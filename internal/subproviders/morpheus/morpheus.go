@@ -1,7 +1,13 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package morpheus
 
 import (
+	"errors"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -16,8 +22,24 @@ func New() subprovider.SubProvider {
 	return SubProvider{}
 }
 
-func (SubProvider) Configure(_ func(x any)) error {
-	return nil
+func (SubProvider) Configure(f func(any)) error {
+	var m []model.SubModel
+
+	f(&m)
+
+	switch len(m) {
+	case 0:
+		// no morpheus provider block
+		return nil
+	case 1:
+		clientfactory.SetClientFactory(m[0])
+
+		return nil
+	default:
+		msg := "invalid morpheus provider block length"
+
+		return errors.New(msg)
+	}
 }
 
 func (SubProvider) GetName() string {
