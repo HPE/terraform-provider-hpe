@@ -2,7 +2,10 @@ module github.com/HPE/terraform-provider-hpe
 
 go 1.22.3
 
-require github.com/hashicorp/terraform-plugin-framework v1.14.1
+require (
+	github.com/hashicorp/terraform-plugin-framework v1.14.1
+	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
+)
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
