@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 build:
-	go build ./...
+	go build ./cmd/terraform-provider-hpe
 
 linter:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
