@@ -1,0 +1,76 @@
+version: "2"
+run:
+  tests: true
+linters:
+  default: none
+  enable:
+    - goconst
+    - gosec
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nlreturn
+    - revive
+    - staticcheck
+    - unconvert
+    - unused
+  settings:
+    dupl:
+      threshold: 110
+    exhaustive:
+      default-signifies-exhaustive: true
+    funlen:
+      lines: 60
+      statements: 40
+    godox:
+      keywords:
+        - OPTIMIZE
+    lll:
+      line-length: 80
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - lll
+        source: '^//go:generate '
+      - linters:
+          - err113
+          - funlen
+        path: _test\.go
+      - linters:
+          - dupl
+        path: .*generated.*go
+      - linters:
+          - goconst
+        path: .*generated.*go
+      - linters:
+          - staticcheck
+        text: 'SA9003:'
+      - linters:
+          - staticcheck
+        text: 'ST1005:'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/HPE
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
