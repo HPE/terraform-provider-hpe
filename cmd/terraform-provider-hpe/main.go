@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -28,8 +29,9 @@ func main() {
 
 	p := provider.New(
 		version,
-		// subprovider1.New(),
+		morpheus.New(),
 		// subprovider2.New(),
+		// subprovider3.New(),
 		// .
 		// .
 		// .
