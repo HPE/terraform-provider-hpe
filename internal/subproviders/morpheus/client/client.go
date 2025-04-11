@@ -2,11 +2,6 @@
 
 package client
 
-import (
-	"net/http"
-)
-
 type Client struct {
-	// For now just use a standard http client
-	http.Client
+	URL string
 }

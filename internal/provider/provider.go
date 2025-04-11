@@ -67,15 +67,15 @@ func createListNestedBlock(attrmaps []AttrMap) map[string]schema.Block {
 }
 
 func (p *HPEProvider) Schema(
-	_ context.Context,
+	ctx context.Context,
 	_ provider.SchemaRequest,
 	resp *provider.SchemaResponse,
 ) {
 	var a []AttrMap
 	for _, s := range p.subproviders {
 		a = append(a, AttrMap{
-			name:       s.GetName(),
-			attributes: s.GetSchema(),
+			name:       s.GetName(ctx),
+			attributes: s.GetSchema(ctx),
 		})
 	}
 
@@ -98,27 +98,27 @@ func (p *HPEProvider) Configure(
 	}
 
 	for _, s := range p.subproviders {
-		s.Configure(f(ctx, req.Config, s.GetName()))
+		s.Configure(ctx, f(ctx, req.Config, s.GetName(ctx)))
 	}
 }
 
 func (p *HPEProvider) Resources(
-	_ context.Context,
+	ctx context.Context,
 ) []func() resource.Resource {
 	var resources []func() resource.Resource
 	for _, s := range p.subproviders {
-		resources = append(resources, s.GetResources()...)
+		resources = append(resources, s.GetResources(ctx)...)
 	}
 
 	return resources
 }
 
 func (p *HPEProvider) DataSources(
-	_ context.Context,
+	ctx context.Context,
 ) []func() datasource.DataSource {
 	var datasources []func() datasource.DataSource
 	for _, s := range p.subproviders {
-		datasources = append(datasources, s.GetDataSources()...)
+		datasources = append(datasources, s.GetDataSources(ctx)...)
 	}
 
 	return datasources

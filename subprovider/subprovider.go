@@ -3,15 +3,17 @@
 package subprovider
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 type SubProvider interface {
-	Configure(f func(any)) error
-	GetName() string
-	GetSchema() map[string]schema.Attribute
-	GetDataSources() []func() datasource.DataSource
-	GetResources() []func() resource.Resource
+	Configure(context.Context, func(any)) error
+	GetName(context.Context) string
+	GetSchema(context.Context) map[string]schema.Attribute
+	GetDataSources(context.Context) []func() datasource.DataSource
+	GetResources(context.Context) []func() resource.Resource
 }

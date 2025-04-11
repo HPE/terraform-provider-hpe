@@ -2,4 +2,6 @@
 
 package model
 
-type SubModel struct{}
+type SubModel struct {
+	URL string `tfsdk:"url"`
+}
