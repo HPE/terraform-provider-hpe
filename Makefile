@@ -2,6 +2,9 @@
 #
 # Note: this Makefile works with GNUMake and BSDMake
 #
+
+.PHONY: build linter lint
+
 build:
 	go build ./cmd/terraform-provider-hpe
 
