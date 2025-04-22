@@ -121,8 +121,8 @@ resource "hpe_morpheus_fake" "foo" {
 	name = "bar"
 }
 `
-	expected := `Attribute morpheus list must contain at "+
-	"least 0 elements and at most 1`
+	expected := `Attribute morpheus list must contain` +
+		` at least 0 elements and at most 1`
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []testresource.TestStep{
