@@ -15,15 +15,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-var _ subprovider.SubProvider = (*SubProvider)(nil)
+var _ subprovider.SubProvider = (*MorpheusSubProvider)(nil)
 
-type SubProvider struct{}
+type MorpheusSubProvider struct{}
 
 func New() subprovider.SubProvider {
-	return &SubProvider{}
+	return &MorpheusSubProvider{}
 }
 
-func (s SubProvider) Configure(_ context.Context, f func(any)) (any, error) {
+func (s MorpheusSubProvider) Configure(_ context.Context, f func(any)) (any, error) {
 	var m []model.SubModel
 
 	f(&m)
@@ -42,11 +42,11 @@ func (s SubProvider) Configure(_ context.Context, f func(any)) (any, error) {
 	}
 }
 
-func (SubProvider) GetName(_ context.Context) string {
+func (MorpheusSubProvider) GetName(_ context.Context) string {
 	return constants.SubProviderName
 }
 
-func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
+func (MorpheusSubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"url": schema.StringAttribute{
 			Required: true,
@@ -54,13 +54,13 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 	}
 }
 
-func (SubProvider) GetDataSources(
+func (MorpheusSubProvider) GetDataSources(
 	_ context.Context,
 ) []func() datasource.DataSource {
 	return nil
 }
 
-func (s SubProvider) GetResources(
+func (s MorpheusSubProvider) GetResources(
 	_ context.Context,
 ) []func() resource.Resource {
 	// Can uncomment this once we have an actual resource

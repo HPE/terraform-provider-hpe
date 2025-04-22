@@ -32,7 +32,7 @@ type FakeModel struct {
 }
 
 type SubProviderTest struct {
-	morpheus.SubProvider
+	morpheus.MorpheusSubProvider
 }
 
 func (t SubProviderTest) GetResources(
@@ -46,8 +46,8 @@ func (t SubProviderTest) GetResources(
 }
 
 func New() *SubProviderTest {
-	m := morpheus.SubProvider{}
-	t := SubProviderTest{SubProvider: m}
+	m := morpheus.MorpheusSubProvider{}
+	t := SubProviderTest{MorpheusSubProvider: m}
 
 	return &t
 }
