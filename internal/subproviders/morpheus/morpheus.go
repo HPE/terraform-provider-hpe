@@ -10,9 +10,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var _ subprovider.SubProvider = (*SubProvider)(nil)
@@ -47,9 +50,35 @@ func (SubProvider) GetName(_ context.Context) string {
 }
 
 func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
+	parentBlock := path.MatchRelative().AtParent()
 	return map[string]schema.Attribute{
 		"url": schema.StringAttribute{
-			Required: true,
+			MarkdownDescription: "Morpheus instance URL",
+			Required:            true,
+		},
+		"username": schema.StringAttribute{
+			MarkdownDescription: "Morpheus username for authentication, required if password is set",
+			Optional:            true,
+			Validators: []validator.String{
+				stringvalidator.AlsoRequires(parentBlock.AtName("password")),
+			},
+		},
+		"password": schema.StringAttribute{
+			MarkdownDescription: "Morpheus password for authentication, required if username is set",
+			Optional:            true,
+			Sensitive:           true,
+			Validators: []validator.String{
+				stringvalidator.AlsoRequires(parentBlock.AtName("username")),
+			},
+		},
+		"access_token": schema.StringAttribute{
+			MarkdownDescription: "Morpheus access token for authentication",
+			Optional:            true,
+			Sensitive:           true,
+			Validators: []validator.String{
+				stringvalidator.ConflictsWith(parentBlock.AtName("username")),
+				stringvalidator.ConflictsWith(parentBlock.AtName("password")),
+			},
 		},
 	}
 }

@@ -3,5 +3,8 @@
 package model
 
 type SubModel struct {
-	URL string `tfsdk:"url"`
+	URL         string `tfsdk:"url"`
+	Username    string `tfsdk:"username"`
+	Password    string `tfsdk:"password"`
+	AccessToken string `tfsdk:"access_token"`
 }
