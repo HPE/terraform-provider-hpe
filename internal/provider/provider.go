@@ -89,7 +89,7 @@ func (p *HPEProvider) Schema(
 func (p *HPEProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
-	_ *provider.ConfigureResponse,
+	resp *provider.ConfigureResponse,
 ) {
 	f := func(ctx context.Context, c tfsdk.Config, name string) func(any) {
 		return func(target any) {
@@ -97,9 +97,22 @@ func (p *HPEProvider) Configure(
 		}
 	}
 
+	d := map[string]any{}
 	for _, s := range p.subproviders {
-		s.Configure(ctx, f(ctx, req.Config, s.GetName(ctx)))
+		v, err := s.Configure(ctx, f(ctx, req.Config, s.GetName(ctx)))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to configure "+s.GetName(ctx),
+				err.Error(),
+			)
+
+			return
+		}
+		d[s.GetName(ctx)] = v
 	}
+
+	resp.ResourceData = d
+	resp.DataSourceData = d
 }
 
 func (p *HPEProvider) Resources(

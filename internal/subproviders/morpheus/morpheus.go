@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
@@ -16,15 +17,13 @@ import (
 
 var _ subprovider.SubProvider = (*SubProvider)(nil)
 
-type SubProvider struct {
-	model *model.SubModel
-}
+type SubProvider struct{}
 
 func New() subprovider.SubProvider {
 	return &SubProvider{}
 }
 
-func (s *SubProvider) Configure(_ context.Context, f func(any)) error {
+func (s SubProvider) Configure(_ context.Context, f func(any)) (any, error) {
 	var m []model.SubModel
 
 	f(&m)
@@ -32,15 +31,14 @@ func (s *SubProvider) Configure(_ context.Context, f func(any)) error {
 	switch len(m) {
 	case 0:
 		// no morpheus provider block
-		return nil
+		return nil, nil
 	case 1:
-		s.model = &m[0]
 
-		return nil
+		return clientfactory.New(m[0]), nil
 	default:
 		msg := "invalid morpheus provider block length"
 
-		return errors.New(msg)
+		return nil, errors.New(msg)
 	}
 }
 

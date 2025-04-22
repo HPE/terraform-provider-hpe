@@ -9,14 +9,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 )
 
-func New(m *model.SubModel) *ClientFactory {
+func New(m model.SubModel) *ClientFactory {
 	return &ClientFactory{model: m}
 }
 
 type ClientFactory struct {
-	model *model.SubModel
+	model model.SubModel
 }
 
-func (c ClientFactory) NewClient(_ context.Context) client.Client {
+func (c ClientFactory) New(_ context.Context) client.Client {
 	return client.Client{URL: c.model.URL}
 }

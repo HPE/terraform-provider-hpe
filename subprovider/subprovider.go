@@ -11,7 +11,7 @@ import (
 )
 
 type SubProvider interface {
-	Configure(context.Context, func(any)) error
+	Configure(context.Context, func(any)) (any, error)
 	GetName(context.Context) string
 	GetSchema(context.Context) map[string]schema.Attribute
 	GetDataSources(context.Context) []func() datasource.DataSource
