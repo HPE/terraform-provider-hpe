@@ -18,5 +18,5 @@ type ClientFactory struct {
 }
 
 func (c ClientFactory) New(_ context.Context) client.Client {
-	return client.Client{URL: c.model.URL}
+	return client.Client{URL: c.model.URL.ValueString()}
 }

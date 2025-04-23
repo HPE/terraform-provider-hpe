@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	testresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -23,12 +24,16 @@ func fakeResourceSchema(_ context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Required: true,
 			},
+			"testattr": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 	}
 }
 
 type FakeModel struct {
-	Name types.String `tfsdk:"name"`
+	Name     types.String `tfsdk:"name"`
+	TestAttr types.String `tfsdk:"testattr"`
 }
 
 type SubProviderTest struct {
@@ -83,6 +88,50 @@ resource "hpe_morpheus_fake" "foo" {
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig,
 				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusSubProviderOk(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "https://example.com"
+		username = "test-user"
+		password = "test-password"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	testresource.TestCheckResourceAttr(
+		"hpe_morpheus_fake.foo",
+		"name",
+		"bar",
+	)
+	checks := []testresource.TestCheckFunc{
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"name",
+			"bar",
+		),
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"testattr",
+			"https://example.com",
+		),
+	}
+	checkFn := testresource.ComposeAggregateTestCheckFunc(checks...)
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
 			},
 		},
 	})
@@ -264,10 +313,10 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var plan FakeModel
-	req.Plan.Get(ctx, &plan)
+	var data FakeModel
+	req.Plan.Get(ctx, &data)
 
-	_, err := r.NewClient(ctx)
+	c, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Client error",
@@ -276,6 +325,8 @@ func (r *Resource) Create(
 
 		return
 	}
+	data.TestAttr = types.StringValue(c.URL)
+	resp.State.Set(ctx, &data)
 }
 
 func (r *Resource) Read(

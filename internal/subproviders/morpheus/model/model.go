@@ -2,9 +2,13 @@
 
 package model
 
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
 type SubModel struct {
-	URL         string `tfsdk:"url"`
-	Username    string `tfsdk:"username"`
-	Password    string `tfsdk:"password"`
-	AccessToken string `tfsdk:"access_token"`
+	URL         types.String `tfsdk:"url"`
+	Username    types.String `tfsdk:"username"`
+	Password    types.String `tfsdk:"password"`
+	AccessToken types.String `tfsdk:"access_token"`
 }
