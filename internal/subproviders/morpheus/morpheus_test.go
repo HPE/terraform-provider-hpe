@@ -88,6 +88,87 @@ resource "hpe_morpheus_fake" "foo" {
 	})
 }
 
+func TestAccMorpheusSubProviderMissingAuth(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "http://example.com"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	expected := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				ExpectError:        regexp.MustCompile(expected),
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusSubProviderMissingPassword(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "http://example.com"
+		username = "test-user"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	expected := `Attribute "morpheus\[0\]\.password" must be specified when\n` +
+		`"morpheus\[0\]\.username" is specified`
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				ExpectError:        regexp.MustCompile(expected),
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusSubProviderTooMuchAuth(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "http://example.com"
+		username = "test-user"
+		password = "test-password"
+		access_token = "this-is-not-a-token"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	expected := `Attribute "morpheus\[0\]\.(username|password)" cannot be specified when\n` +
+		`"morpheus\[0\]\.access_token" is specified`
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				ExpectError:        regexp.MustCompile(expected),
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusSubProviderStrayResource(t *testing.T) {
 	providerConfig := `
 provider "hpe" {

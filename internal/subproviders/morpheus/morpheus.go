@@ -51,10 +51,17 @@ func (SubProvider) GetName(_ context.Context) string {
 
 func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 	parentBlock := path.MatchRelative().AtParent()
+
 	return map[string]schema.Attribute{
 		"url": schema.StringAttribute{
 			MarkdownDescription: "Morpheus instance URL",
 			Required:            true,
+			Validators: []validator.String{
+				stringvalidator.Any(
+					stringvalidator.AlsoRequires(parentBlock.AtName("username")),
+					stringvalidator.AlsoRequires(parentBlock.AtName("access_token")),
+				),
+			},
 		},
 		"username": schema.StringAttribute{
 			MarkdownDescription: "Morpheus username for authentication, required if password is set",
