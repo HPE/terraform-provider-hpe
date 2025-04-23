@@ -105,8 +105,6 @@ func (p *HPEProvider) Configure(
 				"Failed to configure "+s.GetName(ctx),
 				err.Error(),
 			)
-
-			return
 		}
 		d[s.GetName(ctx)] = v
 	}

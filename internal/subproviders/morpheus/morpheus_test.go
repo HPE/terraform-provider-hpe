@@ -88,6 +88,37 @@ resource "hpe_morpheus_fake" "foo" {
 	})
 }
 
+func TestAccMorpheusSubProviderOk(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "https://example.com"
+		username = "test-user"
+		password = "test-password"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	check := testresource.TestCheckResourceAttr(
+		"hpe_morpheus_fake.foo",
+		"name",
+		"bar",
+	)
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              check,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusSubProviderMissingAuth(t *testing.T) {
 	providerConfig := `
 provider "hpe" {
@@ -264,8 +295,8 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var plan FakeModel
-	req.Plan.Get(ctx, &plan)
+	var data FakeModel
+	req.Plan.Get(ctx, &data)
 
 	_, err := r.NewClient(ctx)
 	if err != nil {
@@ -276,6 +307,7 @@ func (r *Resource) Create(
 
 		return
 	}
+	resp.State.Set(ctx, &data)
 }
 
 func (r *Resource) Read(

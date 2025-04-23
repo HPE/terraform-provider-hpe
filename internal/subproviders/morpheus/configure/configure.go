@@ -23,21 +23,8 @@ func (r *ResourceWithMorpheusConfigure) Configure(
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
 ) {
-	msg := `
-Morpheus resource present, but possible missing morpheus provider block.
-
-provider "hpe" {
-  morpheus { <- missing or duplicate?
-    url = "https://example.com"
-  }
-}`
+	// provider.Configure is not guaranteed to have run yet
 	if req.ProviderData == nil {
-		tflog.Debug(ctx, "Nil ProviderData block")
-		resp.Diagnostics.AddError(
-			constants.SubProviderName+" client creation failed",
-			msg,
-		)
-
 		return
 	}
 
@@ -45,6 +32,14 @@ provider "hpe" {
 	cf, ok := m[constants.SubProviderName].(*clientfactory.ClientFactory)
 	if !ok {
 		tflog.Debug(ctx, "Nil ProviderData sub block")
+		msg := `
+Morpheus resource present, but possible missing morpheus provider block.
+
+provider "hpe" {
+  morpheus { <- missing or duplicate?
+    url = "https://example.com"
+  }
+}`
 		resp.Diagnostics.AddError(
 			constants.SubProviderName+" client creation failed",
 			msg,
