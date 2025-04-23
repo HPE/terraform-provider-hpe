@@ -27,7 +27,7 @@ linters:
       keywords:
         - OPTIMIZE
     lll:
-      line-length: 80
+      line-length: 100
   exclusions:
     generated: lax
     presets:
