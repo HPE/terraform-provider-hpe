@@ -16,26 +16,26 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
 
-var _ provider.Provider = &HPEProvider{}
+var _ provider.Provider = &hpeProvider{}
 
 func New(
 	version string,
 	b ...subprovider.SubProvider,
 ) func() provider.Provider {
 	return func() provider.Provider {
-		return &HPEProvider{
+		return &hpeProvider{
 			version:      version,
 			subproviders: b,
 		}
 	}
 }
 
-type HPEProvider struct {
+type hpeProvider struct {
 	version      string
 	subproviders []subprovider.SubProvider
 }
 
-func (p *HPEProvider) Metadata(
+func (p *hpeProvider) Metadata(
 	_ context.Context,
 	_ provider.MetadataRequest,
 	resp *provider.MetadataResponse,
@@ -66,7 +66,7 @@ func createListNestedBlock(attrmaps []AttrMap) map[string]schema.Block {
 	return blockmap
 }
 
-func (p *HPEProvider) Schema(
+func (p *hpeProvider) Schema(
 	ctx context.Context,
 	_ provider.SchemaRequest,
 	resp *provider.SchemaResponse,
@@ -86,7 +86,7 @@ func (p *HPEProvider) Schema(
 	}
 }
 
-func (p *HPEProvider) Configure(
+func (p *hpeProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
@@ -113,7 +113,7 @@ func (p *HPEProvider) Configure(
 	resp.DataSourceData = d
 }
 
-func (p *HPEProvider) Resources(
+func (p *hpeProvider) Resources(
 	ctx context.Context,
 ) []func() resource.Resource {
 	var resources []func() resource.Resource
@@ -124,7 +124,7 @@ func (p *HPEProvider) Resources(
 	return resources
 }
 
-func (p *HPEProvider) DataSources(
+func (p *hpeProvider) DataSources(
 	ctx context.Context,
 ) []func() datasource.DataSource {
 	var datasources []func() datasource.DataSource
