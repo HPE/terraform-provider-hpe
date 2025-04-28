@@ -4,6 +4,7 @@ package clientfactory
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/client"
@@ -29,13 +30,26 @@ type ClientFactory struct {
 	model     model.SubModel
 }
 
-func (c ClientFactory) New(_ context.Context) client.Client {
-	httpClient := &http.Client{
-		Transport: c.transport,
+func (c ClientFactory) New(ctx context.Context) (*client.Client, error) {
+	morpheus := client.New(ctx, client.Config{
+		URL:         c.model.URL.ValueString(),
+		InsecureTLS: true,
+	})
+
+	if !c.model.AccessToken.IsNull() {
+		if err := morpheus.SetAccessToken(ctx, c.model.AccessToken.ValueString()); err != nil {
+			return nil, fmt.Errorf("morpheus access token authentication failed: %w", err)
+		}
 	}
 
-	return client.Client{
-		HTTPClient: httpClient,
-		URL:        c.model.URL.ValueString(),
+	if !c.model.Username.IsNull() {
+		if err := morpheus.SetCredentials(ctx,
+			c.model.Username.ValueString(),
+			c.model.Password.ValueString(),
+		); err != nil {
+			return nil, fmt.Errorf("morpheus credential authentication failed: %w", err)
+		}
 	}
+
+	return morpheus, nil
 }

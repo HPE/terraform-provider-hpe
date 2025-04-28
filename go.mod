@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/HewlettPackard/hpe-morpheus-client/client v0.0.0-20250423165706-69d2f05b96d3 // indirect
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -60,4 +61,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/grpc v1.69.4 // indirect
 	google.golang.org/protobuf v1.36.3 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 )

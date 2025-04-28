@@ -53,6 +53,6 @@ provider "hpe" {
 
 func (r *ResourceWithMorpheusConfigure) NewClient(
 	ctx context.Context,
-) (client.Client, error) {
-	return r.cf.New(ctx), nil
+) (*client.Client, error) {
+	return r.cf.New(ctx)
 }
