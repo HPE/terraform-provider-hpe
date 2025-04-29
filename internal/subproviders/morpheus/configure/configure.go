@@ -3,9 +3,9 @@ package configure
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/client"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
+	"github.com/HewlettPackard/hpe-morpheus-client/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -53,6 +53,6 @@ provider "hpe" {
 
 func (r *ResourceWithMorpheusConfigure) NewClient(
 	ctx context.Context,
-) (*client.Client, error) {
-	return r.cf.New(ctx)
+) (*client.APIClient, error) {
+	return r.cf.NewClient(ctx)
 }

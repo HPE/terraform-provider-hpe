@@ -4,52 +4,113 @@ package clientfactory
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/client"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/httptrace"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/auth"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HewlettPackard/hpe-morpheus-client/client"
 )
 
-func New(m model.SubModel) *ClientFactory {
-	t := http.DefaultTransport
+// factory options
+type FactoryOption func(*ClientFactory)
 
-	if httptrace.Enabled() {
-		t = httptrace.New(t)
+func WithFactoryHTTPClient(c *http.Client) FactoryOption {
+	return func(cf *ClientFactory) {
+		cf.httpclient = c
+	}
+}
+
+func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
+	var options []ClientOption
+
+	cf := &ClientFactory{
+		model: m,
 	}
 
-	return &ClientFactory{
-		transport: t,
-		model:     m,
+	for _, opt := range opts {
+		opt(cf)
 	}
+
+	if cf.httpclient != nil {
+		// Custom http client
+		options = append(options, WithHTTPClient(cf.httpclient))
+	}
+
+	f := func(ctx context.Context) (*client.APIClient, error) {
+		client := NewAPIClient(
+			ctx,
+			cf.model.URL.ValueString(),
+			cf.model.Username.ValueString(),
+			cf.model.Password.ValueString(),
+			cf.model.AccessToken.ValueString(),
+			options...,
+		)
+
+		return client, nil
+	}
+
+	cf.newClient = f
+
+	return cf
 }
 
 type ClientFactory struct {
-	transport http.RoundTripper
-	model     model.SubModel
+	httpclient *http.Client
+	model      model.SubModel
+	newClient  func(context.Context) (*client.APIClient, error)
 }
 
-func (c ClientFactory) New(ctx context.Context) (*client.Client, error) {
-	morpheus := client.New(ctx, client.Config{
-		URL:         c.model.URL.ValueString(),
-		InsecureTLS: true,
-	})
+func (c ClientFactory) NewClient(ctx context.Context) (*client.APIClient, error) {
+	return c.newClient(ctx)
+}
 
-	if !c.model.AccessToken.IsNull() {
-		if err := morpheus.SetAccessToken(ctx, c.model.AccessToken.ValueString()); err != nil {
-			return nil, fmt.Errorf("morpheus access token authentication failed: %w", err)
+// client options
+type ClientOption func(*client.APIClient)
+
+func WithHTTPClient(h *http.Client) ClientOption {
+	return func(c *client.APIClient) {
+		c.GetConfig().HTTPClient = h
+	}
+}
+
+func NewAPIClient(
+	_ context.Context,
+	url,
+	username string,
+	password string,
+	token string,
+	opts ...ClientOption,
+) *client.APIClient {
+	morpheusCfg := client.NewConfiguration()
+	morpheusCfg.Servers[0].URL = url
+
+	c := client.NewAPIClient(morpheusCfg)
+
+	if c.GetConfig().HTTPClient == http.DefaultClient {
+		var authTransport http.RoundTripper
+		if token != "" {
+			authTransport = auth.NewTokenRoundTripper(
+				context.Background(),
+				token,
+			)
+		} else {
+			authTransport = auth.NewCredsRoundTripper(
+				context.Background(),
+				url,
+				username,
+				password,
+			)
+		}
+		c.GetConfig().HTTPClient = &http.Client{
+			Transport: authTransport,
+			Timeout:   15 * time.Second,
 		}
 	}
 
-	if !c.model.Username.IsNull() {
-		if err := morpheus.SetCredentials(ctx,
-			c.model.Username.ValueString(),
-			c.model.Password.ValueString(),
-		); err != nil {
-			return nil, fmt.Errorf("morpheus credential authentication failed: %w", err)
-		}
+	for _, opt := range opts {
+		opt(c)
 	}
 
-	return morpheus, nil
+	return c
 }

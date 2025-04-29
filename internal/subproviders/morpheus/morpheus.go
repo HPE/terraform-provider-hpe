@@ -20,10 +20,34 @@ import (
 
 var _ subprovider.SubProvider = (*SubProvider)(nil)
 
-type SubProvider struct{}
+type Option func(*SubProvider)
 
-func New() subprovider.SubProvider {
-	return &SubProvider{}
+// Option to override newClientFactory
+func WithClientFactory(f func(model.SubModel) *clientfactory.ClientFactory) Option {
+	return func(sp *SubProvider) {
+		sp.newClientFactory = f
+	}
+}
+
+type SubProvider struct {
+	newClientFactory func(model.SubModel) *clientfactory.ClientFactory
+}
+
+func New(opts ...Option) subprovider.SubProvider {
+	f := func(m model.SubModel) *clientfactory.ClientFactory {
+		return clientfactory.New(m)
+	}
+
+	sp := &SubProvider{
+		newClientFactory: f,
+	}
+
+	// Apply any options
+	for _, opt := range opts {
+		opt(sp)
+	}
+
+	return sp
 }
 
 func (s SubProvider) Configure(_ context.Context, f func(any)) (any, error) {
@@ -37,7 +61,7 @@ func (s SubProvider) Configure(_ context.Context, f func(any)) (any, error) {
 		return nil, nil
 	case 1:
 
-		return clientfactory.New(m[0]), nil
+		return s.newClientFactory(m[0]), nil
 	default:
 		msg := "invalid morpheus provider block length"
 

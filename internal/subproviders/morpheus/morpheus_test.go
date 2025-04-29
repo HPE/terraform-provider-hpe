@@ -2,12 +2,16 @@ package morpheus_test
 
 import (
 	"context"
+	"net/http"
 	"regexp"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/subprovider"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -37,7 +41,8 @@ type FakeModel struct {
 }
 
 type SubProviderTest struct {
-	morpheus.SubProvider
+	// morpheus.SubProvider
+	subprovider.SubProvider
 }
 
 func (t SubProviderTest) GetResources(
@@ -51,7 +56,24 @@ func (t SubProviderTest) GetResources(
 }
 
 func New() *SubProviderTest {
-	m := morpheus.SubProvider{}
+	m := morpheus.New()
+	t := SubProviderTest{SubProvider: m}
+
+	return &t
+}
+
+func NewWithCustomHTTPClient() *SubProviderTest {
+	f := func(m model.SubModel) *clientfactory.ClientFactory {
+		// example of passing in custom http client
+		hc := &http.Client{}
+
+		return clientfactory.New(
+			m,
+			clientfactory.WithFactoryHTTPClient(hc),
+		)
+	}
+
+	m := morpheus.New(morpheus.WithClientFactory(f))
 	t := SubProviderTest{SubProvider: m}
 
 	return &t
@@ -93,56 +115,113 @@ resource "hpe_morpheus_fake" "foo" {
 	})
 }
 
-// TODO: inject a client for testing and re-renable the test
-// func TestAccMorpheusSubProviderOk(t *testing.T) {
-// 	providerConfig := `
-// provider "hpe" {
-// 	morpheus {
-// 		url = "https://example.com"
-// 		username = "test-user"
-// 		password = "test-password"
-// 	}
-// }
+func TestAccMorpheusSubProviderOk(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "https://127.0.0.1:0"
+		username = "test-user"
+		password = "test-password"
+	}
+}
 
-// resource "hpe_morpheus_fake" "foo" {
-// 	name = "bar"
-// }
-// `
-// 	testresource.TestCheckResourceAttr(
-// 		"hpe_morpheus_fake.foo",
-// 		"name",
-// 		"bar",
-// 	)
-// 	checks := []testresource.TestCheckFunc{
-// 		testresource.TestCheckResourceAttr(
-// 			"hpe_morpheus_fake.foo",
-// 			"name",
-// 			"bar",
-// 		),
-// 		testresource.TestCheckResourceAttr(
-// 			"hpe_morpheus_fake.foo",
-// 			"testattr",
-// 			"https://example.com",
-// 		),
-// 	}
-// 	checkFn := testresource.ComposeAggregateTestCheckFunc(checks...)
-// 	testresource.Test(t, testresource.TestCase{
-// 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-// 		Steps: []testresource.TestStep{
-// 			{
-// 				Config:             providerConfig,
-// 				ExpectNonEmptyPlan: false,
-// 				Check:              checkFn,
-// 			},
-// 		},
-// 	})
-// }
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	testresource.TestCheckResourceAttr(
+		"hpe_morpheus_fake.foo",
+		"name",
+		"bar",
+	)
+	checks := []testresource.TestCheckFunc{
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"name",
+			"bar",
+		),
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"testattr",
+			"https://127.0.0.1:0",
+		),
+	}
+	checkFn := testresource.ComposeAggregateTestCheckFunc(checks...)
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusSubProviderWithCustomHTTPClient is mainly
+// an example of passing in a custom client
+func TestAccMorpheusSubProviderWithCustomHTTPClient(t *testing.T) {
+	newLocalProviderWithError := func() (tfprotov6.ProviderServer, error) {
+		providerInstance := provider.New("test", NewWithCustomHTTPClient())()
+
+		return providerserver.NewProtocol6WithError(providerInstance)()
+	}
+
+	localTestAccProtoV6ProviderFactories := map[string]func() (
+		tfprotov6.ProviderServer, error,
+	){
+		"hpe": newLocalProviderWithError,
+	}
+
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = "https://127.0.0.1:0"
+		username = "test-user"
+		password = "test-password"
+	}
+}
+
+resource "hpe_morpheus_fake" "foo" {
+	name = "bar"
+}
+`
+	testresource.TestCheckResourceAttr(
+		"hpe_morpheus_fake.foo",
+		"name",
+		"bar",
+	)
+	checks := []testresource.TestCheckFunc{
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"name",
+			"bar",
+		),
+		testresource.TestCheckResourceAttr(
+			"hpe_morpheus_fake.foo",
+			"testattr",
+			"https://127.0.0.1:0",
+		),
+	}
+	checkFn := testresource.ComposeAggregateTestCheckFunc(checks...)
+	testresource.Test(t, testresource.TestCase{
+		ProtoV6ProviderFactories: localTestAccProtoV6ProviderFactories,
+		Steps: []testresource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
 
 func TestAccMorpheusSubProviderMissingAuth(t *testing.T) {
 	providerConfig := `
 provider "hpe" {
 	morpheus {
-		url = "http://example.com"
+		url = "http://127.0.0.1:0"
 	}
 }
 
@@ -167,7 +246,7 @@ func TestAccMorpheusSubProviderMissingPassword(t *testing.T) {
 	providerConfig := `
 provider "hpe" {
 	morpheus {
-		url = "http://example.com"
+		url = "http://127.0.0.1:0"
 		username = "test-user"
 	}
 }
@@ -326,7 +405,8 @@ func (r *Resource) Create(
 
 		return
 	}
-	data.TestAttr = types.StringValue(c.URL)
+
+	data.TestAttr = types.StringValue(c.GetConfig().Servers[0].URL)
 	resp.State.Set(ctx, &data)
 }
 
