@@ -13,7 +13,7 @@ import (
 
 var _ http.RoundTripper = TraceRoundTripper{}
 
-func Enabled() bool {
+func IsEnabled() bool {
 	_, enabled := os.LookupEnv("MORPHEUS_API_HTTPTRACE")
 
 	return enabled

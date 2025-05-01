@@ -3,7 +3,6 @@ package auth
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
 	"sync"
 )
@@ -39,14 +38,11 @@ func (t *TokenRoundTripper) RoundTrip(
 
 func NewTokenRoundTripper(
 	_ context.Context,
+	transport http.RoundTripper,
 	token string,
 ) http.RoundTripper {
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
-	}
-
 	rt := TokenRoundTripper{
-		baseTransport: t,
+		baseTransport: transport,
 		token:         token,
 	}
 

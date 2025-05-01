@@ -4,6 +4,7 @@ package clientfactory
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"time"
 
@@ -38,6 +39,10 @@ func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
 		options = append(options, WithHTTPClient(cf.httpclient))
 	}
 
+	if cf.model.Insecure.ValueBool() {
+		options = append(options, WithInsecureTLS())
+	}
+
 	f := func(ctx context.Context) (*client.APIClient, error) {
 		client := NewAPIClient(
 			ctx,
@@ -66,12 +71,23 @@ func (c ClientFactory) NewClient(ctx context.Context) (*client.APIClient, error)
 	return c.newClient(ctx)
 }
 
+type clientOpts struct {
+	httpclient *http.Client
+	insecure   bool
+}
+
 // client options
-type ClientOption func(*client.APIClient)
+type ClientOption func(*clientOpts)
 
 func WithHTTPClient(h *http.Client) ClientOption {
-	return func(c *client.APIClient) {
-		c.GetConfig().HTTPClient = h
+	return func(o *clientOpts) {
+		o.httpclient = h
+	}
+}
+
+func WithInsecureTLS() ClientOption {
+	return func(o *clientOpts) {
+		o.insecure = true
 	}
 }
 
@@ -83,40 +99,50 @@ func NewAPIClient(
 	token string,
 	opts ...ClientOption,
 ) *client.APIClient {
+	var options clientOpts
+
 	morpheusCfg := client.NewConfiguration()
 	morpheusCfg.Servers[0].URL = url
 
 	c := client.NewAPIClient(morpheusCfg)
 
-	if c.GetConfig().HTTPClient == http.DefaultClient {
-		var authTransport http.RoundTripper
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	if options.httpclient == nil {
+		var transport http.RoundTripper
+
+		transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: options.insecure, //nolint: gosec
+			},
+		}
+
+		if httptrace.IsEnabled() {
+			transport = httptrace.New(transport)
+		}
+
+		var authRoundTripper http.RoundTripper
 		if token != "" {
-			authTransport = auth.NewTokenRoundTripper(
+			authRoundTripper = auth.NewTokenRoundTripper(
 				context.Background(),
+				transport,
 				token,
 			)
 		} else {
-			authTransport = auth.NewCredsRoundTripper(
+			authRoundTripper = auth.NewCredsRoundTripper(
 				context.Background(),
+				transport,
 				url,
 				username,
 				password,
 			)
 		}
 		c.GetConfig().HTTPClient = &http.Client{
-			Transport: authTransport,
+			Transport: authRoundTripper,
 			Timeout:   15 * time.Second,
 		}
-	}
-
-	if httptrace.Enabled() {
-		c.GetConfig().HTTPClient.Transport = httptrace.New(
-			c.GetConfig().HTTPClient.Transport,
-		)
-	}
-
-	for _, opt := range opts {
-		opt(c)
 	}
 
 	return c

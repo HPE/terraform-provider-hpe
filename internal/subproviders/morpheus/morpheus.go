@@ -111,6 +111,12 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 				stringvalidator.ConflictsWith(parentBlock.AtName("password")),
 			},
 		},
+		"insecure": schema.BoolAttribute{
+			MarkdownDescription: "Explicitly allow the provider to perform " +
+				"\"insecure\" SSL requests. If omitted, " +
+				"default value is `false`",
+			Optional: true,
+		},
 	}
 }
 

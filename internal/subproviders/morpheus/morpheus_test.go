@@ -122,6 +122,7 @@ provider "hpe" {
 		url = "https://127.0.0.1:0"
 		username = "test-user"
 		password = "test-password"
+		insecure = true
 	}
 }
 

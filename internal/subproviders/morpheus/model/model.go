@@ -11,4 +11,5 @@ type SubModel struct {
 	Username    types.String `tfsdk:"username"`
 	Password    types.String `tfsdk:"password"`
 	AccessToken types.String `tfsdk:"access_token"`
+	Insecure    types.Bool   `tfsdk:"insecure"`
 }

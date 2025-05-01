@@ -3,7 +3,6 @@ package auth
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"sync"
@@ -109,6 +108,7 @@ func (c *CredsRoundTripper) RoundTrip(req *http.Request) (*http.Response, error)
 
 func NewCredsRoundTripper(
 	_ context.Context,
+	transport http.RoundTripper,
 	url string,
 	username string,
 	password string,
@@ -117,17 +117,14 @@ func NewCredsRoundTripper(
 	morpheusCfg.Servers[0].URL = url
 
 	client := client.NewAPIClient(morpheusCfg)
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
-	}
 
 	morpheusCfg.HTTPClient = &http.Client{
-		Transport: t,
+		Transport: transport,
 		Timeout:   15 * time.Second,
 	}
 
 	rt := CredsRoundTripper{
-		baseTransport: t,
+		baseTransport: transport,
 		client:        client,
 		username:      username,
 		password:      password,
