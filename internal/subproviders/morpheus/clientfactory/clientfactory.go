@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/auth"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/httptrace"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HewlettPackard/hpe-morpheus-client/client"
 )
@@ -106,6 +107,12 @@ func NewAPIClient(
 			Transport: authTransport,
 			Timeout:   15 * time.Second,
 		}
+	}
+
+	if httptrace.Enabled() {
+		c.GetConfig().HTTPClient.Transport = httptrace.New(
+			c.GetConfig().HTTPClient.Transport,
+		)
 	}
 
 	for _, opt := range opts {
