@@ -131,7 +131,7 @@ provider "hpe" {
 #}
 
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-1"
+	username = "testacc-TestAccMorpheusUserOk"
 	email = "foo@bar.com"
 	password = "Secret123!"
 	roles = [
@@ -163,7 +163,7 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"test2",
+			"testacc-TestAccMorpheusUserOk",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -226,9 +226,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingRoles(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -266,9 +263,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingUsername(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -314,9 +308,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingEmail(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
