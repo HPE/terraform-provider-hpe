@@ -9,6 +9,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -129,18 +130,9 @@ func (SubProvider) GetDataSources(
 func (s SubProvider) GetResources(
 	_ context.Context,
 ) []func() resource.Resource {
-	// Can uncomment this once we have an actual resource
-	// f := func(r resource.Resource) func() resource.Resource {
-	//   return func() resource.Resource {
-	//    return r
-	//   }
-	// }
-	// // s.model contents not  populated yet
-	// cf := clientfactory.New(s.model)
-	// resources := []func() resource.Resource{
-	//   f(xxx.NewResource(cf)),
-	// }
-	// return resources
+	resources := []func() resource.Resource{
+		user.NewResource,
+	}
 
-	return []func() resource.Resource{}
+	return resources
 }

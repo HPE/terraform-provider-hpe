@@ -17,3 +17,7 @@ lint:
 test:
 	env TF_ACC=1 \
 	go test -short -v -cover -count 1 -timeout 10m ./...
+
+testacc:
+	env TF_ACC=1 \
+	go test -v -cover -count 1 -timeout 10m ./...

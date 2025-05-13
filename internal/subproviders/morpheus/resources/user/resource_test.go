@@ -1,10 +1,8 @@
 package user_test
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -17,38 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func getExpectedFn(expected map[string]map[string]string) func(string, string) string {
-	return func(id string, key string) string {
-		return expected[id][key]
-	}
-}
-
-func getExpected(index string, key string) string {
-	expectedRoles := map[string]map[string]string{
-		"3": {
-			"id":          "3",
-			"name":        "User Admin",
-			"description": "Sub Tenant User Template",
-			"authority":   "User Admin",
-		},
-		"1": {
-			"id":          "1",
-			"name":        "System Admin",
-			"description": "Super User",
-			"authority":   "System Admin",
-		},
-	}
-
-	return expectedRoles[index][key]
-}
-
 func checkRole(
 	resourceName string,
-	listkey string,
-	index int,
-	keys []string,
-	refkey string,
-	f func(string, string) string,
+	roleIDAttr string,
+	expectedRoles map[string]struct{},
 ) func(*terraform.State) error {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -56,23 +26,23 @@ func checkRole(
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
 
-		indexStr := strconv.Itoa(index)
-		refattr := fmt.Sprintf("%s.%s.%s", listkey, indexStr, refkey)
-		refvalue := rs.Primary.Attributes[refattr]
+		roleID := rs.Primary.Attributes[roleIDAttr]
+		if _, ok := expectedRoles[roleID]; !ok {
+			return fmt.Errorf("role ID %s not found ", roleID)
+		}
 
-		for _, key := range keys {
-			attr := fmt.Sprintf("%s.%s.%s", listkey, indexStr, key)
-			value := rs.Primary.Attributes[attr]
-			expected := f(refvalue, key)
-			if value != expected {
-				msg := fmt.Sprintf(
-					"expected '%s' got '%s'",
-					expected,
-					value,
-				)
+		delete(expectedRoles, roleID)
 
-				return errors.New(msg)
-			}
+		return nil
+	}
+}
+
+func checkStrayRoles(
+	expectedRoles map[string]struct{},
+) func(*terraform.State) error {
+	return func(_ *terraform.State) error {
+		if len(expectedRoles) != 0 {
+			return fmt.Errorf("not all role_ids found %s", expectedRoles)
 		}
 
 		return nil
@@ -117,53 +87,23 @@ provider "hpe" {
 #username = "test101"
 #email = "foo@bar.com"
 #password = "Secret123!"
-#roles = [
-#	{
-#		id = 3
-#	},
-#	{
-#		id = 0
-#	},
-#	{
-#		id = 1
-#	}
-#]
+#roles = [3,0,1]
 #}
 
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-1"
+	username = "testacc-TestAccMorpheusUserOk"
 	email = "foo@bar.com"
 	password = "Secret123!"
-	roles = [
-		{
-			id = 3
-		},
-		{
-			id = 1
-		}
-	]
+	role_ids = [3,1]
 }
 `
-	expectedRoles := map[string]map[string]string{
-		"3": {
-			"id":          "3",
-			"name":        "User Admin",
-			"description": "Sub Tenant User Template",
-			"authority":   "User Admin",
-		},
-		"1": {
-			"id":          "1",
-			"name":        "System Admin",
-			"description": "Super User",
-			"authority":   "System Admin",
-		},
-	}
+	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"test2",
+			"testacc-TestAccMorpheusUserOk",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -177,25 +117,20 @@ resource "hpe_morpheus_user" "foo" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
-			"roles.#",
+			"role_ids.#",
 			"2",
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
-			"roles",
-			0,
-			[]string{"authority", "description", "name", "id"},
-			"id",
-			getExpectedFn(expectedRoles),
+			"role_ids.0",
+			expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
-			"roles",
-			1,
-			[]string{"authority", "description", "name", "id"},
-			"id",
-			getExpected,
+			"role_ids.1",
+			expectedRoles,
 		),
+		checkStrayRoles(expectedRoles),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -226,9 +161,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingRoles(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -248,9 +180,10 @@ resource "hpe_morpheus_user" "foo" {
 	username = "test2"
 	email = "bar@bar.com"
 	password = "Secret123!"
+	# role_ids = [3,1]
 }
 `
-	expected := `The argument "roles" is required`
+	expected := `The argument "role_ids" is required`
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -266,9 +199,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingUsername(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -288,14 +218,7 @@ resource "hpe_morpheus_user" "foo" {
 	#username = "test2"
 	email = "bar@bar.com"
 	password = "Secret123!"
-	roles = [
-		{
-			id = 3
-		},
-		{
-			id = 1
-		}
-	]
+	role_ids = [3,1]
 }
 `
 	expected := `The argument "username" is required`
@@ -314,9 +237,6 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingEmail(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -336,14 +256,7 @@ resource "hpe_morpheus_user" "foo" {
 	username = "test2"
 	#email = "bar@bar.com"
 	password = "Secret123!"
-	roles = [
-		{
-			id = 3
-		},
-		{
-			id = 1
-		}
-	]
+	role_ids = [3,1]
 }
 `
 	expected := `The argument "email" is required`
