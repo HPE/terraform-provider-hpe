@@ -15,7 +15,6 @@ import (
 type CredsRoundTripper struct {
 	baseTransport http.RoundTripper
 	tokenMu       sync.Mutex
-	initToken     bool
 	client        *client.APIClient
 	username      string
 	password      string
@@ -44,33 +43,41 @@ func (c *CredsRoundTripper) GetToken(ctx context.Context) error {
 	return nil
 }
 
-// InitAuthHeader performs first time initialization
-func (c *CredsRoundTripper) InitAuthHeader(req *http.Request) error {
+func (c *CredsRoundTripper) cachedAuthHeader() string {
+	return c.client.GetConfig().DefaultHeader["Authorization"]
+}
+
+// InitReqAuthHeader performs first time initialization
+func (c *CredsRoundTripper) InitReqAuthHeader(req *http.Request) error {
 	c.tokenMu.Lock()
 	defer c.tokenMu.Unlock()
 
-	if c.initToken {
+	if req.Header.Get("Authorization") != "" {
 		return nil
 	}
 
-	c.initToken = true
+	hdr := c.cachedAuthHeader()
+	if hdr != "" {
+		req.Header.Set("Authorization", hdr)
+
+		return nil
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	err := c.GetToken(ctx)
-	if err == nil {
-		req.Header.Set(
-			"Authorization",
-			c.client.GetConfig().DefaultHeader["Authorization"],
-		)
+	if err != nil {
+		return err
 	}
 
-	return err
+	req.Header.Set("Authorization", c.cachedAuthHeader())
+
+	return nil
 }
 
 func (c *CredsRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	err := c.InitAuthHeader(req)
+	err := c.InitReqAuthHeader(req)
 	if err != nil {
 		return nil, err
 	}
