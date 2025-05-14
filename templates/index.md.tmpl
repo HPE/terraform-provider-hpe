@@ -1,0 +1,64 @@
+---
+layout: ""
+page_title: "{{.ProviderShortName}} Provider"
+subcategory: ""
+description: |-
+  This is the hpe terraform provider
+---
+
+# {{.ProviderShortName}} Provider
+
+This is the hpe terraform provider which is still in development.  It will eventually replace the
+[HPE GreenLake Terraform Provider](https://registry.terraform.io/providers/HPE/hpegl/latest) and the
+[Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+
+Initially this provider will support Morpheus, but will in time expand to cover other HPE offerings.
+
+This provider requires 64-bit versions of the terraform binary to work properly.
+
+## Morpheus
+
+This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
+release notes for the current version (v0.0.1).
+
+### Authentication
+
+There are two ways to authenticate with Morpheus:
+1. Using a username and password
+2. Using an access_token
+
+With either method the URL of the Morpheus instance must be provided as `url`.
+
+By default the provider will check the Morpheus server key and will fail if it is not valid.  This can be
+be toggled off be setting `insecure` to `true` in the provider block.
+
+### Example Usage
+
+#### Using a username and password
+
+{{ tffile "../../examples/provider/morpheus/provider-unamepasswd.tf" }}
+
+#### Using an access token
+
+{{ tffile "../../examples/provider/morpheus/provider-accesstoken.tf" }}
+
+#### Using an access token with insecure
+
+{{ tffile "../../examples/provider/morpheus/provider-insecure.tf" }}
+
+### Release Notes
+
+In this release (v0.0.1) the following resources have been added:
+- hpe_morpheus_instance for HPE MVM or HPE VME instances
+- hpe_morpheus_user for Morpheus users
+- hpe_morpheus_role for Morpheus roles (user and account)
+
+In this release (v0.0.1) the following data sources have been added:
+- hpe_morpheus_cloud
+- hpe_morpheus_network
+- hpe_morpheus_instance_type
+- hpe_morpheus_instance_layout
+- hpe_morpheus_network
+
+
+{{ .SchemaMarkdown | trimspace }}
