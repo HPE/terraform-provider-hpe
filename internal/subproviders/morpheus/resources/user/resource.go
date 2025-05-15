@@ -71,6 +71,30 @@ func errMsg(err error, resp *http.Response) string {
 	return msg
 }
 
+func strToType(s *string) types.String {
+	if s == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
+}
+
+func boolToType(b *bool) types.Bool {
+	if b == nil {
+		return types.BoolNull()
+	}
+
+	return types.BoolValue(*b)
+}
+
+func int64ToType(i *int64) types.Int64 {
+	if i == nil {
+		return types.Int64Null()
+	}
+
+	return types.Int64Value(*i)
+}
+
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -82,10 +106,6 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	username := plan.Username.ValueString()
-	email := plan.Email.ValueString()
-	password := plan.Password.ValueString()
 
 	var roleIDs []int64
 	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
@@ -104,6 +124,37 @@ func (r *Resource) Create(
 		roles = append(roles, rolevalue)
 	}
 
+	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
+
+	// required
+	username := plan.Username.ValueString()
+	addUser.SetUsername(username)
+	addUser.SetEmail(plan.Email.ValueString())
+	addUser.SetPassword(plan.Password.ValueString())
+	addUser.SetRoles(roles)
+
+	// optional
+	if !plan.FirstName.IsUnknown() {
+		addUser.SetFirstName(plan.FirstName.ValueString())
+	}
+	if !plan.LastName.IsUnknown() {
+		addUser.SetLastName(plan.LastName.ValueString())
+	}
+	if !plan.LinuxUsername.IsUnknown() {
+		addUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+	}
+	if !plan.WindowsUsername.IsUnknown() {
+		addUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+	if !plan.LinuxKeyPairId.IsUnknown() {
+		addUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+	}
+	if !plan.ReceiveNotifications.IsUnknown() {
+		addUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
+	}
+
+	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -113,14 +164,6 @@ func (r *Resource) Create(
 
 		return
 	}
-
-	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
-	addUser.SetEmail(email)
-	addUser.SetUsername(username)
-	addUser.SetPassword(password)
-	addUser.SetRoles(roles)
-
-	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
 
 	user, hresp, err := client.UsersAPI.AddUser(ctx).
 		AddUserTenantRequest(*addUserReq).Execute()
@@ -155,7 +198,7 @@ func (r *Resource) Create(
 
 	roleIDValues := []attr.Value{}
 	for _, role := range u.GetUser().Roles {
-		roleIDValues = append(roleIDValues, types.Int64Value(*role.Id))
+		roleIDValues = append(roleIDValues, int64ToType(role.Id))
 	}
 
 	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
@@ -166,11 +209,20 @@ func (r *Resource) Create(
 
 	var state UserModel
 
-	state.Id = types.Int64Value(id)
-	state.Username = types.StringValue(username)
-	state.Email = types.StringValue(*u.GetUser().Email)
-	state.Password = types.StringValue(plan.Password.ValueString())
+	state.Username = strToType(u.User.Username)
+	state.Email = strToType(u.User.Email)
+	state.FirstName = strToType(u.User.FirstName)
+	state.LastName = strToType(u.User.LastName)
+	state.LinuxUsername = strToType(u.User.LinuxUsername)
+	state.WindowsUsername = strToType(u.User.WindowsUsername)
+	state.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
+	state.PasswordExpired = boolToType(u.User.PasswordExpired)
+	state.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
+
 	state.RoleIds = roleIDSet
+	state.Id = types.Int64Value(id)
+
+	state.Password, _ = plan.Password.ToStringValue(ctx)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -214,19 +266,9 @@ func (r *Resource) Read(
 		return
 	}
 
-	username := u.GetUser().Username
-	if username == nil {
-		resp.Diagnostics.AddError(
-			"read user resource",
-			fmt.Sprintf("user %d has nil name: ", id),
-		)
-
-		return
-	}
-
 	roleIDValues := []attr.Value{}
 	for _, role := range u.GetUser().Roles {
-		roleIDValues = append(roleIDValues, types.Int64Value(*role.Id))
+		roleIDValues = append(roleIDValues, int64ToType(role.Id))
 	}
 
 	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
@@ -237,11 +279,20 @@ func (r *Resource) Read(
 
 	var state UserModel
 
-	state.Id = types.Int64Value(id)
-	state.Username = types.StringValue(*username)
-	state.Email = types.StringValue(*u.GetUser().Email)
-	state.Password = types.StringValue(plan.Password.ValueString())
+	state.Username = strToType(u.User.Username)
+	state.Email = strToType(u.User.Email)
+	state.FirstName = strToType(u.User.FirstName)
+	state.LastName = strToType(u.User.LastName)
+	state.LinuxUsername = strToType(u.User.LinuxUsername)
+	state.WindowsUsername = strToType(u.User.WindowsUsername)
+	state.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
+	state.PasswordExpired = boolToType(u.User.PasswordExpired)
+	state.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
+
 	state.RoleIds = roleIDSet
+	state.Id = types.Int64Value(id)
+
+	state.Password, _ = plan.Password.ToStringValue(ctx)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -250,11 +301,14 @@ func (r *Resource) Read(
 }
 
 func (r *Resource) Update(
-	ctx context.Context,
+	_ context.Context,
 	_ resource.UpdateRequest,
-	_ *resource.UpdateResponse,
+	resp *resource.UpdateResponse,
 ) {
-	tflog.Error(ctx, "update 'user' is not implemented")
+	resp.Diagnostics.AddError(
+		"update user resource",
+		"update of 'user' resources has not been implemented",
+	)
 }
 
 func (r *Resource) Delete(

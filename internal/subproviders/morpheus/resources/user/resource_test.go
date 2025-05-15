@@ -61,7 +61,108 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusUserOk(t *testing.T) {
+// Check that we can create a user with only
+// required attributes specified
+func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+
+resource "hpe_morpheus_user" "foo" {
+	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
+	email = "foo@hpe.com"
+	password = "Secret123!"
+	role_ids = [3]
+}
+`
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			"testacc-TestAccMorpheusUserRequiredAttrsOk",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"foo@hpe.com",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password",
+			"Secret123!",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.0",
+			"3",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"true",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					// Read ID from the pre-import state
+					rs := s.RootModule().
+						Resources["hpe_morpheus_user.foo"]
+
+					return rs.Primary.ID + "," + "Secret123!", nil
+				},
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_user.foo",
+				Check:             checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -85,16 +186,22 @@ provider "hpe" {
 # the server and only the other two roles are created
 #resource "hpe_morpheus_user" "bar" {
 #username = "test101"
-#email = "foo@bar.com"
+#email = "foo@hpe.com"
 #password = "Secret123!"
 #roles = [3,0,1]
 #}
 
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-TestAccMorpheusUserOk"
-	email = "foo@bar.com"
+	username = "testacc-TestAccMorpheusUserAllAttrsOk"
+	email = "foo@hpe.com"
 	password = "Secret123!"
 	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
 }
 `
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
@@ -103,17 +210,42 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserOk",
+			"testacc-TestAccMorpheusUserAllAttrsOk",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@bar.com",
+			"foo@hpe.com",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"password",
 			"Secret123!",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -178,7 +310,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	username = "test2"
-	email = "bar@bar.com"
+	email = "bar@hpe.com"
 	password = "Secret123!"
 	# role_ids = [3,1]
 }
@@ -216,7 +348,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	#username = "test2"
-	email = "bar@bar.com"
+	email = "bar@hpe.com"
 	password = "Secret123!"
 	role_ids = [3,1]
 }
@@ -254,7 +386,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	username = "test2"
-	#email = "bar@bar.com"
+	#email = "bar@hpe.com"
 	password = "Secret123!"
 	role_ids = [3,1]
 }
