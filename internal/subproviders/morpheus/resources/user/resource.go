@@ -15,9 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	sdk "github.com/HewlettPackard/hpe-morpheus-client/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
+	//"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -71,6 +72,107 @@ func errMsg(err error, resp *http.Response) string {
 	return msg
 }
 
+func strToType(s *string) types.String {
+	if s == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
+}
+
+func boolToType(b *bool) types.Bool {
+	if b == nil {
+		return types.BoolNull()
+	}
+
+	return types.BoolValue(*b)
+}
+
+func int64ToType(i *int64) types.Int64 {
+	if i == nil {
+		return types.Int64Null()
+	}
+
+	return types.Int64Value(*i)
+}
+
+func createPopulate(
+	ctx context.Context,
+	id int64,
+	client *sdk.APIClient,
+	stateP *UserModel,
+	diagsP *diag.Diagnostics,
+) {
+	populate(
+		ctx,
+		id,
+		"create",
+		client,
+		stateP,
+		diagsP,
+	)
+}
+
+func readPopulate(
+	ctx context.Context,
+	id int64,
+	client *sdk.APIClient,
+	stateP *UserModel,
+	diagsP *diag.Diagnostics,
+) {
+	populate(
+		ctx,
+		id,
+		"read",
+		client,
+		stateP,
+		diagsP,
+	)
+}
+
+// populate resource model with current API values
+func populate(
+	ctx context.Context,
+	id int64,
+	operation string,
+	client *sdk.APIClient,
+	stateP *UserModel,
+	diagsP *diag.Diagnostics,
+) {
+	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		diagsP.AddError(
+			fmt.Sprintf("%s user resource", operation),
+			fmt.Sprintf("user %d GET failed: ", id)+errMsg(err, hresp),
+		)
+
+		return
+	}
+
+	roleIDValues := []attr.Value{}
+	for _, role := range u.GetUser().Roles {
+		roleIDValues = append(roleIDValues, int64ToType(role.Id))
+	}
+
+	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
+	diagsP.Append(diags...)
+	if diagsP.HasError() {
+		return
+	}
+
+	stateP.Id = int64ToType(u.User.Id)
+	stateP.Username = strToType(u.User.Username)
+	stateP.Email = strToType(u.User.Email)
+	stateP.FirstName = strToType(u.User.FirstName)
+	stateP.LastName = strToType(u.User.LastName)
+	stateP.LinuxUsername = strToType(u.User.LinuxUsername)
+	stateP.WindowsUsername = strToType(u.User.WindowsUsername)
+	stateP.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
+	stateP.PasswordExpired = boolToType(u.User.PasswordExpired)
+	stateP.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
+	stateP.RoleIds = roleIDSet
+}
+
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -82,10 +184,6 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	username := plan.Username.ValueString()
-	email := plan.Email.ValueString()
-	password := plan.Password.ValueString()
 
 	var roleIDs []int64
 	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
@@ -104,6 +202,37 @@ func (r *Resource) Create(
 		roles = append(roles, rolevalue)
 	}
 
+	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
+
+	// required
+	username := plan.Username.ValueString()
+	addUser.SetUsername(username)
+	addUser.SetEmail(plan.Email.ValueString())
+	addUser.SetPassword(plan.Password.ValueString())
+	addUser.SetRoles(roles)
+
+	// optional
+	if !plan.FirstName.IsUnknown() {
+		addUser.SetFirstName(plan.FirstName.ValueString())
+	}
+	if !plan.LastName.IsUnknown() {
+		addUser.SetLastName(plan.LastName.ValueString())
+	}
+	if !plan.LinuxUsername.IsUnknown() {
+		addUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+	}
+	if !plan.WindowsUsername.IsUnknown() {
+		addUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+	if !plan.LinuxKeyPairId.IsUnknown() {
+		addUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+	}
+	if !plan.ReceiveNotifications.IsUnknown() {
+		addUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
+	}
+
+	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -113,14 +242,6 @@ func (r *Resource) Create(
 
 		return
 	}
-
-	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
-	addUser.SetEmail(email)
-	addUser.SetUsername(username)
-	addUser.SetPassword(password)
-	addUser.SetRoles(roles)
-
-	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
 
 	user, hresp, err := client.UsersAPI.AddUser(ctx).
 		AddUserTenantRequest(*addUserReq).Execute()
@@ -142,35 +263,25 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *user.GetUser().Id
-	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"create user resource",
-			"user "+username+" GET failed: "+errMsg(err, hresp),
-		)
+	plan.Id = types.Int64Value(*user.GetUser().Id)
 
-		return
-	}
-
-	roleIDValues := []attr.Value{}
-	for _, role := range u.GetUser().Roles {
-		roleIDValues = append(roleIDValues, types.Int64Value(*role.Id))
-	}
-
-	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
-	resp.Diagnostics.Append(diags...)
+	// write id as soon as possible
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	var state UserModel
+	createPopulate(
+		ctx,
+		*user.GetUser().Id,
+		client,
+		&state,
+		&resp.Diagnostics,
+	)
 
-	state.Id = types.Int64Value(id)
-	state.Username = types.StringValue(username)
-	state.Email = types.StringValue(*u.GetUser().Email)
-	state.Password = types.StringValue(plan.Password.ValueString())
-	state.RoleIds = roleIDSet
+	// special case (for now)
+	state.Password, _ = plan.Password.ToStringValue(ctx)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -190,58 +301,31 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := plan.Id.ValueInt64()
-
-	var roleIDs []int64
-	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
-		diags := plan.RoleIds.ElementsAs(ctx, &roleIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			tflog.Error(ctx, fmt.Sprintf("Could not parse roles for user %d", id))
-
-			return
-		}
-	}
-
-	client, _ := r.NewClient(ctx)
-	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	client, err := r.NewClient(ctx)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"read user resource",
-			fmt.Sprintf("user %d GET failed: ", id)+errMsg(err, hresp),
+			"new client call failed with "+err.Error(),
 		)
 
-		return
-	}
-
-	username := u.GetUser().Username
-	if username == nil {
-		resp.Diagnostics.AddError(
-			"read user resource",
-			fmt.Sprintf("user %d has nil name: ", id),
-		)
-
-		return
-	}
-
-	roleIDValues := []attr.Value{}
-	for _, role := range u.GetUser().Roles {
-		roleIDValues = append(roleIDValues, types.Int64Value(*role.Id))
-	}
-
-	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	var state UserModel
+	readPopulate(
+		ctx,
+		plan.Id.ValueInt64(),
+		client,
+		&state,
+		&resp.Diagnostics,
+	)
 
-	state.Id = types.Int64Value(id)
-	state.Username = types.StringValue(*username)
-	state.Email = types.StringValue(*u.GetUser().Email)
-	state.Password = types.StringValue(plan.Password.ValueString())
-	state.RoleIds = roleIDSet
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// special case (for now)
+	state.Password, _ = plan.Password.ToStringValue(ctx)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -250,11 +334,14 @@ func (r *Resource) Read(
 }
 
 func (r *Resource) Update(
-	ctx context.Context,
+	_ context.Context,
 	_ resource.UpdateRequest,
-	_ *resource.UpdateResponse,
+	resp *resource.UpdateResponse,
 ) {
-	tflog.Error(ctx, "update 'user' is not implemented")
+	resp.Diagnostics.AddError(
+		"update user resource",
+		"update of 'user' resources has not been implemented",
+	)
 }
 
 func (r *Resource) Delete(
