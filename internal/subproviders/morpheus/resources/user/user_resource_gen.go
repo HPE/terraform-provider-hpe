@@ -4,6 +4,7 @@ package user
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -17,14 +18,48 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Email address",
 				MarkdownDescription: "Email address",
 			},
+			"first_name": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The user's first name (optional)",
+				MarkdownDescription: "The user's first name (optional)",
+			},
 			"id": schema.Int64Attribute{
 				Computed: true,
+			},
+			"last_name": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The user's last name (optional)",
+				MarkdownDescription: "The user's last name (optional)",
+			},
+			"linux_key_pair_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Linux SSH Key, user settings for provisioning",
+				MarkdownDescription: "Linux SSH Key, user settings for provisioning",
+			},
+			"linux_username": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Linux Username, user settings for provisioning",
+				MarkdownDescription: "Linux Username, user settings for provisioning",
 			},
 			"password": schema.StringAttribute{
 				Required:            true,
 				Sensitive:           true,
 				Description:         "Password to apply to the user",
 				MarkdownDescription: "Password to apply to the user",
+			},
+			"password_expired": schema.BoolAttribute{
+				Computed: true,
+			},
+			"receive_notifications": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Receive Notifications?",
+				MarkdownDescription: "Receive Notifications?",
+				Default:             booldefault.StaticBool(true),
 			},
 			"role_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
@@ -35,14 +70,27 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Username (unique per tenant).",
 				MarkdownDescription: "Username (unique per tenant).",
 			},
+			"windows_username": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Windows Username, user settings for provisioning",
+				MarkdownDescription: "Windows Username, user settings for provisioning",
+			},
 		},
 	}
 }
 
 type UserModel struct {
-	Email    types.String `tfsdk:"email"`
-	Id       types.Int64  `tfsdk:"id"`
-	Password types.String `tfsdk:"password"`
-	RoleIds  types.Set    `tfsdk:"role_ids"`
-	Username types.String `tfsdk:"username"`
+	Email                types.String `tfsdk:"email"`
+	FirstName            types.String `tfsdk:"first_name"`
+	Id                   types.Int64  `tfsdk:"id"`
+	LastName             types.String `tfsdk:"last_name"`
+	LinuxKeyPairId       types.Int64  `tfsdk:"linux_key_pair_id"`
+	LinuxUsername        types.String `tfsdk:"linux_username"`
+	Password             types.String `tfsdk:"password"`
+	PasswordExpired      types.Bool   `tfsdk:"password_expired"`
+	ReceiveNotifications types.Bool   `tfsdk:"receive_notifications"`
+	RoleIds              types.Set    `tfsdk:"role_ids"`
+	Username             types.String `tfsdk:"username"`
+	WindowsUsername      types.String `tfsdk:"windows_username"`
 }
