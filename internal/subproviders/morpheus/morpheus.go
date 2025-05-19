@@ -8,7 +8,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
@@ -125,9 +124,7 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 func (SubProvider) GetDataSources(
 	_ context.Context,
 ) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		group.NewDataSource,
-	}
+	return nil
 }
 
 func (s SubProvider) GetResources(
