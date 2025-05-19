@@ -279,6 +279,9 @@ func (r *Resource) Create(
 		&state,
 		&resp.Diagnostics,
 	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// special case (for now)
 	state.Password, _ = plan.Password.ToStringValue(ctx)
@@ -319,7 +322,6 @@ func (r *Resource) Read(
 		&state,
 		&resp.Diagnostics,
 	)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
