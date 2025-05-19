@@ -20,8 +20,3 @@ jobs:
           go-version: ${{ matrix.go }}
       - run: go version
       - run: make test
-        env:
-          TF_VAR_testacc_morpheus_url:
-          TF_VAR_testacc_morpheus_username:
-          TF_VAR_testacc_morpheus_password:
-          TF_VAR_testacc_morpheus_insecure:

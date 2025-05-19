@@ -294,17 +294,11 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingRoles(t *testing.T) {
 	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
 provider "hpe" {
 	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
+		url = ""
+		username = ""
+		password = ""
 	}
 }
 
@@ -332,17 +326,11 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingUsername(t *testing.T) {
 	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
 provider "hpe" {
 	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
+		url = ""
+		username = ""
+		password = ""
 	}
 }
 
@@ -370,17 +358,11 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingEmail(t *testing.T) {
 	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
 provider "hpe" {
 	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
+		url = ""
+		username = ""
+		password = ""
 	}
 }
 
