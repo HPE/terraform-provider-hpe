@@ -114,7 +114,7 @@ func (d *DataSource) Read(
 		}
 
 		for _, g := range gs.Groups {
-			if g.Name != nil && *g.Name == name {
+			if g.GetName() == name {
 				group = g
 
 				break
