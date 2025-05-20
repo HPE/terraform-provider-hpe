@@ -4,6 +4,11 @@ package group
 
 import (
 	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -13,7 +18,6 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"code": schema.StringAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Optional code for use with policies",
 				MarkdownDescription: "Optional code for use with policies",
@@ -23,9 +27,13 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Morpheus ID of the Object being referenced",
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
+				Validators: []validator.Int64{
+					int64validator.ConflictsWith(path.Expressions{
+						path.MatchRoot("name"),
+					}...),
+				},
 			},
 			"location": schema.StringAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Optional location argument for your group",
 				MarkdownDescription: "Optional location argument for your group",
@@ -35,6 +43,11 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The name of the Morpheus group",
 				MarkdownDescription: "The name of the Morpheus group",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{
+						path.MatchRoot("id"),
+					}...),
+				},
 			},
 		},
 	}
