@@ -154,10 +154,6 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	config := providerConfig + `
       data "hpe_morpheus_group" "test" {
       }`
@@ -186,10 +182,6 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	config := providerConfig + `
       data "hpe_morpheus_group" "test" {
         id = 1
