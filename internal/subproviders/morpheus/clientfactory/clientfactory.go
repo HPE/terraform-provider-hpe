@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/auth"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/httptrace"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
-	"github.com/HewlettPackard/hpe-morpheus-client/client"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
 // factory options
@@ -43,7 +43,7 @@ func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
 		options = append(options, WithInsecureTLS())
 	}
 
-	f := func(ctx context.Context) (*client.APIClient, error) {
+	f := func(ctx context.Context) (*sdk.APIClient, error) {
 		client := NewAPIClient(
 			ctx,
 			cf.model.URL.ValueString(),
@@ -64,10 +64,10 @@ func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
 type ClientFactory struct {
 	httpclient *http.Client
 	model      model.SubModel
-	newClient  func(context.Context) (*client.APIClient, error)
+	newClient  func(context.Context) (*sdk.APIClient, error)
 }
 
-func (c ClientFactory) NewClient(ctx context.Context) (*client.APIClient, error) {
+func (c ClientFactory) NewClient(ctx context.Context) (*sdk.APIClient, error) {
 	return c.newClient(ctx)
 }
 
@@ -98,13 +98,13 @@ func NewAPIClient(
 	password string,
 	token string,
 	opts ...ClientOption,
-) *client.APIClient {
+) *sdk.APIClient {
 	var options clientOpts
 
-	morpheusCfg := client.NewConfiguration()
+	morpheusCfg := sdk.NewConfiguration()
 	morpheusCfg.Servers[0].URL = url
 
-	c := client.NewAPIClient(morpheusCfg)
+	c := sdk.NewAPIClient(morpheusCfg)
 
 	for _, opt := range opts {
 		opt(&options)
