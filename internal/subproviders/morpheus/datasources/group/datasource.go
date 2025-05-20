@@ -80,7 +80,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	apiClient, _ := d.NewClient(ctx)
+	apiClient, err := d.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			subject,
+			"could not create sdk client",
+		)
+	}
+
 	var group sdk.ListGroups200ResponseAllOfGroupsInner
 
 	// Get by id
