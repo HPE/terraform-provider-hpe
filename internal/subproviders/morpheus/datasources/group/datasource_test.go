@@ -14,15 +14,6 @@ import (
 )
 
 const providerConfig = `
-terraform {
-  required_providers {
-    hpe = {
-      source  = "hpe/hpe"
-      version = "0.0.1"
-    }
-  }
-}
-
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_insecure" {}
 variable "testacc_morpheus_username" {}
