@@ -13,7 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
 )
 
-const subject = "read group data source"
+const summary = "read group data source"
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
@@ -83,7 +83,7 @@ func (d *DataSource) Read(
 	apiClient, err := d.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			subject,
+			summary,
 			"could not create sdk client",
 		)
 	}
@@ -97,7 +97,7 @@ func (d *DataSource) Read(
 		g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			resp.Diagnostics.AddError(
-				subject,
+				summary,
 				fmt.Sprintf("group %d GET failed: ", id),
 			)
 
@@ -113,7 +113,7 @@ func (d *DataSource) Read(
 		gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			resp.Diagnostics.AddError(
-				subject,
+				summary,
 				fmt.Sprintf("group %s GET failed: ", name),
 			)
 
@@ -130,7 +130,7 @@ func (d *DataSource) Read(
 
 	} else {
 		resp.Diagnostics.AddError(
-			subject,
+			summary,
 			consts.NoValidSearchTerms,
 		)
 
@@ -139,7 +139,7 @@ func (d *DataSource) Read(
 
 	if group.Id == nil {
 		resp.Diagnostics.AddError(
-			subject,
+			summary,
 			consts.NoGroupFound,
 		)
 
