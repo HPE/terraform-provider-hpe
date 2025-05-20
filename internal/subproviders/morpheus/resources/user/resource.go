@@ -96,57 +96,23 @@ func int64ToType(i *int64) types.Int64 {
 	return types.Int64Value(*i)
 }
 
-func createPopulate(
+// populate user resource model with current API values
+func getUserAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-	stateP *UserModel,
-	diagsP *diag.Diagnostics,
-) {
-	populate(
-		ctx,
-		id,
-		"create",
-		client,
-		stateP,
-		diagsP,
-	)
-}
+) (UserModel, diag.Diagnostics) {
+	var state UserModel
+	var diags diag.Diagnostics
 
-func readPopulate(
-	ctx context.Context,
-	id int64,
-	client *sdk.APIClient,
-	stateP *UserModel,
-	diagsP *diag.Diagnostics,
-) {
-	populate(
-		ctx,
-		id,
-		"read",
-		client,
-		stateP,
-		diagsP,
-	)
-}
-
-// populate resource model with current API values
-func populate(
-	ctx context.Context,
-	id int64,
-	operation string,
-	client *sdk.APIClient,
-	stateP *UserModel,
-	diagsP *diag.Diagnostics,
-) {
 	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		diagsP.AddError(
-			fmt.Sprintf("%s user resource", operation),
+		diags.AddError(
+			"populate user resource",
 			fmt.Sprintf("user %d GET failed: ", id)+errMsg(err, hresp),
 		)
 
-		return
+		return state, diags
 	}
 
 	roleIDValues := []attr.Value{}
@@ -154,23 +120,25 @@ func populate(
 		roleIDValues = append(roleIDValues, int64ToType(role.Id))
 	}
 
-	roleIDSet, diags := types.SetValue(types.Int64Type, roleIDValues)
-	diagsP.Append(diags...)
-	if diagsP.HasError() {
-		return
+	roleIDSet, d := types.SetValue(types.Int64Type, roleIDValues)
+	diags.Append(d...)
+	if diags.HasError() {
+		return state, diags
 	}
 
-	stateP.Id = int64ToType(u.User.Id)
-	stateP.Username = strToType(u.User.Username)
-	stateP.Email = strToType(u.User.Email)
-	stateP.FirstName = strToType(u.User.FirstName)
-	stateP.LastName = strToType(u.User.LastName)
-	stateP.LinuxUsername = strToType(u.User.LinuxUsername)
-	stateP.WindowsUsername = strToType(u.User.WindowsUsername)
-	stateP.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
-	stateP.PasswordExpired = boolToType(u.User.PasswordExpired)
-	stateP.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
-	stateP.RoleIds = roleIDSet
+	state.Id = int64ToType(u.User.Id)
+	state.Username = strToType(u.User.Username)
+	state.Email = strToType(u.User.Email)
+	state.FirstName = strToType(u.User.FirstName)
+	state.LastName = strToType(u.User.LastName)
+	state.LinuxUsername = strToType(u.User.LinuxUsername)
+	state.WindowsUsername = strToType(u.User.WindowsUsername)
+	state.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
+	state.PasswordExpired = boolToType(u.User.PasswordExpired)
+	state.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
+	state.RoleIds = roleIDSet
+
+	return state, diags
 }
 
 func (r *Resource) Create(
@@ -263,7 +231,8 @@ func (r *Resource) Create(
 		return
 	}
 
-	plan.Id = types.Int64Value(*user.GetUser().Id)
+	id := *user.GetUser().Id
+	plan.Id = types.Int64Value(id)
 
 	// write id as soon as possible
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -271,14 +240,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	var state UserModel
-	createPopulate(
-		ctx,
-		*user.GetUser().Id,
-		client,
-		&state,
-		&resp.Diagnostics,
-	)
+	state, pdiags := getUserAsState(ctx, id, client)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"create user resource",
+			fmt.Sprintf("user %d: failed to read from api", id),
+		)
+
+		return
+	}
 
 	// special case (for now)
 	state.Password, _ = plan.Password.ToStringValue(ctx)
@@ -311,16 +282,15 @@ func (r *Resource) Read(
 		return
 	}
 
-	var state UserModel
-	readPopulate(
-		ctx,
-		plan.Id.ValueInt64(),
-		client,
-		&state,
-		&resp.Diagnostics,
-	)
+	id := plan.Id.ValueInt64()
+	state, pdiags := getUserAsState(ctx, id, client)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"read user resource",
+			fmt.Sprintf("user %d: failed to read from api", id),
+		)
 
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
