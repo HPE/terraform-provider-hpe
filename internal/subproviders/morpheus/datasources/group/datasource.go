@@ -13,7 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
 )
 
-const subject = "read group resource"
+const subject = "read group data source"
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
