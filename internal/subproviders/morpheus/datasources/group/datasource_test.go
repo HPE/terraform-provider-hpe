@@ -1,7 +1,6 @@
 package group_test
 
 import (
-	"os"
 	"regexp"
 	"testing"
 
@@ -24,15 +23,17 @@ terraform {
   }
 }
 
-variable "morpheus_testacc_access_token" {}
-variable "morpheus_testacc_insecure" {}
-variable "morpheus_testacc_url" {}
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_insecure" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
 
 provider "hpe" {
   morpheus {
-    access_token = var.morpheus_testacc_access_token
-    insecure     = var.morpheus_testacc_insecure
-    url          = var.morpheus_testacc_url
+    url          = var.testacc_morpheus_url
+    insecure     = var.testacc_morpheus_insecure
+    username     = var.testacc_morpheus_username
+    password     = var.testacc_morpheus_password
   }
 }
 `
@@ -45,20 +46,6 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"hpe": newProviderWithError,
-}
-
-func testAccPreCheck(t *testing.T) func() {
-	return func() {
-		for _, k := range []string{
-			"TF_VAR_morpheus_testacc_access_token",
-			"TF_VAR_morpheus_testacc_insecure",
-			"TF_VAR_morpheus_testacc_url",
-		} {
-			if v := os.Getenv(k); v == "" {
-				t.Fatal(k + " must be set for acceptance tests")
-			}
-		}
-	}
 }
 
 func TestAccMorpheusFindGroupById(t *testing.T) {
@@ -87,7 +74,6 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 testAccPreCheck(t),
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -124,7 +110,6 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 testAccPreCheck(t),
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -157,7 +142,6 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	expected := consts.NoGroupFound
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 testAccPreCheck(t),
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -190,7 +174,6 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 	expected := consts.NoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 testAccPreCheck(t),
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -225,7 +208,6 @@ func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
 	expected := consts.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 testAccPreCheck(t),
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
