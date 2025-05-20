@@ -201,3 +201,38 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 		},
 	})
 }
+
+func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := providerConfig + `
+      data "hpe_morpheus_group" "test" {
+        id = 1
+        name = "______" 
+      }`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_group.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := consts.ErrorRunningPreApply
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 testAccPreCheck(t),
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
