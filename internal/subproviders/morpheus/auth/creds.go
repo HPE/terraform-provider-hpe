@@ -8,14 +8,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-client/client"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type CredsRoundTripper struct {
 	baseTransport http.RoundTripper
 	tokenMu       sync.Mutex
-	client        *client.APIClient
+	client        *sdk.APIClient
 	username      string
 	password      string
 }
@@ -120,10 +120,10 @@ func NewCredsRoundTripper(
 	username string,
 	password string,
 ) http.RoundTripper {
-	morpheusCfg := client.NewConfiguration()
+	morpheusCfg := sdk.NewConfiguration()
 	morpheusCfg.Servers[0].URL = url
 
-	client := client.NewAPIClient(morpheusCfg)
+	client := sdk.NewAPIClient(morpheusCfg)
 
 	morpheusCfg.HTTPClient = &http.Client{
 		Transport: transport,

@@ -3,6 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk v0.0.0-20250520111125-a51314e0e909
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.26.0
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	github.com/HewlettPackard/hpe-morpheus-client/client v0.0.0-20250423165706-69d2f05b96d3 // indirect
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
