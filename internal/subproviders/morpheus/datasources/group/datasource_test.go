@@ -29,6 +29,16 @@ provider "hpe" {
 }
 `
 
+const providerConfigOffline = `
+provider "hpe" {
+  morpheus {
+    url          = ""
+    username     = ""
+    password     = ""
+  }
+}
+`
+
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
 
@@ -145,7 +155,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
-	config := providerConfig + `
+	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
       }`
 
@@ -173,7 +183,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
-	config := providerConfig + `
+	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
         id = 1
         name = "______" 
