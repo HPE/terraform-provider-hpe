@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/HewlettPackard/hpe-morpheus-client/client"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -81,7 +81,7 @@ func (d *DataSource) Read(
 	}
 
 	apiClient, _ := d.NewClient(ctx)
-	var group client.ListGroups200ResponseAllOfGroupsInner
+	var group sdk.ListGroups200ResponseAllOfGroupsInner
 
 	// Get by id
 	if !data.Id.IsNull() {
