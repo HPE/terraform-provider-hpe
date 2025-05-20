@@ -4,6 +4,7 @@ package group
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -13,7 +14,6 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"code": schema.StringAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Optional code for use with policies",
 				MarkdownDescription: "Optional code for use with policies",
@@ -25,7 +25,6 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
 			},
 			"location": schema.StringAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Optional location argument for your group",
 				MarkdownDescription: "Optional location argument for your group",
