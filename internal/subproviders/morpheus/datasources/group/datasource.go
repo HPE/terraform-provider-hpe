@@ -20,7 +20,7 @@ var (
 	_ datasource.DataSource = &DataSource{}
 )
 
-// NewCoffeesDataSource is a helper function to simplify the provider implementation.
+// NewDataSource is a helper function to simplify the provider implementation.
 func NewDataSource() datasource.DataSource {
 	return &DataSource{}
 }
