@@ -12,6 +12,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 )
 
+const subject = "read group resource"
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ datasource.DataSource = &DataSource{}
@@ -87,7 +89,7 @@ func (d *DataSource) Read(
 		g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			resp.Diagnostics.AddError(
-				"read group resource",
+				subject,
 				fmt.Sprintf("group %d GET failed: ", id),
 			)
 
@@ -103,7 +105,7 @@ func (d *DataSource) Read(
 		gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			resp.Diagnostics.AddError(
-				"read group resource",
+				subject,
 				fmt.Sprintf("group %s GET failed: ", name),
 			)
 
@@ -119,7 +121,7 @@ func (d *DataSource) Read(
 
 	} else {
 		resp.Diagnostics.AddError(
-			"read group resource",
+			subject,
 			"no valid search terms",
 		)
 
@@ -128,7 +130,7 @@ func (d *DataSource) Read(
 
 	if group.Id == nil {
 		resp.Diagnostics.AddError(
-			"read group resource",
+			subject,
 			"no group found",
 		)
 
