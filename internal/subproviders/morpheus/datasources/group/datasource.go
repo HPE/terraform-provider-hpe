@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
 )
 
 const subject = "read group resource"
@@ -99,7 +100,7 @@ func (d *DataSource) Read(
 		group = g.GetGroup()
 
 		// Get by name
-	} else if data.Name.ValueString() != "" {
+	} else if !data.Name.IsNull() {
 		name := data.Name.ValueString()
 
 		gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
@@ -115,6 +116,7 @@ func (d *DataSource) Read(
 		for _, g := range gs.Groups {
 			if g.Name != nil && *g.Name == name {
 				group = g
+
 				break
 			}
 		}
@@ -122,7 +124,7 @@ func (d *DataSource) Read(
 	} else {
 		resp.Diagnostics.AddError(
 			subject,
-			"no valid search terms",
+			consts.NoValidSearchTerms,
 		)
 
 		return
@@ -131,7 +133,7 @@ func (d *DataSource) Read(
 	if group.Id == nil {
 		resp.Diagnostics.AddError(
 			subject,
-			"no group found",
+			consts.NoGroupFound,
 		)
 
 		return
