@@ -85,6 +85,7 @@ func getUserAsState(
 	}
 
 	state.Id = convert.Int64ToType(u.User.Id)
+	state.TenantId = convert.Int64ToType(u.User.AccountId)
 	state.Username = convert.StrToType(u.User.Username)
 	state.Email = convert.StrToType(u.User.Email)
 	state.FirstName = convert.StrToType(u.User.FirstName)
@@ -157,8 +158,6 @@ func (r *Resource) Create(
 		addUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
 	}
 
-	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
-
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -169,8 +168,14 @@ func (r *Resource) Create(
 		return
 	}
 
-	user, hresp, err := client.UsersAPI.AddUser(ctx).
-		AddUserTenantRequest(*addUserReq).Execute()
+	apiAddUserReq := client.UsersAPI.AddUser(ctx)
+	if !plan.TenantId.IsUnknown() {
+		apiAddUserReq = apiAddUserReq.AccountId(plan.TenantId.ValueInt64())
+	}
+
+	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
+	user, hresp, err := apiAddUserReq.AddUserTenantRequest(*addUserReq).Execute()
+
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"create user resource",

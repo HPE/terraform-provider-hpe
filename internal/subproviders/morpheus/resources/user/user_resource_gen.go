@@ -65,6 +65,12 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				ElementType: types.Int64Type,
 				Required:    true,
 			},
+			"tenant_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
+				MarkdownDescription: "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
+			},
 			"username": schema.StringAttribute{
 				Required:            true,
 				Description:         "Username (unique per tenant).",
@@ -91,6 +97,7 @@ type UserModel struct {
 	PasswordExpired      types.Bool   `tfsdk:"password_expired"`
 	ReceiveNotifications types.Bool   `tfsdk:"receive_notifications"`
 	RoleIds              types.Set    `tfsdk:"role_ids"`
+	TenantId             types.Int64  `tfsdk:"tenant_id"`
 	Username             types.String `tfsdk:"username"`
 	WindowsUsername      types.String `tfsdk:"windows_username"`
 }
