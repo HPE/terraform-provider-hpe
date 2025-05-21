@@ -122,12 +122,26 @@ func (d *DataSource) Read(
 			return
 		}
 
+		var groups []sdk.ListGroups200ResponseAllOfGroupsInner
+
 		for _, g := range gs.Groups {
 			if g.GetName() == name {
-				group = g
-
-				goto found
+				groups = append(groups, g)
 			}
+		}
+
+		if len(groups) == 1 {
+			group = groups[0]
+
+			goto found
+
+		} else if len(groups) > 1 {
+			resp.Diagnostics.AddError(
+				summary,
+				consts.ErrorMultipleGroups,
+			)
+
+			return
 		}
 
 	} else {
