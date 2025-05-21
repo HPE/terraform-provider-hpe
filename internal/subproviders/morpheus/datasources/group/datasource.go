@@ -66,6 +66,54 @@ func int64ToType(i *int64) types.Int64 {
 	return types.Int64Value(*i)
 }
 
+func doRead(
+	ctx context.Context,
+	data GroupModel,
+	apiClient *sdk.APIClient,
+) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+	// Get by id
+	if !data.Id.IsNull() {
+		id := data.Id.ValueInt64()
+
+		g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
+		if err != nil || hresp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("GET failed for group %d", id)
+		}
+
+		group := g.GetGroup()
+
+		return &group, nil
+
+		// Get by name
+	} else if !data.Name.IsNull() {
+		name := data.Name.ValueString()
+
+		gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
+		if err != nil || hresp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("GET failed for group %s", name)
+		}
+
+		var groups []sdk.ListGroups200ResponseAllOfGroupsInner
+
+		for _, g := range gs.Groups {
+			if g.GetName() == name {
+				groups = append(groups, g)
+			}
+		}
+
+		if len(groups) == 1 {
+			return &groups[0], nil
+		} else if len(groups) > 1 {
+			return nil, errors.New(consts.ErrorMultipleGroups)
+		}
+
+	} else {
+		return nil, errors.New(consts.ErrorNoValidSearchTerms)
+	}
+
+	return nil, errors.New(consts.ErrorNoGroupFound)
+}
+
 // Read refreshes the Terraform state with the latest data.
 func (d *DataSource) Read(
 	ctx context.Context,
@@ -91,49 +139,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	group, err := func() (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
-		// Get by id
-		if !data.Id.IsNull() {
-			id := data.Id.ValueInt64()
-
-			g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
-			if err != nil || hresp.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("GET failed for group %d", id)
-			}
-
-			group := g.GetGroup()
-
-			return &group, nil
-
-			// Get by name
-		} else if !data.Name.IsNull() {
-			name := data.Name.ValueString()
-
-			gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
-			if err != nil || hresp.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("GET failed for group %s", name)
-			}
-
-			var groups []sdk.ListGroups200ResponseAllOfGroupsInner
-
-			for _, g := range gs.Groups {
-				if g.GetName() == name {
-					groups = append(groups, g)
-				}
-			}
-
-			if len(groups) == 1 {
-				return &groups[0], nil
-			} else if len(groups) > 1 {
-				return nil, errors.New(consts.ErrorMultipleGroups)
-			}
-
-		} else {
-			return nil, errors.New(consts.ErrorNoValidSearchTerms)
-		}
-
-		return nil, errors.New(consts.ErrorNoGroupFound)
-	}()
+	group, err := doRead(ctx, data, apiClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
