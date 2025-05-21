@@ -5,7 +5,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -53,49 +54,6 @@ func (r *Resource) Schema(
 	resp.Schema = UserResourceSchema(ctx)
 }
 
-func errMsg(err error, resp *http.Response) string {
-	var msg string
-
-	if err != nil {
-		msg = err.Error()
-	}
-
-	if resp != nil {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return msg
-		}
-		code := http.StatusText(resp.StatusCode)
-		msg = fmt.Sprintf("%s (%s): %s", msg, code, string(bodyBytes))
-	}
-
-	return msg
-}
-
-func strToType(s *string) types.String {
-	if s == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(*s)
-}
-
-func boolToType(b *bool) types.Bool {
-	if b == nil {
-		return types.BoolNull()
-	}
-
-	return types.BoolValue(*b)
-}
-
-func int64ToType(i *int64) types.Int64 {
-	if i == nil {
-		return types.Int64Null()
-	}
-
-	return types.Int64Value(*i)
-}
-
 // populate user resource model with current API values
 func getUserAsState(
 	ctx context.Context,
@@ -109,7 +67,7 @@ func getUserAsState(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate user resource",
-			fmt.Sprintf("user %d GET failed: ", id)+errMsg(err, hresp),
+			fmt.Sprintf("user %d GET failed: ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return state, diags
@@ -117,7 +75,7 @@ func getUserAsState(
 
 	roleIDValues := []attr.Value{}
 	for _, role := range u.GetUser().Roles {
-		roleIDValues = append(roleIDValues, int64ToType(role.Id))
+		roleIDValues = append(roleIDValues, convert.Int64ToType(role.Id))
 	}
 
 	roleIDSet, d := types.SetValue(types.Int64Type, roleIDValues)
@@ -126,16 +84,16 @@ func getUserAsState(
 		return state, diags
 	}
 
-	state.Id = int64ToType(u.User.Id)
-	state.Username = strToType(u.User.Username)
-	state.Email = strToType(u.User.Email)
-	state.FirstName = strToType(u.User.FirstName)
-	state.LastName = strToType(u.User.LastName)
-	state.LinuxUsername = strToType(u.User.LinuxUsername)
-	state.WindowsUsername = strToType(u.User.WindowsUsername)
-	state.LinuxKeyPairId = int64ToType(u.User.LinuxKeyPairId)
-	state.PasswordExpired = boolToType(u.User.PasswordExpired)
-	state.ReceiveNotifications = boolToType(u.User.ReceiveNotifications)
+	state.Id = convert.Int64ToType(u.User.Id)
+	state.Username = convert.StrToType(u.User.Username)
+	state.Email = convert.StrToType(u.User.Email)
+	state.FirstName = convert.StrToType(u.User.FirstName)
+	state.LastName = convert.StrToType(u.User.LastName)
+	state.LinuxUsername = convert.StrToType(u.User.LinuxUsername)
+	state.WindowsUsername = convert.StrToType(u.User.WindowsUsername)
+	state.LinuxKeyPairId = convert.Int64ToType(u.User.LinuxKeyPairId)
+	state.PasswordExpired = convert.BoolToType(u.User.PasswordExpired)
+	state.ReceiveNotifications = convert.BoolToType(u.User.ReceiveNotifications)
 	state.RoleIds = roleIDSet
 
 	return state, diags
@@ -216,7 +174,7 @@ func (r *Resource) Create(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"create user resource",
-			"user "+username+" POST failed: "+errMsg(err, hresp),
+			"user "+username+" POST failed: "+errors.ErrMsg(err, hresp),
 		)
 
 		return
@@ -333,7 +291,7 @@ func (r *Resource) Delete(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"delete user resource",
-			fmt.Sprintf("user %d: DELETE failed ", id)+errMsg(err, hresp),
+			fmt.Sprintf("user %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return
