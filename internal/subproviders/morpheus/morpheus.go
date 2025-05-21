@@ -9,6 +9,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -132,6 +133,7 @@ func (s SubProvider) GetResources(
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{
 		user.NewResource,
+		role.NewResource,
 	}
 
 	return resources
