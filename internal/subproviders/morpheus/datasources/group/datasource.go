@@ -50,7 +50,7 @@ func (d *DataSource) Schema(
 	resp.Schema = GroupDataSourceSchema(ctx)
 }
 
-func getGroupById(
+func getGroupByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
@@ -98,12 +98,12 @@ func getGroup(
 	apiClient *sdk.APIClient,
 ) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
 	if !data.Id.IsNull() {
-		return getGroupById(ctx, data.Id.ValueInt64(), apiClient)
+		return getGroupByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {
 		return getGroupByName(ctx, data.Name.ValueString(), apiClient)
-	} else {
-		return nil, errors.New(consts.ErrorNoValidSearchTerms)
 	}
+
+	return nil, errors.New(consts.ErrorNoValidSearchTerms)
 }
 
 // Read refreshes the Terraform state with the latest data.
