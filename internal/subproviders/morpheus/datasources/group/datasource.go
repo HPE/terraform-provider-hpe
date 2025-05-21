@@ -147,7 +147,7 @@ func (d *DataSource) Read(
 	} else {
 		resp.Diagnostics.AddError(
 			summary,
-			consts.NoValidSearchTerms,
+			consts.ErrorNoValidSearchTerms,
 		)
 
 		return
@@ -155,7 +155,7 @@ func (d *DataSource) Read(
 
 	resp.Diagnostics.AddError(
 		summary,
-		consts.NoGroupFound,
+		consts.ErrorNoGroupFound,
 	)
 
 	return

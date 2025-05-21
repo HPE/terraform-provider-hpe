@@ -140,7 +140,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.NoGroupFound
+	expected := consts.ErrorNoGroupFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -168,7 +168,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.NoValidSearchTerms
+	expected := consts.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
