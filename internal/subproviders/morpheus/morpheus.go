@@ -6,18 +6,20 @@ import (
 	"context"
 	"errors"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
-	"github.com/HPE/terraform-provider-hpe/subprovider"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
+	"github.com/HPE/terraform-provider-hpe/subprovider"
 )
 
 var _ subprovider.SubProvider = (*SubProvider)(nil)
@@ -126,6 +128,7 @@ func (SubProvider) GetDataSources(
 	_ context.Context,
 ) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		cloud.NewDataSource,
 		group.NewDataSource,
 	}
 }
