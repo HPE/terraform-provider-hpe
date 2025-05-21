@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -86,81 +87,61 @@ func (d *DataSource) Read(
 			summary,
 			"could not create sdk client",
 		)
-	}
-
-	var group sdk.ListGroups200ResponseAllOfGroupsInner
-
-	// Get by id
-	if !data.Id.IsNull() {
-		id := data.Id.ValueInt64()
-
-		g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				summary,
-				fmt.Sprintf("group %d GET failed: ", id),
-			)
-
-			return
-		}
-
-		group = g.GetGroup()
-
-		goto found
-
-		// Get by name
-	} else if !data.Name.IsNull() {
-		name := data.Name.ValueString()
-
-		gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				summary,
-				fmt.Sprintf("group %s GET failed: ", name),
-			)
-
-			return
-		}
-
-		var groups []sdk.ListGroups200ResponseAllOfGroupsInner
-
-		for _, g := range gs.Groups {
-			if g.GetName() == name {
-				groups = append(groups, g)
-			}
-		}
-
-		if len(groups) == 1 {
-			group = groups[0]
-
-			goto found
-
-		} else if len(groups) > 1 {
-			resp.Diagnostics.AddError(
-				summary,
-				consts.ErrorMultipleGroups,
-			)
-
-			return
-		}
-
-	} else {
-		resp.Diagnostics.AddError(
-			summary,
-			consts.ErrorNoValidSearchTerms,
-		)
 
 		return
 	}
 
-	resp.Diagnostics.AddError(
-		summary,
-		consts.ErrorNoGroupFound,
-	)
+	group, err := func() (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+		// Get by id
+		if !data.Id.IsNull() {
+			id := data.Id.ValueInt64()
 
-	return
+			g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
+			if err != nil || hresp.StatusCode != http.StatusOK {
+				return nil, fmt.Errorf("GET failed for group %d", id)
+			}
 
-found:
+			group := g.GetGroup()
+
+			return &group, nil
+
+			// Get by name
+		} else if !data.Name.IsNull() {
+			name := data.Name.ValueString()
+
+			gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
+			if err != nil || hresp.StatusCode != http.StatusOK {
+				return nil, fmt.Errorf("GET failed for group %s", name)
+			}
+
+			var groups []sdk.ListGroups200ResponseAllOfGroupsInner
+
+			for _, g := range gs.Groups {
+				if g.GetName() == name {
+					groups = append(groups, g)
+				}
+			}
+
+			if len(groups) == 1 {
+				return &groups[0], nil
+			} else if len(groups) > 1 {
+				return nil, errors.New(consts.ErrorMultipleGroups)
+			}
+
+		} else {
+			return nil, errors.New(consts.ErrorNoValidSearchTerms)
+		}
+
+		return nil, errors.New(consts.ErrorNoGroupFound)
+	}()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			summary,
+			err.Error(),
+		)
+
+		return
+	}
 
 	data.Id = int64ToType(group.Id)
 	data.Name = strToType(group.Name)
