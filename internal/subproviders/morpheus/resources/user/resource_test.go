@@ -192,6 +192,8 @@ provider "hpe" {
 #}
 
 resource "hpe_morpheus_user" "foo" {
+	# Assumes tenant_id 1 pre-exists
+	tenant_id = 1
 	username = "testacc-TestAccMorpheusUserAllAttrsOk"
 	email = "foo@hpe.com"
 	password = "Secret123!"
@@ -207,6 +209,11 @@ resource "hpe_morpheus_user" "foo" {
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
 	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"tenant_id",
+			"1",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
