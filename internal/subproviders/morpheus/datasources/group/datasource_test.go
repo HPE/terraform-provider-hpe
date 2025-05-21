@@ -75,7 +75,7 @@ func createGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
 
 	g, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("POST failed for group %d - %v", 1, err)
+		t.Fatalf("POST failed for group %v", err)
 	}
 
 	group := g.GetGroup()
@@ -96,7 +96,7 @@ func deleteGroup(t *testing.T, id int64) {
 
 	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("POST failed for group %d - %v", 1, err)
+		t.Fatalf("DELETE failed for group %v", err)
 	}
 }
 
