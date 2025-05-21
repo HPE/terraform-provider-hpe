@@ -13,7 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errfmt"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -67,7 +67,7 @@ func getUserAsState(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate user resource",
-			fmt.Sprintf("user %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("user %d GET failed: ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return state, diags
@@ -174,7 +174,7 @@ func (r *Resource) Create(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"create user resource",
-			"user "+username+" POST failed: "+errfmt.ErrMsg(err, hresp),
+			"user "+username+" POST failed: "+errors.ErrMsg(err, hresp),
 		)
 
 		return
@@ -291,7 +291,7 @@ func (r *Resource) Delete(
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"delete user resource",
-			fmt.Sprintf("user %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("user %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return
