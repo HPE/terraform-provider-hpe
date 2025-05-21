@@ -106,6 +106,8 @@ func (d *DataSource) Read(
 
 		group = g.GetGroup()
 
+		goto found
+
 		// Get by name
 	} else if !data.Name.IsNull() {
 		name := data.Name.ValueString()
@@ -124,7 +126,7 @@ func (d *DataSource) Read(
 			if g.GetName() == name {
 				group = g
 
-				break
+				goto found
 			}
 		}
 
@@ -137,14 +139,14 @@ func (d *DataSource) Read(
 		return
 	}
 
-	if group.Id == nil {
-		resp.Diagnostics.AddError(
-			summary,
-			consts.NoGroupFound,
-		)
+	resp.Diagnostics.AddError(
+		summary,
+		consts.NoGroupFound,
+	)
 
-		return
-	}
+	return
+
+found:
 
 	data.Id = int64ToType(group.Id)
 	data.Name = strToType(group.Name)
