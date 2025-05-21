@@ -62,14 +62,14 @@ func newClient(t *testing.T, ctx context.Context) *sdk.APIClient {
 func createGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
 	t.Helper()
 
-	ctx := context.TODO()
-
 	addGroup := sdk.NewAddGroupsRequestGroupWithDefaults()
 	addGroup.SetName("testacc-" + t.Name())
 	addGroup.SetCode("jason")
 	addGroup.SetLocation("here")
 
 	addGroupReq := sdk.NewAddGroupsRequest(*addGroup)
+
+	ctx := context.TODO()
 
 	client := newClient(t, ctx)
 
