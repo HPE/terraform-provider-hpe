@@ -45,9 +45,7 @@ provider "hpe" {
 }
 `
 
-var group sdk.ListGroups200ResponseAllOfGroupsInner
-
-func newClient(t *testing.T, ctx context.Context) *sdk.APIClient {
+func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
 	t.Helper()
 
 	return clientfactory.NewAPIClient(
@@ -71,7 +69,7 @@ func createGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
 
 	ctx := context.TODO()
 
-	client := newClient(t, ctx)
+	client := newClient(ctx, t)
 
 	g, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -92,7 +90,7 @@ func deleteGroup(t *testing.T, id int64) {
 
 	ctx := context.TODO()
 
-	client := newClient(t, ctx)
+	client := newClient(ctx, t)
 
 	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
