@@ -4,6 +4,7 @@ package cloud
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -33,6 +34,7 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
+				Optional:            true,
 				Computed:            true,
 				Description:         "The ids of the groups granted access to the cloud",
 				MarkdownDescription: "The ids of the groups granted access to the cloud",

@@ -67,10 +67,14 @@ func getCloudByID(
 
 func getCloudByName(
 	ctx context.Context,
-	name string,
+	data CloudModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
-	gs, hresp, err := apiClient.CloudsAPI.ListClouds(ctx).Name(name).Execute()
+	name := data.Name.ValueString()
+
+	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
+
+	gs, hresp, err := req.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %s", name)
 	}
@@ -100,7 +104,7 @@ func getCloud(
 	if !data.Id.IsNull() {
 		return getCloudByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {
-		return getCloudByName(ctx, data.Name.ValueString(), apiClient)
+		return getCloudByName(ctx, data, apiClient)
 	}
 
 	return nil, errors.New(consts.ErrorNoValidSearchTerms)
@@ -144,7 +148,19 @@ func (d *DataSource) Read(
 	data.Id = convert.Int64ToType(cloud.Id)
 	data.Name = convert.StrToType(cloud.Name)
 	data.Code = convert.StrToType(cloud.Code)
+	data.CostingMode = convert.StrToType(cloud.CostingMode)
+	data.ExternalId = convert.StrToType(cloud.ExternalId)
+	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode)
+	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
+	data.Labels = convert.StrSliceToSet(cloud.Labels)
 	data.Location = convert.StrToType(cloud.Location)
+	data.TimeZone = convert.StrToType(cloud.Timezone)
+
+	var groupIDs []int64
+	for _, g := range cloud.Groups {
+		groupIDs = append(groupIDs, (*g.Id))
+	}
+	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
