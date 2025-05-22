@@ -108,21 +108,33 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	group := testhelpers.CreateGroup(t)
+
+	cloud := testhelpers.CreateCloud(t, group.GetId())
+
+	t.Cleanup(func() {
+		testhelpers.DeleteCloud(t, cloud.GetId())
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
+	cloudID := fmt.Sprintf("%d", cloud.GetId())
+	cloudName := cloud.GetName()
+
 	config := providerConfig + `
       data "hpe_morpheus_cloud" "test" {
-        name = "Fluffy" 
+        name = "` + cloudName + `" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cloud.test",
 			"name",
-			"Fluffy",
+			cloudName,
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cloud.test",
 			"id",
-			"1",
+			cloudID,
 		),
 	}
 
