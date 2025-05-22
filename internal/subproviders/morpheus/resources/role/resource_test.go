@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
@@ -77,7 +78,19 @@ resource "hpe_morpheus_role" "foo" {
 				Check:              checkFn,
 				PlanOnly:           false,
 			},
-			// TODO: Add test step using import state
+			{
+				ImportState: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					// Read ID from the pre-import state
+					rs := s.RootModule().
+						Resources["hpe_morpheus_role.foo"]
+
+					return rs.Primary.ID, nil
+				},
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_role.foo",
+				Check:             checkFn,
+			},
 		},
 	})
 }
