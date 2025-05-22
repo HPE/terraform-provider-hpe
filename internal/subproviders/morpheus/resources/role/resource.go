@@ -18,8 +18,7 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
-	_ resource.Resource                = &Resource{}
-	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.Resource = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -234,13 +233,4 @@ func (r *Resource) Delete(
 
 		return
 	}
-}
-
-//nolint:revive
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	// TODO: Implement import?
 }
