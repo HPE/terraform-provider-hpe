@@ -10,19 +10,17 @@ import (
 type TokenRoundTripper struct {
 	baseTransport http.RoundTripper
 	tokenMu       sync.Mutex
-	initToken     bool
 	token         string
 }
 
-func (t *TokenRoundTripper) InitAuthHeader(req *http.Request) error {
+func (t *TokenRoundTripper) InitReqAuthHeader(req *http.Request) error {
 	t.tokenMu.Lock()
 	defer t.tokenMu.Unlock()
 
-	if t.initToken {
+	if req.Header.Get("Authorization") != "" {
 		return nil
 	}
 
-	t.initToken = true
 	req.Header.Set("Authorization", "Bearer "+t.token)
 
 	return nil
@@ -31,7 +29,7 @@ func (t *TokenRoundTripper) InitAuthHeader(req *http.Request) error {
 func (t *TokenRoundTripper) RoundTrip(
 	req *http.Request,
 ) (*http.Response, error) {
-	t.InitAuthHeader(req)
+	t.InitReqAuthHeader(req)
 
 	return t.baseTransport.RoundTrip(req)
 }
