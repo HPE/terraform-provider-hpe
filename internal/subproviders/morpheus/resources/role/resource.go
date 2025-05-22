@@ -146,7 +146,7 @@ func (r *Resource) Create(
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
-			"create  resource",
+			"create role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
 		)
 
