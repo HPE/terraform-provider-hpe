@@ -236,6 +236,7 @@ func (r *Resource) Delete(
 	}
 }
 
+//nolint:unused
 func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
