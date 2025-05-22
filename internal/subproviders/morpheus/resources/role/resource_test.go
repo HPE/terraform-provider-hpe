@@ -47,22 +47,22 @@ provider "hpe" {
 }
 
 resource "hpe_morpheus_role" "foo" {
-	name = "testRoleHPEMorpheusProvider"
+	name = "testacc-TestAccMorpheusRoleRequiredAttrsOk"
 }
 `
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
+			"hpe_morpheus_role.foo",
 			"name",
-			"testacc-TestAccMorpheusUserRequiredAttrsOk",
+			"testacc-TestAccMorpheusRoleRequiredAttrsOk",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
+			"hpe_morpheus_role.foo",
 			"multitenant",
 			"false",
 		),
 		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_user.foo",
+			"hpe_morpheus_role.foo",
 			"description",
 		),
 	}
