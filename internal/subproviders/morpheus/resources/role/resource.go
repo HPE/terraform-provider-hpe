@@ -94,7 +94,7 @@ func (r *Resource) Create(
 	addRole.SetAuthority(name)
 
 	// optional
-	if !plan.Name.IsUnknown() {
+	if !plan.Description.IsUnknown() {
 		addRole.SetDescription(plan.Description.ValueString())
 	}
 	if !plan.Multitenant.IsUnknown() {
@@ -236,7 +236,7 @@ func (r *Resource) Delete(
 	}
 }
 
-//nolint:unused
+//nolint:revive
 func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
