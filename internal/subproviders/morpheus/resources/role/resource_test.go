@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
@@ -79,14 +78,7 @@ resource "hpe_morpheus_role" "foo" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState: true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					// Read ID from the pre-import state
-					rs := s.RootModule().
-						Resources["hpe_morpheus_role.foo"]
-
-					return rs.Primary.ID, nil
-				},
+				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_role.foo",
 				Check:             checkFn,

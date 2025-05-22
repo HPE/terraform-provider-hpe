@@ -237,7 +237,6 @@ func (r *Resource) Delete(
 	}
 }
 
-// For now, only support importing on Role ID
 func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
@@ -253,9 +252,8 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	diags := resp.State.SetAttribute(
-		ctx, path.Root("id"), id,
-	)
+	diags := resp.State.SetAttribute(ctx, path.Root("id"), id)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
