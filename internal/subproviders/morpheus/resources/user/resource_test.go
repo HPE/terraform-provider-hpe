@@ -86,7 +86,8 @@ provider "hpe" {
 resource "hpe_morpheus_user" "foo" {
 	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
 	email = "foo@hpe.com"
-	password = "Secret123!"
+	password_wo = "Secret123!"
+	password_wo_version = 1
 	role_ids = [3]
 }
 `
@@ -100,11 +101,6 @@ resource "hpe_morpheus_user" "foo" {
 			"hpe_morpheus_user.foo",
 			"email",
 			"foo@hpe.com",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"password",
-			"Secret123!",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -133,6 +129,15 @@ resource "hpe_morpheus_user" "foo" {
 			"receive_notifications",
 			"true",
 		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"1",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -152,7 +157,7 @@ resource "hpe_morpheus_user" "foo" {
 					rs := s.RootModule().
 						Resources["hpe_morpheus_user.foo"]
 
-					return rs.Primary.ID + "," + "Secret123!", nil
+					return rs.Primary.ID, nil
 				},
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_user.foo",
@@ -196,7 +201,8 @@ resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "testacc-TestAccMorpheusUserAllAttrsOk"
 	email = "foo@hpe.com"
-	password = "Secret123!"
+	password_wo = "Secret123!"
+	password_wo_version = 1
 	role_ids = [3,1]
 	first_name = "foo"
 	last_name = "bar"
@@ -224,10 +230,14 @@ resource "hpe_morpheus_user" "foo" {
 			"email",
 			"foo@hpe.com",
 		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
-			"password",
-			"Secret123!",
+			"password_wo_version",
+			"1",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -289,7 +299,7 @@ resource "hpe_morpheus_user" "foo" {
 					rs := s.RootModule().
 						Resources["hpe_morpheus_user.foo"]
 
-					return rs.Primary.ID + "," + "Secret123!", nil
+					return rs.Primary.ID, nil
 				},
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_user.foo",
