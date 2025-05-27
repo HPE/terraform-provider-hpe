@@ -56,14 +56,19 @@ func DeleteCloud(t *testing.T, id int64) {
 
 	client := newClient(ctx, t)
 
-	counter := 0
-
-	// Clouds go into initializing state and can't be deleted immediately
-	_, _, err := client.CloudsAPI.RemoveClouds(ctx, id).Execute()
-	for counter < 10 && err != nil {
-		time.Sleep(5 * time.Second)
-		counter++
-
-		_, _, err = client.CloudsAPI.RemoveClouds(ctx, id).Execute()
+	_, resp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
+	if err != nil || resp.StatusCode != http.StatusOK {
+		t.Fatalf("DELETE failed for cloud %d: %v", id, err)
 	}
+
+	for range 6 {
+		if _, resp, _ := client.CloudsAPI.GetClouds(ctx, id).Execute(); resp.StatusCode == http.StatusNotFound {
+			return
+		} else {
+			t.Log("Waiting for cloud to be deleted")
+			time.Sleep(time.Second * 10)
+		}
+	}
+
+	t.Fatalf("DELETE failed for cloud %d: %v", id, err)
 }

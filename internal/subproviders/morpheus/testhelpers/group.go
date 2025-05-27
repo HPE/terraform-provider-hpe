@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
@@ -44,8 +45,19 @@ func DeleteGroup(t *testing.T, id int64) {
 
 	client := newClient(ctx, t)
 
-	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("DELETE failed for group %v", err)
+	_, resp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
+	if err != nil || resp.StatusCode != http.StatusOK {
+		t.Fatalf("DELETE failed for group %d: %v", id, err)
 	}
+
+	for range 6 {
+		if _, resp, _ := client.GroupsAPI.GetGroups(ctx, id).Execute(); resp.StatusCode == http.StatusNotFound {
+			return
+		} else {
+			t.Log("Waiting for group to be deleted")
+			time.Sleep(time.Second * 10)
+		}
+	}
+
+	t.Fatalf("DELETE failed for group %d: %v", id, err)
 }

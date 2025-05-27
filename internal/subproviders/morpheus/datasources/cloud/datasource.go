@@ -74,14 +74,14 @@ func getCloudByName(
 
 	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
 
-	gs, hresp, err := req.Execute()
+	cs, hresp, err := req.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %s", name)
 	}
 
 	var clouds []sdk.ListClouds200ResponseAllOfZonesInner
 
-	for _, c := range gs.Zones {
+	for _, c := range cs.Zones {
 		if c.GetName() == name {
 			clouds = append(clouds, c)
 		}
