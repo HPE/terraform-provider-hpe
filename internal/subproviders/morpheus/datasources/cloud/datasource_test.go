@@ -70,10 +70,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := providerConfig + `
-      data "hpe_morpheus_cloud" "test" {
-        id = ` + cloudID + `
-      }`
+	config := testhelpers.ReadExample(t, "example-id.hcl", `id\s+=.*`, `id = `+cloudID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -94,7 +91,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},
@@ -120,10 +117,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := providerConfig + `
-      data "hpe_morpheus_cloud" "test" {
-        name = "` + cloudName + `" 
-      }`
+	config := testhelpers.ReadExample(t, "example-name.hcl", `name\s+=.*`, `name = "`+cloudName+`"`)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -144,7 +138,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},

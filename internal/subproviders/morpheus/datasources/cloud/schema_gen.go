@@ -34,7 +34,6 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
-				Optional:            true,
 				Computed:            true,
 				Description:         "The ids of the groups granted access to the cloud",
 				MarkdownDescription: "The ids of the groups granted access to the cloud",

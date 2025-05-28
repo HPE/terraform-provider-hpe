@@ -24,5 +24,3 @@ testacc:
 
 generate-docs:
 	cd tools; go generate
-	rm -rf ./docs
-	mv ./cmd/terraform-provider-hpe/docs .

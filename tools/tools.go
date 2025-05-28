@@ -15,4 +15,4 @@ import (
 //go:generate terraform fmt -recursive ../examples/
 
 // Generate documentation.
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --examples-dir ../../examples --website-source-dir ../../templates --provider-dir ../cmd/terraform-provider-hpe -provider-name hpe
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --examples-dir ../../examples --website-source-dir ../../templates --rendered-website-dir ../../docs --provider-dir ../cmd/terraform-provider-hpe --provider-name hpe
