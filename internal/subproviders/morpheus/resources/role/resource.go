@@ -6,12 +6,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -233,4 +235,24 @@ func (r *Resource) Delete(
 
 		return
 	}
+}
+
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	id, err := strconv.Atoi(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"import role resource",
+			"provided import ID '"+req.ID+"' is invalid (non-number)",
+		)
+
+		return
+	}
+
+	diags := resp.State.SetAttribute(ctx, path.Root("id"), id)
+
+	resp.Diagnostics.Append(diags...)
 }

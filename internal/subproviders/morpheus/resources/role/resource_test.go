@@ -77,7 +77,12 @@ resource "hpe_morpheus_role" "foo" {
 				Check:              checkFn,
 				PlanOnly:           false,
 			},
-			// TODO: Add test step using import state
+			{
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_role.foo",
+				Check:             checkFn,
+			},
 		},
 	})
 }

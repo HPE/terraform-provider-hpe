@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+`hpe_morpheus_role` resource ....
+
+## Example Usage
+
+{{ tffile "../../internal/subproviders/morpheus/resources/role/example.hcl" }}
+
+{{ .SchemaMarkdown | trimspace }}

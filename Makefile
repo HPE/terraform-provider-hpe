@@ -21,3 +21,8 @@ test:
 testacc:
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 10m ./...
+
+generate-docs:
+	cd tools; go generate
+	rm -rf ./docs
+	mv ./cmd/terraform-provider-hpe/docs .

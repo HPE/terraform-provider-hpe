@@ -1,0 +1,10 @@
+.idea/
+vendor/
+bin/
+dist/
+terraform-provider-hpe
+build/
+*.tfstate*
+.terraform/
+.terraform.lock*
+.vscode/
