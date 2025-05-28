@@ -20,7 +20,11 @@ func (c JSONValidator) MarkdownDescription(context.Context) string {
 	return "verify that the attribute is a valid JSON blob"
 }
 
-func (c JSONValidator) ValidateString(_ context.Context, request validator.StringRequest, response *validator.StringResponse) {
+func (c JSONValidator) ValidateString(
+	_ context.Context,
+	request validator.StringRequest,
+	response *validator.StringResponse,
+) {
 	if request.ConfigValue.IsNull() || request.ConfigValue.IsUnknown() {
 		return
 	}
