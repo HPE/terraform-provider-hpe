@@ -62,12 +62,13 @@ func DeleteCloud(t *testing.T, id int64) {
 	}
 
 	for range 6 {
-		if _, resp, _ := client.CloudsAPI.GetClouds(ctx, id).Execute(); resp.StatusCode == http.StatusNotFound {
+		_, resp, _ := client.CloudsAPI.GetClouds(ctx, id).Execute()
+		if resp.StatusCode == http.StatusNotFound {
 			return
-		} else {
-			t.Log("Waiting for cloud to be deleted")
-			time.Sleep(time.Second * 10)
 		}
+
+		t.Log("Waiting for cloud to be deleted")
+		time.Sleep(time.Second * 10)
 	}
 
 	t.Fatalf("DELETE failed for cloud %d: %v", id, err)
