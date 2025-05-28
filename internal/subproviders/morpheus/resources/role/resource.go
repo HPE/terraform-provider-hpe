@@ -4,6 +4,7 @@ package role
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -58,7 +59,7 @@ func getRoleAsState(
 	var state RoleModel
 	var diags diag.Diagnostics
 
-	u, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
+	r, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate role resource",
@@ -68,10 +69,51 @@ func getRoleAsState(
 		return state, diags
 	}
 
-	state.Id = convert.Int64ToType(u.Role.Id)
-	state.Name = convert.StrToType(u.Role.Name)
-	state.Description = convert.StrToType(u.Role.Description)
-	state.Multitenant = convert.BoolToType(u.Role.Multitenant)
+	b, err := json.Marshal(r)
+	if err != nil {
+		diags.AddError(
+			"get role",
+			fmt.Sprintf("role %d: failed to marshal permission set: "+err.Error(), id),
+		)
+	}
+
+	// Unmarshal into a permissions set struct
+	var getPermissions rolePermissionSetGet
+	err = json.Unmarshal(b, &getPermissions)
+	if err != nil {
+		diags.AddError(
+			"get role",
+			fmt.Sprintf("role %d: failed to unmarshal permission set: "+err.Error(), id),
+		)
+
+		return state, diags
+
+	}
+
+	// We need to sort the keys on the permission set we'll store in the state file
+	// Use marshalIndent for prettiness
+	sortedPermissions, err := json.MarshalIndent(getPermissions, "", "\t")
+	if err != nil {
+		diags.AddError(
+			"get role",
+			fmt.Sprintf("role %d: failed to marshal permission set for state file: "+err.Error(), id),
+		)
+	}
+
+	sortedPermissionsStr := string(sortedPermissions)
+
+	// If we perform a json.Marshal, the keys will be sorted.
+
+	state.Id = convert.Int64ToType(r.Role.Id)
+	state.Name = convert.StrToType(r.Role.Name)
+	state.Description = convert.StrToType(r.Role.Description)
+	state.LandingUrl = convert.StrToType(r.Role.LandingUrl)
+	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
+	state.MultitenantLocked = convert.BoolToType(r.Role.MultitenantLocked)
+	state.RoleType = convert.StrToType(r.Role.RoleType)
+	state.PermissionSet = convert.StrToType(&sortedPermissionsStr)
+
+	// TODO: Read Permission set into state file from GET
 
 	return state, diags
 }
@@ -99,7 +141,61 @@ func (r *Resource) Create(
 		addRole.SetDescription(plan.Description.ValueString())
 	}
 	if !plan.Multitenant.IsUnknown() {
+		// default: false (off)
 		addRole.SetMultitenant(plan.Multitenant.ValueBool())
+	}
+	if !plan.MultitenantLocked.IsUnknown() {
+		// default: false (off)
+		addRole.SetMultitenantLocked(plan.MultitenantLocked.ValueBool())
+	}
+
+	if !plan.RoleType.IsUnknown() {
+		// default: user
+		addRole.SetRoleType(plan.RoleType.ValueString())
+	}
+
+	if !plan.LandingUrl.IsUnknown() {
+		addRole.SetLandingUrl(plan.LandingUrl.ValueString())
+	}
+
+	if !plan.PermissionSet.IsUnknown() {
+
+		// var addRoleUnmarshal sdk.AddRolesRequestRole
+		data := []byte(plan.PermissionSet.ValueString())
+		var permissionSet rolePermissionSetPost
+
+		err := json.Unmarshal(data, &permissionSet)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": failed to unmarshal permission set: "+err.Error(),
+			)
+
+			return
+
+		}
+
+		addRole.SetPermissions(permissionSet.Permissions)
+		addRole.SetGlobalSiteAccess(permissionSet.GlobalSiteAccess)
+		addRole.SetSites(permissionSet.Sites)
+		addRole.SetGlobalZoneAccess(permissionSet.GlobalZoneAccess)
+		addRole.SetZones(permissionSet.Zones)
+		addRole.SetGlobalInstanceTypeAccess(permissionSet.GlobalInstanceTypeAccess)
+		addRole.SetInstanceTypes(permissionSet.InstanceTypes)
+		addRole.SetGlobalAppTemplateAccess(permissionSet.GlobalAppTemplateAccess)
+		addRole.SetAppTemplates(permissionSet.AppTemplates)
+		addRole.SetGlobalCatalogItemTypeAccess(permissionSet.GlobalCatalogItemTypeAccess)
+		addRole.SetCatalogItemTypes(permissionSet.CatalogItemTypes)
+		addRole.SetGlobalPersonaAccess(permissionSet.GlobalPersonaAccess)
+		addRole.SetPersonas(permissionSet.Personas)
+		addRole.SetGlobalVdiPoolAccess(permissionSet.GlobalVdiPoolAccess)
+		addRole.SetVdiPools(permissionSet.VdiPools)
+		addRole.SetGlobalReportTypeAccess(permissionSet.GlobalReportTypeAccess)
+		addRole.SetReportTypes(permissionSet.ReportTypes)
+		addRole.SetGlobalTaskAccess(permissionSet.GlobalTaskAccess)
+		addRole.SetTasks(permissionSet.Tasks)
+		addRole.SetGlobalTaskSetAccess(permissionSet.GlobalTaskSetAccess)
+		addRole.SetTaskSets(permissionSet.TaskSets)
 	}
 
 	addRoleReq := sdk.NewAddRolesRequest(*addRole)
