@@ -65,10 +65,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := providerConfig + `
-      data "hpe_morpheus_group" "test" {
-        id = ` + groupID + `
-      }`
+	config := testhelpers.ReadExample(t, "example-id.hcl", `id\s*=.*`, `id = `+groupID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -89,7 +86,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},
@@ -110,10 +107,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := providerConfig + `
-      data "hpe_morpheus_group" "test" {
-        name = "` + groupName + `" 
-      }`
+	config := testhelpers.ReadExample(t, "example-name.hcl", `name\s*=.*`, `name = "`+groupName+`"`)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -134,7 +128,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},
