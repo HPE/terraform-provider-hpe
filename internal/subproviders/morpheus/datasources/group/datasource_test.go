@@ -1,22 +1,18 @@
 package group_test
 
 import (
-	"context"
 	"fmt"
-	"net/http"
-	"os"
 	"regexp"
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
 const providerConfig = `
@@ -45,59 +41,6 @@ provider "hpe" {
 }
 `
 
-func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
-	t.Helper()
-
-	return clientfactory.NewAPIClient(
-		ctx,
-		os.Getenv("TF_VAR_testacc_morpheus_url"),
-		os.Getenv("TF_VAR_testacc_morpheus_username"),
-		os.Getenv("TF_VAR_testacc_morpheus_password"),
-		"",
-		clientfactory.WithInsecureTLS())
-}
-
-func createGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
-	t.Helper()
-
-	addGroup := sdk.NewAddGroupsRequestGroupWithDefaults()
-	addGroup.SetName("testacc-" + t.Name())
-	addGroup.SetCode("jason")
-	addGroup.SetLocation("here")
-
-	addGroupReq := sdk.NewAddGroupsRequest(*addGroup)
-
-	ctx := context.TODO()
-
-	client := newClient(ctx, t)
-
-	g, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("POST failed for group %v", err)
-	}
-
-	group := g.GetGroup()
-
-	t.Cleanup(func() {
-		deleteGroup(t, group.GetId())
-	})
-
-	return group
-}
-
-func deleteGroup(t *testing.T, id int64) {
-	t.Helper()
-
-	ctx := context.TODO()
-
-	client := newClient(ctx, t)
-
-	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("DELETE failed for group %v", err)
-	}
-}
-
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
 
@@ -113,7 +56,12 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := createGroup(t)
+	group := testhelpers.CreateGroup(t)
+
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
@@ -153,7 +101,12 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := createGroup(t)
+	group := testhelpers.CreateGroup(t)
+
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
