@@ -108,6 +108,7 @@ func (r *Resource) Create(
 				"create role resource",
 				"role "+name+": currently only 'user' role_type is supported",
 			)
+
 			return
 		}
 		addRole.SetRoleType(plan.RoleType.ValueString())
