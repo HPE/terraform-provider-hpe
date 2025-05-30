@@ -1,5 +1,8 @@
 package cloud_test
 
+//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+
 import (
 	"fmt"
 	"regexp"
@@ -70,7 +73,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.hcl", "Id", cloudID)
+	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -117,7 +120,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.hcl", "Name", cloudName)
+	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

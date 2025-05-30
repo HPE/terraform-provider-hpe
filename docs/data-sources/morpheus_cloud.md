@@ -16,13 +16,13 @@ Clouds are integrations or connections to public, private, hybrid clouds, or bar
 
 ```terraform
 data "hpe_morpheus_cloud" "test" {
-  id = 1
+  id = 99
 }
 ```
 
 ```terraform
 data "hpe_morpheus_cloud" "test" {
-  name = "example" 
+  name = "Example name" 
 }
 ```
 
