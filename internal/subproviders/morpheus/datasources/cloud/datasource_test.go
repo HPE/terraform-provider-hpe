@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package cloud_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
