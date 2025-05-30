@@ -36,26 +36,12 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	providerBlock := testhelpers.BuildProviderBlock(t)
+
 	config := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
 
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
+	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -105,29 +91,16 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	providerBlock := testhelpers.BuildProviderBlock(t)
+
 	config := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
 		"Multitenant", "true",
 		"Description", "test",
 		"RoleType", "user")
 
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
@@ -176,29 +149,16 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
+
+	providerBlock := testhelpers.BuildProviderBlock(t)
+
 	config := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",
 		"Multitenant", "false",
 		"Description", "a test of the example HCL config",
 		"RoleType", "user")
 
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
+	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
