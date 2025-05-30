@@ -22,5 +22,6 @@ func BuildProviderBlock(t *testing.T) string {
 			"Insecure", os.Getenv("TF_ACC_MORPHEUS_INSECURE"),
 		)
 	}
+
 	return providerBlock
 }
