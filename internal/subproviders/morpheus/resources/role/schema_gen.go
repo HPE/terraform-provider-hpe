@@ -4,7 +4,10 @@ package role
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -20,8 +23,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "",
-				MarkdownDescription: "",
+				Description:         "The ID of the role",
+				MarkdownDescription: "The ID of the role",
 			},
 			"multitenant": schema.BoolAttribute{
 				Optional:            true,
@@ -32,8 +35,21 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "a unique name of the role",
-				MarkdownDescription: "a unique name of the role",
+				Description:         "A unique name for the role",
+				MarkdownDescription: "A unique name for the role",
+			},
+			"role_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Role type",
+				MarkdownDescription: "Role type",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"user",
+						"account",
+					),
+				},
+				Default: stringdefault.StaticString("user"),
 			},
 		},
 	}
@@ -44,4 +60,5 @@ type RoleModel struct {
 	Id          types.Int64  `tfsdk:"id"`
 	Multitenant types.Bool   `tfsdk:"multitenant"`
 	Name        types.String `tfsdk:"name"`
+	RoleType    types.String `tfsdk:"role_type"`
 }
