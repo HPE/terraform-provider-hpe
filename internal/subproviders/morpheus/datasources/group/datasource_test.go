@@ -1,5 +1,8 @@
 package group_test
 
+//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+
 import (
 	"fmt"
 	"regexp"
@@ -65,7 +68,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.ReadExample(t, "example-id.hcl", `id\s*=.*`, `id = `+groupID)
+	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -107,7 +110,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.ReadExample(t, "example-name.hcl", `name\s*=.*`, `name = "`+groupName+`"`)
+	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

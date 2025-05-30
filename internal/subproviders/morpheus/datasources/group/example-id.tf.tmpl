@@ -1,3 +1,3 @@
 data "hpe_morpheus_group" "test" {
-  id = 1
+  id = {{.Id}}
 }

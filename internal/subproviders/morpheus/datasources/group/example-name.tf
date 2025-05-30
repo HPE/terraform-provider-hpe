@@ -1,3 +1,3 @@
 data "hpe_morpheus_group" "test" {
-  name = "mygroup" 
+  name = "Example name"
 }
