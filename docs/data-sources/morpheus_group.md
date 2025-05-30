@@ -18,13 +18,13 @@ Policies applied to a Group will be enforced on all Instances provisioned or mov
 
 ```terraform
 data "hpe_morpheus_group" "test" {
-  id = 1
+  id = 99
 }
 ```
 
 ```terraform
 data "hpe_morpheus_group" "test" {
-  name = "mygroup" 
+  name = "Example name"
 }
 ```
 
