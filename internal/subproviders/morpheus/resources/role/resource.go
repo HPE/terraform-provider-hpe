@@ -106,7 +106,7 @@ func (r *Resource) Create(
 		if plan.RoleType.ValueString() != "user" {
 			resp.Diagnostics.AddError(
 				"create role resource",
-				"role "+name+": currently only 'user' RoleType is supported",
+				"role "+name+": currently only 'user' role_type is supported",
 			)
 			return
 		}
