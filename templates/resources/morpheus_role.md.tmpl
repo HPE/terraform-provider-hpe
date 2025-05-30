@@ -12,6 +12,12 @@ description: |-
 
 ## Example Usage
 
-{{ tffile "../../internal/subproviders/morpheus/resources/role/example.hcl" }}
+{{ tffile "../../internal/subproviders/morpheus/resources/role/example.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
+
+## Additional Information
+
+Currently, only the `user` `role_type` is supported through the Terraform provider.
+
+Support for `account` `role_type` is in progress.
