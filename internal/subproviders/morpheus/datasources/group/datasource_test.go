@@ -65,7 +65,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.hcl", `id\s*=.*`, `id = `+groupID)
+	config := testhelpers.RenderExample(t, "example-id.hcl", "Id", groupID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -107,7 +107,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.hcl", `name\s*=.*`, `name = "`+groupName+`"`)
+	config := testhelpers.RenderExample(t, "example-name.hcl", "Name", groupName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
