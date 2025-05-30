@@ -70,7 +70,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.ReadExample(t, "example-id.hcl", `id\s+=.*`, `id = `+cloudID)
+	config := testhelpers.RenderExample(t, "example-id.hcl", "Id", cloudID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -117,7 +117,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.ReadExample(t, "example-name.hcl", `name\s+=.*`, `name = "`+cloudName+`"`)
+	config := testhelpers.RenderExample(t, "example-name.hcl", "Name", cloudName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
