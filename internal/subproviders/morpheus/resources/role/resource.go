@@ -58,7 +58,7 @@ func getRoleAsState(
 	var state RoleModel
 	var diags diag.Diagnostics
 
-	u, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
+	r, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate role resource",
@@ -68,10 +68,11 @@ func getRoleAsState(
 		return state, diags
 	}
 
-	state.Id = convert.Int64ToType(u.Role.Id)
-	state.Name = convert.StrToType(u.Role.Name)
-	state.Description = convert.StrToType(u.Role.Description)
-	state.Multitenant = convert.BoolToType(u.Role.Multitenant)
+	state.Id = convert.Int64ToType(r.Role.Id)
+	state.Name = convert.StrToType(r.Role.Name)
+	state.Description = convert.StrToType(r.Role.Description)
+	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
+	state.RoleType = convert.StrToType(r.Role.RoleType)
 
 	return state, diags
 }
@@ -100,6 +101,17 @@ func (r *Resource) Create(
 	}
 	if !plan.Multitenant.IsUnknown() {
 		addRole.SetMultitenant(plan.Multitenant.ValueBool())
+	}
+	if !plan.RoleType.IsUnknown() {
+		if plan.RoleType.ValueString() != "user" {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": currently only 'user' role_type is supported",
+			)
+
+			return
+		}
+		addRole.SetRoleType(plan.RoleType.ValueString())
 	}
 
 	addRoleReq := sdk.NewAddRolesRequest(*addRole)
