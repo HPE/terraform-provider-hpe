@@ -204,61 +204,62 @@ func (r *Resource) Create(
 		addRole.SetGlobalTaskSetAccess(permissionSet.GlobalTaskSetAccess)
 		addRole.SetTaskSets(permissionSet.TaskSets)
 
-	addRoleReq := sdk.NewAddRolesRequest(*addRole)
+		addRoleReq := sdk.NewAddRolesRequest(*addRole)
 
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"create role resource",
-			"role "+name+": failed to create client: "+err.Error(),
-		)
+		client, err := r.NewClient(ctx)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": failed to create client: "+err.Error(),
+			)
 
-		return
-	}
+			return
+		}
 
-	role, hresp, err := client.RolesAPI.AddRoles(ctx).
-		AddRolesRequest(*addRoleReq).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"create role resource",
-			"role "+name+" POST failed: "+errors.ErrMsg(err, hresp),
-		)
+		role, hresp, err := client.RolesAPI.AddRoles(ctx).
+			AddRolesRequest(*addRoleReq).Execute()
+		if err != nil || hresp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+" POST failed: "+errors.ErrMsg(err, hresp),
+			)
 
-		return
-	}
+			return
+		}
 
-	if role.GetRole().Id == nil {
-		resp.Diagnostics.AddError(
-			"create role resource",
-			"role "+name+": id is nil",
-		)
+		if role.GetRole().Id == nil {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": id is nil",
+			)
 
-		return
-	}
+			return
+		}
 
-	id := *role.GetRole().Id
-	plan.Id = types.Int64Value(id)
+		id := *role.GetRole().Id
+		plan.Id = types.Int64Value(id)
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+		// write id as soon as possible
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-	state, pdiags := getRoleAsState(ctx, id, client)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
-		resp.Diagnostics.AddError(
-			"create role resource",
-			fmt.Sprintf("role %d: failed to read from api", id),
-		)
+		state, pdiags := getRoleAsState(ctx, id, client)
+		if pdiags.HasError() {
+			resp.Diagnostics.Append(pdiags...)
+			resp.Diagnostics.AddError(
+				"create role resource",
+				fmt.Sprintf("role %d: failed to read from api", id),
+			)
 
-		return
-	}
+			return
+		}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 }
 
