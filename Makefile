@@ -23,6 +23,5 @@ testacc:
 	go test -v -cover -count 1 -timeout 10m ./...
 
 generate-docs:
+	go generate ./...
 	cd tools; go generate
-	rm -rf ./docs
-	mv ./cmd/terraform-provider-hpe/docs .

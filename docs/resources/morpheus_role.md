@@ -13,23 +13,11 @@ description: |-
 ## Example Usage
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
-
-terraform {
-  required_providers {
-    hpegl = {
-      source  = "HPE/hpe"
-      version = "= 0.0.1"
-    }
-  }
-}
-
-provider "hpe" {
-  # Provide morpheus block if you want to create morpheus resources
-  morpheus {
-    access_token = "access_token"
-    url          = "https://morpheus.example.com"
-  }
+resource "hpe_morpheus_role" "example" {
+	name = "ExampleRole"
+	multitenant = false
+        description = "An example role"
+        role_type = "user"
 }
 ```
 
@@ -38,13 +26,20 @@ provider "hpe" {
 
 ### Required
 
-- `name` (String) a unique name of the role
+- `name` (String) A unique name for the role
 
 ### Optional
 
 - `description` (String) Description
 - `multitenant` (Boolean) Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*
+- `role_type` (String) Role type
 
 ### Read-Only
 
-- `id` (Number) The ID of this resource.
+- `id` (Number) The ID of the role
+
+## Additional Information
+
+Currently, only the `user` `role_type` is supported through the Terraform provider.
+
+Support for `account` `role_type` is in progress.

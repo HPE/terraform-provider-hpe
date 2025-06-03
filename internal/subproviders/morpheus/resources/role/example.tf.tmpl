@@ -1,0 +1,6 @@
+resource "hpe_morpheus_role" "example" {
+	name = "{{.Name}}"
+	multitenant = {{.Multitenant}}
+        description = "{{.Description}}"
+        role_type = "{{.RoleType}}"
+}

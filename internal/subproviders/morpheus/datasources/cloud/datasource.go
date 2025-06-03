@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package group
+package cloud
 
 import (
 	"context"
@@ -12,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud/consts"
 )
 
-const summary = "read group data source"
+const summary = "read cloud data source"
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
@@ -40,7 +41,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_group"
+	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_cloud"
 }
 
 // Schema defines the schema for the data source.
@@ -49,60 +50,64 @@ func (d *DataSource) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = GroupDataSourceSchema(ctx)
+	resp.Schema = CloudDataSourceSchema(ctx)
 }
 
-func getGroupByID(
+func getCloudByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
-	g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
+) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
+	c, hresp, err := apiClient.CloudsAPI.GetClouds(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for group %d", id)
+		return nil, fmt.Errorf("GET failed for cloud %d", id)
 	}
 
-	group := g.GetGroup()
+	cloud := c.GetZone()
 
-	return &group, nil
+	return &cloud, nil
 }
 
-func getGroupByName(
+func getCloudByName(
 	ctx context.Context,
-	name string,
+	data CloudModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
-	gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
+) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
+	name := data.Name.ValueString()
+
+	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
+
+	cs, hresp, err := req.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for group %s", name)
+		return nil, fmt.Errorf("GET failed for cloud %s", name)
 	}
 
-	var groups []sdk.ListGroups200ResponseAllOfGroupsInner
+	var clouds []sdk.ListClouds200ResponseAllOfZonesInner
 
-	for _, g := range gs.Groups {
-		if g.GetName() == name {
-			groups = append(groups, g)
+	for _, c := range cs.Zones {
+		if c.GetName() == name {
+			clouds = append(clouds, c)
 		}
 	}
 
-	if len(groups) == 1 {
-		return &groups[0], nil
-	} else if len(groups) > 1 {
-		return nil, errors.New(consts.ErrorMultipleGroups)
+	if len(clouds) == 1 {
+		return &clouds[0], nil
+	} else if len(clouds) > 1 {
+		return nil, errors.New(consts.ErrorMultipleClouds)
 	}
 
-	return nil, errors.New(consts.ErrorNoGroupFound)
+	return nil, errors.New(consts.ErrorNoCloudFound)
 }
 
-func getGroup(
+func getCloud(
 	ctx context.Context,
-	data GroupModel,
+	data CloudModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
 	if !data.Id.IsNull() {
-		return getGroupByID(ctx, data.Id.ValueInt64(), apiClient)
+		return getCloudByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {
-		return getGroupByName(ctx, data.Name.ValueString(), apiClient)
+		return getCloudByName(ctx, data, apiClient)
 	}
 
 	return nil, errors.New(consts.ErrorNoValidSearchTerms)
@@ -114,7 +119,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data GroupModel
+	var data CloudModel
 
 	// Read config
 	diags := req.Config.Get(ctx, &data)
@@ -133,7 +138,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	group, err := getGroup(ctx, data, apiClient)
+	cloud, err := getCloud(ctx, data, apiClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
@@ -143,10 +148,22 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.Id = convert.Int64ToType(group.Id)
-	data.Name = convert.StrToType(group.Name)
-	data.Code = convert.StrToType(group.Code)
-	data.Location = convert.StrToType(group.Location)
+	data.Id = convert.Int64ToType(cloud.Id)
+	data.Name = convert.StrToType(cloud.Name)
+	data.Code = convert.StrToType(cloud.Code)
+	data.CostingMode = convert.StrToType(cloud.CostingMode)
+	data.ExternalId = convert.StrToType(cloud.ExternalId)
+	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode)
+	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
+	data.Labels = convert.StrSliceToSet(cloud.Labels)
+	data.Location = convert.StrToType(cloud.Location)
+	data.TimeZone = convert.StrToType(cloud.Timezone)
+
+	var groupIDs []int64
+	for _, g := range cloud.Groups {
+		groupIDs = append(groupIDs, (*g.Id))
+	}
+	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

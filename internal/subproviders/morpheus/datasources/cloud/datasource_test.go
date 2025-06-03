@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package group_test
+package cloud_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
 //go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
@@ -16,7 +16,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud/consts"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -56,32 +56,37 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindGroupById(t *testing.T) {
+func TestAccMorpheusFindCloudById(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	group := testhelpers.CreateGroup(t)
 
+	cloud := testhelpers.CreateCloud(t, group.GetId())
+
 	t.Cleanup(func() {
+		testhelpers.DeleteCloud(t, cloud.GetId())
 		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
-	groupID := fmt.Sprintf("%d", group.GetId())
-	groupName := group.GetName()
+	cloudID := fmt.Sprintf("%d", cloud.GetId())
+	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"name",
-			groupName,
+			cloudName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"id",
-			groupID,
+			cloudID,
 		),
 	}
 
@@ -98,32 +103,37 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupByName(t *testing.T) {
+func TestAccMorpheusFindCloudByName(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	group := testhelpers.CreateGroup(t)
 
+	cloud := testhelpers.CreateCloud(t, group.GetId())
+
 	t.Cleanup(func() {
+		testhelpers.DeleteCloud(t, cloud.GetId())
 		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
-	groupID := fmt.Sprintf("%d", group.GetId())
-	groupName := group.GetName()
+	cloudID := fmt.Sprintf("%d", cloud.GetId())
+	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"name",
-			groupName,
+			cloudName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"id",
-			groupID,
+			cloudID,
 		),
 	}
 
@@ -140,26 +150,28 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupNotFound(t *testing.T) {
+func TestAccMorpheusFindCloudNotFound(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	config := providerConfig + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_cloud" "test" {
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorNoGroupFound
+	expected := consts.ErrorNoCloudFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -173,14 +185,16 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
+	t.Parallel()
+
 	config := providerConfigOffline + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_cloud" "test" {
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"id",
 		),
 	}
@@ -201,16 +215,18 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
+	t.Parallel()
+
 	config := providerConfigOffline + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_cloud" "test" {
         id = 1
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_cloud.test",
 			"id",
 		),
 	}

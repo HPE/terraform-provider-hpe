@@ -1,4 +1,4 @@
-// (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 package role
 
@@ -150,7 +150,14 @@ func (r *Resource) Create(
 	}
 
 	if !plan.RoleType.IsUnknown() {
-		// default: user
+		if plan.RoleType.ValueString() != "user" {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": currently only 'user' role_type is supported",
+			)
+
+			return
+		}
 		addRole.SetRoleType(plan.RoleType.ValueString())
 	}
 
@@ -196,7 +203,6 @@ func (r *Resource) Create(
 		addRole.SetTasks(permissionSet.Tasks)
 		addRole.SetGlobalTaskSetAccess(permissionSet.GlobalTaskSetAccess)
 		addRole.SetTaskSets(permissionSet.TaskSets)
-	}
 
 	addRoleReq := sdk.NewAddRolesRequest(*addRole)
 
