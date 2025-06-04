@@ -7,14 +7,13 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/provider"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/internal/provider"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
 
 func checkRole(
@@ -84,11 +83,20 @@ provider "hpe" {
 		insecure = var.testacc_morpheus_insecure
 	}
 }
-
+`
+	resourceConfig := `
 resource "hpe_morpheus_user" "foo" {
 	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
 	email = "foo@hpe.com"
-	password = "Secret123!"
+	password_wo = "Secret123!"
+	role_ids = [3]
+}
+`
+	resourceConfigPostImport := `
+resource "hpe_morpheus_user" "foo" {
+	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
+	email = "foo@hpe.com"
+	# password_wo = "Secret123!"
 	role_ids = [3]
 }
 `
@@ -102,11 +110,6 @@ resource "hpe_morpheus_user" "foo" {
 			"hpe_morpheus_user.foo",
 			"email",
 			"foo@hpe.com",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"password",
-			"Secret123!",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -135,6 +138,14 @@ resource "hpe_morpheus_user" "foo" {
 			"receive_notifications",
 			"true",
 		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -142,10 +153,16 @@ resource "hpe_morpheus_user" "foo" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:   providerConfig + resourceConfig,
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+			{
+				// Check that a post-apply plan detects no changes
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
-				PlanOnly:           false,
+				PlanOnly:           true,
 			},
 			{
 				ImportState: true,
@@ -154,11 +171,19 @@ resource "hpe_morpheus_user" "foo" {
 					rs := s.RootModule().
 						Resources["hpe_morpheus_user.foo"]
 
-					return rs.Primary.ID + "," + "Secret123!", nil
+					return rs.Primary.ID, nil
 				},
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_user.foo",
 				Check:             checkFn,
+			},
+			{
+				// Check that a post-import plan detects no changes
+				// if write-only fields are omitted
+				Config:             providerConfig + resourceConfigPostImport,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           true,
 			},
 		},
 	})
@@ -192,13 +217,16 @@ provider "hpe" {
 #password = "Secret123!"
 #roles = [3,0,1]
 #}
+`
 
+	resourceCfg := `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
 	username = "testacc-TestAccMorpheusUserAllAttrsOk"
 	email = "foo@hpe.com"
-	password = "Secret123!"
+	password_wo = "Secret123!"
+	password_wo_version = 1
 	role_ids = [3,1]
 	first_name = "foo"
 	last_name = "bar"
@@ -210,7 +238,7 @@ resource "hpe_morpheus_user" "foo" {
 `
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
-	checks := []resource.TestCheckFunc{
+	baseChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"tenant_id",
@@ -226,10 +254,9 @@ resource "hpe_morpheus_user" "foo" {
 			"email",
 			"foo@hpe.com",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
-			"password",
-			"Secret123!",
+			"password_wo",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -274,28 +301,47 @@ resource "hpe_morpheus_user" "foo" {
 		checkStrayRoles(expectedRoles),
 	}
 
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	passwordWoCheck := resource.TestCheckResourceAttr(
+		"hpe_morpheus_user.foo",
+		"password_wo_version",
+		"1",
+	)
+
+	passwordWoImportCheck := resource.TestCheckNoResourceAttr(
+		"hpe_morpheus_user.foo",
+		"password_wo_version",
+	)
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, passwordWoCheck)...,
+	)
+
+	checkImportFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, passwordWoImportCheck)...,
+	)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config:   providerConfig + resourceCfg,
+				Check:    checkFn,
+				PlanOnly: false,
 			},
 			{
+				// state from import test exists in memory (not written to disk)
 				ImportState: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					// Read ID from the pre-import state
 					rs := s.RootModule().
 						Resources["hpe_morpheus_user.foo"]
 
-					return rs.Primary.ID + "," + "Secret123!", nil
+					return rs.Primary.ID, nil
 				},
-				ImportStateVerify: true, // Check state post import
-				ResourceName:      "hpe_morpheus_user.foo",
-				Check:             checkFn,
+				ImportStateVerify:       true, // Check state post import (in memory)
+				ImportStateVerifyIgnore: []string{"password_wo_version"},
+				ResourceName:            "hpe_morpheus_user.foo",
+				Check:                   checkImportFn,
 			},
 		},
 	})

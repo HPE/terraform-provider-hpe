@@ -45,14 +45,20 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Linux Username, user settings for provisioning",
 				MarkdownDescription: "Linux Username, user settings for provisioning",
 			},
-			"password": schema.StringAttribute{
-				Required:            true,
-				Sensitive:           true,
-				Description:         "Password to apply to the user",
-				MarkdownDescription: "Password to apply to the user",
-			},
 			"password_expired": schema.BoolAttribute{
 				Computed: true,
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:            true,
+				Sensitive:           true,
+				WriteOnly:           true,
+				Description:         "Password to apply to the user (Write Only)",
+				MarkdownDescription: "Password to apply to the user (Write Only)",
+			},
+			"password_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Password version. Used to determine if password_wo has been updated.",
+				MarkdownDescription: "Password version. Used to determine if password_wo has been updated.",
 			},
 			"receive_notifications": schema.BoolAttribute{
 				Optional:            true,
@@ -93,8 +99,9 @@ type UserModel struct {
 	LastName             types.String `tfsdk:"last_name"`
 	LinuxKeyPairId       types.Int64  `tfsdk:"linux_key_pair_id"`
 	LinuxUsername        types.String `tfsdk:"linux_username"`
-	Password             types.String `tfsdk:"password"`
 	PasswordExpired      types.Bool   `tfsdk:"password_expired"`
+	PasswordWo           types.String `tfsdk:"password_wo"`
+	PasswordWoVersion    types.Int64  `tfsdk:"password_wo_version"`
 	ReceiveNotifications types.Bool   `tfsdk:"receive_notifications"`
 	RoleIds              types.Set    `tfsdk:"role_ids"`
 	TenantId             types.Int64  `tfsdk:"tenant_id"`
