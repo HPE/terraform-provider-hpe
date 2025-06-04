@@ -78,7 +78,7 @@ func getCloudByName(
 	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
 
 	cs, hresp, err := req.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if cs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %s", name)
 	}
 

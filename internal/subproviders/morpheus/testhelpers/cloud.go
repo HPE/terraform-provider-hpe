@@ -17,33 +17,41 @@ import (
 func CreateCloud(t *testing.T, groupID int64) sdk.ListClouds200ResponseAllOfZonesInner {
 	t.Helper()
 
+	ctx := context.TODO()
+
+	client := newClient(ctx, t)
+
 	name := fmt.Sprintf("testacc-%s-%s", t.Name(), rand.Text())
+
+	zts, hresp, err := client.CloudsAPI.ListCloudTypes(ctx).Execute()
+	if zts == nil || err != nil || hresp.StatusCode != http.StatusOK {
+		t.Fatalf("GET failed for cloud types %v", err)
+	}
+
+	if len(zts.ZoneTypes) < 1 {
+		t.Fatal("no cloud type returned")
+	}
+
+	ztID := zts.ZoneTypes[len(zts.ZoneTypes)-1].Id
+
+	zt := sdk.AddCloudsRequestZoneZoneType{
+		AddCloudsRequestZoneZoneTypeAnyOf: &sdk.AddCloudsRequestZoneZoneTypeAnyOf{
+			Id: ztID,
+		},
+	}
 
 	addCloud := sdk.NewAddCloudsRequestZoneWithDefaults()
 	addCloud.SetName(name)
 	addCloud.SetCode(strings.ToLower(name))
 	addCloud.SetLocation("here")
 	addCloud.SetGroupId(groupID)
-
-	// This is the ID of a Morpheus zone type
-	ztID := int64(1)
-	zt := sdk.AddCloudsRequestZoneZoneType{
-		AddCloudsRequestZoneZoneTypeAnyOf: &sdk.AddCloudsRequestZoneZoneTypeAnyOf{
-			Id: &ztID,
-		},
-	}
-
 	addCloud.SetZoneType(zt)
 
 	addCloudReq := sdk.NewAddCloudsRequest(*addCloud)
 
-	ctx := context.TODO()
-
-	client := newClient(ctx, t)
-
 	c, hresp, err := client.CloudsAPI.AddClouds(ctx).AddCloudsRequest(*addCloudReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("POST failed for group %v", err)
+		t.Fatalf("POST failed for cloud %v", err)
 	}
 
 	cloud := c.GetZone()
