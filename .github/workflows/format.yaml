@@ -1,0 +1,39 @@
+# Copyright 2025 Hewlett Packard Enterprise Development LP
+
+name: Format
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        go: [ '1.24.1' ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go install golang.org/x/tools/cmd/goimports@v0.33.0
+      - run: |
+          set -euo pipefail
+
+          fail=false
+          FILES=$(find . -name '*.go' | grep -v '_gen.go' || true)
+
+          for FILE in $FILES; do
+            goimports -w -local github.com/HPE "$FILE"
+            if ! git diff --exit-code -- "$FILE"; then
+              echo "goimports failed on $FILE"
+              fail=true
+            fi
+          done
+
+          if [ "$fail" = true ]; then
+            echo "goimports drift detected"
+            exit 1
+          fi
