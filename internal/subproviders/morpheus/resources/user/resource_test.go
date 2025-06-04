@@ -7,12 +7,13 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/provider"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/internal/provider"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
 
 func checkRole(
