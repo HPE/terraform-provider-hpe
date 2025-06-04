@@ -1,0 +1,23 @@
+# Copyright 2025 Hewlett Packard Enterprise Development LP
+
+name: Imports
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        go: [ '1.24.1' ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go install golang.org/x/tools/cmd/goimports@v0.33.0
+      - run: goimports -w -local github.com/HPE -d .
+      - run: git diff --exit-code -- .
