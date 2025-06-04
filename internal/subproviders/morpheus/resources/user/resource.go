@@ -221,7 +221,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	// special case
+	// special case - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -238,10 +238,6 @@ func (r *Resource) Read(
 	var plan UserModel
 
 	diags := req.State.Get(ctx, &plan)
-	if diags.HasError() {
-		return
-	}
-
 	if diags.HasError() {
 		return
 	}
@@ -268,7 +264,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	// special case
+	// special case - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
