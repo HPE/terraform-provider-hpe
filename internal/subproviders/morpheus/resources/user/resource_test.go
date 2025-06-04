@@ -442,3 +442,37 @@ resource "hpe_morpheus_user" "foo" {
 		},
 	})
 }
+
+// password_wo is required for create (but not import) here we check that it is
+// correctly identified as missing during plan (i.e. before Create is called)
+func TestAccMorpheusUserMissingPasswordWo(t *testing.T) {
+	providerConfig := `
+provider "hpe" {
+	morpheus {
+		url = ""
+		username = ""
+		password = ""
+	}
+}
+
+resource "hpe_morpheus_user" "foo" {
+	username = "test2"
+	email = "bar@hpe.com"
+	#password_wo = "Secret123!"
+	role_ids = [3,1]
+}
+`
+	expected := `'password_wo' not set`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+				ExpectError:        regexp.MustCompile(expected),
+			},
+		},
+	})
+}

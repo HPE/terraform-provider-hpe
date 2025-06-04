@@ -4,7 +4,9 @@ package user
 
 import (
 	"context"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -54,6 +56,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				WriteOnly:           true,
 				Description:         "Password to apply to the user (Write Only)",
 				MarkdownDescription: "Password to apply to the user (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.RequireOnCreateModifier{},
+				},
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Optional:            true,
