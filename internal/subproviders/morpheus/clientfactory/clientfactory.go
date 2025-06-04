@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/auth"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/httptrace"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
 // factory options

@@ -5,7 +5,6 @@ package provider
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/subprovider"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+
+	"github.com/HPE/terraform-provider-hpe/subprovider"
 )
 
 var _ provider.Provider = &hpeProvider{}

@@ -5,11 +5,12 @@ package configure
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 )
 
 type DataSourceWithMorpheusConfigure struct {
