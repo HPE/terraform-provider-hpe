@@ -3,7 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
-	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250605154726-754607ac7710
+	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250609141639-a37cbeb3d243
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.26.0
@@ -66,3 +66,5 @@ require (
 	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 )
+
+replace github.com/HewlettPackard/hpe-morpheus-go-sdk => /home/sam/git/github.com/HewlettPackard/hpe-morpheus-go-sdk

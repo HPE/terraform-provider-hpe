@@ -6,6 +6,7 @@ import (
 	"context"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -23,17 +24,28 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			"first_name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The user's first name (optional)",
-				MarkdownDescription: "The user's first name (optional)",
+				Description:         "User's first name (optional)",
+				MarkdownDescription: "User's first name (optional)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 			"id": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "User id",
+				MarkdownDescription: "User id",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"last_name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The user's last name (optional)",
-				MarkdownDescription: "The user's last name (optional)",
+				Description:         "User's last name (optional)",
+				MarkdownDescription: "User's last name (optional)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 			"linux_key_pair_id": schema.Int64Attribute{
 				Optional:            true,
