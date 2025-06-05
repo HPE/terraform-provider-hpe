@@ -59,7 +59,7 @@ func getCloudByID(
 	apiClient *sdk.APIClient,
 ) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
 	c, hresp, err := apiClient.CloudsAPI.GetClouds(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if c == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %d", id)
 	}
 

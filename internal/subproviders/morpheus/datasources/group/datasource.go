@@ -58,7 +58,7 @@ func getGroupByID(
 	apiClient *sdk.APIClient,
 ) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
 	g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if g == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for group %d", id)
 	}
 
@@ -73,7 +73,7 @@ func getGroupByName(
 	apiClient *sdk.APIClient,
 ) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
 	gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if gs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for group %s", name)
 	}
 
