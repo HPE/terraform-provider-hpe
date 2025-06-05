@@ -476,3 +476,239 @@ resource "hpe_morpheus_user" "foo" {
 		},
 	})
 }
+
+// Here we use a two phase approach to import that
+// allows creating a resource using terraform
+// while preserving the import state for follow
+// on tests.
+//
+// The testing here is similar to other import
+// related tests in this file, but here we
+// are able to run plan after import, having
+// inherited the import state.
+func TestAccMorpheusUserImportOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+`
+	// nolint: gosec
+	resourceCfgWithPassword := `
+resource "hpe_morpheus_user" "foo" {
+	# Assumes tenant_id 1 pre-exists
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserImportOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}
+`
+	// nolint: gosec
+	resourceCfgNoPassword := `
+resource "hpe_morpheus_user" "foo" {
+	# Assumes tenant_id 1 pre-exists
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserImportOk"
+	email = "foo@hpe.com"
+        #password_wo = "Secret123!"
+        #password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}
+`
+	resourceCfgRemove := `
+# This allows us to create a resource using the provider
+# and then import it in a separate resource.Test.
+#
+# A regular 'Config:' test step (with import block) can be used for the
+# import test (rather than an 'ImportState:' style test step)
+#
+# The state is preserved after import and available to
+# subsequent tests.
+#
+# The 'removed' block means the resource is removed from state
+# (and terraform control) but not deleted.
+#
+# This avoids both triggering two deletes for the same resource,
+# and the dreaded "resource is already under terraform control"
+# error when running the follow on import test.
+removed {
+from = hpe_morpheus_user.foo
+
+lifecycle {
+destroy = false
+}
+}
+`
+	baseChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"tenant_id",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			"testacc-TestAccMorpheusUserImportOk",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"foo@hpe.com",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"2",
+		),
+	}
+
+	expectedCreateRoles := map[string]struct{}{"3": {}, "1": {}}
+	createChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedCreateRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedCreateRoles),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, createChecks...)...,
+	)
+
+	var cachedID string
+
+	// This is a new TestCase - we know for sure
+	// we inherit no state from the TestCase above
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceCfgWithPassword,
+				Check: resource.ComposeTestCheckFunc(
+					func(s *terraform.State) error {
+						// Cache ID for use later
+						rs := s.RootModule().Resources["hpe_morpheus_user.foo"]
+						if rs == nil {
+							return fmt.Errorf("resource not found")
+						}
+						cachedID = rs.Primary.ID
+
+						return nil
+					},
+					checkFn,
+				),
+				PlanOnly: false,
+			},
+			{
+				// remove resource from terraform state (without deleting it)
+				Config:   providerConfig + resourceCfgRemove,
+				PlanOnly: false,
+			},
+		},
+	})
+
+	importCfg := providerConfig + resourceCfgNoPassword + `
+	import {
+	  to = hpe_morpheus_user.foo
+	  id = ` + cachedID + `
+	}
+	`
+	expectedImportRoles := map[string]struct{}{"3": {}, "1": {}}
+	importChecks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedImportRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedImportRoles),
+	}
+
+	checkImportFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, importChecks...)...,
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:   importCfg,
+				PlanOnly: false,
+				Check: resource.ComposeTestCheckFunc(
+					checkImportFn,
+				),
+			},
+			{
+				// check that a plan after import detects no changes
+				Config:             providerConfig + resourceCfgNoPassword,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
