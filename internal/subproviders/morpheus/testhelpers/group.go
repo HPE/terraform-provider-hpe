@@ -14,7 +14,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
-func CreateGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
+func CreateGroup(t *testing.T) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
 	t.Helper()
 
 	name := fmt.Sprintf("testacc-%s-%s", t.Name(), rand.Text())
@@ -32,15 +32,15 @@ func CreateGroup(t *testing.T) sdk.ListGroups200ResponseAllOfGroupsInner {
 
 	g, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		t.Fatalf("POST failed for group %v", err)
+		return nil, fmt.Errorf("POST failed for group %w", err)
 	}
 
 	group := g.GetGroup()
 
-	return group
+	return &group, nil
 }
 
-func DeleteGroup(t *testing.T, id int64) {
+func DeleteGroup(t *testing.T, id int64) error {
 	t.Helper()
 
 	ctx := context.TODO()
@@ -55,12 +55,12 @@ func DeleteGroup(t *testing.T, id int64) {
 	for range 6 {
 		_, resp, _ := client.GroupsAPI.GetGroups(ctx, id).Execute()
 		if resp.StatusCode == http.StatusNotFound {
-			return
+			return nil
 		}
 
 		t.Log("Waiting for group to be deleted")
 		time.Sleep(time.Second * 10)
 	}
 
-	t.Fatalf("DELETE failed for group %d: %v", id, err)
+	return fmt.Errorf("DELETE failed for group %d: %w", id, err)
 }

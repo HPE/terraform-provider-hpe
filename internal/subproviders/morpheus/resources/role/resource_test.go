@@ -36,8 +36,11 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	config := testhelpers.RenderExample(t, "example-required.tf.tmpl",
+	config, err := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	providerConfig := fmt.Sprintf(`
 variable "testacc_morpheus_url" {}
@@ -105,11 +108,14 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	config := testhelpers.RenderExample(t, "example-all.tf.tmpl",
+	config, err := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
 		"Multitenant", "true",
 		"Description", "test",
 		"RoleType", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	providerConfig := fmt.Sprintf(`
 variable "testacc_morpheus_url" {}
@@ -176,11 +182,14 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	config := testhelpers.RenderExample(t, "example.tf.tmpl",
+	config, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",
 		"Multitenant", "false",
 		"Description", "a test of the example HCL config",
 		"RoleType", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	providerConfig := fmt.Sprintf(`
 variable "testacc_morpheus_url" {}
