@@ -1,0 +1,47 @@
+# Copyright 2025 Hewlett Packard Enterprise Development LP
+
+# Errors if Go tests do not compile
+name: BuildTest
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        go: [ '1.24.1' ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - run: |
+          set -euo pipefail
+
+          fail=false
+          SKIPS="./.git ./tools"
+          DIRS=$(find . -name '*.go' -exec dirname {} \;)
+
+          for DIR in $DIRS; do
+            skip=false
+            for SKIP in $SKIPS; do
+              if [ "$DIR" = "$SKIP" ]; then
+                skip=true
+                break
+              fi
+            done
+
+            if [ "$skip" = true ]; then
+              continue
+            fi
+
+            if ! go test -c "$DIR" -o /dev/null ; then
+              echo could not compile tests for $DIR
+              exit 1
+            fi
+
+          done
