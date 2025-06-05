@@ -61,7 +61,10 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteGroup(t, group.GetId())
@@ -70,7 +73,10 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -103,7 +109,10 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteGroup(t, group.GetId())
@@ -112,7 +121,10 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
