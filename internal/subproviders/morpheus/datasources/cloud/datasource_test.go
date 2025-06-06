@@ -63,19 +63,31 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	cloud := testhelpers.CreateCloud(t, group.GetId())
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
+	cloud, err := testhelpers.CreateCloud(t, group.GetId())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteCloud(t, cloud.GetId())
-		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -110,19 +122,31 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	cloud := testhelpers.CreateCloud(t, group.GetId())
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
+	cloud, err := testhelpers.CreateCloud(t, group.GetId())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteCloud(t, cloud.GetId())
-		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

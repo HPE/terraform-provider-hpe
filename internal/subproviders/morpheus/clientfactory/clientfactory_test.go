@@ -10,9 +10,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func TestSecureTLS(t *testing.T) {

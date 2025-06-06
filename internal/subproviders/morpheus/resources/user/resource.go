@@ -7,19 +7,17 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	//"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -100,6 +98,7 @@ func getUserAsState(
 	return state, diags
 }
 
+// TODO: Add plan modifier that enforces password_wo is set before create is called.
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -131,12 +130,18 @@ func (r *Resource) Create(
 
 	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
 
+	var config UserModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// required
 	username := plan.Username.ValueString()
 	addUser.SetUsername(username)
 	addUser.SetEmail(plan.Email.ValueString())
-	addUser.SetPassword(plan.Password.ValueString())
 	addUser.SetRoles(roles)
+	addUser.SetPassword(config.PasswordWo.ValueString())
 
 	// optional
 	if !plan.FirstName.IsUnknown() {
@@ -214,8 +219,8 @@ func (r *Resource) Create(
 		return
 	}
 
-	// special case (for now)
-	state.Password, _ = plan.Password.ToStringValue(ctx)
+	// special case - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -257,8 +262,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	// special case (for now)
-	state.Password, _ = plan.Password.ToStringValue(ctx)
+	// special case - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -271,6 +276,7 @@ func (r *Resource) Update(
 	_ resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	// NOTE: password_wo/password_wo_version will require special handling
 	resp.Diagnostics.AddError(
 		"update user resource",
 		"update of 'user' resources has not been implemented",
@@ -308,15 +314,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ",", 2)
-	if len(parts) != 2 {
-		resp.Diagnostics.AddError(
-			"import user resource",
-			"expected import format: <id>,<password>",
-		)
-	}
-	password := parts[1]
-	id, err := strconv.Atoi(parts[0])
+	id, err := strconv.Atoi(req.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import user resource",
@@ -328,14 +326,6 @@ func (r *Resource) ImportState(
 
 	diags := resp.State.SetAttribute(
 		ctx, path.Root("id"), id,
-	)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	diags = resp.State.SetAttribute(
-		ctx, path.Root("password"), password,
 	)
 	resp.Diagnostics.Append(diags...)
 }

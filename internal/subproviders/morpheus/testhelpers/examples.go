@@ -12,30 +12,30 @@ import (
 	"text/template"
 )
 
-func ReadExample(t *testing.T, name, rgx, replace string) string {
+func ReadExample(t *testing.T, name, rgx, replace string) (string, error) {
 	t.Helper()
 
 	bytes, err := os.ReadFile(name)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
 	rg := regexp.MustCompile(rgx)
 
 	example := rg.ReplaceAllString(string(bytes), replace)
 
-	return example
+	return example, nil
 }
 
-func RenderExample(t *testing.T, name string, args ...string) string {
+func RenderExample(t *testing.T, name string, args ...string) (string, error) {
 	t.Helper()
 
 	example, err := renderExample(name, args...)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return example
+	return example, nil
 }
 
 func WriteExample(name string, args ...string) {
