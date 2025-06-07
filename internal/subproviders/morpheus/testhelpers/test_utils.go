@@ -41,6 +41,9 @@ func FindProjectRootDir() string {
 }
 
 func RecordResult(t *testing.T) {
+	if os.Getenv("RECORD_TEST_RESULTS") != "true" {
+		return
+	}
 	if t.Skipped() {
 		TestResults[t.Name()] = struct {
 			Status string `json:"status"`
