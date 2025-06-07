@@ -8,15 +8,24 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
 func TestSecureTLS(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	server := httptest.NewTLSServer(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			// Simulate a simple 200 OK response
@@ -48,6 +57,7 @@ func TestSecureTLS(t *testing.T) {
 }
 
 func TestInsecureTLS(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	server := httptest.NewTLSServer(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			// Simulate a simple 200 OK response

@@ -7,6 +7,7 @@ package group_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -46,6 +47,12 @@ provider "hpe" {
 }
 `
 
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
 
@@ -57,6 +64,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindGroupById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -105,6 +113,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -153,6 +162,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -186,6 +196,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
       }`
@@ -214,6 +225,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
         id = 1
