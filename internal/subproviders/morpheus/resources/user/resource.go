@@ -227,18 +227,17 @@ func (r *Resource) Create(
 	}
 }
 
+// Note that the following are not updateable via the API:
+// LinuxUsername
+// WindowsUsername
+// LinuxKeyPairId
+// ReceiveNotifications
+// TenantId
 func (r *Resource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	// Not updateable via API:
-	// LinuxUsername
-	// WindowsUsername
-	// LinuxKeyPairId
-	// ReceiveNotifications
-	// TenantId
-
 	var plan, state, config UserModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -414,116 +413,6 @@ func (r *Resource) Read(
 		return
 	}
 }
-
-/*
-func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	var plan UserModel
-
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	id := plan.Id.ValueInt64()
-
-	var roleIDs []int64
-	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
-		diags := plan.RoleIds.ElementsAs(ctx, &roleIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-	}
-
-	var roles []sdk.UpdateUserRequestUserRolesInner
-	for _, roleID := range roleIDs {
-		rolevalue := sdk.UpdateUserRequestUserRolesInner{
-			Id: roleID,
-		}
-		roles = append(roles, rolevalue)
-	}
-
-	updateUser := sdk.NewUpdateUserRequestUser()
-
-	var config UserModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// required
-	username := plan.Username.ValueString()
-	updateUser.SetUsername(username)
-	updateUser.SetEmail(plan.Email.ValueString())
-	updateUser.SetRoles(roles)
-	//updateUser.SetPassword(config.PasswordWo.ValueString())
-
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			"user "+username+": failed to create client: "+err.Error(),
-		)
-
-		return
-	}
-
-	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
-	updateUserReq := sdk.NewUpdateUserRequest(*updateUser)
-	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
-
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			"user "+username+" PUT failed: "+errors.ErrMsg(err, hresp),
-		)
-
-		return
-	}
-
-	if user.GetUser().Id == nil {
-		resp.Diagnostics.AddError(
-			"create user resource",
-			"user "+username+": id is nil",
-		)
-
-		return
-	}
-
-	id = *user.GetUser().Id
-	plan.Id = types.Int64Value(id)
-
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	state, pdiags := getUserAsState(ctx, id, client)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: failed to read from api", id),
-		)
-
-		return
-	}
-
-	// special case - can't read from API
-	state.PasswordWoVersion = plan.PasswordWoVersion
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-}
-*/
 
 func (r *Resource) Delete(
 	ctx context.Context,
