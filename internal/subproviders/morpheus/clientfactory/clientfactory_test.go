@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,6 +17,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func TestSecureTLS(t *testing.T) {
 	defer testhelpers.RecordResult(t)

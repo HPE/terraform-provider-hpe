@@ -4,6 +4,7 @@ package user_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -17,6 +18,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func checkRole(
 	resourceName string,

@@ -5,6 +5,7 @@ package morpheus_test
 import (
 	"context"
 	"net/http"
+	"os"
 	"regexp"
 	"testing"
 
@@ -25,6 +26,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	testresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func fakeResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{

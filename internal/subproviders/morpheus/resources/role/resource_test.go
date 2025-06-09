@@ -6,6 +6,7 @@ package role_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -17,6 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()

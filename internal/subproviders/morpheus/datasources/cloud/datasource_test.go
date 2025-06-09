@@ -7,6 +7,7 @@ package cloud_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -45,6 +46,12 @@ provider "hpe" {
   }
 }
 `
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
