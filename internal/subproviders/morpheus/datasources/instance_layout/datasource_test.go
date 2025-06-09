@@ -76,7 +76,10 @@ func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
 	layoutID := fmt.Sprintf("%d", layout.GetId())
 	layoutName := layout.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
+	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -123,7 +126,10 @@ func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
 	layoutID := fmt.Sprintf("%d", layout.GetId())
 	layoutName := layout.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", layoutName)
+	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", layoutName)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -171,7 +177,10 @@ func TestAccMorpheusFindInstanceLayoutByNameAndVersion(t *testing.T) {
 	layoutName := layout.GetName()
 	layoutVersion := layout.GetInstanceVersion()
 
-	config := testhelpers.RenderExample(t, "example-name-version.tf.tmpl", "Name", layoutName, "Version", layoutVersion)
+	config, err := testhelpers.RenderExample(t, "example-name-version.tf.tmpl", "Name", layoutName, "Version", layoutVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
