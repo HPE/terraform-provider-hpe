@@ -4,11 +4,11 @@ package morpheus_test
 
 import (
 	"context"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 	"net/http"
-	"os"
 	"regexp"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
@@ -25,12 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	testresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
-
-func TestMain(m *testing.M) {
-	code := m.Run()
-	testhelpers.WriteMergedResults()
-	os.Exit(code)
-}
 
 func fakeResourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{

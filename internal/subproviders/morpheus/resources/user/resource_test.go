@@ -4,10 +4,10 @@ package user_test
 
 import (
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
-	"os"
 	"regexp"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -17,12 +17,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
-
-func TestMain(m *testing.M) {
-	code := m.Run()
-	testhelpers.WriteMergedResults()
-	os.Exit(code)
-}
 
 func checkRole(
 	resourceName string,
