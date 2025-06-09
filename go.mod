@@ -66,5 +66,3 @@ require (
 	google.golang.org/protobuf v1.36.3 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 )
-
-replace github.com/HewlettPackard/hpe-morpheus-go-sdk => /home/sam/git/github.com/HewlettPackard/hpe-morpheus-go-sdk
