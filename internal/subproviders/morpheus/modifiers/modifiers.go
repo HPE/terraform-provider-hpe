@@ -63,7 +63,11 @@ func (m NullableStringUpdateModifier) MarkdownDescription(_ context.Context) str
 	return "Force diff when config changes from non-null to null"
 }
 
-func (m NullableStringUpdateModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+func (m NullableStringUpdateModifier) PlanModifyString(
+	_ context.Context,
+	req planmodifier.StringRequest,
+	resp *planmodifier.StringResponse,
+) {
 	if req.ConfigValue.IsNull() && !req.StateValue.IsNull() {
 		resp.PlanValue = types.StringNull()
 	}
