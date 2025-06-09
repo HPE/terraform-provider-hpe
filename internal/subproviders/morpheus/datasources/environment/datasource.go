@@ -11,10 +11,15 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment/consts"
 )
 
-const summary = "read environment data source"
+const (
+	summary                   = "read environment data source"
+	ErrorNoValidSearchTerms   = `no valid search terms - an id or name is required`
+	ErrorRunningPreApply      = `Error running pre-apply plan: exit status 1`
+	ErrorNoEnvironmentFound   = `no environment found`
+	ErrorMultipleEnvironments = `multiple environments were returned`
+)
 
 // Ensure the implementation satisfies the expected interfaces.
 var _ datasource.DataSource = &DataSource{}
@@ -84,10 +89,10 @@ func getEnvironmentByName(
 	if len(environments) == 1 {
 		return &environments[0], nil
 	} else if len(environments) > 1 {
-		return nil, errors.New(consts.ErrorMultipleEnvironments)
+		return nil, errors.New(ErrorMultipleEnvironments)
 	}
 
-	return nil, errors.New(consts.ErrorNoEnvironmentFound)
+	return nil, errors.New(ErrorNoEnvironmentFound)
 }
 
 func getEnvironment(
@@ -101,7 +106,7 @@ func getEnvironment(
 		return getEnvironmentByName(ctx, data.Name.ValueString(), apiClient)
 	}
 
-	return nil, errors.New(consts.ErrorNoValidSearchTerms)
+	return nil, errors.New(ErrorNoValidSearchTerms)
 }
 
 // Read refreshes the Terraform state with the latest data.

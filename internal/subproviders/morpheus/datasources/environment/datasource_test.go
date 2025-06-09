@@ -14,7 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -169,7 +169,7 @@ func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorNoEnvironmentFound
+	expected := environment.ErrorNoEnvironmentFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -197,7 +197,7 @@ func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorNoValidSearchTerms
+	expected := environment.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -227,7 +227,7 @@ func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorRunningPreApply
+	expected := environment.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
