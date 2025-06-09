@@ -1,6 +1,10 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package instance_layout
+//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+//go:generate go run ../../../../../cmd/render example-name-version.tf.tmpl Name "Example name" Version "1.2.3"
+
+package instancelayout
 
 import (
 	"context"

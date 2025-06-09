@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+`hpe_morpheus_instance_layout` data source ....
+
+Instance layouts are attached to instance types. An instance layout can only be attached to a single instance type and a single technology. An instance type can have one or many instance layouts attached to it, allowing for a single instance type to work with any technology type. Node types are added to instance layouts. An instance layout can have one or many node types attached to it. Node types can be shared across instance layouts of matching technology types.
+
+## Example Usage
+
+{{ tffile "../../internal/subproviders/morpheus/datasources/instancelayout/example-id.tf" }}
+
+{{ tffile "../../internal/subproviders/morpheus/datasources/instancelayout/example-name.tf" }}
+
+{{ tffile "../../internal/subproviders/morpheus/datasources/instancelayout/example-name-version.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

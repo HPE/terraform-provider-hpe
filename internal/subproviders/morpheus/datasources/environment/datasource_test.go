@@ -1,10 +1,7 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-
-package instance_layout_test
+package environment_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
 //go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
-//go:generate go run ../../../../../cmd/render example-name-version.tf.tmpl Name "Example name" Version "1.2.3"
 
 import (
 	"fmt"
@@ -17,7 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/instance_layout"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -57,40 +54,38 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
-	t.Parallel()
-
+func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceLayout(t)
+	environment, err := testhelpers.CreateEnvironment(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
+		testhelpers.DeleteEnvironment(t, environment.GetId())
 	})
 
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
+	environmentID := fmt.Sprintf("%d", environment.GetId())
+	environmentName := environment.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
+	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"name",
-			layoutName,
+			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
-			layoutID,
+			environmentID,
 		),
 	}
 
@@ -107,40 +102,38 @@ func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
-	t.Parallel()
-
+func TestAccMorpheusFindIdbyName(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceLayout(t)
+	environment, err := testhelpers.CreateEnvironment(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
+		testhelpers.DeleteEnvironment(t, environment.GetId())
 	})
 
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
+	environmentID := fmt.Sprintf("%d", environment.GetId())
+	environmentName := environment.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", layoutName)
+	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", environmentName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"name",
-			layoutName,
+			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
-			layoutID,
+			environmentID,
 		),
 	}
 
@@ -157,84 +150,26 @@ func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutByNameAndVersion(t *testing.T) {
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	layout, err := testhelpers.CreateInstanceLayout(t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
-	})
-
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
-	layoutVersion := layout.GetInstanceVersion()
-
-	config, err := testhelpers.RenderExample(t, "example-name-version.tf.tmpl", "Name", layoutName, "Version", layoutVersion)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
-			"name",
-			layoutName,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
-			"version",
-			layoutVersion,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
-			"id",
-			layoutID,
-		),
-	}
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + config,
-				Check:  checkFn,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
-	t.Parallel()
-
+func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	config := providerConfig + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_environment" "test" {
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instance_layout.ErrorNoInstanceLayoutFound
+	expected := environment.ErrorNoEnvironmentFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -248,23 +183,21 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutNoSearchAttrs(t *testing.T) {
-	t.Parallel()
-
+func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_environment" "test" {
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instance_layout.ErrorNoValidSearchTerms
+	expected := environment.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -278,57 +211,23 @@ func TestAccMorpheusFindInstanceLayoutNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
-	t.Parallel()
-
+func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
 	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_environment" "test" {
         id = 1
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instance_layout.ErrorRunningPreApply
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config:      config,
-				Check:       checkFn,
-				ExpectError: regexp.MustCompile(expected),
-			},
-		},
-	})
-}
-
-func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
-	t.Parallel()
-
-	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
-        id = 1
-        version = "123" 
-      }`
-
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
-			"id",
-		),
-	}
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	expected := instance_layout.ErrorRunningPreApply
+	expected := environment.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

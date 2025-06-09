@@ -12,7 +12,10 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
-func CreateInstanceLayout(t *testing.T) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
+func CreateInstanceLayout(t *testing.T) (
+	*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner,
+	error,
+) {
 	t.Helper()
 
 	ctx := context.TODO()
