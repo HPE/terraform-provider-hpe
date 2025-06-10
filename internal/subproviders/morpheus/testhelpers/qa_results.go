@@ -52,14 +52,20 @@ func WriteMergedResults() {
 	existing := map[string]TestResult{}
 
 	data, err := os.ReadFile(outputFile)
-	if err == nil {
-		if err := json.Unmarshal(data, &existing); err != nil {
+	if err != nil {
+		if os.IsNotExist(err) {
+			logger.Printf("result.json not found at %s; initializing fresh result set", outputFile)
+			panic(err)
+		} else {
+			logger.Printf("Error reading result.json: %v", err)
+			panic(err)
+		}
+	} else {
+		err = json.Unmarshal(data, &existing)
+		if err != nil {
 			logger.Printf("Error unmarshaling result.json: %v", err)
 			panic(err)
 		}
-	} else if !os.IsNotExist(err) {
-		logger.Printf("Error reading result.json: %v", err)
-		panic(err)
 	}
 
 	for k, v := range TestResults {
