@@ -19,48 +19,13 @@ var (
 	logger      = log.New(os.Stderr, "[testhelpers] ", log.LstdFlags)
 )
 
-func FindProjectRootDir() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		logger.Printf("Error getting current directory: %v", err)
-
-		return "."
-	}
-
-	for {
-		goModPath := filepath.Join(dir, "go.mod")
-		if _, err := os.Stat(goModPath); err == nil {
-			return dir
-		} else if !os.IsNotExist(err) {
-			logger.Printf("Error checking go.mod in %s: %v", dir, err)
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			logger.Println("Reached filesystem root, go.mod not found")
-
-			break
-		}
-		dir = parent
-	}
-
-	return "."
-}
-
 func RecordResult(t *testing.T) {
 	if os.Getenv("RECORD_TEST_RESULTS") != "true" {
 		return
 	}
 
 	defer func() {
-		if r := recover(); r != nil {
-			stack := string(debug.Stack())
-			TestResults[t.Name()] = TestResult{
-				Status: "Failed",
-				Error:  "panic: " + toString(r) + "\n\nstack trace:\n" + stack,
-			}
-			panic(r)
-		} else if t.Failed() {
+		if t.Failed() {
 			stack := string(debug.Stack())
 			TestResults[t.Name()] = TestResult{
 				Status: "Failed",
@@ -81,17 +46,20 @@ func RecordResult(t *testing.T) {
 }
 
 func WriteMergedResults() {
-	rootOutputDir := filepath.Join(FindProjectRootDir(), "test_output")
+	rootOutputDir := filepath.Join("/tmp", "test_output")
 	outputFile := filepath.Join(rootOutputDir, "result.json")
 
 	existing := map[string]TestResult{}
+
 	data, err := os.ReadFile(outputFile)
 	if err == nil {
 		if err := json.Unmarshal(data, &existing); err != nil {
 			logger.Printf("Error unmarshaling result.json: %v", err)
+			panic(err)
 		}
 	} else if !os.IsNotExist(err) {
 		logger.Printf("Error reading result.json: %v", err)
+		panic(err)
 	}
 
 	for k, v := range TestResults {
@@ -101,18 +69,17 @@ func WriteMergedResults() {
 	output, err := json.MarshalIndent(existing, "", "  ")
 	if err != nil {
 		logger.Printf("Error marshaling merged results: %v", err)
-
-		return
+		panic(err)
 	}
 
 	if err := os.MkdirAll(rootOutputDir, 0o755); err != nil {
 		logger.Printf("Error creating directory %s: %v", rootOutputDir, err)
-
-		return
+		panic(err)
 	}
 
 	if err := os.WriteFile(outputFile, output, 0o600); err != nil {
 		logger.Printf("Error writing result file: %v", err)
+		panic(err)
 	}
 }
 
