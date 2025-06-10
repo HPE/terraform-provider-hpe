@@ -69,6 +69,7 @@ func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	// nolint: goconst
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -184,6 +185,461 @@ resource "hpe_morpheus_user" "foo" {
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusUserUpdateOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+`
+	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
+
+	baseChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"tenant_id",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			"testacc-TestAccMorpheusUserUpdateOk",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"first_name",
+			"foo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"last_name",
+			"bar",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"foo@hpe.com",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"2",
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.0",
+			expectedRoles,
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.1",
+			expectedRoles,
+		),
+		checkStrayRoles(expectedRoles),
+	}
+
+	passwordWoCheck := resource.TestCheckResourceAttr(
+		"hpe_morpheus_user.foo",
+		"password_wo_version",
+		"1",
+	)
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, passwordWoCheck)...,
+	)
+
+	expectedUpdateRoles := map[string]struct{}{"1": {}}
+	updateChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"tenant_id",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			"testacc-TestAccMorpheusUserUpdateOkChanged",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"first_name",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"first_name",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"last_name",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"bar@hpe.com",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"1",
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.0",
+			expectedUpdateRoles,
+		),
+		checkStrayRoles(expectedUpdateRoles),
+	}
+
+	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
+		updateChecks...,
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Assumes tenant_id 1 pre-exists
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+# checks plan has no effect
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				Check:              checkFn,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects first_name change to null
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	# changed
+	# first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects first_name change
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	# changed
+	first_name = "newfoo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects last_name change to null
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	# changed
+	# last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects last_name change
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	# changed
+	last_name = "newbar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects password_wo_version to null
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	# changed
+	# password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects no change if only password_wo is changed
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	# changed
+	# password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed role_ids
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	# changed
+	role_ids = [3]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed username
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	# changed
+	username = "testacc-TestAccMorpheusUserUpdateOkNew"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks apply of changes to all changeable fields
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	# changed
+	username = "testacc-TestAccMorpheusUserUpdateOkChanged"
+	# changed
+	email = "bar@hpe.com"
+	# changed
+	password_wo = "Secret456!"
+	# changed
+	password_wo_version = 2
+	# changed
+	role_ids = [1]
+	# changed
+	# first_name = ""
+	# changed
+	# last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				Check:    checkUpdateFn,
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+# checks plan has no effect
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOkChanged"
+	email = "bar@hpe.com"
+	password_wo = "Secret456!"
+	password_wo_version = 2
+	role_ids = [1]
+	# first_name = ""
+	# last_name = "bar"
+	linux_username = "linus"
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+}`,
+				Check:              checkUpdateFn,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
