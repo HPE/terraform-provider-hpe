@@ -610,8 +610,8 @@ resource "hpe_morpheus_user" "foo" {
 	role_ids = [1]
 	# changed
 	# first_name = ""
-	# changed
-	# last_name = "bar"
+	# changed - explicitly null
+	last_name = null
 	linux_username = "linus"
 	linux_key_pair_id = 100
 	receive_notifications = false
