@@ -84,7 +84,9 @@ func getInstanceTypeLayoutByName(
 ) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
 	name := data.Name.ValueString()
 
-	req := apiClient.LibraryAPI.ListLayouts(ctx).Name(name)
+	// Sort by descending display order (sortOrder)
+	// https://docs.morpheusdata.com/en/latest/library/blueprints/layouts.html?highlight=high-to-low
+	req := apiClient.LibraryAPI.ListLayouts(ctx).Name(name).Sort("sortOrder").Direction("desc")
 	if !data.Version.IsNull() {
 		req = req.Max(5000) // the api doesn't support filtering by version
 	}
@@ -115,10 +117,9 @@ func getInstanceTypeLayoutByName(
 		layouts = filtered
 	}
 
-	if len(layouts) == 1 {
+	// We return the first layout which should have the highest display order (sortOrder)
+	if len(layouts) > 0 {
 		return &layouts[0], nil
-	} else if len(layouts) > 1 {
-		return nil, errors.New(ErrorMultipleInstanceTypeLayouts)
 	}
 
 	return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
@@ -178,6 +179,7 @@ func (d *DataSource) Read(
 	data.Code = convert.StrToType(layout.Code)
 	data.Description = convert.StrToType(layout.Description)
 	data.Version = convert.StrToType(layout.InstanceVersion)
+	data.SortOrder = convert.Int64ToType(layout.SortOrder)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

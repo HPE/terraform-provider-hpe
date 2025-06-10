@@ -60,10 +60,12 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceTypeLayout(t)
-	if err != nil {
+	layouts, err := testhelpers.CreateInstanceTypeLayout(t, 1)
+	if err != nil || len(layouts) == 0 {
 		t.Fatal(err)
 	}
+
+	layout := layouts[0]
 
 	t.Cleanup(func() {
 		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
@@ -110,10 +112,12 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceTypeLayout(t)
-	if err != nil {
+	layouts, err := testhelpers.CreateInstanceTypeLayout(t, 1)
+	if err != nil || len(layouts) == 0 {
 		t.Fatal(err)
 	}
+
+	layout := layouts[0]
 
 	t.Cleanup(func() {
 		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
@@ -160,10 +164,12 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceTypeLayout(t)
-	if err != nil {
+	layouts, err := testhelpers.CreateInstanceTypeLayout(t, 1)
+	if err != nil || len(layouts) == 0 {
 		t.Fatal(err)
 	}
+
+	layout := layouts[0]
 
 	t.Cleanup(func() {
 		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
@@ -204,6 +210,56 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + config,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	duplicateCount := 3
+
+	layouts, err := testhelpers.CreateInstanceTypeLayout(t, int64(duplicateCount))
+	if err != nil || len(layouts) == 0 {
+		t.Fatal(err)
+	}
+
+	for _, layout := range layouts {
+		t.Cleanup(func() {
+			testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
+		})
+	}
+
+	layoutID := fmt.Sprintf("%d", layouts[len(layouts)-1].GetId())
+
+	config := providerConfig + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+        id = ` + layoutID + `
+      }`
+
+	fmt.Println(config)
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_instance_type_layout.test",
+			"sort_order",
+			"1",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
 				Check:  checkFn,
 			},
 		},

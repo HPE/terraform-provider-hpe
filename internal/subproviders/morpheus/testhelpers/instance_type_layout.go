@@ -12,8 +12,8 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
-func CreateInstanceTypeLayout(t *testing.T) (
-	*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner,
+func CreateInstanceTypeLayout(t *testing.T, count int64) (
+	[]sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner,
 	error,
 ) {
 	t.Helper()
@@ -35,24 +35,29 @@ func CreateInstanceTypeLayout(t *testing.T) (
 
 	itID := its.InstanceTypes[len(its.InstanceTypes)-1].Id
 
-	addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()
-	addLayout.SetName(name)
-	addLayout.SetInstanceVersion("1")
-	addLayout.SetProvisionTypeCode("kvm")
+	var layouts []sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner
 
-	addLayoutReq := sdk.NewAddLayoutRequest()
-	addLayoutReq.InstanceTypeLayout = addLayout
+	for i := range count {
+		addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()
+		addLayout.SetName(name)
+		addLayout.SetInstanceVersion("1")
+		addLayout.SetProvisionTypeCode("kvm")
+		addLayout.SetSortOrder(int64(i))
 
-	req := client.LibraryAPI.AddLayout(ctx, *itID).AddLayoutRequest(*addLayoutReq)
+		addLayoutReq := sdk.NewAddLayoutRequest()
+		addLayoutReq.InstanceTypeLayout = addLayout
 
-	l, resp, err := req.Execute()
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("POST failed for instance layout %w", err)
+		req := client.LibraryAPI.AddLayout(ctx, *itID).AddLayoutRequest(*addLayoutReq)
+
+		l, resp, err := req.Execute()
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("POST failed for instance layout %w", err)
+		}
+
+		layouts = append(layouts, l.GetInstanceTypeLayout())
 	}
 
-	layout := l.GetInstanceTypeLayout()
-
-	return &layout, nil
+	return layouts, nil
 }
 
 func DeleteInstanceTypeLayout(t *testing.T, id int64) error {

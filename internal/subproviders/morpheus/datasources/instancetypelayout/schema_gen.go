@@ -43,6 +43,11 @@ func InstanceTypeLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"sort_order": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Display order of the layout higher to lower",
+				MarkdownDescription: "Display order of the layout higher to lower",
+			},
 			"version": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -63,5 +68,6 @@ type InstanceTypeLayoutModel struct {
 	Description types.String `tfsdk:"description"`
 	Id          types.Int64  `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
+	SortOrder   types.Int64  `tfsdk:"sort_order"`
 	Version     types.String `tfsdk:"version"`
 }
