@@ -366,9 +366,6 @@ func (r *Resource) Update(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *Resource) Read(
