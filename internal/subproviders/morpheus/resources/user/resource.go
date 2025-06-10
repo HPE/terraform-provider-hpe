@@ -277,7 +277,7 @@ func (r *Resource) Update(
 	username := plan.Username.ValueString()
 
 	// non-nullable
-	updateUser.SetUsername(plan.Username.ValueString())
+	updateUser.SetUsername(username)
 	updateUser.SetEmail(plan.Email.ValueString())
 	updateUser.SetRoles(roles)
 
