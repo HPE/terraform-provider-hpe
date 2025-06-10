@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package instancelayout_test
+package instancetypelayout_test
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/instancelayout"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -53,20 +53,20 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceLayout(t)
+	layout, err := testhelpers.CreateInstanceTypeLayout(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
 	})
 
 	layoutID := fmt.Sprintf("%d", layout.GetId())
@@ -79,12 +79,12 @@ func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 			layoutID,
 		),
@@ -103,20 +103,20 @@ func TestAccMorpheusFindInstanceLayoutById(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceLayout(t)
+	layout, err := testhelpers.CreateInstanceTypeLayout(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
 	})
 
 	layoutID := fmt.Sprintf("%d", layout.GetId())
@@ -129,12 +129,12 @@ func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 			layoutID,
 		),
@@ -153,20 +153,20 @@ func TestAccMorpheusFindInstanceLayoutByName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutByNameAndVersion(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	layout, err := testhelpers.CreateInstanceLayout(t)
+	layout, err := testhelpers.CreateInstanceTypeLayout(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
 	})
 
 	layoutID := fmt.Sprintf("%d", layout.GetId())
@@ -181,17 +181,17 @@ func TestAccMorpheusFindInstanceLayoutByNameAndVersion(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"version",
 			layoutVersion,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 			layoutID,
 		),
@@ -218,20 +218,20 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 	}
 
 	config := providerConfig + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_instance_type_layout" "test" {
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instancelayout.ErrorNoInstanceLayoutFound
+	expected := instancetypelayout.ErrorNoInstanceTypeLayoutFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -245,23 +245,23 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testing.T) {
 	t.Parallel()
 
 	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_instance_type_layout" "test" {
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instancelayout.ErrorNoValidSearchTerms
+	expected := instancetypelayout.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -279,21 +279,21 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 	t.Parallel()
 
 	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_instance_type_layout" "test" {
         id = 1
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instancelayout.ErrorRunningPreApply
+	expected := instancetypelayout.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -311,21 +311,21 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
 	t.Parallel()
 
 	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_layout" "test" {
+      data "hpe_morpheus_instance_type_layout" "test" {
         id = 1
         version = "123" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_instance_layout.test",
+			"data.hpe_morpheus_instance_type_layout.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := instancelayout.ErrorRunningPreApply
+	expected := instancetypelayout.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

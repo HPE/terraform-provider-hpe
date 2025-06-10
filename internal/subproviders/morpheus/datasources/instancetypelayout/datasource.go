@@ -4,7 +4,7 @@
 //go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
 //go:generate go run ../../../../../cmd/render example-name-version.tf.tmpl Name "Example name" Version "1.2.3"
 
-package instancelayout
+package instancetypelayout
 
 import (
 	"context"
@@ -21,11 +21,11 @@ import (
 )
 
 const (
-	summary                      = "read instance layout data source"
-	ErrorNoInstanceLayoutFound   = `no instance layout found`
-	ErrorNoValidSearchTerms      = `no valid search terms - an id or name is required`
-	ErrorRunningPreApply         = `Error running pre-apply plan: exit status 1`
-	ErrorMultipleInstanceLayouts = `multiple instance layouts were returned`
+	summary                          = "read instance type layout data source"
+	ErrorNoInstanceTypeLayoutFound   = `no instance type layout found`
+	ErrorNoValidSearchTerms          = `no valid search terms - an id or name is required`
+	ErrorRunningPreApply             = `Error running pre-apply plan: exit status 1`
+	ErrorMultipleInstanceTypeLayouts = `multiple instance type layouts were returned`
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -50,7 +50,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_instance_layout"
+	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_instance_type_layout"
 }
 
 // Schema defines the schema for the data source.
@@ -59,10 +59,10 @@ func (d *DataSource) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = InstanceLayoutDataSourceSchema(ctx)
+	resp.Schema = InstanceTypeLayoutDataSourceSchema(ctx)
 }
 
-func getInstanceLayoutByID(
+func getInstanceTypeLayoutByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
@@ -77,9 +77,9 @@ func getInstanceLayoutByID(
 	return &layout, nil
 }
 
-func getInstanceLayoutByName(
+func getInstanceTypeLayoutByName(
 	ctx context.Context,
-	data InstanceLayoutModel,
+	data InstanceTypeLayoutModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
 	name := data.Name.ValueString()
@@ -118,21 +118,21 @@ func getInstanceLayoutByName(
 	if len(layouts) == 1 {
 		return &layouts[0], nil
 	} else if len(layouts) > 1 {
-		return nil, errors.New(ErrorMultipleInstanceLayouts)
+		return nil, errors.New(ErrorMultipleInstanceTypeLayouts)
 	}
 
-	return nil, errors.New(ErrorNoInstanceLayoutFound)
+	return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
 }
 
-func getInstanceLayout(
+func getInstanceTypeLayout(
 	ctx context.Context,
-	data InstanceLayoutModel,
+	data InstanceTypeLayoutModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
 	if !data.Id.IsNull() {
-		return getInstanceLayoutByID(ctx, data.Id.ValueInt64(), apiClient)
+		return getInstanceTypeLayoutByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {
-		return getInstanceLayoutByName(ctx, data, apiClient)
+		return getInstanceTypeLayoutByName(ctx, data, apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -144,7 +144,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data InstanceLayoutModel
+	var data InstanceTypeLayoutModel
 
 	// Read config
 	diags := req.Config.Get(ctx, &data)
@@ -163,7 +163,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	layout, err := getInstanceLayout(ctx, data, apiClient)
+	layout, err := getInstanceTypeLayout(ctx, data, apiClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
