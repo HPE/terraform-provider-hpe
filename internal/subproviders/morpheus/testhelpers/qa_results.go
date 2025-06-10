@@ -21,6 +21,7 @@ var (
 
 func RecordResult(t *testing.T) {
 	if os.Getenv("RECORD_TEST_RESULTS") != "true" {
+
 		return
 	}
 
