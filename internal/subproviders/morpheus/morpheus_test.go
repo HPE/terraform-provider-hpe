@@ -9,13 +9,12 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
-
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
