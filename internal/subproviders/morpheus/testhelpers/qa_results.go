@@ -21,7 +21,6 @@ var (
 
 func RecordResult(t *testing.T) {
 	if os.Getenv("RECORD_TEST_RESULTS") != "true" {
-
 		return
 	}
 
@@ -57,16 +56,15 @@ func WriteMergedResults() {
 		if os.IsNotExist(err) {
 			logger.Printf("result.json not found at %s; initializing fresh result set", outputFile)
 			panic(err)
-		} else {
-			logger.Printf("Error reading result.json: %v", err)
-			panic(err)
 		}
-	} else {
-		err = json.Unmarshal(data, &existing)
-		if err != nil {
-			logger.Printf("Error unmarshaling result.json: %v", err)
-			panic(err)
-		}
+		logger.Printf("Error reading result.json: %v", err)
+		panic(err)
+	}
+
+	err = json.Unmarshal(data, &existing)
+	if err != nil {
+		logger.Printf("Error unmarshaling result.json: %v", err)
+		panic(err)
 	}
 
 	for k, v := range TestResults {
@@ -88,12 +86,4 @@ func WriteMergedResults() {
 		logger.Printf("Error writing result file: %v", err)
 		panic(err)
 	}
-}
-
-func toString(v interface{}) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-
-	return "unknown panic type"
 }
