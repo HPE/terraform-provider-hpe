@@ -51,37 +51,45 @@ func WriteMergedResults() {
 
 	existing := map[string]TestResult{}
 
+	// Try to read the existing file
 	data, err := os.ReadFile(outputFile)
 	if err != nil {
 		if os.IsNotExist(err) {
+			// File doesn't exist, initialize fresh result set
 			logger.Printf("result.json not found at %s; initializing fresh result set", outputFile)
+			// No need to create a file here; it will be created later when writing
+		} else {
+			// Other read errors (e.g., permission issues)
+			logger.Printf("Error reading result.json: %v", err)
 			panic(err)
 		}
-		logger.Printf("Error reading result.json: %v", err)
-		panic(err)
+	} else {
+		// File exists, parse the JSON data
+		if err := json.Unmarshal(data, &existing); err != nil {
+			logger.Printf("Error unmarshaling result.json: %v", err)
+			panic(err)
+		}
 	}
 
-	err = json.Unmarshal(data, &existing)
-	if err != nil {
-		logger.Printf("Error unmarshaling result.json: %v", err)
-		panic(err)
-	}
-
+	// Merge new results into existing map
 	for k, v := range TestResults {
 		existing[k] = v
 	}
 
+	// Marshal the merged results
 	output, err := json.MarshalIndent(existing, "", "  ")
 	if err != nil {
 		logger.Printf("Error marshaling merged results: %v", err)
 		panic(err)
 	}
 
+	// Ensure the output directory exists
 	if err := os.MkdirAll(rootOutputDir, 0o755); err != nil {
 		logger.Printf("Error creating directory %s: %v", rootOutputDir, err)
 		panic(err)
 	}
 
+	// Write the merged results to the file
 	if err := os.WriteFile(outputFile, output, 0o600); err != nil {
 		logger.Printf("Error writing result file: %v", err)
 		panic(err)
