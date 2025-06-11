@@ -46,3 +46,4 @@ data "hpe_morpheus_instance_type_layout" "test" {
 
 - `code` (String) Optional code for use with policies
 - `description` (String) The description of the instance layout
+- `sort_order` (Number) Display order of the layout higher to lower
