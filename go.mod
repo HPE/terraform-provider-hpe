@@ -3,7 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
-	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611110743-dacff1f3fe77
+	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611115604-eb544d5038f3
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.26.0

@@ -42,7 +42,7 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 		addLayout.SetName(name)
 		addLayout.SetInstanceVersion("1")
 		addLayout.SetProvisionTypeCode("kvm")
-		addLayout.SetSortOrder(int64(i))
+		addLayout.SetSortOrder(i)
 
 		addLayoutReq := sdk.NewAddLayoutRequest()
 		addLayoutReq.InstanceTypeLayout = addLayout
