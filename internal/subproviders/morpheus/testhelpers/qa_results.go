@@ -52,10 +52,8 @@ func WriteMergedResults() {
 	}
 
 	// File exists, parse the JSON data
-	if err == nil {
-		if err := json.Unmarshal(data, &existing); err != nil {
-			panic(err)
-		}
+	if err := json.Unmarshal(data, &existing); err != nil {
+		panic(err)
 	}
 
 	// Merge new results into existing map
