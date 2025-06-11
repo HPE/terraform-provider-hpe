@@ -51,8 +51,6 @@ func WriteMergedResults() {
 		if !os.IsNotExist(err) {
 			panic(err) // Panic only on errors other than file not existing
 		}
-		// File doesn't exist, initialize empty map
-		existing = make(map[string]TestResult)
 	} else {
 		// File exists, parse the JSON data
 		if err := json.Unmarshal(data, &existing); err != nil {
