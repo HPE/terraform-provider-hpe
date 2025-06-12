@@ -11,28 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
-
-const providerConfig = `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_insecure" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-
-provider "hpe" {
-  morpheus {
-    url          = var.testacc_morpheus_url
-    insecure     = var.testacc_morpheus_insecure
-    username     = var.testacc_morpheus_username
-    password     = var.testacc_morpheus_password
-  }
-}
-`
 
 const providerConfigOffline = `
 provider "hpe" {
@@ -68,7 +53,10 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
+
+	dataSourceConfig := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -89,7 +77,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -110,7 +98,10 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
+
+	dataSourceConfig := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -131,7 +122,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -142,6 +133,9 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
+
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
 
 	config := providerConfig + `
       data "hpe_morpheus_group" "test" {

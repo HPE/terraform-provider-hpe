@@ -5,7 +5,6 @@
 package role_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -16,6 +15,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
@@ -36,12 +37,11 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerBlock := testhelpers.BuildProviderBlock(t)
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
 
-	config := testhelpers.RenderExample(t, "example-required.tf.tmpl",
+	resourceConfig := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
-
-	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -70,7 +70,7 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -91,15 +91,14 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerBlock := testhelpers.BuildProviderBlock(t)
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
 
-	config := testhelpers.RenderExample(t, "example-all.tf.tmpl",
+	resourceConfig := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
 		"Multitenant", "true",
 		"Description", "test",
 		"RoleType", "user")
-
-	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -129,7 +128,7 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -150,15 +149,14 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerBlock := testhelpers.BuildProviderBlock(t)
+	providerConfig, err := testhelpers.BuildProviderBlock()
+	assert.NoError(t, err)
 
-	config := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",
 		"Multitenant", "false",
 		"Description", "a test of the example HCL config",
 		"RoleType", "user")
-
-	providerConfig := fmt.Sprintf("%s %s", providerBlock, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -188,7 +186,7 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
