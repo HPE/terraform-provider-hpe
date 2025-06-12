@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
+//nolint:gosec
 const (
 	ErrOneOrMoreEnvVarsNotSet = "One or more environment variables were not set: "
 
-	//nolint:gosec
 	envVarURL         = "TF_VAR_testacc_morpheus_url"
 	envVarUsername    = "TF_VAR_testacc_morpheus_username"
 	envVarPassword    = "TF_VAR_testacc_morpheus_password"
@@ -80,7 +80,6 @@ func buildNotSetMessage(setMap map[string]bool) error {
 }
 
 func BuildProviderBlock() (string, error) {
-
 	setVars := make(map[string]bool)
 
 	// true if set, false if not
