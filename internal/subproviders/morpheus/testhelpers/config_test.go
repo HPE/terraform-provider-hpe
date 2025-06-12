@@ -12,6 +12,8 @@ const ErrNotMatchConfig = "The provider block generated does not match the expec
 func TestBuildProviderBlockWithAccessToken(t *testing.T) {
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_access_token", "abcdefg")
+	t.Setenv("TF_VAR_testacc_morpheus_username", "")
+	t.Setenv("TF_VAR_testacc_morpheus_password", "")
 
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
@@ -38,6 +40,7 @@ func TestBuildProviderBlockWithCredentials(t *testing.T) {
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_username", "foo@test.com")
 	t.Setenv("TF_VAR_testacc_morpheus_password", "testpass")
+	t.Setenv("TF_VAR_testacc_morpheus_access_token", "")
 
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
@@ -69,7 +72,7 @@ func TestBuildProviderBlockNoneSet(t *testing.T) {
 	t.Setenv("TF_VAR_testacc_morpheus_url", "")
 	t.Setenv("TF_VAR_testacc_morpheus_username", "")
 	t.Setenv("TF_VAR_testacc_morpheus_password", "")
-	t.Setenv("TF_VAR_testacc_morheus_access_token", "")
+	t.Setenv("TF_VAR_testacc_morpheus_access_token", "")
 
 	providerConfig, err := testhelpers.BuildProviderBlock()
 
