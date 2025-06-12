@@ -9,14 +9,11 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func checkRole(
@@ -198,30 +195,6 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	resourceConfig := `
-# Role id 0 causes a test failure because it is ignored by
-# the server and only the other two roles are created
-#resource "hpe_morpheus_user" "bar" {
-#username = "test101"
-#email = "foo@hpe.com"
-#password = "Secret123!"
-#roles = [3,0,1]
-#}
-
-resource "hpe_morpheus_user" "foo" {
-	# Assumes tenant_id 1 pre-exists
-	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserAllAttrsOk"
-	email = "foo@hpe.com"
-	password = "Secret123!"
-	role_ids = [3,1]
-	first_name = "foo"
-	last_name = "bar"
-	linux_username = "linus"
-	linux_key_pair_id = 100
-	receive_notifications = false
-	windows_username = "bill"
-`
 	// nolint: goconst
 	providerConfig := `
 variable "testacc_morpheus_url" {}
