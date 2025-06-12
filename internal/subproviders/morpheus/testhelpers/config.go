@@ -10,7 +10,8 @@ import (
 const (
 	ErrOneOrMoreEnvVarsNotSet = "One or more environment variables were not set: "
 
-	envVarUrl         = "TF_VAR_testacc_morpheus_url"
+	//nolint:gosec
+	envVarURL         = "TF_VAR_testacc_morpheus_url"
 	envVarUsername    = "TF_VAR_testacc_morpheus_username"
 	envVarPassword    = "TF_VAR_testacc_morpheus_password"
 	envVarAccessToken = "TF_VAR_testacc_morpheus_access_token"
@@ -54,9 +55,9 @@ func buildNotSetMessage(setMap map[string]bool) error {
 	var n int
 	var notSet string
 	// need to do it like this so it's in order; we can't range over the map as it'll be unordered
-	if isSet, ok := setMap[envVarUrl]; ok && !isSet {
+	if isSet, ok := setMap[envVarURL]; ok && !isSet {
 		n++
-		notSet += fmt.Sprintf("%s, ", envVarUrl)
+		notSet += fmt.Sprintf("%s, ", envVarURL)
 	}
 	if isSet, ok := setMap[envVarUsername]; ok && !isSet {
 		n++
@@ -83,7 +84,7 @@ func BuildProviderBlock() (string, error) {
 	setVars := make(map[string]bool)
 
 	// true if set, false if not
-	setVars[envVarUrl] = os.Getenv(envVarUrl) != ""
+	setVars[envVarURL] = os.Getenv(envVarURL) != ""
 	setVars[envVarUsername] = os.Getenv(envVarUsername) != ""
 	setVars[envVarPassword] = os.Getenv(envVarPassword) != ""
 	setVars[envVarAccessToken] = os.Getenv(envVarAccessToken) != ""

@@ -7,8 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const ErrNotMatchConfig = "The provider block generated does not match the expected config"
-
 func TestBuildProviderBlockWithAccessToken(t *testing.T) {
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_access_token", "abcdefg")
@@ -77,5 +75,7 @@ func TestBuildProviderBlockNoneSet(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 
 	assert.Equal(t, "", providerConfig)
+
+	//nolint:lll
 	assert.EqualError(t, err, "One or more environment variables were not set: TF_VAR_testacc_morpheus_url, TF_VAR_testacc_morpheus_username, TF_VAR_testacc_morpheus_password, TF_VAR_testacc_morpheus_access_token")
 }
