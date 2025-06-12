@@ -71,6 +71,136 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func TestAccMorpheusUserExample(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+`
+	path := "../../../../../examples/resources/hpe_morpheus_user/resource.tf"
+	exampleConfig, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("Error reading example config: %v", err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"username",
+			"testacc-example",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"email",
+			"user@example.com",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"role_ids.#",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"role_ids.0",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"first_name",
+			"Joe",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"last_name",
+			"User",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_username",
+			"winuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_username",
+			"linuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_username",
+			"winuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_password_wo",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:   providerConfig + string(exampleConfig),
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+		},
+	})
+}
+
 // Test update of tenant_id attribute separately, as it
 // requires delete/recreate.
 // We may update this test once we can create a second tenant using
