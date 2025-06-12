@@ -16,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
@@ -131,6 +132,7 @@ func (SubProvider) GetDataSources(
 	return []func() datasource.DataSource{
 		cloud.NewDataSource,
 		group.NewDataSource,
+		environment.NewDataSource,
 	}
 }
 

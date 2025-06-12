@@ -1,4 +1,4 @@
-// (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 package user
 
@@ -7,19 +7,17 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	//"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -131,12 +129,18 @@ func (r *Resource) Create(
 
 	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
 
+	var config UserModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// required
 	username := plan.Username.ValueString()
 	addUser.SetUsername(username)
 	addUser.SetEmail(plan.Email.ValueString())
-	addUser.SetPassword(plan.Password.ValueString())
 	addUser.SetRoles(roles)
+	addUser.SetPassword(config.PasswordWo.ValueString())
 
 	// optional
 	if !plan.FirstName.IsUnknown() {
@@ -214,13 +218,154 @@ func (r *Resource) Create(
 		return
 	}
 
-	// special case (for now)
-	state.Password, _ = plan.Password.ToStringValue(ctx)
+	// special case - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+// Note that the following are not updateable via the API:
+// LinuxUsername
+// WindowsUsername
+// LinuxKeyPairId
+// ReceiveNotifications
+// TenantId
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, state, config UserModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var roleIDs []int64
+	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
+		diags := plan.RoleIds.ElementsAs(ctx, &roleIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	var roles []sdk.UpdateUserRequestUserRolesInner
+	for _, roleID := range roleIDs {
+		rolevalue := sdk.UpdateUserRequestUserRolesInner{
+			Id: roleID,
+		}
+		roles = append(roles, rolevalue)
+	}
+
+	updateUser := sdk.NewUpdateUserRequestUser()
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	username := plan.Username.ValueString()
+
+	// non-nullable
+	updateUser.SetUsername(username)
+	updateUser.SetEmail(plan.Email.ValueString())
+	updateUser.SetRoles(roles)
+
+	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
+		if config.PasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'password_wo_version' changed, "+
+					"but 'password_wo' is not set", username),
+			)
+
+			return
+		}
+		updateUser.SetPassword(config.PasswordWo.ValueString())
+	}
+
+	// nullable
+	if plan.FirstName.IsNull() {
+		updateUser.SetFirstNameNil()
+	} else {
+		updateUser.SetFirstName(plan.FirstName.ValueString())
+	}
+
+	if plan.LastName.IsNull() {
+		updateUser.SetLastNameNil()
+	} else {
+		updateUser.SetLastName(plan.LastName.ValueString())
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	id := plan.Id.ValueInt64()
+	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
+
+	updateUserReq := sdk.NewUpdateUserRequest(*updateUser)
+	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
+
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+" PUT failed: "+errors.ErrMsg(err, hresp),
+		)
+
+		return
+	}
+
+	if user.GetUser().Id == nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": id is nil",
+		)
+
+		return
+	}
+
+	newid := *user.GetUser().Id
+	if newid != id {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": id mismatch "+fmt.Sprintf("%d != %d", id, newid),
+		)
+
+		return
+	}
+
+	state, pdiags := getUserAsState(ctx, newid, client)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"update user resource",
+			fmt.Sprintf("user %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	// special case - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Read(
@@ -257,24 +402,13 @@ func (r *Resource) Read(
 		return
 	}
 
-	// special case (for now)
-	state.Password, _ = plan.Password.ToStringValue(ctx)
+	// special case - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-}
-
-func (r *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	resp.Diagnostics.AddError(
-		"update user resource",
-		"update of 'user' resources has not been implemented",
-	)
 }
 
 func (r *Resource) Delete(
@@ -308,15 +442,7 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ",", 2)
-	if len(parts) != 2 {
-		resp.Diagnostics.AddError(
-			"import user resource",
-			"expected import format: <id>,<password>",
-		)
-	}
-	password := parts[1]
-	id, err := strconv.Atoi(parts[0])
+	id, err := strconv.Atoi(req.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import user resource",
@@ -328,14 +454,6 @@ func (r *Resource) ImportState(
 
 	diags := resp.State.SetAttribute(
 		ctx, path.Root("id"), id,
-	)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	diags = resp.State.SetAttribute(
-		ctx, path.Root("password"), password,
 	)
 	resp.Diagnostics.Append(diags...)
 }

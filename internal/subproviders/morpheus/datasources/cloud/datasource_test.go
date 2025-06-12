@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package cloud_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
@@ -46,13 +48,22 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	cloud := testhelpers.CreateCloud(t, group.GetId())
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
+	cloud, err := testhelpers.CreateCloud(t, group.GetId())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteCloud(t, cloud.GetId())
-		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
@@ -61,7 +72,10 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
 
-	dataSourceConfig := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -96,13 +110,22 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group := testhelpers.CreateGroup(t)
+	group, err := testhelpers.CreateGroup(t)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	cloud := testhelpers.CreateCloud(t, group.GetId())
+	t.Cleanup(func() {
+		testhelpers.DeleteGroup(t, group.GetId())
+	})
+
+	cloud, err := testhelpers.CreateCloud(t, group.GetId())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Cleanup(func() {
 		testhelpers.DeleteCloud(t, cloud.GetId())
-		testhelpers.DeleteGroup(t, group.GetId())
 	})
 
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
@@ -111,7 +134,10 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
 
-	dataSourceConfig := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package testhelpers
 
 import (
@@ -5,8 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 )
 
 func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {

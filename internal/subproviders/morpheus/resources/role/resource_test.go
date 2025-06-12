@@ -40,8 +40,11 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
 
-	resourceConfig := testhelpers.RenderExample(t, "example-required.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -94,11 +97,14 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
 
-	resourceConfig := testhelpers.RenderExample(t, "example-all.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
 		"Multitenant", "true",
 		"Description", "test",
 		"RoleType", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -152,11 +158,14 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	providerConfig, err := testhelpers.BuildProviderBlock()
 	assert.NoError(t, err)
 
-	resourceConfig := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",
 		"Multitenant", "false",
 		"Description", "a test of the example HCL config",
 		"RoleType", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

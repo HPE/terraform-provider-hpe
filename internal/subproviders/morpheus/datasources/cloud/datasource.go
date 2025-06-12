@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package cloud
 
 import (
@@ -57,7 +59,7 @@ func getCloudByID(
 	apiClient *sdk.APIClient,
 ) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
 	c, hresp, err := apiClient.CloudsAPI.GetClouds(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if c == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %d", id)
 	}
 
@@ -76,7 +78,7 @@ func getCloudByName(
 	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
 
 	cs, hresp, err := req.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if cs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for cloud %s", name)
 	}
 

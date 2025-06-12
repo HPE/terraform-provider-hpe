@@ -1,6 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-
-package group_test
+package environment_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
 //go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
@@ -13,13 +11,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
+
+const providerConfig = `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_insecure" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+
+provider "hpe" {
+  morpheus {
+    url          = var.testacc_morpheus_url
+    insecure     = var.testacc_morpheus_insecure
+    username     = var.testacc_morpheus_username
+    password     = var.testacc_morpheus_password
+  }
+}
+`
 
 const providerConfigOffline = `
 provider "hpe" {
@@ -41,41 +54,38 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindGroupById(t *testing.T) {
+func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group, err := testhelpers.CreateGroup(t)
+	environment, err := testhelpers.CreateEnvironment(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteGroup(t, group.GetId())
+		testhelpers.DeleteEnvironment(t, environment.GetId())
 	})
 
-	groupID := fmt.Sprintf("%d", group.GetId())
-	groupName := group.GetName()
+	environmentID := fmt.Sprintf("%d", environment.GetId())
+	environmentName := environment.GetName()
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
-
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"name",
-			groupName,
+			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
-			groupID,
+			environmentID,
 		),
 	}
 
@@ -85,48 +95,45 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},
 	})
 }
 
-func TestAccMorpheusFindGroupByName(t *testing.T) {
+func TestAccMorpheusFindIdbyName(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group, err := testhelpers.CreateGroup(t)
+	environment, err := testhelpers.CreateEnvironment(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteGroup(t, group.GetId())
+		testhelpers.DeleteEnvironment(t, environment.GetId())
 	})
 
-	groupID := fmt.Sprintf("%d", group.GetId())
-	groupName := group.GetName()
+	environmentID := fmt.Sprintf("%d", environment.GetId())
+	environmentName := environment.GetName()
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
-
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", environmentName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"name",
-			groupName,
+			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
-			groupID,
+			environmentID,
 		),
 	}
 
@@ -136,36 +143,33 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + config,
 				Check:  checkFn,
 			},
 		},
 	})
 }
 
-func TestAccMorpheusFindGroupNotFound(t *testing.T) {
+func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
 
 	config := providerConfig + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_environment" "test" {
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorNoGroupFound
+	expected := environment.ErrorNoEnvironmentFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -179,21 +183,21 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 	config := providerConfigOffline + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_environment" "test" {
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorNoValidSearchTerms
+	expected := environment.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -207,23 +211,23 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
 	config := providerConfigOffline + `
-      data "hpe_morpheus_group" "test" {
+      data "hpe_morpheus_environment" "test" {
         id = 1
         name = "______" 
       }`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_environment.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := consts.ErrorRunningPreApply
+	expected := environment.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

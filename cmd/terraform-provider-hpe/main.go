@@ -1,4 +1,4 @@
-// (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 package main
 
@@ -7,9 +7,10 @@ import (
 	"flag"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
 var version = "dev"
