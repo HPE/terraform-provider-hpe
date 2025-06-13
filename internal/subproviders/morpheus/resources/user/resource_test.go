@@ -195,7 +195,6 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	// nolint: goconst
 	providerConfig := `
 variable "testacc_morpheus_url" {}
 variable "testacc_morpheus_username" {}
@@ -253,6 +252,15 @@ provider "hpe" {
 			"linux_username",
 			"linus",
 		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo_version",
+			"1",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"linux_key_pair_id",
@@ -262,6 +270,15 @@ provider "hpe" {
 			"hpe_morpheus_user.foo",
 			"windows_username",
 			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -342,17 +359,35 @@ provider "hpe" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"linux_username",
-			"linus",
+			"torvalds",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo_version",
+			"2",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"linux_key_pair_id",
-			"100",
+			"101",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"windows_username",
-			"bill",
+			"gates",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo_version",
+			"2",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -397,9 +432,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				Check:    checkFn,
 				PlanOnly: false,
@@ -417,9 +456,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				Check:              checkFn,
 				ExpectNonEmptyPlan: false,
@@ -439,9 +482,13 @@ resource "hpe_morpheus_user" "foo" {
 	# first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -460,9 +507,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "newfoo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -481,9 +532,13 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	# last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -502,9 +557,13 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	last_name = "newbar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -523,9 +582,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -544,9 +607,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
@@ -565,9 +632,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -586,9 +657,138 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed windows username
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	# changed
+	windows_username = "melinda"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed linux username
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	# changed
+	linux_username = "bsd"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed linux password version
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	# changed
+	linux_password_wo_version = 2
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed windows password version
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	# changed
+	windows_password_wo_version = 2
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects changed linux key pair id
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "testacc-TestAccMorpheusUserUpdateOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	# changed
+	linux_key_pair_id = 101
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -612,10 +812,21 @@ resource "hpe_morpheus_user" "foo" {
 	# first_name = ""
 	# changed - explicitly null
 	last_name = null
-	linux_username = "linus"
-	linux_key_pair_id = 100
+	# changed
+	linux_username = "torvalds"
+	# changed
+	linux_password_wo = "Linux1.0!"
+	# changed
+	linux_password_wo_version = 2
+	# changed
+	linux_key_pair_id = 101
 	receive_notifications = false
-	windows_username = "bill"
+	# changed
+	windows_username = "gates"
+	# changed
+	windows_password_wo = "Windows95!"
+	# changed
+	windows_password_wo_version = 2
 }`,
 				Check:    checkUpdateFn,
 				PlanOnly: false,
@@ -625,17 +836,35 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
+	# changed
 	username = "testacc-TestAccMorpheusUserUpdateOkChanged"
+	# changed
 	email = "bar@hpe.com"
+	# changed
 	password_wo = "Secret456!"
+	# changed
 	password_wo_version = 2
+	# changed
 	role_ids = [1]
+	# changed
 	# first_name = ""
-	# last_name = "bar"
-	linux_username = "linus"
-	linux_key_pair_id = 100
+	# changed - explicitly null
+	last_name = null
+	# changed
+	linux_username = "torvalds"
+	# changed
+	linux_password_wo = "Linux1.0!"
+	# changed
+	linux_password_wo_version = 2
+	# changed
+	linux_key_pair_id = 101
 	receive_notifications = false
-	windows_username = "bill"
+	# changed
+	windows_username = "gates"
+	# changed
+	windows_password_wo = "Windows95!"
+	# changed
+	windows_password_wo_version = 2
 }`,
 				Check:              checkUpdateFn,
 				PlanOnly:           true,
@@ -687,9 +916,13 @@ resource "hpe_morpheus_user" "foo" {
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
 	linux_key_pair_id = 100
 	receive_notifications = false
 	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
 }
 `
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
@@ -719,6 +952,10 @@ resource "hpe_morpheus_user" "foo" {
 			"linux_username",
 			"linus",
 		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"linux_key_pair_id",
@@ -728,6 +965,15 @@ resource "hpe_morpheus_user" "foo" {
 			"hpe_morpheus_user.foo",
 			"windows_username",
 			"bill",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo_version",
+			"1",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -762,18 +1008,46 @@ resource "hpe_morpheus_user" "foo" {
 		"password_wo_version",
 		"1",
 	)
+	linuxPasswordWoVersionCheck := resource.TestCheckResourceAttr(
+		"hpe_morpheus_user.foo",
+		"linux_password_wo_version",
+		"1",
+	)
+	windowsPasswordWoVersionCheck := resource.TestCheckResourceAttr(
+		"hpe_morpheus_user.foo",
+		"windows_password_wo_version",
+		"1",
+	)
 
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		append(
+			baseChecks,
+			passwordWoCheck,
+			linuxPasswordWoVersionCheck,
+			windowsPasswordWoVersionCheck,
+		)...,
+	)
+
+	linuxPasswordWoVersionImportCheck := resource.TestCheckNoResourceAttr(
+		"hpe_morpheus_user.foo",
+		"linux_password_wo_version",
+	)
+	windowsPasswordWoVersionImportCheck := resource.TestCheckNoResourceAttr(
+		"hpe_morpheus_user.foo",
+		"windows_password_wo_version",
+	)
 	passwordWoImportCheck := resource.TestCheckNoResourceAttr(
 		"hpe_morpheus_user.foo",
 		"password_wo_version",
 	)
 
-	checkFn := resource.ComposeAggregateTestCheckFunc(
-		append(baseChecks, passwordWoCheck)...,
-	)
-
 	checkImportFn := resource.ComposeAggregateTestCheckFunc(
-		append(baseChecks, passwordWoImportCheck)...,
+		append(
+			baseChecks,
+			passwordWoImportCheck,
+			linuxPasswordWoVersionImportCheck,
+			windowsPasswordWoVersionImportCheck,
+		)...,
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -794,10 +1068,14 @@ resource "hpe_morpheus_user" "foo" {
 
 					return rs.Primary.ID, nil
 				},
-				ImportStateVerify:       true, // Check state post import (in memory)
-				ImportStateVerifyIgnore: []string{"password_wo_version"},
-				ResourceName:            "hpe_morpheus_user.foo",
-				Check:                   checkImportFn,
+				ImportStateVerify: true, // Check state post import (in memory)
+				ImportStateVerifyIgnore: []string{
+					"password_wo_version",
+					"linux_password_wo_version",
+					"windows_password_wo_version",
+				},
+				ResourceName: "hpe_morpheus_user.foo",
+				Check:        checkImportFn,
 			},
 		},
 	})
