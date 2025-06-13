@@ -111,8 +111,11 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			"tenant_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
-				MarkdownDescription: "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
+				Description:         "Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.",
+				MarkdownDescription: "Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"username": schema.StringAttribute{
 				Required:            true,

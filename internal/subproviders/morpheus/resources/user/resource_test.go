@@ -62,6 +62,66 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// Test update of tenant_id attribute separately, as it
+// requires delete/recreate.
+// We may update this test once we can create a second tenant using
+// the provider.
+func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+`
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	username = "testacc-TestAccMorpheusUserUpdateTestIdOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	tenant_id = 1
+}`,
+				Check: resource.TestCheckResourceAttr(
+					"hpe_morpheus_user.foo",
+					"tenant_id",
+					"1",
+				),
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	username = "testacc-TestAccMorpheusUserUpdateTestIdOk"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	# changed
+	tenant_id = 2
+}`,
+				ExpectNonEmptyPlan: true, // implicit delete/recreate
+				PlanOnly:           true,
+			},
+		},
+	})
+}
+
 // Check that we can create a user with only
 // required attributes specified
 func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
