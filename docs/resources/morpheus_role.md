@@ -1,5 +1,5 @@
 ---
-page_title: "hpe_morpheus_role Resource - hpe"
+page_title: "hpe_morpheus_role Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   
