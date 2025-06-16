@@ -4,8 +4,11 @@ package user_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -15,6 +18,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func checkRole(
 	resourceName string,
@@ -125,6 +134,7 @@ resource "hpe_morpheus_user" "foo" {
 // Check that we can create a user with only
 // required attributes specified
 func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -935,6 +945,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1142,6 +1153,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingRoles(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1174,6 +1186,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingUsername(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1206,6 +1219,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserMissingEmail(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1240,6 +1254,7 @@ resource "hpe_morpheus_user" "foo" {
 // password_wo is required for create (but not import) here we check that it is
 // correctly identified as missing during plan (i.e. before Create is called)
 func TestAccMorpheusUserMissingPasswordWo(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1281,6 +1296,7 @@ resource "hpe_morpheus_user" "foo" {
 // are able to run plan after import, having
 // inherited the import state.
 func TestAccMorpheusUserImportOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
