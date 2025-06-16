@@ -1,5 +1,5 @@
 ---
-page_title: "hpe_morpheus_cloud Data Source - hpe"
+page_title: "hpe_morpheus_cloud Data Source - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   

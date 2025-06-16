@@ -47,3 +47,53 @@ func (m RequireOnCreateModifier) PlanModifyString(
 		)
 	}
 }
+
+// NullableStringUpdateModifier can be used when the desired state of
+// a string is null and the current state is non-null. Usually
+// terraform plan will not treat this as something that should
+// trigger an update. But using this modifier will cause plan
+// to trigger an update, eg "foo" -> null
+type NullableStringUpdateModifier struct{}
+
+func (m NullableStringUpdateModifier) Description(_ context.Context) string {
+	return "Force diff when config changes from non-null to null" // nolint: goconst
+}
+
+func (m NullableStringUpdateModifier) MarkdownDescription(_ context.Context) string {
+	return "Force diff when config changes from non-null to null"
+}
+
+func (m NullableStringUpdateModifier) PlanModifyString(
+	_ context.Context,
+	req planmodifier.StringRequest,
+	resp *planmodifier.StringResponse,
+) {
+	if req.ConfigValue.IsNull() && !req.StateValue.IsNull() {
+		resp.PlanValue = types.StringNull()
+	}
+}
+
+// NullableInt64UpdateModifier can be used when the desired state of
+// an int64 is null and the current state is non-null. Usually
+// terraform plan will not treat this as something that should
+// trigger an update. But using this modifier will cause plan
+// to trigger an update, eg 100 -> null
+type NullableInt64UpdateModifier struct{}
+
+func (m NullableInt64UpdateModifier) Description(_ context.Context) string {
+	return "Force diff when config changes from non-null to null"
+}
+
+func (m NullableInt64UpdateModifier) MarkdownDescription(_ context.Context) string {
+	return "Force diff when config changes from non-null to null"
+}
+
+func (m NullableInt64UpdateModifier) PlanModifyInt64(
+	_ context.Context,
+	req planmodifier.Int64Request,
+	resp *planmodifier.Int64Response,
+) {
+	if req.ConfigValue.IsNull() && !req.StateValue.IsNull() {
+		resp.PlanValue = types.Int64Null()
+	}
+}

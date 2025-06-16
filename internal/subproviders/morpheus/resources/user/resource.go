@@ -98,7 +98,6 @@ func getUserAsState(
 	return state, diags
 }
 
-// TODO: Add plan modifier that enforces password_wo is set before create is called.
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -153,8 +152,14 @@ func (r *Resource) Create(
 	if !plan.LinuxUsername.IsUnknown() {
 		addUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
 	}
+	if !plan.LinuxPasswordWo.IsUnknown() {
+		addUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+	}
 	if !plan.WindowsUsername.IsUnknown() {
 		addUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+	if !plan.WindowsPasswordWo.IsUnknown() {
+		addUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
 		addUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
@@ -221,11 +226,208 @@ func (r *Resource) Create(
 
 	// special case - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+// Note that the following are not updateable via the API:
+// LinuxUsername
+// WindowsUsername
+// LinuxKeyPairId
+// ReceiveNotifications
+// TenantId
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, state, config UserModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var roleIDs []int64
+	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
+		diags := plan.RoleIds.ElementsAs(ctx, &roleIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	var roles []sdk.UpdateUserRequestUserRolesInner
+	for _, roleID := range roleIDs {
+		rolevalue := sdk.UpdateUserRequestUserRolesInner{
+			Id: roleID,
+		}
+		roles = append(roles, rolevalue)
+	}
+
+	updateUser := sdk.NewUpdateUserRequestUser()
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	username := plan.Username.ValueString()
+
+	// non-nullable
+	updateUser.SetUsername(username)
+	updateUser.SetEmail(plan.Email.ValueString())
+	updateUser.SetRoles(roles)
+
+	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
+		if config.PasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'password_wo_version' changed, "+
+					"but 'password_wo' is not set", username),
+			)
+
+			return
+		}
+		updateUser.SetPassword(config.PasswordWo.ValueString())
+	}
+
+	// nullable
+	if plan.FirstName.IsNull() {
+		updateUser.SetFirstNameNil()
+	} else {
+		updateUser.SetFirstName(plan.FirstName.ValueString())
+	}
+
+	if plan.LastName.IsNull() {
+		updateUser.SetLastNameNil()
+	} else {
+		updateUser.SetLastName(plan.LastName.ValueString())
+	}
+
+	if plan.LinuxKeyPairId.IsNull() {
+		updateUser.SetLinuxKeyPairIdNil()
+	} else {
+		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+	}
+
+	if plan.LinuxUsername.IsNull() {
+		updateUser.SetLinuxUsernameNil()
+	} else {
+		updateUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+	}
+
+	if plan.WindowsUsername.IsNull() {
+		updateUser.SetWindowsUsernameNil()
+	} else {
+		updateUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+
+	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
+		if config.LinuxPasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'linux_password_wo_version' changed, "+
+					"but 'linux_password_wo' is not set", username),
+			)
+
+			return
+		}
+		if plan.LinuxPasswordWo.IsNull() {
+			updateUser.SetLinuxPasswordNil()
+		} else {
+			updateUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+		}
+	}
+
+	if !plan.WindowsPasswordWoVersion.Equal(state.WindowsPasswordWoVersion) {
+		if config.WindowsPasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'windows_password_wo_version' changed, "+
+					"but 'windows_password_wo' is not set", username),
+			)
+
+			return
+		}
+		if plan.WindowsPasswordWo.IsNull() {
+			updateUser.SetWindowsPasswordNil()
+		} else {
+			updateUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
+		}
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	id := plan.Id.ValueInt64()
+	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
+
+	updateUserReq := sdk.NewUpdateUserRequest(*updateUser)
+	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
+
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+" PUT failed: "+errors.ErrMsg(err, hresp),
+		)
+
+		return
+	}
+
+	if user.GetUser().Id == nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": id is nil",
+		)
+
+		return
+	}
+
+	newid := *user.GetUser().Id
+	if newid != id {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+": id mismatch "+fmt.Sprintf("%d != %d", id, newid),
+		)
+
+		return
+	}
+
+	state, pdiags := getUserAsState(ctx, newid, client)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"update user resource",
+			fmt.Sprintf("user %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	// special cases - can't read from API
+	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *Resource) Read(
@@ -262,25 +464,15 @@ func (r *Resource) Read(
 		return
 	}
 
-	// special case - can't read from API
+	// special cases - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-}
-
-func (r *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	// NOTE: password_wo/password_wo_version will require special handling
-	resp.Diagnostics.AddError(
-		"update user resource",
-		"update of 'user' resources has not been implemented",
-	)
 }
 
 func (r *Resource) Delete(
