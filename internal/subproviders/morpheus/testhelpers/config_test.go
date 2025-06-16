@@ -52,7 +52,6 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 
 // we explicitly unset env vars here, so do not run in parallel
 func TestAccProviderBlockWithAccessToken(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_access_token", "abcdefg")
 	t.Setenv("TF_VAR_testacc_morpheus_insecure", "false")
@@ -102,7 +101,6 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 
 // we explicitly unset env vars here, so do not run in parallel
 func TestAccProviderBlockWithCredentials(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_username", "foo@test.com")
 	t.Setenv("TF_VAR_testacc_morpheus_password", "testpass")
@@ -148,7 +146,6 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 
 // if all access token and creds are provided, then it'll prefer access token
 func TestAccProviderBlockAllAuth(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_username", "foo@test.com")
 	t.Setenv("TF_VAR_testacc_morpheus_password", "testpass")
@@ -185,7 +182,6 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingAuth(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 
 	username, setA := os.LookupEnv("TF_VAR_testacc_morpheus_username")
@@ -222,11 +218,9 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func TestAccProviderBlockMissingPassword(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_username", "foo@test.com")
 
@@ -260,11 +254,9 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func TestAccProviderBlockMissingUsername(t *testing.T) {
-
 	t.Setenv("TF_VAR_testacc_morpheus_url", "https://test.morpheus.com")
 	t.Setenv("TF_VAR_testacc_morpheus_password", "testpass")
 
@@ -299,7 +291,6 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func TestAccProviderBlockNoneSet(t *testing.T) {
@@ -346,5 +337,4 @@ func TestAccProviderBlockNoneSet(t *testing.T) {
 			},
 		},
 	})
-
 }

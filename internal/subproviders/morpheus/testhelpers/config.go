@@ -1,5 +1,6 @@
 package testhelpers
 
+//nolint:lll
 const providerConfig = `
 variable "testacc_morpheus_url" {
   default = null
