@@ -5,7 +5,6 @@
 package role_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -17,7 +16,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	// "github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
