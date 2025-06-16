@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/stretchr/testify/assert"
 )
 
 func checkRole(
@@ -71,8 +70,7 @@ func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// nolint: goconst
 	resourceConfig := `
@@ -185,8 +183,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
 	baseChecks := []resource.TestCheckFunc{
@@ -626,8 +623,7 @@ func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceCfg := `
 # Role id 0 causes a test failure because it is ignored by
@@ -909,8 +905,7 @@ func TestAccMorpheusUserImportOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// nolint: gosec
 	resourceCfgWithPassword := `

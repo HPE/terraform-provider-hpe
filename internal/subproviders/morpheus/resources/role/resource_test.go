@@ -15,8 +15,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/assert"
 )
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
@@ -37,8 +36,7 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
@@ -94,8 +92,7 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
@@ -155,8 +152,7 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",

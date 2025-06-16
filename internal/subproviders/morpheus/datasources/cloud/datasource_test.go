@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
@@ -69,8 +68,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
 	if err != nil {
@@ -131,8 +129,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
 	if err != nil {
@@ -172,8 +169,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig, err := testhelpers.BuildProviderBlock()
-	assert.NoError(t, err)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_cloud" "test" {
