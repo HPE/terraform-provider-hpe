@@ -152,8 +152,14 @@ func (r *Resource) Create(
 	if !plan.LinuxUsername.IsUnknown() {
 		addUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
 	}
+	if !plan.LinuxPasswordWo.IsUnknown() {
+		addUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+	}
 	if !plan.WindowsUsername.IsUnknown() {
 		addUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+	if !plan.WindowsPasswordWo.IsUnknown() {
+		addUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
 		addUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
@@ -220,6 +226,8 @@ func (r *Resource) Create(
 
 	// special case - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -307,6 +315,58 @@ func (r *Resource) Update(
 		updateUser.SetLastName(plan.LastName.ValueString())
 	}
 
+	if plan.LinuxKeyPairId.IsNull() {
+		updateUser.SetLinuxKeyPairIdNil()
+	} else {
+		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+	}
+
+	if plan.LinuxUsername.IsNull() {
+		updateUser.SetLinuxUsernameNil()
+	} else {
+		updateUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+	}
+
+	if plan.WindowsUsername.IsNull() {
+		updateUser.SetWindowsUsernameNil()
+	} else {
+		updateUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+	}
+
+	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
+		if config.LinuxPasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'linux_password_wo_version' changed, "+
+					"but 'linux_password_wo' is not set", username),
+			)
+
+			return
+		}
+		if plan.LinuxPasswordWo.IsNull() {
+			updateUser.SetLinuxPasswordNil()
+		} else {
+			updateUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+		}
+	}
+
+	if !plan.WindowsPasswordWoVersion.Equal(state.WindowsPasswordWoVersion) {
+		if config.WindowsPasswordWo.IsUnknown() {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %s: 'windows_password_wo_version' changed, "+
+					"but 'windows_password_wo' is not set", username),
+			)
+
+			return
+		}
+		if plan.WindowsPasswordWo.IsNull() {
+			updateUser.SetWindowsPasswordNil()
+		} else {
+			updateUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
+		}
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -362,8 +422,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	// special case - can't read from API
+	// special cases - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -402,8 +464,10 @@ func (r *Resource) Read(
 		return
 	}
 
-	// special case - can't read from API
+	// special cases - can't read from API
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
+	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

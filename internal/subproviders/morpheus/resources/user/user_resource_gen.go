@@ -50,14 +50,34 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			"linux_key_pair_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Linux SSH Key, user settings for provisioning",
-				MarkdownDescription: "Linux SSH Key, user settings for provisioning",
+				Description:         "Linux key pair id (optional)",
+				MarkdownDescription: "Linux key pair id (optional)",
+				PlanModifiers: []planmodifier.Int64{
+					modifiers.NullableInt64UpdateModifier{},
+				},
+			},
+			"linux_password_wo": schema.StringAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Linux password (Write Only)",
+				MarkdownDescription: "Linux password (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
+			},
+			"linux_password_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Linux password version. Used to determine if linux_password_wo has been updated.",
+				MarkdownDescription: "Linux password version. Used to determine if linux_password_wo has been updated.",
 			},
 			"linux_username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Linux Username, user settings for provisioning",
-				MarkdownDescription: "Linux Username, user settings for provisioning",
+				Description:         "Linux username",
+				MarkdownDescription: "Linux username",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 			"password_expired": schema.BoolAttribute{
 				Computed: true,
@@ -91,37 +111,61 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			"tenant_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
-				MarkdownDescription: "Tenant Id (accountId) create user in a sub tenant account instead of your own.",
+				Description:         "Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.",
+				MarkdownDescription: "Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"username": schema.StringAttribute{
 				Required:            true,
 				Description:         "Username (unique per tenant).",
 				MarkdownDescription: "Username (unique per tenant).",
 			},
+			"windows_password_wo": schema.StringAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Windows password (Write Only)",
+				MarkdownDescription: "Windows password (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
+			},
+			"windows_password_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Windows password version. Used to determine if windows_password_wo has been updated.",
+				MarkdownDescription: "Windows password version. Used to determine if windows_password_wo has been updated.",
+			},
 			"windows_username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Windows Username, user settings for provisioning",
-				MarkdownDescription: "Windows Username, user settings for provisioning",
+				Description:         "Windows username",
+				MarkdownDescription: "Windows username",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 		},
 	}
 }
 
 type UserModel struct {
-	Email                types.String `tfsdk:"email"`
-	FirstName            types.String `tfsdk:"first_name"`
-	Id                   types.Int64  `tfsdk:"id"`
-	LastName             types.String `tfsdk:"last_name"`
-	LinuxKeyPairId       types.Int64  `tfsdk:"linux_key_pair_id"`
-	LinuxUsername        types.String `tfsdk:"linux_username"`
-	PasswordExpired      types.Bool   `tfsdk:"password_expired"`
-	PasswordWo           types.String `tfsdk:"password_wo"`
-	PasswordWoVersion    types.Int64  `tfsdk:"password_wo_version"`
-	ReceiveNotifications types.Bool   `tfsdk:"receive_notifications"`
-	RoleIds              types.Set    `tfsdk:"role_ids"`
-	TenantId             types.Int64  `tfsdk:"tenant_id"`
-	Username             types.String `tfsdk:"username"`
-	WindowsUsername      types.String `tfsdk:"windows_username"`
+	Email                    types.String `tfsdk:"email"`
+	FirstName                types.String `tfsdk:"first_name"`
+	Id                       types.Int64  `tfsdk:"id"`
+	LastName                 types.String `tfsdk:"last_name"`
+	LinuxKeyPairId           types.Int64  `tfsdk:"linux_key_pair_id"`
+	LinuxPasswordWo          types.String `tfsdk:"linux_password_wo"`
+	LinuxPasswordWoVersion   types.Int64  `tfsdk:"linux_password_wo_version"`
+	LinuxUsername            types.String `tfsdk:"linux_username"`
+	PasswordExpired          types.Bool   `tfsdk:"password_expired"`
+	PasswordWo               types.String `tfsdk:"password_wo"`
+	PasswordWoVersion        types.Int64  `tfsdk:"password_wo_version"`
+	ReceiveNotifications     types.Bool   `tfsdk:"receive_notifications"`
+	RoleIds                  types.Set    `tfsdk:"role_ids"`
+	TenantId                 types.Int64  `tfsdk:"tenant_id"`
+	Username                 types.String `tfsdk:"username"`
+	WindowsPasswordWo        types.String `tfsdk:"windows_password_wo"`
+	WindowsPasswordWoVersion types.Int64  `tfsdk:"windows_password_wo_version"`
+	WindowsUsername          types.String `tfsdk:"windows_username"`
 }

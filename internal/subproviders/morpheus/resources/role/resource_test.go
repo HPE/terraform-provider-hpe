@@ -5,6 +5,8 @@
 package role_test
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -17,6 +19,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	// "github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
@@ -32,6 +40,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Check that we can create a role with only required attributes specified
 func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -88,6 +97,7 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 
 // Check that we can create a role with all attributes specified
 func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -148,6 +158,7 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusRoleExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

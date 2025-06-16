@@ -7,6 +7,7 @@ package cloud_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -30,6 +31,12 @@ provider "hpe" {
 }
 `
 
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
 
@@ -41,6 +48,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindCloudById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -102,6 +110,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -163,6 +172,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -200,6 +210,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -230,6 +241,7 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
