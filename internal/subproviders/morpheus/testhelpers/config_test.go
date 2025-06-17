@@ -153,7 +153,6 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingURL(t *testing.T) {
-
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
