@@ -18,22 +18,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-const providerConfig = `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_insecure" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-
-provider "hpe" {
-  morpheus {
-    url          = var.testacc_morpheus_url
-    insecure     = var.testacc_morpheus_insecure
-    username     = var.testacc_morpheus_username
-    password     = var.testacc_morpheus_password
-  }
-}
-`
-
 const providerConfigOffline = `
 provider "hpe" {
   morpheus {
@@ -71,7 +55,9 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 	environmentID := fmt.Sprintf("%d", environment.GetId())
 	environmentName := environment.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +81,7 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -119,7 +105,10 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 	environmentID := fmt.Sprintf("%d", environment.GetId())
 	environmentName := environment.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", environmentName)
+	providerConfig := testhelpers.ProviderBlock()
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-name.tf.tmpl",
+		"Name", environmentName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +132,7 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -155,9 +144,10 @@ func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	providerConfig := testhelpers.ProviderBlock()
 	config := providerConfig + `
       data "hpe_morpheus_environment" "test" {
-        name = "______" 
+        name = "______"
       }`
 
 	checks := []resource.TestCheckFunc{

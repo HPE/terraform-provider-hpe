@@ -5,7 +5,6 @@
 package role_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -44,29 +43,13 @@ func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	config, err := testhelpers.RenderExample(t, "example-required.tf.tmpl",
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example-required.tf.tmpl",
 		"Name", "TestAccMorpheusRoleRequiredAttrsOk")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -95,7 +78,7 @@ provider "hpe" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -117,7 +100,9 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	config, err := testhelpers.RenderExample(t, "example-all.tf.tmpl",
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example-all.tf.tmpl",
 		"Name", "TestAccMorpheusRoleAllAttrsOk",
 		"Multitenant", "true",
 		"Description", "test",
@@ -126,23 +111,6 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
@@ -171,7 +139,7 @@ provider "hpe" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -192,7 +160,10 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	config, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", "TestAccMorpheusRoleExampleOk",
 		"Multitenant", "false",
 		"Description", "a test of the example HCL config",
@@ -200,24 +171,6 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	providerConfig := fmt.Sprintf(`
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
-%s
-`, config)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -247,7 +200,7 @@ provider "hpe" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
