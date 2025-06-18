@@ -27,11 +27,11 @@ func TestMain(m *testing.M) {
 
 const networkResponseJSON = `{
     "network": {
-	"description": "network one",
         "id": 123,
         "name": "testacc-TestAccNetworkDataSourceBasic",
         "displayName": "testacc-TestAccNetworkDataSourceBasic",
-        "labels": ["label1", "label2"],
+        "description": "A test network for basic acceptance testing",
+        "labels": ["test-label-1", "test-label-2"],
         "tags": [],
         "group": null,
         "zone": null,
@@ -61,7 +61,8 @@ const networksListJSON = `{
         "id": 123,
         "name": "testacc-TestAccNetworkDataSourceBasic",
         "displayName": "testacc-TestAccNetworkDataSourceBasic",
-        "labels": [],
+        "description": "A test network for basic acceptance testing",
+        "labels": ["test-label-1", "test-label-2"],
         "tags": [],
         "group": null,
         "zone": null,
@@ -164,6 +165,16 @@ data "hpe_morpheus_network" "test" {
 					),
 					resource.TestCheckResourceAttr(
 						"data.hpe_morpheus_network.test",
+						"display_name",
+						"testacc-TestAccNetworkDataSourceBasic",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
+						"description",
+						"A test network for basic acceptance testing",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
 						"cidr",
 						"10.0.0.0/24",
 					),
@@ -172,8 +183,29 @@ data "hpe_morpheus_network" "test" {
 						"visibility",
 						"private",
 					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
+						"active",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
+						"labels.#",
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
+						"labels.0",
+						"test-label-1",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.test",
+						"labels.1",
+						"test-label-2",
+					),
 				),
 			},
 		},
 	})
 }
+
