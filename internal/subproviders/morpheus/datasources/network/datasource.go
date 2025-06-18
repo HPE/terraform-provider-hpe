@@ -103,7 +103,7 @@ func getNetworkByName(
 	name string,
 	client *sdk.APIClient,
 ) (*NetworkModel, error) {
-	networks, hresp, err := client.NetworksAPI.ListNetworks(ctx).Execute()
+	networks, hresp, err := client.NetworksAPI.ListNetworks(ctx).Name(name).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("network %s list failed: %s", name, errors.ErrMsg(err, hresp))
 	}
