@@ -119,6 +119,7 @@ func TestAccNetworkDataSourceBasic(t *testing.T) {
 
 	gock.New("http://net1.test").
 		Get("/api/networks($)").
+		MatchParam("name", "testacc-TestAccNetworkDataSourceBasic").
 		Persist().
 		Reply(200).
 		SetHeader("Content-Type", "application/json").
