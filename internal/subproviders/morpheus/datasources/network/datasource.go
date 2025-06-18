@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 
@@ -71,29 +72,20 @@ func getNetworkByID(
 
 	state := &NetworkModel{}
 
-	state.Labels = convert.StrSliceToSet(network.GetNetwork().Labels)
+	net, ok := network.GetNetworkOk()
+	if !ok {
+		return nil, fmt.Errorf("network %d is nil", id)
+	}
 
-	if id, ok := network.Network.GetIdOk(); ok {
-		state.Id = convert.Int64ToType(id)
-	}
-	if name, ok := network.Network.GetNameOk(); ok {
-		state.Name = convert.StrToType(name)
-	}
-	if displayName, ok := network.Network.GetDisplayNameOk(); ok {
-		state.DisplayName = convert.StrToType(displayName)
-	}
-	if description, ok := network.Network.GetDescriptionOk(); ok {
-		state.Description = convert.StrToType(description)
-	}
-	if cidr, ok := network.Network.GetCidrOk(); ok {
-		state.Cidr = convert.StrToType(cidr)
-	}
-	if active, ok := network.Network.GetActiveOk(); ok {
-		state.Active = convert.BoolToType(active)
-	}
-	if visibility, ok := network.Network.GetVisibilityOk(); ok {
-		state.Visibility = convert.StrToType(visibility)
-	}
+	state.Labels = convert.StrSliceToSet(net.Labels)
+
+	state.Id = types.Int64Value(id)
+	state.Name = convert.StrToType(net.Name)
+	state.DisplayName = convert.StrToType(net.DisplayName)
+	state.Description = convert.StrToType(net.Description)
+	state.Cidr = convert.StrToType(net.Cidr)
+	state.Active = convert.BoolToType(net.Active)
+	state.Visibility = convert.StrToType(net.Visibility)
 
 	return state, nil
 }
