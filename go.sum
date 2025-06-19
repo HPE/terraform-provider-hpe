@@ -1,7 +1,5 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611115604-eb544d5038f3 h1:rx0wnk/+DpK5a89H9J0vkeeY+j7fdQzYp9jDZ3aln7w=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611115604-eb544d5038f3/go.mod h1:n9dT5IbZxQZ0TEORIdvAG7pc6usBeB8lRG2Obe1uCCs=
 github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611142836-88afa678fe7b h1:ffI1O/4tsEJco5OwTciecNYsIx9zF6RzNYozO9ktxMA=
 github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250611142836-88afa678fe7b/go.mod h1:n9dT5IbZxQZ0TEORIdvAG7pc6usBeB8lRG2Obe1uCCs=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
