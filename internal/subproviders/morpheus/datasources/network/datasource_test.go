@@ -68,7 +68,7 @@ provider "hpe" {
 }
 `
 
-	path := "../../../../../examples/data-sources/hpe_morpheus_network/resource.tf"
+	path := "../../../../../examples/data-sources/hpe_morpheus_network/data-source.tf"
 	exampleConfig, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Error reading example config: %v", err)
@@ -216,4 +216,7 @@ provider "hpe" {
 			},
 		},
 	})
+	//if !gock.IsDone() {
+	//	t.Errorf("Not all gock mocks were called")
+	//}
 }
