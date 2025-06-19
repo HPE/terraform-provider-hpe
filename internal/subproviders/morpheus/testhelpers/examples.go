@@ -69,9 +69,13 @@ func WriteExample(fn string, args ...string) {
 
 	fn = strings.TrimSuffix(fn, ".tmpl")
 
-	dest := filepath.Join(absPath, exampleDir[kind], fn)
+	destDir := filepath.Join(absPath, exampleDir[kind])
+	err = os.MkdirAll(destDir, 0o755)
+	if err != nil {
+		panic(err)
+	}
 
-	err = os.WriteFile(dest, []byte(text), 0o644)
+	err = os.WriteFile(filepath.Join(destDir, fn), []byte(text), 0o644)
 	if err != nil {
 		panic(err)
 	}
