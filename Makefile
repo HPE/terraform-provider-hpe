@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test
+.PHONY: build linter lint test docs
 
 build:
 	go build ./...
@@ -22,6 +22,6 @@ testacc:
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 10m ./...
 
-generate-docs:
+docs:
 	go generate ./...
 	cd tools; go generate
