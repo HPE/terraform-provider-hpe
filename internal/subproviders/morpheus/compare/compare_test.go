@@ -96,21 +96,19 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 
 	// for map
 	for _, tc := range testCases {
-		if tc.name == "not subset: string value mismatch" {
-			t.Run(fmt.Sprintf("test as map: %s", tc.name), func(t *testing.T) {
-				var planStruct, apiStruct map[string]any
+		t.Run(fmt.Sprintf("test as map: %s", tc.name), func(t *testing.T) {
+			var planStruct, apiStruct map[string]any
 
-				err := json.Unmarshal([]byte(tc.permissionsPlan), &planStruct)
-				assert.NoError(t, err)
+			err := json.Unmarshal([]byte(tc.permissionsPlan), &planStruct)
+			assert.NoError(t, err)
 
-				err = json.Unmarshal([]byte(tc.permissionsAPI), &apiStruct)
-				assert.NoError(t, err)
+			err = json.Unmarshal([]byte(tc.permissionsAPI), &apiStruct)
+			assert.NoError(t, err)
 
-				eq, err := compare.IsSubset(planStruct, apiStruct)
-				assert.Equal(t, tc.expectEq, eq)
-				assert.Equal(t, tc.expectErr, err)
-			})
-		}
+			eq, err := compare.IsSubset(planStruct, apiStruct)
+			assert.Equal(t, tc.expectEq, eq)
+			assert.Equal(t, tc.expectErr, err)
+		})
 	}
 
 	// for struct
@@ -208,6 +206,70 @@ const (
       "subCategory": "admin"
     }
   ]
+}
+`
+	permissionsTestUserMinimum = `
+{
+  "featurePermissions": [
+    {
+      "code": "integrations-ansible",
+      "access": "full"
+    }
+  ]
+}
+`
+	permissionsTestAPIMinimumAccessMismatch = `
+{
+  "featurePermissions": [
+    {
+      "code": "integrations-ansible",
+      "access": "none"
+    }
+  ]
+}
+`
+	permissionsTestAPINoMatchingStringKey = `
+{
+  "featurePermissions": [
+    {
+      "id": 159,
+      "foo": "integrations-foo",
+      "name": "Ansible",
+      "access": "full",
+      "subCategory": "admin"
+    }
+  ]
+}
+`
+	permissionsTestAPINoMatchingStringValue = `
+{
+  "featurePermissions": [
+    {
+      "id": 159,
+      "code": "integrations-foo",
+      "name": "Ansible",
+      "access": "full",
+      "subCategory": "admin"
+    }
+  ]
+}
+`
+	permissionsTestAPINoMatchingArrayKey = `
+{
+  "fooPermissions": [
+    {
+      "id": 159,
+      "code": "integrations-ansible",
+      "name": "Ansible",
+      "access": "full",
+      "subCategory": "admin"
+    }
+  ]
+}
+`
+	permissionsTestAPINoMatchingArrayValue = `
+{
+  "featurePermissions": []
 }
 `
 	// permissions obtained from GET to API after a create using permissionsTestUserFeaturePermissions
@@ -4507,70 +4569,6 @@ const (
   "taskSetPermissions": [],
   "globalClusterTypeAccess": "none",
   "clusterTypePermissions": []
-}
-`
-	permissionsTestUserMinimum = `
-{
-  "featurePermissions": [
-    {
-      "code": "integrations-ansible",
-      "access": "full"
-    }
-  ]
-}
-`
-	permissionsTestAPIMinimumAccessMismatch = `
-{
-  "featurePermissions": [
-    {
-      "code": "integrations-ansible",
-      "access": "none"
-    }
-  ]
-}
-`
-	permissionsTestAPINoMatchingStringKey = `
-{
-  "featurePermissions": [
-    {
-      "id": 159,
-      "foo": "integrations-foo",
-      "name": "Ansible",
-      "access": "full",
-      "subCategory": "admin"
-    }
-  ]
-}
-`
-	permissionsTestAPINoMatchingStringValue = `
-{
-  "featurePermissions": [
-    {
-      "id": 159,
-      "code": "integrations-foo",
-      "name": "Ansible",
-      "access": "full",
-      "subCategory": "admin"
-    }
-  ]
-}
-`
-	permissionsTestAPINoMatchingArrayKey = `
-{
-  "fooPermissions": [
-    {
-      "id": 159,
-      "code": "integrations-ansible",
-      "name": "Ansible",
-      "access": "full",
-      "subCategory": "admin"
-    }
-  ]
-}
-`
-	permissionsTestAPINoMatchingArrayValue = `
-{
-  "featurePermissions": []
 }
 `
 )
