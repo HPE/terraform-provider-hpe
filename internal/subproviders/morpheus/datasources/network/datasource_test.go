@@ -216,7 +216,4 @@ provider "hpe" {
 			},
 		},
 	})
-	//if !gock.IsDone() {
-	//	t.Errorf("Not all gock mocks were called")
-	//}
 }
