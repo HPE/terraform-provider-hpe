@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -50,35 +49,34 @@ func WriteExample(fn string, args ...string) {
 	if err != nil {
 		panic(err)
 	}
+	absPath = filepath.Dir(absPath)
 
-	pathParts := strings.Split(absPath, string(os.PathSeparator))
+	sep := string(os.PathSeparator)
+
+	pathParts := strings.Split(absPath, sep)
 	if len(pathParts) < 3 {
 		panic("Not enough path elements: " + absPath)
 	}
 
-	name := pathParts[len(pathParts)-2]
-	kind := pathParts[len(pathParts)-3]
+	name := filepath.Base(absPath)
+	absPath = filepath.Dir(absPath)
+	kind := filepath.Base(absPath)
 
 	exampleDir := map[string]string{
-		"datasources": "examples/data-sources/hpe_morpheus_" + name,
-		"resources":   "examples/resources/hpe_morpheus_" + name,
+		"datasources": filepath.Join("examples", "data-sources", "hpe_morpheus_"+name),
+		"resources":   filepath.Join("examples", "resources", "hpe_morpheus_"+name),
 	}
 
-	pathParts = pathParts[:len(pathParts)-1]
-
-	var rootDir string
-
 	for {
-		rootDir = "/" + path.Join(pathParts...)
-		if _, err := os.Stat(rootDir + "/.git"); err == nil {
+		if _, err := os.Stat(filepath.Join(absPath, ".git")); err == nil {
 			break
 		}
-		pathParts = pathParts[:len(pathParts)-1]
+		absPath = filepath.Dir(absPath)
 	}
 
 	fn = strings.TrimSuffix(fn, ".tmpl")
 
-	dest := path.Join(rootDir, exampleDir[kind], fn)
+	dest := filepath.Join(absPath, exampleDir[kind], fn)
 
 	err = os.WriteFile(dest, []byte(text), 0o644)
 	if err != nil {
