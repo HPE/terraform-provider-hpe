@@ -23,4 +23,4 @@ jobs:
           terraform_version: 1.12.2
       - run: go version
       - run: terraform version
-      - run: make generate-docs
+      - run: make docs
