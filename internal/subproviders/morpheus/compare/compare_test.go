@@ -25,7 +25,7 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 		{
 			name:            "is subset: user featurePermissions vs minimal out of order API featurePermissions",
 			permissionsPlan: permissionsTestUserFeaturePermissions,
-			permissionsAPI:  permissionsTestAPIOutOfOrder,
+			permissionsAPI:  permissionsTestAPIFeaturePermissionsOutOfOrder,
 			expectEq:        true,
 			expectErr:       nil,
 		},
@@ -74,7 +74,7 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 		{
 			name:            "not subset: no matching array key found",
 			permissionsPlan: permissionsTestUserMinimum,
-			permissionsAPI:  permissionsTestAPINoMatchingArrayValue,
+			permissionsAPI:  permissionsTestAPINoMatchingArrayKey,
 			expectEq:        false,
 			expectErr:       errors.New(compare.ErrorNotSubset),
 		},
@@ -158,30 +158,8 @@ const (
   ]
 }
 `
-
-	permissionsTestUserMixedPermissions = `
-{
-  "featurePermissions": [
-    {
-      "code": "integrations-ansible",
-      "access": "full"
-    },
-    {
-      "code": "admin-appliance",
-      "access": "none"
-    }
-  ],
-  "globalZoneAccess": "full",
-  "globalPersonaAccess": "full",
-  "personaPermissions": [
-    {
-      "code": "serviceCatalog",
-      "access": "full"
-    }
-  ]
-}
-`
-	permissionsTestAPIOutOfOrder = `
+	// admin-appliance and app-template not in same order as the user set
+	permissionsTestAPIFeaturePermissionsOutOfOrder = `
 {
   "featurePermissions": [
     {
@@ -208,6 +186,30 @@ const (
   ]
 }
 `
+
+	// test that a mix of the string and array values works
+	permissionsTestUserMixedPermissions = `
+{
+  "featurePermissions": [
+    {
+      "code": "integrations-ansible",
+      "access": "full"
+    },
+    {
+      "code": "admin-appliance",
+      "access": "none"
+    }
+  ],
+  "globalZoneAccess": "full",
+  "globalPersonaAccess": "full",
+  "personaPermissions": [
+    {
+      "code": "serviceCatalog",
+      "access": "full"
+    }
+  ]
+}
+`
 	permissionsTestUserMinimum = `
 {
   "featurePermissions": [
@@ -228,6 +230,7 @@ const (
   ]
 }
 `
+	// this should fail because it's missing the "code" key
 	permissionsTestAPINoMatchingStringKey = `
 {
   "featurePermissions": [
@@ -241,6 +244,7 @@ const (
   ]
 }
 `
+	// this should fail because even though it has the "code" key, its value is not equal
 	permissionsTestAPINoMatchingStringValue = `
 {
   "featurePermissions": [
@@ -254,6 +258,8 @@ const (
   ]
 }
 `
+	// this should fail because the key of the JSON array, "fooPermissions"
+	// does not match "featurePermissions" when the algorithm searches for it
 	permissionsTestAPINoMatchingArrayKey = `
 {
   "fooPermissions": [
@@ -267,6 +273,8 @@ const (
   ]
 }
 `
+	// this should fail because the algorithm cannot find the array values sub in this.
+	// this is supposed to contain those values at minimum.
 	permissionsTestAPINoMatchingArrayValue = `
 {
   "featurePermissions": []
