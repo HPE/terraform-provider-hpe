@@ -17,22 +17,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-const providerConfig = `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_insecure" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-
-provider "hpe" {
-  morpheus {
-    url          = var.testacc_morpheus_url
-    insecure     = var.testacc_morpheus_insecure
-    username     = var.testacc_morpheus_username
-    password     = var.testacc_morpheus_password
-  }
-}
-`
-
 const providerConfigOffline = `
 provider "hpe" {
   morpheus {
@@ -74,11 +58,6 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 	layoutID := fmt.Sprintf("%d", layout.GetId())
 	layoutName := layout.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -94,11 +73,18 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -126,11 +112,6 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 	layoutID := fmt.Sprintf("%d", layout.GetId())
 	layoutName := layout.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", layoutName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -146,11 +127,18 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", layoutName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -179,12 +167,6 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 	layoutName := layout.GetName()
 	layoutVersion := layout.GetInstanceVersion()
 
-	config, err := testhelpers.RenderExample(t, "example-name-version.tf.tmpl",
-		"Name", layoutName, "Version", layoutVersion)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -205,11 +187,19 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name-version.tf.tmpl",
+		"Name", layoutName, "Version", layoutVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -238,13 +228,6 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 
 	layoutID := fmt.Sprintf("%d", layouts[len(layouts)-1].GetId())
 
-	config := providerConfig + `
-      data "hpe_morpheus_instance_type_layout" "test" {
-        id = ` + layoutID + `
-      }`
-
-	fmt.Println(config)
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -255,11 +238,18 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig := providerConfig + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+        id = ` + layoutID + `
+      }`
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -273,11 +263,6 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	config := providerConfig + `
-      data "hpe_morpheus_instance_type_layout" "test" {
-        name = "______" 
-      }`
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -287,13 +272,20 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig := providerConfig + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+        name = "______" 
+      }`
+
 	expected := instancetypelayout.ErrorNoInstanceTypeLayoutFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      dataSourceConfig,
 				Check:       checkFn,
 				ExpectError: regexp.MustCompile(expected),
 			},
@@ -304,10 +296,6 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testing.T) {
 	t.Parallel()
 
-	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_type_layout" "test" {
-      }`
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -317,13 +305,17 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	dataSourceConfig := providerConfigOffline + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+      }`
+
 	expected := instancetypelayout.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      dataSourceConfig,
 				Check:       checkFn,
 				ExpectError: regexp.MustCompile(expected),
 			},
@@ -334,12 +326,6 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 	t.Parallel()
 
-	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_type_layout" "test" {
-        id = 1
-        name = "______" 
-      }`
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -349,13 +335,19 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	dataSourceConfig := providerConfigOffline + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+        id = 1
+        name = "______" 
+      }`
+
 	expected := instancetypelayout.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      dataSourceConfig,
 				Check:       checkFn,
 				ExpectError: regexp.MustCompile(expected),
 			},
@@ -366,12 +358,6 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
 	t.Parallel()
 
-	config := providerConfigOffline + `
-      data "hpe_morpheus_instance_type_layout" "test" {
-        id = 1
-        version = "123" 
-      }`
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
@@ -381,13 +367,19 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	dataSourceConfig := providerConfigOffline + `
+      data "hpe_morpheus_instance_type_layout" "test" {
+        id = 1
+        version = "123" 
+      }`
+
 	expected := instancetypelayout.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      dataSourceConfig,
 				Check:       checkFn,
 				ExpectError: regexp.MustCompile(expected),
 			},
