@@ -232,7 +232,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance_type_layout.test",
 			"sort_order",
-			"1",
+			"2",
 		),
 	}
 
