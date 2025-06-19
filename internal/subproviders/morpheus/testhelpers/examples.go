@@ -55,11 +55,6 @@ func WriteExample(fn string, args ...string) {
 	absPath = filepath.Dir(absPath)
 	kind := filepath.Base(absPath)
 
-	exampleDir := map[string]string{
-		"datasources": filepath.Join("examples", "data-sources", "hpe_morpheus_"+name),
-		"resources":   filepath.Join("examples", "resources", "hpe_morpheus_"+name),
-	}
-
 	for {
 		if _, err := os.Stat(filepath.Join(absPath, ".git")); err == nil {
 			break
@@ -67,15 +62,19 @@ func WriteExample(fn string, args ...string) {
 		absPath = filepath.Dir(absPath)
 	}
 
+	exampleDir := map[string]string{
+		"datasources": filepath.Join(absPath, "examples", "data-sources", "hpe_morpheus_"+name),
+		"resources":   filepath.Join(absPath, "examples", "resources", "hpe_morpheus_"+name),
+	}
+
 	fn = strings.TrimSuffix(fn, ".tmpl")
 
-	destDir := filepath.Join(absPath, exampleDir[kind])
-	err = os.MkdirAll(destDir, 0o755)
+	err = os.MkdirAll(exampleDir[kind], 0o755)
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.WriteFile(filepath.Join(destDir, fn), []byte(text), 0o644)
+	err = os.WriteFile(filepath.Join(exampleDir[kind], fn), []byte(text), 0o644)
 	if err != nil {
 		panic(err)
 	}

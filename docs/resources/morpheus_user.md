@@ -42,19 +42,17 @@ resource "hpe_morpheus_user" "example" {
 
 ### Optional
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
 - `first_name` (String) User's first name (optional)
 - `last_name` (String) User's last name (optional)
 - `linux_key_pair_id` (Number) Linux key pair id (optional)
-- `linux_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Linux password (Write Only)
+- `linux_password_wo` (String) Linux password (Write Only)
 - `linux_password_wo_version` (Number) Linux password version. Used to determine if linux_password_wo has been updated.
 - `linux_username` (String) Linux username
-- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user (Write Only)
+- `password_wo` (String, Sensitive) Password to apply to the user (Write Only)
 - `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
 - `receive_notifications` (Boolean) Receive Notifications?
 - `tenant_id` (Number) Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
-- `windows_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
+- `windows_password_wo` (String) Windows password (Write Only)
 - `windows_password_wo_version` (Number) Windows password version. Used to determine if windows_password_wo has been updated.
 - `windows_username` (String) Windows username
 
