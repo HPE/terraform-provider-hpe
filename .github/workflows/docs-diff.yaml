@@ -8,7 +8,7 @@ on:
       - main
   pull_request:
 jobs:
-  docsDiff:
+  diff:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
