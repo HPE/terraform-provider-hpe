@@ -76,6 +76,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 			}
 
 		}
+
 		return true, nil
 
 	case reflect.Map:
@@ -109,10 +110,10 @@ func IsSubset(sub, super any) (eq bool, err error) {
 				if used[j] {
 					continue
 				}
-				// intentionally use =, not := to set the err in return
 				if _, err := IsSubset(vSub.Index(i).Interface(), vSuper.Index(j).Interface()); err == nil {
 					used[j] = true
 					found = true
+
 					break
 				}
 			}
@@ -128,11 +129,9 @@ func IsSubset(sub, super any) (eq bool, err error) {
 	default:
 		eq := reflect.DeepEqual(sub, super)
 		if eq {
-
 			return true, nil
-		} else {
-
-			return false, errors.New(ErrorNotSubset)
 		}
+
+		return false, errors.New(ErrorNotSubset)
 	}
 }

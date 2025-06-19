@@ -13,6 +13,7 @@ import (
 )
 
 func TestIsSubsetPermissionsJSON(t *testing.T) {
+	//nolint:lll
 	testCases := []struct {
 		name            string
 		permissionsPlan string
@@ -108,7 +109,6 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 				assert.Equal(t, tc.expectEq, eq)
 				assert.Equal(t, tc.expectErr, err)
 			})
-
 		}
 	}
 
@@ -209,7 +209,7 @@ const (
   ]
 }
 `
-	// permission set obtained from GET to API after a create using permissionsTestUserFeaturePermissions
+	// permissions obtained from GET to API after a create using permissionsTestUserFeaturePermissions
 	permissionsTestAPIComputedPartial = `
 {
   "featurePermissions": [
@@ -1281,6 +1281,8 @@ const (
   "clusterTypePermissions": []
 }
 `
+	// the permissions received from a GET to the API after
+	// creating a role using permissionsTestUserMixedPermissions
 	permissionsTestAPIMixedPermissionsComputedPartial = `
 {
   "featurePermissions": [
@@ -2359,7 +2361,9 @@ const (
   "clusterTypePermissions": []
 }
 `
-	// permissions sest obtained from API after
+	// permissions stored in the state file which were obtained from API
+	// after not specifying any permissions, i.e. all computed defaults.
+	// note how the ordering differs to permissionsTestAPIComputedFull
 	permissionsTestAPIComputedFullStatefile = `
 {
   "appTemplatePermissions": [],
@@ -3431,6 +3435,8 @@ const (
   "zones": []
 }
 `
+	// permissions obtained from the API after creating a role without setting permissions
+	// i.e. all computed default values
 	permissionsTestAPIComputedFull = `
 {
   "featurePermissions": [
