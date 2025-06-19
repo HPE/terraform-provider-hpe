@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/compare"
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/compare"
 
 	"github.com/stretchr/testify/assert"
 )
