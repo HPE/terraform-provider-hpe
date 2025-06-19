@@ -51,13 +51,6 @@ func WriteExample(fn string, args ...string) {
 	}
 	absPath = filepath.Dir(absPath)
 
-	sep := string(os.PathSeparator)
-
-	pathParts := strings.Split(absPath, sep)
-	if len(pathParts) < 3 {
-		panic("Not enough path elements: " + absPath)
-	}
-
 	name := filepath.Base(absPath)
 	absPath = filepath.Dir(absPath)
 	kind := filepath.Base(absPath)
