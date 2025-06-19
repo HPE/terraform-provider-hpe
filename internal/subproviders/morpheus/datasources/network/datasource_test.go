@@ -113,7 +113,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccNetworkDataSourceBasic(t *testing.T) {
+func TestNetworkDataSourceBasic(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	defer gock.Off()
 
