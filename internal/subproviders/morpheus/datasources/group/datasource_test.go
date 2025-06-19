@@ -7,6 +7,7 @@ package group_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -20,22 +21,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-const providerConfig = `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_insecure" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-
-provider "hpe" {
-  morpheus {
-    url          = var.testacc_morpheus_url
-    insecure     = var.testacc_morpheus_insecure
-    username     = var.testacc_morpheus_username
-    password     = var.testacc_morpheus_password
-  }
-}
-`
-
 const providerConfigOffline = `
 provider "hpe" {
   morpheus {
@@ -45,6 +30,12 @@ provider "hpe" {
   }
 }
 `
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
@@ -57,6 +48,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindGroupById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -73,7 +65,9 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", groupID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +91,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -105,6 +99,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -121,7 +116,9 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	groupID := fmt.Sprintf("%d", group.GetId())
 	groupName := group.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", groupName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +142,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -153,9 +150,12 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
+
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_group" "test" {
@@ -186,6 +186,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
       }`
@@ -214,6 +215,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
         id = 1

@@ -118,6 +118,7 @@ func NewAPIClient(
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: options.insecure, //nolint: gosec
 			},
+			Proxy: http.ProxyFromEnvironment,
 		}
 
 		if httptrace.IsEnabled() {

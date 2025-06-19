@@ -7,6 +7,7 @@ package cloud_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -20,22 +21,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-const providerConfig = `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_insecure" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-
-provider "hpe" {
-  morpheus {
-    url          = var.testacc_morpheus_url
-    insecure     = var.testacc_morpheus_insecure
-    username     = var.testacc_morpheus_username
-    password     = var.testacc_morpheus_password
-  }
-}
-`
-
 const providerConfigOffline = `
 provider "hpe" {
   morpheus {
@@ -45,6 +30,12 @@ provider "hpe" {
   }
 }
 `
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
@@ -57,6 +48,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindCloudById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -84,7 +76,9 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +102,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -116,6 +110,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -143,7 +138,9 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	cloudID := fmt.Sprintf("%d", cloud.GetId())
 	cloudName := cloud.GetName()
 
-	config, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +164,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -175,11 +172,14 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
+
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_cloud" "test" {
@@ -210,6 +210,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -240,6 +241,7 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `

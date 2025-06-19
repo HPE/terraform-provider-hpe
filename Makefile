@@ -6,7 +6,7 @@
 .PHONY: build linter lint test
 
 build:
-	go build ./cmd/...
+	go build ./...
 
 linter:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
