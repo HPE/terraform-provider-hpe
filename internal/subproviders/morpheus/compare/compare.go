@@ -19,20 +19,14 @@ const (
 // that the user may not have explicitly set. This complicates comparison using
 // solely unmarshaling into one of the generated API structs as we can't range over
 // and recursively walk the struct without using reflection.
-func ContainsSubset(super, sub any) (eq bool, err error) {
+func ContainsSubset(super, sub any) (bool, error) {
+	var err error
 	// catch-all for panic edge cases
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%s%v", ErrorRecoveredFromPanic, r)
-			eq = false
 		}
 	}()
-
-	// this will return the root error back up the call stack
-	// this is especially required if we recover from a panic
-	if err != nil {
-		return false, err
-	}
 
 	vSub := reflect.ValueOf(sub)
 	vSuper := reflect.ValueOf(super)
@@ -70,7 +64,7 @@ func ContainsSubset(super, sub any) (eq bool, err error) {
 				continue
 			}
 
-			if _, err := ContainsSubset(fieldSuper.Interface(), fieldSub.Interface()); err != nil {
+			if _, err = ContainsSubset(fieldSuper.Interface(), fieldSub.Interface()); err != nil {
 				// propagate the root error
 				return false, err
 			}
@@ -92,7 +86,7 @@ func ContainsSubset(super, sub any) (eq bool, err error) {
 				return false, errors.New(ErrorNotSubset)
 			}
 
-			if _, err := ContainsSubset(valSuper.Interface(), valSub.Interface()); err != nil {
+			if _, err = ContainsSubset(valSuper.Interface(), valSub.Interface()); err != nil {
 				// propagate the root error
 				return false, err
 			}
@@ -110,7 +104,7 @@ func ContainsSubset(super, sub any) (eq bool, err error) {
 				if used[j] {
 					continue
 				}
-				if _, err := ContainsSubset(vSuper.Index(j).Interface(), vSub.Index(i).Interface()); err == nil {
+				if _, err = ContainsSubset(vSuper.Index(j).Interface(), vSub.Index(i).Interface()); err == nil {
 					used[j] = true
 					found = true
 
