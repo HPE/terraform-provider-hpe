@@ -23,6 +23,20 @@ func TestContainsSubsetPermissionsJSON(t *testing.T) {
 		expectErr       error
 	}{
 		{
+			name:            "is subset: user featurePermissions vs user featurePermissions",
+			permissionsPlan: permissionsTestUserFeaturePermissions,
+			permissionsAPI:  permissionsTestUserFeaturePermissions,
+			expectEq:        true,
+			expectErr:       nil,
+		},
+		{
+			name:            "is subset: computed API permissions vs computed API permissions",
+			permissionsPlan: permissionsTestAPIComputedFull,
+			permissionsAPI:  permissionsTestAPIComputedFull,
+			expectEq:        true,
+			expectErr:       nil,
+		},
+		{
 			name:            "is subset: user featurePermissions vs minimal out of order API featurePermissions",
 			permissionsPlan: permissionsTestUserFeaturePermissions,
 			permissionsAPI:  permissionsTestAPIFeaturePermissionsOutOfOrder,
@@ -123,6 +137,50 @@ func TestContainsSubsetPermissionsJSON(t *testing.T) {
 			assert.NoError(t, err)
 
 			eq, err := compare.ContainsSubset(apiStruct, planStruct)
+			assert.Equal(t, tc.expectEq, eq)
+			assert.Equal(t, tc.expectErr, err)
+		})
+	}
+}
+
+func TestContainsSubsetStruct(t *testing.T) {
+	testCases := []struct {
+		name      string
+		super     any
+		sub       any
+		expectEq  bool
+		expectErr error
+	}{
+		{
+			name: "is subset: equal structs with private fields",
+			super: struct {
+				private string
+				Public  string
+			}{Public: "foo"},
+			sub: struct {
+				private string
+				Public  string
+			}{Public: "foo"},
+			expectEq:  true,
+			expectErr: nil,
+		},
+		{
+			name: "not subset: unequal structs with private fields",
+			super: struct {
+				private string
+				Public  string
+			}{Public: "foo"},
+			sub: struct {
+				private string
+				Public  string
+			}{Public: "bar"},
+			expectEq:  false,
+			expectErr: errors.New(compare.ErrorNotSubset),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			eq, err := compare.ContainsSubset(tc.super, tc.sub)
 			assert.Equal(t, tc.expectEq, eq)
 			assert.Equal(t, tc.expectErr, err)
 		})
