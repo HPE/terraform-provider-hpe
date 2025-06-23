@@ -23,7 +23,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 	// catch-all for panic edge cases
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("recovered from panic: %v", r)
+			err = fmt.Errorf("%s%v", ErrorRecoveredFromPanic, r)
 			eq = false
 		}
 	}()
