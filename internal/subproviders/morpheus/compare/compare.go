@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ErrorRecoveredFromPanic = "IsSubset recovered from panic: "
+	ErrorRecoveredFromPanic = "ContainsSubset recovered from panic: "
 	ErrorNotSubset          = "sub is not a subset of super"
 )
 
@@ -19,7 +19,7 @@ const (
 // that the user may not have explicitly set. This complicates comparison using
 // solely unmarshaling into one of the generated API structs as we can't range over
 // and recursively walk the struct without using reflection.
-func IsSubset(sub, super any) (eq bool, err error) {
+func ContainsSubset(super, sub any) (eq bool, err error) {
 	// catch-all for panic edge cases
 	defer func() {
 		if r := recover(); r != nil {
@@ -70,7 +70,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 				continue
 			}
 
-			if _, err := IsSubset(fieldSub.Interface(), fieldSuper.Interface()); err != nil {
+			if _, err := ContainsSubset(fieldSuper.Interface(), fieldSub.Interface()); err != nil {
 				// propagate the root error
 				return false, err
 			}
@@ -92,7 +92,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 				return false, errors.New(ErrorNotSubset)
 			}
 
-			if _, err := IsSubset(valSub.Interface(), valSuper.Interface()); err != nil {
+			if _, err := ContainsSubset(valSuper.Interface(), valSub.Interface()); err != nil {
 				// propagate the root error
 				return false, err
 			}
@@ -110,7 +110,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 				if used[j] {
 					continue
 				}
-				if _, err := IsSubset(vSub.Index(i).Interface(), vSuper.Index(j).Interface()); err == nil {
+				if _, err := ContainsSubset(vSuper.Index(j).Interface(), vSub.Index(i).Interface()); err == nil {
 					used[j] = true
 					found = true
 
@@ -127,7 +127,7 @@ func IsSubset(sub, super any) (eq bool, err error) {
 
 	// for all other types
 	default:
-		eq := reflect.DeepEqual(sub, super)
+		eq := reflect.DeepEqual(super, sub)
 		if eq {
 			return true, nil
 		}

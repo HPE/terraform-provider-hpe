@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsSubsetPermissionsJSON(t *testing.T) {
+func TestContainsSubsetPermissionsJSON(t *testing.T) {
 	//nolint:lll
 	testCases := []struct {
 		name            string
@@ -105,7 +105,7 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 			err = json.Unmarshal([]byte(tc.permissionsAPI), &apiStruct)
 			assert.NoError(t, err)
 
-			eq, err := compare.IsSubset(planStruct, apiStruct)
+			eq, err := compare.ContainsSubset(apiStruct, planStruct)
 			assert.Equal(t, tc.expectEq, eq)
 			assert.Equal(t, tc.expectErr, err)
 		})
@@ -122,7 +122,7 @@ func TestIsSubsetPermissionsJSON(t *testing.T) {
 			err = json.Unmarshal([]byte(tc.permissionsAPI), &apiStruct)
 			assert.NoError(t, err)
 
-			eq, err := compare.IsSubset(planStruct, apiStruct)
+			eq, err := compare.ContainsSubset(apiStruct, planStruct)
 			assert.Equal(t, tc.expectEq, eq)
 			assert.Equal(t, tc.expectErr, err)
 		})
