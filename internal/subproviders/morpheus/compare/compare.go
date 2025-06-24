@@ -104,6 +104,7 @@ func ContainsSubset(super, sub any) (bool, error) {
 				if used[j] {
 					continue
 				}
+
 				if _, err = ContainsSubset(vSuper.Index(j).Interface(), vSub.Index(i).Interface()); err == nil {
 					used[j] = true
 					found = true
@@ -121,8 +122,7 @@ func ContainsSubset(super, sub any) (bool, error) {
 
 	// for all other types
 	default:
-		eq := reflect.DeepEqual(super, sub)
-		if eq {
+		if reflect.DeepEqual(super, sub) {
 			return true, nil
 		}
 
