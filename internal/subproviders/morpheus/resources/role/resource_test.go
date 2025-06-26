@@ -524,6 +524,92 @@ permissions = jsonencode({
 	})
 }
 
+// test that there's no change in plan after running an apply
+func TestAccMorpheusRolePermissionsPlanAfterApply(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfigGood := `resource "hpe_morpheus_role" "plan_after_apply_good" {
+name = "TestAccMorpheusRolePermissionsPlanAfterApplyGoodPermissions"
+permissions = jsonencode({
+  "featurePermissions": [
+    {
+      "code" = "integrations-ansible"
+      "access" = "full"
+    }
+  ],
+  "globalSiteAccess" = "full"
+})
+}
+`
+	resourceConfigBad := `resource "hpe_morpheus_role" "plan_after_apply_bad" {
+name = "TestAccMorpheusRolePermissionsPlanAfterApplyBadPermissions"
+permissions = jsonencode({
+  "globalSiteAccessFoo" = "full"
+})
+}
+`
+
+	// remember, jsonencode() sorts the keys of an object
+	//nolint:lll
+	expectedGoodPermissionsJSON := `{"featurePermissions":[{"access":"full","code":"integrations-ansible"}],"globalSiteAccess":"full"}`
+
+	expectedBadPermissionsJSON := `{"globalSiteAccessFoo":"full"}`
+
+	checksGood := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.plan_after_apply_good",
+			"name",
+			"TestAccMorpheusRolePermissionsPlanAfterApplyGoodPermissions",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.plan_after_apply_good",
+			"permissions",
+			expectedGoodPermissionsJSON,
+		),
+	}
+
+	checksBad := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.plan_after_apply_bad",
+			"name",
+			"TestAccMorpheusRolePermissionsPlanAfterApplyBadPermissions",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.plan_after_apply_bad",
+			"permissions",
+			expectedBadPermissionsJSON,
+		),
+	}
+
+	checkFnGood := resource.ComposeAggregateTestCheckFunc(checksGood...)
+	checkFnBad := resource.ComposeAggregateTestCheckFunc(checksBad...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfigGood,
+				ExpectNonEmptyPlan: false, // works on refresh plan after apply, too
+				Check:              checkFnGood,
+				ResourceName:       "hpe_morpheus_role.plan_after_apply_good",
+				PlanOnly:           false,
+			},
+			{
+				Config:             providerConfig + resourceConfigBad,
+				ExpectNonEmptyPlan: true, // works on refresh plan after apply, too
+				Check:              checkFnBad,
+				ResourceName:       "hpe_morpheus_role.plan_after_apply_bad",
+				PlanOnly:           false,
+			},
+		},
+	})
+}
+
 // Needed for when we want to verify entirely computed permissions in state.
 // We can't compare against a string constant because the IDs of the featurePermissions can
 // differ between Morpheus installs; presumably computed in parallel at Morpheus initialisation.
