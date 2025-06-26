@@ -4,6 +4,7 @@ package role
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/compare"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
@@ -72,8 +74,28 @@ func getRoleAsState(
 	state.Id = convert.Int64ToType(r.Role.Id)
 	state.Name = convert.StrToType(r.Role.Name)
 	state.Description = convert.StrToType(r.Role.Description)
+	state.LandingUrl = convert.StrToType(r.Role.LandingUrl)
 	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
+	state.MultitenantLocked = convert.BoolToType(r.Role.MultitenantLocked)
 	state.RoleType = convert.StrToType(r.Role.RoleType)
+
+	// for sorting the permission keys and storing to state, we don't want the Role properties,
+	// only the permission related ones
+	r.Role = nil
+
+	sortedPermissions, err := json.Marshal(r)
+	if err != nil {
+		diags.AddError(
+			"get role (read permissions)",
+			fmt.Sprintf("role %d: failed to marshal permissions: "+err.Error(), id),
+		)
+
+		return state, diags
+	}
+
+	sortedPermissionsStr := string(sortedPermissions)
+
+	state.Permissions = convert.StrToType(&sortedPermissionsStr)
 
 	return state, diags
 }
@@ -91,27 +113,52 @@ func (r *Resource) Create(
 	}
 
 	addRole := sdk.NewAddRolesRequestRoleWithDefaults()
+	name := plan.Name.ValueString()
+
+	// Only add to create request if user has set permissions explicitly.
+	// Also, set permissions first so that it doesn't override the other
+	// addRole fields when we unmarshal.
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+
+		data := []byte(plan.Permissions.ValueString())
+
+		// populate the addRole request with user-provided config data
+		err := json.Unmarshal(data, &addRole)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create role resource",
+				"role "+name+": failed to unmarshal permissions to request: "+err.Error(),
+			)
+
+			return
+
+		}
+	}
 
 	// required
-	name := plan.Name.ValueString()
 	addRole.SetAuthority(name)
 
 	// optional
 	if !plan.Description.IsUnknown() {
 		addRole.SetDescription(plan.Description.ValueString())
 	}
+
+	if !plan.LandingUrl.IsUnknown() {
+		addRole.SetLandingUrl(plan.LandingUrl.ValueString())
+	}
+
+	// optional_computed
 	if !plan.Multitenant.IsUnknown() {
+		// default: false
 		addRole.SetMultitenant(plan.Multitenant.ValueBool())
 	}
-	if !plan.RoleType.IsUnknown() {
-		if plan.RoleType.ValueString() != "user" {
-			resp.Diagnostics.AddError(
-				"create role resource",
-				"role "+name+": currently only 'user' role_type is supported",
-			)
+	if !plan.MultitenantLocked.IsUnknown() {
+		// default: false
+		addRole.SetMultitenantLocked(plan.MultitenantLocked.ValueBool())
+	}
 
-			return
-		}
+	if !plan.RoleType.IsUnknown() {
+		// default: user
 		addRole.SetRoleType(plan.RoleType.ValueString())
 	}
 
@@ -167,6 +214,14 @@ func (r *Resource) Create(
 		return
 	}
 
+	// If the user provided a config as part of the create,
+	// then set the state to what was in the plan (optional).
+	// Otherwise, in the case of the user providing NO config,
+	// set it to what was read from the API (computed, set in getRoleAsState).
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		state.Permissions = plan.Permissions
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -178,9 +233,9 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	var plan RoleModel
+	var state RoleModel
 
-	diags := req.State.Get(ctx, &plan)
+	diags := req.State.Get(ctx, &state)
 	if diags.HasError() {
 		return
 	}
@@ -195,8 +250,8 @@ func (r *Resource) Read(
 		return
 	}
 
-	id := plan.Id.ValueInt64()
-	state, pdiags := getRoleAsState(ctx, id, client)
+	id := state.Id.ValueInt64()
+	apiState, pdiags := getRoleAsState(ctx, id, client)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -207,7 +262,50 @@ func (r *Resource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	var statePermissionData, apiPermissionData sdk.GetRole200Response
+
+	// On import, or when the user does not set the permissions attribute,
+	// the permissions attribute will be null or unknown, so we need to ignore the subset check
+	// and just set it to the API Permissions - i.e. fully computed
+	if !state.Permissions.IsNull() && !state.Permissions.IsUnknown() {
+
+		statePermissionStr := state.Permissions.ValueString()
+		err = json.Unmarshal([]byte(statePermissionStr), &statePermissionData)
+		if err != nil {
+			resp.Diagnostics.Append(pdiags...)
+			resp.Diagnostics.AddError(
+				"read role resource",
+				fmt.Sprintf("role %d: failed to unmarshal permissions from state; permissions: %s",
+					id, statePermissionStr),
+			)
+
+			return
+
+		}
+
+		apiPermissionStr := apiState.Permissions.ValueString()
+		err = json.Unmarshal([]byte(apiPermissionStr), &apiPermissionData)
+		if err != nil {
+			resp.Diagnostics.Append(pdiags...)
+			resp.Diagnostics.AddError(
+				"read role resource",
+				fmt.Sprintf("role %d: failed to unmarshal permissions from api; permissions: %s",
+					id, apiPermissionStr),
+			)
+
+			return
+
+		}
+
+		// If the existing state is a subset of the response from the API,
+		// then we're safe to keep using the existing state as the new state.
+		// Otherwise, it'll attempt to set the state to the API permissions which will show a mismatch.
+		if eq, err := compare.ContainsSubset(apiPermissionData, statePermissionData); eq && err == nil {
+			apiState.Permissions = state.Permissions
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

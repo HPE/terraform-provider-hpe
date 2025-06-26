@@ -4,8 +4,11 @@ package role
 
 import (
 	"context"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,6 +28,14 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The ID of the role",
 				MarkdownDescription: "The ID of the role",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"landing_url": schema.StringAttribute{
+				Optional:            true,
+				Description:         "An optional override for the default landing page after login for a user.",
+				MarkdownDescription: "An optional override for the default landing page after login for a user.",
 			},
 			"multitenant": schema.BoolAttribute{
 				Optional:            true,
@@ -33,10 +44,26 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*",
 				Default:             booldefault.StaticBool(false),
 			},
+			"multitenant_locked": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
+				MarkdownDescription: "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
+				Default:             booldefault.StaticBool(false),
+			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "A unique name for the role",
 				MarkdownDescription: "A unique name for the role",
+			},
+			"permissions": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "A JSON document containing the set of permissions to assign to the role",
+				MarkdownDescription: "A JSON document containing the set of permissions to assign to the role",
+				Validators: []validator.String{
+					morpheusvalidators.JSONValidator{},
+				},
 			},
 			"role_type": schema.StringAttribute{
 				Optional:            true,
@@ -56,9 +83,12 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type RoleModel struct {
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Multitenant types.Bool   `tfsdk:"multitenant"`
-	Name        types.String `tfsdk:"name"`
-	RoleType    types.String `tfsdk:"role_type"`
+	Description       types.String `tfsdk:"description"`
+	Id                types.Int64  `tfsdk:"id"`
+	LandingUrl        types.String `tfsdk:"landing_url"`
+	Multitenant       types.Bool   `tfsdk:"multitenant"`
+	MultitenantLocked types.Bool   `tfsdk:"multitenant_locked"`
+	Name              types.String `tfsdk:"name"`
+	Permissions       types.String `tfsdk:"permissions"`
+	RoleType          types.String `tfsdk:"role_type"`
 }
