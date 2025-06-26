@@ -41,10 +41,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // Some notes about what we expect to happen with Permissions in acceptance test import testing:
-// On import, if the permissions have been computed at create, then the import step will pass happily.
-// If the permissions have been set by the user at create, then the import verification step will fail,
-// because the API permissions being imported do not match the existing resource's permissions in state.
-// Therefore, for any tests using user-set permissions, we skip the permissions import verification check.
+
+// On import, if the permissions have been computed at create,
+// then the import step will pass happily.
+// If the permissions have been set by the user at create,
+// then the import verification step will fail,
+// because the API permissions being imported do not match the
+// existing resource's permissions in state.
+
+// Therefore, for any tests using user-set permissions,
+// we skip the permissions import verification check.
 
 // Check that we can create a role with only required attributes specified
 func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
@@ -146,7 +152,8 @@ resource "hpe_morpheus_role" "example_all" {
   })
 }
 `
-	// jsonencode() will sort the keys in objects
+	// jsonencode() will have sorted the keys in objects
+	//nolint:lll
 	expectedPermissionsJSON := `{"featurePermissions":[{"access":"full","code":"integrations-ansible"}],"globalSiteAccess":"full"}`
 
 	checks := []resource.TestCheckFunc{
@@ -198,8 +205,9 @@ resource "hpe_morpheus_role" "example_all" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,                    // Check state post import
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				//nolint:lll
 				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
 				ResourceName:            "hpe_morpheus_role.example_all",
 				Check:                   checkFn,
@@ -324,9 +332,10 @@ resource "hpe_morpheus_role" "default_access_permissions_ok" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true, // Check state post import
-				ResourceName:            "hpe_morpheus_role.default_access_permissions_ok",
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_role.default_access_permissions_ok",
+				//nolint:lll
 				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
 				Check:                   checkFn,
 			},
@@ -439,8 +448,9 @@ func TestAccMorpheusRolePermissionsFeaturePermissionsJSONStringOk(t *testing.T) 
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,                    // Check state post import
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				//nolint:lll
 				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
 				ResourceName:            "hpe_morpheus_role.json_string_ok",
 				Check:                   checkFn,
@@ -476,6 +486,7 @@ permissions = jsonencode({
 `
 
 	// remember, jsonencode() sorts the keys of an object
+	//nolint:lll
 	expectedFeaturePermissionsJSON := `{"featurePermissions":[{"access":"full","code":"integrations-ansible"},{"access":"none","code":"admin-appliance"}]}`
 
 	checks := []resource.TestCheckFunc{
@@ -502,8 +513,9 @@ permissions = jsonencode({
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,                    // Check state post import
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				//nolint:lll
 				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
 				ResourceName:            "hpe_morpheus_role.json_encode_ok",
 				Check:                   checkFn,
@@ -515,20 +527,23 @@ permissions = jsonencode({
 // Needed for when we want to verify entirely computed permissions in state.
 // We can't compare against a string constant because the IDs of the featurePermissions can
 // differ between Morpheus installs; presumably computed in parallel at Morpheus initialisation.
-func composeCheckFnStatePermissionsEqAPIPermissions(t *testing.T, resource string) resource.TestCheckFunc {
+func composeCheckFnStatePermissionsEqAPIPermissions(
+	t *testing.T,
+	resource string,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[resource]
 		if rs == nil {
 			return fmt.Errorf("resource not found: %s", resource)
 		}
 
-		roleId := rs.Primary.Attributes["id"]
-		roleIdInt, err := strconv.Atoi(roleId)
+		roleID := rs.Primary.Attributes["id"]
+		roleIDInt, err := strconv.Atoi(roleID)
 		if err != nil {
 			return err
 		}
 
-		roleResp, err := testhelpers.GetRole(t, int64(roleIdInt))
+		roleResp, err := testhelpers.GetRole(t, int64(roleIDInt))
 		if err != nil {
 			return err
 		}
@@ -547,10 +562,10 @@ func composeCheckFnStatePermissionsEqAPIPermissions(t *testing.T, resource strin
 
 		// the state Permissions should have already been sorted by a json.Marshal at create time
 		if apiPermissionsStr != statePermisions {
-			return fmt.Errorf("permissions in state do not match API permissions:\nexpected: %s\ngot: %s", statePermisions, apiPermissions)
+			return fmt.Errorf("permissions in state do not match API permissions:\nexpected: %s\ngot: %s",
+				statePermisions, apiPermissions)
 		}
 
 		return nil
-
 	}
 }

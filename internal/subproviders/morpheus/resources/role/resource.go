@@ -89,12 +89,14 @@ func getRoleAsState(
 			"get role (read permissions)",
 			fmt.Sprintf("role %d: failed to marshal permissions: "+err.Error(), id),
 		)
+
 		return state, diags
 	}
 
 	sortedPermissionsStr := string(sortedPermissions)
 
 	state.Permissions = convert.StrToType(&sortedPermissionsStr)
+
 	return state, diags
 }
 
@@ -273,7 +275,8 @@ func (r *Resource) Read(
 			resp.Diagnostics.Append(pdiags...)
 			resp.Diagnostics.AddError(
 				"read role resource",
-				fmt.Sprintf("role %d: failed to unmarshal permissions from state; permissions: %s", id, statePermissionStr),
+				fmt.Sprintf("role %d: failed to unmarshal permissions from state; permissions: %s",
+					id, statePermissionStr),
 			)
 
 			return
@@ -286,7 +289,8 @@ func (r *Resource) Read(
 			resp.Diagnostics.Append(pdiags...)
 			resp.Diagnostics.AddError(
 				"read role resource",
-				fmt.Sprintf("role %d: failed to unmarshal permissions from api; permissions: %s", id, apiPermissionStr),
+				fmt.Sprintf("role %d: failed to unmarshal permissions from api; permissions: %s",
+					id, apiPermissionStr),
 			)
 
 			return
