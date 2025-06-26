@@ -31,7 +31,10 @@ resource "hpe_morpheus_role" "example" {
 ### Optional
 
 - `description` (String) Description
+- `landing_url` (String) An optional override for the default landing page after login for a user.
 - `multitenant` (Boolean) Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*
+- `multitenant_locked` (Boolean) Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*
+- `permissions` (String) A JSON document containing the set of permissions to assign to the role
 - `role_type` (String) Role type
 
 ### Read-Only
