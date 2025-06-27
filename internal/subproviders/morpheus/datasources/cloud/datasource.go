@@ -151,13 +151,13 @@ func (d *DataSource) Read(
 	data.Id = convert.Int64ToType(cloud.Id)
 	data.Name = convert.StrToType(cloud.Name)
 	data.Code = convert.StrToType(cloud.Code)
-	data.CostingMode = convert.StrToType(cloud.CostingMode)
-	data.ExternalId = convert.StrToType(cloud.ExternalId)
-	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode)
+	data.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	data.ExternalId = convert.StrToType(cloud.ExternalId.Get())
+	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
 	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
 	data.Labels = convert.StrSliceToSet(cloud.Labels)
-	data.Location = convert.StrToType(cloud.Location)
-	data.TimeZone = convert.StrToType(cloud.Timezone)
+	data.Location = convert.StrToType(cloud.Location.Get())
+	data.TimeZone = convert.StrToType(cloud.Timezone.Get())
 
 	var groupIDs []int64
 	for _, g := range cloud.Groups {

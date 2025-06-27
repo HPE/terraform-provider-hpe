@@ -88,9 +88,9 @@ func getUserAsState(
 	state.Email = convert.StrToType(u.User.Email)
 	state.FirstName = convert.StrToType(u.User.FirstName)
 	state.LastName = convert.StrToType(u.User.LastName)
-	state.LinuxUsername = convert.StrToType(u.User.LinuxUsername)
-	state.WindowsUsername = convert.StrToType(u.User.WindowsUsername)
-	state.LinuxKeyPairId = convert.Int64ToType(u.User.LinuxKeyPairId)
+	state.LinuxUsername = convert.StrToType(u.User.LinuxUsername.Get())
+	state.WindowsUsername = convert.StrToType(u.User.WindowsUsername.Get())
+	state.LinuxKeyPairId = convert.Int64ToType(u.User.LinuxKeyPairId.Get())
 	state.PasswordExpired = convert.BoolToType(u.User.PasswordExpired)
 	state.ReceiveNotifications = convert.BoolToType(u.User.ReceiveNotifications)
 	state.RoleIds = roleIDSet
