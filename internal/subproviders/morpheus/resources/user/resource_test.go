@@ -8,15 +8,14 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/HPE/terraform-provider-hpe/internal/provider"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
-	"github.com/HPE/terraform-provider-hpe/internal/provider"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
 )
 
 func TestMain(m *testing.M) {
@@ -69,6 +68,136 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	tfprotov6.ProviderServer, error,
 ){
 	"hpe": newProviderWithError,
+}
+
+func TestAccMorpheusUserExample(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := `
+variable "testacc_morpheus_url" {}
+variable "testacc_morpheus_username" {}
+variable "testacc_morpheus_password" {}
+variable "testacc_morpheus_insecure" {}
+
+provider "hpe" {
+	morpheus {
+		url = var.testacc_morpheus_url
+		username = var.testacc_morpheus_username
+		password = var.testacc_morpheus_password
+		insecure = var.testacc_morpheus_insecure
+	}
+}
+`
+	path := "../../../../../examples/resources/hpe_morpheus_user/resource.tf"
+	exampleConfig, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("Error reading example config: %v", err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"username",
+			"testacc-example",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"email",
+			"user@example.com",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"role_ids.#",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"role_ids.0",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"first_name",
+			"Joe",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"last_name",
+			"User",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_username",
+			"winuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"password_wo",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_username",
+			"linuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"windows_username",
+			"winuser",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.example",
+			"linux_password_wo",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:   providerConfig + string(exampleConfig),
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+		},
+	})
 }
 
 // Test update of tenant_id attribute separately, as it
@@ -139,22 +268,9 @@ func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	// nolint: goconst
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := testhelpers.ProviderBlock()
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-`
+	// nolint: goconst
 	resourceConfig := `
 resource "hpe_morpheus_user" "foo" {
 	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
@@ -265,21 +381,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
-
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-`
+	providerConfig := testhelpers.ProviderBlock()
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
 	baseChecks := []resource.TestCheckFunc{
@@ -950,21 +1052,9 @@ func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := testhelpers.ProviderBlock()
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-
+	resourceCfg := `
 # Role id 0 causes a test failure because it is ignored by
 # the server and only the other two roles are created
 #resource "hpe_morpheus_user" "bar" {
@@ -973,9 +1063,6 @@ provider "hpe" {
 #password = "Secret123!"
 #roles = [3,0,1]
 #}
-`
-
-	resourceCfg := `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
@@ -1301,21 +1388,8 @@ func TestAccMorpheusUserImportOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := testhelpers.ProviderBlock()
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-`
 	// nolint: gosec
 	resourceCfgWithPassword := `
 resource "hpe_morpheus_user" "foo" {
