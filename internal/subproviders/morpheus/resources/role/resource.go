@@ -73,8 +73,8 @@ func getRoleAsState(
 
 	state.Id = convert.Int64ToType(r.Role.Id)
 	state.Name = convert.StrToType(r.Role.Name)
-	state.Description = convert.StrToType(r.Role.Description)
-	state.LandingUrl = convert.StrToType(r.Role.LandingUrl)
+	state.Description = convert.StrToType(r.Role.Description.Get())
+	state.LandingUrl = convert.StrToType(r.Role.LandingUrl.Get())
 	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
 	state.MultitenantLocked = convert.BoolToType(r.Role.MultitenantLocked)
 	state.RoleType = convert.StrToType(r.Role.RoleType)

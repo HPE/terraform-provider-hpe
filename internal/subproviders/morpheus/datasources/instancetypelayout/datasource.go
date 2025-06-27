@@ -177,7 +177,7 @@ func (d *DataSource) Read(
 	data.Id = convert.Int64ToType(layout.Id)
 	data.Name = convert.StrToType(layout.Name)
 	data.Code = convert.StrToType(layout.Code)
-	data.Description = convert.StrToType(layout.Description)
+	data.Description = convert.StrToType(layout.Description.Get())
 	data.Version = convert.StrToType(layout.InstanceVersion)
 	data.SortOrder = convert.Int64ToType(layout.SortOrder)
 
