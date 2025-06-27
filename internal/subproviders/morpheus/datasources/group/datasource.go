@@ -145,8 +145,8 @@ func (d *DataSource) Read(
 
 	data.Id = convert.Int64ToType(group.Id)
 	data.Name = convert.StrToType(group.Name)
-	data.Code = convert.StrToType(group.Code)
-	data.Location = convert.StrToType(group.Location)
+	data.Code = convert.StrToType(group.Code.Get())
+	data.Location = convert.StrToType(group.Location.Get())
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
