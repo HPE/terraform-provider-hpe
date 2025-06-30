@@ -14,10 +14,8 @@ description: |-
 
 {{ tffile "internal/subproviders/morpheus/resources/role/example.tf" }}
 
+## Example Usage (Using legacy Morpheus Terraform provider)
+
+{{ tffile "internal/subproviders/morpheus/resources/role/example-using-legacy-provider.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
-
-## Additional Information
-
-Currently, only the `user` `role_type` is supported through the Terraform provider.
-
-Support for `account` `role_type` is in progress.
