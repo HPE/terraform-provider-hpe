@@ -59,22 +59,19 @@ func AnyToValue(
 		return types.BoolValue(b), nil
 
 	case basetypes.NumberType:
-		bf := new(big.Float)
 		switch v := a.(type) {
 		case int:
-			bf.SetInt64(int64(v))
+			return types.NumberValue(new(big.Float).SetInt64(int64(v))), nil
 		case int64:
-			bf.SetInt64(v)
+			return types.NumberValue(new(big.Float).SetInt64(v)), nil
 		case float64:
-			bf.SetFloat64(v)
+			return types.NumberValue(new(big.Float).SetFloat64(v)), nil
 		default:
 			return nil, fmt.Errorf(
 				"expected number, got %T",
 				a,
 			)
 		}
-
-		return types.NumberValue(bf), nil
 
 	case basetypes.Float64Type:
 		switch v := a.(type) {
@@ -144,6 +141,7 @@ func AnyToValue(
 }
 
 func NullToValue(targetType attr.Type) (attr.Value, error) {
+	// primitives require "basetypes" while collections require "types"
 	switch t := targetType.(type) {
 	case basetypes.StringType:
 		return types.StringNull(), nil
@@ -153,6 +151,8 @@ func NullToValue(targetType attr.Type) (attr.Value, error) {
 		return types.Int64Null(), nil
 	case basetypes.Float64Type:
 		return types.Float64Null(), nil
+	case basetypes.NumberType:
+		return types.NumberNull(), nil
 	case types.ListType:
 		return types.ListNull(t.ElemType), nil
 	case types.SetType:
@@ -161,6 +161,10 @@ func NullToValue(targetType attr.Type) (attr.Value, error) {
 		return types.MapNull(t.ElemType), nil
 	case types.ObjectType:
 		return types.ObjectNull(t.AttrTypes), nil
+	case types.TupleType:
+		return types.TupleNull(t.ElemTypes), nil
+	case attr.TypeWithElementTypes:
+		return types.TupleNull(t.ElementTypes()), nil
 	default:
 		return nil, fmt.Errorf(
 			"unsupported type: %T",
@@ -177,50 +181,51 @@ func MapToValue(
 	attr.Value,
 	error,
 ) {
-	if typ, ok := targetType.(types.ObjectType); ok {
-		if len(m) == 0 {
-			return types.ObjectValueMust(
-				typ.AttrTypes,
-				map[string]attr.Value{},
-			), nil
-		}
-
-		vm := make(map[string]attr.Value, len(m))
-		tm := make(map[string]attr.Type, len(typ.AttrTypes))
-
-		// Only process keys that have target types
-		for k, v := range m {
-			if targetValue, exists := typ.AttrTypes[k]; exists {
-				vv, err := AnyToValue(ctx, v, targetValue)
-				if err != nil {
-					return types.ObjectNull(typ.AttrTypes),
-						fmt.Errorf(
-							"error decoding key %q: %w",
-							k,
-							err,
-						)
-				}
-				vm[k] = vv
-				tm[k] = targetValue
-			} else {
-				tflog.Trace(
-					ctx,
-					"skipping map key with no target type",
-					map[string]any{
-						"key":   k,
-						"value": fmt.Sprintf("%v", v),
-					},
-				)
-			}
-		}
-
-		return types.ObjectValueMust(tm, vm), nil
+	typ, ok := targetType.(types.ObjectType)
+	if !ok {
+		return nil, fmt.Errorf(
+			"expected Object type for map, got %T",
+			targetType,
+		)
 	}
 
-	return nil, fmt.Errorf(
-		"expected Object type for map, got %T",
-		targetType,
-	)
+	if len(m) == 0 {
+		return types.ObjectValueMust(
+			typ.AttrTypes,
+			map[string]attr.Value{},
+		), nil
+	}
+
+	vm := make(map[string]attr.Value, len(m))
+	tm := make(map[string]attr.Type, len(typ.AttrTypes))
+
+	// Only process keys that have target types
+	for k, v := range m {
+		if targetValue, exists := typ.AttrTypes[k]; exists {
+			vv, err := AnyToValue(ctx, v, targetValue)
+			if err != nil {
+				return types.ObjectNull(typ.AttrTypes),
+					fmt.Errorf(
+						"error decoding key %q: %w",
+						k,
+						err,
+					)
+			}
+			vm[k] = vv
+			tm[k] = targetValue
+		} else {
+			tflog.Trace(
+				ctx,
+				"skipping map key with no target type",
+				map[string]any{
+					"key":   k,
+					"value": fmt.Sprintf("%v", v),
+				},
+			)
+		}
+	}
+
+	return types.ObjectValueMust(tm, vm), nil
 }
 
 func CollectionToValue(
