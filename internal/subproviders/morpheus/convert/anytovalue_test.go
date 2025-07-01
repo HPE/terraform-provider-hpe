@@ -1,6 +1,4 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-// Current Date and Time (UTC): 2025-07-01 16:23:10
-// Current User: stuart-mclaren-hpe
 
 package convert
 
