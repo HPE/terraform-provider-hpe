@@ -26,6 +26,53 @@ var (
 	_ resource.Resource = &Resource{}
 )
 
+// We unmarshal permissions into this struct on Create to avoid an unmarshaler error from lacking a required field
+//
+//nolint:lll
+type createPermissions struct {
+	FeaturePermissions []sdk.AddRolesRequestRoleFeaturePermissionsInner `json:"featurePermissions,omitempty"`
+	// Set the default access level for for groups (sites). Only applies to user roles.
+	GlobalSiteAccess *string `json:"globalSiteAccess,omitempty"`
+	// Set the access level for the specified groups (sites). Only applies to user roles.
+	Sites []sdk.AddRolesRequestRoleSitesInner `json:"sites,omitempty"`
+	// Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.
+	GlobalZoneAccess *string `json:"globalZoneAccess,omitempty"`
+	// Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.
+	Zones []sdk.AddRolesRequestRoleZonesInner `json:"zones,omitempty"`
+	// Set the default access level for for instance types
+	GlobalInstanceTypeAccess *string `json:"globalInstanceTypeAccess,omitempty"`
+	// Set the access level for the specified instance types
+	InstanceTypePermissions []sdk.AddRolesRequestRoleInstanceTypePermissionsInner `json:"instanceTypePermissions,omitempty"`
+	// Set the default access level for blueprints
+	GlobalAppTemplateAccess *string `json:"globalAppTemplateAccess,omitempty"`
+	// Set the access level for the specified blueprints (appTemplates)
+	AppTemplatePermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner `json:"appTemplatePermissions,omitempty"`
+	// Set the default access level for catalog item types
+	GlobalCatalogItemTypeAccess *string `json:"globalCatalogItemTypeAccess,omitempty"`
+	// Set the access level for the specified catalog item types
+	CatalogItemTypePermissions []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner `json:"catalogItemTypePermissions,omitempty"`
+	// Set the default access level for personas
+	GlobalPersonaAccess *string `json:"globalPersonaAccess,omitempty"`
+	// Set the access level for the specified personas
+	PersonaPermissions []sdk.AddRolesRequestRolePersonaPermissionsInner `json:"personaPermissions,omitempty"`
+	// Set the default access level for VDI pools
+	GlobalVdiPoolAccess *string `json:"globalVdiPoolAccess,omitempty"`
+	// Set the access level for the specified VDI pools
+	VdiPoolPermissions []sdk.AddRolesRequestRoleVdiPoolPermissionsInner `json:"vdiPoolPermissions,omitempty"`
+	// Set the default access level for report types
+	GlobalReportTypeAccess *string `json:"globalReportTypeAccess,omitempty"`
+	// Set the access level for the specified report types
+	ReportTypePermissions []sdk.AddRolesRequestRoleReportTypePermissionsInner `json:"reportTypePermissions,omitempty"`
+	// Set the default access level for tasks
+	GlobalTaskAccess *string `json:"globalTaskAccess,omitempty"`
+	// Set the access level for the specified tasks
+	TaskPermissions []sdk.AddRolesRequestRoleTaskPermissionsInner `json:"taskPermissions,omitempty"`
+	// Set the default access level for workflows (taskSets)
+	GlobalTaskSetAccess *string `json:"globalTaskSetAccess,omitempty"`
+	// Set the access level for the specified workflows (taskSets)
+	TaskSetPermissions []sdk.AddRolesRequestRoleTaskSetPermissionsInner `json:"taskSetPermissions,omitempty"`
+}
+
 func NewResource() resource.Resource {
 	return &Resource{}
 }
@@ -122,8 +169,8 @@ func (r *Resource) Create(
 
 		data := []byte(plan.Permissions.ValueString())
 
-		// populate the addRole request with user-provided config data
-		err := json.Unmarshal(data, &addRole)
+		permissions := createPermissions{}
+		err := json.Unmarshal(data, &permissions)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"create role resource",
@@ -132,6 +179,51 @@ func (r *Resource) Create(
 
 			return
 
+		}
+
+		// populate the addRole request with user-provided config data
+		addRole.SetFeaturePermissions(permissions.FeaturePermissions)
+
+		addRole.SetSites(permissions.Sites)
+		addRole.SetZones(permissions.Zones)
+		addRole.SetInstanceTypePermissions(permissions.InstanceTypePermissions)
+		addRole.SetAppTemplatePermissions(permissions.AppTemplatePermissions)
+		addRole.SetCatalogItemTypePermissions(permissions.CatalogItemTypePermissions)
+		addRole.SetPersonaPermissions(permissions.PersonaPermissions)
+		addRole.SetVdiPoolPermissions(permissions.VdiPoolPermissions)
+		addRole.SetReportTypePermissions(permissions.ReportTypePermissions)
+		addRole.SetTaskPermissions(permissions.TaskPermissions)
+		addRole.SetTaskSetPermissions(permissions.TaskSetPermissions)
+
+		if permissions.GlobalSiteAccess != nil {
+			addRole.SetGlobalSiteAccess(*permissions.GlobalSiteAccess)
+		}
+		if permissions.GlobalZoneAccess != nil {
+			addRole.SetGlobalZoneAccess(*permissions.GlobalZoneAccess)
+		}
+		if permissions.GlobalInstanceTypeAccess != nil {
+			addRole.SetGlobalInstanceTypeAccess(*permissions.GlobalInstanceTypeAccess)
+		}
+		if permissions.GlobalAppTemplateAccess != nil {
+			addRole.SetGlobalAppTemplateAccess(*permissions.GlobalAppTemplateAccess)
+		}
+		if permissions.GlobalCatalogItemTypeAccess != nil {
+			addRole.SetGlobalCatalogItemTypeAccess(*permissions.GlobalCatalogItemTypeAccess)
+		}
+		if permissions.GlobalPersonaAccess != nil {
+			addRole.SetGlobalPersonaAccess(*permissions.GlobalPersonaAccess)
+		}
+		if permissions.GlobalVdiPoolAccess != nil {
+			addRole.SetGlobalVdiPoolAccess(*permissions.GlobalVdiPoolAccess)
+		}
+		if permissions.GlobalReportTypeAccess != nil {
+			addRole.SetGlobalReportTypeAccess(*permissions.GlobalReportTypeAccess)
+		}
+		if permissions.GlobalTaskAccess != nil {
+			addRole.SetGlobalTaskAccess(*permissions.GlobalTaskAccess)
+		}
+		if permissions.GlobalTaskSetAccess != nil {
+			addRole.SetGlobalTaskSetAccess(*permissions.GlobalTaskSetAccess)
 		}
 	}
 
