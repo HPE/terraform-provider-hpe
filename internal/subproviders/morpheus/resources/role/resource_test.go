@@ -668,7 +668,7 @@ resource "hpe_morpheus_role" "testacc_role_task_permissions" {
 			"TestAccMorpheusRolePermissionsTaskPermissionsOk",
 		),
 		func(s *terraform.State) error {
-			taskId, err := testhelpers.ExtractValue(
+			taskID, err := testhelpers.ExtractValue(
 				s,
 				"data.morpheus_task.testacc_task",
 				"id",
@@ -676,7 +676,7 @@ resource "hpe_morpheus_role" "testacc_role_task_permissions" {
 			if err != nil {
 				return err
 			}
-			taskIdInt, err := strconv.Atoi(taskId)
+			taskIDInt, err := strconv.Atoi(taskID)
 			if err != nil {
 				return err
 			}
@@ -690,7 +690,7 @@ resource "hpe_morpheus_role" "testacc_role_task_permissions" {
 
 			expectedPermissionsJSON := fmt.Sprintf(
 				`{"taskPermissions":[{"access":"full","id":%d}]}`,
-				taskIdInt)
+				taskIDInt)
 
 			if statePermisions != expectedPermissionsJSON {
 				return fmt.Errorf(
@@ -699,7 +699,6 @@ resource "hpe_morpheus_role" "testacc_role_task_permissions" {
 			}
 
 			return nil
-
 		},
 	}
 
@@ -734,7 +733,8 @@ resource "hpe_morpheus_role" "testacc_role_task_permissions" {
 	})
 }
 
-// Tests that our mixed usage for legacy provider example file template used for docs is a valid config
+// Tests that our mixed usage for legacy provider example
+// file template used for docs is a valid config
 func TestAccMorpheusRoleExampleLegacyProviderOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
@@ -761,7 +761,6 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 		"RoleType", "user",
 		"Task0Access", "full",
 	)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -799,7 +798,7 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 		),
 		// to test the permissions
 		func(s *terraform.State) error {
-			taskId, err := testhelpers.ExtractValue(
+			taskID, err := testhelpers.ExtractValue(
 				s,
 				"data.morpheus_task.testacc_role_example_legacy_provider_task_datasource",
 				"id",
@@ -807,7 +806,7 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 			if err != nil {
 				return err
 			}
-			taskIdInt, err := strconv.Atoi(taskId)
+			taskIDInt, err := strconv.Atoi(taskID)
 			if err != nil {
 				return err
 			}
@@ -821,7 +820,7 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 
 			expectedPermissionsJSON := fmt.Sprintf(
 				`{"taskPermissions":[{"access":"full","id":%d}]}`,
-				taskIdInt)
+				taskIDInt)
 
 			if statePermisions != expectedPermissionsJSON {
 				return fmt.Errorf(
