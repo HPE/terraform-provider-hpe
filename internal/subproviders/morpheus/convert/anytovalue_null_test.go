@@ -33,6 +33,7 @@ func (t mockUnsupportedType) String() string {
 
 func (t mockUnsupportedType) Equal(o attr.Type) bool {
 	_, ok := o.(mockUnsupportedType)
+
 	return ok
 }
 
@@ -40,25 +41,25 @@ func (t mockUnsupportedType) Type() attr.Type {
 	return mockUnsupportedType{}
 }
 
-func (t mockUnsupportedType) ValueType(ctx context.Context) attr.Value {
+func (t mockUnsupportedType) ValueType(_ context.Context) attr.Value {
 	return nil
 }
 
 func (t mockUnsupportedType) ValueFromTerraform(
-	ctx context.Context,
-	in tftypes.Value,
+	_ context.Context,
+	_ tftypes.Value,
 ) (attr.Value, error) {
 	return nil, fmt.Errorf("cannot convert value")
 }
 
-func (t mockUnsupportedType) TerraformType(ctx context.Context) tftypes.Type {
+func (t mockUnsupportedType) TerraformType(_ context.Context) tftypes.Type {
 	return tftypes.DynamicPseudoType
 }
 
 func (t mockUnsupportedType) Validate(
-	ctx context.Context,
-	in tftypes.Value,
-	path path.Path,
+	_ context.Context,
+	_ tftypes.Value,
+	_ path.Path,
 ) diag.Diagnostics {
 	return nil
 }
@@ -204,4 +205,3 @@ func TestNullToValueUnsupportedType(t *testing.T) {
 		"should error with unsupported type message",
 	)
 }
-

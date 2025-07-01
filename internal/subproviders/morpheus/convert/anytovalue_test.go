@@ -171,12 +171,12 @@ func TestAnyToValue(t *testing.T) {
 					"labels": []any{"prod", "us-west"},
 					"annotations": map[string]any{
 						"created_by": "admin",
-						"timestamp": 1625148107,
+						"timestamp":  1625148107,
 					},
 				},
 				"spec": map[string]any{
 					"replicas": 3,
-					"ports": []any{80, 443},
+					"ports":    []any{80, 443},
 					"config": map[string]any{
 						"enabled": true,
 						"timeout": 30.5,
@@ -196,7 +196,7 @@ func TestAnyToValue(t *testing.T) {
 							"annotations": types.ObjectType{
 								AttrTypes: map[string]attr.Type{
 									"created_by": types.StringType,
-									"timestamp": types.NumberType,
+									"timestamp":  types.NumberType,
 								},
 							},
 						},
@@ -238,7 +238,7 @@ func TestAnyToValue(t *testing.T) {
 							"annotations": types.ObjectType{
 								AttrTypes: map[string]attr.Type{
 									"created_by": types.StringType,
-									"timestamp": types.NumberType,
+									"timestamp":  types.NumberType,
 								},
 							},
 						},
@@ -278,7 +278,7 @@ func TestAnyToValue(t *testing.T) {
 							"annotations": types.ObjectType{
 								AttrTypes: map[string]attr.Type{
 									"created_by": types.StringType,
-									"timestamp": types.NumberType,
+									"timestamp":  types.NumberType,
 								},
 							},
 						},
@@ -293,11 +293,11 @@ func TestAnyToValue(t *testing.T) {
 							"annotations": types.ObjectValueMust(
 								map[string]attr.Type{
 									"created_by": types.StringType,
-									"timestamp": types.NumberType,
+									"timestamp":  types.NumberType,
 								},
 								map[string]attr.Value{
 									"created_by": types.StringValue("admin"),
-									"timestamp": types.NumberValue(new(big.Float).SetInt64(1625148107)),
+									"timestamp":  types.NumberValue(new(big.Float).SetInt64(1625148107)),
 								},
 							),
 						},
@@ -414,16 +414,17 @@ func TestAnyToValue(t *testing.T) {
 			t.Parallel()
 
 			got, err := AnyToValue(context.Background(), tc.input, tc.targetType)
-
 			if err != nil {
 				if !tc.expectErr {
 					t.Errorf("unexpected error: %s", err)
 				}
+
 				return
 			}
 
 			if tc.expectErr {
 				t.Error("expected error, got none")
+
 				return
 			}
 
