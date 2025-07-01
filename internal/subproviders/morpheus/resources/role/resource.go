@@ -27,6 +27,8 @@ var (
 )
 
 // We unmarshal permissions into this struct on Create to avoid an unmarshaler error from lacking a required field
+//
+//nolint:lll
 type createPermissions struct {
 	FeaturePermissions []sdk.AddRolesRequestRoleFeaturePermissionsInner `json:"featurePermissions,omitempty"`
 	// Set the default access level for for groups (sites). Only applies to user roles.
