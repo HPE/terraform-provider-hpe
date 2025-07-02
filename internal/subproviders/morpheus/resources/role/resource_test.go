@@ -859,8 +859,10 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 			{
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
-				ResourceName:      "hpe_morpheus_role.testacc_example_role_legacy_provider",
-				Check:             checkFn,
+				//nolint:lll
+				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
+				ResourceName:            "hpe_morpheus_role.testacc_example_role_legacy_provider",
+				Check:                   checkFn,
 			},
 		},
 	})
