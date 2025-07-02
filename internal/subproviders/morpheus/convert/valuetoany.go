@@ -26,8 +26,11 @@ func ValueToAny(_ context.Context, v attr.Value) (any, error) {
 	case basetypes.NumberValue:
 		f, acc := val.ValueBigFloat().Float64()
 		if acc != 0 {
-			return nil, fmt.Errorf("loss of precision converting number value %v to float64", val.ValueBigFloat())
+			return nil, fmt.Errorf(
+				"loss of precision converting number value %v to float64",
+				val.ValueBigFloat())
 		}
+
 		return f, nil
 	case basetypes.Float64Value:
 		return val.ValueFloat64(), nil
