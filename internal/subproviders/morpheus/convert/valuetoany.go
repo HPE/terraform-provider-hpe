@@ -13,7 +13,7 @@ import (
 // ValueToAny converts a Terraform Plugin Framework Value into a Go type.
 // This function handles null values, primitive types, and complex types
 // like objects, lists, sets, tuples and maps.
-func ValueToAny(_ context.Context, v attr.Value) (any, error) {
+func ValueToAny(ctx context.Context, v attr.Value) (any, error) {
 	if v == nil || v.IsNull() {
 		return nil, nil
 	}
@@ -35,21 +35,21 @@ func ValueToAny(_ context.Context, v attr.Value) (any, error) {
 	case basetypes.Float64Value:
 		return val.ValueFloat64(), nil
 	case basetypes.ListValue:
-		return ListToAny(val)
+		return ListToAny(ctx, val)
 	case basetypes.SetValue:
-		return SetToAny(val)
+		return SetToAny(ctx, val)
 	case basetypes.MapValue:
-		return MapToAny(val)
+		return MapToAny(ctx, val)
 	case basetypes.ObjectValue:
-		return ObjectToAny(val)
+		return ObjectToAny(ctx, val)
 	case basetypes.TupleValue:
-		return TupleToAny(val)
+		return TupleToAny(ctx, val)
 	default:
 		return nil, fmt.Errorf("unsupported type for ValueToAny conversion: %T", v)
 	}
 }
 
-func ListToAny(l basetypes.ListValue) ([]any, error) {
+func ListToAny(ctx context.Context, l basetypes.ListValue) ([]any, error) {
 	if l.IsNull() {
 		return nil, nil
 	}
@@ -59,7 +59,7 @@ func ListToAny(l basetypes.ListValue) ([]any, error) {
 
 	for i, elem := range elems {
 		var err error
-		result[i], err = ValueToAny(context.Background(), elem)
+		result[i], err = ValueToAny(ctx, elem)
 		if err != nil {
 			return nil, fmt.Errorf("error converting list element %d: %w", i, err)
 		}
@@ -68,7 +68,7 @@ func ListToAny(l basetypes.ListValue) ([]any, error) {
 	return result, nil
 }
 
-func SetToAny(s basetypes.SetValue) ([]any, error) {
+func SetToAny(ctx context.Context, s basetypes.SetValue) ([]any, error) {
 	if s.IsNull() {
 		return nil, nil
 	}
@@ -78,7 +78,7 @@ func SetToAny(s basetypes.SetValue) ([]any, error) {
 
 	for i, elem := range elems {
 		var err error
-		result[i], err = ValueToAny(context.Background(), elem)
+		result[i], err = ValueToAny(ctx, elem)
 		if err != nil {
 			return nil, fmt.Errorf("error converting set element %d: %w", i, err)
 		}
@@ -87,7 +87,7 @@ func SetToAny(s basetypes.SetValue) ([]any, error) {
 	return result, nil
 }
 
-func MapToAny(m basetypes.MapValue) (map[string]any, error) {
+func MapToAny(ctx context.Context, m basetypes.MapValue) (map[string]any, error) {
 	if m.IsNull() {
 		return nil, nil
 	}
@@ -97,7 +97,7 @@ func MapToAny(m basetypes.MapValue) (map[string]any, error) {
 
 	for k, v := range elems {
 		var err error
-		result[k], err = ValueToAny(context.Background(), v)
+		result[k], err = ValueToAny(ctx, v)
 		if err != nil {
 			return nil, fmt.Errorf("error converting map value for key %q: %w", k, err)
 		}
@@ -106,7 +106,7 @@ func MapToAny(m basetypes.MapValue) (map[string]any, error) {
 	return result, nil
 }
 
-func ObjectToAny(o basetypes.ObjectValue) (map[string]any, error) {
+func ObjectToAny(ctx context.Context, o basetypes.ObjectValue) (map[string]any, error) {
 	if o.IsNull() {
 		return nil, nil
 	}
@@ -116,7 +116,7 @@ func ObjectToAny(o basetypes.ObjectValue) (map[string]any, error) {
 
 	for k, v := range attrs {
 		var err error
-		result[k], err = ValueToAny(context.Background(), v)
+		result[k], err = ValueToAny(ctx, v)
 		if err != nil {
 			return nil, fmt.Errorf("error converting object attribute %q: %w", k, err)
 		}
@@ -125,7 +125,7 @@ func ObjectToAny(o basetypes.ObjectValue) (map[string]any, error) {
 	return result, nil
 }
 
-func TupleToAny(t basetypes.TupleValue) ([]any, error) {
+func TupleToAny(ctx context.Context, t basetypes.TupleValue) ([]any, error) {
 	if t.IsNull() {
 		return nil, nil
 	}
@@ -135,7 +135,7 @@ func TupleToAny(t basetypes.TupleValue) ([]any, error) {
 
 	for i, elem := range elems {
 		var err error
-		result[i], err = ValueToAny(context.Background(), elem)
+		result[i], err = ValueToAny(ctx, elem)
 		if err != nil {
 			return nil, fmt.Errorf("error converting tuple element %d: %w", i, err)
 		}
