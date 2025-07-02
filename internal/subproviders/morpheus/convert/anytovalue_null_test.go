@@ -132,6 +132,11 @@ func TestAnyToValueNullCases(t *testing.T) {
 				types.StringType,
 			}),
 		},
+		"dynamic-null": {
+			input:      nil,
+			targetType: types.DynamicType,
+			expected:   types.DynamicNull(),
+		},
 	}
 
 	ctx := context.Background()
