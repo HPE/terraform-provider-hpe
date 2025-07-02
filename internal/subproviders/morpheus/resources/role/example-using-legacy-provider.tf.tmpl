@@ -1,0 +1,18 @@
+data "morpheus_task" "{{.TaskDataSourceName}}" {
+  name = "{{.TaskName}}"
+}
+
+resource "hpe_morpheus_role" "{{.ResourceName}}" {
+  name = "{{.Name}}"
+  description = "{{.Description}}"
+  role_type = "{{.RoleType}}"
+  permissions = jsonencode({
+    "taskPermissions" : [
+      {
+        "id" = data.morpheus_task.{{.TaskDataSourceName}}.id
+        "access" = "{{.Task0Access}}"
+      }
+    ]
+    }
+  )
+}

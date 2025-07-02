@@ -1,11 +1,13 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleRole" Multitenant "false" Description "An example role" RoleType "user"
+//go:generate go run ../../../../../cmd/render example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
 
 package role_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -270,8 +272,10 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
-				ResourceName:      "hpe_morpheus_role.example",
-				Check:             checkFn,
+				//nolint:lll
+				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
+				ResourceName:            "hpe_morpheus_role.example",
+				Check:                   checkFn,
 			},
 		},
 	})
@@ -605,6 +609,258 @@ permissions = jsonencode({
 				Check:              checkFnBad,
 				ResourceName:       "hpe_morpheus_role.plan_after_apply_bad",
 				PlanOnly:           false,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusRolePermissionsTaskPermissionsOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfigLegacy := testhelpers.ProviderBlockLegacy()
+	providerConfigMixed := testhelpers.ProviderBlockMixed()
+
+	legacyTaskResourceConfig := `
+resource "morpheus_groovy_script_task" "testacc_groovy" {
+  name                = "testacc_groovy"
+  source_type         = "local"
+}
+`
+	resourceConfigMixed := `
+data "morpheus_task" "testacc_task" {
+  name = "testacc_groovy"
+}
+
+resource "hpe_morpheus_role" "testacc_role_task_permissions" {
+  name               = "TestAccMorpheusRolePermissionsTaskPermissionsOk"
+  permissions = jsonencode({
+    "taskPermissions" : [
+      {
+        "id" = data.morpheus_task.testacc_task.id
+        "access" : "full"
+      }
+    ]
+    }
+  )
+}
+`
+	// confirms that the task dependency was set up correctly
+	checksTask := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"morpheus_groovy_script_task.testacc_groovy",
+			"name",
+			"testacc_groovy",
+		),
+		resource.TestCheckResourceAttr(
+			"morpheus_groovy_script_task.testacc_groovy",
+			"source_type",
+			"local",
+		),
+	}
+	checkFnTask := resource.ComposeAggregateTestCheckFunc(checksTask...)
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_role_task_permissions",
+			"name",
+			"TestAccMorpheusRolePermissionsTaskPermissionsOk",
+		),
+		func(s *terraform.State) error {
+			taskID, err := testhelpers.ExtractValue(
+				s,
+				"data.morpheus_task.testacc_task",
+				"id",
+			)
+			if err != nil {
+				return err
+			}
+			taskIDInt, err := strconv.Atoi(taskID)
+			if err != nil {
+				return err
+			}
+
+			rs := s.RootModule().Resources["hpe_morpheus_role.testacc_role_task_permissions"]
+			if rs == nil {
+				return errors.New("resource not found: hpe_morpheus_role.testacc_role_task_permissions")
+			}
+
+			statePermisions := rs.Primary.Attributes["permissions"]
+
+			expectedPermissionsJSON := fmt.Sprintf(
+				`{"taskPermissions":[{"access":"full","id":%d}]}`,
+				taskIDInt)
+
+			if statePermisions != expectedPermissionsJSON {
+				return fmt.Errorf(
+					"permissions in state do not match expected permissions:\nexpected: %s\ngot: %s",
+					expectedPermissionsJSON, statePermisions)
+			}
+
+			return nil
+		},
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	// Use the hpe/morpheus provider to create a Role using the ID from the legacy task resource
+
+	// Set up the task resource using the legacy provider
+	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Set up the task resource in a separate step so it's created for the following one
+			{
+				Config: providerConfigLegacy + legacyTaskResourceConfig,
+				Check:  checkFnTask,
+			},
+			// Need to include the task resource config from the previous step
+			// or else Terraform will assume it no longer exists
+			{
+				Config:             legacyTaskResourceConfig + providerConfigMixed + resourceConfigMixed,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+		},
+	})
+}
+
+// Tests that our mixed usage for legacy provider example
+// file template used for docs is a valid config
+func TestAccMorpheusRoleExampleLegacyProviderOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfigLegacy := testhelpers.ProviderBlockLegacy()
+	providerConfigMixed := testhelpers.ProviderBlockMixed()
+
+	// for setting up all of the required legacy resources to be tested
+	resourceConfigLegacy := `
+resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_task" {
+  name                = "testacc_role_example_legacy_provider_task"
+  source_type         = "local"
+}
+`
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example-using-legacy-provider.tf.tmpl",
+		"TaskDataSourceName", "testacc_role_example_legacy_provider_task_datasource",
+		"TaskName", "testacc_role_example_legacy_provider_task",
+		"ResourceName", "testacc_example_role_legacy_provider",
+		"Name", "TestAccMorpheusRoleExampleLegacyProviderOk",
+		"Description", "An example role using legacy provider",
+		"RoleType", "user",
+		"Task0Access", "full",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// perform these checks on the resource created with the old provider
+	checksLegacy := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"morpheus_groovy_script_task.testacc_role_example_legacy_provider_task",
+			"name",
+			"testacc_role_example_legacy_provider_task",
+		),
+		resource.TestCheckResourceAttr(
+			"morpheus_groovy_script_task.testacc_role_example_legacy_provider_task",
+			"source_type",
+			"local",
+		),
+	}
+
+	// perform these checks on the resource created with the new provider
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_example_role_legacy_provider",
+			"name",
+			"TestAccMorpheusRoleExampleLegacyProviderOk",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_example_role_legacy_provider",
+			"description",
+			"An example role using legacy provider",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_example_role_legacy_provider",
+			"role_type",
+			"user",
+		),
+		// to test the permissions
+		func(s *terraform.State) error {
+			taskID, err := testhelpers.ExtractValue(
+				s,
+				"data.morpheus_task.testacc_role_example_legacy_provider_task_datasource",
+				"id",
+			)
+			if err != nil {
+				return err
+			}
+			taskIDInt, err := strconv.Atoi(taskID)
+			if err != nil {
+				return err
+			}
+
+			rs := s.RootModule().Resources["hpe_morpheus_role.testacc_example_role_legacy_provider"]
+			if rs == nil {
+				return errors.New("resource not found: hpe_morpheus_role.testacc_example_role_legacy_provider")
+			}
+
+			statePermisions := rs.Primary.Attributes["permissions"]
+
+			expectedPermissionsJSON := fmt.Sprintf(
+				`{"taskPermissions":[{"access":"full","id":%d}]}`,
+				taskIDInt)
+
+			if statePermisions != expectedPermissionsJSON {
+				return fmt.Errorf(
+					"permissions in state do not match expected permissions:\nexpected: %s\ngot: %s",
+					expectedPermissionsJSON, statePermisions)
+			}
+
+			return nil
+		},
+	}
+
+	checkFnLegacy := resource.ComposeAggregateTestCheckFunc(checksLegacy...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfigLegacy + resourceConfigLegacy,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFnLegacy,
+				PlanOnly:           false,
+			},
+			{
+				Config:             providerConfigMixed + resourceConfigLegacy + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_role.testacc_example_role_legacy_provider",
+				Check:             checkFn,
 			},
 		},
 	})
