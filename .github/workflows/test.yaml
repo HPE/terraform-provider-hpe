@@ -18,5 +18,8 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
       - run: go version
       - run: make test
