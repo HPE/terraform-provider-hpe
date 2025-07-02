@@ -153,6 +153,8 @@ func NullToValue(targetType attr.Type) (attr.Value, error) {
 		return types.Float64Null(), nil
 	case basetypes.NumberType:
 		return types.NumberNull(), nil
+	case basetypes.DynamicType:
+		return types.DynamicNull(), nil
 	case types.ListType:
 		return types.ListNull(t.ElemType), nil
 	case types.SetType:
