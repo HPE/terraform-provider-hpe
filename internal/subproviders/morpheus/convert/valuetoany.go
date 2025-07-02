@@ -13,7 +13,7 @@ import (
 )
 
 // ValueToAny converts a Terraform Plugin Framework Value into a Go type.
-// This function handles null values, primitive types, and complex types 
+// This function handles null values, primitive types, and complex types
 // like objects, lists, sets, tuples and maps.
 func ValueToAny(_ context.Context, v attr.Value) (any, error) {
 	if v == nil || v.IsNull() {
