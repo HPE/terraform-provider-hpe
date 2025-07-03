@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-//nolint:revive
+//nolint:revive,lll
 func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -203,9 +203,21 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the access level for the specified permissions.",
 				MarkdownDescription: "Set the access level for the specified permissions.",
+			},
+			"default_group_access": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
+				MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"default",
+						"full",
+						"read",
+						"none",
+					),
+				},
 			},
 		},
 	}
@@ -215,4 +227,5 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 type RolePermissionsModel struct {
 	Json               jsontypes.Normalized `tfsdk:"json"`
 	FeaturePermissions types.Set            `tfsdk:"feature_permissions"`
+	DefaultGroupAccess types.String         `tfsdk:"default_group_access"`
 }

@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 )
 
 //nolint:unused
@@ -165,19 +166,47 @@ func (d *DataSource) Read(
 
 	permissionsStruct := permissions{}
 
-	var fpInners []sdk.AddRolesRequestRoleFeaturePermissionsInner
-	featurePermissions := data.FeaturePermissions.String()
-	err := json.Unmarshal([]byte(featurePermissions), &fpInners)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"failed to unmarshal feature_permissions to sdk struct",
-			err.Error(),
-		)
+	if !data.FeaturePermissions.IsNull() && !data.FeaturePermissions.IsUnknown() {
+		var fpInners []sdk.AddRolesRequestRoleFeaturePermissionsInner
+		featurePermissions := data.FeaturePermissions.String()
+		err := json.Unmarshal([]byte(featurePermissions), &fpInners)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal feature_permissions to sdk struct",
+				err.Error(),
+			)
 
-		return
+			return
+		}
+
+		permissionsStruct.FeaturePermissions = fpInners
+
 	}
 
-	permissionsStruct.FeaturePermissions = fpInners
+	if !data.DefaultGroupAccess.IsNull() && !data.DefaultGroupAccess.IsUnknown() {
+		v, err := convert.ValueToAny(ctx, data.DefaultGroupAccess)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"failed to convert default_group_access to any",
+				err.Error(),
+			)
+
+			return
+		}
+
+		defaultGroupAccess, ok := v.(string)
+		if !ok {
+			resp.Diagnostics.AddError(
+				"failed to convert default_group_access to string",
+				"type assertion failed",
+			)
+
+			return
+
+		}
+
+		permissionsStruct.GlobalSiteAccess = &defaultGroupAccess
+	}
 
 	// TODO: Do the same as above for the other permissions fields
 

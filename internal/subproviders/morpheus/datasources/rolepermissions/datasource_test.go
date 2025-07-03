@@ -55,6 +55,7 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
       "access" = "full"
     }
   ]
+  default_group_access = "full"
 }
 `
 	expectJSONWithWhitespace := `
@@ -68,7 +69,8 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
         "access": "full",
         "code" : "admin-accounts"
       }
-    ]
+    ],
+  "globalSiteAccess": "full"
 }
 `
 	var bufJSONCompact bytes.Buffer
@@ -93,6 +95,11 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
 				"code":   "admin-accounts",
 				"access": "full",
 			},
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_group_access",
+			"full",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
