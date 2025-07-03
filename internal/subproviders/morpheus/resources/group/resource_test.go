@@ -79,6 +79,16 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 			"labels.#",
 			"2",
 		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.example",
+			"labels.*",
+			"aLabel1",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.example",
+			"labels.*",
+			"aLabel2",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -132,14 +142,14 @@ func TestAccMorpheusGroupUpdateOk(t *testing.T) {
 			"labels.#",
 			"2",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_group.test",
-			"labels.0",
+			"labels.*",
 			"Label1",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_group.test",
-			"labels.1",
+			"labels.*",
 			"Label2",
 		),
 	}
