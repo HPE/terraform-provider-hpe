@@ -230,7 +230,7 @@ func (r *Resource) Update(
 			v, err := convert.ValueToAny(ctx, l)
 			if err != nil {
 				resp.Diagnostics.AddError(
-					"create group resource",
+					"update group resource",
 					"group "+name+": failed to parse label: "+err.Error(),
 				)
 
