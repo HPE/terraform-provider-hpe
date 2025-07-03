@@ -4,6 +4,7 @@ package convert
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -44,7 +45,12 @@ func SetToStrSlice(set types.Set) ([]string, error) {
 			return nil, err
 		}
 
-		items = append(items, v.(string))
+		s, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("value %v is not a string", v)
+		}
+
+		items = append(items, s)
 	}
 
 	return items, nil
