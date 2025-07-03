@@ -3,8 +3,11 @@
 package convert
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func StrToType(s *string) types.String {
@@ -31,6 +34,21 @@ func StrSliceToSet(items []string) types.Set {
 	}
 
 	return set
+}
+
+func SetToStrSlice(set types.Set) ([]string, error) {
+	var items []string
+
+	for _, elem := range set.Elements() {
+		switch val := elem.(type) {
+		case basetypes.StringValue:
+			items = append(items, val.ValueString())
+		default:
+			return nil, fmt.Errorf("value %v is not a string", val)
+		}
+	}
+
+	return items, nil
 }
 
 func BoolToType(b *bool) types.Bool {
