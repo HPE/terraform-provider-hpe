@@ -111,8 +111,11 @@ func (r *Resource) Create(
 
 	if !plan.Labels.IsUnknown() {
 		var labels []string
+
 		for _, l := range plan.Labels.Elements() {
-			labels = append(labels, l.String())
+			lStr := l.String()
+			lStr = lStr[1 : len(lStr)-1]
+			labels = append(labels, lStr)
 		}
 
 		addGroup.SetLabels(labels)
@@ -216,8 +219,11 @@ func (r *Resource) Update(
 		updateGroup.SetLabels([]string{})
 	} else {
 		var labels []string
+
 		for _, l := range plan.Labels.Elements() {
-			labels = append(labels, l.String())
+			lStr := l.String()
+			lStr = lStr[1 : len(lStr)-1]
+			labels = append(labels, lStr)
 		}
 
 		updateGroup.SetLabels(labels)
