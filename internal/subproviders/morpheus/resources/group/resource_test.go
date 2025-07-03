@@ -132,6 +132,16 @@ func TestAccMorpheusGroupUpdateOk(t *testing.T) {
 			"labels.#",
 			"2",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"labels.0",
+			"Label1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"labels.1",
+			"Label2",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(
