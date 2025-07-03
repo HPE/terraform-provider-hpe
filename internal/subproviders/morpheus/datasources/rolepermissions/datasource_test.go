@@ -57,7 +57,7 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
   ]
 }
 `
-	expectJsonWithWhitespace := `
+	expectJSONWithWhitespace := `
 {
   "featurePermissions": [
       {
@@ -71,11 +71,11 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
     ]
 }
 `
-	var bufJsonCompact bytes.Buffer
-	err := json.Compact(&bufJsonCompact, []byte(expectJsonWithWhitespace))
+	var bufJSONCompact bytes.Buffer
+	err := json.Compact(&bufJSONCompact, []byte(expectJSONWithWhitespace))
 	assert.NoError(t, err)
 
-	expectJson := bufJsonCompact.String()
+	expectJSON := bufJSONCompact.String()
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckTypeSetElemNestedAttrs(
@@ -97,7 +97,7 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
 			"json",
-			expectJson,
+			expectJSON,
 		),
 	}
 
@@ -112,5 +112,4 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
 			},
 		},
 	})
-
 }

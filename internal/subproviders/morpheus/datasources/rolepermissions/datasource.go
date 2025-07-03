@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 )
 
+//nolint:unused
 const summary = "role permissions data source"
 
 type permissions sdk.AddRolesRequestRole
@@ -108,7 +109,7 @@ func (p *permissions) MarshalJSON() ([]byte, error) {
 		res["taskSetPermissions"] = p.TaskSetPermissions
 	}
 
-	//TODO: Add Cluster Permisions support (not yet documented in OpenAPI spec)
+	// TODO: Add Cluster Permissions support (not yet documented in OpenAPI spec)
 
 	return json.Marshal(res)
 }
@@ -178,7 +179,7 @@ func (d *DataSource) Read(
 
 	permissionsStruct.FeaturePermissions = fpInners
 
-	//TODO: Do the same as above for the other permissions fields
+	// TODO: Do the same as above for the other permissions fields
 
 	// marshal the permissions struct to JSON
 	b, err := json.Marshal(&permissionsStruct)

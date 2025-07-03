@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
+//nolint:revive
 func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -210,6 +211,7 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
+//nolint:revive
 type RolePermissionsModel struct {
 	Json               jsontypes.Normalized `tfsdk:"json"`
 	FeaturePermissions types.Set            `tfsdk:"feature_permissions"`
