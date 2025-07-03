@@ -3,11 +3,11 @@
 package convert
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 func StrToType(s *string) types.String {
@@ -39,18 +39,13 @@ func StrSliceToSet(items []string) types.Set {
 func SetToStrSlice(set types.Set) ([]string, error) {
 	var items []string
 
-	for _, l := range set.Elements() {
-		v, err := ValueToAny(context.TODO(), l)
-		if err != nil {
-			return nil, err
+	for _, elem := range set.Elements() {
+		switch val := elem.(type) {
+		case basetypes.StringValue:
+			items = append(items, val.ValueString())
+		default:
+			return nil, fmt.Errorf("value %v is not a string", val)
 		}
-
-		s, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("value %v is not a string", v)
-		}
-
-		items = append(items, s)
 	}
 
 	return items, nil
