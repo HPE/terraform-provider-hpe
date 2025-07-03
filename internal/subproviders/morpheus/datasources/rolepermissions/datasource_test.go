@@ -18,6 +18,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const providerConfigOffline = `
+provider "hpe" {
+  morpheus {
+    url          = ""
+    username     = ""
+    password     = ""
+  }
+}
+`
+
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
 
@@ -31,8 +41,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 // tests that the JSON body from setting a permissions config is as expected
 func TestAccMorpheusDataSourceRolePermissionsJsonOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
 	dataSourceConfig := `
 data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
   feature_permissions = [
@@ -97,7 +107,7 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfigOffline + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
