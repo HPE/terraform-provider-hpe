@@ -7,24 +7,13 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
-	dsgroup "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/instancetypelayout"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/network"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/rolepermissions"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/group"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
 )
 
@@ -128,29 +117,4 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 			Optional: true,
 		},
 	}
-}
-
-func (SubProvider) GetDataSources(
-	_ context.Context,
-) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		cloud.NewDataSource,
-		environment.NewDataSource,
-		dsgroup.NewDataSource,
-		instancetypelayout.NewDataSource,
-		network.NewDataSource,
-		rolepermissions.NewDataSource,
-	}
-}
-
-func (s SubProvider) GetResources(
-	_ context.Context,
-) []func() resource.Resource {
-	resources := []func() resource.Resource{
-		group.NewResource,
-		user.NewResource,
-		role.NewResource,
-	}
-
-	return resources
 }
