@@ -223,7 +223,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_cloud_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 				MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 				Validators: []validator.String{
@@ -237,7 +236,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_blueprint_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for blueprints",
 				MarkdownDescription: "Set the default access level for blueprints",
 				Validators: []validator.String{
@@ -249,7 +247,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_catalog_item_type_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for catalog item types",
 				MarkdownDescription: "Set the default access level for catalog item types",
 				Validators: []validator.String{
@@ -261,7 +258,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_instance_type_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for for instance types",
 				MarkdownDescription: "Set the default access level for for instance types",
 				Validators: []validator.String{
@@ -273,7 +269,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_persona_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for personas",
 				MarkdownDescription: "Set the default access level for personas",
 				Validators: []validator.String{
@@ -285,7 +280,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_report_type_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for report types",
 				MarkdownDescription: "Set the default access level for report types",
 				Validators: []validator.String{
@@ -297,7 +291,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_task_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for tasks",
 				MarkdownDescription: "Set the default access level for tasks",
 				Validators: []validator.String{
@@ -309,7 +302,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_workflow_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for workflows (taskSets)",
 				MarkdownDescription: "Set the default access level for workflows (taskSets)",
 				Validators: []validator.String{
@@ -321,7 +313,6 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"default_vdi_pool_access": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Set the default access level for VDI pools",
 				MarkdownDescription: "Set the default access level for VDI pools",
 				Validators: []validator.String{
