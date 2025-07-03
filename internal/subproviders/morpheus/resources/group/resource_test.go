@@ -74,16 +74,21 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 			"location",
 			"here",
 		),
-		// resource.TestCheckResourceAttr(
-		// 	"hpe_morpheus_group.example",
-		// 	"labels.#",
-		// 	"1",
-		// ),
-		// resource.TestCheckResourceAttr(
-		// 	"hpe_morpheus_group.example",
-		// 	"labels",
-		// 	`TODO`,
-		// ),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.example",
+			"labels.#",
+			"2",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.example",
+			"labels.*",
+			"aLabel1",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.example",
+			"labels.*",
+			"aLabel2",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -102,6 +107,208 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_group.example",
 				Check:             checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusGroupUpdateOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	baseChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"code",
+			code,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"location",
+			"here",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"labels.#",
+			"2",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.test",
+			"labels.*",
+			"Label1",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_group.test",
+			"labels.*",
+			"Label2",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		baseChecks...,
+	)
+
+	updateChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"name",
+			name+"-changed",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"code",
+			code+"-changed",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"location",
+			"here-changed",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_group.test",
+			"labels.#",
+			"3",
+		),
+	}
+
+	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
+		updateChecks...,
+	)
+	_ = checkUpdateFn
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_group" "test" {
+  name = "` + name + `"
+  location = "here"
+  code = "` + code + `"
+  labels = ["Label1", "Label2"]
+}`,
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+# checks plan has no effect
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	location = "here"
+	code = "` + code + `"
+	labels = ["Label1", "Label2"]
+}`,
+				Check:              checkFn,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects change to labels
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	location = "here"
+	code = "` + code + `"
+	labels = ["Label1", "Label2", "env:blah"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects name change
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `-changed"
+	location = "here"
+	code = "` + code + `"
+	labels = ["Label1", "Label2"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects code change
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	location = "here"
+	code = "` + code + `-changed"
+	labels = ["Label1", "Label2"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects code set to null
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	location = "here"
+	# code = "` + code + `-changed"
+	labels = ["Label1", "Label2"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects location change
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	location = "there"
+	code = "` + code + `"
+	labels = ["Label1", "Label2"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects location set to null
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `"
+	# location = "here"
+	code = "` + code + `"
+	labels = ["Label1", "Label2"]
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks apply of changes to all changeable fields
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `-changed"
+	location = "here-changed"
+	code = "` + code + `-changed"
+	labels = ["Label1", "Label2", "Label3"]
+}`,
+				Check:    checkUpdateFn,
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+# checks plan has no effect
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `-changed"
+	location = "here-changed"
+	code = "` + code + `-changed"
+	labels = ["Label1", "Label2", "Label3"]
+}`,
+				Check:              checkUpdateFn,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
