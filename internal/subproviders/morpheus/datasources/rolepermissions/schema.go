@@ -219,13 +219,132 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
+			"default_cloud_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
+				MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"default",
+						"full",
+						"read",
+						"none",
+					),
+				},
+			},
+			"default_blueprint_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for blueprints",
+				MarkdownDescription: "Set the default access level for blueprints",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_catalog_item_type_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for catalog item types",
+				MarkdownDescription: "Set the default access level for catalog item types",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_instance_type_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for for instance types",
+				MarkdownDescription: "Set the default access level for for instance types",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_persona_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for personas",
+				MarkdownDescription: "Set the default access level for personas",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_report_type_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for report types",
+				MarkdownDescription: "Set the default access level for report types",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_task_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for tasks",
+				MarkdownDescription: "Set the default access level for tasks",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_workflow_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for workflows (taskSets)",
+				MarkdownDescription: "Set the default access level for workflows (taskSets)",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
+			"default_vdi_pool_access": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set the default access level for VDI pools",
+				MarkdownDescription: "Set the default access level for VDI pools",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"full",
+						"none",
+					),
+				},
+			},
 		},
 	}
 }
 
 //nolint:revive
 type RolePermissionsModel struct {
-	Json               jsontypes.Normalized `tfsdk:"json"`
-	FeaturePermissions types.Set            `tfsdk:"feature_permissions"`
-	DefaultGroupAccess types.String         `tfsdk:"default_group_access"`
+	Json                         jsontypes.Normalized `tfsdk:"json"`
+	FeaturePermissions           types.Set            `tfsdk:"feature_permissions"`
+	DefaultGroupAccess           types.String         `tfsdk:"default_group_access"`
+	DefaultCloudAccess           types.String         `tfsdk:"default_cloud_access"`
+	DefaultBlueprintAccess       types.String         `tfsdk:"default_blueprint_access"`
+	DefaultCatalogItemTypeAccess types.String         `tfsdk:"default_catalog_item_type_access"`
+	DefaultInstanceTypeAccess    types.String         `tfsdk:"default_instance_type_access"`
+	DefaultPersonaAccess         types.String         `tfsdk:"default_persona_access"`
+	DefaultReportTypeAccess      types.String         `tfsdk:"default_report_type_access"`
+	DefaultTaskAccess            types.String         `tfsdk:"default_task_access"`
+	DefaultWorkflowAccess        types.String         `tfsdk:"default_workflow_access"`
+	DefaultVdiPoolAccess         types.String         `tfsdk:"default_vdi_pool_access"`
 }

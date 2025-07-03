@@ -56,6 +56,15 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
     }
   ]
   default_group_access = "full"
+  default_cloud_access = "full"
+  default_blueprint_access = "full"
+  default_catalog_item_type_access = "full"
+  default_instance_type_access = "full"
+  default_persona_access = "full"
+  default_report_type_access = "full"
+  default_task_access = "full"
+  default_workflow_access = "full"
+  default_vdi_pool_access = "full"
 }
 `
 	expectJSONWithWhitespace := `
@@ -70,7 +79,16 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
         "code" : "admin-accounts"
       }
     ],
-  "globalSiteAccess": "full"
+  "globalAppTemplateAccess": "full",
+  "globalCatalogItemTypeAccess": "full",
+  "globalInstanceTypeAccess": "full",
+  "globalPersonaAccess": "full",
+  "globalReportTypeAccess": "full",
+  "globalSiteAccess": "full",
+  "globalTaskAccess": "full",
+  "globalTaskSetAccess": "full",
+  "globalVdiPoolAccess": "full",
+  "globalZoneAccess": "full"
 }
 `
 	var bufJSONCompact bytes.Buffer
@@ -99,6 +117,51 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_json_ok" {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
 			"default_group_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_cloud_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_blueprint_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_catalog_item_type_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_instance_type_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_persona_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_report_type_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_task_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_workflow_access",
+			"full",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role_permissions.testacc_permissions_json_ok",
+			"default_vdi_pool_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
