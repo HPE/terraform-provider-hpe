@@ -109,20 +109,14 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Labels.IsUnknown() {
-		var labels []string
+		labels, err := convert.SetToStrSlice(plan.Labels)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+": failed to parse label: "+err.Error(),
+			)
 
-		for _, l := range plan.Labels.Elements() {
-			v, err := convert.ValueToAny(ctx, l)
-			if err != nil {
-				resp.Diagnostics.AddError(
-					"create group resource",
-					"group "+name+": failed to parse label: "+err.Error(),
-				)
-
-				return
-			}
-
-			labels = append(labels, v.(string))
+			return
 		}
 
 		addGroup.SetLabels(labels)
@@ -224,20 +218,14 @@ func (r *Resource) Update(
 	if plan.Labels.IsNull() {
 		updateGroup.SetLabels([]string{})
 	} else {
-		var labels []string
+		labels, err := convert.SetToStrSlice(plan.Labels)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update group resource",
+				"group "+name+": failed to parse labels: "+err.Error(),
+			)
 
-		for _, l := range plan.Labels.Elements() {
-			v, err := convert.ValueToAny(ctx, l)
-			if err != nil {
-				resp.Diagnostics.AddError(
-					"update group resource",
-					"group "+name+": failed to parse label: "+err.Error(),
-				)
-
-				return
-			}
-
-			labels = append(labels, v.(string))
+			return
 		}
 
 		updateGroup.SetLabels(labels)
