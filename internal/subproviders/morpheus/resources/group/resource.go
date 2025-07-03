@@ -84,7 +84,6 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	fmt.Println("Create")
 	var plan GroupModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -191,7 +190,6 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	fmt.Println("Update")
 	var plan, state, config GroupModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -307,7 +305,6 @@ func (r *Resource) Read(
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
 ) {
-	fmt.Println("Read")
 	var plan GroupModel
 
 	diags := req.State.Get(ctx, &plan)
@@ -348,7 +345,6 @@ func (r *Resource) Delete(
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
 ) {
-	fmt.Println("Delete")
 	var data GroupModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -377,8 +373,6 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	fmt.Println("Import")
-
 	id, err := strconv.Atoi(req.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
