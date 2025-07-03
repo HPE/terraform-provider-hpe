@@ -3,6 +3,8 @@
 package convert
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -31,6 +33,21 @@ func StrSliceToSet(items []string) types.Set {
 	}
 
 	return set
+}
+
+func SetToStrSlice(set types.Set) ([]string, error) {
+	var items []string
+
+	for _, l := range set.Elements() {
+		v, err := ValueToAny(context.TODO(), l)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, v.(string))
+	}
+
+	return items, nil
 }
 
 func BoolToType(b *bool) types.Bool {
