@@ -17,10 +17,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/constants"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
+	dsgroup "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
@@ -134,7 +135,7 @@ func (SubProvider) GetDataSources(
 	return []func() datasource.DataSource{
 		cloud.NewDataSource,
 		environment.NewDataSource,
-		group.NewDataSource,
+		dsgroup.NewDataSource,
 		instancetypelayout.NewDataSource,
 		network.NewDataSource,
 	}
@@ -144,6 +145,7 @@ func (s SubProvider) GetResources(
 	_ context.Context,
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{
+		group.NewResource,
 		user.NewResource,
 		role.NewResource,
 	}
