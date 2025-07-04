@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test docs
+.PHONY: build linter lint test docs docs-experimental experimental
 
 build:
 	go build ./...
@@ -28,3 +28,13 @@ testacc:
 docs:
 	go generate ./...
 	cd tools; go generate
+
+docs-experimental: export GOFLAGS = "-tags=experimental"
+docs-experimental:
+	rm -rf templates-combined-temp
+	mkdir -p templates-combined-temp
+	cp -r ./templates/* templates-combined-temp
+	cp -r ./templates-experimental/* templates-combined-temp
+	go generate ./...
+	cd tools; go generate
+	rm -rf templates-combined-temp
