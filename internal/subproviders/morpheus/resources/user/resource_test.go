@@ -76,21 +76,8 @@ func TestAccMorpheusUserExample(t *testing.T) {
 	}
 
 	// nolint: goconst
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := testhelpers.ProviderBlock()
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-`
 	path := "../../../../../examples/resources/hpe_morpheus_user/resource.tf"
 	exampleConfig, err := os.ReadFile(path)
 	if err != nil {
@@ -210,21 +197,8 @@ func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
 	}
 
 	// nolint: goconst
-	providerConfig := `
-variable "testacc_morpheus_url" {}
-variable "testacc_morpheus_username" {}
-variable "testacc_morpheus_password" {}
-variable "testacc_morpheus_insecure" {}
+	providerConfig := testhelpers.ProviderBlock()
 
-provider "hpe" {
-	morpheus {
-		url = var.testacc_morpheus_url
-		username = var.testacc_morpheus_username
-		password = var.testacc_morpheus_password
-		insecure = var.testacc_morpheus_insecure
-	}
-}
-`
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
