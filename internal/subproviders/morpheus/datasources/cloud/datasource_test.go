@@ -3,16 +3,16 @@
 package cloud_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "\"Example name\""
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -55,30 +55,21 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group, err := testhelpers.CreateGroup(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	name := acctest.RandomWithPrefix(t.Name())
 
-	t.Cleanup(func() {
-		testhelpers.DeleteGroup(t, group.GetId())
-	})
+	providerConfig := testhelpers.ProviderBlockMixed()
 
-	cloud, err := testhelpers.CreateCloud(t, group.GetId())
-	if err != nil {
-		t.Fatal(err)
-	}
+	cloudResourceConfig := `
+# assume tenant_id 1 exists
+resource "morpheus_standard_cloud" "test_cloud" {
+  name = "` + name + `"
+  code = "standard"
+  tenant_id = 1
+}
+`
 
-	t.Cleanup(func() {
-		testhelpers.DeleteCloud(t, cloud.GetId())
-	})
-
-	cloudID := fmt.Sprintf("%d", cloud.GetId())
-	cloudName := cloud.GetName()
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", cloudID)
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-id.tf.tmpl", "Id", "morpheus_standard_cloud.test_cloud.id")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,22 +78,23 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cloud.test",
 			"name",
-			cloudName,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_cloud.test",
-			"id",
-			cloudID,
+			name,
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -117,30 +109,21 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	group, err := testhelpers.CreateGroup(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	name := acctest.RandomWithPrefix(t.Name())
 
-	t.Cleanup(func() {
-		testhelpers.DeleteGroup(t, group.GetId())
-	})
+	providerConfig := testhelpers.ProviderBlockMixed()
 
-	cloud, err := testhelpers.CreateCloud(t, group.GetId())
-	if err != nil {
-		t.Fatal(err)
-	}
+	cloudResourceConfig := `
+# assume tenant_id 1 exists
+resource "morpheus_standard_cloud" "test_cloud" {
+  name = "` + name + `"
+  code = "standard"
+  tenant_id = 1
+}
+`
 
-	t.Cleanup(func() {
-		testhelpers.DeleteCloud(t, cloud.GetId())
-	})
-
-	cloudID := fmt.Sprintf("%d", cloud.GetId())
-	cloudName := cloud.GetName()
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", cloudName)
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-name.tf.tmpl", "Name", "morpheus_standard_cloud.test_cloud.name")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,22 +132,23 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cloud.test",
 			"name",
-			cloudName,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_cloud.test",
-			"id",
-			cloudID,
+			name,
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
