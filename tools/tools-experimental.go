@@ -1,7 +1,7 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-//go:build generate && !experimental
+//go:build generate && experimental
 
 package tools
 
@@ -14,4 +14,4 @@ import (
 // to ensure the documentation is formatted properly.
 //go:generate terraform fmt -recursive ../examples/
 
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-dir ..
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --website-source-dir templates-combined-temp --rendered-website-dir docs-experimental --examples-dir examples --provider-dir ..

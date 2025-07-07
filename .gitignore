@@ -4,6 +4,8 @@ bin/
 dist/
 terraform-provider-hpe
 build/
+docs-experimental/
+templates-combined-temp/
 *.tfstate*
 .terraform/
 .terraform.lock*
