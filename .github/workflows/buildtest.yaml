@@ -35,6 +35,12 @@ jobs:
               fi
             done
 
+            # if any of the .go files in $DIR contain a go build tag, mark the directory as skipped
+            # and do not compile tests for it
+            if find $DIR -name '*.go' -exec grep -qE '//go:build \w+' {} +; then
+              skip = true
+            fi
+
             if [ "$skip" = true ]; then
               continue
             fi
