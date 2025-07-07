@@ -67,10 +67,8 @@ func (d *DataSource) Read(
 	permissionsStruct := permissions{}
 
 	if !data.FeaturePermissions.IsNull() && !data.FeaturePermissions.IsUnknown() {
-		var fpInners []sdk.AddRolesRequestRoleFeaturePermissionsInner
-		featurePermissions := data.FeaturePermissions.String()
-		err := json.Unmarshal([]byte(featurePermissions), &fpInners)
-		if err != nil {
+		var inners []sdk.AddRolesRequestRoleFeaturePermissionsInner
+		if err := json.Unmarshal([]byte(data.FeaturePermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal feature_permissions to sdk struct",
 				err.Error(),
@@ -78,9 +76,138 @@ func (d *DataSource) Read(
 
 			return
 		}
+		permissionsStruct.FeaturePermissions = inners
 
-		permissionsStruct.FeaturePermissions = fpInners
+	}
 
+	if !data.CloudPermissions.IsNull() && !data.CloudPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleZonesInner
+		if err := json.Unmarshal([]byte(data.CloudPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal cloud_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.Zones = inners
+	}
+
+	if !data.GroupPermissions.IsNull() && !data.GroupPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleSitesInner
+		if err := json.Unmarshal([]byte(data.GroupPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal group_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.Sites = inners
+	}
+
+	if !data.BlueprintPermissions.IsNull() && !data.BlueprintPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
+		if err := json.Unmarshal([]byte(data.BlueprintPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal blueprint_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.AppTemplatePermissions = inners
+	}
+
+	if !data.CatalogItemTypePermissions.IsNull() && !data.CatalogItemTypePermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
+		if err := json.Unmarshal([]byte(data.CatalogItemTypePermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal catalog_item_type_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.CatalogItemTypePermissions = inners
+	}
+
+	if !data.InstanceTypePermissions.IsNull() && !data.InstanceTypePermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
+		if err := json.Unmarshal([]byte(data.InstanceTypePermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal instance_type_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.InstanceTypePermissions = inners
+	}
+
+	if !data.PersonaPermissions.IsNull() && !data.PersonaPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRolePersonaPermissionsInner
+		if err := json.Unmarshal([]byte(data.PersonaPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal persona_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.PersonaPermissions = inners
+	}
+
+	if !data.ReportTypePermissions.IsNull() && !data.ReportTypePermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleReportTypePermissionsInner
+		if err := json.Unmarshal([]byte(data.ReportTypePermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal report_type_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.ReportTypePermissions = inners
+	}
+
+	if !data.TaskPermissions.IsNull() && !data.TaskPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleTaskPermissionsInner
+		if err := json.Unmarshal([]byte(data.TaskPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal task_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.TaskPermissions = inners
+	}
+
+	if !data.WorkflowPermissions.IsNull() && !data.WorkflowPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleTaskSetPermissionsInner
+		if err := json.Unmarshal([]byte(data.WorkflowPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal workflow_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.TaskSetPermissions = inners
+	}
+
+	if !data.VdiPoolPermissions.IsNull() && !data.VdiPoolPermissions.IsUnknown() {
+		var inners []sdk.AddRolesRequestRoleVdiPoolPermissionsInner
+		if err := json.Unmarshal([]byte(data.VdiPoolPermissions.String()), &inners); err != nil {
+			resp.Diagnostics.AddError(
+				"failed to unmarshal vdi_pool_permissions to sdk struct",
+				err.Error(),
+			)
+
+			return
+		}
+		permissionsStruct.VdiPoolPermissions = inners
 	}
 
 	if !data.DefaultGroupAccess.IsNull() && !data.DefaultGroupAccess.IsUnknown() {
@@ -132,8 +259,6 @@ func (d *DataSource) Read(
 		defaultVdiPoolAccess := data.DefaultVdiPoolAccess.ValueString()
 		permissionsStruct.GlobalVdiPoolAccess = &defaultVdiPoolAccess
 	}
-
-	// TODO: Do the same as above for the other permissions fields
 
 	// marshal the permissions struct to JSON
 	b, err := json.Marshal(&permissionsStruct)

@@ -1,5 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
+//go:build experimental
+
 package rolepermissions
 
 import (
@@ -208,6 +210,283 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Set the access level for the specified permissions.",
 				MarkdownDescription: "Set the access level for the specified permissions.",
 			},
+			"group_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the group (site)",
+							MarkdownDescription: "`id` of the group (site)",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
+				MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
+			},
+			"cloud_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the cloud (zone)",
+							MarkdownDescription: "`id` of the cloud (zone)",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+				MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+			},
+			"blueprint_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the blueprint (appTemplate)",
+							MarkdownDescription: "`id` of the blueprint (appTemplate)",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified blueprints (appTemplates)",
+				MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
+			},
+			"catalog_item_type_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the catalog item type",
+							MarkdownDescription: "`id` of the catalog item type",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified catalog item types",
+				MarkdownDescription: "Set the access level for the specified catalog item types",
+			},
+			"instance_type_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the instance type",
+							MarkdownDescription: "`id` of the instance type",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified instance types",
+				MarkdownDescription: "Set the access level for the specified instance types",
+			},
+			"persona_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"code": schema.StringAttribute{
+							Required:            true,
+							Description:         "`code` of the persona",
+							MarkdownDescription: "`code` of the persona",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"standard",
+									"serviceCatalog",
+									"vdi",
+								),
+							},
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified personas",
+				MarkdownDescription: "Set the access level for the specified personas",
+			},
+			"report_type_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"code": schema.StringAttribute{
+							Required:            true,
+							Description:         "`code` of the report type",
+							MarkdownDescription: "`code` of the report type",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified report types",
+				MarkdownDescription: "Set the access level for the specified report types",
+			},
+			"task_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the task",
+							MarkdownDescription: "`id` of the task",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified tasks",
+				MarkdownDescription: "Set the access level for the specified tasks",
+			},
+			"workflow_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the workflow (taskSet)",
+							MarkdownDescription: "`id` of the workflow (taskSet)",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the default access level for workflows (taskSets)",
+				MarkdownDescription: "Set the default access level for workflows (taskSets)",
+			},
+			"vdi_pool_permissions": schema.SetNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"access": schema.StringAttribute{
+							Required:            true,
+							Description:         "The new access level.",
+							MarkdownDescription: "The new access level.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"default",
+									"full",
+									"read",
+									"none",
+								),
+							},
+						},
+						"id": schema.Int64Attribute{
+							Required:            true,
+							Description:         "`id` of the VDI pool",
+							MarkdownDescription: "`id` of the VDI pool",
+						},
+					},
+				},
+				Optional:            true,
+				Description:         "Set the access level for the specified VDI pools",
+				MarkdownDescription: "Set the access level for the specified VDI pools",
+			},
 			"default_group_access": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
@@ -330,6 +609,16 @@ func RolePermissionsDataSourceSchema(ctx context.Context) schema.Schema {
 type RolePermissionsModel struct {
 	Json                         jsontypes.Normalized `tfsdk:"json"`
 	FeaturePermissions           types.Set            `tfsdk:"feature_permissions"`
+	CloudPermissions             types.Set            `tfsdk:"cloud_permissions"`
+	GroupPermissions             types.Set            `tfsdk:"group_permissions"`
+	BlueprintPermissions         types.Set            `tfsdk:"blueprint_permissions"`
+	CatalogItemTypePermissions   types.Set            `tfsdk:"catalog_item_type_permissions"`
+	InstanceTypePermissions      types.Set            `tfsdk:"instance_type_permissions"`
+	PersonaPermissions           types.Set            `tfsdk:"persona_permissions"`
+	ReportTypePermissions        types.Set            `tfsdk:"report_type_permissions"`
+	TaskPermissions              types.Set            `tfsdk:"task_permissions"`
+	WorkflowPermissions          types.Set            `tfsdk:"workflow_permissions"`
+	VdiPoolPermissions           types.Set            `tfsdk:"vdi_pool_permissions"`
 	DefaultGroupAccess           types.String         `tfsdk:"default_group_access"`
 	DefaultCloudAccess           types.String         `tfsdk:"default_cloud_access"`
 	DefaultBlueprintAccess       types.String         `tfsdk:"default_blueprint_access"`
