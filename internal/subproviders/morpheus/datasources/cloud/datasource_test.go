@@ -134,11 +134,6 @@ resource "morpheus_standard_cloud" "test_cloud" {
 			"name",
 			name,
 		),
-		// resource.TestCheckResourceAttr(
-		// 	"data.hpe_morpheus_cloud.test",
-		// 	"id",
-		// 	cloudID,
-		// ),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
