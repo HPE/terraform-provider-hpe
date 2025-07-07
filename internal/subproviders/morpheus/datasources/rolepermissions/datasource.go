@@ -68,9 +68,7 @@ func (d *DataSource) Read(
 
 	if !data.FeaturePermissions.IsNull() && !data.FeaturePermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleFeaturePermissionsInner
-		featurePermissions := data.FeaturePermissions.String()
-		err := json.Unmarshal([]byte(featurePermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.FeaturePermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal feature_permissions to sdk struct",
 				err.Error(),
@@ -84,9 +82,7 @@ func (d *DataSource) Read(
 
 	if !data.CloudPermissions.IsNull() && !data.CloudPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleZonesInner
-		cloudPermissions := data.CloudPermissions.String()
-		err := json.Unmarshal([]byte(cloudPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.CloudPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal cloud_permissions to sdk struct",
 				err.Error(),
@@ -99,9 +95,7 @@ func (d *DataSource) Read(
 
 	if !data.GroupPermissions.IsNull() && !data.GroupPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleSitesInner
-		groupPermissions := data.GroupPermissions.String()
-		err := json.Unmarshal([]byte(groupPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.GroupPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal group_permissions to sdk struct",
 				err.Error(),
@@ -114,9 +108,7 @@ func (d *DataSource) Read(
 
 	if !data.BlueprintPermissions.IsNull() && !data.BlueprintPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
-		blueprintPermissions := data.BlueprintPermissions.String()
-		err := json.Unmarshal([]byte(blueprintPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.BlueprintPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal blueprint_permissions to sdk struct",
 				err.Error(),
@@ -129,9 +121,7 @@ func (d *DataSource) Read(
 
 	if !data.CatalogItemTypePermissions.IsNull() && !data.CatalogItemTypePermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
-		catalogItemTypePermissions := data.CatalogItemTypePermissions.String()
-		err := json.Unmarshal([]byte(catalogItemTypePermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.CatalogItemTypePermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal catalog_item_type_permissions to sdk struct",
 				err.Error(),
@@ -144,9 +134,7 @@ func (d *DataSource) Read(
 
 	if !data.InstanceTypePermissions.IsNull() && !data.InstanceTypePermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
-		instanceTypePermissions := data.InstanceTypePermissions.String()
-		err := json.Unmarshal([]byte(instanceTypePermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.InstanceTypePermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal instance_type_permissions to sdk struct",
 				err.Error(),
@@ -159,9 +147,7 @@ func (d *DataSource) Read(
 
 	if !data.PersonaPermissions.IsNull() && !data.PersonaPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRolePersonaPermissionsInner
-		personaPermissions := data.PersonaPermissions.String()
-		err := json.Unmarshal([]byte(personaPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.PersonaPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal persona_permissions to sdk struct",
 				err.Error(),
@@ -174,9 +160,7 @@ func (d *DataSource) Read(
 
 	if !data.ReportTypePermissions.IsNull() && !data.ReportTypePermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleReportTypePermissionsInner
-		reportTypePermissions := data.ReportTypePermissions.String()
-		err := json.Unmarshal([]byte(reportTypePermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.ReportTypePermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal report_type_permissions to sdk struct",
 				err.Error(),
@@ -189,9 +173,7 @@ func (d *DataSource) Read(
 
 	if !data.TaskPermissions.IsNull() && !data.TaskPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleTaskPermissionsInner
-		taskPermissions := data.TaskPermissions.String()
-		err := json.Unmarshal([]byte(taskPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.TaskPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal task_permissions to sdk struct",
 				err.Error(),
@@ -204,9 +186,7 @@ func (d *DataSource) Read(
 
 	if !data.WorkflowPermissions.IsNull() && !data.WorkflowPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleTaskSetPermissionsInner
-		workflowPermissions := data.WorkflowPermissions.String()
-		err := json.Unmarshal([]byte(workflowPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.WorkflowPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal workflow_permissions to sdk struct",
 				err.Error(),
@@ -219,9 +199,7 @@ func (d *DataSource) Read(
 
 	if !data.VdiPoolPermissions.IsNull() && !data.VdiPoolPermissions.IsUnknown() {
 		var inners []sdk.AddRolesRequestRoleVdiPoolPermissionsInner
-		vdiPoolPermissions := data.VdiPoolPermissions.String()
-		err := json.Unmarshal([]byte(vdiPoolPermissions), &inners)
-		if err != nil {
+		if err := json.Unmarshal([]byte(data.VdiPoolPermissions.String()), &inners); err != nil {
 			resp.Diagnostics.AddError(
 				"failed to unmarshal vdi_pool_permissions to sdk struct",
 				err.Error(),
