@@ -8,8 +8,6 @@ description: |-
 
 
 
-`hpe_morpheus_group` resource ....
-
 ## Example Usage
 
 ```terraform

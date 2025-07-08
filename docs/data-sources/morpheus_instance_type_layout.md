@@ -8,8 +8,6 @@ description: |-
 
 
 
-`hpe_morpheus_instance_type_layout` data source ....
-
 Instance type layouts are attached to instance types. An instance type layout can only be attached to a single instance type and a single technology. An instance type can have one or many instance type layouts attached to it, allowing for a single instance type to work with any technology type. Node types are added to instance type layouts. An instance type layout can have one or many node types attached to it. Node types can be shared across instance type layouts of matching technology types.
 
 ## Example Usage
