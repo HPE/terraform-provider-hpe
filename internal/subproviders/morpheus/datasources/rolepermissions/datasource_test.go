@@ -481,9 +481,3 @@ data "hpe_morpheus_role_permissions" "testacc_permissions_none_set_ok" {}
 		},
 	})
 }
-
-// test that we can use the permissions data source to create a user role
-func TestAccMorpheusDataSourceRolePermissionsUserRoleOk(t *testing.T) {
-	//
-
-}

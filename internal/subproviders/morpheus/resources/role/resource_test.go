@@ -17,11 +17,13 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/compare"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -870,6 +872,381 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 	})
 }
 
+// test that we can use the permissions data source to create a user role
+// we test all possible permissions EXCEPT VDI Pool.
+// For now, the VDI pool section of the OpenAPI spec looks to be incorrect
+// and needs to be updated so that we can create one using the generated SDK.
+func TestAccMorpheusRoleWithPermissionsDataSourceUserRoleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	dependencyResourceConfig := `
+resource "hpe_morpheus_group" "testacc_group" {
+  name = "` + name + `"
+}
+
+resource "morpheus_terraform_app_blueprint" "testacc_blueprint" {
+  name = "` + name + `"
+  source_type = "hcl"
+}
+
+resource "morpheus_instance_type" "testacc_instance_type" {
+  name = "` + name + `"
+  code = "` + name + `"
+  visibility = "public"
+  category = "cloud"
+}
+
+resource "morpheus_groovy_script_task" "testacc_task" {
+  name = "` + name + `"
+  source_type         = "local"
+}
+
+resource "morpheus_operational_workflow" "testacc_workflow" {
+  name = "` + name + `"
+}
+`
+
+	resourceConfig := `
+data "hpe_morpheus_group" "testacc_group" {
+  name = "` + name + `"
+}
+
+data "morpheus_blueprint" "testacc_blueprint" {
+  name = "` + name + `"
+}
+
+data "morpheus_instance_type" "testacc_instance_type" {
+  name = "` + name + `"
+}
+
+data "morpheus_task" "testacc_task" {
+  name = "` + name + `"
+}
+
+data "morpheus_workflow" "testacc_workflow" {
+  name = "` + name + `"
+}
+
+data "hpe_morpheus_role_permissions" "testacc_permissions_user_role_ok" {
+  feature_permissions = [
+    {
+      "code"   = "activity"
+      "access" = "read"
+    },
+    {
+      "code"   = "admin-accounts"
+      "access" = "full"
+    }
+  ]
+  group_permissions = [
+    {
+      "id"   = data.hpe_morpheus_group.testacc_group.id
+      "access" = "full"
+    }
+  ]
+  blueprint_permissions = [
+    {
+      "id"   = data.morpheus_blueprint.testacc_blueprint.id
+      "access" = "full"
+    }
+  ]
+  instance_type_permissions = [
+    {
+      "id"   = data.morpheus_instance_type.testacc_instance_type.id
+      "access" = "full"
+    }
+  ]
+  persona_permissions = [
+    {
+      "code"   = "standard"
+      "access" = "full"
+    }
+  ]
+  report_type_permissions = [
+    {
+      "code"   = "appCost"
+      "access" = "full"
+    }
+  ]
+  task_permissions = [
+    {
+      "id"   = data.morpheus_task.testacc_task.id
+      "access" = "full"
+    }
+  ]
+  workflow_permissions = [
+    {
+      "id"   = data.morpheus_workflow.testacc_workflow.id
+      "access" = "full"
+    }
+  ]
+  default_group_access = "full"
+  default_blueprint_access = "full"
+  default_catalog_item_type_access = "full"
+  default_instance_type_access = "full"
+  default_persona_access = "full"
+  default_report_type_access = "full"
+  default_task_access = "full"
+  default_workflow_access = "full"
+  default_vdi_pool_access = "full"
+}
+
+resource "hpe_morpheus_role" "testacc_role_data_source_permissions_user_role_ok" {
+  name               = "` + name + `"
+  role_type = "user"
+  permissions = data.hpe_morpheus_role_permissions.testacc_permissions_user_role_ok.json
+}
+`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_role_data_source_permissions_user_role_ok",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_role_data_source_permissions_user_role_ok",
+			"role_type",
+			"user",
+		),
+		composeCheckFnStatePermissionsSubsetAPIPermissions(
+			t,
+			"hpe_morpheus_role.testacc_role_data_source_permissions_user_role_ok",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dependencyResourceConfig,
+				// one of the blueprints values will be computed
+				// so this has to be set to `true`
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           false,
+			},
+			{
+				Config: providerConfig + dependencyResourceConfig + resourceConfig,
+				// one of the blueprints values will be computed
+				// so this has to be set to `true`
+				ExpectNonEmptyPlan: true,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,                    // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
+				ResourceName:            "hpe_morpheus_role.testacc_role_data_source_permissions_user_role_ok",
+				Check:                   checkFn,
+			},
+		},
+	})
+
+}
+
+// the differenced between user and account role is that user roles can be assigned
+// group permissions while account roles can be assigned cloud permissions
+func TestAccMorpheusRoleWithPermissionsDataSourceAccountRoleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	dependencyResourceConfig := `
+resource "morpheus_standard_cloud" "testacc_cloud" {
+  name = "` + name + `"
+  code = "standard"
+  tenant_id = 1
+  visibility = "public" # cloud must be visible to the client for the zone permissions to be set
+}
+
+resource "morpheus_terraform_app_blueprint" "testacc_blueprint" {
+  name = "` + name + `"
+  source_type = "hcl"
+}
+
+resource "morpheus_instance_type" "testacc_instance_type" {
+  name = "` + name + `"
+  code = "` + name + `"
+  visibility = "public"
+  category = "cloud"
+}
+
+resource "morpheus_groovy_script_task" "testacc_task" {
+  name = "` + name + `"
+  source_type         = "local"
+}
+
+resource "morpheus_operational_workflow" "testacc_workflow" {
+  name = "` + name + `"
+}
+`
+
+	resourceConfig := `
+data "morpheus_cloud" "testacc_cloud" {
+  name = "` + name + `"
+}
+
+data "morpheus_blueprint" "testacc_blueprint" {
+  name = "` + name + `"
+}
+
+data "morpheus_instance_type" "testacc_instance_type" {
+  name = "` + name + `"
+}
+
+data "morpheus_task" "testacc_task" {
+  name = "` + name + `"
+}
+
+data "morpheus_workflow" "testacc_workflow" {
+  name = "` + name + `"
+}
+
+data "hpe_morpheus_role_permissions" "testacc_permissions_account_role_ok" {
+  feature_permissions = [
+    {
+      "code"   = "activity"
+      "access" = "read"
+    },
+    {
+      "code"   = "admin-accounts"
+      "access" = "full"
+    }
+  ]
+  cloud_permissions = [
+    {
+      "id"   = data.morpheus_cloud.testacc_cloud.id
+      "access" = "full"
+    }
+  ]
+  blueprint_permissions = [
+    {
+      "id"   = data.morpheus_blueprint.testacc_blueprint.id
+      "access" = "full"
+    }
+  ]
+  instance_type_permissions = [
+    {
+      "id"   = data.morpheus_instance_type.testacc_instance_type.id
+      "access" = "full"
+    }
+  ]
+  persona_permissions = [
+    {
+      "code"   = "standard"
+      "access" = "full"
+    }
+  ]
+  report_type_permissions = [
+    {
+      "code"   = "appCost"
+      "access" = "full"
+    }
+  ]
+  task_permissions = [
+    {
+      "id"   = data.morpheus_task.testacc_task.id
+      "access" = "full"
+    }
+  ]
+  workflow_permissions = [
+    {
+      "id"   = data.morpheus_workflow.testacc_workflow.id
+      "access" = "full"
+    }
+  ]
+  default_cloud_access = "full"
+  default_blueprint_access = "full"
+  default_catalog_item_type_access = "full"
+  default_instance_type_access = "full"
+  default_persona_access = "full"
+  default_report_type_access = "full"
+  default_task_access = "full"
+  default_workflow_access = "full"
+  default_vdi_pool_access = "full"
+}
+
+resource "hpe_morpheus_role" "testacc_role_data_source_permissions_account_role_ok" {
+  name               = "` + name + `"
+  role_type = "account"
+  permissions = data.hpe_morpheus_role_permissions.testacc_permissions_account_role_ok.json
+}
+`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_role_data_source_permissions_account_role_ok",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.testacc_role_data_source_permissions_account_role_ok",
+			"role_type",
+			"account",
+		),
+		composeCheckFnStatePermissionsSubsetAPIPermissions(
+			t,
+			"hpe_morpheus_role.testacc_role_data_source_permissions_account_role_ok",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dependencyResourceConfig,
+				// one of the blueprints values will be computed
+				// so this has to be set to `true`
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           false,
+			},
+			{
+				Config: providerConfig + dependencyResourceConfig + resourceConfig,
+				// one of the blueprints values will be computed
+				// so this has to be set to `true`
+				ExpectNonEmptyPlan: true,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,                    // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions"}, // ignore verification on computed permissions (import)
+				ResourceName:            "hpe_morpheus_role.testacc_role_data_source_permissions_account_role_ok",
+				Check:                   checkFn,
+			},
+		},
+	})
+
+}
+
 // Needed for when we want to verify entirely computed permissions in state.
 // We can't compare against a string constant because the IDs of the featurePermissions can
 // differ between Morpheus installs; presumably computed in parallel at Morpheus initialisation.
@@ -904,12 +1281,65 @@ func composeCheckFnStatePermissionsEqAPIPermissions(
 
 		apiPermissionsStr := string(apiPermissions)
 
-		statePermisions := rs.Primary.Attributes["permissions"]
+		statePermissions := rs.Primary.Attributes["permissions"]
 
 		// the state Permissions should have already been sorted by a json.Marshal at create time
-		if apiPermissionsStr != statePermisions {
+		if apiPermissionsStr != statePermissions {
 			return fmt.Errorf("permissions in state do not match API permissions:\nexpected: %s\ngot: %s",
-				statePermisions, apiPermissions)
+				statePermissions, apiPermissions)
+		}
+
+		return nil
+	}
+}
+
+func composeCheckFnStatePermissionsSubsetAPIPermissions(
+	t *testing.T,
+	resource string,
+) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[resource]
+		if rs == nil {
+			return fmt.Errorf("resource not found: %s", resource)
+		}
+
+		roleID := rs.Primary.Attributes["id"]
+		roleIDInt, err := strconv.Atoi(roleID)
+		if err != nil {
+			return err
+		}
+
+		roleResp, err := testhelpers.GetRole(t, int64(roleIDInt))
+		if err != nil {
+			return err
+		}
+
+		// don't need it for marshaling to do comparison
+		roleResp.Role = nil
+
+		apiPermissions, err := json.Marshal(*roleResp)
+		if err != nil {
+			return err
+		}
+
+		statePermissionsStr := rs.Primary.Attributes["permissions"]
+
+		apiStruct := make(map[string]any)
+
+		stateStruct := make(map[string]any)
+
+		err = json.Unmarshal(apiPermissions, &apiStruct)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal([]byte(statePermissionsStr), &stateStruct)
+		if err != nil {
+			return err
+		}
+
+		if eq, err := compare.ContainsSubset(apiStruct, stateStruct); !eq && err != nil {
+			return fmt.Errorf("permissions in state are not a subset of API permissions:\nstate: %s\napi: %s\nerr: %w",
+				statePermissionsStr, apiPermissions, err)
 		}
 
 		return nil
