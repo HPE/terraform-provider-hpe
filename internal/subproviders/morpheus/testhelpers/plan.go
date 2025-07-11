@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	
+
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/plan"
