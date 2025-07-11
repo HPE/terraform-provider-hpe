@@ -65,7 +65,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Cloud (zone) id",
 			},
 			"config": schema.DynamicAttribute{
-				Required:            true,
+				Optional:            true,
+				Computed:            true,
 				Description:         "Configuration object. Settings vary by type. (Dynamic)",
 				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
 			},
