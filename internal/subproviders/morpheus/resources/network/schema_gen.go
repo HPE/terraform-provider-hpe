@@ -234,7 +234,7 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "List of tenant account ids that are allowed access",
 				MarkdownDescription: "List of tenant account ids that are allowed access",
 			},
-			"type": schema.Int64Attribute{
+			"type_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "Network type id",
 				MarkdownDescription: "Network type id",
@@ -294,7 +294,7 @@ type NetworkModel struct {
 	ResourcePermissions     ResourcePermissionsValue `tfsdk:"resource_permissions"`
 	SearchDomains           types.String             `tfsdk:"search_domains"`
 	TenantIds               types.Set                `tfsdk:"tenant_ids"`
-	Type                    types.Int64              `tfsdk:"type"`
+	TypeId                  types.Int64              `tfsdk:"type_id"`
 	Visibility              types.String             `tfsdk:"visibility"`
 	VlanId                  types.Int64              `tfsdk:"vlan_id"`
 }
