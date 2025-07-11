@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -100,11 +101,11 @@ func getRoleAsState(
 	state.MultitenantLocked = convert.BoolToType(r.Role.MultitenantLocked)
 	state.RoleType = convert.StrToType(r.Role.RoleType)
 
-	// for sorting the permission keys and storing to state, we don't want the Role properties,
+	// for storing permissions to state, we don't want the Role properties,
 	// only the permission related ones
 	r.Role = nil
 
-	sortedPermissions, err := json.Marshal(r)
+	permissions, err := json.Marshal(r)
 	if err != nil {
 		diags.AddError(
 			"get role (read permissions)",
@@ -114,9 +115,7 @@ func getRoleAsState(
 		return state, diags
 	}
 
-	sortedPermissionsStr := string(sortedPermissions)
-
-	state.Permissions = convert.StrToType(&sortedPermissionsStr)
+	state.Permissions = jsontypes.NewNormalizedValue(string(permissions))
 
 	return state, diags
 }
@@ -285,12 +284,11 @@ func (r *Resource) Read(
 		return
 	}
 
-	var statePermissionData, apiPermissionData sdk.GetRole200Response
-
 	// On import, or when the user does not set the permissions attribute,
 	// the permissions attribute will be null or unknown, so we need to ignore the subset check
 	// and just set it to the API Permissions - i.e. fully computed
 	if !state.Permissions.IsNull() && !state.Permissions.IsUnknown() {
+		var statePermissionData, apiPermissionData sdk.GetRole200Response
 
 		statePermissionStr := state.Permissions.ValueString()
 		err = json.Unmarshal([]byte(statePermissionStr), &statePermissionData)

@@ -4,7 +4,7 @@ package role
 
 import (
 	"context"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -57,13 +57,11 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "A unique name for the role",
 			},
 			"permissions": schema.StringAttribute{
+				CustomType:          jsontypes.NormalizedType{},
 				Optional:            true,
 				Computed:            true,
 				Description:         "A JSON document containing the set of permissions to assign to the role",
 				MarkdownDescription: "A JSON document containing the set of permissions to assign to the role",
-				Validators: []validator.String{
-					morpheusvalidators.JSONValidator{},
-				},
 			},
 			"role_type": schema.StringAttribute{
 				Optional:            true,
@@ -83,12 +81,12 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type RoleModel struct {
-	Description       types.String `tfsdk:"description"`
-	Id                types.Int64  `tfsdk:"id"`
-	LandingUrl        types.String `tfsdk:"landing_url"`
-	Multitenant       types.Bool   `tfsdk:"multitenant"`
-	MultitenantLocked types.Bool   `tfsdk:"multitenant_locked"`
-	Name              types.String `tfsdk:"name"`
-	Permissions       types.String `tfsdk:"permissions"`
-	RoleType          types.String `tfsdk:"role_type"`
+	Description       types.String         `tfsdk:"description"`
+	Id                types.Int64          `tfsdk:"id"`
+	LandingUrl        types.String         `tfsdk:"landing_url"`
+	Multitenant       types.Bool           `tfsdk:"multitenant"`
+	MultitenantLocked types.Bool           `tfsdk:"multitenant_locked"`
+	Name              types.String         `tfsdk:"name"`
+	Permissions       jsontypes.Normalized `tfsdk:"permissions"`
+	RoleType          types.String         `tfsdk:"role_type"`
 }
