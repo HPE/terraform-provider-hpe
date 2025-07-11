@@ -208,8 +208,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
-						Description:         "Array of groups that are allowed access",
-						MarkdownDescription: "Array of groups that are allowed access",
+						Description:         "Array of groups (sites) that are allowed access",
+						MarkdownDescription: "Array of groups (sites) that are allowed access",
 					},
 				},
 				CustomType: ResourcePermissionsType{
