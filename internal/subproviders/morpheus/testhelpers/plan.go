@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/plan"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
 func CreatePlan(t *testing.T) (*sdk.GetServicePlans200ResponseServicePlan, error) {
