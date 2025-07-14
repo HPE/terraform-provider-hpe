@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -62,6 +63,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "A JSON document containing the set of permissions to assign to the role",
 				MarkdownDescription: "A JSON document containing the set of permissions to assign to the role",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"role_type": schema.StringAttribute{
 				Optional:            true,
