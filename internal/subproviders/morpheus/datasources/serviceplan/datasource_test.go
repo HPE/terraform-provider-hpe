@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package plan_test
+package serviceplan_test
 
 //go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
 //go:generate go run ../../../../../cmd/render example-name-provision.tf.tmpl Name "Example name" ProvisionType "ARM"
@@ -17,7 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/plan"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -37,41 +37,41 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindPlanById(t *testing.T) {
+func TestAccMorpheusFindServicePlanById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	plan, err := testhelpers.CreatePlan(t)
+	plan, err := testhelpers.CreateServicePlan(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeletePlan(t, plan.GetId())
+		testhelpers.DeleteServicePlan(t, plan.GetId())
 	})
 
-	planID := fmt.Sprintf("%d", plan.GetId())
-	planName := plan.GetName()
+	servicePlanID := fmt.Sprintf("%d", plan.GetId())
+	servicePlanName := plan.GetName()
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	datasourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", planID)
+	datasourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", servicePlanID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"id",
-			planID,
+			servicePlanID,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"name",
-			planName,
+			servicePlanName,
 		),
 	}
 
@@ -88,49 +88,49 @@ func TestAccMorpheusFindPlanById(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindPlanByNameProvision(t *testing.T) {
+func TestAccMorpheusFindServicePlanByNameProvision(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	plan, err := testhelpers.CreatePlan(t)
+	servicePlan, err := testhelpers.CreateServicePlan(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeletePlan(t, plan.GetId())
+		testhelpers.DeleteServicePlan(t, servicePlan.GetId())
 	})
 
-	planID := fmt.Sprintf("%d", plan.GetId())
-	planName := plan.GetName()
-	planProvisonType := plan.GetProvisionType()
-	planProvisionTypeName := planProvisonType.GetName()
+	servicePlanID := fmt.Sprintf("%d", servicePlan.GetId())
+	servicePlanName := servicePlan.GetName()
+	servicePlanProvisonType := servicePlan.GetProvisionType()
+	servicePlanProvisionTypeName := servicePlanProvisonType.GetName()
 
 	providerConfig := testhelpers.ProviderBlock()
 
 	datasourceConfig, err := testhelpers.RenderExample(t, "example-name-provision.tf.tmpl",
-		"Name", planName,
-		"ProvisionType", planProvisionTypeName)
+		"Name", servicePlanName,
+		"ProvisionType", servicePlanProvisionTypeName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"id",
-			planID,
+			servicePlanID,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"name",
-			planName,
+			servicePlanName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"provision_type",
-			planProvisionTypeName,
+			servicePlanProvisionTypeName,
 		),
 	}
 
@@ -147,7 +147,7 @@ func TestAccMorpheusFindPlanByNameProvision(t *testing.T) {
 	})
 }
 
-func TestAcccMorpheusFindPlanNoPlanFound(t *testing.T) {
+func TestAcccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -156,21 +156,21 @@ func TestAcccMorpheusFindPlanNoPlanFound(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
-		data "hpe_morpheus_plan" "test" {
+		data "hpe_morpheus_service_plan" "test" {
 			name = "____"
 			provision_type = "ARM"
 		}`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := plan.ErrorNoPlanFound
+	expected := serviceplan.ErrorNoServicePlanFound
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -184,7 +184,7 @@ func TestAcccMorpheusFindPlanNoPlanFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindPlanNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -193,19 +193,19 @@ func TestAccMorpheusFindPlanNoSearchAttrs(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
-			data "hpe_morpheus_plan" "test" {
+			data "hpe_morpheus_service_plan" "test" {
 			}`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := plan.ErrorNoValidSearchTerms
+	expected := serviceplan.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -219,7 +219,7 @@ func TestAccMorpheusFindPlanNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindPlanBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -228,7 +228,7 @@ func TestAccMorpheusFindPlanBothSearchAttrs(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
-			data "hpe_morpheus_plan" "test" {
+			data "hpe_morpheus_service_plan" "test" {
 				id = "1"
 				name = "_____"
 				provision_type = "______"
@@ -236,14 +236,14 @@ func TestAccMorpheusFindPlanBothSearchAttrs(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_plan.test",
+			"data.hpe_morpheus_service_plan.test",
 			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := plan.ErrorRunningPreApply
+	expected := serviceplan.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

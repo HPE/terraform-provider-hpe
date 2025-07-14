@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package plan
+package serviceplan
 
 import (
 	"context"
@@ -17,11 +17,11 @@ import (
 )
 
 const (
-	summary                 = "read plan data source"
-	ErrorNoPlanFound        = `no group found`
-	ErrorNoValidSearchTerms = `no valid search terms - an id or name is required`
-	ErrorRunningPreApply    = `Error running pre-apply plan: exit status 1`
-	ErrorMultiplePlans      = `multiple groups were returned`
+	summary                   = "read service_plan data source"
+	ErrorNoServicePlanFound   = `no group found`
+	ErrorNoValidSearchTerms   = `no valid search terms - an id or name is required`
+	ErrorRunningPreApply      = `Error running pre-apply plan: exit status 1`
+	ErrorMultipleServicePlans = `multiple service_plans were returned`
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -46,7 +46,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_plan"
+	resp.TypeName = req.ProviderTypeName + "_morpheus_service_plan"
 }
 
 // Schema defines the schema for the data source.
@@ -55,29 +55,30 @@ func (d *DataSource) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = PlanDataSourceSchema(ctx)
+	resp.Schema = ServicePlanDataSourceSchema(ctx)
 }
 
-func GetPlanByID(
+func GetServicePlanByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetServicePlans200ResponseServicePlan, error) {
-	p, hresp, err := apiClient.ServicePlansAPI.GetServicePlans(ctx, id).Execute()
-	if p == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for plan %d: %s", id, internalErrors.ErrMsg(err, hresp))
+	sp, hresp, err := apiClient.ServicePlansAPI.GetServicePlans(ctx, id).Execute()
+	if sp == nil || err != nil || hresp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"GET failed for service_plan %d: %s", id, internalErrors.ErrMsg(err, hresp))
 	}
 
-	plan, ok := p.GetServicePlanOk()
+	servicePlan, ok := sp.GetServicePlanOk()
 
 	if !ok {
-		return nil, fmt.Errorf("plan %d is nil", id)
+		return nil, fmt.Errorf("service_plan %d is nil", id)
 	}
 
-	return plan, nil
+	return servicePlan, nil
 }
 
-func getPlanByName(
+func getServicePlanByName(
 	ctx context.Context,
 	name string,
 	provisionType string,
@@ -86,15 +87,15 @@ func getPlanByName(
 	pTypes, hresp, err := apiClient.ProvisioningAPI.ListProvisionTypes(ctx).Name(
 		provisionType).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for plan , provision_type %s: %s",
+		return nil, fmt.Errorf("GET failed for service_plan , provision_type %s: %s",
 			provisionType, internalErrors.ErrMsg(err, hresp))
 	}
 
 	var matchingProvisionTypes []sdk.
 		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
-	for _, pT := range pTypes.GetProvisionTypes() {
-		if pTName, ok := pT.GetNameOk(); ok && *pTName == provisionType {
-			matchingProvisionTypes = append(matchingProvisionTypes, pT)
+	for _, pt := range pTypes.GetProvisionTypes() {
+		if pTName, ok := pt.GetNameOk(); ok && *pTName == provisionType {
+			matchingProvisionTypes = append(matchingProvisionTypes, pt)
 		}
 	}
 
@@ -114,17 +115,18 @@ func getPlanByName(
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
 		name).ProvisionTypeId(*pTypeID).Execute()
 	if ps == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for plan %s: %s", name, internalErrors.ErrMsg(err, hresp))
+		return nil, fmt.Errorf(
+			"GET failed for service_plan %s: %s", name, internalErrors.ErrMsg(err, hresp))
 	}
 
 	var matchingServicePlans []sdk.ListServicePlans200ResponseAllOfServicePlansInner
 
-	for _, p := range ps.GetServicePlans() {
-		if pName, pNameOk := p.GetNameOk(); pNameOk {
-			if pProvisionType, pProvisionTypeOk := p.GetProvisionTypeOk(); pProvisionTypeOk {
+	for _, sp := range ps.GetServicePlans() {
+		if pName, pNameOk := sp.GetNameOk(); pNameOk {
+			if pProvisionType, pProvisionTypeOk := sp.GetProvisionTypeOk(); pProvisionTypeOk {
 				// now check name and ProvisionType match getplanByName() params
 				if *pName == name && pProvisionType.GetName() == provisionType {
-					matchingServicePlans = append(matchingServicePlans, p)
+					matchingServicePlans = append(matchingServicePlans, sp)
 				}
 			}
 		}
@@ -133,26 +135,27 @@ func getPlanByName(
 	if len(matchingServicePlans) == 1 {
 		if pID, pIDOk := matchingServicePlans[0].GetIdOk(); pIDOk {
 			// same return types as GetPlanByID
-			return GetPlanByID(ctx, *pID, apiClient)
+			return GetServicePlanByID(ctx, *pID, apiClient)
 		}
 
-		return nil, fmt.Errorf("plan %s, id not found", name)
+		return nil, fmt.Errorf("service_plan %s, id not found", name)
 	} else if len(matchingServicePlans) > 1 {
-		return nil, errors.New(ErrorMultiplePlans)
+		return nil, errors.New(ErrorMultipleServicePlans)
 	}
 
-	return nil, errors.New(ErrorNoPlanFound)
+	return nil, errors.New(ErrorNoServicePlanFound)
 }
 
-func getPlan(
+func getServicePlan(
 	ctx context.Context,
-	data PlanModel,
+	data ServicePlanModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetServicePlans200ResponseServicePlan, error) {
 	if !data.Id.IsNull() {
-		return GetPlanByID(ctx, data.Id.ValueInt64(), apiClient)
+		return GetServicePlanByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() && !data.ProvisionType.IsNull() {
-		return getPlanByName(ctx, data.Name.ValueString(), data.ProvisionType.ValueString(), apiClient)
+		return getServicePlanByName(
+			ctx, data.Name.ValueString(), data.ProvisionType.ValueString(), apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -164,7 +167,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data PlanModel
+	var data ServicePlanModel
 
 	// Read config
 	diags := req.Config.Get(ctx, &data)
@@ -183,7 +186,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	plan, err := getPlan(ctx, data, apiClient)
+	plan, err := getServicePlan(ctx, data, apiClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
