@@ -66,13 +66,13 @@ func getServicePlanByID(
 	sp, hresp, err := apiClient.ServicePlansAPI.GetServicePlans(ctx, id).Execute()
 	if sp == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
-			"GET failed for service_plan %d: %s", id, internalErrors.ErrMsg(err, hresp))
+			"GET failed for service plan %d: %s", id, internalErrors.ErrMsg(err, hresp))
 	}
 
 	servicePlan, ok := sp.GetServicePlanOk()
 
 	if !ok {
-		return nil, fmt.Errorf("service_plan %d is nil", id)
+		return nil, fmt.Errorf("service plan %d is nil", id)
 	}
 
 	return servicePlan, nil
@@ -87,7 +87,7 @@ func getServicePlanByName(
 	pTypes, hresp, err := apiClient.ProvisioningAPI.ListProvisionTypes(ctx).Code(
 		provisionTypeCode).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for service_plan , provision_type_code %s: %s",
+		return nil, fmt.Errorf("GET failed for service plan , provision type code %s: %s",
 			provisionTypeCode, internalErrors.ErrMsg(err, hresp))
 	}
 
@@ -100,11 +100,11 @@ func getServicePlanByName(
 	}
 
 	if len(matchingProvisionTypes) == 0 {
-		return nil, fmt.Errorf("provision_type with code %s not found", provisionTypeCode)
+		return nil, fmt.Errorf("provision type with code %s not found", provisionTypeCode)
 	}
 
 	if len(matchingProvisionTypes) > 1 {
-		return nil, fmt.Errorf("multiple provision type's with code %s found", provisionTypeCode)
+		return nil, fmt.Errorf("multiple provision types with code %s found", provisionTypeCode)
 	}
 
 	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
@@ -137,7 +137,7 @@ func getServicePlanByName(
 			return getServicePlanByID(ctx, *pID, apiClient)
 		}
 
-		return nil, fmt.Errorf("service_plan %s, id not found", name)
+		return nil, fmt.Errorf("service plan %s, id not found", name)
 	} else if len(matchingServicePlans) > 1 {
 		return nil, errors.New(ErrorMultipleServicePlans)
 	}
