@@ -18,7 +18,7 @@ import (
 
 const (
 	summary                   = "read service_plan data source"
-	ErrorNoServicePlanFound   = `no group found`
+	ErrorNoServicePlanFound   = `no service_plan found`
 	ErrorNoValidSearchTerms   = `no valid search terms - an id or name is required`
 	ErrorRunningPreApply      = `Error running pre-apply plan: exit status 1`
 	ErrorMultipleServicePlans = `multiple service_plans were returned`
@@ -58,7 +58,7 @@ func (d *DataSource) Schema(
 	resp.Schema = ServicePlanDataSourceSchema(ctx)
 }
 
-func GetServicePlanByID(
+func getServicePlanByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
@@ -81,35 +81,35 @@ func GetServicePlanByID(
 func getServicePlanByName(
 	ctx context.Context,
 	name string,
-	provisionType string,
+	provisionTypeCode string,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetServicePlans200ResponseServicePlan, error) {
-	pTypes, hresp, err := apiClient.ProvisioningAPI.ListProvisionTypes(ctx).Name(
-		provisionType).Execute()
+	pTypes, hresp, err := apiClient.ProvisioningAPI.ListProvisionTypes(ctx).Code(
+		provisionTypeCode).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for service_plan , provision_type %s: %s",
-			provisionType, internalErrors.ErrMsg(err, hresp))
+		return nil, fmt.Errorf("GET failed for service_plan , provision_type_code %s: %s",
+			provisionTypeCode, internalErrors.ErrMsg(err, hresp))
 	}
 
 	var matchingProvisionTypes []sdk.
 		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
 	for _, pt := range pTypes.GetProvisionTypes() {
-		if pTName, ok := pt.GetNameOk(); ok && *pTName == provisionType {
+		if pTCode, ok := pt.GetCodeOk(); ok && *pTCode == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
 		}
 	}
 
 	if len(matchingProvisionTypes) == 0 {
-		return nil, fmt.Errorf("provision_type %s not found", provisionType)
+		return nil, fmt.Errorf("provision_type with code %s not found", provisionTypeCode)
 	}
 
 	if len(matchingProvisionTypes) > 1 {
-		return nil, fmt.Errorf("multiple provision_type with name %s found", provisionType)
+		return nil, fmt.Errorf("multiple provision_type's with code %s found", provisionTypeCode)
 	}
 
 	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
 	if !ok {
-		return nil, fmt.Errorf("provision_type %s id not found", provisionType)
+		return nil, fmt.Errorf("id not found for provision_type with code %s", provisionTypeCode)
 	}
 
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
@@ -125,17 +125,16 @@ func getServicePlanByName(
 		if pName, pNameOk := sp.GetNameOk(); pNameOk {
 			if pProvisionType, pProvisionTypeOk := sp.GetProvisionTypeOk(); pProvisionTypeOk {
 				// now check name and ProvisionType match getplanByName() params
-				if *pName == name && pProvisionType.GetName() == provisionType {
+				if *pName == name && pProvisionType.GetCode() == provisionTypeCode {
 					matchingServicePlans = append(matchingServicePlans, sp)
 				}
 			}
 		}
 	}
-
 	if len(matchingServicePlans) == 1 {
 		if pID, pIDOk := matchingServicePlans[0].GetIdOk(); pIDOk {
 			// same return types as GetPlanByID
-			return GetServicePlanByID(ctx, *pID, apiClient)
+			return getServicePlanByID(ctx, *pID, apiClient)
 		}
 
 		return nil, fmt.Errorf("service_plan %s, id not found", name)
@@ -152,10 +151,10 @@ func getServicePlan(
 	apiClient *sdk.APIClient,
 ) (*sdk.GetServicePlans200ResponseServicePlan, error) {
 	if !data.Id.IsNull() {
-		return GetServicePlanByID(ctx, data.Id.ValueInt64(), apiClient)
-	} else if !data.Name.IsNull() && !data.ProvisionType.IsNull() {
+		return getServicePlanByID(ctx, data.Id.ValueInt64(), apiClient)
+	} else if !data.Name.IsNull() && !data.ProvisionTypeCode.IsNull() {
 		return getServicePlanByName(
-			ctx, data.Name.ValueString(), data.ProvisionType.ValueString(), apiClient)
+			ctx, data.Name.ValueString(), data.ProvisionTypeCode.ValueString(), apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -200,8 +199,8 @@ func (d *DataSource) Read(
 	data.Name = convert.StrToType(plan.Name)
 	data.Code = convert.StrToType(plan.Code)
 	data.Description = convert.StrToType(plan.Description)
-	planProvisionType := plan.ProvisionType.GetName()
-	data.ProvisionType = convert.StrToType(&planProvisionType)
+	planProvisionType := plan.ProvisionType.GetCode()
+	data.ProvisionTypeCode = convert.StrToType(&planProvisionType)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

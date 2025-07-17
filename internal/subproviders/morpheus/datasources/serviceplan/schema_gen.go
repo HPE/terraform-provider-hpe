@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,10 +17,14 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"code": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The code of the Morpheus service plan",
+				MarkdownDescription: "The code of the Morpheus service plan",
 			},
 			"description": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The description of the Morpheus service plan",
+				MarkdownDescription: "The description of the Morpheus service plan",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -31,40 +34,30 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{
 						path.MatchRoot("name"),
-						path.MatchRoot("provision_type"),
+						path.MatchRoot("provision_type_code"),
 					}...),
 				},
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus environment",
-				MarkdownDescription: "The name of the Morpheus environment",
-				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
-				},
+				Description:         "The name of the Morpheus service plan",
+				MarkdownDescription: "The name of the Morpheus service plan",
 			},
-			"provision_type": schema.StringAttribute{
+			"provision_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The provision_type name of the Morpheus environment",
-				MarkdownDescription: "The provision_type name of the Morpheus environment",
-				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
-				},
+				Description:         "The provision_type code of the Morpheus service plan (note this is lower case e.g arm, kvm)",
+				MarkdownDescription: "The provision_type code of the Morpheus service plan (note this is lower case e.g arm, kvm)",
 			},
 		},
 	}
 }
 
 type ServicePlanModel struct {
-	Code          types.String `tfsdk:"code"`
-	Description   types.String `tfsdk:"description"`
-	Id            types.Int64  `tfsdk:"id"`
-	Name          types.String `tfsdk:"name"`
-	ProvisionType types.String `tfsdk:"provision_type"`
+	Code              types.String `tfsdk:"code"`
+	Description       types.String `tfsdk:"description"`
+	Id                types.Int64  `tfsdk:"id"`
+	Name              types.String `tfsdk:"name"`
+	ProvisionTypeCode types.String `tfsdk:"provision_type_code"`
 }
