@@ -47,8 +47,8 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 			"provision_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The provision_type code of the Morpheus service plan (note this is lower case e.g arm, kvm)",
-				MarkdownDescription: "The provision_type code of the Morpheus service plan (note this is lower case e.g arm, kvm)",
+				Description:         "The provision_type code of the Morpheus service plan",
+				MarkdownDescription: "The provision_type code of the Morpheus service plan",
 			},
 		},
 	}

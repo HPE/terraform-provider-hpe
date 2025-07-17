@@ -17,11 +17,11 @@ import (
 )
 
 const (
-	summary                   = "read service_plan data source"
-	ErrorNoServicePlanFound   = `no service_plan found`
+	summary                   = "read service plan data source"
+	ErrorNoServicePlanFound   = `no service plan found`
 	ErrorNoValidSearchTerms   = `no valid search terms - an id or name is required`
 	ErrorRunningPreApply      = `Error running pre-apply plan: exit status 1`
-	ErrorMultipleServicePlans = `multiple service_plans were returned`
+	ErrorMultipleServicePlans = `multiple service plans were returned`
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -104,12 +104,12 @@ func getServicePlanByName(
 	}
 
 	if len(matchingProvisionTypes) > 1 {
-		return nil, fmt.Errorf("multiple provision_type's with code %s found", provisionTypeCode)
+		return nil, fmt.Errorf("multiple provision type's with code %s found", provisionTypeCode)
 	}
 
 	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
 	if !ok {
-		return nil, fmt.Errorf("id not found for provision_type with code %s", provisionTypeCode)
+		return nil, fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
