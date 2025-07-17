@@ -10,11 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -86,12 +83,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the blueprint (appTemplate)",
 									MarkdownDescription: "`id` of the blueprint (appTemplate)",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: BlueprintPermissionsType{
 								ObjectType: types.ObjectType{
@@ -100,6 +91,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified blueprints (appTemplates)",
 						MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
 					},
@@ -123,12 +115,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the catalog item type",
 									MarkdownDescription: "`id` of the catalog item type",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: CatalogItemTypePermissionsType{
 								ObjectType: types.ObjectType{
@@ -137,6 +123,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified catalog item types",
 						MarkdownDescription: "Set the access level for the specified catalog item types",
 					},
@@ -161,12 +148,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the cloud (zone)",
 									MarkdownDescription: "`id` of the cloud (zone)",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: CloudPermissionsType{
 								ObjectType: types.ObjectType{
@@ -175,6 +156,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 					},
@@ -183,9 +165,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for blueprints",
 						MarkdownDescription: "Set the default access level for blueprints",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -198,9 +177,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for catalog item types",
 						MarkdownDescription: "Set the default access level for catalog item types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -213,9 +189,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"default",
@@ -230,9 +203,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"default",
@@ -247,9 +217,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for for instance types",
 						MarkdownDescription: "Set the default access level for for instance types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -262,9 +229,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for personas",
 						MarkdownDescription: "Set the default access level for personas",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -277,9 +241,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for report types",
 						MarkdownDescription: "Set the default access level for report types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -292,9 +253,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for tasks",
 						MarkdownDescription: "Set the default access level for tasks",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -307,9 +265,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for VDI pools",
 						MarkdownDescription: "Set the default access level for VDI pools",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -322,9 +277,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the default access level for workflows (taskSets)",
 						MarkdownDescription: "Set the default access level for workflows (taskSets)",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -339,9 +291,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Required:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 									Validators: []validator.String{
 										stringvalidator.OneOf(
 											"full",
@@ -364,9 +313,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Required:            true,
 									Description:         "`code` of the feature permission",
 									MarkdownDescription: "`code` of the feature permission",
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 									Validators: []validator.String{
 										stringvalidator.OneOf(
 											"account-usage",
@@ -397,8 +343,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 											"admin-profiles",
 											"admin-provisioningSettings",
 											"admin-roles",
-											"admin-server-devices",
-											"admin-server-software",
 											"admin-servers",
 											"admin-servicePlans",
 											"admin-users",
@@ -447,8 +391,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 											"infrastructure-router-dhcp-relay",
 											"infrastructure-routers",
 											"infrastructure-securityGroups",
-											"infrastructure-servers-maintenance",
-											"infrastructure-servers-placement",
 											"infrastructure-state",
 											"infrastructure-storage",
 											"infrastructure-storage-browser",
@@ -457,7 +399,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 											"job-templates",
 											"kubernetes-template",
 											"library-advanced-node-type-options",
-											"library-operating-systems",
 											"library-options",
 											"library-templates",
 											"logs",
@@ -507,7 +448,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 											"services-cypher",
 											"services-image-builder",
 											"services-kubernetes",
-											"services-migrations",
 											"services-network-registry",
 											"services-vdi-copy",
 											"services-vdi-pools",
@@ -521,26 +461,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 											"thresholds",
 											"trust-services",
 											"virtual-images",
-											"workflows",
 										),
-									},
-								},
-								"id": schema.Int64Attribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
-								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
-								"sub_category": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
 							},
@@ -554,9 +475,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Set the access level for the specified permissions.",
 						MarkdownDescription: "Set the access level for the specified permissions.",
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"group_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -579,12 +497,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the group (site)",
 									MarkdownDescription: "`id` of the group (site)",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: GroupPermissionsType{
 								ObjectType: types.ObjectType{
@@ -593,6 +505,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
 					},
@@ -611,22 +524,10 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 										),
 									},
 								},
-								"code": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 								"id": schema.Int64Attribute{
 									Required:            true,
 									Description:         "`id` of the instance type",
 									MarkdownDescription: "`id` of the instance type",
-								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: InstanceTypePermissionsType{
@@ -636,6 +537,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified instance types",
 						MarkdownDescription: "Set the access level for the specified instance types",
 					},
@@ -666,18 +568,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 										),
 									},
 								},
-								"id": schema.Int64Attribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
-								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: PersonaPermissionsType{
 								ObjectType: types.ObjectType{
@@ -686,6 +576,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified personas",
 						MarkdownDescription: "Set the access level for the specified personas",
 					},
@@ -709,18 +600,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`code` of the report type",
 									MarkdownDescription: "`code` of the report type",
 								},
-								"id": schema.Int64Attribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
-								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: ReportTypePermissionsType{
 								ObjectType: types.ObjectType{
@@ -729,6 +608,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified report types",
 						MarkdownDescription: "Set the access level for the specified report types",
 					},
@@ -747,22 +627,10 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 										),
 									},
 								},
-								"code": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 								"id": schema.Int64Attribute{
 									Required:            true,
 									Description:         "`id` of the task",
 									MarkdownDescription: "`id` of the task",
-								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: TaskPermissionsType{
@@ -772,6 +640,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified tasks",
 						MarkdownDescription: "Set the access level for the specified tasks",
 					},
@@ -795,12 +664,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the VDI pool",
 									MarkdownDescription: "`id` of the VDI pool",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: VdiPoolPermissionsType{
 								ObjectType: types.ObjectType{
@@ -809,6 +672,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified VDI pools",
 						MarkdownDescription: "Set the access level for the specified VDI pools",
 					},
@@ -832,12 +696,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Description:         "`id` of the workflow (taskSet)",
 									MarkdownDescription: "`id` of the workflow (taskSet)",
 								},
-								"name": schema.StringAttribute{
-									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-								},
 							},
 							CustomType: WorkflowPermissionsType{
 								ObjectType: types.ObjectType{
@@ -846,6 +704,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified workflows (taskSets)",
 						MarkdownDescription: "Set the access level for the specified workflows (taskSets)",
 					},
@@ -859,9 +718,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The set of permissions to assign to the role",
 				MarkdownDescription: "The set of permissions to assign to the role",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"role_type": schema.StringAttribute{
 				Optional:            true,
@@ -913,14 +769,6 @@ func (t PermissionsType) String() string {
 
 func (t PermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -2731,14 +2579,6 @@ func (t BlueprintPermissionsType) String() string {
 func (t BlueprintPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if in.IsUnknown() {
-		return NewBlueprintPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewBlueprintPermissionsValueNull(), nil
-	}
-
 	attributes := in.Attributes()
 
 	accessAttribute, ok := attributes["access"]
@@ -2777,24 +2617,6 @@ func (t BlueprintPermissionsType) ValueFromObject(ctx context.Context, in basety
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -2802,7 +2624,6 @@ func (t BlueprintPermissionsType) ValueFromObject(ctx context.Context, in basety
 	return BlueprintPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -2906,24 +2727,6 @@ func NewBlueprintPermissionsValue(attributeTypes map[string]attr.Type, attribute
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewBlueprintPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewBlueprintPermissionsValueUnknown(), diags
 	}
@@ -2931,7 +2734,6 @@ func NewBlueprintPermissionsValue(attributeTypes map[string]attr.Type, attribute
 	return BlueprintPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -3006,25 +2808,23 @@ var _ basetypes.ObjectValuable = BlueprintPermissionsValue{}
 type BlueprintPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v BlueprintPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -3041,14 +2841,6 @@ func (v BlueprintPermissionsValue) ToTerraformValue(ctx context.Context) (tftype
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -3082,7 +2874,6 @@ func (v BlueprintPermissionsValue) ToObjectValue(ctx context.Context) (basetypes
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -3098,7 +2889,6 @@ func (v BlueprintPermissionsValue) ToObjectValue(ctx context.Context) (basetypes
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -3127,10 +2917,6 @@ func (v BlueprintPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -3146,7 +2932,6 @@ func (v BlueprintPermissionsValue) AttributeTypes(ctx context.Context) map[strin
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -3172,14 +2957,6 @@ func (t CatalogItemTypePermissionsType) String() string {
 
 func (t CatalogItemTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewCatalogItemTypePermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewCatalogItemTypePermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -3219,24 +2996,6 @@ func (t CatalogItemTypePermissionsType) ValueFromObject(ctx context.Context, in 
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -3244,7 +3003,6 @@ func (t CatalogItemTypePermissionsType) ValueFromObject(ctx context.Context, in 
 	return CatalogItemTypePermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -3348,24 +3106,6 @@ func NewCatalogItemTypePermissionsValue(attributeTypes map[string]attr.Type, att
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewCatalogItemTypePermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewCatalogItemTypePermissionsValueUnknown(), diags
 	}
@@ -3373,7 +3113,6 @@ func NewCatalogItemTypePermissionsValue(attributeTypes map[string]attr.Type, att
 	return CatalogItemTypePermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -3448,25 +3187,23 @@ var _ basetypes.ObjectValuable = CatalogItemTypePermissionsValue{}
 type CatalogItemTypePermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v CatalogItemTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -3483,14 +3220,6 @@ func (v CatalogItemTypePermissionsValue) ToTerraformValue(ctx context.Context) (
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -3524,7 +3253,6 @@ func (v CatalogItemTypePermissionsValue) ToObjectValue(ctx context.Context) (bas
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -3540,7 +3268,6 @@ func (v CatalogItemTypePermissionsValue) ToObjectValue(ctx context.Context) (bas
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -3569,10 +3296,6 @@ func (v CatalogItemTypePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -3588,7 +3311,6 @@ func (v CatalogItemTypePermissionsValue) AttributeTypes(ctx context.Context) map
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -3614,14 +3336,6 @@ func (t CloudPermissionsType) String() string {
 
 func (t CloudPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewCloudPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewCloudPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -3661,24 +3375,6 @@ func (t CloudPermissionsType) ValueFromObject(ctx context.Context, in basetypes.
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -3686,7 +3382,6 @@ func (t CloudPermissionsType) ValueFromObject(ctx context.Context, in basetypes.
 	return CloudPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -3790,24 +3485,6 @@ func NewCloudPermissionsValue(attributeTypes map[string]attr.Type, attributes ma
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewCloudPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewCloudPermissionsValueUnknown(), diags
 	}
@@ -3815,7 +3492,6 @@ func NewCloudPermissionsValue(attributeTypes map[string]attr.Type, attributes ma
 	return CloudPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -3890,25 +3566,23 @@ var _ basetypes.ObjectValuable = CloudPermissionsValue{}
 type CloudPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v CloudPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -3925,14 +3599,6 @@ func (v CloudPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -3966,7 +3632,6 @@ func (v CloudPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -3982,7 +3647,6 @@ func (v CloudPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -4011,10 +3675,6 @@ func (v CloudPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -4030,7 +3690,6 @@ func (v CloudPermissionsValue) AttributeTypes(ctx context.Context) map[string]at
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -4056,14 +3715,6 @@ func (t FeaturePermissionsType) String() string {
 
 func (t FeaturePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewFeaturePermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewFeaturePermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -4103,71 +3754,14 @@ func (t FeaturePermissionsType) ValueFromObject(ctx context.Context, in basetype
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return nil, diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
-	subCategoryAttribute, ok := attributes["sub_category"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`sub_category is missing from object`)
-
-		return nil, diags
-	}
-
-	subCategoryVal, ok := subCategoryAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`sub_category expected to be basetypes.StringValue, was: %T`, subCategoryAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return FeaturePermissionsValue{
-		Access:      accessVal,
-		Code:        codeVal,
-		Id:          idVal,
-		Name:        nameVal,
-		SubCategory: subCategoryVal,
-		state:       attr.ValueStateKnown,
+		Access: accessVal,
+		Code:   codeVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -4270,71 +3864,14 @@ func NewFeaturePermissionsValue(attributeTypes map[string]attr.Type, attributes 
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return NewFeaturePermissionsValueUnknown(), diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewFeaturePermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
-	subCategoryAttribute, ok := attributes["sub_category"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`sub_category is missing from object`)
-
-		return NewFeaturePermissionsValueUnknown(), diags
-	}
-
-	subCategoryVal, ok := subCategoryAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`sub_category expected to be basetypes.StringValue, was: %T`, subCategoryAttribute))
-	}
-
 	if diags.HasError() {
 		return NewFeaturePermissionsValueUnknown(), diags
 	}
 
 	return FeaturePermissionsValue{
-		Access:      accessVal,
-		Code:        codeVal,
-		Id:          idVal,
-		Name:        nameVal,
-		SubCategory: subCategoryVal,
-		state:       attr.ValueStateKnown,
+		Access: accessVal,
+		Code:   codeVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -4406,31 +3943,25 @@ func (t FeaturePermissionsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = FeaturePermissionsValue{}
 
 type FeaturePermissionsValue struct {
-	Access      basetypes.StringValue `tfsdk:"access"`
-	Code        basetypes.StringValue `tfsdk:"code"`
-	Id          basetypes.Int64Value  `tfsdk:"id"`
-	Name        basetypes.StringValue `tfsdk:"name"`
-	SubCategory basetypes.StringValue `tfsdk:"sub_category"`
-	state       attr.ValueState
+	Access basetypes.StringValue `tfsdk:"access"`
+	Code   basetypes.StringValue `tfsdk:"code"`
+	state  attr.ValueState
 }
 
 func (v FeaturePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 5)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["sub_category"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 5)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -4447,30 +3978,6 @@ func (v FeaturePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.
 		}
 
 		vals["code"] = val
-
-		val, err = v.Id.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
-
-		val, err = v.SubCategory.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["sub_category"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -4502,11 +4009,8 @@ func (v FeaturePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"access":       basetypes.StringType{},
-		"code":         basetypes.StringType{},
-		"id":           basetypes.Int64Type{},
-		"name":         basetypes.StringType{},
-		"sub_category": basetypes.StringType{},
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4520,11 +4024,8 @@ func (v FeaturePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"access":       v.Access,
-			"code":         v.Code,
-			"id":           v.Id,
-			"name":         v.Name,
-			"sub_category": v.SubCategory,
+			"access": v.Access,
+			"code":   v.Code,
 		})
 
 	return objVal, diags
@@ -4553,18 +4054,6 @@ func (v FeaturePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
-	if !v.SubCategory.Equal(other.SubCategory) {
-		return false
-	}
-
 	return true
 }
 
@@ -4578,11 +4067,8 @@ func (v FeaturePermissionsValue) Type(ctx context.Context) attr.Type {
 
 func (v FeaturePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"access":       basetypes.StringType{},
-		"code":         basetypes.StringType{},
-		"id":           basetypes.Int64Type{},
-		"name":         basetypes.StringType{},
-		"sub_category": basetypes.StringType{},
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
 	}
 }
 
@@ -4608,14 +4094,6 @@ func (t GroupPermissionsType) String() string {
 
 func (t GroupPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewGroupPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewGroupPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -4655,24 +4133,6 @@ func (t GroupPermissionsType) ValueFromObject(ctx context.Context, in basetypes.
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -4680,7 +4140,6 @@ func (t GroupPermissionsType) ValueFromObject(ctx context.Context, in basetypes.
 	return GroupPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -4784,24 +4243,6 @@ func NewGroupPermissionsValue(attributeTypes map[string]attr.Type, attributes ma
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewGroupPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewGroupPermissionsValueUnknown(), diags
 	}
@@ -4809,7 +4250,6 @@ func NewGroupPermissionsValue(attributeTypes map[string]attr.Type, attributes ma
 	return GroupPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -4884,25 +4324,23 @@ var _ basetypes.ObjectValuable = GroupPermissionsValue{}
 type GroupPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v GroupPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -4919,14 +4357,6 @@ func (v GroupPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -4960,7 +4390,6 @@ func (v GroupPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4976,7 +4405,6 @@ func (v GroupPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -5005,10 +4433,6 @@ func (v GroupPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -5024,7 +4448,6 @@ func (v GroupPermissionsValue) AttributeTypes(ctx context.Context) map[string]at
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -5051,14 +4474,6 @@ func (t InstanceTypePermissionsType) String() string {
 func (t InstanceTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if in.IsUnknown() {
-		return NewInstanceTypePermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewInstanceTypePermissionsValueNull(), nil
-	}
-
 	attributes := in.Attributes()
 
 	accessAttribute, ok := attributes["access"]
@@ -5079,24 +4494,6 @@ func (t InstanceTypePermissionsType) ValueFromObject(ctx context.Context, in bas
 			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
 	}
 
-	codeAttribute, ok := attributes["code"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`code is missing from object`)
-
-		return nil, diags
-	}
-
-	codeVal, ok := codeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
-	}
-
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -5115,33 +4512,13 @@ func (t InstanceTypePermissionsType) ValueFromObject(ctx context.Context, in bas
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return InstanceTypePermissionsValue{
 		Access: accessVal,
-		Code:   codeVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -5227,24 +4604,6 @@ func NewInstanceTypePermissionsValue(attributeTypes map[string]attr.Type, attrib
 			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
 	}
 
-	codeAttribute, ok := attributes["code"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`code is missing from object`)
-
-		return NewInstanceTypePermissionsValueUnknown(), diags
-	}
-
-	codeVal, ok := codeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
-	}
-
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -5263,33 +4622,13 @@ func NewInstanceTypePermissionsValue(attributeTypes map[string]attr.Type, attrib
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewInstanceTypePermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewInstanceTypePermissionsValueUnknown(), diags
 	}
 
 	return InstanceTypePermissionsValue{
 		Access: accessVal,
-		Code:   codeVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -5363,28 +4702,24 @@ var _ basetypes.ObjectValuable = InstanceTypePermissionsValue{}
 
 type InstanceTypePermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
-	Code   basetypes.StringValue `tfsdk:"code"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v InstanceTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -5394,14 +4729,6 @@ func (v InstanceTypePermissionsValue) ToTerraformValue(ctx context.Context) (tft
 
 		vals["access"] = val
 
-		val, err = v.Code.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["code"] = val
-
 		val, err = v.Id.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -5409,14 +4736,6 @@ func (v InstanceTypePermissionsValue) ToTerraformValue(ctx context.Context) (tft
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -5449,9 +4768,7 @@ func (v InstanceTypePermissionsValue) ToObjectValue(ctx context.Context) (basety
 
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
-		"code":   basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -5466,9 +4783,7 @@ func (v InstanceTypePermissionsValue) ToObjectValue(ctx context.Context) (basety
 		attributeTypes,
 		map[string]attr.Value{
 			"access": v.Access,
-			"code":   v.Code,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -5493,15 +4808,7 @@ func (v InstanceTypePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Code.Equal(other.Code) {
-		return false
-	}
-
 	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
 		return false
 	}
 
@@ -5519,9 +4826,7 @@ func (v InstanceTypePermissionsValue) Type(ctx context.Context) attr.Type {
 func (v InstanceTypePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
-		"code":   basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -5547,14 +4852,6 @@ func (t PersonaPermissionsType) String() string {
 
 func (t PersonaPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewPersonaPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewPersonaPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -5594,42 +4891,6 @@ func (t PersonaPermissionsType) ValueFromObject(ctx context.Context, in basetype
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return nil, diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -5637,8 +4898,6 @@ func (t PersonaPermissionsType) ValueFromObject(ctx context.Context, in basetype
 	return PersonaPermissionsValue{
 		Access: accessVal,
 		Code:   codeVal,
-		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -5742,42 +5001,6 @@ func NewPersonaPermissionsValue(attributeTypes map[string]attr.Type, attributes 
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return NewPersonaPermissionsValueUnknown(), diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewPersonaPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewPersonaPermissionsValueUnknown(), diags
 	}
@@ -5785,8 +5008,6 @@ func NewPersonaPermissionsValue(attributeTypes map[string]attr.Type, attributes 
 	return PersonaPermissionsValue{
 		Access: accessVal,
 		Code:   codeVal,
-		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -5861,27 +5082,23 @@ var _ basetypes.ObjectValuable = PersonaPermissionsValue{}
 type PersonaPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Code   basetypes.StringValue `tfsdk:"code"`
-	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v PersonaPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -5898,22 +5115,6 @@ func (v PersonaPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.
 		}
 
 		vals["code"] = val
-
-		val, err = v.Id.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -5947,8 +5148,6 @@ func (v PersonaPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"code":   basetypes.StringType{},
-		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -5964,8 +5163,6 @@ func (v PersonaPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 		map[string]attr.Value{
 			"access": v.Access,
 			"code":   v.Code,
-			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -5994,14 +5191,6 @@ func (v PersonaPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -6017,8 +5206,6 @@ func (v PersonaPermissionsValue) AttributeTypes(ctx context.Context) map[string]
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"code":   basetypes.StringType{},
-		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -6044,14 +5231,6 @@ func (t ReportTypePermissionsType) String() string {
 
 func (t ReportTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewReportTypePermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewReportTypePermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -6091,42 +5270,6 @@ func (t ReportTypePermissionsType) ValueFromObject(ctx context.Context, in baset
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return nil, diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -6134,8 +5277,6 @@ func (t ReportTypePermissionsType) ValueFromObject(ctx context.Context, in baset
 	return ReportTypePermissionsValue{
 		Access: accessVal,
 		Code:   codeVal,
-		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -6239,42 +5380,6 @@ func NewReportTypePermissionsValue(attributeTypes map[string]attr.Type, attribut
 			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return NewReportTypePermissionsValueUnknown(), diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewReportTypePermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewReportTypePermissionsValueUnknown(), diags
 	}
@@ -6282,8 +5387,6 @@ func NewReportTypePermissionsValue(attributeTypes map[string]attr.Type, attribut
 	return ReportTypePermissionsValue{
 		Access: accessVal,
 		Code:   codeVal,
-		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -6358,27 +5461,23 @@ var _ basetypes.ObjectValuable = ReportTypePermissionsValue{}
 type ReportTypePermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Code   basetypes.StringValue `tfsdk:"code"`
-	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v ReportTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -6395,22 +5494,6 @@ func (v ReportTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftyp
 		}
 
 		vals["code"] = val
-
-		val, err = v.Id.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -6444,8 +5527,6 @@ func (v ReportTypePermissionsValue) ToObjectValue(ctx context.Context) (basetype
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"code":   basetypes.StringType{},
-		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -6461,8 +5542,6 @@ func (v ReportTypePermissionsValue) ToObjectValue(ctx context.Context) (basetype
 		map[string]attr.Value{
 			"access": v.Access,
 			"code":   v.Code,
-			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -6491,14 +5570,6 @@ func (v ReportTypePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -6514,8 +5585,6 @@ func (v ReportTypePermissionsValue) AttributeTypes(ctx context.Context) map[stri
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"code":   basetypes.StringType{},
-		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -6542,14 +5611,6 @@ func (t TaskPermissionsType) String() string {
 func (t TaskPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if in.IsUnknown() {
-		return NewTaskPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewTaskPermissionsValueNull(), nil
-	}
-
 	attributes := in.Attributes()
 
 	accessAttribute, ok := attributes["access"]
@@ -6570,24 +5631,6 @@ func (t TaskPermissionsType) ValueFromObject(ctx context.Context, in basetypes.O
 			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
 	}
 
-	codeAttribute, ok := attributes["code"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`code is missing from object`)
-
-		return nil, diags
-	}
-
-	codeVal, ok := codeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
-	}
-
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -6606,33 +5649,13 @@ func (t TaskPermissionsType) ValueFromObject(ctx context.Context, in basetypes.O
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return TaskPermissionsValue{
 		Access: accessVal,
-		Code:   codeVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -6718,24 +5741,6 @@ func NewTaskPermissionsValue(attributeTypes map[string]attr.Type, attributes map
 			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
 	}
 
-	codeAttribute, ok := attributes["code"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`code is missing from object`)
-
-		return NewTaskPermissionsValueUnknown(), diags
-	}
-
-	codeVal, ok := codeAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
-	}
-
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -6754,33 +5759,13 @@ func NewTaskPermissionsValue(attributeTypes map[string]attr.Type, attributes map
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewTaskPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewTaskPermissionsValueUnknown(), diags
 	}
 
 	return TaskPermissionsValue{
 		Access: accessVal,
-		Code:   codeVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -6854,28 +5839,24 @@ var _ basetypes.ObjectValuable = TaskPermissionsValue{}
 
 type TaskPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
-	Code   basetypes.StringValue `tfsdk:"code"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v TaskPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -6885,14 +5866,6 @@ func (v TaskPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 
 		vals["access"] = val
 
-		val, err = v.Code.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["code"] = val
-
 		val, err = v.Id.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -6900,14 +5873,6 @@ func (v TaskPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -6940,9 +5905,7 @@ func (v TaskPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
-		"code":   basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -6957,9 +5920,7 @@ func (v TaskPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 		attributeTypes,
 		map[string]attr.Value{
 			"access": v.Access,
-			"code":   v.Code,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -6984,15 +5945,7 @@ func (v TaskPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Code.Equal(other.Code) {
-		return false
-	}
-
 	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
 		return false
 	}
 
@@ -7010,9 +5963,7 @@ func (v TaskPermissionsValue) Type(ctx context.Context) attr.Type {
 func (v TaskPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
-		"code":   basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -7038,14 +5989,6 @@ func (t VdiPoolPermissionsType) String() string {
 
 func (t VdiPoolPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewVdiPoolPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewVdiPoolPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -7085,24 +6028,6 @@ func (t VdiPoolPermissionsType) ValueFromObject(ctx context.Context, in basetype
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -7110,7 +6035,6 @@ func (t VdiPoolPermissionsType) ValueFromObject(ctx context.Context, in basetype
 	return VdiPoolPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -7214,24 +6138,6 @@ func NewVdiPoolPermissionsValue(attributeTypes map[string]attr.Type, attributes 
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewVdiPoolPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewVdiPoolPermissionsValueUnknown(), diags
 	}
@@ -7239,7 +6145,6 @@ func NewVdiPoolPermissionsValue(attributeTypes map[string]attr.Type, attributes 
 	return VdiPoolPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -7314,25 +6219,23 @@ var _ basetypes.ObjectValuable = VdiPoolPermissionsValue{}
 type VdiPoolPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v VdiPoolPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -7349,14 +6252,6 @@ func (v VdiPoolPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -7390,7 +6285,6 @@ func (v VdiPoolPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -7406,7 +6300,6 @@ func (v VdiPoolPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.O
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -7435,10 +6328,6 @@ func (v VdiPoolPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -7454,7 +6343,6 @@ func (v VdiPoolPermissionsValue) AttributeTypes(ctx context.Context) map[string]
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
 
@@ -7480,14 +6368,6 @@ func (t WorkflowPermissionsType) String() string {
 
 func (t WorkflowPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewWorkflowPermissionsValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewWorkflowPermissionsValueNull(), nil
-	}
 
 	attributes := in.Attributes()
 
@@ -7527,24 +6407,6 @@ func (t WorkflowPermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -7552,7 +6414,6 @@ func (t WorkflowPermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	return WorkflowPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -7656,24 +6517,6 @@ func NewWorkflowPermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewWorkflowPermissionsValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
 	if diags.HasError() {
 		return NewWorkflowPermissionsValueUnknown(), diags
 	}
@@ -7681,7 +6524,6 @@ func NewWorkflowPermissionsValue(attributeTypes map[string]attr.Type, attributes
 	return WorkflowPermissionsValue{
 		Access: accessVal,
 		Id:     idVal,
-		Name:   nameVal,
 		state:  attr.ValueStateKnown,
 	}, diags
 }
@@ -7756,25 +6598,23 @@ var _ basetypes.ObjectValuable = WorkflowPermissionsValue{}
 type WorkflowPermissionsValue struct {
 	Access basetypes.StringValue `tfsdk:"access"`
 	Id     basetypes.Int64Value  `tfsdk:"id"`
-	Name   basetypes.StringValue `tfsdk:"name"`
 	state  attr.ValueState
 }
 
 func (v WorkflowPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Access.ToTerraformValue(ctx)
 
@@ -7791,14 +6631,6 @@ func (v WorkflowPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		}
 
 		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -7832,7 +6664,6 @@ func (v WorkflowPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 	attributeTypes := map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -7848,7 +6679,6 @@ func (v WorkflowPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 		map[string]attr.Value{
 			"access": v.Access,
 			"id":     v.Id,
-			"name":   v.Name,
 		})
 
 	return objVal, diags
@@ -7877,10 +6707,6 @@ func (v WorkflowPermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
 	return true
 }
 
@@ -7896,6 +6722,5 @@ func (v WorkflowPermissionsValue) AttributeTypes(ctx context.Context) map[string
 	return map[string]attr.Type{
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
-		"name":   basetypes.StringType{},
 	}
 }
