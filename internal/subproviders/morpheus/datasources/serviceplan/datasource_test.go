@@ -49,15 +49,16 @@ func TestAccMorpheusFindServicePlanById(t *testing.T) {
 	servicePlanResourceConfig := `
 resource "morpheus_service_plan" "test" {
   name = "` + servicePlanName + `"
-	code 			 = "standard"
-	price_set_ids  = []
+  code = "standard"
+  price_set_ids  = []
   provision_type = "` + provisionTypeCode + `"
 }
 `
 
 	providerConfig := testhelpers.ProviderBlockMixed()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", "morpheus_service_plan.test.id")
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t, "example-id.tf.tmpl", "Id", "morpheus_service_plan.test.id")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,9 +102,9 @@ func TestAccMorpheusFindServicePlanByNameProvision(t *testing.T) {
 	servicePlanResourceConfig := `
 resource "morpheus_service_plan" "test" {
   name = "` + servicePlanName + `"
-	code = "standard"
-	price_set_ids  = []
-	provision_type = "` + provisionTypeCode + `"
+  code = "standard"
+  price_set_ids  = []
+  provision_type = "` + provisionTypeCode + `"
 }
 `
 	providerConfig := testhelpers.ProviderBlockMixed()
