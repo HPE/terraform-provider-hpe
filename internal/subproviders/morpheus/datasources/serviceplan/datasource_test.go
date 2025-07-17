@@ -148,7 +148,7 @@ resource "morpheus_service_plan" "test" {
 	})
 }
 
-func TestAcccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
+func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
