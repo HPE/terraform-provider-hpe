@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -43,12 +44,22 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The name of the Morpheus service plan",
 				MarkdownDescription: "The name of the Morpheus service plan",
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.Expressions{
+						path.MatchRoot("provision_type_code"),
+					}...),
+				},
 			},
 			"provision_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "The provision_type code of the Morpheus service plan",
 				MarkdownDescription: "The provision_type code of the Morpheus service plan",
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.Expressions{
+						path.MatchRoot("name"),
+					}...),
+				},
 			},
 		},
 	}

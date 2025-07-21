@@ -257,3 +257,39 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 		},
 	})
 }
+
+func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	config := providerConfig + `
+			data "hpe_morpheus_service_plan" "test" {
+				provision_type_code = "arm"
+			}`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_service_plan.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := serviceplan.ErrorRunningPreApply
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}

@@ -19,7 +19,7 @@ import (
 const (
 	summary                   = "read service plan data source"
 	ErrorNoServicePlanFound   = `no service plan found`
-	ErrorNoValidSearchTerms   = `no valid search terms - an id or name is required`
+	ErrorNoValidSearchTerms   = `no valid search terms - an id or (name and provision_type_code) is required`
 	ErrorRunningPreApply      = `Error running pre-apply plan: exit status 1`
 	ErrorMultipleServicePlans = `multiple service plans were returned`
 )
