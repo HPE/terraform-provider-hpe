@@ -90,7 +90,7 @@ resource "morpheus_service_plan" "test" {
 	})
 }
 
-func TestAccMorpheusFindServicePlanByNameProvision(t *testing.T) {
+func TestAccMorpheusFindServicePlanByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
