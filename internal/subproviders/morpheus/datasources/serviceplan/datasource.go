@@ -25,11 +25,8 @@ const (
 	ErrorMultipleServicePlans = `multiple service plans were returned`
 )
 
-
 // Ensure the implementation satisfies the expected interfaces.
-var (
-	_ datasource.DataSource = &DataSource{}
-)
+var _ datasource.DataSource = &DataSource{}
 
 // NewDataSource is a helper function to simplify the provider implementation.
 func NewDataSource() datasource.DataSource {
