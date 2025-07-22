@@ -53,8 +53,8 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 			"provision_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The provision_type code of the Morpheus service plan",
-				MarkdownDescription: "The provision_type code of the Morpheus service plan",
+				Description:         "The provision type code of the Morpheus service plan",
+				MarkdownDescription: "The provision type code of the Morpheus service plan",
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(path.Expressions{
 						path.MatchRoot("name"),
