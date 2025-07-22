@@ -25,6 +25,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/network"
 	dsrole "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/rolepermissions"
+	dsserviceplan "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/user"
@@ -41,6 +42,7 @@ func (SubProvider) GetDataSources(
 		network.NewDataSource,
 		dsrole.NewDataSource,
 		rolepermissions.NewDataSource,
+		dsserviceplan.NewDataSource,
 	}
 }
 
