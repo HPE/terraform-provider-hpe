@@ -6,10 +6,10 @@
 .PHONY: build linter lint test docs docs-experimental experimental
 
 build:
-	go build ./...
+	go build
 
 experimental:
-	go build -tags=experimental ./...
+	go build -tags=experimental
 
 linter:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
