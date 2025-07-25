@@ -185,13 +185,13 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.",
 				MarkdownDescription: "Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.",
 			},
-			"pool": schema.Int64Attribute{
+			"pool_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Network Pool ID",
 				MarkdownDescription: "Network Pool ID",
 			},
-			"pool_ipv6": schema.Int64Attribute{
+			"pool_ipv6_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "IPv6 Network Pool ID",
@@ -289,8 +289,8 @@ type NetworkModel struct {
 	NetworkDomainId         types.Int64              `tfsdk:"network_domain_id"`
 	NetworkProxyId          types.Int64              `tfsdk:"network_proxy_id"`
 	NoProxy                 types.String             `tfsdk:"no_proxy"`
-	Pool                    types.Int64              `tfsdk:"pool"`
-	PoolIpv6                types.Int64              `tfsdk:"pool_ipv6"`
+	PoolId                  types.Int64              `tfsdk:"pool_id"`
+	PoolIpv6Id              types.Int64              `tfsdk:"pool_ipv6_id"`
 	ResourcePermissions     ResourcePermissionsValue `tfsdk:"resource_permissions"`
 	SearchDomains           types.String             `tfsdk:"search_domains"`
 	TenantIds               types.Set                `tfsdk:"tenant_ids"`
@@ -321,6 +321,14 @@ func (t ResourcePermissionsType) String() string {
 
 func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewResourcePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewResourcePermissionsValueNull(), nil
+	}
 
 	attributes := in.Attributes()
 
