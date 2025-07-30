@@ -205,12 +205,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Pass true to allow access all groups",
 						MarkdownDescription: "Pass true to allow access all groups",
 					},
-					"groups": schema.SetAttribute{
+					"group_ids": schema.SetAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
-						Description:         "Array of groups (sites) that are allowed access",
-						MarkdownDescription: "Array of groups (sites) that are allowed access",
+						Description:         "Array of group (site) IDs that are allowed access",
+						MarkdownDescription: "Array of group (site) IDs that are allowed access",
 					},
 				},
 				CustomType: ResourcePermissionsType{
@@ -350,22 +350,22 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	groupsAttribute, ok := attributes["groups"]
+	groupIdsAttribute, ok := attributes["group_ids"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`groups is missing from object`)
+			`group_ids is missing from object`)
 
 		return nil, diags
 	}
 
-	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
+			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -373,9 +373,9 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	}
 
 	return ResourcePermissionsValue{
-		All:    allVal,
-		Groups: groupsVal,
-		state:  attr.ValueStateKnown,
+		All:      allVal,
+		GroupIds: groupIdsVal,
+		state:    attr.ValueStateKnown,
 	}, diags
 }
 
@@ -460,22 +460,22 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	groupsAttribute, ok := attributes["groups"]
+	groupIdsAttribute, ok := attributes["group_ids"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`groups is missing from object`)
+			`group_ids is missing from object`)
 
 		return NewResourcePermissionsValueUnknown(), diags
 	}
 
-	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
+			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -483,9 +483,9 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	}
 
 	return ResourcePermissionsValue{
-		All:    allVal,
-		Groups: groupsVal,
-		state:  attr.ValueStateKnown,
+		All:      allVal,
+		GroupIds: groupIdsVal,
+		state:    attr.ValueStateKnown,
 	}, diags
 }
 
@@ -557,9 +557,9 @@ func (t ResourcePermissionsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ResourcePermissionsValue{}
 
 type ResourcePermissionsValue struct {
-	All    basetypes.BoolValue `tfsdk:"all"`
-	Groups basetypes.SetValue  `tfsdk:"groups"`
-	state  attr.ValueState
+	All      basetypes.BoolValue `tfsdk:"all"`
+	GroupIds basetypes.SetValue  `tfsdk:"group_ids"`
+	state    attr.ValueState
 }
 
 func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -569,7 +569,7 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 	var err error
 
 	attrTypes["all"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["groups"] = basetypes.SetType{
+	attrTypes["group_ids"] = basetypes.SetType{
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
 
@@ -587,13 +587,13 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 
 		vals["all"] = val
 
-		val, err = v.Groups.ToTerraformValue(ctx)
+		val, err = v.GroupIds.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["groups"] = val
+		vals["group_ids"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -624,22 +624,22 @@ func (v ResourcePermissionsValue) String() string {
 func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var groupsVal basetypes.SetValue
+	var groupIdsVal basetypes.SetValue
 	switch {
-	case v.Groups.IsUnknown():
-		groupsVal = types.SetUnknown(types.Int64Type)
-	case v.Groups.IsNull():
-		groupsVal = types.SetNull(types.Int64Type)
+	case v.GroupIds.IsUnknown():
+		groupIdsVal = types.SetUnknown(types.Int64Type)
+	case v.GroupIds.IsNull():
+		groupIdsVal = types.SetNull(types.Int64Type)
 	default:
 		var d diag.Diagnostics
-		groupsVal, d = types.SetValue(types.Int64Type, v.Groups.Elements())
+		groupIdsVal, d = types.SetValue(types.Int64Type, v.GroupIds.Elements())
 		diags.Append(d...)
 	}
 
 	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"all": basetypes.BoolType{},
-			"groups": basetypes.SetType{
+			"group_ids": basetypes.SetType{
 				ElemType: types.Int64Type,
 			},
 		}), diags
@@ -647,7 +647,7 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 
 	attributeTypes := map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"groups": basetypes.SetType{
+		"group_ids": basetypes.SetType{
 			ElemType: types.Int64Type,
 		},
 	}
@@ -663,8 +663,8 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"all":    v.All,
-			"groups": groupsVal,
+			"all":       v.All,
+			"group_ids": groupIdsVal,
 		})
 
 	return objVal, diags
@@ -689,7 +689,7 @@ func (v ResourcePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Groups.Equal(other.Groups) {
+	if !v.GroupIds.Equal(other.GroupIds) {
 		return false
 	}
 
@@ -707,7 +707,7 @@ func (v ResourcePermissionsValue) Type(ctx context.Context) attr.Type {
 func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"groups": basetypes.SetType{
+		"group_ids": basetypes.SetType{
 			ElemType: types.Int64Type,
 		},
 	}
