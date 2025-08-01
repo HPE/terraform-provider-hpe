@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,8 +35,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The Cloud ID to provision the instance onto.",
 			},
 			"config": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration object. Settings vary by type. (Dynamic)",
+				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
 				Validators: []validator.String{
 					morpheusvalidators.JSONValidator{},
 				},
@@ -71,6 +75,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"instance_context": schema.StringAttribute{
 				Optional:            true,
@@ -159,11 +166,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"ports": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"lb": schema.StringAttribute{
+						"load_balancer_protocol": schema.StringAttribute{
 							Optional:            true,
-							Computed:            true,
-							Description:         "The load balancer protocol. HTTP, HTTPS, or TCP.",
-							MarkdownDescription: "The load balancer protocol. HTTP, HTTPS, or TCP.",
+							Description:         "Enable a load balancer and set load balancer protocol. HTTP, HTTPS, or TCP.",
+							MarkdownDescription: "Enable a load balancer and set load balancer protocol. HTTP, HTTPS, or TCP.",
 						},
 						"name": schema.StringAttribute{
 							Optional:            true,
@@ -274,7 +280,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Description:         "Can be used to select pre-existing LV choices from Morpheus.",
 							MarkdownDescription: "Can be used to select pre-existing LV choices from Morpheus.",
 						},
-						"storage_type": schema.Int64Attribute{
+						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
 							Description:         "Identifier for LV type",
 							MarkdownDescription: "Identifier for LV type",
@@ -1231,22 +1237,22 @@ func (t PortsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 
 	attributes := in.Attributes()
 
-	lbAttribute, ok := attributes["lb"]
+	loadBalancerProtocolAttribute, ok := attributes["load_balancer_protocol"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`lb is missing from object`)
+			`load_balancer_protocol is missing from object`)
 
 		return nil, diags
 	}
 
-	lbVal, ok := lbAttribute.(basetypes.StringValue)
+	loadBalancerProtocolVal, ok := loadBalancerProtocolAttribute.(basetypes.StringValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lb expected to be basetypes.StringValue, was: %T`, lbAttribute))
+			fmt.Sprintf(`load_balancer_protocol expected to be basetypes.StringValue, was: %T`, loadBalancerProtocolAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1290,10 +1296,10 @@ func (t PortsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 	}
 
 	return PortsValue{
-		Lb:    lbVal,
-		Name:  nameVal,
-		Port:  portVal,
-		state: attr.ValueStateKnown,
+		LoadBalancerProtocol: loadBalancerProtocolVal,
+		Name:                 nameVal,
+		Port:                 portVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1360,22 +1366,22 @@ func NewPortsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 		return NewPortsValueUnknown(), diags
 	}
 
-	lbAttribute, ok := attributes["lb"]
+	loadBalancerProtocolAttribute, ok := attributes["load_balancer_protocol"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`lb is missing from object`)
+			`load_balancer_protocol is missing from object`)
 
 		return NewPortsValueUnknown(), diags
 	}
 
-	lbVal, ok := lbAttribute.(basetypes.StringValue)
+	loadBalancerProtocolVal, ok := loadBalancerProtocolAttribute.(basetypes.StringValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lb expected to be basetypes.StringValue, was: %T`, lbAttribute))
+			fmt.Sprintf(`load_balancer_protocol expected to be basetypes.StringValue, was: %T`, loadBalancerProtocolAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1419,10 +1425,10 @@ func NewPortsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 	}
 
 	return PortsValue{
-		Lb:    lbVal,
-		Name:  nameVal,
-		Port:  portVal,
-		state: attr.ValueStateKnown,
+		LoadBalancerProtocol: loadBalancerProtocolVal,
+		Name:                 nameVal,
+		Port:                 portVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1494,10 +1500,10 @@ func (t PortsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = PortsValue{}
 
 type PortsValue struct {
-	Lb    basetypes.StringValue `tfsdk:"lb"`
-	Name  basetypes.StringValue `tfsdk:"name"`
-	Port  basetypes.Int64Value  `tfsdk:"port"`
-	state attr.ValueState
+	LoadBalancerProtocol basetypes.StringValue `tfsdk:"load_balancer_protocol"`
+	Name                 basetypes.StringValue `tfsdk:"name"`
+	Port                 basetypes.Int64Value  `tfsdk:"port"`
+	state                attr.ValueState
 }
 
 func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -1506,7 +1512,7 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 	var val tftypes.Value
 	var err error
 
-	attrTypes["lb"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["load_balancer_protocol"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["port"] = basetypes.Int64Type{}.TerraformType(ctx)
 
@@ -1516,13 +1522,13 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 	case attr.ValueStateKnown:
 		vals := make(map[string]tftypes.Value, 3)
 
-		val, err = v.Lb.ToTerraformValue(ctx)
+		val, err = v.LoadBalancerProtocol.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["lb"] = val
+		vals["load_balancer_protocol"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
 
@@ -1570,9 +1576,9 @@ func (v PortsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"lb":   basetypes.StringType{},
-		"name": basetypes.StringType{},
-		"port": basetypes.Int64Type{},
+		"load_balancer_protocol": basetypes.StringType{},
+		"name":                   basetypes.StringType{},
+		"port":                   basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -1586,9 +1592,9 @@ func (v PortsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"lb":   v.Lb,
-			"name": v.Name,
-			"port": v.Port,
+			"load_balancer_protocol": v.LoadBalancerProtocol,
+			"name":                   v.Name,
+			"port":                   v.Port,
 		})
 
 	return objVal, diags
@@ -1609,7 +1615,7 @@ func (v PortsValue) Equal(o attr.Value) bool {
 		return true
 	}
 
-	if !v.Lb.Equal(other.Lb) {
+	if !v.LoadBalancerProtocol.Equal(other.LoadBalancerProtocol) {
 		return false
 	}
 
@@ -1634,9 +1640,9 @@ func (v PortsValue) Type(ctx context.Context) attr.Type {
 
 func (v PortsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"lb":   basetypes.StringType{},
-		"name": basetypes.StringType{},
-		"port": basetypes.Int64Type{},
+		"load_balancer_protocol": basetypes.StringType{},
+		"name":                   basetypes.StringType{},
+		"port":                   basetypes.Int64Type{},
 	}
 }
 
@@ -2204,22 +2210,22 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
 	}
 
-	storageTypeAttribute, ok := attributes["storage_type"]
+	storageTypeIdAttribute, ok := attributes["storage_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`storage_type is missing from object`)
+			`storage_type_id is missing from object`)
 
 		return nil, diags
 	}
 
-	storageTypeVal, ok := storageTypeAttribute.(basetypes.Int64Value)
+	storageTypeIdVal, ok := storageTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`storage_type expected to be basetypes.Int64Value, was: %T`, storageTypeAttribute))
+			fmt.Sprintf(`storage_type_id expected to be basetypes.Int64Value, was: %T`, storageTypeIdAttribute))
 	}
 
 	if diags.HasError() {
@@ -2235,7 +2241,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		RootVolume:             rootVolumeVal,
 		Size:                   sizeVal,
 		SizeId:                 sizeIdVal,
-		StorageType:            storageTypeVal,
+		StorageTypeId:          storageTypeIdVal,
 		state:                  attr.ValueStateKnown,
 	}, diags
 }
@@ -2447,22 +2453,22 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
 	}
 
-	storageTypeAttribute, ok := attributes["storage_type"]
+	storageTypeIdAttribute, ok := attributes["storage_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`storage_type is missing from object`)
+			`storage_type_id is missing from object`)
 
 		return NewVolumesValueUnknown(), diags
 	}
 
-	storageTypeVal, ok := storageTypeAttribute.(basetypes.Int64Value)
+	storageTypeIdVal, ok := storageTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`storage_type expected to be basetypes.Int64Value, was: %T`, storageTypeAttribute))
+			fmt.Sprintf(`storage_type_id expected to be basetypes.Int64Value, was: %T`, storageTypeIdAttribute))
 	}
 
 	if diags.HasError() {
@@ -2478,7 +2484,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		RootVolume:             rootVolumeVal,
 		Size:                   sizeVal,
 		SizeId:                 sizeIdVal,
-		StorageType:            storageTypeVal,
+		StorageTypeId:          storageTypeIdVal,
 		state:                  attr.ValueStateKnown,
 	}, diags
 }
@@ -2559,7 +2565,7 @@ type VolumesValue struct {
 	RootVolume             basetypes.BoolValue   `tfsdk:"root_volume"`
 	Size                   basetypes.Int64Value  `tfsdk:"size"`
 	SizeId                 basetypes.Int64Value  `tfsdk:"size_id"`
-	StorageType            basetypes.Int64Value  `tfsdk:"storage_type"`
+	StorageTypeId          basetypes.Int64Value  `tfsdk:"storage_type_id"`
 	state                  attr.ValueState
 }
 
@@ -2577,7 +2583,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["root_volume"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["size"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["size_id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["storage_type"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["storage_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
@@ -2649,13 +2655,13 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 		vals["size_id"] = val
 
-		val, err = v.StorageType.ToTerraformValue(ctx)
+		val, err = v.StorageTypeId.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["storage_type"] = val
+		vals["storage_type_id"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -2695,7 +2701,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"root_volume":              basetypes.BoolType{},
 		"size":                     basetypes.Int64Type{},
 		"size_id":                  basetypes.Int64Type{},
-		"storage_type":             basetypes.Int64Type{},
+		"storage_type_id":          basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -2717,7 +2723,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"root_volume":              v.RootVolume,
 			"size":                     v.Size,
 			"size_id":                  v.SizeId,
-			"storage_type":             v.StorageType,
+			"storage_type_id":          v.StorageTypeId,
 		})
 
 	return objVal, diags
@@ -2770,7 +2776,7 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.StorageType.Equal(other.StorageType) {
+	if !v.StorageTypeId.Equal(other.StorageTypeId) {
 		return false
 	}
 
@@ -2795,6 +2801,6 @@ func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"root_volume":              basetypes.BoolType{},
 		"size":                     basetypes.Int64Type{},
 		"size_id":                  basetypes.Int64Type{},
-		"storage_type":             basetypes.Int64Type{},
+		"storage_type_id":          basetypes.Int64Type{},
 	}
 }
