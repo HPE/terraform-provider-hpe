@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -160,8 +161,11 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "Name",
-				MarkdownDescription: "Name",
+				Description:         "Network name.",
+				MarkdownDescription: "Network name.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"netmask_ipv6": schema.StringAttribute{
 				Optional: true,
