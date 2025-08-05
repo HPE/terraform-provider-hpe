@@ -44,7 +44,8 @@ func (c BoolAttributesSetterValidator) ValidateBool(
 	boolVal := request.ConfigValue.ValueBool()
 
 	for _, expression := range expressions {
-		// finding all paths that match the expression e.g path.MatchRoot("list_of_objects").AtListIndex(path.MatchAll()).AtName("id"), matchedPaths
+		// finding all paths that match the expression
+		// e.g path.MatchRoot("list_of_objects").AtListIndex(path.MatchAll()).AtName("id")
 		matchedPaths, diags := request.Config.PathMatches(ctx, expression)
 
 		response.Diagnostics.Append(diags...)
@@ -86,7 +87,8 @@ func (c BoolAttributesSetterValidator) ValidateBool(
 			if !boolVal && !mpVal.IsNull() {
 				response.Diagnostics.Append(validatordiag.InvalidAttributeCombinationDiagnostic(
 					request.Path,
-					fmt.Sprintf("Attribute %q cannot be specified when %q is not provided or false", mp, request.Path),
+					fmt.Sprintf("Attribute %q cannot be specified when %q is not provided or false",
+						mp, request.Path),
 				))
 			}
 		}
