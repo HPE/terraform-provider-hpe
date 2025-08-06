@@ -853,77 +853,68 @@ func (r *Resource) Read(
 		// We need to do this because the API returns ALL feature permissions in a GET,
 		// not just the ones that were overridden by the user.
 
-		// if featurepermissions state is null then set to null
-		var apiStateFeaturePermissions []FeaturePermissionsValue
-		diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-
-			return
-		}
-
-		var stateFeaturePermissions []FeaturePermissionsValue
-		diags = state.Permissions.FeaturePermissions.ElementsAs(ctx, &stateFeaturePermissions, false)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-
-			return
-		}
-
-		// Edge case: Not a subset if there are no feature permissions in Terraform state,
-		// but there are feature permissions in API state.
-		if len(apiStateFeaturePermissions) > 0 && len(stateFeaturePermissions) == 0 {
-			resp.Diagnostics.AddError(
-				"read role resource",
-				fmt.Sprintf("role %d: if setting feature_permissions, 1 or more feature_permissions are required to be set", id),
-			)
-
-			return
-		}
-
-		for k, v := range stateFeaturePermissions {
-			// If apiStateFeaturePermissions contains v with the conditions in the closure...
-			if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
-				// We should only compare on code and access, as the other fields are computed.
-				// If we compare on the other fields when we have a tainted state with computed values missing,
-				// then we'll incorrectly error that the state is not a subset
-
-				// For the case of a tainted state, so we can still find the permissions
-				// and get an accurate view of the plan.
-				if v.Name.IsUnknown() && v.Id.IsUnknown() && v.SubCategory.IsUnknown() {
-					return vv.Code.Equal(v.Code)
-				}
-
-				// all other times, when computed state values are OK
-				return vv.Id.Equal(v.Id) &&
-					vv.Code.Equal(v.Code)
-			}); n > -1 {
-				// If there's a match, update the permissions to store to state with the computed values.
-				stateFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
-				stateFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
-				stateFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
-				// We don't need to set planFeaturePermissions[k].state,
-				// its value is already attr.ValueStateKnown.
-
-			} else {
-				resp.Diagnostics.AddError(
-					"read role resource",
-					fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
-				)
+		if !state.Permissions.FeaturePermissions.IsNull() && !state.Permissions.FeaturePermissions.IsUnknown() {
+			// if featurepermissions state is null then set to null
+			var apiStateFeaturePermissions []FeaturePermissionsValue
+			diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
 
 				return
 			}
+
+			var stateFeaturePermissions []FeaturePermissionsValue
+			diags = state.Permissions.FeaturePermissions.ElementsAs(ctx, &stateFeaturePermissions, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+
+			for k, v := range stateFeaturePermissions {
+				// If apiStateFeaturePermissions contains v with the conditions in the closure...
+				if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
+					// We should only compare on code and access, as the other fields are computed.
+					// If we compare on the other fields when we have a tainted state with computed values missing,
+					// then we'll incorrectly error that the state is not a subset
+
+					// For the case of a tainted state, so we can still find the permissions
+					// and get an accurate view of the plan.
+					if v.Name.IsUnknown() && v.Id.IsUnknown() && v.SubCategory.IsUnknown() {
+						return vv.Code.Equal(v.Code)
+					}
+
+					// all other times, when computed state values are OK
+					return vv.Id.Equal(v.Id) &&
+						vv.Code.Equal(v.Code)
+				}); n > -1 {
+					// If there's a match, update the permissions to store to state with the computed values.
+					stateFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
+					stateFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
+					stateFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
+					// We don't need to set planFeaturePermissions[k].state,
+					// its value is already attr.ValueStateKnown.
+
+				} else {
+					resp.Diagnostics.AddError(
+						"read role resource",
+						fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
+					)
+
+					return
+				}
+			}
+
+			// If we get to here, the permissions in state are a subset of those in API state.
+			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissions)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+
+			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
-
-		// If we get to here, the permissions in state are a subset of those in API state.
-		featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissions)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-
-			return
-		}
-
-		apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
