@@ -147,7 +147,7 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 			Id:     types.Int64Value(v.GetId()),
 			Name:   types.StringValue(v.GetName()),
 			Access: types.StringValue(v.GetAccess()),
-			Code:   types.StringValue(v.GetCode()),
+			Code:   types.StringPointerValue(v.Code.Get()),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -700,7 +700,7 @@ func (r *Resource) Create(
 
 		// Only feature permissions requires this more complicated create logic.
 		// This is because if the user sets feature permissions, we can only store to state
-		// the number of feature permissions that were set by the user.
+		// the set of feature permissions that were set by the user.
 		if !plan.Permissions.FeaturePermissions.IsNull() && !plan.Permissions.FeaturePermissions.IsUnknown() {
 
 			var planFeaturePermissions []FeaturePermissionsValue
@@ -719,19 +719,17 @@ func (r *Resource) Create(
 				return
 			}
 
-			planFeaturePermissionsWithComputed := planFeaturePermissions
 			for k, v := range planFeaturePermissions {
 				if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
 					// We don't know the values of the Id, Name, and SubCategory fields at create time,
-					// so we use Code and Access to find those values for v.
-					return vv.Code.Equal(v.Code) &&
-						vv.Access.Equal(v.Access)
+					// so we use Code to find those values for v (codes are unique).
+					return vv.Code.Equal(v.Code)
 				}); n > -1 {
 					// If there's a match, update the permissions to store to state with the computed values.
-					planFeaturePermissionsWithComputed[k].Id = apiStateFeaturePermissions[n].Id
-					planFeaturePermissionsWithComputed[k].Name = apiStateFeaturePermissions[n].Name
-					planFeaturePermissionsWithComputed[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
-					// We don't need to set planFeaturePermissionsWithComputed[k].state,
+					planFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
+					planFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
+					planFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
+					// We don't need to set planFeaturePermissions[k].state,
 					// its value is already attr.ValueStateKnown.
 				} else {
 					// the case where the permission is not found - error
@@ -744,7 +742,7 @@ func (r *Resource) Create(
 				}
 			}
 
-			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), planFeaturePermissionsWithComputed)
+			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), planFeaturePermissions)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -883,7 +881,6 @@ func (r *Resource) Read(
 			return
 		}
 
-		stateFeaturePermissionsWithComputed := stateFeaturePermissions
 		for k, v := range stateFeaturePermissions {
 			// If apiStateFeaturePermissions contains v with the conditions in the closure...
 			if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
@@ -894,22 +891,18 @@ func (r *Resource) Read(
 				// For the case of a tainted state, so we can still find the permissions
 				// and get an accurate view of the plan.
 				if v.Name.IsUnknown() && v.Id.IsUnknown() && v.SubCategory.IsUnknown() {
-					return vv.Code.Equal(v.Code) &&
-						vv.Access.Equal(v.Access)
+					return vv.Code.Equal(v.Code)
 				}
 
 				// all other times, when computed state values are OK
 				return vv.Id.Equal(v.Id) &&
-					vv.Code.Equal(v.Code) &&
-					vv.Access.Equal(v.Access) &&
-					vv.Name.Equal(v.Name) &&
-					vv.SubCategory.Equal(v.SubCategory)
+					vv.Code.Equal(v.Code)
 			}); n > -1 {
 				// If there's a match, update the permissions to store to state with the computed values.
-				stateFeaturePermissionsWithComputed[k].Id = apiStateFeaturePermissions[n].Id
-				stateFeaturePermissionsWithComputed[k].Name = apiStateFeaturePermissions[n].Name
-				stateFeaturePermissionsWithComputed[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
-				// We don't need to set planFeaturePermissionsWithComputed[k].state,
+				stateFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
+				stateFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
+				stateFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
+				// We don't need to set planFeaturePermissions[k].state,
 				// its value is already attr.ValueStateKnown.
 
 			} else {
@@ -923,7 +916,7 @@ func (r *Resource) Read(
 		}
 
 		// If we get to here, the permissions in state are a subset of those in API state.
-		featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissionsWithComputed)
+		featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissions)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 
