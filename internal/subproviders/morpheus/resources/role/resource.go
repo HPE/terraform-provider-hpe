@@ -735,7 +735,7 @@ func (r *Resource) Create(
 					// the case where the permission is not found - error
 					resp.Diagnostics.AddError(
 						"create role resource",
-						fmt.Sprintf("role %d: permission with code %s not found in API state", id, v.Code.String()),
+						fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
 					)
 
 					return
@@ -875,7 +875,7 @@ func (r *Resource) Read(
 		if len(apiStateFeaturePermissions) > 0 && len(stateFeaturePermissions) == 0 {
 			resp.Diagnostics.AddError(
 				"read role resource",
-				fmt.Sprintf("role %d: feature permissions not a subset: 0 feature permissions in state, 1 or more feature permissions in API", id),
+				fmt.Sprintf("role %d: if setting feature_permissions, 1 or more feature_permissions are required to be set", id),
 			)
 
 			return
@@ -908,7 +908,7 @@ func (r *Resource) Read(
 			} else {
 				resp.Diagnostics.AddError(
 					"read role resource",
-					fmt.Sprintf("role %d: permission %s not found in API state", id, v.Code.String()),
+					fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
 				)
 
 				return
