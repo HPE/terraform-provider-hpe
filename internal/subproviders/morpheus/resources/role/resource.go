@@ -1035,8 +1035,8 @@ func (r *Resource) ValidateConfig(
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.cloud_permissions"),
 			"Conflicting attributes in configuration",
-			"cloud_permissions not available for role_type \"user\". "+
-				"Set role_type to \"account\" to set cloud_permissions.",
+			`cloud_permissions not available for role_type "user". `+
+				`Set role_type to "account" to set cloud_permissions.`,
 		)
 
 		return
@@ -1049,8 +1049,8 @@ func (r *Resource) ValidateConfig(
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.group_permissions"),
 			"Conflicting attributes in configuration",
-			"group_permissions not available for role_type \"account\". "+
-				"Set role_type to \"user\" to set group_permissions.",
+			`group_permissions not available for role_type "account". `+
+				`Set role_type to "user" to set group_permissions.`,
 		)
 
 		return
