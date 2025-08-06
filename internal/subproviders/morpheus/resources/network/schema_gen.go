@@ -260,6 +260,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"zone_pool_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Zone pool id",
+				MarkdownDescription: "Zone pool id",
+			},
 		},
 	}
 }
@@ -301,6 +307,7 @@ type NetworkModel struct {
 	TypeId                  types.Int64              `tfsdk:"type_id"`
 	Visibility              types.String             `tfsdk:"visibility"`
 	VlanId                  types.Int64              `tfsdk:"vlan_id"`
+	ZonePoolId              types.Int64              `tfsdk:"zone_pool_id"`
 }
 
 var _ basetypes.ObjectTypable = ResourcePermissionsType{}
