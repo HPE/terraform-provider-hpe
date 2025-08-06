@@ -6,7 +6,6 @@ package role
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"slices"
@@ -28,25 +27,6 @@ import (
 var (
 	_ resource.Resource = &Resource{}
 )
-
-// We unmarshal permissions into this struct on Create
-// to avoid an unmarshaler error from lacking a required field
-type createPermissions sdk.AddRolesRequestRole
-
-func (c *createPermissions) UnmarshalJSON(b []byte) error {
-	type _createPermissions sdk.AddRolesRequestRole
-
-	// to break recursion from this calling itself
-	varCreatePermissions := _createPermissions{}
-	err := json.Unmarshal(b, &varCreatePermissions)
-	if err != nil {
-		return err
-	}
-
-	*c = createPermissions(varCreatePermissions)
-
-	return nil
-}
 
 func NewResource() resource.Resource {
 	return &Resource{}
