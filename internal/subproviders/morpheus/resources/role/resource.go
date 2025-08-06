@@ -796,12 +796,6 @@ func (r *Resource) Read(
 		return
 	}
 
-	// On import, or when the user does not set the permissions attribute,
-	// the permissions attribute will be null or unknown, so we need to ignore the subset check
-	// and just set it to the API Permissions - i.e. fully computed
-
-	println("the value of default_blueprint_access: ", state.Permissions.DefaultBlueprintAccess.ValueString())
-
 	// for optional behaviour on the default access levels
 	if state.Permissions.DefaultBlueprintAccess.IsNull() {
 		apiState.Permissions.DefaultBlueprintAccess = types.StringNull()
@@ -897,7 +891,8 @@ func (r *Resource) Read(
 				// If we compare on the other fields when we have a tainted state with computed values missing,
 				// then we'll incorrectly error that the state is not a subset
 
-				// for the case of a tainted state
+				// For the case of a tainted state, so we can still find the permissions
+				// and get an accurate view of the plan.
 				if v.Name.IsUnknown() && v.Id.IsUnknown() && v.SubCategory.IsUnknown() {
 					return vv.Code.Equal(v.Code) &&
 						vv.Access.Equal(v.Access)
