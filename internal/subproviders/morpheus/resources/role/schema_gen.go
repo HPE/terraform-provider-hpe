@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -180,12 +179,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_blueprint_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for blueprints",
 						MarkdownDescription: "Set the default access level for blueprints",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -195,12 +190,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_catalog_item_type_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for catalog item types",
 						MarkdownDescription: "Set the default access level for catalog item types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -210,12 +201,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_cloud_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"default",
@@ -227,12 +214,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_group_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"default",
@@ -244,12 +227,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_instance_type_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for for instance types",
 						MarkdownDescription: "Set the default access level for for instance types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -259,12 +238,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_persona_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for personas",
 						MarkdownDescription: "Set the default access level for personas",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -274,12 +249,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_report_type_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for report types",
 						MarkdownDescription: "Set the default access level for report types",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -289,12 +260,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_task_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for tasks",
 						MarkdownDescription: "Set the default access level for tasks",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -304,12 +271,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_vdi_pool_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for VDI pools",
 						MarkdownDescription: "Set the default access level for VDI pools",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -319,12 +282,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"default_workflow_access": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the default access level for workflows (taskSets)",
 						MarkdownDescription: "Set the default access level for workflows (taskSets)",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"full",
@@ -339,9 +298,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Required:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 									Validators: []validator.String{
 										stringvalidator.OneOf(
 											"full",
@@ -364,166 +320,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Required:            true,
 									Description:         "`code` of the feature permission",
 									MarkdownDescription: "`code` of the feature permission",
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
-									Validators: []validator.String{
-										stringvalidator.OneOf(
-											"account-usage",
-											"activity",
-											"admin-accounts",
-											"admin-accounts-users",
-											"admin-appliance",
-											"admin-backupSettings",
-											"admin-certificates",
-											"admin-clients",
-											"admin-cm",
-											"admin-containers",
-											"admin-distributed-workers",
-											"admin-environments",
-											"admin-global-policies",
-											"admin-groups",
-											"admin-guidanceSettings",
-											"admin-health",
-											"admin-identity-sources",
-											"admin-keypairs",
-											"admin-licenses",
-											"admin-logSettings",
-											"admin-monitorSettings",
-											"admin-motd",
-											"admin-packages",
-											"admin-plugins",
-											"admin-policies",
-											"admin-profiles",
-											"admin-provisioningSettings",
-											"admin-roles",
-											"admin-server-devices",
-											"admin-server-software",
-											"admin-servers",
-											"admin-servicePlans",
-											"admin-users",
-											"admin-whitelabel",
-											"admin-zones",
-											"app-templates",
-											"apps",
-											"arm-template",
-											"automation-services",
-											"backup-services",
-											"backups",
-											"billing",
-											"catalog",
-											"cloudFormation-template",
-											"code-repositories",
-											"credentials",
-											"dashboard",
-											"deployment-services",
-											"deployments",
-											"execution-request",
-											"executions",
-											"guidance",
-											"helm-template",
-											"infrastructure-boot",
-											"infrastructure-cluster",
-											"infrastructure-dhcp-pool",
-											"infrastructure-domains",
-											"infrastructure-ippools",
-											"infrastructure-kube-cntl",
-											"infrastructure-loadbalancer",
-											"infrastructure-move-server",
-											"infrastructure-nat",
-											"infrastructure-network-dhcp-relay",
-											"infrastructure-network-dhcp-routes",
-											"infrastructure-network-dhcp-server",
-											"infrastructure-network-firewalls",
-											"infrastructure-network-integrations",
-											"infrastructure-network-router-firewalls",
-											"infrastructure-network-router-interfaces",
-											"infrastructure-network-router-redistribution",
-											"infrastructure-network-router-routes",
-											"infrastructure-network-server-groups",
-											"infrastructure-networks",
-											"infrastructure-proxies",
-											"infrastructure-router-dhcp-binding",
-											"infrastructure-router-dhcp-relay",
-											"infrastructure-routers",
-											"infrastructure-securityGroups",
-											"infrastructure-servers-maintenance",
-											"infrastructure-servers-placement",
-											"infrastructure-state",
-											"infrastructure-storage",
-											"infrastructure-storage-browser",
-											"integrations-ansible",
-											"job-executions",
-											"job-templates",
-											"kubernetes-template",
-											"library-advanced-node-type-options",
-											"library-operating-systems",
-											"library-options",
-											"library-templates",
-											"logs",
-											"monitoring",
-											"operations-alarms",
-											"operations-approvals",
-											"operations-budgets",
-											"operations-invoices",
-											"operations-wiki",
-											"projects",
-											"provisioning",
-											"provisioning-add",
-											"provisioning-admin",
-											"provisioning-clone",
-											"provisioning-delete",
-											"provisioning-edit",
-											"provisioning-environment",
-											"provisioning-execute-script",
-											"provisioning-execute-task",
-											"provisioning-execute-workflow",
-											"provisioning-force-delete",
-											"provisioning-import-image",
-											"provisioning-lock",
-											"provisioning-power",
-											"provisioning-reconfigure",
-											"provisioning-reconfigure-add-disk",
-											"provisioning-reconfigure-add-network",
-											"provisioning-reconfigure-change-plan",
-											"provisioning-reconfigure-disk-type",
-											"provisioning-reconfigure-modify-disk",
-											"provisioning-reconfigure-modify-network",
-											"provisioning-reconfigure-remove-disk",
-											"provisioning-reconfigure-remove-network",
-											"provisioning-remove-control",
-											"provisioning-scale",
-											"provisioning-settings",
-											"provisioning-state",
-											"reports",
-											"reports-analytics",
-											"scheduling-execute",
-											"scheduling-power",
-											"security-scan",
-											"service-catalog",
-											"service-catalog-dashboard",
-											"service-catalog-inventory",
-											"services-archives",
-											"services-cypher",
-											"services-image-builder",
-											"services-kubernetes",
-											"services-migrations",
-											"services-network-registry",
-											"services-vdi-copy",
-											"services-vdi-pools",
-											"services-vdi-printer",
-											"snapshots",
-											"task-scripts",
-											"tasks",
-											"terminal",
-											"terminal-access",
-											"terraform-template",
-											"thresholds",
-											"trust-services",
-											"virtual-images",
-											"workflows",
-										),
-									},
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
@@ -551,12 +347,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
-						Computed:            true,
 						Description:         "Set the access level for the specified permissions.",
 						MarkdownDescription: "Set the access level for the specified permissions.",
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"group_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -856,7 +648,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "The set of permissions to assign to the role",
 				MarkdownDescription: "The set of permissions to assign to the role",
 				PlanModifiers: []planmodifier.Object{

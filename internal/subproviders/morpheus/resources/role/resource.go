@@ -76,9 +76,7 @@ func (r *Resource) Schema(
 
 // This function breaks out the logic of reading permissions from API response to store to state.
 func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Response) (PermissionsValue, diag.Diagnostics) {
-	// NOTE:
-	// Should we have better checks on reading the values from API,
-	// or will using the SDK getters suffice?
+
 	var features []FeaturePermissionsValue
 	for _, v := range r.FeaturePermissions {
 		features = append(features, FeaturePermissionsValue{
@@ -282,7 +280,6 @@ func setPermissionsInCreate(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	// All the "Default Access" attributes are optional_computed
 	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
 		addRole.SetGlobalAppTemplateAccess(plan.Permissions.DefaultBlueprintAccess.ValueString())
 	}
@@ -323,7 +320,6 @@ func setPermissionsInCreate(
 		addRole.SetGlobalTaskSetAccess(plan.Permissions.DefaultWorkflowAccess.ValueString())
 	}
 
-	// optional_computed
 	if !plan.Permissions.FeaturePermissions.IsUnknown() {
 		var featurePermissions []FeaturePermissionsValue
 		diags := plan.Permissions.FeaturePermissions.ElementsAs(ctx, &featurePermissions, false)
@@ -342,7 +338,6 @@ func setPermissionsInCreate(
 		addRole.SetFeaturePermissions(addRoleFeaturePermissions)
 	}
 
-	// all the non-FeaturePermissions are optional
 	if !plan.Permissions.BlueprintPermissions.IsUnknown() {
 		var blueprintPermissions []BlueprintPermissionsValue
 		diags = plan.Permissions.BlueprintPermissions.ElementsAs(ctx, &blueprintPermissions, false)
@@ -608,7 +603,7 @@ func (r *Resource) Create(
 	}
 
 	// Only add to create request if user has set permissions explicitly.
-	if !plan.Permissions.IsUnknown() {
+	if !plan.Permissions.IsUnknown() && !plan.Permissions.IsNull() {
 		diags := setPermissionsInCreate(ctx, &plan, addRole)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
@@ -669,10 +664,58 @@ func (r *Resource) Create(
 		return
 	}
 
+	// for optional behaviour on the default access levels
+	if plan.Permissions.DefaultBlueprintAccess.IsNull() {
+		apiState.Permissions.DefaultBlueprintAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultCatalogItemTypeAccess.IsNull() {
+		apiState.Permissions.DefaultCatalogItemTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultCloudAccess.IsNull() {
+		apiState.Permissions.DefaultCloudAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultGroupAccess.IsNull() {
+		apiState.Permissions.DefaultGroupAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultInstanceTypeAccess.IsNull() {
+		apiState.Permissions.DefaultInstanceTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultPersonaAccess.IsNull() {
+		apiState.Permissions.DefaultPersonaAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultReportTypeAccess.IsNull() {
+		apiState.Permissions.DefaultReportTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultTaskAccess.IsNull() {
+		apiState.Permissions.DefaultTaskAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultVdiPoolAccess.IsNull() {
+		apiState.Permissions.DefaultVdiPoolAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultWorkflowAccess.IsNull() {
+		apiState.Permissions.DefaultWorkflowAccess = types.StringNull()
+	}
+
+	// for the case of ommitting permissions field
+	if plan.Permissions.IsNull() {
+		apiState.Permissions = NewPermissionsValueNull()
+	}
+
+	if plan.Permissions.FeaturePermissions.IsNull() {
+		apiState.Permissions.FeaturePermissions = types.SetNull(FeaturePermissionsValue{}.Type(ctx))
+	}
+
 	// If the user provided a config with feature permissions as part of the create,
 	// then set the feature permissions to what was in the plan (optional).
-	// Otherwise, in the case of the user providing NO feature permissions,
-	// set them to what was read from the API (computed, obtained from getRoleAsState).
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 
 		// Only feature permissions requires this more complicated create logic.
@@ -710,6 +753,14 @@ func (r *Resource) Create(
 					planFeaturePermissionsWithComputed[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
 					// We don't need to set planFeaturePermissionsWithComputed[k].state,
 					// its value is already attr.ValueStateKnown.
+				} else {
+					// the case where the permission is not found - error
+					resp.Diagnostics.AddError(
+						"create role resource",
+						fmt.Sprintf("role %d: permission with code %s not found in API state", id, v.Code.String()),
+					)
+
+					return
 				}
 			}
 
@@ -722,6 +773,7 @@ func (r *Resource) Create(
 
 			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
+
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
@@ -753,9 +805,9 @@ func (r *Resource) Read(
 	}
 
 	id := state.Id.ValueInt64()
-	apiState, pdiags := getRoleAsState(ctx, id, client)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	apiState, diags := getRoleAsState(ctx, id, client)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
 			"read role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
@@ -768,12 +820,68 @@ func (r *Resource) Read(
 	// the permissions attribute will be null or unknown, so we need to ignore the subset check
 	// and just set it to the API Permissions - i.e. fully computed
 
+	println("the value of default_blueprint_access: ", state.Permissions.DefaultBlueprintAccess.ValueString())
+
+	// for optional behaviour on the default access levels
+	if state.Permissions.DefaultBlueprintAccess.IsNull() {
+		apiState.Permissions.DefaultBlueprintAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultCatalogItemTypeAccess.IsNull() {
+		apiState.Permissions.DefaultCatalogItemTypeAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultCloudAccess.IsNull() {
+		apiState.Permissions.DefaultCloudAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultGroupAccess.IsNull() {
+		apiState.Permissions.DefaultGroupAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultInstanceTypeAccess.IsNull() {
+		apiState.Permissions.DefaultInstanceTypeAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultPersonaAccess.IsNull() {
+		apiState.Permissions.DefaultPersonaAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultReportTypeAccess.IsNull() {
+		apiState.Permissions.DefaultReportTypeAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultTaskAccess.IsNull() {
+		apiState.Permissions.DefaultTaskAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultVdiPoolAccess.IsNull() {
+		apiState.Permissions.DefaultVdiPoolAccess = types.StringNull()
+	}
+
+	if state.Permissions.DefaultWorkflowAccess.IsNull() {
+		apiState.Permissions.DefaultWorkflowAccess = types.StringNull()
+	}
+
+	if state.Permissions.FeaturePermissions.IsNull() {
+		apiState.Permissions.FeaturePermissions = types.SetNull(FeaturePermissionsValue{}.Type(ctx))
+	}
+
+	// for the case of ommitting permissions field
+	if state.Permissions.IsNull() {
+		apiState.Permissions = NewPermissionsValueNull()
+	}
+
 	if !state.Permissions.IsNull() && !state.Permissions.IsUnknown() {
 
 		// We extract all feature permissions from API state into a []FeaturePermissionsValue.
-		// Then, we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
-		// Then, we check if the feature permissions in Terraform state are a subset of those in API state.
+		// Then we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
+		// Then we check if the feature permissions in Terraform state are a subset of those in API state.
+		// If they are a subset, we use the permissions in state in the Read.
+		// We need to do this because the API returns ALL feature permissions in a GET,
+		// not just the ones that were overridden by the user.
 
+		// if featurepermissions state is null then set to null
 		var apiStateFeaturePermissions []FeaturePermissionsValue
 		diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
 		if diags.HasError() {
@@ -802,10 +910,20 @@ func (r *Resource) Read(
 		}
 
 		stateFeaturePermissionsWithComputed := stateFeaturePermissions
-		subset := true
 		for k, v := range stateFeaturePermissions {
 			// If apiStateFeaturePermissions contains v with the conditions in the closure...
 			if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
+				// We should only compare on code and access, as the other fields are computed.
+				// If we compare on the other fields when we have a tainted state with computed values missing,
+				// then we'll incorrectly error that the state is not a subset
+
+				// for the case of a tainted state
+				if v.Name.IsUnknown() && v.Id.IsUnknown() && v.SubCategory.IsUnknown() {
+					return vv.Code.Equal(v.Code) &&
+						vv.Access.Equal(v.Access)
+				}
+
+				// all other times, when computed state values are OK
 				return vv.Id.Equal(v.Id) &&
 					vv.Code.Equal(v.Code) &&
 					vv.Access.Equal(v.Access) &&
@@ -820,21 +938,24 @@ func (r *Resource) Read(
 				// its value is already attr.ValueStateKnown.
 
 			} else {
-				subset = false
-				break
-			}
-		}
-
-		if subset {
-			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissionsWithComputed)
-			if diags.HasError() {
-				resp.Diagnostics.Append(diags...)
+				resp.Diagnostics.AddError(
+					"read role resource",
+					fmt.Sprintf("role %d: permission %s not found in API state", id, v.Code.String()),
+				)
 
 				return
 			}
-
-			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
+
+		// If we get to here, the permissions in state are a subset of those in API state.
+		featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissionsWithComputed)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+
+			return
+		}
+
+		apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
