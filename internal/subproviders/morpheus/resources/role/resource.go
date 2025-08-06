@@ -854,7 +854,7 @@ func (r *Resource) Read(
 		// not just the ones that were overridden by the user.
 
 		if !state.Permissions.FeaturePermissions.IsNull() && !state.Permissions.FeaturePermissions.IsUnknown() {
-			// if featurepermissions state is null then set to null
+
 			var apiStateFeaturePermissions []FeaturePermissionsValue
 			diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
 			if diags.HasError() {
