@@ -329,7 +329,7 @@ func setPermissionsInCreate(
 		for _, v := range blueprintPermissions {
 			addRoleBlueprintPermissions = append(addRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -347,7 +347,7 @@ func setPermissionsInCreate(
 		for _, v := range catalogItemTypePermissions {
 			addRoleCatalogItemTypePermissions = append(addRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -365,7 +365,7 @@ func setPermissionsInCreate(
 		for _, v := range cloudPermissions {
 			addRoleCloudPermissions = append(addRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -383,7 +383,7 @@ func setPermissionsInCreate(
 		for _, v := range groupPermissions {
 			addRoleGroupPermissions = append(addRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -401,7 +401,7 @@ func setPermissionsInCreate(
 		for _, v := range instanceTypePermissions {
 			addRoleInstanceTypePermissions = append(addRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -456,7 +456,7 @@ func setPermissionsInCreate(
 		for _, v := range taskPermissions {
 			addRoleTaskPermissions = append(addRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -474,7 +474,7 @@ func setPermissionsInCreate(
 		for _, v := range vdiPoolPermissions {
 			addRoleVdiPoolPermissions = append(addRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
@@ -492,7 +492,7 @@ func setPermissionsInCreate(
 		for _, v := range workflowPermissions {
 			addRoleWorkflowPermissions = append(addRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
 				Access: v.Access.ValueString(),
-				Id:     int32(v.Id.ValueInt64()),
+				Id:     v.Id.ValueInt64(),
 			})
 		}
 
