@@ -981,8 +981,10 @@ func (r *Resource) ImportState(
 	}
 
 	// We need to set permissions to be empty so that Read will correctly populate it with API values.
-	// For import, we're effectively ignoring what we've put in place to
+	// For import, we're effectively ignoring the IsNull() checks that we've put in place to
 	// support the optional typing of the various permissions fields.
+	// By doing this, import will populate permissions with all values read from the API,
+	// while maintaining the optional behaviour on Create.
 	emptyPermissions, diags := NewPermissionsValue(PermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
 		"default_blueprint_access":         types.StringUnknown(),
 		"default_catalog_item_type_access": types.StringUnknown(),
