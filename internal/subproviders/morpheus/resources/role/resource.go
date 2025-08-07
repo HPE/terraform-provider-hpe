@@ -1059,6 +1059,20 @@ func (r *Resource) ValidateConfig(
 		return
 	}
 
+	// if roleType is "user" and default_cloud_access has been set...
+	if roleType == RoleTypeUser &&
+		!config.Permissions.DefaultCloudAccess.IsNull() &&
+		!config.Permissions.DefaultCloudAccess.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("permissions.default_cloud_access"),
+			"Conflicting attributes in configuration",
+			`default_cloud_access not available for role_type "user". `+
+				`Set role_type to "account" to set default_cloud_access.`,
+		)
+
+		return
+	}
+
 	// if roleType is "account" and group_permissions has been set...
 	if roleType == RoleTypeAccount &&
 		!config.Permissions.GroupPermissions.IsNull() &&
@@ -1068,6 +1082,20 @@ func (r *Resource) ValidateConfig(
 			"Conflicting attributes in configuration",
 			`group_permissions not available for role_type "account". `+
 				`Set role_type to "user" to set group_permissions.`,
+		)
+
+		return
+	}
+
+	// if roleType is "account" and default_group_access has been set...
+	if roleType == RoleTypeAccount &&
+		!config.Permissions.DefaultGroupAccess.IsNull() &&
+		!config.Permissions.DefaultGroupAccess.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("permissions.default_group_access"),
+			"Conflicting attributes in configuration",
+			`default_group_access not available for role_type "account". `+
+				`Set role_type to "user" to set default_group_access.`,
 		)
 
 		return
