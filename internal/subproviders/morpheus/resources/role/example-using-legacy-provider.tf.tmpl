@@ -6,13 +6,12 @@ resource "hpe_morpheus_role" "{{.ResourceName}}" {
   name = "{{.Name}}"
   description = "{{.Description}}"
   role_type = "{{.RoleType}}"
-  permissions = jsonencode({
-    "taskPermissions" : [
+  permissions = {
+    task_permissions = [
       {
-        "id" = data.morpheus_task.{{.TaskDataSourceName}}.id
-        "access" = "{{.Task0Access}}"
+        id     = data.morpheus_task.{{.TaskDataSourceName}}.id
+        access = "{{.Task0Access}}"
       }
     ]
-    }
-  )
+  }
 }
