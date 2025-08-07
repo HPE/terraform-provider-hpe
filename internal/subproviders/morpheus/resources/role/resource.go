@@ -976,6 +976,44 @@ func (r *Resource) ImportState(
 	}
 
 	diags := resp.State.SetAttribute(ctx, path.Root("id"), id)
+	if diags.HasError() {
+		return
+	}
+
+	// We need to set permissions to be empty so that Read will correctly populate it with API values.
+	// For import, we're effectively ignoring the IsNull() checks that we've put in place to
+	// support the optional typing of the various permissions fields.
+	// By doing this, import will populate permissions with all values read from the API,
+	// while maintaining the optional behaviour on Create.
+	emptyPermissions, diags := NewPermissionsValue(PermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
+		"default_blueprint_access":         types.StringUnknown(),
+		"default_catalog_item_type_access": types.StringUnknown(),
+		"default_cloud_access":             types.StringUnknown(),
+		"default_group_access":             types.StringUnknown(),
+		"default_instance_type_access":     types.StringUnknown(),
+		"default_persona_access":           types.StringUnknown(),
+		"default_report_type_access":       types.StringUnknown(),
+		"default_task_access":              types.StringUnknown(),
+		"default_vdi_pool_access":          types.StringUnknown(),
+		"default_workflow_access":          types.StringUnknown(),
+		"feature_permissions":              types.SetUnknown(FeaturePermissionsValue{}.Type(ctx)),
+		"blueprint_permissions":            types.SetUnknown(BlueprintPermissionsValue{}.Type(ctx)),
+		"catalog_item_type_permissions":    types.SetUnknown(CatalogItemTypePermissionsValue{}.Type(ctx)),
+		"cloud_permissions":                types.SetUnknown(CloudPermissionsValue{}.Type(ctx)),
+		"group_permissions":                types.SetUnknown(GroupPermissionsValue{}.Type(ctx)),
+		"instance_type_permissions":        types.SetUnknown(InstanceTypePermissionsValue{}.Type(ctx)),
+		"persona_permissions":              types.SetUnknown(PersonaPermissionsValue{}.Type(ctx)),
+		"report_type_permissions":          types.SetUnknown(ReportTypePermissionsValue{}.Type(ctx)),
+		"task_permissions":                 types.SetUnknown(TaskPermissionsValue{}.Type(ctx)),
+		"vdi_pool_permissions":             types.SetUnknown(VdiPoolPermissionsValue{}.Type(ctx)),
+		"workflow_permissions":             types.SetUnknown(WorkflowPermissionsValue{}.Type(ctx)),
+	})
+	emptyPermissions.state = attr.ValueStateKnown
+
+	diags = resp.State.SetAttribute(ctx, path.Root("permissions"), emptyPermissions)
+	if diags.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(diags...)
 }
