@@ -917,6 +917,20 @@ func (r *Resource) Read(
 		}
 	}
 
+	// Perform additional validation of default group/cloud access based on the role_type.
+	// We have to do it here in Read so that it's supported by import.
+	// Morpheus API does not perform validation like this, but the Morpheus UI does.
+
+	// Only account roles should be able to set default cloud access
+	if apiState.RoleType.ValueString() == RoleTypeUser {
+		apiState.Permissions.DefaultCloudAccess = types.StringNull()
+	}
+
+	// Only user roles should be able to set default group access
+	if apiState.RoleType.ValueString() == RoleTypeAccount {
+		apiState.Permissions.DefaultGroupAccess = types.StringNull()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
