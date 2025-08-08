@@ -218,11 +218,21 @@ resource "hpe_morpheus_role" "example_all" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true, // Check state post import
-				ImportStateVerifyIgnore: []string{"permissions"},
-				ResourceName:            "hpe_morpheus_role.example_all",
-				Check:                   checkFn,
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				ImportStateVerifyIgnore: []string{
+					"permissions.feature_permissions",
+					"permissions.default_catalog_item_type_access",
+					"permissions.default_instance_type_access",
+					"permissions.default_persona_access",
+					"permissions.default_report_type_access",
+					"permissions.default_task_access",
+					"permissions.default_workflow_access",
+					"permissions.default_vdi_pool_access",
+					"permissions.default_blueprint_access",
+				},
+				ResourceName: "hpe_morpheus_role.example_all",
+				Check:        checkFn,
 			},
 		},
 	})
@@ -385,16 +395,11 @@ resource "hpe_morpheus_role" "default_access_permissions_ok" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true, // Check state post import
-				ImportStateVerifyIgnore: []string{
-					"permissions.feature_permissions",
-					"permissions.default_cloud_access",
-					// ignore default_cloud_access as the user shouldn't set it for a user role,
-					// even though the API reads it back.
-				},
-				ResourceName: "hpe_morpheus_role.default_access_permissions_ok",
-				Check:        checkFn,
+				ImportState:             true,
+				ImportStateVerify:       true, // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions.feature_permissions"},
+				ResourceName:            "hpe_morpheus_role.default_access_permissions_ok",
+				Check:                   checkFn,
 			},
 		},
 	})
@@ -523,7 +528,6 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 					"permissions.workflow_permissions",
 					"permissions.vdi_pool_permissions",
 					"permissions.default_group_access",
-					"permissions.default_cloud_access",
 					"permissions.default_catalog_item_type_access",
 					"permissions.default_instance_type_access",
 					"permissions.default_persona_access",
@@ -815,16 +819,11 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true, // Check state post import
-				ImportStateVerifyIgnore: []string{
-					"permissions.feature_permissions",
-					"permissions.default_cloud_access",
-					// ignore default_cloud_access as the user shouldn't set it for a user role,
-					// even though the API reads it back.
-				},
-				ResourceName: "hpe_morpheus_role.testacc_role_all_permissions_user_role_ok",
-				Check:        checkFn,
+				ImportState:             true,
+				ImportStateVerify:       true, // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions.feature_permissions"},
+				ResourceName:            "hpe_morpheus_role.testacc_role_all_permissions_user_role_ok",
+				Check:                   checkFn,
 			},
 		},
 	})
@@ -1107,16 +1106,11 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true, // Check state post import
-				ImportStateVerifyIgnore: []string{
-					"permissions.feature_permissions",
-					"permissions.default_group_access",
-					// ignore default_group_access as the user shouldn't set it for an account role,
-					// even though the API reads it back.
-				},
-				ResourceName: "hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
-				Check:        checkFn,
+				ImportState:             true,
+				ImportStateVerify:       true, // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions.feature_permissions"},
+				ResourceName:            "hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+				Check:                   checkFn,
 			},
 		},
 	})
