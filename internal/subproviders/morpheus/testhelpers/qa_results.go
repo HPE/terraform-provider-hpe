@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"testing"
 )
 
@@ -21,10 +20,9 @@ func RecordResult(t *testing.T) {
 	}
 
 	if t.Failed() {
-		stack := string(debug.Stack())
 		TestResults[t.Name()] = TestResult{
 			Status: "Failed",
-			Error:  "test failed\n\nstack trace:\n" + stack,
+			Error:  "Test " + t.Name() + "failed.",
 		}
 	} else if t.Skipped() {
 		TestResults[t.Name()] = TestResult{
