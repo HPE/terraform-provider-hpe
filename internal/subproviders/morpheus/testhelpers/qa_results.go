@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"testing"
 )
 
@@ -23,7 +22,7 @@ func RecordResult(t *testing.T) {
 	if t.Failed() {
 		TestResults[t.Name()] = TestResult{
 			Status: "Failed",
-			Error:  "Test "+ t.Name() + "failed.",
+			Error:  "Test " + t.Name() + "failed.",
 		}
 	} else if t.Skipped() {
 		TestResults[t.Name()] = TestResult{
