@@ -316,9 +316,7 @@ func getRoleByName(
 	}
 
 	if len(roles) == 1 {
-		id := roles[0].GetId()
-
-		return getRoleByID(ctx, id, apiClient)
+		return getRoleByID(ctx, roles[0].GetId(), apiClient)
 	} else if len(roles) > 1 {
 		return nil, errors.New(consts.ErrorMultipleRoles)
 	}
