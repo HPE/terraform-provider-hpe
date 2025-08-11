@@ -289,7 +289,7 @@ func getRoleByID(
 ) (*sdk.GetRole200Response, error) {
 	r, hresp, err := apiClient.RolesAPI.GetRole(ctx, id).Execute()
 	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for role %d", id)
+		return nil, fmt.Errorf("GET failed for role %d: %s", id, providererrors.ErrMsg(err, hresp))
 	}
 
 	return r, nil
@@ -318,12 +318,7 @@ func getRoleByName(
 	if len(roles) == 1 {
 		id := roles[0].GetId()
 
-		r, hresp, err := apiClient.RolesAPI.GetRole(ctx, id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("GET failed for role %d: %s", id, providererrors.ErrMsg(err, hresp))
-		}
-
-		return r, nil
+		return getRoleByID(ctx, id, apiClient)
 	} else if len(roles) > 1 {
 		return nil, errors.New(consts.ErrorMultipleRoles)
 	}
