@@ -234,7 +234,7 @@ data "hpe_morpheus_role" "test" {
 			"account",
 		),
 		resource.TestCheckTypeSetElemNestedAttrs(
-			"hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.test",
 			"permissions.feature_permissions.*",
 			map[string]string{
 				"code":   "activity",
@@ -242,7 +242,7 @@ data "hpe_morpheus_role" "test" {
 			},
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.test",
 			"permissions.default_blueprint_access",
 			"full",
 		),
