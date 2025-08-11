@@ -179,6 +179,15 @@ resource "hpe_morpheus_role" "test" {
   multitenant = false
   multitenant_locked = false
   role_type = "account"
+  permissions = {
+    feature_permissions = [
+    {
+      code = "activity"
+      access = "read"
+    }
+  ]
+    default_blueprint_access = "full"
+  }
 }
 `
 	dataSourceConfig := `
@@ -223,6 +232,19 @@ data "hpe_morpheus_role" "test" {
 			"data.hpe_morpheus_role.test",
 			"role_type",
 			"account",
+		),
+		resource.TestCheckTypeSetElemNestedAttrs(
+			"hpe_morpheus_role.test",
+			"permissions.feature_permissions.*",
+			map[string]string{
+				"code":   "activity",
+				"access": "read",
+			},
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.test",
+			"permissions.default_blueprint_access",
+			"full",
 		),
 	}
 
