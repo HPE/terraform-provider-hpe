@@ -2,9 +2,9 @@ package testhelpers
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
-	"log"
 	"testing"
 )
 
