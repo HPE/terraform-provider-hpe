@@ -50,15 +50,19 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cidr": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "CIDR Network",
-				MarkdownDescription: "CIDR Network",
+				Description:         "Network CIDR.",
+				MarkdownDescription: "Network CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cidr_ipv6": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "IPv6 Network CIDR",
-				MarkdownDescription: "IPv6 Network CIDR",
+				Description:         "Network IPv6 CIDR.",
+				MarkdownDescription: "Network IPv6 CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
