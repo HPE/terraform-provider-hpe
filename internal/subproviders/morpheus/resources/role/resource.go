@@ -921,13 +921,15 @@ func (r *Resource) Read(
 	// We have to do it here in Read so that it's supported by import.
 	// Morpheus API does not perform validation like this, but the Morpheus UI does.
 
-	// Only account roles should be able to set default cloud access
+	// Only account roles should be able to set default_cloud_access
 	if apiState.RoleType.ValueString() == RoleTypeUser {
 		apiState.Permissions.DefaultCloudAccess = types.StringNull()
 	}
 
-	// Only user roles should be able to set default group access
+	// Only user roles should be able to set multitenant, multitenant_locked and default_group_access
 	if apiState.RoleType.ValueString() == RoleTypeAccount {
+		apiState.Multitenant = types.BoolNull()
+		apiState.MultitenantLocked = types.BoolNull()
 		apiState.Permissions.DefaultGroupAccess = types.StringNull()
 	}
 
@@ -1033,7 +1035,7 @@ func (r *Resource) ImportState(
 }
 
 // This method is called by Terraform's ValidateResourceConfig RPC.
-// We use this to perform the validation of permissions specific to user and account roles.
+// We use this to perform the validation of attributes specific to user and account roles.
 // We need to use the ValidateConfig method as schema validators
 // do not have access to config values other than the attribute they're defined for.
 // Only user roles can set group permissions.
@@ -1110,6 +1112,34 @@ func (r *Resource) ValidateConfig(
 			"Conflicting attributes in configuration",
 			`default_group_access not available for role_type "account". `+
 				`Set role_type to "user" to set default_group_access.`,
+		)
+
+		return
+	}
+
+	// if roleType is "account" and multitenant has been set...
+	if roleType == RoleTypeAccount &&
+		!config.Multitenant.IsNull() &&
+		!config.Multitenant.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("multitenant"),
+			"Conflicting attributes in configuration",
+			`multitenant not available for role_type "account". `+
+				`Set role_type to "user" to set multitenant.`,
+		)
+
+		return
+	}
+
+	// if roleType is "account" and multitenant_locked has been set...
+	if roleType == RoleTypeAccount &&
+		!config.MultitenantLocked.IsNull() &&
+		!config.MultitenantLocked.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("multitenant_locked"),
+			"Conflicting attributes in configuration",
+			`multitenant_locked not available for role_type "account". `+
+				`Set role_type to "user" to set multitenant_locked.`,
 		)
 
 		return
