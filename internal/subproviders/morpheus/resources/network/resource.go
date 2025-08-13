@@ -155,20 +155,21 @@ func getNetworkAsState(
 		state.VlanId = convert.Int64ToType(net.VlanId.Get())
 	}
 
+	state.Labels = types.SetNull(types.StringType)
 	if net.Labels != nil {
 		var labelValues []attr.Value
 		for _, label := range net.Labels {
 			labelValues = append(labelValues, types.StringValue(label))
 		}
 
-		labelsSet, d := types.SetValue(types.StringType, labelValues)
-		diags.Append(d...)
-		if diags.HasError() {
-			return state, diags
+		if len(labelValues) > 0 {
+			labelsSet, d := types.SetValue(types.StringType, labelValues)
+			diags.Append(d...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.Labels = labelsSet
 		}
-		state.Labels = labelsSet
-	} else {
-		state.Labels = types.SetNull(types.StringType)
 	}
 
 	state.Config = types.DynamicNull()
@@ -207,6 +208,7 @@ func getNetworkAsState(
 		state.TypeId = types.Int64Null()
 	}
 
+	state.TenantIds = types.SetNull(types.Int64Type)
 	if len(net.Tenants) > 0 {
 		var tenantValues []attr.Value
 		for _, tenant := range net.Tenants {
@@ -223,44 +225,13 @@ func getNetworkAsState(
 				return state, diags
 			}
 			state.TenantIds = tenantSet
-		} else {
-			state.TenantIds = types.SetNull(types.Int64Type)
 		}
-	} else {
-		state.TenantIds = types.SetNull(types.Int64Type)
 	}
 
 	state.Visibility = convert.StrToType(net.Visibility)
 
 	if resourcePermission, ok := net.GetResourcePermissionOk(); ok {
-		var groupValues []attr.Value
-		if sites, sitesOk := resourcePermission.GetSitesOk(); sitesOk {
-			for _, site := range sites {
-				if site.Id != nil {
-					groupValues = append(
-						groupValues, types.Int64Value(*site.Id),
-					)
-				}
-			}
-		}
-
-		var groupIDsSet attr.Value
-		if len(groupValues) > 0 {
-			groupIDsSet, _ = types.SetValue(types.Int64Type, groupValues)
-		} else {
-			groupIDsSet = types.SetNull(types.Int64Type)
-		}
-
-		resourcePermissions, d := NewResourcePermissionsValue(
-			ResourcePermissionsValue{}.AttributeTypes(ctx),
-			map[string]attr.Value{
-				"all": types.BoolValue(
-					resourcePermission.All != nil &&
-						*resourcePermission.All,
-				),
-				"group_ids": groupIDsSet,
-			},
-		)
+		resourcePermissions, d := convertResourcePermissions(ctx, resourcePermission)
 		diags.Append(d...)
 		if diags.HasError() {
 			return state, diags
@@ -271,6 +242,47 @@ func getNetworkAsState(
 	}
 
 	return state, diags
+}
+
+// convertResourcePermissions converts the network resource permission
+// from the SDK model to the Terraform state model
+func convertResourcePermissions(
+	ctx context.Context,
+	resourcePermission *sdk.ListNetworks200ResponseAllOfNetworksInnerResourcePermission,
+) (ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var groupValues []attr.Value
+	if sites, sitesOk := resourcePermission.GetSitesOk(); sitesOk {
+		for _, site := range sites {
+			if site.Id != nil {
+				groupValues = append(
+					groupValues, types.Int64Value(*site.Id),
+				)
+			}
+		}
+	}
+
+	var groupIDsSet attr.Value
+	if len(groupValues) > 0 {
+		groupIDsSet, _ = types.SetValue(types.Int64Type, groupValues)
+	} else {
+		groupIDsSet = types.SetNull(types.Int64Type)
+	}
+
+	resourcePermissions, d := NewResourcePermissionsValue(
+		ResourcePermissionsValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"all": types.BoolValue(
+				resourcePermission.All != nil &&
+					*resourcePermission.All,
+			),
+			"group_ids": groupIDsSet,
+		},
+	)
+	diags.Append(d...)
+
+	return resourcePermissions, diags
 }
 
 func (r *Resource) Create(
@@ -529,8 +541,6 @@ func (r *Resource) Create(
 
 	createNetworkReq := sdk.NewCreateNetworksRequest()
 	createNetworkReq.SetNetwork(*createNetwork)
-
-	tflog.Debug(ctx, fmt.Sprintf("Creating network '%s'", name))
 
 	network, hresp, err := client.NetworksAPI.CreateNetworks(ctx).
 		CreateNetworksRequest(*createNetworkReq).Execute()
