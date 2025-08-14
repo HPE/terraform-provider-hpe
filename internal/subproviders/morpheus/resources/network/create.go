@@ -213,7 +213,8 @@ func (r *Resource) Create(
 			return
 		}
 
-		if configDataMap, ok := configMap.(map[string]any); ok {
+		configDataMap, ok := configMap.(map[string]any)
+		if ok {
 			networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
 			networkConfig.MapmapOfStringAny = &configDataMap
 			createNetwork.SetConfig(networkConfig)
