@@ -10,7 +10,6 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
@@ -218,9 +217,6 @@ func (r *Resource) Create(
 			networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
 			networkConfig.MapmapOfStringAny = &configDataMap
 			createNetwork.SetConfig(networkConfig)
-			tflog.Debug(ctx, fmt.Sprintf(
-				"Config set with %d properties", len(configDataMap),
-			))
 		} else {
 			resp.Diagnostics.AddError(
 				"create network resource",
@@ -232,9 +228,16 @@ func (r *Resource) Create(
 	}
 
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		diags := plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		var tenants []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
-		for _, elem := range plan.TenantIds.Elements() {
-			if idVal, ok := elem.(types.Int64); ok && !idVal.IsNull() {
+		for _, idVal := range tenantIDs {
+			if !idVal.IsNull() {
 				tenant := sdk.
 					GetAlerts200ResponseAllOfChecksInnerAccount{}
 				tenant.SetId(idVal.ValueInt64())
@@ -256,9 +259,17 @@ func (r *Resource) Create(
 
 		if !plan.ResourcePermissions.GroupIds.IsNull() &&
 			!plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			diags := plan.ResourcePermissions.GroupIds.ElementsAs(ctx,
+				&groupIDs, false)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
 			var sites []int64
-			for _, elem := range plan.ResourcePermissions.GroupIds.Elements() {
-				if idVal, ok := elem.(types.Int64); ok && !idVal.IsNull() {
+			for _, idVal := range groupIDs {
+				if !idVal.IsNull() {
 					sites = append(sites, idVal.ValueInt64())
 				}
 			}
