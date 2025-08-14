@@ -161,7 +161,8 @@ func getNetworkAsState(
 		state.CloudId = types.Int64Null()
 	}
 
-	if group, ok := net.GetGroupOk(); ok && group.Id != nil {
+	group, ok := net.GetGroupOk()
+	if ok && group.Id != nil {
 		state.GroupId = convert.Int64ToType(group.Id)
 	} else {
 		state.GroupId = types.Int64Null()
@@ -195,7 +196,8 @@ func getNetworkAsState(
 
 	state.Visibility = convert.StrToType(net.Visibility)
 
-	if resourcePermission, ok := net.GetResourcePermissionOk(); ok {
+	resourcePermission, ok := net.GetResourcePermissionOk()
+	if ok {
 		resourcePermissions, d := convertResourcePermissions(ctx, resourcePermission)
 		diags.Append(d...)
 		if diags.HasError() {
@@ -216,7 +218,8 @@ func convertResourcePermissions(
 	var diags diag.Diagnostics
 
 	var groupValues []attr.Value
-	if sites, sitesOk := resourcePermission.GetSitesOk(); sitesOk {
+	sites, ok := resourcePermission.GetSitesOk()
+	if ok {
 		for _, site := range sites {
 			if site.Id != nil {
 				groupValues = append(
