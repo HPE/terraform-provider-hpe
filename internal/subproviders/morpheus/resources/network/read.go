@@ -218,8 +218,8 @@ func convertResourcePermissions(
 	var diags diag.Diagnostics
 
 	var groupValues []attr.Value
-	sites, sitesOk := resourcePermission.GetSitesOk()
-	if sitesOk {
+	sites, ok := resourcePermission.GetSitesOk()
+	if ok {
 		for _, site := range sites {
 			if site.Id != nil {
 				groupValues = append(
