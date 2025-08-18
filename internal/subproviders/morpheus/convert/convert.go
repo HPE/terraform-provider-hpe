@@ -3,9 +3,11 @@
 package convert
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -83,4 +85,98 @@ func Int64SliceToSet(items []int64) types.Set {
 	}
 
 	return set
+}
+
+type MappingFunc[I any, O any] func(in I) O
+
+func SetToType[S any, O basetypes.ObjectValuable](
+	ctx context.Context,
+	slice []S,
+	setter MappingFunc[S, O],
+) (basetypes.SetValue, diag.Diagnostics) {
+	values := []attr.Value{}
+	var obj O
+	v, _ := obj.ToObjectValue(ctx)
+
+	if len(slice) == 0 {
+		return basetypes.NewSetNull(v.Type(ctx)), nil
+	}
+
+	for _, i := range slice {
+		v := setter(i)
+
+		obj, d := v.ToObjectValue(ctx)
+		if d.HasError() {
+			return types.SetUnknown(basetypes.ObjectType{}), d
+		}
+
+		values = append(values, obj)
+	}
+
+	return types.SetValue(v.Type(ctx), values)
+}
+
+func ListToType[S any, O basetypes.ObjectValuable](
+	ctx context.Context,
+	slice []S,
+	setter MappingFunc[S, O],
+) (basetypes.ListValue, diag.Diagnostics) {
+	values := []attr.Value{}
+	var obj O
+	v, _ := obj.ToObjectValue(ctx)
+
+	if len(slice) == 0 {
+		return basetypes.NewListNull(v.Type(ctx)), nil
+	}
+
+	for _, i := range slice {
+		v := setter(i)
+
+		obj, d := v.ToObjectValue(ctx)
+		if d.HasError() {
+			return types.ListUnknown(basetypes.ObjectType{}), d
+		}
+
+		values = append(values, obj)
+	}
+
+	return types.ListValue(v.Type(ctx), values)
+}
+
+func SetMapper[S attr.Value, O any](
+	ctx context.Context,
+	set types.Set,
+	setter MappingFunc[S, O],
+) ([]O, diag.Diagnostics) {
+	var out []O
+	var elems []S
+
+	if diags := set.ElementsAs(ctx, &elems, false); diags.HasError() {
+		return nil, diags
+	}
+
+	for _, el := range elems {
+		out = append(out, setter(el))
+	}
+
+	return out, nil
+}
+
+func ListMapper[S attr.Value, O any](
+	ctx context.Context,
+	list types.List,
+	setter MappingFunc[S, O],
+) ([]O, diag.Diagnostics) {
+	var out []O
+	var elems []S
+
+	if diags := list.ElementsAs(ctx, &elems, false); diags.HasError() {
+		return nil, diags
+	}
+
+	for _, el := range elems {
+		out = append(out, setter(el))
+	}
+
+	return out, nil
 }
