@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
@@ -23,7 +23,7 @@ func TestAccMorpheusNetworkImport(t *testing.T) {
 	}
 
 	// Generate unique name for this test run
-	uniqueName := "testacc-TestAccMorpheusNetworkImport-" + uuid.New().String()
+	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -32,7 +32,7 @@ func TestAccMorpheusNetworkImport(t *testing.T) {
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "terraform-mclaren-1"
+  default     = "TestAccMorpheusNetworkImport"
 }
 
 variable "description" {
@@ -270,8 +270,6 @@ import {
 }
 `
 
-	checkImportFn := resource.ComposeAggregateTestCheckFunc(baseChecks...)
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -283,7 +281,7 @@ import {
 				},
 				PlanOnly: false,
 				Check: resource.ComposeTestCheckFunc(
-					checkImportFn,
+					checkFn,
 				),
 			},
 			{
