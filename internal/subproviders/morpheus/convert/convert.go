@@ -89,6 +89,10 @@ func Int64SliceToSet(items []int64) types.Set {
 
 type MappingFunc[I any, O any] func(in I) O
 
+// Map objects in a slice into a Terraform Set Type according to the mapping
+// function.
+// Mapping function must take in an arbitrary Go value (e.g. API response
+// struct) and return the mapped Terraform value.
 func ToSetType[S any, O basetypes.ObjectValuable](
 	ctx context.Context,
 	slice []S,
@@ -116,6 +120,10 @@ func ToSetType[S any, O basetypes.ObjectValuable](
 	return types.SetValue(v.Type(ctx), values)
 }
 
+// Map objects in a slice into a Terraform List Type according to the mapping
+// function.
+// Mapping function must take in an arbitrary Go value (e.g. API response
+// struct) and return the mapped Terraform value.
 func ToListType[S any, O basetypes.ObjectValuable](
 	ctx context.Context,
 	slice []S,
@@ -143,6 +151,9 @@ func ToListType[S any, O basetypes.ObjectValuable](
 	return types.ListValue(v.Type(ctx), values)
 }
 
+// Map List objects into a slice of objects according to the mapping function.
+// Mapping function must take in a Terraform value and return the mapped object
+// (e.g. fill out an API request struct)
 func FromSetType[S attr.Value, O any](
 	ctx context.Context,
 	set types.Set,
@@ -162,6 +173,9 @@ func FromSetType[S attr.Value, O any](
 	return out, nil
 }
 
+// Map List objects into a slice of objects according to the mapping function.
+// Mapping function must take in a Terraform value and return the mapped object
+// (e.g. fill out an API request struct)
 func FromListType[S attr.Value, O any](
 	ctx context.Context,
 	list types.List,
