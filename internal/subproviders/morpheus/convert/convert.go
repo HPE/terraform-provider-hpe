@@ -89,10 +89,10 @@ func Int64SliceToSet(items []int64) types.Set {
 
 type MappingFunc[I any, O any] func(in I) O
 
-func SetToType[S any, O basetypes.ObjectValuable](
+func ToSetType[S any, O basetypes.ObjectValuable](
 	ctx context.Context,
 	slice []S,
-	setter MappingFunc[S, O],
+	mapper MappingFunc[S, O],
 ) (basetypes.SetValue, diag.Diagnostics) {
 	values := []attr.Value{}
 	var obj O
@@ -103,7 +103,7 @@ func SetToType[S any, O basetypes.ObjectValuable](
 	}
 
 	for _, i := range slice {
-		v := setter(i)
+		v := mapper(i)
 
 		obj, d := v.ToObjectValue(ctx)
 		if d.HasError() {
@@ -116,10 +116,10 @@ func SetToType[S any, O basetypes.ObjectValuable](
 	return types.SetValue(v.Type(ctx), values)
 }
 
-func ListToType[S any, O basetypes.ObjectValuable](
+func ToListType[S any, O basetypes.ObjectValuable](
 	ctx context.Context,
 	slice []S,
-	setter MappingFunc[S, O],
+	mapper MappingFunc[S, O],
 ) (basetypes.ListValue, diag.Diagnostics) {
 	values := []attr.Value{}
 	var obj O
@@ -130,7 +130,7 @@ func ListToType[S any, O basetypes.ObjectValuable](
 	}
 
 	for _, i := range slice {
-		v := setter(i)
+		v := mapper(i)
 
 		obj, d := v.ToObjectValue(ctx)
 		if d.HasError() {
@@ -143,10 +143,10 @@ func ListToType[S any, O basetypes.ObjectValuable](
 	return types.ListValue(v.Type(ctx), values)
 }
 
-func SetMapper[S attr.Value, O any](
+func FromSetType[S attr.Value, O any](
 	ctx context.Context,
 	set types.Set,
-	setter MappingFunc[S, O],
+	mapper MappingFunc[S, O],
 ) ([]O, diag.Diagnostics) {
 	var out []O
 	var elems []S
@@ -156,16 +156,16 @@ func SetMapper[S attr.Value, O any](
 	}
 
 	for _, el := range elems {
-		out = append(out, setter(el))
+		out = append(out, mapper(el))
 	}
 
 	return out, nil
 }
 
-func ListMapper[S attr.Value, O any](
+func FromListType[S attr.Value, O any](
 	ctx context.Context,
 	list types.List,
-	setter MappingFunc[S, O],
+	mapper MappingFunc[S, O],
 ) ([]O, diag.Diagnostics) {
 	var out []O
 	var elems []S
@@ -175,7 +175,7 @@ func ListMapper[S attr.Value, O any](
 	}
 
 	for _, el := range elems {
-		out = append(out, setter(el))
+		out = append(out, mapper(el))
 	}
 
 	return out, nil
