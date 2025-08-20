@@ -8,8 +8,13 @@ description: |-
 
 {{ .Description | trimspace }}
 
+Roles in HPE Morpheus Enterprise control what access levels of Morpheus resources and features a User or Tenant (Account) has access to.
+
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/resources/group/example.tf" }}
+{{ tffile "internal/subproviders/morpheus/datasources/role/example-id.tf" }}
+
+{{ tffile "internal/subproviders/morpheus/datasources/role/example-name.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
+

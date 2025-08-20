@@ -8,8 +8,6 @@ description: |-
 
 
 
-`hpe_morpheus_cloud` data source ....
-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 
 ## Example Usage

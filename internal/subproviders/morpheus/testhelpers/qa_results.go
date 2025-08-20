@@ -2,9 +2,9 @@ package testhelpers
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"testing"
 )
 
@@ -21,10 +21,9 @@ func RecordResult(t *testing.T) {
 	}
 
 	if t.Failed() {
-		stack := string(debug.Stack())
 		TestResults[t.Name()] = TestResult{
 			Status: "Failed",
-			Error:  "test failed\n\nstack trace:\n" + stack,
+			Error:  "Test " + t.Name() + "failed.",
 		}
 	} else if t.Skipped() {
 		TestResults[t.Name()] = TestResult{
@@ -49,12 +48,14 @@ func WriteMergedResults() {
 	data, err := os.ReadFile(outputFile)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			panic(err) // Panic only on errors other than file not existing
+			log.Printf("Error reading existing results file: %v", err)
+			os.Exit(1)
 		}
 	} else {
 		// File exists, parse the JSON data
 		if err := json.Unmarshal(data, &existing); err != nil {
-			panic(err)
+			log.Printf("Error parsing JSON from existing results file: %v", err)
+			os.Exit(1)
 		}
 	}
 
@@ -66,16 +67,19 @@ func WriteMergedResults() {
 	// Marshal the merged results
 	output, err := json.MarshalIndent(existing, "", "  ")
 	if err != nil {
-		panic(err)
+		log.Printf("Error marshalling merged results: %v", err)
+		os.Exit(1)
 	}
 
 	// Ensure the output directory exists
 	if err := os.MkdirAll(rootOutputDir, 0o755); err != nil {
-		panic(err)
+		log.Printf("Error creating output directory: %v", err)
+		os.Exit(1)
 	}
 
 	// Write the merged results to the file
 	if err := os.WriteFile(outputFile, output, 0o600); err != nil {
-		panic(err)
+		log.Printf("Error writing merged results to file: %v", err)
+		os.Exit(1)
 	}
 }

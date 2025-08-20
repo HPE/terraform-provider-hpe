@@ -5,63 +5,62 @@ package role
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func RoleResourceSchema(ctx context.Context) schema.Schema {
+func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
-				Optional:            true,
-				Description:         "Description",
-				MarkdownDescription: "Description",
+				Computed: true,
 			},
 			"id": schema.Int64Attribute{
+				Optional:            true,
 				Computed:            true,
-				Description:         "The ID of the role",
-				MarkdownDescription: "The ID of the role",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+				Description:         "Morpheus ID of the Object being referenced",
+				MarkdownDescription: "Morpheus ID of the Object being referenced",
+				Validators: []validator.Int64{
+					int64validator.ConflictsWith(path.Expressions{
+						path.MatchRoot("name"),
+					}...),
 				},
 			},
 			"landing_url": schema.StringAttribute{
-				Optional:            true,
+				Computed:            true,
 				Description:         "An optional override for the default landing page after login for a user.",
 				MarkdownDescription: "An optional override for the default landing page after login for a user.",
 			},
 			"multitenant": schema.BoolAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*",
 				MarkdownDescription: "Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*",
-				Default:             booldefault.StaticBool(false),
 			},
 			"multitenant_locked": schema.BoolAttribute{
-				Optional:            true,
 				Computed:            true,
-				Description:         "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
-				MarkdownDescription: "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
-				Default:             booldefault.StaticBool(false),
+				Description:         "Multitenant Locked prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant*",
+				MarkdownDescription: "Multitenant Locked prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant*",
 			},
 			"name": schema.StringAttribute{
-				Required:            true,
-				Description:         "A unique name for the role",
-				MarkdownDescription: "A unique name for the role",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The name of the Morpheus role",
+				MarkdownDescription: "The name of the Morpheus role",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{
+						path.MatchRoot("id"),
+					}...),
+				},
 			},
 			"permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -69,7 +68,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -81,7 +80,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the blueprint (appTemplate)",
 									MarkdownDescription: "`id` of the blueprint (appTemplate)",
 								},
@@ -95,7 +94,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified blueprints (appTemplates)",
 						MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
 					},
@@ -103,7 +102,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -115,7 +114,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the catalog item type",
 									MarkdownDescription: "`id` of the catalog item type",
 								},
@@ -129,7 +128,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified catalog item types",
 						MarkdownDescription: "Set the access level for the specified catalog item types",
 					},
@@ -137,7 +136,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -150,7 +149,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the cloud (zone)",
 									MarkdownDescription: "`id` of the cloud (zone)",
 								},
@@ -164,12 +163,12 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 					},
 					"default_blueprint_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for blueprints",
 						MarkdownDescription: "Set the default access level for blueprints",
 						Validators: []validator.String{
@@ -180,7 +179,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_catalog_item_type_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for catalog item types",
 						MarkdownDescription: "Set the default access level for catalog item types",
 						Validators: []validator.String{
@@ -191,7 +190,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_cloud_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						Validators: []validator.String{
@@ -203,7 +202,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_group_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
 						Validators: []validator.String{
@@ -215,7 +214,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_instance_type_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for for instance types",
 						MarkdownDescription: "Set the default access level for for instance types",
 						Validators: []validator.String{
@@ -226,7 +225,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_persona_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for personas",
 						MarkdownDescription: "Set the default access level for personas",
 						Validators: []validator.String{
@@ -237,7 +236,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_report_type_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for report types",
 						MarkdownDescription: "Set the default access level for report types",
 						Validators: []validator.String{
@@ -248,7 +247,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_task_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for tasks",
 						MarkdownDescription: "Set the default access level for tasks",
 						Validators: []validator.String{
@@ -259,7 +258,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_vdi_pool_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for VDI pools",
 						MarkdownDescription: "Set the default access level for VDI pools",
 						Validators: []validator.String{
@@ -270,7 +269,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"default_workflow_access": schema.StringAttribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the default access level for workflows (taskSets)",
 						MarkdownDescription: "Set the default access level for workflows (taskSets)",
 						Validators: []validator.String{
@@ -284,7 +283,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -306,7 +305,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"code": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`code` of the feature permission",
 									MarkdownDescription: "`code` of the feature permission",
 								},
@@ -326,7 +325,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified permissions.",
 						MarkdownDescription: "Set the access level for the specified permissions.",
 					},
@@ -334,7 +333,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -347,7 +346,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the group (site)",
 									MarkdownDescription: "`id` of the group (site)",
 								},
@@ -361,7 +360,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
 					},
@@ -369,7 +368,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -384,7 +383,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Computed: true,
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the instance type",
 									MarkdownDescription: "`id` of the instance type",
 								},
@@ -398,7 +397,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified instance types",
 						MarkdownDescription: "Set the access level for the specified instance types",
 					},
@@ -406,7 +405,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -418,7 +417,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"code": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`code` of the persona",
 									MarkdownDescription: "`code` of the persona",
 									Validators: []validator.String{
@@ -442,7 +441,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified personas",
 						MarkdownDescription: "Set the access level for the specified personas",
 					},
@@ -450,7 +449,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -462,7 +461,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"code": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`code` of the report type",
 									MarkdownDescription: "`code` of the report type",
 								},
@@ -479,7 +478,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified report types",
 						MarkdownDescription: "Set the access level for the specified report types",
 					},
@@ -487,7 +486,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -502,7 +501,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									Computed: true,
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the task",
 									MarkdownDescription: "`id` of the task",
 								},
@@ -516,7 +515,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified tasks",
 						MarkdownDescription: "Set the access level for the specified tasks",
 					},
@@ -524,7 +523,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -536,7 +535,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the VDI pool",
 									MarkdownDescription: "`id` of the VDI pool",
 								},
@@ -550,7 +549,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified VDI pools",
 						MarkdownDescription: "Set the access level for the specified VDI pools",
 					},
@@ -558,7 +557,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access": schema.StringAttribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "The new access level.",
 									MarkdownDescription: "The new access level.",
 									Validators: []validator.String{
@@ -570,7 +569,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Computed:            true,
 									Description:         "`id` of the workflow (taskSet)",
 									MarkdownDescription: "`id` of the workflow (taskSet)",
 								},
@@ -584,7 +583,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						Optional:            true,
+						Computed:            true,
 						Description:         "Set the access level for the specified workflows (taskSets)",
 						MarkdownDescription: "Set the access level for the specified workflows (taskSets)",
 					},
@@ -594,28 +593,14 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: PermissionsValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional:            true,
+				Computed:            true,
 				Description:         "The set of permissions to assign to the role",
 				MarkdownDescription: "The set of permissions to assign to the role",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"role_type": schema.StringAttribute{
-				Optional:            true,
 				Computed:            true,
 				Description:         "Role type",
 				MarkdownDescription: "Role type",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						"user",
-						"account",
-					),
-				},
-				Default: stringdefault.StaticString("user"),
 			},
 		},
 	}
