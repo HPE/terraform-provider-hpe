@@ -5,6 +5,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -74,6 +75,9 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration object. Settings vary by type. (Dynamic)",
 				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
+				Validators: []validator.Dynamic{
+					morpheusvalidators.ValidObjectMap(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
