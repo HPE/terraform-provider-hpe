@@ -28,16 +28,6 @@ func (r *Resource) Update(
 		return
 	}
 
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update network resource",
-			"failed to create client: "+err.Error(),
-		)
-
-		return
-	}
-
 	id := state.Id.ValueInt64()
 	name := plan.Name.ValueString()
 
@@ -224,6 +214,16 @@ func (r *Resource) Update(
 
 	updateNetworkReq := sdk.NewUpdateNetworkRequest()
 	updateNetworkReq.SetNetwork(*network)
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update network resource",
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
 
 	_, hresp, err := client.NetworksAPI.UpdateNetwork(ctx, id).
 		UpdateNetworkRequest(*updateNetworkReq).Execute()
