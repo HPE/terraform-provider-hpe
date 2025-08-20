@@ -4,11 +4,17 @@ package role
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -56,6 +62,541 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"permissions": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"blueprint_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the blueprint (appTemplate)",
+									MarkdownDescription: "`id` of the blueprint (appTemplate)",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: BlueprintPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: BlueprintPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified blueprints (appTemplates)",
+						MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
+					},
+					"catalog_item_type_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the catalog item type",
+									MarkdownDescription: "`id` of the catalog item type",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: CatalogItemTypePermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: CatalogItemTypePermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified catalog item types",
+						MarkdownDescription: "Set the access level for the specified catalog item types",
+					},
+					"cloud_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"read",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the cloud (zone)",
+									MarkdownDescription: "`id` of the cloud (zone)",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: CloudPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: CloudPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+						MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+					},
+					"default_blueprint_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for blueprints",
+						MarkdownDescription: "Set the default access level for blueprints",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_catalog_item_type_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for catalog item types",
+						MarkdownDescription: "Set the default access level for catalog item types",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_cloud_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
+						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"read",
+								"none",
+							),
+						},
+					},
+					"default_group_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for for groups (sites). Only applies to user roles.",
+						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"read",
+								"none",
+							),
+						},
+					},
+					"default_instance_type_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for for instance types",
+						MarkdownDescription: "Set the default access level for for instance types",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_persona_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for personas",
+						MarkdownDescription: "Set the default access level for personas",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_report_type_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for report types",
+						MarkdownDescription: "Set the default access level for report types",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_task_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for tasks",
+						MarkdownDescription: "Set the default access level for tasks",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_vdi_pool_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for VDI pools",
+						MarkdownDescription: "Set the default access level for VDI pools",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"default_workflow_access": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Set the default access level for workflows (taskSets)",
+						MarkdownDescription: "Set the default access level for workflows (taskSets)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"full",
+								"none",
+							),
+						},
+					},
+					"feature_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"full",
+											"full_decrypted",
+											"group",
+											"listfiles",
+											"managerules",
+											"no",
+											"none",
+											"provision",
+											"read",
+											"rolemappings",
+											"user",
+											"view",
+											"yes",
+										),
+									},
+								},
+								"code": schema.StringAttribute{
+									Computed:            true,
+									Description:         "`code` of the feature permission",
+									MarkdownDescription: "`code` of the feature permission",
+								},
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+								"sub_category": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: FeaturePermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: FeaturePermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified permissions.",
+						MarkdownDescription: "Set the access level for the specified permissions.",
+					},
+					"group_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"read",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the group (site)",
+									MarkdownDescription: "`id` of the group (site)",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: GroupPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: GroupPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
+						MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
+					},
+					"instance_type_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"code": schema.StringAttribute{
+									Computed: true,
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the instance type",
+									MarkdownDescription: "`id` of the instance type",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: InstanceTypePermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: InstanceTypePermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified instance types",
+						MarkdownDescription: "Set the access level for the specified instance types",
+					},
+					"persona_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"code": schema.StringAttribute{
+									Computed:            true,
+									Description:         "`code` of the persona",
+									MarkdownDescription: "`code` of the persona",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"standard",
+											"serviceCatalog",
+											"vdi",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: PersonaPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: PersonaPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified personas",
+						MarkdownDescription: "Set the access level for the specified personas",
+					},
+					"report_type_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"code": schema.StringAttribute{
+									Computed:            true,
+									Description:         "`code` of the report type",
+									MarkdownDescription: "`code` of the report type",
+								},
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: ReportTypePermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: ReportTypePermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified report types",
+						MarkdownDescription: "Set the access level for the specified report types",
+					},
+					"task_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"code": schema.StringAttribute{
+									Computed: true,
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the task",
+									MarkdownDescription: "`id` of the task",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: TaskPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: TaskPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified tasks",
+						MarkdownDescription: "Set the access level for the specified tasks",
+					},
+					"vdi_pool_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the VDI pool",
+									MarkdownDescription: "`id` of the VDI pool",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: VdiPoolPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: VdiPoolPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified VDI pools",
+						MarkdownDescription: "Set the access level for the specified VDI pools",
+					},
+					"workflow_permissions": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"access": schema.StringAttribute{
+									Computed:            true,
+									Description:         "The new access level.",
+									MarkdownDescription: "The new access level.",
+									Validators: []validator.String{
+										stringvalidator.OneOf(
+											"default",
+											"full",
+											"none",
+										),
+									},
+								},
+								"id": schema.Int64Attribute{
+									Computed:            true,
+									Description:         "`id` of the workflow (taskSet)",
+									MarkdownDescription: "`id` of the workflow (taskSet)",
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: WorkflowPermissionsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: WorkflowPermissionsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
+						Computed:            true,
+						Description:         "Set the access level for the specified workflows (taskSets)",
+						MarkdownDescription: "Set the access level for the specified workflows (taskSets)",
+					},
+				},
+				CustomType: PermissionsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: PermissionsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The set of permissions to assign to the role",
+				MarkdownDescription: "The set of permissions to assign to the role",
+			},
 			"role_type": schema.StringAttribute{
 				Computed:            true,
 				Description:         "Role type",
@@ -66,11 +607,7021 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type RoleModel struct {
-	Description       types.String `tfsdk:"description"`
-	Id                types.Int64  `tfsdk:"id"`
-	LandingUrl        types.String `tfsdk:"landing_url"`
-	Multitenant       types.Bool   `tfsdk:"multitenant"`
-	MultitenantLocked types.Bool   `tfsdk:"multitenant_locked"`
-	Name              types.String `tfsdk:"name"`
-	RoleType          types.String `tfsdk:"role_type"`
+	Description       types.String     `tfsdk:"description"`
+	Id                types.Int64      `tfsdk:"id"`
+	LandingUrl        types.String     `tfsdk:"landing_url"`
+	Multitenant       types.Bool       `tfsdk:"multitenant"`
+	MultitenantLocked types.Bool       `tfsdk:"multitenant_locked"`
+	Name              types.String     `tfsdk:"name"`
+	Permissions       PermissionsValue `tfsdk:"permissions"`
+	RoleType          types.String     `tfsdk:"role_type"`
+}
+
+var _ basetypes.ObjectTypable = PermissionsType{}
+
+type PermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t PermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(PermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PermissionsType) String() string {
+	return "PermissionsType"
+}
+
+func (t PermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	blueprintPermissionsAttribute, ok := attributes["blueprint_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`blueprint_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	blueprintPermissionsVal, ok := blueprintPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`blueprint_permissions expected to be basetypes.SetValue, was: %T`, blueprintPermissionsAttribute))
+	}
+
+	catalogItemTypePermissionsAttribute, ok := attributes["catalog_item_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`catalog_item_type_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	catalogItemTypePermissionsVal, ok := catalogItemTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`catalog_item_type_permissions expected to be basetypes.SetValue, was: %T`, catalogItemTypePermissionsAttribute))
+	}
+
+	cloudPermissionsAttribute, ok := attributes["cloud_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	cloudPermissionsVal, ok := cloudPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_permissions expected to be basetypes.SetValue, was: %T`, cloudPermissionsAttribute))
+	}
+
+	defaultBlueprintAccessAttribute, ok := attributes["default_blueprint_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_blueprint_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultBlueprintAccessVal, ok := defaultBlueprintAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_blueprint_access expected to be basetypes.StringValue, was: %T`, defaultBlueprintAccessAttribute))
+	}
+
+	defaultCatalogItemTypeAccessAttribute, ok := attributes["default_catalog_item_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_catalog_item_type_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultCatalogItemTypeAccessVal, ok := defaultCatalogItemTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_catalog_item_type_access expected to be basetypes.StringValue, was: %T`, defaultCatalogItemTypeAccessAttribute))
+	}
+
+	defaultCloudAccessAttribute, ok := attributes["default_cloud_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_cloud_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultCloudAccessVal, ok := defaultCloudAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_cloud_access expected to be basetypes.StringValue, was: %T`, defaultCloudAccessAttribute))
+	}
+
+	defaultGroupAccessAttribute, ok := attributes["default_group_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_group_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultGroupAccessVal, ok := defaultGroupAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_group_access expected to be basetypes.StringValue, was: %T`, defaultGroupAccessAttribute))
+	}
+
+	defaultInstanceTypeAccessAttribute, ok := attributes["default_instance_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_instance_type_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultInstanceTypeAccessVal, ok := defaultInstanceTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_instance_type_access expected to be basetypes.StringValue, was: %T`, defaultInstanceTypeAccessAttribute))
+	}
+
+	defaultPersonaAccessAttribute, ok := attributes["default_persona_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_persona_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultPersonaAccessVal, ok := defaultPersonaAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_persona_access expected to be basetypes.StringValue, was: %T`, defaultPersonaAccessAttribute))
+	}
+
+	defaultReportTypeAccessAttribute, ok := attributes["default_report_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_report_type_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultReportTypeAccessVal, ok := defaultReportTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_report_type_access expected to be basetypes.StringValue, was: %T`, defaultReportTypeAccessAttribute))
+	}
+
+	defaultTaskAccessAttribute, ok := attributes["default_task_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_task_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultTaskAccessVal, ok := defaultTaskAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_task_access expected to be basetypes.StringValue, was: %T`, defaultTaskAccessAttribute))
+	}
+
+	defaultVdiPoolAccessAttribute, ok := attributes["default_vdi_pool_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_vdi_pool_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultVdiPoolAccessVal, ok := defaultVdiPoolAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_vdi_pool_access expected to be basetypes.StringValue, was: %T`, defaultVdiPoolAccessAttribute))
+	}
+
+	defaultWorkflowAccessAttribute, ok := attributes["default_workflow_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_workflow_access is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultWorkflowAccessVal, ok := defaultWorkflowAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_workflow_access expected to be basetypes.StringValue, was: %T`, defaultWorkflowAccessAttribute))
+	}
+
+	featurePermissionsAttribute, ok := attributes["feature_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`feature_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	featurePermissionsVal, ok := featurePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`feature_permissions expected to be basetypes.SetValue, was: %T`, featurePermissionsAttribute))
+	}
+
+	groupPermissionsAttribute, ok := attributes["group_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	groupPermissionsVal, ok := groupPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_permissions expected to be basetypes.SetValue, was: %T`, groupPermissionsAttribute))
+	}
+
+	instanceTypePermissionsAttribute, ok := attributes["instance_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`instance_type_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	instanceTypePermissionsVal, ok := instanceTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`instance_type_permissions expected to be basetypes.SetValue, was: %T`, instanceTypePermissionsAttribute))
+	}
+
+	personaPermissionsAttribute, ok := attributes["persona_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persona_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	personaPermissionsVal, ok := personaPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persona_permissions expected to be basetypes.SetValue, was: %T`, personaPermissionsAttribute))
+	}
+
+	reportTypePermissionsAttribute, ok := attributes["report_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`report_type_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	reportTypePermissionsVal, ok := reportTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`report_type_permissions expected to be basetypes.SetValue, was: %T`, reportTypePermissionsAttribute))
+	}
+
+	taskPermissionsAttribute, ok := attributes["task_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`task_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	taskPermissionsVal, ok := taskPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`task_permissions expected to be basetypes.SetValue, was: %T`, taskPermissionsAttribute))
+	}
+
+	vdiPoolPermissionsAttribute, ok := attributes["vdi_pool_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vdi_pool_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	vdiPoolPermissionsVal, ok := vdiPoolPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vdi_pool_permissions expected to be basetypes.SetValue, was: %T`, vdiPoolPermissionsAttribute))
+	}
+
+	workflowPermissionsAttribute, ok := attributes["workflow_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_permissions is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowPermissionsVal, ok := workflowPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_permissions expected to be basetypes.SetValue, was: %T`, workflowPermissionsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PermissionsValue{
+		BlueprintPermissions:         blueprintPermissionsVal,
+		CatalogItemTypePermissions:   catalogItemTypePermissionsVal,
+		CloudPermissions:             cloudPermissionsVal,
+		DefaultBlueprintAccess:       defaultBlueprintAccessVal,
+		DefaultCatalogItemTypeAccess: defaultCatalogItemTypeAccessVal,
+		DefaultCloudAccess:           defaultCloudAccessVal,
+		DefaultGroupAccess:           defaultGroupAccessVal,
+		DefaultInstanceTypeAccess:    defaultInstanceTypeAccessVal,
+		DefaultPersonaAccess:         defaultPersonaAccessVal,
+		DefaultReportTypeAccess:      defaultReportTypeAccessVal,
+		DefaultTaskAccess:            defaultTaskAccessVal,
+		DefaultVdiPoolAccess:         defaultVdiPoolAccessVal,
+		DefaultWorkflowAccess:        defaultWorkflowAccessVal,
+		FeaturePermissions:           featurePermissionsVal,
+		GroupPermissions:             groupPermissionsVal,
+		InstanceTypePermissions:      instanceTypePermissionsVal,
+		PersonaPermissions:           personaPermissionsVal,
+		ReportTypePermissions:        reportTypePermissionsVal,
+		TaskPermissions:              taskPermissionsVal,
+		VdiPoolPermissions:           vdiPoolPermissionsVal,
+		WorkflowPermissions:          workflowPermissionsVal,
+		state:                        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPermissionsValueNull() PermissionsValue {
+	return PermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPermissionsValueUnknown() PermissionsValue {
+	return PermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PermissionsValue Attribute Value",
+				"While creating a PermissionsValue value, a missing attribute value was detected. "+
+					"A PermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PermissionsValue Attribute Type",
+				"While creating a PermissionsValue value, an invalid attribute value was detected. "+
+					"A PermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PermissionsValue Attribute Value",
+				"While creating a PermissionsValue value, an extra attribute value was detected. "+
+					"A PermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	blueprintPermissionsAttribute, ok := attributes["blueprint_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`blueprint_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	blueprintPermissionsVal, ok := blueprintPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`blueprint_permissions expected to be basetypes.SetValue, was: %T`, blueprintPermissionsAttribute))
+	}
+
+	catalogItemTypePermissionsAttribute, ok := attributes["catalog_item_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`catalog_item_type_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	catalogItemTypePermissionsVal, ok := catalogItemTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`catalog_item_type_permissions expected to be basetypes.SetValue, was: %T`, catalogItemTypePermissionsAttribute))
+	}
+
+	cloudPermissionsAttribute, ok := attributes["cloud_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	cloudPermissionsVal, ok := cloudPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_permissions expected to be basetypes.SetValue, was: %T`, cloudPermissionsAttribute))
+	}
+
+	defaultBlueprintAccessAttribute, ok := attributes["default_blueprint_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_blueprint_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultBlueprintAccessVal, ok := defaultBlueprintAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_blueprint_access expected to be basetypes.StringValue, was: %T`, defaultBlueprintAccessAttribute))
+	}
+
+	defaultCatalogItemTypeAccessAttribute, ok := attributes["default_catalog_item_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_catalog_item_type_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultCatalogItemTypeAccessVal, ok := defaultCatalogItemTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_catalog_item_type_access expected to be basetypes.StringValue, was: %T`, defaultCatalogItemTypeAccessAttribute))
+	}
+
+	defaultCloudAccessAttribute, ok := attributes["default_cloud_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_cloud_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultCloudAccessVal, ok := defaultCloudAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_cloud_access expected to be basetypes.StringValue, was: %T`, defaultCloudAccessAttribute))
+	}
+
+	defaultGroupAccessAttribute, ok := attributes["default_group_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_group_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultGroupAccessVal, ok := defaultGroupAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_group_access expected to be basetypes.StringValue, was: %T`, defaultGroupAccessAttribute))
+	}
+
+	defaultInstanceTypeAccessAttribute, ok := attributes["default_instance_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_instance_type_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultInstanceTypeAccessVal, ok := defaultInstanceTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_instance_type_access expected to be basetypes.StringValue, was: %T`, defaultInstanceTypeAccessAttribute))
+	}
+
+	defaultPersonaAccessAttribute, ok := attributes["default_persona_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_persona_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultPersonaAccessVal, ok := defaultPersonaAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_persona_access expected to be basetypes.StringValue, was: %T`, defaultPersonaAccessAttribute))
+	}
+
+	defaultReportTypeAccessAttribute, ok := attributes["default_report_type_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_report_type_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultReportTypeAccessVal, ok := defaultReportTypeAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_report_type_access expected to be basetypes.StringValue, was: %T`, defaultReportTypeAccessAttribute))
+	}
+
+	defaultTaskAccessAttribute, ok := attributes["default_task_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_task_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultTaskAccessVal, ok := defaultTaskAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_task_access expected to be basetypes.StringValue, was: %T`, defaultTaskAccessAttribute))
+	}
+
+	defaultVdiPoolAccessAttribute, ok := attributes["default_vdi_pool_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_vdi_pool_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultVdiPoolAccessVal, ok := defaultVdiPoolAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_vdi_pool_access expected to be basetypes.StringValue, was: %T`, defaultVdiPoolAccessAttribute))
+	}
+
+	defaultWorkflowAccessAttribute, ok := attributes["default_workflow_access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default_workflow_access is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	defaultWorkflowAccessVal, ok := defaultWorkflowAccessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default_workflow_access expected to be basetypes.StringValue, was: %T`, defaultWorkflowAccessAttribute))
+	}
+
+	featurePermissionsAttribute, ok := attributes["feature_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`feature_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	featurePermissionsVal, ok := featurePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`feature_permissions expected to be basetypes.SetValue, was: %T`, featurePermissionsAttribute))
+	}
+
+	groupPermissionsAttribute, ok := attributes["group_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	groupPermissionsVal, ok := groupPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_permissions expected to be basetypes.SetValue, was: %T`, groupPermissionsAttribute))
+	}
+
+	instanceTypePermissionsAttribute, ok := attributes["instance_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`instance_type_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	instanceTypePermissionsVal, ok := instanceTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`instance_type_permissions expected to be basetypes.SetValue, was: %T`, instanceTypePermissionsAttribute))
+	}
+
+	personaPermissionsAttribute, ok := attributes["persona_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persona_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	personaPermissionsVal, ok := personaPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persona_permissions expected to be basetypes.SetValue, was: %T`, personaPermissionsAttribute))
+	}
+
+	reportTypePermissionsAttribute, ok := attributes["report_type_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`report_type_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	reportTypePermissionsVal, ok := reportTypePermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`report_type_permissions expected to be basetypes.SetValue, was: %T`, reportTypePermissionsAttribute))
+	}
+
+	taskPermissionsAttribute, ok := attributes["task_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`task_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	taskPermissionsVal, ok := taskPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`task_permissions expected to be basetypes.SetValue, was: %T`, taskPermissionsAttribute))
+	}
+
+	vdiPoolPermissionsAttribute, ok := attributes["vdi_pool_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vdi_pool_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	vdiPoolPermissionsVal, ok := vdiPoolPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vdi_pool_permissions expected to be basetypes.SetValue, was: %T`, vdiPoolPermissionsAttribute))
+	}
+
+	workflowPermissionsAttribute, ok := attributes["workflow_permissions"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_permissions is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	workflowPermissionsVal, ok := workflowPermissionsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_permissions expected to be basetypes.SetValue, was: %T`, workflowPermissionsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	return PermissionsValue{
+		BlueprintPermissions:         blueprintPermissionsVal,
+		CatalogItemTypePermissions:   catalogItemTypePermissionsVal,
+		CloudPermissions:             cloudPermissionsVal,
+		DefaultBlueprintAccess:       defaultBlueprintAccessVal,
+		DefaultCatalogItemTypeAccess: defaultCatalogItemTypeAccessVal,
+		DefaultCloudAccess:           defaultCloudAccessVal,
+		DefaultGroupAccess:           defaultGroupAccessVal,
+		DefaultInstanceTypeAccess:    defaultInstanceTypeAccessVal,
+		DefaultPersonaAccess:         defaultPersonaAccessVal,
+		DefaultReportTypeAccess:      defaultReportTypeAccessVal,
+		DefaultTaskAccess:            defaultTaskAccessVal,
+		DefaultVdiPoolAccess:         defaultVdiPoolAccessVal,
+		DefaultWorkflowAccess:        defaultWorkflowAccessVal,
+		FeaturePermissions:           featurePermissionsVal,
+		GroupPermissions:             groupPermissionsVal,
+		InstanceTypePermissions:      instanceTypePermissionsVal,
+		PersonaPermissions:           personaPermissionsVal,
+		ReportTypePermissions:        reportTypePermissionsVal,
+		TaskPermissions:              taskPermissionsVal,
+		VdiPoolPermissions:           vdiPoolPermissionsVal,
+		WorkflowPermissions:          workflowPermissionsVal,
+		state:                        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PermissionsValue {
+	object, diags := NewPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPermissionsValueMust(PermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PermissionsType) ValueType(ctx context.Context) attr.Value {
+	return PermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = PermissionsValue{}
+
+type PermissionsValue struct {
+	BlueprintPermissions         basetypes.SetValue    `tfsdk:"blueprint_permissions"`
+	CatalogItemTypePermissions   basetypes.SetValue    `tfsdk:"catalog_item_type_permissions"`
+	CloudPermissions             basetypes.SetValue    `tfsdk:"cloud_permissions"`
+	DefaultBlueprintAccess       basetypes.StringValue `tfsdk:"default_blueprint_access"`
+	DefaultCatalogItemTypeAccess basetypes.StringValue `tfsdk:"default_catalog_item_type_access"`
+	DefaultCloudAccess           basetypes.StringValue `tfsdk:"default_cloud_access"`
+	DefaultGroupAccess           basetypes.StringValue `tfsdk:"default_group_access"`
+	DefaultInstanceTypeAccess    basetypes.StringValue `tfsdk:"default_instance_type_access"`
+	DefaultPersonaAccess         basetypes.StringValue `tfsdk:"default_persona_access"`
+	DefaultReportTypeAccess      basetypes.StringValue `tfsdk:"default_report_type_access"`
+	DefaultTaskAccess            basetypes.StringValue `tfsdk:"default_task_access"`
+	DefaultVdiPoolAccess         basetypes.StringValue `tfsdk:"default_vdi_pool_access"`
+	DefaultWorkflowAccess        basetypes.StringValue `tfsdk:"default_workflow_access"`
+	FeaturePermissions           basetypes.SetValue    `tfsdk:"feature_permissions"`
+	GroupPermissions             basetypes.SetValue    `tfsdk:"group_permissions"`
+	InstanceTypePermissions      basetypes.SetValue    `tfsdk:"instance_type_permissions"`
+	PersonaPermissions           basetypes.SetValue    `tfsdk:"persona_permissions"`
+	ReportTypePermissions        basetypes.SetValue    `tfsdk:"report_type_permissions"`
+	TaskPermissions              basetypes.SetValue    `tfsdk:"task_permissions"`
+	VdiPoolPermissions           basetypes.SetValue    `tfsdk:"vdi_pool_permissions"`
+	WorkflowPermissions          basetypes.SetValue    `tfsdk:"workflow_permissions"`
+	state                        attr.ValueState
+}
+
+func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 21)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["blueprint_permissions"] = basetypes.SetType{
+		ElemType: BlueprintPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["catalog_item_type_permissions"] = basetypes.SetType{
+		ElemType: CatalogItemTypePermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["cloud_permissions"] = basetypes.SetType{
+		ElemType: CloudPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["default_blueprint_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_catalog_item_type_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_cloud_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_group_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_instance_type_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_persona_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_report_type_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_task_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_vdi_pool_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["default_workflow_access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["feature_permissions"] = basetypes.SetType{
+		ElemType: FeaturePermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["group_permissions"] = basetypes.SetType{
+		ElemType: GroupPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["instance_type_permissions"] = basetypes.SetType{
+		ElemType: InstanceTypePermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["persona_permissions"] = basetypes.SetType{
+		ElemType: PersonaPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["report_type_permissions"] = basetypes.SetType{
+		ElemType: ReportTypePermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["task_permissions"] = basetypes.SetType{
+		ElemType: TaskPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["vdi_pool_permissions"] = basetypes.SetType{
+		ElemType: VdiPoolPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+	attrTypes["workflow_permissions"] = basetypes.SetType{
+		ElemType: WorkflowPermissionsValue{}.Type(ctx),
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 21)
+
+		val, err = v.BlueprintPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["blueprint_permissions"] = val
+
+		val, err = v.CatalogItemTypePermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["catalog_item_type_permissions"] = val
+
+		val, err = v.CloudPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cloud_permissions"] = val
+
+		val, err = v.DefaultBlueprintAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_blueprint_access"] = val
+
+		val, err = v.DefaultCatalogItemTypeAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_catalog_item_type_access"] = val
+
+		val, err = v.DefaultCloudAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_cloud_access"] = val
+
+		val, err = v.DefaultGroupAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_group_access"] = val
+
+		val, err = v.DefaultInstanceTypeAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_instance_type_access"] = val
+
+		val, err = v.DefaultPersonaAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_persona_access"] = val
+
+		val, err = v.DefaultReportTypeAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_report_type_access"] = val
+
+		val, err = v.DefaultTaskAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_task_access"] = val
+
+		val, err = v.DefaultVdiPoolAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_vdi_pool_access"] = val
+
+		val, err = v.DefaultWorkflowAccess.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default_workflow_access"] = val
+
+		val, err = v.FeaturePermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["feature_permissions"] = val
+
+		val, err = v.GroupPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["group_permissions"] = val
+
+		val, err = v.InstanceTypePermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["instance_type_permissions"] = val
+
+		val, err = v.PersonaPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["persona_permissions"] = val
+
+		val, err = v.ReportTypePermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["report_type_permissions"] = val
+
+		val, err = v.TaskPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["task_permissions"] = val
+
+		val, err = v.VdiPoolPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vdi_pool_permissions"] = val
+
+		val, err = v.WorkflowPermissions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_permissions"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PermissionsValue) String() string {
+	return "PermissionsValue"
+}
+
+func (v PermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	blueprintPermissionsVal := types.SetValueMust(
+		BlueprintPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: BlueprintPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.BlueprintPermissions.Elements(),
+	)
+
+	if v.BlueprintPermissions.IsNull() {
+		blueprintPermissionsVal = types.SetNull(
+			BlueprintPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: BlueprintPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.BlueprintPermissions.IsUnknown() {
+		blueprintPermissionsVal = types.SetUnknown(
+			BlueprintPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: BlueprintPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	catalogItemTypePermissionsVal := types.SetValueMust(
+		CatalogItemTypePermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: CatalogItemTypePermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.CatalogItemTypePermissions.Elements(),
+	)
+
+	if v.CatalogItemTypePermissions.IsNull() {
+		catalogItemTypePermissionsVal = types.SetNull(
+			CatalogItemTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: CatalogItemTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.CatalogItemTypePermissions.IsUnknown() {
+		catalogItemTypePermissionsVal = types.SetUnknown(
+			CatalogItemTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: CatalogItemTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	cloudPermissionsVal := types.SetValueMust(
+		CloudPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: CloudPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.CloudPermissions.Elements(),
+	)
+
+	if v.CloudPermissions.IsNull() {
+		cloudPermissionsVal = types.SetNull(
+			CloudPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: CloudPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.CloudPermissions.IsUnknown() {
+		cloudPermissionsVal = types.SetUnknown(
+			CloudPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: CloudPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	featurePermissionsVal := types.SetValueMust(
+		FeaturePermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: FeaturePermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.FeaturePermissions.Elements(),
+	)
+
+	if v.FeaturePermissions.IsNull() {
+		featurePermissionsVal = types.SetNull(
+			FeaturePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: FeaturePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.FeaturePermissions.IsUnknown() {
+		featurePermissionsVal = types.SetUnknown(
+			FeaturePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: FeaturePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	groupPermissionsVal := types.SetValueMust(
+		GroupPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: GroupPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.GroupPermissions.Elements(),
+	)
+
+	if v.GroupPermissions.IsNull() {
+		groupPermissionsVal = types.SetNull(
+			GroupPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: GroupPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.GroupPermissions.IsUnknown() {
+		groupPermissionsVal = types.SetUnknown(
+			GroupPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: GroupPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	instanceTypePermissionsVal := types.SetValueMust(
+		InstanceTypePermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: InstanceTypePermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.InstanceTypePermissions.Elements(),
+	)
+
+	if v.InstanceTypePermissions.IsNull() {
+		instanceTypePermissionsVal = types.SetNull(
+			InstanceTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: InstanceTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.InstanceTypePermissions.IsUnknown() {
+		instanceTypePermissionsVal = types.SetUnknown(
+			InstanceTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: InstanceTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	personaPermissionsVal := types.SetValueMust(
+		PersonaPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: PersonaPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.PersonaPermissions.Elements(),
+	)
+
+	if v.PersonaPermissions.IsNull() {
+		personaPermissionsVal = types.SetNull(
+			PersonaPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: PersonaPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.PersonaPermissions.IsUnknown() {
+		personaPermissionsVal = types.SetUnknown(
+			PersonaPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: PersonaPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	reportTypePermissionsVal := types.SetValueMust(
+		ReportTypePermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: ReportTypePermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.ReportTypePermissions.Elements(),
+	)
+
+	if v.ReportTypePermissions.IsNull() {
+		reportTypePermissionsVal = types.SetNull(
+			ReportTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: ReportTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.ReportTypePermissions.IsUnknown() {
+		reportTypePermissionsVal = types.SetUnknown(
+			ReportTypePermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: ReportTypePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	taskPermissionsVal := types.SetValueMust(
+		TaskPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: TaskPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.TaskPermissions.Elements(),
+	)
+
+	if v.TaskPermissions.IsNull() {
+		taskPermissionsVal = types.SetNull(
+			TaskPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: TaskPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.TaskPermissions.IsUnknown() {
+		taskPermissionsVal = types.SetUnknown(
+			TaskPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: TaskPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	vdiPoolPermissionsVal := types.SetValueMust(
+		VdiPoolPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: VdiPoolPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.VdiPoolPermissions.Elements(),
+	)
+
+	if v.VdiPoolPermissions.IsNull() {
+		vdiPoolPermissionsVal = types.SetNull(
+			VdiPoolPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: VdiPoolPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.VdiPoolPermissions.IsUnknown() {
+		vdiPoolPermissionsVal = types.SetUnknown(
+			VdiPoolPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: VdiPoolPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	workflowPermissionsVal := types.SetValueMust(
+		WorkflowPermissionsType{
+			basetypes.ObjectType{
+				AttrTypes: WorkflowPermissionsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.WorkflowPermissions.Elements(),
+	)
+
+	if v.WorkflowPermissions.IsNull() {
+		workflowPermissionsVal = types.SetNull(
+			WorkflowPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: WorkflowPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.WorkflowPermissions.IsUnknown() {
+		workflowPermissionsVal = types.SetUnknown(
+			WorkflowPermissionsType{
+				basetypes.ObjectType{
+					AttrTypes: WorkflowPermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"blueprint_permissions": basetypes.SetType{
+			ElemType: BlueprintPermissionsValue{}.Type(ctx),
+		},
+		"catalog_item_type_permissions": basetypes.SetType{
+			ElemType: CatalogItemTypePermissionsValue{}.Type(ctx),
+		},
+		"cloud_permissions": basetypes.SetType{
+			ElemType: CloudPermissionsValue{}.Type(ctx),
+		},
+		"default_blueprint_access":         basetypes.StringType{},
+		"default_catalog_item_type_access": basetypes.StringType{},
+		"default_cloud_access":             basetypes.StringType{},
+		"default_group_access":             basetypes.StringType{},
+		"default_instance_type_access":     basetypes.StringType{},
+		"default_persona_access":           basetypes.StringType{},
+		"default_report_type_access":       basetypes.StringType{},
+		"default_task_access":              basetypes.StringType{},
+		"default_vdi_pool_access":          basetypes.StringType{},
+		"default_workflow_access":          basetypes.StringType{},
+		"feature_permissions": basetypes.SetType{
+			ElemType: FeaturePermissionsValue{}.Type(ctx),
+		},
+		"group_permissions": basetypes.SetType{
+			ElemType: GroupPermissionsValue{}.Type(ctx),
+		},
+		"instance_type_permissions": basetypes.SetType{
+			ElemType: InstanceTypePermissionsValue{}.Type(ctx),
+		},
+		"persona_permissions": basetypes.SetType{
+			ElemType: PersonaPermissionsValue{}.Type(ctx),
+		},
+		"report_type_permissions": basetypes.SetType{
+			ElemType: ReportTypePermissionsValue{}.Type(ctx),
+		},
+		"task_permissions": basetypes.SetType{
+			ElemType: TaskPermissionsValue{}.Type(ctx),
+		},
+		"vdi_pool_permissions": basetypes.SetType{
+			ElemType: VdiPoolPermissionsValue{}.Type(ctx),
+		},
+		"workflow_permissions": basetypes.SetType{
+			ElemType: WorkflowPermissionsValue{}.Type(ctx),
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"blueprint_permissions":            blueprintPermissionsVal,
+			"catalog_item_type_permissions":    catalogItemTypePermissionsVal,
+			"cloud_permissions":                cloudPermissionsVal,
+			"default_blueprint_access":         v.DefaultBlueprintAccess,
+			"default_catalog_item_type_access": v.DefaultCatalogItemTypeAccess,
+			"default_cloud_access":             v.DefaultCloudAccess,
+			"default_group_access":             v.DefaultGroupAccess,
+			"default_instance_type_access":     v.DefaultInstanceTypeAccess,
+			"default_persona_access":           v.DefaultPersonaAccess,
+			"default_report_type_access":       v.DefaultReportTypeAccess,
+			"default_task_access":              v.DefaultTaskAccess,
+			"default_vdi_pool_access":          v.DefaultVdiPoolAccess,
+			"default_workflow_access":          v.DefaultWorkflowAccess,
+			"feature_permissions":              featurePermissionsVal,
+			"group_permissions":                groupPermissionsVal,
+			"instance_type_permissions":        instanceTypePermissionsVal,
+			"persona_permissions":              personaPermissionsVal,
+			"report_type_permissions":          reportTypePermissionsVal,
+			"task_permissions":                 taskPermissionsVal,
+			"vdi_pool_permissions":             vdiPoolPermissionsVal,
+			"workflow_permissions":             workflowPermissionsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v PermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(PermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.BlueprintPermissions.Equal(other.BlueprintPermissions) {
+		return false
+	}
+
+	if !v.CatalogItemTypePermissions.Equal(other.CatalogItemTypePermissions) {
+		return false
+	}
+
+	if !v.CloudPermissions.Equal(other.CloudPermissions) {
+		return false
+	}
+
+	if !v.DefaultBlueprintAccess.Equal(other.DefaultBlueprintAccess) {
+		return false
+	}
+
+	if !v.DefaultCatalogItemTypeAccess.Equal(other.DefaultCatalogItemTypeAccess) {
+		return false
+	}
+
+	if !v.DefaultCloudAccess.Equal(other.DefaultCloudAccess) {
+		return false
+	}
+
+	if !v.DefaultGroupAccess.Equal(other.DefaultGroupAccess) {
+		return false
+	}
+
+	if !v.DefaultInstanceTypeAccess.Equal(other.DefaultInstanceTypeAccess) {
+		return false
+	}
+
+	if !v.DefaultPersonaAccess.Equal(other.DefaultPersonaAccess) {
+		return false
+	}
+
+	if !v.DefaultReportTypeAccess.Equal(other.DefaultReportTypeAccess) {
+		return false
+	}
+
+	if !v.DefaultTaskAccess.Equal(other.DefaultTaskAccess) {
+		return false
+	}
+
+	if !v.DefaultVdiPoolAccess.Equal(other.DefaultVdiPoolAccess) {
+		return false
+	}
+
+	if !v.DefaultWorkflowAccess.Equal(other.DefaultWorkflowAccess) {
+		return false
+	}
+
+	if !v.FeaturePermissions.Equal(other.FeaturePermissions) {
+		return false
+	}
+
+	if !v.GroupPermissions.Equal(other.GroupPermissions) {
+		return false
+	}
+
+	if !v.InstanceTypePermissions.Equal(other.InstanceTypePermissions) {
+		return false
+	}
+
+	if !v.PersonaPermissions.Equal(other.PersonaPermissions) {
+		return false
+	}
+
+	if !v.ReportTypePermissions.Equal(other.ReportTypePermissions) {
+		return false
+	}
+
+	if !v.TaskPermissions.Equal(other.TaskPermissions) {
+		return false
+	}
+
+	if !v.VdiPoolPermissions.Equal(other.VdiPoolPermissions) {
+		return false
+	}
+
+	if !v.WorkflowPermissions.Equal(other.WorkflowPermissions) {
+		return false
+	}
+
+	return true
+}
+
+func (v PermissionsValue) Type(ctx context.Context) attr.Type {
+	return PermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"blueprint_permissions": basetypes.SetType{
+			ElemType: BlueprintPermissionsValue{}.Type(ctx),
+		},
+		"catalog_item_type_permissions": basetypes.SetType{
+			ElemType: CatalogItemTypePermissionsValue{}.Type(ctx),
+		},
+		"cloud_permissions": basetypes.SetType{
+			ElemType: CloudPermissionsValue{}.Type(ctx),
+		},
+		"default_blueprint_access":         basetypes.StringType{},
+		"default_catalog_item_type_access": basetypes.StringType{},
+		"default_cloud_access":             basetypes.StringType{},
+		"default_group_access":             basetypes.StringType{},
+		"default_instance_type_access":     basetypes.StringType{},
+		"default_persona_access":           basetypes.StringType{},
+		"default_report_type_access":       basetypes.StringType{},
+		"default_task_access":              basetypes.StringType{},
+		"default_vdi_pool_access":          basetypes.StringType{},
+		"default_workflow_access":          basetypes.StringType{},
+		"feature_permissions": basetypes.SetType{
+			ElemType: FeaturePermissionsValue{}.Type(ctx),
+		},
+		"group_permissions": basetypes.SetType{
+			ElemType: GroupPermissionsValue{}.Type(ctx),
+		},
+		"instance_type_permissions": basetypes.SetType{
+			ElemType: InstanceTypePermissionsValue{}.Type(ctx),
+		},
+		"persona_permissions": basetypes.SetType{
+			ElemType: PersonaPermissionsValue{}.Type(ctx),
+		},
+		"report_type_permissions": basetypes.SetType{
+			ElemType: ReportTypePermissionsValue{}.Type(ctx),
+		},
+		"task_permissions": basetypes.SetType{
+			ElemType: TaskPermissionsValue{}.Type(ctx),
+		},
+		"vdi_pool_permissions": basetypes.SetType{
+			ElemType: VdiPoolPermissionsValue{}.Type(ctx),
+		},
+		"workflow_permissions": basetypes.SetType{
+			ElemType: WorkflowPermissionsValue{}.Type(ctx),
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = BlueprintPermissionsType{}
+
+type BlueprintPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t BlueprintPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(BlueprintPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t BlueprintPermissionsType) String() string {
+	return "BlueprintPermissionsType"
+}
+
+func (t BlueprintPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewBlueprintPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBlueprintPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return BlueprintPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBlueprintPermissionsValueNull() BlueprintPermissionsValue {
+	return BlueprintPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewBlueprintPermissionsValueUnknown() BlueprintPermissionsValue {
+	return BlueprintPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewBlueprintPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (BlueprintPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing BlueprintPermissionsValue Attribute Value",
+				"While creating a BlueprintPermissionsValue value, a missing attribute value was detected. "+
+					"A BlueprintPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BlueprintPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid BlueprintPermissionsValue Attribute Type",
+				"While creating a BlueprintPermissionsValue value, an invalid attribute value was detected. "+
+					"A BlueprintPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BlueprintPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("BlueprintPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra BlueprintPermissionsValue Attribute Value",
+				"While creating a BlueprintPermissionsValue value, an extra attribute value was detected. "+
+					"A BlueprintPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra BlueprintPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewBlueprintPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewBlueprintPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewBlueprintPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewBlueprintPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewBlueprintPermissionsValueUnknown(), diags
+	}
+
+	return BlueprintPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBlueprintPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) BlueprintPermissionsValue {
+	object, diags := NewBlueprintPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewBlueprintPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t BlueprintPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewBlueprintPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewBlueprintPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBlueprintPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewBlueprintPermissionsValueMust(BlueprintPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t BlueprintPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return BlueprintPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = BlueprintPermissionsValue{}
+
+type BlueprintPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v BlueprintPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v BlueprintPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v BlueprintPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v BlueprintPermissionsValue) String() string {
+	return "BlueprintPermissionsValue"
+}
+
+func (v BlueprintPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v BlueprintPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(BlueprintPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v BlueprintPermissionsValue) Type(ctx context.Context) attr.Type {
+	return BlueprintPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v BlueprintPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = CatalogItemTypePermissionsType{}
+
+type CatalogItemTypePermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t CatalogItemTypePermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(CatalogItemTypePermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t CatalogItemTypePermissionsType) String() string {
+	return "CatalogItemTypePermissionsType"
+}
+
+func (t CatalogItemTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewCatalogItemTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewCatalogItemTypePermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return CatalogItemTypePermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewCatalogItemTypePermissionsValueNull() CatalogItemTypePermissionsValue {
+	return CatalogItemTypePermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewCatalogItemTypePermissionsValueUnknown() CatalogItemTypePermissionsValue {
+	return CatalogItemTypePermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewCatalogItemTypePermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (CatalogItemTypePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing CatalogItemTypePermissionsValue Attribute Value",
+				"While creating a CatalogItemTypePermissionsValue value, a missing attribute value was detected. "+
+					"A CatalogItemTypePermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("CatalogItemTypePermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid CatalogItemTypePermissionsValue Attribute Type",
+				"While creating a CatalogItemTypePermissionsValue value, an invalid attribute value was detected. "+
+					"A CatalogItemTypePermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("CatalogItemTypePermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("CatalogItemTypePermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra CatalogItemTypePermissionsValue Attribute Value",
+				"While creating a CatalogItemTypePermissionsValue value, an extra attribute value was detected. "+
+					"A CatalogItemTypePermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra CatalogItemTypePermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewCatalogItemTypePermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewCatalogItemTypePermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewCatalogItemTypePermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewCatalogItemTypePermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewCatalogItemTypePermissionsValueUnknown(), diags
+	}
+
+	return CatalogItemTypePermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewCatalogItemTypePermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) CatalogItemTypePermissionsValue {
+	object, diags := NewCatalogItemTypePermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewCatalogItemTypePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t CatalogItemTypePermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewCatalogItemTypePermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewCatalogItemTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewCatalogItemTypePermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewCatalogItemTypePermissionsValueMust(CatalogItemTypePermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t CatalogItemTypePermissionsType) ValueType(ctx context.Context) attr.Value {
+	return CatalogItemTypePermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = CatalogItemTypePermissionsValue{}
+
+type CatalogItemTypePermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v CatalogItemTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v CatalogItemTypePermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v CatalogItemTypePermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v CatalogItemTypePermissionsValue) String() string {
+	return "CatalogItemTypePermissionsValue"
+}
+
+func (v CatalogItemTypePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v CatalogItemTypePermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(CatalogItemTypePermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v CatalogItemTypePermissionsValue) Type(ctx context.Context) attr.Type {
+	return CatalogItemTypePermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v CatalogItemTypePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = CloudPermissionsType{}
+
+type CloudPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t CloudPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(CloudPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t CloudPermissionsType) String() string {
+	return "CloudPermissionsType"
+}
+
+func (t CloudPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewCloudPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewCloudPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return CloudPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewCloudPermissionsValueNull() CloudPermissionsValue {
+	return CloudPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewCloudPermissionsValueUnknown() CloudPermissionsValue {
+	return CloudPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewCloudPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (CloudPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing CloudPermissionsValue Attribute Value",
+				"While creating a CloudPermissionsValue value, a missing attribute value was detected. "+
+					"A CloudPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("CloudPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid CloudPermissionsValue Attribute Type",
+				"While creating a CloudPermissionsValue value, an invalid attribute value was detected. "+
+					"A CloudPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("CloudPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("CloudPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra CloudPermissionsValue Attribute Value",
+				"While creating a CloudPermissionsValue value, an extra attribute value was detected. "+
+					"A CloudPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra CloudPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewCloudPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewCloudPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewCloudPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewCloudPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewCloudPermissionsValueUnknown(), diags
+	}
+
+	return CloudPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewCloudPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) CloudPermissionsValue {
+	object, diags := NewCloudPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewCloudPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t CloudPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewCloudPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewCloudPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewCloudPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewCloudPermissionsValueMust(CloudPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t CloudPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return CloudPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = CloudPermissionsValue{}
+
+type CloudPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v CloudPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v CloudPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v CloudPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v CloudPermissionsValue) String() string {
+	return "CloudPermissionsValue"
+}
+
+func (v CloudPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v CloudPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(CloudPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v CloudPermissionsValue) Type(ctx context.Context) attr.Type {
+	return CloudPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v CloudPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = FeaturePermissionsType{}
+
+type FeaturePermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t FeaturePermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(FeaturePermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t FeaturePermissionsType) String() string {
+	return "FeaturePermissionsType"
+}
+
+func (t FeaturePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewFeaturePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewFeaturePermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	subCategoryAttribute, ok := attributes["sub_category"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`sub_category is missing from object`)
+
+		return nil, diags
+	}
+
+	subCategoryVal, ok := subCategoryAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`sub_category expected to be basetypes.StringValue, was: %T`, subCategoryAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return FeaturePermissionsValue{
+		Access:      accessVal,
+		Code:        codeVal,
+		Id:          idVal,
+		Name:        nameVal,
+		SubCategory: subCategoryVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewFeaturePermissionsValueNull() FeaturePermissionsValue {
+	return FeaturePermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewFeaturePermissionsValueUnknown() FeaturePermissionsValue {
+	return FeaturePermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewFeaturePermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (FeaturePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing FeaturePermissionsValue Attribute Value",
+				"While creating a FeaturePermissionsValue value, a missing attribute value was detected. "+
+					"A FeaturePermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("FeaturePermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid FeaturePermissionsValue Attribute Type",
+				"While creating a FeaturePermissionsValue value, an invalid attribute value was detected. "+
+					"A FeaturePermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("FeaturePermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("FeaturePermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra FeaturePermissionsValue Attribute Value",
+				"While creating a FeaturePermissionsValue value, an extra attribute value was detected. "+
+					"A FeaturePermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra FeaturePermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	subCategoryAttribute, ok := attributes["sub_category"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`sub_category is missing from object`)
+
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	subCategoryVal, ok := subCategoryAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`sub_category expected to be basetypes.StringValue, was: %T`, subCategoryAttribute))
+	}
+
+	if diags.HasError() {
+		return NewFeaturePermissionsValueUnknown(), diags
+	}
+
+	return FeaturePermissionsValue{
+		Access:      accessVal,
+		Code:        codeVal,
+		Id:          idVal,
+		Name:        nameVal,
+		SubCategory: subCategoryVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewFeaturePermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) FeaturePermissionsValue {
+	object, diags := NewFeaturePermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewFeaturePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t FeaturePermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewFeaturePermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewFeaturePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewFeaturePermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewFeaturePermissionsValueMust(FeaturePermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t FeaturePermissionsType) ValueType(ctx context.Context) attr.Value {
+	return FeaturePermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = FeaturePermissionsValue{}
+
+type FeaturePermissionsValue struct {
+	Access      basetypes.StringValue `tfsdk:"access"`
+	Code        basetypes.StringValue `tfsdk:"code"`
+	Id          basetypes.Int64Value  `tfsdk:"id"`
+	Name        basetypes.StringValue `tfsdk:"name"`
+	SubCategory basetypes.StringValue `tfsdk:"sub_category"`
+	state       attr.ValueState
+}
+
+func (v FeaturePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 5)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["sub_category"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		val, err = v.SubCategory.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["sub_category"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v FeaturePermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v FeaturePermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v FeaturePermissionsValue) String() string {
+	return "FeaturePermissionsValue"
+}
+
+func (v FeaturePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access":       basetypes.StringType{},
+		"code":         basetypes.StringType{},
+		"id":           basetypes.Int64Type{},
+		"name":         basetypes.StringType{},
+		"sub_category": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access":       v.Access,
+			"code":         v.Code,
+			"id":           v.Id,
+			"name":         v.Name,
+			"sub_category": v.SubCategory,
+		})
+
+	return objVal, diags
+}
+
+func (v FeaturePermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(FeaturePermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.SubCategory.Equal(other.SubCategory) {
+		return false
+	}
+
+	return true
+}
+
+func (v FeaturePermissionsValue) Type(ctx context.Context) attr.Type {
+	return FeaturePermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v FeaturePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access":       basetypes.StringType{},
+		"code":         basetypes.StringType{},
+		"id":           basetypes.Int64Type{},
+		"name":         basetypes.StringType{},
+		"sub_category": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = GroupPermissionsType{}
+
+type GroupPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t GroupPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(GroupPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t GroupPermissionsType) String() string {
+	return "GroupPermissionsType"
+}
+
+func (t GroupPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewGroupPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGroupPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return GroupPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupPermissionsValueNull() GroupPermissionsValue {
+	return GroupPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewGroupPermissionsValueUnknown() GroupPermissionsValue {
+	return GroupPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewGroupPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (GroupPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing GroupPermissionsValue Attribute Value",
+				"While creating a GroupPermissionsValue value, a missing attribute value was detected. "+
+					"A GroupPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid GroupPermissionsValue Attribute Type",
+				"While creating a GroupPermissionsValue value, an invalid attribute value was detected. "+
+					"A GroupPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("GroupPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra GroupPermissionsValue Attribute Value",
+				"While creating a GroupPermissionsValue value, an extra attribute value was detected. "+
+					"A GroupPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra GroupPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewGroupPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewGroupPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewGroupPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewGroupPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewGroupPermissionsValueUnknown(), diags
+	}
+
+	return GroupPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) GroupPermissionsValue {
+	object, diags := NewGroupPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewGroupPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t GroupPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewGroupPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewGroupPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGroupPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewGroupPermissionsValueMust(GroupPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t GroupPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return GroupPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = GroupPermissionsValue{}
+
+type GroupPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v GroupPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v GroupPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v GroupPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v GroupPermissionsValue) String() string {
+	return "GroupPermissionsValue"
+}
+
+func (v GroupPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v GroupPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(GroupPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v GroupPermissionsValue) Type(ctx context.Context) attr.Type {
+	return GroupPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v GroupPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = InstanceTypePermissionsType{}
+
+type InstanceTypePermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t InstanceTypePermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(InstanceTypePermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t InstanceTypePermissionsType) String() string {
+	return "InstanceTypePermissionsType"
+}
+
+func (t InstanceTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewInstanceTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInstanceTypePermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return InstanceTypePermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInstanceTypePermissionsValueNull() InstanceTypePermissionsValue {
+	return InstanceTypePermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewInstanceTypePermissionsValueUnknown() InstanceTypePermissionsValue {
+	return InstanceTypePermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewInstanceTypePermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (InstanceTypePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing InstanceTypePermissionsValue Attribute Value",
+				"While creating a InstanceTypePermissionsValue value, a missing attribute value was detected. "+
+					"A InstanceTypePermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InstanceTypePermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid InstanceTypePermissionsValue Attribute Type",
+				"While creating a InstanceTypePermissionsValue value, an invalid attribute value was detected. "+
+					"A InstanceTypePermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InstanceTypePermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("InstanceTypePermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra InstanceTypePermissionsValue Attribute Value",
+				"While creating a InstanceTypePermissionsValue value, an extra attribute value was detected. "+
+					"A InstanceTypePermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra InstanceTypePermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewInstanceTypePermissionsValueUnknown(), diags
+	}
+
+	return InstanceTypePermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInstanceTypePermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) InstanceTypePermissionsValue {
+	object, diags := NewInstanceTypePermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewInstanceTypePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t InstanceTypePermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewInstanceTypePermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewInstanceTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInstanceTypePermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewInstanceTypePermissionsValueMust(InstanceTypePermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t InstanceTypePermissionsType) ValueType(ctx context.Context) attr.Value {
+	return InstanceTypePermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = InstanceTypePermissionsValue{}
+
+type InstanceTypePermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Code   basetypes.StringValue `tfsdk:"code"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v InstanceTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v InstanceTypePermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v InstanceTypePermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v InstanceTypePermissionsValue) String() string {
+	return "InstanceTypePermissionsValue"
+}
+
+func (v InstanceTypePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"code":   v.Code,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v InstanceTypePermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(InstanceTypePermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v InstanceTypePermissionsValue) Type(ctx context.Context) attr.Type {
+	return InstanceTypePermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v InstanceTypePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = PersonaPermissionsType{}
+
+type PersonaPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t PersonaPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(PersonaPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PersonaPermissionsType) String() string {
+	return "PersonaPermissionsType"
+}
+
+func (t PersonaPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPersonaPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPersonaPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PersonaPermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPersonaPermissionsValueNull() PersonaPermissionsValue {
+	return PersonaPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPersonaPermissionsValueUnknown() PersonaPermissionsValue {
+	return PersonaPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPersonaPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PersonaPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PersonaPermissionsValue Attribute Value",
+				"While creating a PersonaPermissionsValue value, a missing attribute value was detected. "+
+					"A PersonaPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PersonaPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PersonaPermissionsValue Attribute Type",
+				"While creating a PersonaPermissionsValue value, an invalid attribute value was detected. "+
+					"A PersonaPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PersonaPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PersonaPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PersonaPermissionsValue Attribute Value",
+				"While creating a PersonaPermissionsValue value, an extra attribute value was detected. "+
+					"A PersonaPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PersonaPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPersonaPermissionsValueUnknown(), diags
+	}
+
+	return PersonaPermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPersonaPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PersonaPermissionsValue {
+	object, diags := NewPersonaPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPersonaPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PersonaPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPersonaPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPersonaPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPersonaPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPersonaPermissionsValueMust(PersonaPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PersonaPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return PersonaPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = PersonaPermissionsValue{}
+
+type PersonaPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Code   basetypes.StringValue `tfsdk:"code"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v PersonaPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PersonaPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PersonaPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PersonaPermissionsValue) String() string {
+	return "PersonaPermissionsValue"
+}
+
+func (v PersonaPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"code":   v.Code,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v PersonaPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(PersonaPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v PersonaPermissionsValue) Type(ctx context.Context) attr.Type {
+	return PersonaPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PersonaPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ReportTypePermissionsType{}
+
+type ReportTypePermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t ReportTypePermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(ReportTypePermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ReportTypePermissionsType) String() string {
+	return "ReportTypePermissionsType"
+}
+
+func (t ReportTypePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewReportTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewReportTypePermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ReportTypePermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewReportTypePermissionsValueNull() ReportTypePermissionsValue {
+	return ReportTypePermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewReportTypePermissionsValueUnknown() ReportTypePermissionsValue {
+	return ReportTypePermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewReportTypePermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ReportTypePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ReportTypePermissionsValue Attribute Value",
+				"While creating a ReportTypePermissionsValue value, a missing attribute value was detected. "+
+					"A ReportTypePermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ReportTypePermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ReportTypePermissionsValue Attribute Type",
+				"While creating a ReportTypePermissionsValue value, an invalid attribute value was detected. "+
+					"A ReportTypePermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ReportTypePermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ReportTypePermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ReportTypePermissionsValue Attribute Value",
+				"While creating a ReportTypePermissionsValue value, an extra attribute value was detected. "+
+					"A ReportTypePermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ReportTypePermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewReportTypePermissionsValueUnknown(), diags
+	}
+
+	return ReportTypePermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewReportTypePermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ReportTypePermissionsValue {
+	object, diags := NewReportTypePermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewReportTypePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ReportTypePermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewReportTypePermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewReportTypePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewReportTypePermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewReportTypePermissionsValueMust(ReportTypePermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ReportTypePermissionsType) ValueType(ctx context.Context) attr.Value {
+	return ReportTypePermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = ReportTypePermissionsValue{}
+
+type ReportTypePermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Code   basetypes.StringValue `tfsdk:"code"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v ReportTypePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ReportTypePermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ReportTypePermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ReportTypePermissionsValue) String() string {
+	return "ReportTypePermissionsValue"
+}
+
+func (v ReportTypePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"code":   v.Code,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v ReportTypePermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ReportTypePermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v ReportTypePermissionsValue) Type(ctx context.Context) attr.Type {
+	return ReportTypePermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ReportTypePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = TaskPermissionsType{}
+
+type TaskPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t TaskPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(TaskPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t TaskPermissionsType) String() string {
+	return "TaskPermissionsType"
+}
+
+func (t TaskPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewTaskPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTaskPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return TaskPermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTaskPermissionsValueNull() TaskPermissionsValue {
+	return TaskPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewTaskPermissionsValueUnknown() TaskPermissionsValue {
+	return TaskPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewTaskPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (TaskPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing TaskPermissionsValue Attribute Value",
+				"While creating a TaskPermissionsValue value, a missing attribute value was detected. "+
+					"A TaskPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TaskPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid TaskPermissionsValue Attribute Type",
+				"While creating a TaskPermissionsValue value, an invalid attribute value was detected. "+
+					"A TaskPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TaskPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("TaskPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra TaskPermissionsValue Attribute Value",
+				"While creating a TaskPermissionsValue value, an extra attribute value was detected. "+
+					"A TaskPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra TaskPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewTaskPermissionsValueUnknown(), diags
+	}
+
+	return TaskPermissionsValue{
+		Access: accessVal,
+		Code:   codeVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTaskPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) TaskPermissionsValue {
+	object, diags := NewTaskPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewTaskPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t TaskPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewTaskPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewTaskPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTaskPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewTaskPermissionsValueMust(TaskPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t TaskPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return TaskPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = TaskPermissionsValue{}
+
+type TaskPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Code   basetypes.StringValue `tfsdk:"code"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v TaskPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v TaskPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v TaskPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v TaskPermissionsValue) String() string {
+	return "TaskPermissionsValue"
+}
+
+func (v TaskPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"code":   v.Code,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v TaskPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(TaskPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v TaskPermissionsValue) Type(ctx context.Context) attr.Type {
+	return TaskPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v TaskPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"code":   basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = VdiPoolPermissionsType{}
+
+type VdiPoolPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t VdiPoolPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(VdiPoolPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t VdiPoolPermissionsType) String() string {
+	return "VdiPoolPermissionsType"
+}
+
+func (t VdiPoolPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewVdiPoolPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewVdiPoolPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return VdiPoolPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVdiPoolPermissionsValueNull() VdiPoolPermissionsValue {
+	return VdiPoolPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewVdiPoolPermissionsValueUnknown() VdiPoolPermissionsValue {
+	return VdiPoolPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewVdiPoolPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (VdiPoolPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing VdiPoolPermissionsValue Attribute Value",
+				"While creating a VdiPoolPermissionsValue value, a missing attribute value was detected. "+
+					"A VdiPoolPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VdiPoolPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid VdiPoolPermissionsValue Attribute Type",
+				"While creating a VdiPoolPermissionsValue value, an invalid attribute value was detected. "+
+					"A VdiPoolPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VdiPoolPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("VdiPoolPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra VdiPoolPermissionsValue Attribute Value",
+				"While creating a VdiPoolPermissionsValue value, an extra attribute value was detected. "+
+					"A VdiPoolPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra VdiPoolPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewVdiPoolPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewVdiPoolPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewVdiPoolPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewVdiPoolPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewVdiPoolPermissionsValueUnknown(), diags
+	}
+
+	return VdiPoolPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVdiPoolPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) VdiPoolPermissionsValue {
+	object, diags := NewVdiPoolPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewVdiPoolPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t VdiPoolPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewVdiPoolPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewVdiPoolPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewVdiPoolPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewVdiPoolPermissionsValueMust(VdiPoolPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t VdiPoolPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return VdiPoolPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = VdiPoolPermissionsValue{}
+
+type VdiPoolPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v VdiPoolPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v VdiPoolPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v VdiPoolPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v VdiPoolPermissionsValue) String() string {
+	return "VdiPoolPermissionsValue"
+}
+
+func (v VdiPoolPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v VdiPoolPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(VdiPoolPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v VdiPoolPermissionsValue) Type(ctx context.Context) attr.Type {
+	return VdiPoolPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v VdiPoolPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = WorkflowPermissionsType{}
+
+type WorkflowPermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t WorkflowPermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(WorkflowPermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t WorkflowPermissionsType) String() string {
+	return "WorkflowPermissionsType"
+}
+
+func (t WorkflowPermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewWorkflowPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewWorkflowPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return nil, diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return WorkflowPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewWorkflowPermissionsValueNull() WorkflowPermissionsValue {
+	return WorkflowPermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewWorkflowPermissionsValueUnknown() WorkflowPermissionsValue {
+	return WorkflowPermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewWorkflowPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (WorkflowPermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing WorkflowPermissionsValue Attribute Value",
+				"While creating a WorkflowPermissionsValue value, a missing attribute value was detected. "+
+					"A WorkflowPermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("WorkflowPermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid WorkflowPermissionsValue Attribute Type",
+				"While creating a WorkflowPermissionsValue value, an invalid attribute value was detected. "+
+					"A WorkflowPermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("WorkflowPermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("WorkflowPermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra WorkflowPermissionsValue Attribute Value",
+				"While creating a WorkflowPermissionsValue value, an extra attribute value was detected. "+
+					"A WorkflowPermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra WorkflowPermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewWorkflowPermissionsValueUnknown(), diags
+	}
+
+	accessAttribute, ok := attributes["access"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access is missing from object`)
+
+		return NewWorkflowPermissionsValueUnknown(), diags
+	}
+
+	accessVal, ok := accessAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access expected to be basetypes.StringValue, was: %T`, accessAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewWorkflowPermissionsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewWorkflowPermissionsValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewWorkflowPermissionsValueUnknown(), diags
+	}
+
+	return WorkflowPermissionsValue{
+		Access: accessVal,
+		Id:     idVal,
+		Name:   nameVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewWorkflowPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) WorkflowPermissionsValue {
+	object, diags := NewWorkflowPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewWorkflowPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t WorkflowPermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewWorkflowPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewWorkflowPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewWorkflowPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewWorkflowPermissionsValueMust(WorkflowPermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t WorkflowPermissionsType) ValueType(ctx context.Context) attr.Value {
+	return WorkflowPermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = WorkflowPermissionsValue{}
+
+type WorkflowPermissionsValue struct {
+	Access basetypes.StringValue `tfsdk:"access"`
+	Id     basetypes.Int64Value  `tfsdk:"id"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	state  attr.ValueState
+}
+
+func (v WorkflowPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Access.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v WorkflowPermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v WorkflowPermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v WorkflowPermissionsValue) String() string {
+	return "WorkflowPermissionsValue"
+}
+
+func (v WorkflowPermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access": v.Access,
+			"id":     v.Id,
+			"name":   v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v WorkflowPermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(WorkflowPermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Access.Equal(other.Access) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v WorkflowPermissionsValue) Type(ctx context.Context) attr.Type {
+	return WorkflowPermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v WorkflowPermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access": basetypes.StringType{},
+		"id":     basetypes.Int64Type{},
+		"name":   basetypes.StringType{},
+	}
 }

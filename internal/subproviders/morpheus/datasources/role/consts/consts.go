@@ -7,4 +7,6 @@ const (
 	ErrorNoValidSearchTerms = `no valid search terms - an id or name is required`
 	ErrorRunningPreApply    = `Error running pre-apply plan: exit status 1`
 	ErrorMultipleRoles      = `multiple roles were returned`
+	RoleTypeUser            = "user"
+	RoleTypeAccount         = "account"
 )
