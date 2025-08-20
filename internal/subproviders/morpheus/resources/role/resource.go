@@ -252,6 +252,364 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 	})
 }
 
+// Helper function to create a request that will reset all permissions.
+// This is needed until the `resetAllAccess` field is fixed in the API.
+// Currently, it only correctly resets feature permissions and the default access levels.
+// This function needs a GetRole200Response to determine which non-feature permissions to reset.
+
+func newResetAllPermissionsRequest(getRole *sdk.GetRole200Response) *sdk.UpdateRoleRequest {
+
+	req := sdk.NewUpdateRoleRequestRoleWithDefaults()
+
+	var updateRoleBlueprintPermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
+
+	for _, v := range getRole.AppTemplatePermissions {
+		updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleCatalogItemTypePermissions []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
+	for _, v := range getRole.CatalogItemTypePermissions {
+		updateRoleCatalogItemTypePermissions = append(updateRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleCloudPermissions []sdk.AddRolesRequestRoleZonesInner
+	for _, v := range getRole.Zones {
+		updateRoleCloudPermissions = append(updateRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleGroupPermissions []sdk.AddRolesRequestRoleSitesInner
+	for _, v := range getRole.Sites {
+		updateRoleGroupPermissions = append(updateRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleInstanceTypePermissions []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
+	for _, v := range getRole.InstanceTypePermissions {
+		updateRoleInstanceTypePermissions = append(updateRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRolePersonaPermissions []sdk.AddRolesRequestRolePersonaPermissionsInner
+	for _, v := range getRole.PersonaPermissions {
+		updateRolePersonaPermissions = append(updateRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Code:   v.GetCode(),
+		})
+	}
+
+	var updateRoleReportTypePermissions []sdk.AddRolesRequestRoleReportTypePermissionsInner
+	for _, v := range getRole.ReportTypePermissions {
+		updateRoleReportTypePermissions = append(updateRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Code:   v.GetCode(),
+		})
+	}
+
+	var updateRoleTaskPermissions []sdk.AddRolesRequestRoleTaskPermissionsInner
+	for _, v := range getRole.TaskPermissions {
+		updateRoleTaskPermissions = append(updateRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleVdiPoolPermissions []sdk.AddRolesRequestRoleVdiPoolPermissionsInner
+	for _, v := range getRole.VdiPoolPermissions {
+		updateRoleVdiPoolPermissions = append(updateRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	var updateRoleWorkflowPermissions []sdk.AddRolesRequestRoleTaskSetPermissionsInner
+	for _, v := range getRole.TaskSetPermissions {
+		updateRoleWorkflowPermissions = append(updateRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+			Access: DefaultPermissionAccessLevel,
+			Id:     v.GetId(),
+		})
+	}
+
+	// Reset what's been set already
+	req.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
+	req.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
+	req.SetZones(updateRoleCloudPermissions)
+	req.SetSites(updateRoleGroupPermissions)
+	req.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
+	req.SetPersonaPermissions(updateRolePersonaPermissions)
+	req.SetReportTypePermissions(updateRoleReportTypePermissions)
+	req.SetTaskPermissions(updateRoleTaskPermissions)
+	req.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
+	req.SetTaskSetPermissions(updateRoleWorkflowPermissions)
+
+	// Reset the rest
+	req.SetResetAllAccess(true)
+
+	return sdk.NewUpdateRoleRequest(*req)
+}
+
+// Helper function to break out the logic of setting permissions in update.
+func setPermissionsInUpdate(
+	ctx context.Context,
+	plan *RoleModel,
+	updateRole *sdk.UpdateRoleRequestRole,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
+		updateRole.SetGlobalAppTemplateAccess(plan.Permissions.DefaultBlueprintAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
+		updateRole.SetGlobalCatalogItemTypeAccess(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
+		updateRole.SetGlobalZoneAccess(plan.Permissions.DefaultCloudAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultGroupAccess.IsUnknown() {
+		updateRole.SetGlobalSiteAccess(plan.Permissions.DefaultGroupAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultInstanceTypeAccess.IsUnknown() {
+		updateRole.SetGlobalInstanceTypeAccess(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultPersonaAccess.IsUnknown() {
+		updateRole.SetGlobalPersonaAccess(plan.Permissions.DefaultPersonaAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultReportTypeAccess.IsUnknown() {
+		updateRole.SetGlobalReportTypeAccess(plan.Permissions.DefaultReportTypeAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultTaskAccess.IsUnknown() {
+		updateRole.SetGlobalTaskAccess(plan.Permissions.DefaultTaskAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultVdiPoolAccess.IsUnknown() {
+		updateRole.SetGlobalVdiPoolAccess(plan.Permissions.DefaultVdiPoolAccess.ValueString())
+	}
+
+	if !plan.Permissions.DefaultWorkflowAccess.IsUnknown() {
+		updateRole.SetGlobalTaskSetAccess(plan.Permissions.DefaultWorkflowAccess.ValueString())
+	}
+
+	if !plan.Permissions.FeaturePermissions.IsUnknown() {
+		var featurePermissions []FeaturePermissionsValue
+		diags := plan.Permissions.FeaturePermissions.ElementsAs(ctx, &featurePermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleFeaturePermissions []sdk.AddRolesRequestRoleFeaturePermissionsInner
+		for _, v := range featurePermissions {
+			updateRoleFeaturePermissions = append(updateRoleFeaturePermissions, sdk.AddRolesRequestRoleFeaturePermissionsInner{
+				Access: v.Access.ValueString(),
+				Code:   v.Code.ValueString(),
+			})
+		}
+
+		updateRole.SetFeaturePermissions(updateRoleFeaturePermissions)
+	}
+
+	if !plan.Permissions.BlueprintPermissions.IsUnknown() {
+		var blueprintPermissions []BlueprintPermissionsValue
+		diags = plan.Permissions.BlueprintPermissions.ElementsAs(ctx, &blueprintPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleBlueprintPermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
+		for _, v := range blueprintPermissions {
+			updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
+	}
+
+	if !plan.Permissions.CatalogItemTypePermissions.IsUnknown() {
+		var catalogItemTypePermissions []CatalogItemTypePermissionsValue
+		diags = plan.Permissions.CatalogItemTypePermissions.ElementsAs(ctx, &catalogItemTypePermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleCatalogItemTypePermissions []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
+		for _, v := range catalogItemTypePermissions {
+			updateRoleCatalogItemTypePermissions = append(updateRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
+	}
+
+	if !plan.Permissions.CloudPermissions.IsUnknown() {
+		var cloudPermissions []CloudPermissionsValue
+		diags := plan.Permissions.CloudPermissions.ElementsAs(ctx, &cloudPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleCloudPermissions []sdk.AddRolesRequestRoleZonesInner
+		for _, v := range cloudPermissions {
+			updateRoleCloudPermissions = append(updateRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetZones(updateRoleCloudPermissions)
+	}
+
+	if !plan.Permissions.GroupPermissions.IsUnknown() {
+		var groupPermissions []GroupPermissionsValue
+		diags := plan.Permissions.GroupPermissions.ElementsAs(ctx, &groupPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleGroupPermissions []sdk.AddRolesRequestRoleSitesInner
+		for _, v := range groupPermissions {
+			updateRoleGroupPermissions = append(updateRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetSites(updateRoleGroupPermissions)
+	}
+
+	if !plan.Permissions.InstanceTypePermissions.IsUnknown() {
+		var instanceTypePermissions []InstanceTypePermissionsValue
+		diags := plan.Permissions.InstanceTypePermissions.ElementsAs(ctx, &instanceTypePermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleInstanceTypePermissions []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
+		for _, v := range instanceTypePermissions {
+			updateRoleInstanceTypePermissions = append(updateRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
+	}
+
+	if !plan.Permissions.PersonaPermissions.IsUnknown() {
+		var personaPermissions []PersonaPermissionsValue
+		diags := plan.Permissions.PersonaPermissions.ElementsAs(ctx, &personaPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRolePersonaPermissions []sdk.AddRolesRequestRolePersonaPermissionsInner
+		for _, v := range personaPermissions {
+			updateRolePersonaPermissions = append(updateRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
+				Access: v.Access.ValueString(),
+				Code:   v.Code.ValueString(),
+			})
+		}
+
+		updateRole.SetPersonaPermissions(updateRolePersonaPermissions)
+	}
+
+	if !plan.Permissions.ReportTypePermissions.IsUnknown() {
+		var reportTypePermissions []ReportTypePermissionsValue
+		diags := plan.Permissions.ReportTypePermissions.ElementsAs(ctx, &reportTypePermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleReportTypePermissions []sdk.AddRolesRequestRoleReportTypePermissionsInner
+		for _, v := range reportTypePermissions {
+			updateRoleReportTypePermissions = append(updateRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
+				Access: v.Access.ValueString(),
+				Code:   v.Code.ValueString(),
+			})
+		}
+
+		updateRole.SetReportTypePermissions(updateRoleReportTypePermissions)
+	}
+
+	if !plan.Permissions.TaskPermissions.IsUnknown() {
+
+		var taskPermissions []TaskPermissionsValue
+		diags := plan.Permissions.TaskPermissions.ElementsAs(ctx, &taskPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		var updateRoleTaskPermissions []sdk.AddRolesRequestRoleTaskPermissionsInner
+		for _, v := range taskPermissions {
+			updateRoleTaskPermissions = append(updateRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetTaskPermissions(updateRoleTaskPermissions)
+	}
+
+	if !plan.Permissions.VdiPoolPermissions.IsUnknown() {
+		var updateRoleVdiPoolPermissions []sdk.AddRolesRequestRoleVdiPoolPermissionsInner
+		var vdiPoolPermissions []VdiPoolPermissionsValue
+		diags := plan.Permissions.VdiPoolPermissions.ElementsAs(ctx, &vdiPoolPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		for _, v := range vdiPoolPermissions {
+			updateRoleVdiPoolPermissions = append(updateRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
+	}
+
+	if !plan.Permissions.WorkflowPermissions.IsUnknown() {
+		var updateRoleWorkflowPermissions []sdk.AddRolesRequestRoleTaskSetPermissionsInner
+		var workflowPermissions []WorkflowPermissionsValue
+		diags := plan.Permissions.WorkflowPermissions.ElementsAs(ctx, &workflowPermissions, false)
+		if diags.HasError() {
+			return diags
+		}
+
+		for _, v := range workflowPermissions {
+			updateRoleWorkflowPermissions = append(updateRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+				Access: v.Access.ValueString(),
+				Id:     v.Id.ValueInt64(),
+			})
+		}
+
+		updateRole.SetTaskSetPermissions(updateRoleWorkflowPermissions)
+	}
+
+	return diags
+}
+
 // Helper function to break out the logic of setting permissions in create.
 func setPermissionsInCreate(
 	ctx context.Context,
@@ -849,9 +1207,10 @@ func (r *Resource) Read(
 		// We extract all feature permissions from API state into a []FeaturePermissionsValue.
 		// Then we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
 		// Then we check if the feature permissions in Terraform state are a subset of those in API state.
-		// If they are a subset, we use the permissions in state in the Read.
+		// If they are a subset, we set the values from the GET in state.
+
 		// We need to do this because the API returns ALL feature permissions in a GET,
-		// not just the ones that were overridden by the user.
+		// not just the ones whose default values were overridden by the user.
 
 		if !state.Permissions.FeaturePermissions.IsNull() && !state.Permissions.FeaturePermissions.IsUnknown() {
 
@@ -889,6 +1248,8 @@ func (r *Resource) Read(
 						vv.Code.Equal(v.Code)
 				}); n > -1 {
 					// If there's a match, update the permissions to store to state with the computed values.
+					// We set access to detect drift in API and state
+					stateFeaturePermissions[k].Access = apiStateFeaturePermissions[n].Access
 					stateFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
 					stateFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
 					stateFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
@@ -938,14 +1299,264 @@ func (r *Resource) Read(
 }
 
 func (r *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
+	ctx context.Context,
+	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	resp.Diagnostics.AddError(
-		"update role resource",
-		"update of 'role' resources has not been implemented",
-	)
+	var plan, state RoleModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateRole := sdk.NewUpdateRoleRequestRoleWithDefaults()
+	id := plan.Id.ValueInt64()
+
+	// required - authority (name)
+	updateRole.SetAuthority(plan.Name.ValueString())
+
+	// optional fields
+	if plan.Description.IsNull() {
+		updateRole.SetDescriptionNil()
+	} else {
+		updateRole.SetDescription(plan.Description.ValueString())
+	}
+
+	if plan.LandingUrl.IsNull() {
+		updateRole.SetLandingUrlNil()
+	} else {
+		updateRole.SetLandingUrl(plan.LandingUrl.ValueString())
+	}
+
+	if !plan.Multitenant.IsNull() {
+		updateRole.SetMultitenant(plan.Multitenant.ValueBool())
+	}
+
+	if !plan.MultitenantLocked.IsNull() {
+		updateRole.SetMultitenantLocked(plan.MultitenantLocked.ValueBool())
+	}
+
+	if !plan.Permissions.IsUnknown() && !plan.Permissions.IsNull() {
+		diags := setPermissionsInUpdate(ctx, &plan, updateRole)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d: failed to create client: ", id)+err.Error(),
+		)
+		return
+	}
+
+	// The update section:
+	// 1. Perform a GET so we know which non-feature permissions to reset.
+	// 2. Perform a PUT to reset ALL permissions.
+	// 3. Perform a PUT to apply the permissions levels from the Terraform plan.
+
+	// Doing the steps in that order will ensure that our Terraform config will act as an override for defaults.
+
+	// 1. Perform a GET so we know which non-feature permissions to reset
+	getRole, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d GET failed: ", id)+errors.ErrMsg(err, hresp),
+		)
+		return
+	}
+
+	resetPermissionsReq := newResetAllPermissionsRequest(getRole)
+
+	// 2. Perform a PUT to reset all permissions.
+	_, hresp, err = client.RolesAPI.UpdateRole(ctx, id).
+		UpdateRoleRequest(*resetPermissionsReq).Execute()
+
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d PUT failed (reset permissions): ", id)+errors.ErrMsg(err, hresp),
+		)
+		return
+	}
+
+	// 3. Perform a PUT to apply the permissions levels from the Terraform plan.
+	updateRoleReq := sdk.NewUpdateRoleRequest(*updateRole)
+
+	role, hresp, err := client.RolesAPI.UpdateRole(ctx, id).
+		UpdateRoleRequest(*updateRoleReq).Execute()
+
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d PUT failed: ", id)+errors.ErrMsg(err, hresp),
+		)
+		return
+	}
+
+	if role.GetRole().Id == nil {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d: id is nil", id),
+		)
+		return
+	}
+
+	newID := *role.GetRole().Id
+	if newID != id {
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d: id mismatch %d != %d", id, id, newID),
+		)
+		return
+	}
+
+	apiState, diags := getRoleAsState(ctx, newID, client)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"update role resource",
+			fmt.Sprintf("role %d: failed to read from api", id),
+		)
+		return
+	}
+
+	// Handle optional behavior for default access levels (similar to Create/Read)
+	if plan.Permissions.DefaultBlueprintAccess.IsNull() {
+		apiState.Permissions.DefaultBlueprintAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultCatalogItemTypeAccess.IsNull() {
+		apiState.Permissions.DefaultCatalogItemTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultCloudAccess.IsNull() {
+		apiState.Permissions.DefaultCloudAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultGroupAccess.IsNull() {
+		apiState.Permissions.DefaultGroupAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultInstanceTypeAccess.IsNull() {
+		apiState.Permissions.DefaultInstanceTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultPersonaAccess.IsNull() {
+		apiState.Permissions.DefaultPersonaAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultReportTypeAccess.IsNull() {
+		apiState.Permissions.DefaultReportTypeAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultTaskAccess.IsNull() {
+		apiState.Permissions.DefaultTaskAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultVdiPoolAccess.IsNull() {
+		apiState.Permissions.DefaultVdiPoolAccess = types.StringNull()
+	}
+
+	if plan.Permissions.DefaultWorkflowAccess.IsNull() {
+		apiState.Permissions.DefaultWorkflowAccess = types.StringNull()
+	}
+
+	// Handle computed feature permissions (similar to Create/Read)
+	if plan.Permissions.FeaturePermissions.IsNull() {
+		apiState.Permissions.FeaturePermissions = types.SetNull(FeaturePermissionsValue{}.Type(ctx))
+	}
+
+	// Handle permissions omission case
+	if plan.Permissions.IsNull() {
+		apiState.Permissions = NewPermissionsValueNull()
+	}
+
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+
+		// We extract all feature permissions from API state into a []FeaturePermissionsValue.
+		// Then we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
+		// Then we check if the feature permissions in Terraform state are a subset of those in API state.
+		// If they are a subset, we set the values from the GET in state.
+
+		// We need to do this because the API returns ALL feature permissions in a GET,
+		// not just the ones whose default values were overridden by the user.
+
+		if !plan.Permissions.FeaturePermissions.IsNull() && !plan.Permissions.FeaturePermissions.IsUnknown() {
+
+			var apiStateFeaturePermissions []FeaturePermissionsValue
+			diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+
+			var planFeaturePermissions []FeaturePermissionsValue
+			diags = plan.Permissions.FeaturePermissions.ElementsAs(ctx, &planFeaturePermissions, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+
+			// Combine the state and plan feature permissions for the subset comparison
+			// We only want to store to state those permissions that are new (plan), updated (plan), or unchanged (state)
+
+			// combined
+			for k, v := range planFeaturePermissions {
+				// If apiStateFeaturePermissions contains v with the conditions in the closure...
+				if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
+					// We should only compare on code as it acts as an ID and the other fields are computed.
+					return vv.Code.Equal(v.Code)
+
+				}); n > -1 {
+					// If there's a match, update the permissions to store to state with the computed values.
+					// We set access to detect drift in API and plan
+					planFeaturePermissions[k].Access = apiStateFeaturePermissions[n].Access
+					planFeaturePermissions[k].Id = apiStateFeaturePermissions[n].Id
+					planFeaturePermissions[k].Name = apiStateFeaturePermissions[n].Name
+					planFeaturePermissions[k].SubCategory = apiStateFeaturePermissions[n].SubCategory
+					// We don't need to set planFeaturePermissions[k].state;
+					// its value is already attr.ValueStateKnown.
+
+				} else {
+					resp.Diagnostics.AddError(
+						"update role resource",
+						fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
+					)
+
+					return
+				}
+			}
+
+			// If we get to here, the permissions in plan + state are a subset of those in API state.
+			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), planFeaturePermissions)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+
+			// At this point, we store to state
+			// 1. the planned feature permissions and
+			// 2. unchanged feature permissions,
+			// if they are a valid subset of those found in the API state.
+			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 }
 
 func (r *Resource) Delete(
