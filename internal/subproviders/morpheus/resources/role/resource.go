@@ -258,11 +258,9 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 // This function needs a GetRole200Response to determine which non-feature permissions to reset.
 
 func newResetAllPermissionsRequest(getRole *sdk.GetRole200Response) *sdk.UpdateRoleRequest {
-
 	req := sdk.NewUpdateRoleRequestRoleWithDefaults()
 
 	var updateRoleBlueprintPermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
-
 	for _, v := range getRole.AppTemplatePermissions {
 		updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
 			Access: DefaultPermissionAccessLevel,
@@ -1510,10 +1508,6 @@ func (r *Resource) Update(
 				return
 			}
 
-			// Combine the state and plan feature permissions for the subset comparison
-			// We only want to store to state those permissions that are new (plan), updated (plan), or unchanged (state)
-
-			// combined
 			for k, v := range planFeaturePermissions {
 				// If apiStateFeaturePermissions contains v with the conditions in the closure...
 				if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
@@ -1548,10 +1542,6 @@ func (r *Resource) Update(
 				return
 			}
 
-			// At this point, we store to state
-			// 1. the planned feature permissions and
-			// 2. unchanged feature permissions,
-			// if they are a valid subset of those found in the API state.
 			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
 	}
