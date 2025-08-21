@@ -1,11 +1,16 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+//go:build experimental
+
 package role_test
 
 import (
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
 // Test for updating all attributes of a user role, including permissions.
