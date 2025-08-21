@@ -5,6 +5,7 @@ package role
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -98,6 +99,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified blueprints (appTemplates)",
 						MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"catalog_item_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -132,6 +136,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified catalog item types",
 						MarkdownDescription: "Set the access level for the specified catalog item types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"cloud_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -167,6 +174,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"default_blueprint_access": schema.StringAttribute{
 						Optional:            true,
@@ -329,6 +339,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified permissions.",
 						MarkdownDescription: "Set the access level for the specified permissions.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"group_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -364,6 +377,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"instance_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -401,6 +417,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified instance types",
 						MarkdownDescription: "Set the access level for the specified instance types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"persona_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -445,6 +464,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified personas",
 						MarkdownDescription: "Set the access level for the specified personas",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"report_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -482,6 +504,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified report types",
 						MarkdownDescription: "Set the access level for the specified report types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"task_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -519,6 +544,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified tasks",
 						MarkdownDescription: "Set the access level for the specified tasks",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"vdi_pool_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -553,6 +581,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified VDI pools",
 						MarkdownDescription: "Set the access level for the specified VDI pools",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"workflow_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -587,6 +618,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified workflows (taskSets)",
 						MarkdownDescription: "Set the access level for the specified workflows (taskSets)",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 				},
 				CustomType: PermissionsType{
