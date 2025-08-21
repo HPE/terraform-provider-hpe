@@ -791,12 +791,12 @@ resource "hpe_morpheus_role" "update_test" {
 	})
 }
 
-// Test for updating all attributes of an account role, including permissions.
+// Test for updating all attributes of a tenant role, including permissions.
 // Creates all permission dependencies (i.e. permissions for resources using ID)
 // as part of the test.
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
-func TestAccMorpheusRoleAccountUpdateAllAttrsOk(t *testing.T) {
+func TestAccMorpheusRoleTenantUpdateAllAttrsOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
