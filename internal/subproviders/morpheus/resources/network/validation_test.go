@@ -54,7 +54,7 @@ func TestAccMorpheusNetworkResourceValidationMissingCloudId(t *testing.T) {
 	// Configuration missing the required 'cloud_id' field
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationMissingCloudId"
 	group_id = 1
 	type_id  = 1
 	# cloud_id is missing - this should cause validation error
@@ -85,7 +85,7 @@ func TestAccMorpheusNetworkResourceValidationMissingGroupId(t *testing.T) {
 	// Configuration missing the required 'group_id' field
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationMissingGroupId"
 	cloud_id = 1
 	type_id  = 1
 	# group_id is missing - this should cause validation error
@@ -116,7 +116,7 @@ func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
 	// Configuration missing the required 'type_id' field
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationMissingTypeId"
 	cloud_id = 1
 	group_id = 1
 	# type_id is missing - this should cause validation error
@@ -148,7 +148,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidConfig(t *testing.T) {
 	// Configuration with invalid config type
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationInvalidConfig"
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
@@ -181,7 +181,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidPoolId(t *testing.T) {
 	// Configuration with invalid pool_id type
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationInvalidPoolId"
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
@@ -214,7 +214,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidTenantIds(t *testing.T) {
 	// Configuration with invalid tenant_ids type
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name       = "test-network"
+	name       = "TestAccMorpheusNetworkResourceValidationInvalidTenantIds"
 	cloud_id   = 1
 	group_id   = 1
 	type_id    = 1
@@ -247,7 +247,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidResourcePermissionsGroupIds(
 	// Configuration with invalid group_ids type in resource_permissions
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationInvalidResourcePermissionsGroupIds"
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
@@ -282,7 +282,7 @@ func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
 	// Configuration with valid null config
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
-	name     = "test-network"
+	name     = "TestAccMorpheusNetworkResourceValidationValidConfigNull"
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
