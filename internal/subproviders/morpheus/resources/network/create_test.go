@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
+// Uses Azure
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -122,6 +123,7 @@ resource "hpe_morpheus_network" "foo" {
 
 // TestAccMorpheusNetworkResourceCreateAllAttrsOk tests creating a network resource
 // with all available fields populated and validates that each field is set correctly
+// Uses Azure
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
