@@ -5,6 +5,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,15 +51,19 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cidr": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "CIDR Network",
-				MarkdownDescription: "CIDR Network",
+				Description:         "Network CIDR.",
+				MarkdownDescription: "Network CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cidr_ipv6": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "IPv6 Network CIDR",
-				MarkdownDescription: "IPv6 Network CIDR",
+				Description:         "Network IPv6 CIDR.",
+				MarkdownDescription: "Network IPv6 CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
@@ -70,6 +75,9 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration object. Settings vary by type. (Dynamic)",
 				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
+				Validators: []validator.Dynamic{
+					morpheusvalidators.ValidObjectMap(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,

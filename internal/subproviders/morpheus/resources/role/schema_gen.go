@@ -5,6 +5,7 @@ package role
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -87,9 +88,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: BlueprintPermissionsType{
@@ -101,6 +99,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified blueprints (appTemplates)",
 						MarkdownDescription: "Set the access level for the specified blueprints (appTemplates)",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"catalog_item_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -124,9 +125,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: CatalogItemTypePermissionsType{
@@ -138,6 +136,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified catalog item types",
 						MarkdownDescription: "Set the access level for the specified catalog item types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"cloud_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -162,9 +163,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: CloudPermissionsType{
@@ -176,6 +174,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
 						MarkdownDescription: "Set the access level for the specified clouds (zones). Only applies to base account (tenant) roles.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"default_blueprint_access": schema.StringAttribute{
 						Optional:            true,
@@ -205,7 +206,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								"default",
 								"full",
 								"read",
 								"none",
@@ -218,7 +218,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								"default",
 								"full",
 								"read",
 								"none",
@@ -323,21 +322,12 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"sub_category": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: FeaturePermissionsType{
@@ -349,6 +339,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified permissions.",
 						MarkdownDescription: "Set the access level for the specified permissions.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"group_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -373,9 +366,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: GroupPermissionsType{
@@ -387,6 +377,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified groups (sites). Only applies to user roles.",
 						MarkdownDescription: "Set the access level for the specified groups (sites). Only applies to user roles.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"instance_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -405,9 +398,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"code": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"id": schema.Int64Attribute{
 									Required:            true,
@@ -416,9 +406,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: InstanceTypePermissionsType{
@@ -430,6 +417,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified instance types",
 						MarkdownDescription: "Set the access level for the specified instance types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"persona_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -460,15 +450,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: PersonaPermissionsType{
@@ -480,6 +464,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified personas",
 						MarkdownDescription: "Set the access level for the specified personas",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"report_type_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -503,15 +490,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: ReportTypePermissionsType{
@@ -523,6 +504,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified report types",
 						MarkdownDescription: "Set the access level for the specified report types",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"task_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -541,9 +525,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"code": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"id": schema.Int64Attribute{
 									Required:            true,
@@ -552,9 +533,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: TaskPermissionsType{
@@ -566,6 +544,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified tasks",
 						MarkdownDescription: "Set the access level for the specified tasks",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"vdi_pool_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -589,9 +570,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: VdiPoolPermissionsType{
@@ -603,6 +581,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified VDI pools",
 						MarkdownDescription: "Set the access level for the specified VDI pools",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"workflow_permissions": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -626,9 +607,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: WorkflowPermissionsType{
@@ -640,6 +618,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "Set the access level for the specified workflows (taskSets)",
 						MarkdownDescription: "Set the access level for the specified workflows (taskSets)",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 				},
 				CustomType: PermissionsType{
@@ -659,6 +640,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Role type",
 				MarkdownDescription: "Role type",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"user",
