@@ -47,14 +47,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required:            true,
-							Description:         "",
-							MarkdownDescription: "",
+							Required: true,
 						},
 						"value": schema.StringAttribute{
-							Required:            true,
-							Description:         "",
-							MarkdownDescription: "",
+							Required: true,
 						},
 					},
 					CustomType: EvarsType{
@@ -198,14 +194,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required:            true,
-							Description:         "",
-							MarkdownDescription: "",
+							Required: true,
 						},
 						"value": schema.StringAttribute{
-							Required:            true,
-							Description:         "",
-							MarkdownDescription: "",
+							Required: true,
 						},
 					},
 					CustomType: TagsType{
@@ -246,6 +238,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"datastore_id": schema.Int64Attribute{
 							Optional:            true,
+							Computed:            true,
 							Description:         "The ID of the specific datastore.",
 							MarkdownDescription: "The ID of the specific datastore.",
 						},
@@ -254,7 +247,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The id for the LV configuration being created.",
 							MarkdownDescription: "The id for the LV configuration being created.",
-							Default:             int64default.StaticInt64(-1),
 						},
 						"name": schema.StringAttribute{
 							Optional:            true,
@@ -282,6 +274,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
+							Computed:            true,
 							Description:         "Identifier for LV type",
 							MarkdownDescription: "Identifier for LV type",
 						},
