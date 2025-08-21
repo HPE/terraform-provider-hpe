@@ -47,7 +47,13 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Automatically Power on VMs",
 				Default:             booldefault.StaticBool(false),
 			},
-			"aws": schema.SingleNestedAttribute{
+			"code": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Optional code for use with policies",
+				MarkdownDescription: "Optional code for use with policies",
+			},
+			"config_aws": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"access_key": schema.StringAttribute{
 						Optional:            true,
@@ -96,9 +102,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "The VPC ID for a specific VPC",
 					},
 				},
-				CustomType: AwsType{
+				CustomType: ConfigAwsType{
 					ObjectType: types.ObjectType{
-						AttrTypes: AwsValue{}.AttributeTypes(ctx),
+						AttrTypes: ConfigAwsValue{}.AttributeTypes(ctx),
 					},
 				},
 				Optional:            true,
@@ -106,10 +112,10 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Amazon Cloud",
 				MarkdownDescription: "Amazon Cloud",
 				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("azure"), path.MatchRoot("standard"), path.MatchRoot("vsphere")}...),
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_azure"), path.MatchRoot("config_standard"), path.MatchRoot("config_vsphere")}...),
 				},
 			},
-			"azure": schema.SingleNestedAttribute{
+			"config_azure": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"client_id": schema.StringAttribute{
 						Optional:            true,
@@ -160,9 +166,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Azure tenant id",
 					},
 				},
-				CustomType: AzureType{
+				CustomType: ConfigAzureType{
 					ObjectType: types.ObjectType{
-						AttrTypes: AzureValue{}.AttributeTypes(ctx),
+						AttrTypes: ConfigAzureValue{}.AttributeTypes(ctx),
 					},
 				},
 				Optional:            true,
@@ -170,14 +176,141 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Azure Cloud",
 				MarkdownDescription: "Azure Cloud",
 				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("standard"), path.MatchRoot("vsphere")}...),
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_standard"), path.MatchRoot("config_vsphere")}...),
 				},
 			},
-			"code": schema.StringAttribute{
+			"config_standard": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"certificate_provider": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Certificate provider",
+						MarkdownDescription: "Certificate provider",
+						Default:             stringdefault.StaticString("internal"),
+					},
+					"enable_network_type_selection": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to enable the user to select the network interface type during provisioning",
+						MarkdownDescription: "Whether to enable the user to select the network interface type during provisioning",
+					},
+				},
+				CustomType: ConfigStandardType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigStandardValue{}.AttributeTypes(ctx),
+					},
+				},
 				Optional:            true,
 				Computed:            true,
-				Description:         "Optional code for use with policies",
-				MarkdownDescription: "Optional code for use with policies",
+				Description:         "Standard Cloud",
+				MarkdownDescription: "Standard Cloud",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_vsphere")}...),
+				},
+			},
+			"config_vsphere": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"api_url": schema.StringAttribute{
+						Required:            true,
+						Description:         "The SDK URL of the vCenter server.",
+						MarkdownDescription: "The SDK URL of the vCenter server.",
+					},
+					"api_version": schema.StringAttribute{
+						Required:            true,
+						Description:         "The SDK version of the vCenter server.",
+						MarkdownDescription: "The SDK version of the vCenter server.",
+					},
+					"certificate_provider": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Certificate provider",
+						MarkdownDescription: "Certificate provider",
+						Default:             stringdefault.StaticString("internal"),
+					},
+					"cluster": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The name of the vSphere cluster",
+						MarkdownDescription: "The name of the vSphere cluster",
+						Default:             stringdefault.StaticString("all"),
+					},
+					"config_management_id": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The id of the configuration management integration associated with the vSphere cloud.",
+						MarkdownDescription: "The id of the configuration management integration associated with the vSphere cloud.",
+					},
+					"datacenter": schema.StringAttribute{
+						Required:            true,
+						Description:         "The vSphere datacenter to add.",
+						MarkdownDescription: "The vSphere datacenter to add.",
+					},
+					"enable_disk_type_selection": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to enable the user to select the disk type during provisioning",
+						MarkdownDescription: "Whether to enable the user to select the disk type during provisioning",
+					},
+					"enable_network_type_selection": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to enable the user to select the network interface type during provisioning",
+						MarkdownDescription: "Whether to enable the user to select the network interface type during provisioning",
+					},
+					"enable_storage_type_selection": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to enable the user to select the storage type during provisioning",
+						MarkdownDescription: "Whether to enable the user to select the storage type during provisioning",
+					},
+					"enable_vnc": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to enable VNC access",
+						MarkdownDescription: "Whether to enable VNC access",
+					},
+					"hide_host_selection": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Whether to hide the ability to select the vSphere host from the user during provisioning",
+						MarkdownDescription: "Whether to hide the ability to select the vSphere host from the user during provisioning",
+					},
+					"resource_pool": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The name of the vSphere resource pool",
+						MarkdownDescription: "The name of the vSphere resource pool",
+					},
+					"rpc_mode": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+						MarkdownDescription: "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"guestexec",
+								"rpc",
+							),
+						},
+					},
+					"storage_type": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The default vSphere VMDK type for virtual machines",
+						MarkdownDescription: "The default vSphere VMDK type for virtual machines",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"thin",
+								"thick",
+								"thickEager",
+							),
+						},
+						Default: stringdefault.StaticString("thin"),
+					},
+				},
+				CustomType: ConfigVsphereType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigVsphereValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "VSphere Cloud",
+				MarkdownDescription: "VSphere Cloud",
 			},
 			"costing_mode": schema.StringAttribute{
 				Optional:            true,
@@ -291,34 +424,6 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("off"),
 			},
-			"standard": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"certificate_provider": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "Certificate provider",
-						MarkdownDescription: "Certificate provider",
-						Default:             stringdefault.StaticString("internal"),
-					},
-					"enable_network_type_selection": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to enable the user to select the network interface type during provisioning",
-						MarkdownDescription: "Whether to enable the user to select the network interface type during provisioning",
-					},
-				},
-				CustomType: StandardType{
-					ObjectType: types.ObjectType{
-						AttrTypes: StandardValue{}.AttributeTypes(ctx),
-					},
-				},
-				Optional:            true,
-				Computed:            true,
-				Description:         "Standard Cloud",
-				MarkdownDescription: "Standard Cloud",
-				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("vsphere")}...),
-				},
-			},
 			"tenant_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "Specifies which Tenant this cloud should be assigned to",
@@ -342,152 +447,47 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("private"),
 			},
-			"vsphere": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"api_url": schema.StringAttribute{
-						Required:            true,
-						Description:         "The SDK URL of the vCenter server.",
-						MarkdownDescription: "The SDK URL of the vCenter server.",
-					},
-					"api_version": schema.StringAttribute{
-						Required:            true,
-						Description:         "The SDK version of the vCenter server.",
-						MarkdownDescription: "The SDK version of the vCenter server.",
-					},
-					"certificate_provider": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "Certificate provider",
-						MarkdownDescription: "Certificate provider",
-						Default:             stringdefault.StaticString("internal"),
-					},
-					"cluster": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "The name of the vSphere cluster",
-						MarkdownDescription: "The name of the vSphere cluster",
-						Default:             stringdefault.StaticString("all"),
-					},
-					"config_management_id": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "The id of the configuration management integration associated with the vSphere cloud.",
-						MarkdownDescription: "The id of the configuration management integration associated with the vSphere cloud.",
-					},
-					"datacenter": schema.StringAttribute{
-						Required:            true,
-						Description:         "The vSphere datacenter to add.",
-						MarkdownDescription: "The vSphere datacenter to add.",
-					},
-					"enable_disk_type_selection": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to enable the user to select the disk type during provisioning",
-						MarkdownDescription: "Whether to enable the user to select the disk type during provisioning",
-					},
-					"enable_network_type_selection": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to enable the user to select the network interface type during provisioning",
-						MarkdownDescription: "Whether to enable the user to select the network interface type during provisioning",
-					},
-					"enable_storage_type_selection": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to enable the user to select the storage type during provisioning",
-						MarkdownDescription: "Whether to enable the user to select the storage type during provisioning",
-					},
-					"enable_vnc": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to enable VNC access",
-						MarkdownDescription: "Whether to enable VNC access",
-					},
-					"hide_host_selection": schema.BoolAttribute{
-						Optional:            true,
-						Description:         "Whether to hide the ability to select the vSphere host from the user during provisioning",
-						MarkdownDescription: "Whether to hide the ability to select the vSphere host from the user during provisioning",
-					},
-					"resource_pool": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "The name of the vSphere resource pool",
-						MarkdownDescription: "The name of the vSphere resource pool",
-					},
-					"rpc_mode": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
-						MarkdownDescription: "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								"guestexec",
-								"rpc",
-							),
-						},
-					},
-					"storage_type": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "The default vSphere VMDK type for virtual machines",
-						MarkdownDescription: "The default vSphere VMDK type for virtual machines",
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								"thin",
-								"thick",
-								"thickEager",
-							),
-						},
-						Default: stringdefault.StaticString("thin"),
-					},
-				},
-				CustomType: VsphereType{
-					ObjectType: types.ObjectType{
-						AttrTypes: VsphereValue{}.AttributeTypes(ctx),
-					},
-				},
-				Optional:            true,
-				Computed:            true,
-				Description:         "VSphere Cloud",
-				MarkdownDescription: "VSphere Cloud",
-			},
 		},
 	}
 }
 
 type CloudModel struct {
-	AgentInstallMode      types.String  `tfsdk:"agent_install_mode"`
-	ApplianceUrl          types.String  `tfsdk:"appliance_url"`
-	AutoRecoverPowerState types.Bool    `tfsdk:"auto_recover_power_state"`
-	Aws                   AwsValue      `tfsdk:"aws"`
-	Azure                 AzureValue    `tfsdk:"azure"`
-	Code                  types.String  `tfsdk:"code"`
-	CostingMode           types.String  `tfsdk:"costing_mode"`
-	CredentialId          types.Int64   `tfsdk:"credential_id"`
-	DatacenterId          types.String  `tfsdk:"datacenter_id"`
-	Description           types.String  `tfsdk:"description"`
-	Enabled               types.Bool    `tfsdk:"enabled"`
-	ExternalId            types.String  `tfsdk:"external_id"`
-	GroupId               types.Int64   `tfsdk:"group_id"`
-	GuidanceMode          types.String  `tfsdk:"guidance_mode"`
-	Id                    types.Int64   `tfsdk:"id"`
-	ImportExistingVms     types.String  `tfsdk:"import_existing_vms"`
-	KeyboardLayout        types.String  `tfsdk:"keyboard_layout"`
-	Labels                types.Set     `tfsdk:"labels"`
-	Location              types.String  `tfsdk:"location"`
-	Name                  types.String  `tfsdk:"name"`
-	SecurityMode          types.String  `tfsdk:"security_mode"`
-	Standard              StandardValue `tfsdk:"standard"`
-	TenantId              types.Int64   `tfsdk:"tenant_id"`
-	TimeZone              types.String  `tfsdk:"time_zone"`
-	Visibility            types.String  `tfsdk:"visibility"`
-	Vsphere               VsphereValue  `tfsdk:"vsphere"`
+	AgentInstallMode      types.String        `tfsdk:"agent_install_mode"`
+	ApplianceUrl          types.String        `tfsdk:"appliance_url"`
+	AutoRecoverPowerState types.Bool          `tfsdk:"auto_recover_power_state"`
+	Code                  types.String        `tfsdk:"code"`
+	ConfigAws             ConfigAwsValue      `tfsdk:"config_aws"`
+	ConfigAzure           ConfigAzureValue    `tfsdk:"config_azure"`
+	ConfigStandard        ConfigStandardValue `tfsdk:"config_standard"`
+	ConfigVsphere         ConfigVsphereValue  `tfsdk:"config_vsphere"`
+	CostingMode           types.String        `tfsdk:"costing_mode"`
+	CredentialId          types.Int64         `tfsdk:"credential_id"`
+	DatacenterId          types.String        `tfsdk:"datacenter_id"`
+	Description           types.String        `tfsdk:"description"`
+	Enabled               types.Bool          `tfsdk:"enabled"`
+	ExternalId            types.String        `tfsdk:"external_id"`
+	GroupId               types.Int64         `tfsdk:"group_id"`
+	GuidanceMode          types.String        `tfsdk:"guidance_mode"`
+	Id                    types.Int64         `tfsdk:"id"`
+	ImportExistingVms     types.String        `tfsdk:"import_existing_vms"`
+	KeyboardLayout        types.String        `tfsdk:"keyboard_layout"`
+	Labels                types.Set           `tfsdk:"labels"`
+	Location              types.String        `tfsdk:"location"`
+	Name                  types.String        `tfsdk:"name"`
+	SecurityMode          types.String        `tfsdk:"security_mode"`
+	TenantId              types.Int64         `tfsdk:"tenant_id"`
+	TimeZone              types.String        `tfsdk:"time_zone"`
+	Visibility            types.String        `tfsdk:"visibility"`
 }
 
-var _ basetypes.ObjectTypable = AwsType{}
+var _ basetypes.ObjectTypable = ConfigAwsType{}
 
-type AwsType struct {
+type ConfigAwsType struct {
 	basetypes.ObjectType
 }
 
-func (t AwsType) Equal(o attr.Type) bool {
-	other, ok := o.(AwsType)
+func (t ConfigAwsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAwsType)
 
 	if !ok {
 		return false
@@ -496,19 +496,19 @@ func (t AwsType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t AwsType) String() string {
-	return "AwsType"
+func (t ConfigAwsType) String() string {
+	return "ConfigAwsType"
 }
 
-func (t AwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewAwsValueUnknown(), nil
+		return NewConfigAwsValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewAwsValueNull(), nil
+		return NewConfigAwsValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -661,7 +661,7 @@ func (t AwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) 
 		return nil, diags
 	}
 
-	return AwsValue{
+	return ConfigAwsValue{
 		AccessKey:             accessKeyVal,
 		ConfigManagementId:    configManagementIdVal,
 		EbsEncryption:         ebsEncryptionVal,
@@ -674,19 +674,19 @@ func (t AwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) 
 	}, diags
 }
 
-func NewAwsValueNull() AwsValue {
-	return AwsValue{
+func NewConfigAwsValueNull() ConfigAwsValue {
+	return ConfigAwsValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewAwsValueUnknown() AwsValue {
-	return AwsValue{
+func NewConfigAwsValueUnknown() ConfigAwsValue {
+	return ConfigAwsValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (AwsValue, diag.Diagnostics) {
+func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAwsValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -697,11 +697,11 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 
 		if !ok {
 			diags.AddError(
-				"Missing AwsValue Attribute Value",
-				"While creating a AwsValue value, a missing attribute value was detected. "+
-					"A AwsValue must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigAwsValue Attribute Value",
+				"While creating a ConfigAwsValue value, a missing attribute value was detected. "+
+					"A ConfigAwsValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AwsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -709,12 +709,12 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid AwsValue Attribute Type",
-				"While creating a AwsValue value, an invalid attribute value was detected. "+
-					"A AwsValue must use a matching attribute type for the value. "+
+				"Invalid ConfigAwsValue Attribute Type",
+				"While creating a ConfigAwsValue value, an invalid attribute value was detected. "+
+					"A ConfigAwsValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AwsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("AwsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -724,17 +724,17 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 
 		if !ok {
 			diags.AddError(
-				"Extra AwsValue Attribute Value",
-				"While creating a AwsValue value, an extra attribute value was detected. "+
-					"A AwsValue must not contain values beyond the expected attribute types. "+
+				"Extra ConfigAwsValue Attribute Value",
+				"While creating a ConfigAwsValue value, an extra attribute value was detected. "+
+					"A ConfigAwsValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra AwsValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigAwsValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	accessKeyAttribute, ok := attributes["access_key"]
@@ -744,7 +744,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`access_key is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	accessKeyVal, ok := accessKeyAttribute.(basetypes.StringValue)
@@ -762,7 +762,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`config_management_id is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	configManagementIdVal, ok := configManagementIdAttribute.(basetypes.StringValue)
@@ -780,7 +780,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`ebs_encryption is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	ebsEncryptionVal, ok := ebsEncryptionAttribute.(basetypes.BoolValue)
@@ -798,7 +798,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`region is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	regionVal, ok := regionAttribute.(basetypes.StringValue)
@@ -816,7 +816,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`role_arn is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	roleArnVal, ok := roleArnAttribute.(basetypes.StringValue)
@@ -834,7 +834,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`secret_key is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	secretKeyVal, ok := secretKeyAttribute.(basetypes.StringValue)
@@ -852,7 +852,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`use_host_iam_credentials is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	useHostIamCredentialsVal, ok := useHostIamCredentialsAttribute.(basetypes.BoolValue)
@@ -870,7 +870,7 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 			"Attribute Missing",
 			`vpc is missing from object`)
 
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
 	vpcVal, ok := vpcAttribute.(basetypes.StringValue)
@@ -882,10 +882,10 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 	}
 
 	if diags.HasError() {
-		return NewAwsValueUnknown(), diags
+		return NewConfigAwsValueUnknown(), diags
 	}
 
-	return AwsValue{
+	return ConfigAwsValue{
 		AccessKey:             accessKeyVal,
 		ConfigManagementId:    configManagementIdVal,
 		EbsEncryption:         ebsEncryptionVal,
@@ -898,8 +898,8 @@ func NewAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr
 	}, diags
 }
 
-func NewAwsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) AwsValue {
-	object, diags := NewAwsValue(attributeTypes, attributes)
+func NewConfigAwsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAwsValue {
+	object, diags := NewConfigAwsValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -913,15 +913,15 @@ func NewAwsValueMust(attributeTypes map[string]attr.Type, attributes map[string]
 				diagnostic.Detail()))
 		}
 
-		panic("NewAwsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigAwsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t AwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigAwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewAwsValueNull(), nil
+		return NewConfigAwsValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -929,11 +929,11 @@ func (t AwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr
 	}
 
 	if !in.IsKnown() {
-		return NewAwsValueUnknown(), nil
+		return NewConfigAwsValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewAwsValueNull(), nil
+		return NewConfigAwsValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -956,16 +956,16 @@ func (t AwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr
 		attributes[k] = a
 	}
 
-	return NewAwsValueMust(AwsValue{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigAwsValueMust(ConfigAwsValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t AwsType) ValueType(ctx context.Context) attr.Value {
-	return AwsValue{}
+func (t ConfigAwsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAwsValue{}
 }
 
-var _ basetypes.ObjectValuable = AwsValue{}
+var _ basetypes.ObjectValuable = ConfigAwsValue{}
 
-type AwsValue struct {
+type ConfigAwsValue struct {
 	AccessKey             basetypes.StringValue `tfsdk:"access_key"`
 	ConfigManagementId    basetypes.StringValue `tfsdk:"config_management_id"`
 	EbsEncryption         basetypes.BoolValue   `tfsdk:"ebs_encryption"`
@@ -977,7 +977,7 @@ type AwsValue struct {
 	state                 attr.ValueState
 }
 
-func (v AwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
@@ -1076,19 +1076,19 @@ func (v AwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	}
 }
 
-func (v AwsValue) IsNull() bool {
+func (v ConfigAwsValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v AwsValue) IsUnknown() bool {
+func (v ConfigAwsValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v AwsValue) String() string {
-	return "AwsValue"
+func (v ConfigAwsValue) String() string {
+	return "ConfigAwsValue"
 }
 
-func (v AwsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigAwsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -1126,8 +1126,8 @@ func (v AwsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, dia
 	return objVal, diags
 }
 
-func (v AwsValue) Equal(o attr.Value) bool {
-	other, ok := o.(AwsValue)
+func (v ConfigAwsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAwsValue)
 
 	if !ok {
 		return false
@@ -1176,15 +1176,15 @@ func (v AwsValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v AwsValue) Type(ctx context.Context) attr.Type {
-	return AwsType{
+func (v ConfigAwsValue) Type(ctx context.Context) attr.Type {
+	return ConfigAwsType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v AwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigAwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"access_key":               basetypes.StringType{},
 		"config_management_id":     basetypes.StringType{},
@@ -1197,14 +1197,14 @@ func (v AwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	}
 }
 
-var _ basetypes.ObjectTypable = AzureType{}
+var _ basetypes.ObjectTypable = ConfigAzureType{}
 
-type AzureType struct {
+type ConfigAzureType struct {
 	basetypes.ObjectType
 }
 
-func (t AzureType) Equal(o attr.Type) bool {
-	other, ok := o.(AzureType)
+func (t ConfigAzureType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAzureType)
 
 	if !ok {
 		return false
@@ -1213,19 +1213,19 @@ func (t AzureType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t AzureType) String() string {
-	return "AzureType"
+func (t ConfigAzureType) String() string {
+	return "ConfigAzureType"
 }
 
-func (t AzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewAzureValueUnknown(), nil
+		return NewConfigAzureValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewAzureValueNull(), nil
+		return NewConfigAzureValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -1360,7 +1360,7 @@ func (t AzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 		return nil, diags
 	}
 
-	return AzureValue{
+	return ConfigAzureValue{
 		ClientId:      clientIdVal,
 		ClientSecret:  clientSecretVal,
 		Region:        regionVal,
@@ -1372,19 +1372,19 @@ func (t AzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 	}, diags
 }
 
-func NewAzureValueNull() AzureValue {
-	return AzureValue{
+func NewConfigAzureValueNull() ConfigAzureValue {
+	return ConfigAzureValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewAzureValueUnknown() AzureValue {
-	return AzureValue{
+func NewConfigAzureValueUnknown() ConfigAzureValue {
+	return ConfigAzureValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (AzureValue, diag.Diagnostics) {
+func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAzureValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -1395,11 +1395,11 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 
 		if !ok {
 			diags.AddError(
-				"Missing AzureValue Attribute Value",
-				"While creating a AzureValue value, a missing attribute value was detected. "+
-					"A AzureValue must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, a missing attribute value was detected. "+
+					"A ConfigAzureValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -1407,12 +1407,12 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid AzureValue Attribute Type",
-				"While creating a AzureValue value, an invalid attribute value was detected. "+
-					"A AzureValue must use a matching attribute type for the value. "+
+				"Invalid ConfigAzureValue Attribute Type",
+				"While creating a ConfigAzureValue value, an invalid attribute value was detected. "+
+					"A ConfigAzureValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("AzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -1422,17 +1422,17 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 
 		if !ok {
 			diags.AddError(
-				"Extra AzureValue Attribute Value",
-				"While creating a AzureValue value, an extra attribute value was detected. "+
-					"A AzureValue must not contain values beyond the expected attribute types. "+
+				"Extra ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, an extra attribute value was detected. "+
+					"A ConfigAzureValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra AzureValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigAzureValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	clientIdAttribute, ok := attributes["client_id"]
@@ -1442,7 +1442,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`client_id is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	clientIdVal, ok := clientIdAttribute.(basetypes.StringValue)
@@ -1460,7 +1460,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`client_secret is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	clientSecretVal, ok := clientSecretAttribute.(basetypes.StringValue)
@@ -1478,7 +1478,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`region is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	regionVal, ok := regionAttribute.(basetypes.StringValue)
@@ -1496,7 +1496,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`resource_group is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	resourceGroupVal, ok := resourceGroupAttribute.(basetypes.StringValue)
@@ -1514,7 +1514,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`rpc_mode is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
@@ -1532,7 +1532,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`subscriber_id is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	subscriberIdVal, ok := subscriberIdAttribute.(basetypes.StringValue)
@@ -1550,7 +1550,7 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 			"Attribute Missing",
 			`tenant_id is missing from object`)
 
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
 	tenantIdVal, ok := tenantIdAttribute.(basetypes.StringValue)
@@ -1562,10 +1562,10 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 	}
 
 	if diags.HasError() {
-		return NewAzureValueUnknown(), diags
+		return NewConfigAzureValueUnknown(), diags
 	}
 
-	return AzureValue{
+	return ConfigAzureValue{
 		ClientId:      clientIdVal,
 		ClientSecret:  clientSecretVal,
 		Region:        regionVal,
@@ -1577,8 +1577,8 @@ func NewAzureValue(attributeTypes map[string]attr.Type, attributes map[string]at
 	}, diags
 }
 
-func NewAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) AzureValue {
-	object, diags := NewAzureValue(attributeTypes, attributes)
+func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAzureValue {
+	object, diags := NewConfigAzureValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -1592,15 +1592,15 @@ func NewAzureValueMust(attributeTypes map[string]attr.Type, attributes map[strin
 				diagnostic.Detail()))
 		}
 
-		panic("NewAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t AzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewAzureValueNull(), nil
+		return NewConfigAzureValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -1608,11 +1608,11 @@ func (t AzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	}
 
 	if !in.IsKnown() {
-		return NewAzureValueUnknown(), nil
+		return NewConfigAzureValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewAzureValueNull(), nil
+		return NewConfigAzureValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -1635,16 +1635,16 @@ func (t AzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 		attributes[k] = a
 	}
 
-	return NewAzureValueMust(AzureValue{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigAzureValueMust(ConfigAzureValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t AzureType) ValueType(ctx context.Context) attr.Value {
-	return AzureValue{}
+func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAzureValue{}
 }
 
-var _ basetypes.ObjectValuable = AzureValue{}
+var _ basetypes.ObjectValuable = ConfigAzureValue{}
 
-type AzureValue struct {
+type ConfigAzureValue struct {
 	ClientId      basetypes.StringValue `tfsdk:"client_id"`
 	ClientSecret  basetypes.StringValue `tfsdk:"client_secret"`
 	Region        basetypes.StringValue `tfsdk:"region"`
@@ -1655,7 +1655,7 @@ type AzureValue struct {
 	state         attr.ValueState
 }
 
-func (v AzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
@@ -1745,19 +1745,19 @@ func (v AzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 	}
 }
 
-func (v AzureValue) IsNull() bool {
+func (v ConfigAzureValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v AzureValue) IsUnknown() bool {
+func (v ConfigAzureValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v AzureValue) String() string {
-	return "AzureValue"
+func (v ConfigAzureValue) String() string {
+	return "ConfigAzureValue"
 }
 
-func (v AzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -1793,8 +1793,8 @@ func (v AzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	return objVal, diags
 }
 
-func (v AzureValue) Equal(o attr.Value) bool {
-	other, ok := o.(AzureValue)
+func (v ConfigAzureValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAzureValue)
 
 	if !ok {
 		return false
@@ -1839,15 +1839,15 @@ func (v AzureValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v AzureValue) Type(ctx context.Context) attr.Type {
-	return AzureType{
+func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
+	return ConfigAzureType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v AzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"client_id":      basetypes.StringType{},
 		"client_secret":  basetypes.StringType{},
@@ -1859,14 +1859,14 @@ func (v AzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	}
 }
 
-var _ basetypes.ObjectTypable = StandardType{}
+var _ basetypes.ObjectTypable = ConfigStandardType{}
 
-type StandardType struct {
+type ConfigStandardType struct {
 	basetypes.ObjectType
 }
 
-func (t StandardType) Equal(o attr.Type) bool {
-	other, ok := o.(StandardType)
+func (t ConfigStandardType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigStandardType)
 
 	if !ok {
 		return false
@@ -1875,19 +1875,19 @@ func (t StandardType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t StandardType) String() string {
-	return "StandardType"
+func (t ConfigStandardType) String() string {
+	return "ConfigStandardType"
 }
 
-func (t StandardType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigStandardType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewStandardValueUnknown(), nil
+		return NewConfigStandardValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewStandardValueNull(), nil
+		return NewConfigStandardValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -1932,26 +1932,26 @@ func (t StandardType) ValueFromObject(ctx context.Context, in basetypes.ObjectVa
 		return nil, diags
 	}
 
-	return StandardValue{
+	return ConfigStandardValue{
 		CertificateProvider:        certificateProviderVal,
 		EnableNetworkTypeSelection: enableNetworkTypeSelectionVal,
 		state:                      attr.ValueStateKnown,
 	}, diags
 }
 
-func NewStandardValueNull() StandardValue {
-	return StandardValue{
+func NewConfigStandardValueNull() ConfigStandardValue {
+	return ConfigStandardValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewStandardValueUnknown() StandardValue {
-	return StandardValue{
+func NewConfigStandardValueUnknown() ConfigStandardValue {
+	return ConfigStandardValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (StandardValue, diag.Diagnostics) {
+func NewConfigStandardValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigStandardValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -1962,11 +1962,11 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 
 		if !ok {
 			diags.AddError(
-				"Missing StandardValue Attribute Value",
-				"While creating a StandardValue value, a missing attribute value was detected. "+
-					"A StandardValue must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigStandardValue Attribute Value",
+				"While creating a ConfigStandardValue value, a missing attribute value was detected. "+
+					"A ConfigStandardValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StandardValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigStandardValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -1974,12 +1974,12 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid StandardValue Attribute Type",
-				"While creating a StandardValue value, an invalid attribute value was detected. "+
-					"A StandardValue must use a matching attribute type for the value. "+
+				"Invalid ConfigStandardValue Attribute Type",
+				"While creating a ConfigStandardValue value, an invalid attribute value was detected. "+
+					"A ConfigStandardValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StandardValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("StandardValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigStandardValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigStandardValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -1989,17 +1989,17 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 
 		if !ok {
 			diags.AddError(
-				"Extra StandardValue Attribute Value",
-				"While creating a StandardValue value, an extra attribute value was detected. "+
-					"A StandardValue must not contain values beyond the expected attribute types. "+
+				"Extra ConfigStandardValue Attribute Value",
+				"While creating a ConfigStandardValue value, an extra attribute value was detected. "+
+					"A ConfigStandardValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra StandardValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigStandardValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewStandardValueUnknown(), diags
+		return NewConfigStandardValueUnknown(), diags
 	}
 
 	certificateProviderAttribute, ok := attributes["certificate_provider"]
@@ -2009,7 +2009,7 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 			"Attribute Missing",
 			`certificate_provider is missing from object`)
 
-		return NewStandardValueUnknown(), diags
+		return NewConfigStandardValueUnknown(), diags
 	}
 
 	certificateProviderVal, ok := certificateProviderAttribute.(basetypes.StringValue)
@@ -2027,7 +2027,7 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 			"Attribute Missing",
 			`enable_network_type_selection is missing from object`)
 
-		return NewStandardValueUnknown(), diags
+		return NewConfigStandardValueUnknown(), diags
 	}
 
 	enableNetworkTypeSelectionVal, ok := enableNetworkTypeSelectionAttribute.(basetypes.BoolValue)
@@ -2039,18 +2039,18 @@ func NewStandardValue(attributeTypes map[string]attr.Type, attributes map[string
 	}
 
 	if diags.HasError() {
-		return NewStandardValueUnknown(), diags
+		return NewConfigStandardValueUnknown(), diags
 	}
 
-	return StandardValue{
+	return ConfigStandardValue{
 		CertificateProvider:        certificateProviderVal,
 		EnableNetworkTypeSelection: enableNetworkTypeSelectionVal,
 		state:                      attr.ValueStateKnown,
 	}, diags
 }
 
-func NewStandardValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) StandardValue {
-	object, diags := NewStandardValue(attributeTypes, attributes)
+func NewConfigStandardValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigStandardValue {
+	object, diags := NewConfigStandardValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -2064,15 +2064,15 @@ func NewStandardValueMust(attributeTypes map[string]attr.Type, attributes map[st
 				diagnostic.Detail()))
 		}
 
-		panic("NewStandardValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigStandardValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t StandardType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigStandardType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewStandardValueNull(), nil
+		return NewConfigStandardValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -2080,11 +2080,11 @@ func (t StandardType) ValueFromTerraform(ctx context.Context, in tftypes.Value) 
 	}
 
 	if !in.IsKnown() {
-		return NewStandardValueUnknown(), nil
+		return NewConfigStandardValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewStandardValueNull(), nil
+		return NewConfigStandardValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -2107,22 +2107,22 @@ func (t StandardType) ValueFromTerraform(ctx context.Context, in tftypes.Value) 
 		attributes[k] = a
 	}
 
-	return NewStandardValueMust(StandardValue{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigStandardValueMust(ConfigStandardValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t StandardType) ValueType(ctx context.Context) attr.Value {
-	return StandardValue{}
+func (t ConfigStandardType) ValueType(ctx context.Context) attr.Value {
+	return ConfigStandardValue{}
 }
 
-var _ basetypes.ObjectValuable = StandardValue{}
+var _ basetypes.ObjectValuable = ConfigStandardValue{}
 
-type StandardValue struct {
+type ConfigStandardValue struct {
 	CertificateProvider        basetypes.StringValue `tfsdk:"certificate_provider"`
 	EnableNetworkTypeSelection basetypes.BoolValue   `tfsdk:"enable_network_type_selection"`
 	state                      attr.ValueState
 }
 
-func (v StandardValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigStandardValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
@@ -2167,19 +2167,19 @@ func (v StandardValue) ToTerraformValue(ctx context.Context) (tftypes.Value, err
 	}
 }
 
-func (v StandardValue) IsNull() bool {
+func (v ConfigStandardValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v StandardValue) IsUnknown() bool {
+func (v ConfigStandardValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v StandardValue) String() string {
-	return "StandardValue"
+func (v ConfigStandardValue) String() string {
+	return "ConfigStandardValue"
 }
 
-func (v StandardValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigStandardValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -2205,8 +2205,8 @@ func (v StandardValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue
 	return objVal, diags
 }
 
-func (v StandardValue) Equal(o attr.Value) bool {
-	other, ok := o.(StandardValue)
+func (v ConfigStandardValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigStandardValue)
 
 	if !ok {
 		return false
@@ -2231,29 +2231,29 @@ func (v StandardValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v StandardValue) Type(ctx context.Context) attr.Type {
-	return StandardType{
+func (v ConfigStandardValue) Type(ctx context.Context) attr.Type {
+	return ConfigStandardType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v StandardValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigStandardValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"certificate_provider":          basetypes.StringType{},
 		"enable_network_type_selection": basetypes.BoolType{},
 	}
 }
 
-var _ basetypes.ObjectTypable = VsphereType{}
+var _ basetypes.ObjectTypable = ConfigVsphereType{}
 
-type VsphereType struct {
+type ConfigVsphereType struct {
 	basetypes.ObjectType
 }
 
-func (t VsphereType) Equal(o attr.Type) bool {
-	other, ok := o.(VsphereType)
+func (t ConfigVsphereType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigVsphereType)
 
 	if !ok {
 		return false
@@ -2262,19 +2262,19 @@ func (t VsphereType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t VsphereType) String() string {
-	return "VsphereType"
+func (t ConfigVsphereType) String() string {
+	return "ConfigVsphereType"
 }
 
-func (t VsphereType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigVsphereType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewVsphereValueUnknown(), nil
+		return NewConfigVsphereValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewVsphereValueNull(), nil
+		return NewConfigVsphereValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -2535,7 +2535,7 @@ func (t VsphereType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		return nil, diags
 	}
 
-	return VsphereValue{
+	return ConfigVsphereValue{
 		ApiUrl:                     apiUrlVal,
 		ApiVersion:                 apiVersionVal,
 		CertificateProvider:        certificateProviderVal,
@@ -2554,19 +2554,19 @@ func (t VsphereType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}, diags
 }
 
-func NewVsphereValueNull() VsphereValue {
-	return VsphereValue{
+func NewConfigVsphereValueNull() ConfigVsphereValue {
+	return ConfigVsphereValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewVsphereValueUnknown() VsphereValue {
-	return VsphereValue{
+func NewConfigVsphereValueUnknown() ConfigVsphereValue {
+	return ConfigVsphereValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (VsphereValue, diag.Diagnostics) {
+func NewConfigVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigVsphereValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -2577,11 +2577,11 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !ok {
 			diags.AddError(
-				"Missing VsphereValue Attribute Value",
-				"While creating a VsphereValue value, a missing attribute value was detected. "+
-					"A VsphereValue must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigVsphereValue Attribute Value",
+				"While creating a ConfigVsphereValue value, a missing attribute value was detected. "+
+					"A ConfigVsphereValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("VsphereValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigVsphereValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -2589,12 +2589,12 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid VsphereValue Attribute Type",
-				"While creating a VsphereValue value, an invalid attribute value was detected. "+
-					"A VsphereValue must use a matching attribute type for the value. "+
+				"Invalid ConfigVsphereValue Attribute Type",
+				"While creating a ConfigVsphereValue value, an invalid attribute value was detected. "+
+					"A ConfigVsphereValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("VsphereValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("VsphereValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigVsphereValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigVsphereValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -2604,17 +2604,17 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !ok {
 			diags.AddError(
-				"Extra VsphereValue Attribute Value",
-				"While creating a VsphereValue value, an extra attribute value was detected. "+
-					"A VsphereValue must not contain values beyond the expected attribute types. "+
+				"Extra ConfigVsphereValue Attribute Value",
+				"While creating a ConfigVsphereValue value, an extra attribute value was detected. "+
+					"A ConfigVsphereValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra VsphereValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigVsphereValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	apiUrlAttribute, ok := attributes["api_url"]
@@ -2624,7 +2624,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`api_url is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	apiUrlVal, ok := apiUrlAttribute.(basetypes.StringValue)
@@ -2642,7 +2642,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`api_version is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	apiVersionVal, ok := apiVersionAttribute.(basetypes.StringValue)
@@ -2660,7 +2660,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`certificate_provider is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	certificateProviderVal, ok := certificateProviderAttribute.(basetypes.StringValue)
@@ -2678,7 +2678,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`cluster is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	clusterVal, ok := clusterAttribute.(basetypes.StringValue)
@@ -2696,7 +2696,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`config_management_id is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	configManagementIdVal, ok := configManagementIdAttribute.(basetypes.StringValue)
@@ -2714,7 +2714,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`datacenter is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	datacenterVal, ok := datacenterAttribute.(basetypes.StringValue)
@@ -2732,7 +2732,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`enable_disk_type_selection is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	enableDiskTypeSelectionVal, ok := enableDiskTypeSelectionAttribute.(basetypes.BoolValue)
@@ -2750,7 +2750,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`enable_network_type_selection is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	enableNetworkTypeSelectionVal, ok := enableNetworkTypeSelectionAttribute.(basetypes.BoolValue)
@@ -2768,7 +2768,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`enable_storage_type_selection is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	enableStorageTypeSelectionVal, ok := enableStorageTypeSelectionAttribute.(basetypes.BoolValue)
@@ -2786,7 +2786,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`enable_vnc is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	enableVncVal, ok := enableVncAttribute.(basetypes.BoolValue)
@@ -2804,7 +2804,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`hide_host_selection is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	hideHostSelectionVal, ok := hideHostSelectionAttribute.(basetypes.BoolValue)
@@ -2822,7 +2822,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`resource_pool is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	resourcePoolVal, ok := resourcePoolAttribute.(basetypes.StringValue)
@@ -2840,7 +2840,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`rpc_mode is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
@@ -2858,7 +2858,7 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`storage_type is missing from object`)
 
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
 	storageTypeVal, ok := storageTypeAttribute.(basetypes.StringValue)
@@ -2870,10 +2870,10 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	if diags.HasError() {
-		return NewVsphereValueUnknown(), diags
+		return NewConfigVsphereValueUnknown(), diags
 	}
 
-	return VsphereValue{
+	return ConfigVsphereValue{
 		ApiUrl:                     apiUrlVal,
 		ApiVersion:                 apiVersionVal,
 		CertificateProvider:        certificateProviderVal,
@@ -2892,8 +2892,8 @@ func NewVsphereValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}, diags
 }
 
-func NewVsphereValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) VsphereValue {
-	object, diags := NewVsphereValue(attributeTypes, attributes)
+func NewConfigVsphereValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigVsphereValue {
+	object, diags := NewConfigVsphereValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -2907,15 +2907,15 @@ func NewVsphereValueMust(attributeTypes map[string]attr.Type, attributes map[str
 				diagnostic.Detail()))
 		}
 
-		panic("NewVsphereValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigVsphereValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t VsphereType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigVsphereType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewVsphereValueNull(), nil
+		return NewConfigVsphereValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -2923,11 +2923,11 @@ func (t VsphereType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	}
 
 	if !in.IsKnown() {
-		return NewVsphereValueUnknown(), nil
+		return NewConfigVsphereValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewVsphereValueNull(), nil
+		return NewConfigVsphereValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -2950,16 +2950,16 @@ func (t VsphereType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 		attributes[k] = a
 	}
 
-	return NewVsphereValueMust(VsphereValue{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigVsphereValueMust(ConfigVsphereValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t VsphereType) ValueType(ctx context.Context) attr.Value {
-	return VsphereValue{}
+func (t ConfigVsphereType) ValueType(ctx context.Context) attr.Value {
+	return ConfigVsphereValue{}
 }
 
-var _ basetypes.ObjectValuable = VsphereValue{}
+var _ basetypes.ObjectValuable = ConfigVsphereValue{}
 
-type VsphereValue struct {
+type ConfigVsphereValue struct {
 	ApiUrl                     basetypes.StringValue `tfsdk:"api_url"`
 	ApiVersion                 basetypes.StringValue `tfsdk:"api_version"`
 	CertificateProvider        basetypes.StringValue `tfsdk:"certificate_provider"`
@@ -2977,7 +2977,7 @@ type VsphereValue struct {
 	state                      attr.ValueState
 }
 
-func (v VsphereValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigVsphereValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 14)
 
 	var val tftypes.Value
@@ -3130,19 +3130,19 @@ func (v VsphereValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	}
 }
 
-func (v VsphereValue) IsNull() bool {
+func (v ConfigVsphereValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v VsphereValue) IsUnknown() bool {
+func (v ConfigVsphereValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v VsphereValue) String() string {
-	return "VsphereValue"
+func (v ConfigVsphereValue) String() string {
+	return "ConfigVsphereValue"
 }
 
-func (v VsphereValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigVsphereValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -3192,8 +3192,8 @@ func (v VsphereValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	return objVal, diags
 }
 
-func (v VsphereValue) Equal(o attr.Value) bool {
-	other, ok := o.(VsphereValue)
+func (v ConfigVsphereValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigVsphereValue)
 
 	if !ok {
 		return false
@@ -3266,15 +3266,15 @@ func (v VsphereValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v VsphereValue) Type(ctx context.Context) attr.Type {
-	return VsphereType{
+func (v ConfigVsphereValue) Type(ctx context.Context) attr.Type {
+	return ConfigVsphereType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v VsphereValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigVsphereValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"api_url":                       basetypes.StringType{},
 		"api_version":                   basetypes.StringType{},
