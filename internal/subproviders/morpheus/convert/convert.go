@@ -162,6 +162,10 @@ func FromSetType[S attr.Value, O any](
 	var out []O
 	var elems []S
 
+	if set.IsNull() || set.IsUnknown() {
+		return nil, nil
+	}
+
 	if diags := set.ElementsAs(ctx, &elems, false); diags.HasError() {
 		return nil, diags
 	}
@@ -183,6 +187,10 @@ func FromListType[S attr.Value, O any](
 ) ([]O, diag.Diagnostics) {
 	var out []O
 	var elems []S
+
+	if list.IsNull() || list.IsUnknown() {
+		return nil, nil
+	}
 
 	if diags := list.ElementsAs(ctx, &elems, false); diags.HasError() {
 		return nil, diags
