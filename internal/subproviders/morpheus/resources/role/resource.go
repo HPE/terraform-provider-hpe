@@ -754,6 +754,13 @@ func (r *Resource) Create(
 
 	}
 
+	// Don't track multitenant and multitenant locked in state for Tenant Roles
+	// These fields don't do anything for Tenant Roles.
+	if apiState.RoleType.ValueString() == RoleTypeAccount {
+		apiState.Multitenant = types.BoolNull()
+		apiState.MultitenantLocked = types.BoolNull()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
