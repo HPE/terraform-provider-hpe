@@ -73,8 +73,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Configuration object. Settings vary by type. (Dynamic)",
-				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
+				Description:         "Configuration object. Settings vary by type.",
+				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
 					morpheusvalidators.ValidObjectMap(),
 				},
