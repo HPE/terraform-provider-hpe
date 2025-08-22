@@ -52,8 +52,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 // Therefore, for any tests using user-set permissions,
 // we skip the permissions import verification check.
 
-// Check that we can create a role with only required attributes specified
-func TestAccMorpheusRoleRequiredAttrsOk(t *testing.T) {
+// Check that we can create a user role with only required attributes specified
+func TestAccMorpheusRoleUserRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -99,6 +99,77 @@ resource "hpe_morpheus_role" "example_required" {
 			"hpe_morpheus_role.example_required",
 			"role_type",
 			"user",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true, // Check state post import
+				ImportStateVerifyIgnore: []string{"permissions"},
+				ResourceName:            "hpe_morpheus_role.example_required",
+				Check:                   checkFn,
+			},
+		},
+	})
+}
+
+// Check that we can create a tenant role with only required attributes specified
+func TestAccMorpheusRoleTenantRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_role" "example_required" {
+  name = "` + name + `"
+  role_type = "account"
+}
+`
+	checks := []resource.TestCheckFunc{
+		// required
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"name",
+			name,
+		),
+		// checks for optional
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"description",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"landing_url",
+		),
+		// check the role type
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"role_type",
+			"account",
+		),
+		// checks for fields not applicable to tenant roles
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"multitenant",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
+			"multitenant_locked",
 		),
 	}
 
@@ -973,6 +1044,19 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
 			"role_type",
 			"account",
+		),
+		// check fields not available for account roles
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"multitenant",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"multitenant_locked",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"permissions.default_group_access",
 		),
 		// check the default permission access levels
 		resource.TestCheckResourceAttr(
