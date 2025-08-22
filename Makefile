@@ -35,5 +35,5 @@ docs-experimental:
 	cp -r ./templates/* templates-combined-temp
 	cp -r ./templates-experimental/* templates-combined-temp
 	go generate -tags=experimental ./...
-	cd tools && go generate -tags=experimental
+	cd tools && env GOFLAGS="-tags=experimental" go generate
 	rm -rf templates-combined-temp
