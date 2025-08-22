@@ -11,11 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -123,7 +121,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 									"dhcp",
 								),
 							},
-							Default: stringdefault.StaticString("dhcp"),
 						},
 						"network_group_id": schema.Int64Attribute{
 							Optional:            true,
@@ -213,7 +210,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"task_set_id": schema.Int64Attribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
@@ -253,14 +249,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "Name/type of the LV being created.",
 							MarkdownDescription: "Name/type of the LV being created.",
-							Default:             stringdefault.StaticString("root"),
 						},
 						"root_volume": schema.BoolAttribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "If set to false then a non-root LV will be created.",
 							MarkdownDescription: "If set to false then a non-root LV will be created.",
-							Default:             booldefault.StaticBool(true),
 						},
 						"size": schema.Int64Attribute{
 							Optional:            true,
