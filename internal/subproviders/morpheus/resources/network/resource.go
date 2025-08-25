@@ -4,6 +4,7 @@ package network
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -15,6 +16,9 @@ var (
 	_ resource.Resource                = &Resource{}
 	_ resource.ResourceWithImportState = &Resource{}
 )
+
+//go:embed extended_description.md
+var extendedDescription string
 
 func NewResource() resource.Resource {
 	return &Resource{}
@@ -40,4 +44,8 @@ func (r *Resource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = NetworkResourceSchema(ctx)
+	resp.Schema.Description = "Morpheus Network Resource"
+	resp.Schema.MarkdownDescription = "Morpheus Network Resource"
+
+	resp.Schema.MarkdownDescription += extendedDescription
 }
