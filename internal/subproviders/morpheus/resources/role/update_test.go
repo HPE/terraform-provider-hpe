@@ -730,9 +730,7 @@ resource "hpe_morpheus_role" "update_test" {
 		Steps: []resource.TestStep{
 			// Create dependencies
 			{
-				Config: providerConfig + dependencyResourceConfig,
-				// blueprint resource in the old provider has a computed field
-				// which doesn't use state for unknown, so plan will not be empty
+				Config:             providerConfig + dependencyResourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           false,
 			},
@@ -1480,9 +1478,7 @@ resource "hpe_morpheus_role" "update_test" {
 		Steps: []resource.TestStep{
 			// Create dependencies
 			{
-				Config: providerConfig + dependencyResourceConfig,
-				// blueprint resource in the old provider has a computed field
-				// which doesn't use state for unknown, so plan will not be empty
+				Config:             providerConfig + dependencyResourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           false,
 			},
