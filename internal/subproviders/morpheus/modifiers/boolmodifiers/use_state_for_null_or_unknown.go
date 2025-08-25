@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package boolmodifiers
 
 import (
@@ -24,8 +26,11 @@ func (m useStateForNullOrUnknownModifier) MarkdownDescription(_ context.Context)
 }
 
 // PlanModifyBool implements the plan modification logic.
-func (m useStateForNullOrUnknownModifier) PlanModifyBool(_ context.Context, req planmodifier.BoolRequest, resp *planmodifier.BoolResponse) {
-
+func (m useStateForNullOrUnknownModifier) PlanModifyBool(
+	_ context.Context,
+	req planmodifier.BoolRequest,
+	resp *planmodifier.BoolResponse,
+) {
 	// Do nothing if there is a known planned value.
 	if !req.PlanValue.IsUnknown() {
 		return
