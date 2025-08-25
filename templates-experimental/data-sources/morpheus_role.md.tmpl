@@ -8,7 +8,7 @@ description: |-
 
 {{ .Description | trimspace }}
 
-Roles in HPE Morpheus Enterprise control what access levels of Morpheus resources and features a User or Tenant (Account) has access to.
+Roles in HPE Morpheus Enterprise control the access levels of Morpheus resources and features a User or Tenant has access to.
 
 ## Example Usage
 
@@ -18,3 +18,13 @@ Roles in HPE Morpheus Enterprise control what access levels of Morpheus resource
 
 {{ .SchemaMarkdown | trimspace }}
 
+## Permissions
+
+~>When referring to a Role using the data source, there is some additional information available from the data source that may not have been explicitly set in the Terraform configuration for a Role created using the Terraform provider.
+
+As outlined in the Role resource documentation, Roles created using the Terraform provider treat their fine-grained permissions settings as overrides to default values. Unlike for non-feature permisesions, which are only returned by the API if their values have been changed from `default`, the Morpheus API returns ALL features and access levels for those features upon a GET operation to a specific Role. This means that a user can pull out additional information about feature codes and access levels using the data source compared to what was set in a Terraform config for a Role.
+
+## More Information
+For more information about Roles in HPE Morpheus Enterprise, please check out the [official documentation](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006474en_us&docLocale=en_US&page=GUID-49067498-304A-4C38-B9C1-D8CF296DD3FA.html#ariaid-title1).
+
+For more information about the HPE Morpheus Enterprise API, please check out the [official API documentation](https://apidocs.morpheusdata.com/).
