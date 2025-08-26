@@ -1379,13 +1379,6 @@ func (r *Resource) Create(
 
 	}
 
-	// Don't track multitenant and multitenant locked in state for Tenant Roles
-	// These fields don't do anything for Tenant Roles.
-	if apiState.RoleType.ValueString() == RoleTypeAccount {
-		apiState.Multitenant = types.BoolNull()
-		apiState.MultitenantLocked = types.BoolNull()
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1550,22 +1543,6 @@ func (r *Resource) Read(
 
 			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
-	}
-
-	// Perform additional validation of default group/cloud access based on the role_type.
-	// We have to do it here in Read so that it's supported by import.
-	// Morpheus API does not perform validation like this, but the Morpheus UI does.
-
-	// Only account roles should be able to set default_cloud_access
-	if apiState.RoleType.ValueString() == RoleTypeUser {
-		apiState.Permissions.DefaultCloudAccess = types.StringNull()
-	}
-
-	// Only user roles should be able to set multitenant, multitenant_locked and default_group_access
-	if apiState.RoleType.ValueString() == RoleTypeAccount {
-		apiState.Multitenant = types.BoolNull()
-		apiState.MultitenantLocked = types.BoolNull()
-		apiState.Permissions.DefaultGroupAccess = types.StringNull()
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
@@ -1903,7 +1880,7 @@ func (r *Resource) ImportState(
 
 // This method is called by Terraform's ValidateResourceConfig RPC.
 // We use this to perform the validation of attributes specific to user and account roles.
-// We need to use the ValidateConfig method as schema validators
+// We need to use the ValidateConfig method as the built-in validators
 // do not have access to config values other than the attribute they're defined for.
 // Only user roles can set group permissions.
 // Only account roles can set cloud permissions.
