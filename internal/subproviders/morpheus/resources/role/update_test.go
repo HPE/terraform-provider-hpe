@@ -772,6 +772,7 @@ resource "hpe_morpheus_role" "update_test" {
 					// Feature permissions on import will be the full set of computed permissions,
 					// not just those we set.
 					"permissions.feature_permissions",
+					"permissions.default_cloud_access",
 				},
 				ResourceName: "hpe_morpheus_role.update_test",
 				Check:        updatedCheckFn,
@@ -1060,6 +1061,16 @@ resource "hpe_morpheus_role" "update_test" {
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant_locked",
+			"false",
+		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
@@ -1271,6 +1282,16 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant_locked",
+			"false",
 		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
@@ -1484,6 +1505,16 @@ resource "hpe_morpheus_role" "update_test" {
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant_locked",
+			"false",
+		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"permissions",
@@ -1547,6 +1578,7 @@ resource "hpe_morpheus_role" "update_test" {
 					// Feature permissions on import will be the full set of computed permissions,
 					// not just those we set.
 					"permissions.feature_permissions",
+					"permissions.default_group_access",
 				},
 				ResourceName: "hpe_morpheus_role.update_test",
 				Check:        updatedCheckFn,

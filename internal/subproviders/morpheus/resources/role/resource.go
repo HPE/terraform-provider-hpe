@@ -1161,22 +1161,8 @@ func getRoleAsState(
 	state.RoleType = convert.StrToType(r.Role.RoleType)
 	state.Permissions = permissions
 
-	// Perform additional validation of default group/cloud access based on the role_type.
-	// We override values read from API with User and Tenant-specific values.
-
-	// Only tenant roles should be able to set default_cloud_access.
-	if state.RoleType.ValueString() == RoleTypeUser {
-		state.Permissions.DefaultCloudAccess = types.StringNull()
-	}
-
 	if state.RoleType.ValueString() == RoleTypeAccountAPI {
-		// We use "tenant" instead of "account" for the Terraform provider
 		state.RoleType = types.StringValue(RoleTypeTenant)
-		// Only user roles should be able to set multitenant,
-		// multitenant_locked and default_group_access
-		state.Multitenant = types.BoolNull()
-		state.MultitenantLocked = types.BoolNull()
-		state.Permissions.DefaultGroupAccess = types.StringNull()
 	}
 
 	return state, diags
