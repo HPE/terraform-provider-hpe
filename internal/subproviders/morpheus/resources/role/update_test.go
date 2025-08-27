@@ -1052,24 +1052,20 @@ resource "hpe_morpheus_role" "update_test" {
 			"role_type",
 			"tenant",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant_locked",
+			"false",
+		),
 		// checks for fields not applicable to tenant roles
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.update_test",
-			"multitenant",
-		),
-		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant_locked",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant",
-			"false",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant_locked",
-			"false",
+			"permissions.default_group_access",
 		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
@@ -1274,24 +1270,20 @@ resource "hpe_morpheus_role" "update_test" {
 			"role_type",
 			"tenant",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"multitenant_locked",
+			"false",
+		),
 		// checks for fields not applicable to tenant roles
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.update_test",
-			"multitenant",
-		),
-		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant_locked",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant",
-			"false",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant_locked",
-			"false",
+			"permissions.default_group_access",
 		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
@@ -1495,15 +1487,6 @@ resource "hpe_morpheus_role" "update_test" {
 			"hpe_morpheus_role.update_test",
 			"role_type",
 			"tenant",
-		),
-		// checks for fields not applicable to tenant roles
-		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant",
-		),
-		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_role.update_test",
-			"multitenant_locked",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",

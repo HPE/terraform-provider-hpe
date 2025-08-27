@@ -1161,6 +1161,7 @@ func getRoleAsState(
 	state.RoleType = convert.StrToType(r.Role.RoleType)
 	state.Permissions = permissions
 
+	// Convert the `account` role type from API to `tenant` Tor Terraform
 	if state.RoleType.ValueString() == RoleTypeAccountAPI {
 		state.RoleType = types.StringValue(RoleTypeTenant)
 	}

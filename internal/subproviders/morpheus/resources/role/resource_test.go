@@ -1066,7 +1066,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_tenant_role_ok" {
 			"multitenant_locked",
 			"false",
 		),
-		// check fields not available for account roles
+		// check fields not available for tenant roles
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_group_access",

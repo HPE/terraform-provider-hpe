@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/modifiers/boolmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
