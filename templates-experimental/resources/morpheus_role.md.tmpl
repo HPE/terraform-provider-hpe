@@ -8,7 +8,7 @@ description: |-
 
 {{ .Description | trimspace }}
 
-Roles in HPE Morpheus Enterprise control the access levels of Morpheus resources and features a User or Tenant has access to.
+Roles in HPE Morpheus Enterprise control the access levels for Morpheus resources and features that a User or Tenant has access to.
 
 ## Example Usage
 
@@ -52,9 +52,9 @@ Permissions set using the provider behave as overrides to default settings. Unle
 
 The `default access` fields control the level of access that resources whose access level is set to `default` will inherit. For example, setting `default_blueprints_access` to `full` will make it so all Blueprints whose access level is set to `default` will inherit an access level of `full` for the Role.
 
-Non-feature fine-grained access levels control the access levels granted to the Role for the various HPE Morpheus Enterprise resources. The available access levels are typically one of `none`, `read`, `all`, or `default`.
+Non-feature fine-grained access levels control the access levels granted to the Role for the various HPE Morpheus Enterprise resources. The available access levels are typically `none`, `read`, `all`, or `default`.
 
-Access to features can be controlled by setting the `feature_permissions` attribute.  The available access levels vary by feature. Please note that depending on your HPE Morpheus Enterprise license, configuration, and version, some features may not be available. A list of available feature codes is provided below:
+Access to features can be controlled by setting the `feature_permissions` attribute. The available access levels vary by feature. Please note that depending on your HPE Morpheus Enterprise license, configuration, and version, some features may not be available. A list of available feature codes is provided below:
 
 ```
 account-usage
@@ -216,7 +216,7 @@ workflows
 
 ~> When importing a Role using import blocks, the generated config will have to be manually edited to successfully create a Role using it. Read below for more information.
 
-Importing a Role will pick up all fields returned by performing a GET to the API. This results in some properties which are intended to be specific to `user` or `tenant` Roles being read as part of import. For example, for `user` Roles, a value for `default_cloud_access` will be picked up during import and for `tenant` Roles, values for `multitenant`, `multitenant_locked`, and `default_group_access` will be picked up during import. This is due to how the HPE Morpheus Enterprise stores Roles internally. When you generate a config using import blocks and run `terraform plan`, the provider will present warning messages informing that certain attributes are only compatible with certain Role types. Remove the incompatible attribute(s) to create the Role successfully.
+Importing a Role will pick up all fields returned by performing a GET to the API. This results in some properties which are intended to be specific to `user` or `tenant` Roles being read as part of import. For example, for `user` Roles, a value for `default_cloud_access` will be picked up during import and for `tenant` Roles, values for `multitenant`, `multitenant_locked`, and `default_group_access` will be picked up during import. This is due to how HPE Morpheus Enterprise stores Roles internally. When you generate a config using import blocks and run `terraform plan`, the provider will present warning messages informing that certain attributes are only compatible with certain Role types. Remove the incompatible attribute(s) to create the Role successfully.
 
 ## More Information
 For more information about Roles in HPE Morpheus Enterprise, please check out the [official documentation](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006474en_us&docLocale=en_US&page=GUID-49067498-304A-4C38-B9C1-D8CF296DD3FA.html#ariaid-title1).
