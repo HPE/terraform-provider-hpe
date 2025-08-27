@@ -8,5 +8,9 @@ const (
 	ErrorRunningPreApply    = `Error running pre-apply plan: exit status 1`
 	ErrorMultipleRoles      = `multiple roles were returned`
 	RoleTypeUser            = "user"
-	RoleTypeAccount         = "account"
+	// Provider-specific role type created to adopt new Morpheus naming conventions.
+	RoleTypeTenant = "tenant"
+	// API-specific legacy role type which we use to maintain API compatibility.
+	// Account Roles and Tenant Roles are the same thing; Tenant Role is the newer name.
+	RoleTypeAccountAPI = "account"
 )

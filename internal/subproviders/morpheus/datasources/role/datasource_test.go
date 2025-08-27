@@ -190,13 +190,11 @@ resource "hpe_morpheus_role" "test_user" {
   }
 }
 
-resource "hpe_morpheus_role" "test_account" {
-  name = "` + name + `-account"
+resource "hpe_morpheus_role" "test_tenant" {
+  name = "` + name + `-tenant"
   description = "test"
   landing_url = "https://test.morpheus.com"
-  multitenant = false
-  multitenant_locked = false
-  role_type = "account"
+  role_type = "tenant"
   permissions = {
     feature_permissions = [
     {
@@ -213,8 +211,8 @@ data "hpe_morpheus_role" "test_user" {
   name = "` + name + `-user"
 }
 
-data "hpe_morpheus_role" "test_account" {
-  name = "` + name + `-account"
+data "hpe_morpheus_role" "test_tenant" {
+  name = "` + name + `-tenant"
 }
 `
 
@@ -269,50 +267,45 @@ data "hpe_morpheus_role" "test_account" {
 			"permissions.default_blueprint_access",
 			"full",
 		),
-		// user roles cannot have cloud access
-		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_role.test_user",
-			"permissions.default_cloud_access",
-		),
-		// account role
+		// tenant role
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"name",
-			name+"-account",
+			name+"-tenant",
 		),
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.test_account",
+			"hpe_morpheus_role.test_tenant",
 			"id",
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"description",
 			"test",
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"landing_url",
 			"https://test.morpheus.com",
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_user",
 			"multitenant",
 			"false",
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_user",
 			"multitenant_locked",
 			"false",
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"role_type",
-			"account",
+			"tenant",
 		),
 		resource.TestCheckTypeSetElemNestedAttrs(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"permissions.feature_permissions.*",
 			map[string]string{
 				"code":   "activity",
@@ -320,14 +313,9 @@ data "hpe_morpheus_role" "test_account" {
 			},
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test_account",
+			"data.hpe_morpheus_role.test_tenant",
 			"permissions.default_blueprint_access",
 			"full",
-		),
-		// account roles cannot have group access
-		resource.TestCheckNoResourceAttr(
-			"data.hpe_morpheus_role.test_account",
-			"permissions.default_group_access",
 		),
 	}
 

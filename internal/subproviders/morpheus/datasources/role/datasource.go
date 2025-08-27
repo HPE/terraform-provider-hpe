@@ -279,6 +279,11 @@ func roleAsState(
 	state.RoleType = convert.StrToType(role.Role.RoleType)
 	state.Permissions = permissions
 
+	if state.RoleType.ValueString() == consts.RoleTypeAccountAPI {
+		// We use "tenant" instead of "account" for the Terraform provider
+		state.RoleType = types.StringValue(consts.RoleTypeTenant)
+	}
+
 	return state, diags
 }
 
@@ -378,19 +383,6 @@ func (d *DataSource) Read(
 		resp.Diagnostics.Append(diags...)
 
 		return
-	}
-
-	// Perform additional validation of default group/cloud access based on the role_type.
-	// Morpheus API does not perform validation like this, but the Morpheus UI does.
-
-	// Only account roles should be able to set default cloud access
-	if apiState.RoleType.ValueString() == consts.RoleTypeUser {
-		apiState.Permissions.DefaultCloudAccess = types.StringNull()
-	}
-
-	// Only user roles should be able to set default group access
-	if apiState.RoleType.ValueString() == consts.RoleTypeAccount {
-		apiState.Permissions.DefaultGroupAccess = types.StringNull()
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
