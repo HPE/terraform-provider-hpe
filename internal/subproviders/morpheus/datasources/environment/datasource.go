@@ -1,3 +1,8 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+
 package environment
 
 import (

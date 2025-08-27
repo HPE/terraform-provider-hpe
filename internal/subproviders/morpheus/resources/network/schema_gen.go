@@ -5,6 +5,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,15 +51,19 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cidr": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "CIDR Network",
-				MarkdownDescription: "CIDR Network",
+				Description:         "Network CIDR.",
+				MarkdownDescription: "Network CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cidr_ipv6": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "IPv6 Network CIDR",
-				MarkdownDescription: "IPv6 Network CIDR",
+				Description:         "Network IPv6 CIDR.",
+				MarkdownDescription: "Network IPv6 CIDR.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
@@ -68,8 +73,11 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Configuration object. Settings vary by type. (Dynamic)",
-				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
+				Description:         "Configuration object. Settings vary by type.",
+				MarkdownDescription: "Configuration object. Settings vary by type.",
+				Validators: []validator.Dynamic{
+					morpheusvalidators.ValidObjectMap(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -204,14 +212,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"resource_permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"all": schema.BoolAttribute{
-						Optional:            true,
 						Computed:            true,
 						Description:         "Pass true to allow access all groups",
 						MarkdownDescription: "Pass true to allow access all groups",
 					},
 					"group_ids": schema.SetAttribute{
 						ElementType:         types.Int64Type,
-						Optional:            true,
 						Computed:            true,
 						Description:         "Array of group (site) IDs that are allowed access",
 						MarkdownDescription: "Array of group (site) IDs that are allowed access",
@@ -222,7 +228,6 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional: true,
 				Computed: true,
 			},
 			"search_domains": schema.StringAttribute{

@@ -4,7 +4,9 @@ go 1.24.1
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250821122023-2b0aa6729dff
+	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/google/go-cmp v0.7.0
+	github.com/google/uuid v1.6.0
 	github.com/h2non/gock v1.2.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0

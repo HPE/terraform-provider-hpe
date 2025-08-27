@@ -1,6 +1,7 @@
 package role
 
 const (
-	RoleTypeUser    = "user"
-	RoleTypeAccount = "account"
+	RoleTypeUser                 = "user"
+	RoleTypeAccount              = "account"
+	DefaultPermissionAccessLevel = "default"
 )

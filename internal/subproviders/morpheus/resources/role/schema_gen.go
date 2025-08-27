@@ -87,9 +87,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: BlueprintPermissionsType{
@@ -124,9 +121,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: CatalogItemTypePermissionsType{
@@ -162,9 +156,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: CloudPermissionsType{
@@ -205,7 +196,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Set the default access level for for clouds (zones). Only applies to base account (tenant) roles.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								"default",
 								"full",
 								"read",
 								"none",
@@ -218,7 +208,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Set the default access level for for groups (sites). Only applies to user roles.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
-								"default",
 								"full",
 								"read",
 								"none",
@@ -323,21 +312,12 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"sub_category": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: FeaturePermissionsType{
@@ -373,9 +353,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: GroupPermissionsType{
@@ -405,9 +382,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"code": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"id": schema.Int64Attribute{
 									Required:            true,
@@ -416,9 +390,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: InstanceTypePermissionsType{
@@ -460,15 +431,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: PersonaPermissionsType{
@@ -503,15 +468,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"id": schema.Int64Attribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.Int64{
-										int64planmodifier.UseStateForUnknown(),
-									},
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: ReportTypePermissionsType{
@@ -541,9 +500,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"code": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"id": schema.Int64Attribute{
 									Required:            true,
@@ -552,9 +508,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: TaskPermissionsType{
@@ -589,9 +542,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: VdiPoolPermissionsType{
@@ -626,9 +576,6 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 								},
 								"name": schema.StringAttribute{
 									Computed: true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 							CustomType: WorkflowPermissionsType{
@@ -659,6 +606,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Role type",
 				MarkdownDescription: "Role type",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"user",
