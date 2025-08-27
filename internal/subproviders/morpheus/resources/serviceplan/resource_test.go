@@ -99,6 +99,11 @@ resource "hpe_morpheus_service_plan" "example_required" {
 				PlanOnly:           false,
 			},
 			{
+				Config:             providerConfig + resourceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false, // Ensures the plan is empty, validating no drift
+			},
+			{
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_service_plan.example_required",
@@ -322,6 +327,11 @@ resource "hpe_morpheus_service_plan" "example_all" {
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
+			},
+			{
+				Config:             providerConfig + resourceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false, // Ensures the plan is empty, validating no drift
 			},
 			{
 				ImportState:       true,
