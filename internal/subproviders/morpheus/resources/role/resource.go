@@ -1161,6 +1161,24 @@ func getRoleAsState(
 	state.RoleType = convert.StrToType(r.Role.RoleType)
 	state.Permissions = permissions
 
+	// Perform additional validation of default group/cloud access based on the role_type.
+	// We override values read from API with User and Tenant-specific values.
+
+	// Only tenant roles should be able to set default_cloud_access.
+	if state.RoleType.ValueString() == RoleTypeUser {
+		state.Permissions.DefaultCloudAccess = types.StringNull()
+	}
+
+	if state.RoleType.ValueString() == RoleTypeAccountAPI {
+		// We use "tenant" instead of "account" for the Terraform provider
+		state.RoleType = types.StringValue(RoleTypeTenant)
+		// Only user roles should be able to set multitenant,
+		// multitenant_locked and default_group_access
+		state.Multitenant = types.BoolNull()
+		state.MultitenantLocked = types.BoolNull()
+		state.Permissions.DefaultGroupAccess = types.StringNull()
+	}
+
 	return state, diags
 }
 
@@ -1204,7 +1222,13 @@ func (r *Resource) Create(
 
 	if !plan.RoleType.IsUnknown() {
 		// default: user
-		addRole.SetRoleType(plan.RoleType.ValueString())
+		if plan.RoleType.ValueString() == RoleTypeUser {
+			addRole.SetRoleType(plan.RoleType.ValueString())
+		}
+
+		if plan.RoleType.ValueString() == RoleTypeTenant {
+			addRole.SetRoleType(RoleTypeAccountAPI)
+		}
 	}
 
 	// Only add to create request if user has set permissions explicitly.
@@ -1379,13 +1403,6 @@ func (r *Resource) Create(
 
 	}
 
-	// Don't track multitenant and multitenant locked in state for Tenant Roles
-	// These fields don't do anything for Tenant Roles.
-	if apiState.RoleType.ValueString() == RoleTypeAccount {
-		apiState.Multitenant = types.BoolNull()
-		apiState.MultitenantLocked = types.BoolNull()
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1550,22 +1567,6 @@ func (r *Resource) Read(
 
 			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
-	}
-
-	// Perform additional validation of default group/cloud access based on the role_type.
-	// We have to do it here in Read so that it's supported by import.
-	// Morpheus API does not perform validation like this, but the Morpheus UI does.
-
-	// Only account roles should be able to set default_cloud_access
-	if apiState.RoleType.ValueString() == RoleTypeUser {
-		apiState.Permissions.DefaultCloudAccess = types.StringNull()
-	}
-
-	// Only user roles should be able to set multitenant, multitenant_locked and default_group_access
-	if apiState.RoleType.ValueString() == RoleTypeAccount {
-		apiState.Multitenant = types.BoolNull()
-		apiState.MultitenantLocked = types.BoolNull()
-		apiState.Permissions.DefaultGroupAccess = types.StringNull()
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
@@ -1902,11 +1903,11 @@ func (r *Resource) ImportState(
 }
 
 // This method is called by Terraform's ValidateResourceConfig RPC.
-// We use this to perform the validation of attributes specific to user and account roles.
+// We use this to perform the validation of attributes specific to user and tenant roles.
 // We need to use the ValidateConfig method as schema validators
 // do not have access to config values other than the attribute they're defined for.
 // Only user roles can set group permissions.
-// Only account roles can set cloud permissions.
+// Only tenant roles can set cloud permissions.
 func (r *Resource) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,
@@ -1935,8 +1936,8 @@ func (r *Resource) ValidateConfig(
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.cloud_permissions"),
 			"Conflicting attributes in configuration",
-			`cloud_permissions not available for role_type "user". `+
-				`Set role_type to "account" to set cloud_permissions.`,
+			`cloud_permissions not available for role_type "`+RoleTypeUser+`". `+
+				`Set role_type to "`+RoleTypeTenant+`" to set cloud_permissions.`,
 		)
 
 		return
@@ -1949,64 +1950,64 @@ func (r *Resource) ValidateConfig(
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.default_cloud_access"),
 			"Conflicting attributes in configuration",
-			`default_cloud_access not available for role_type "user". `+
-				`Set role_type to "account" to set default_cloud_access.`,
+			`default_cloud_access not available for role_type "`+RoleTypeUser+`". `+
+				`Set role_type to "`+RoleTypeTenant+`" to set default_cloud_access.`,
 		)
 
 		return
 	}
 
-	// if roleType is "account" and group_permissions has been set...
-	if roleType == RoleTypeAccount &&
+	// if roleType is "tenant" and group_permissions has been set...
+	if roleType == RoleTypeTenant &&
 		!config.Permissions.GroupPermissions.IsNull() &&
 		!config.Permissions.GroupPermissions.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.group_permissions"),
 			"Conflicting attributes in configuration",
-			`group_permissions not available for role_type "account". `+
-				`Set role_type to "user" to set group_permissions.`,
+			`group_permissions not available for role_type "`+RoleTypeTenant+`". `+
+				`Set role_type to "`+RoleTypeUser+`" to set group_permissions.`,
 		)
 
 		return
 	}
 
-	// if roleType is "account" and default_group_access has been set...
-	if roleType == RoleTypeAccount &&
+	// if roleType is "tenant" and default_group_access has been set...
+	if roleType == RoleTypeTenant &&
 		!config.Permissions.DefaultGroupAccess.IsNull() &&
 		!config.Permissions.DefaultGroupAccess.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("permissions.default_group_access"),
 			"Conflicting attributes in configuration",
-			`default_group_access not available for role_type "account". `+
-				`Set role_type to "user" to set default_group_access.`,
+			`default_group_access not available for role_type "`+RoleTypeTenant+`". `+
+				`Set role_type to "`+RoleTypeUser+`" to set default_group_access.`,
 		)
 
 		return
 	}
 
-	// if roleType is "account" and multitenant has been set...
-	if roleType == RoleTypeAccount &&
+	// if roleType is "tenant" and multitenant has been set...
+	if roleType == RoleTypeTenant &&
 		!config.Multitenant.IsNull() &&
 		!config.Multitenant.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("multitenant"),
 			"Conflicting attributes in configuration",
-			`multitenant not available for role_type "account". `+
-				`Set role_type to "user" to set multitenant.`,
+			`multitenant not available for role_type "`+RoleTypeTenant+`". `+
+				`Set role_type to "`+RoleTypeUser+`" to set multitenant.`,
 		)
 
 		return
 	}
 
-	// if roleType is "account" and multitenant_locked has been set...
-	if roleType == RoleTypeAccount &&
+	// if roleType is "tenant" and multitenant_locked has been set...
+	if roleType == RoleTypeTenant &&
 		!config.MultitenantLocked.IsNull() &&
 		!config.MultitenantLocked.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("multitenant_locked"),
 			"Conflicting attributes in configuration",
-			`multitenant_locked not available for role_type "account". `+
-				`Set role_type to "user" to set multitenant_locked.`,
+			`multitenant_locked not available for role_type "`+RoleTypeTenant+`". `+
+				`Set role_type to "`+RoleTypeUser+`" to set multitenant_locked.`,
 		)
 
 		return

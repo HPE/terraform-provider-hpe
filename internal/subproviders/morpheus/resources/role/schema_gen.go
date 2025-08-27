@@ -5,6 +5,9 @@ package role
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/modifiers/boolmodifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -48,12 +50,18 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*",
 				MarkdownDescription: "Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*",
+				PlanModifiers: []planmodifier.Bool{
+					boolmodifiers.UseStateForNullOrUnknown(),
+				},
 			},
 			"multitenant_locked": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
 				MarkdownDescription: "Multitenant Locked, prevents sub-tenant users from modifying their copy of multienant roles. *Only available to master tenant*",
+				PlanModifiers: []planmodifier.Bool{
+					boolmodifiers.UseStateForNullOrUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -609,7 +617,7 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"user",
-						"account",
+						"tenant",
 					),
 				},
 				Default: stringdefault.StaticString("user"),
