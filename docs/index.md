@@ -115,7 +115,7 @@ provider "hpe" {
 In this release (v0.0.1) the following resources have been added:
 - hpe_morpheus_instance for HPE MVM or HPE VME instances
 - hpe_morpheus_user for Morpheus users
-- hpe_morpheus_role for Morpheus roles (user and account)
+- hpe_morpheus_role for Morpheus roles (user and tenant)
 
 In this release (v0.0.1) the following data sources have been added:
 - hpe_morpheus_cloud
