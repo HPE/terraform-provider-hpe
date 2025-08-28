@@ -190,13 +190,10 @@ func setConfigInCreate(
 
 	// top level fields first
 	if !plan.StorageSizeType.IsNull() {
-		storageSize := plan.StorageSizeType.ValueString()
-
-		config.StorageSizeType = &storageSize
+		config.StorageSizeType := plan.StorageSizeType.ValueStringPointer()
 	}
 	if !plan.MemorySizeType.IsNull() {
-		memorySize := plan.MemorySizeType.ValueString()
-		config.MemorySizeType = &memorySize
+		config.MemorySizeType := plan.MemorySizeType.ValueStringPointer()
 	}
 
 	// ConfigRanges
@@ -289,7 +286,6 @@ func (r *Resource) Create(
 
 	err = setProvisionTypeInCreate(ctx, client, &plan, addServicePlan)
 	if err != nil {
-		// setProvisionTypeInCreate checks for cert err
 		resp.Diagnostics.AddError(
 			"create service plan resource",
 			"set provision type POST failed : "+err.Error(),
@@ -320,57 +316,47 @@ func (r *Resource) Create(
 
 	if !plan.Description.IsNull() {
 		description := plan.Description.ValueStringPointer()
-		addServicePlan.Description = description
 	}
 
 	if !plan.MaxCores.IsNull() {
-		maxCores := plan.MaxCores.ValueInt64Pointer()
-		addServicePlan.MaxCores = maxCores
+		addServicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
 	}
 
 	if !plan.MaxCpu.IsNull() {
-		maxCpu := plan.MaxCpu.ValueInt64Pointer()
-		addServicePlan.MaxCpu = maxCpu
+		addServicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
 	}
 
 	if !plan.MaxDisks.IsNull() {
-		maxDisks := plan.MaxDisks.ValueInt64Pointer()
-		addServicePlan.MaxDisks = maxDisks
+		addServicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
 	}
 
 	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
-		coresPerSocket := plan.CoresPerSocket.ValueInt64()
-		addServicePlan.CoresPerSocket = &coresPerSocket
+		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
+
 	}
 
 	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
-		customCores := plan.CustomCores.ValueBool()
-		addServicePlan.CustomCores = &customCores
+		addServicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
 	}
 
 	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
-		customCpu := plan.CustomCpu.ValueBool()
-		addServicePlan.CustomCpu = &customCpu
+		addServicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
 	}
 
 	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
-		customMaxMemory := plan.CustomMaxMemory.ValueBool()
-		addServicePlan.CustomMaxMemory = &customMaxMemory
+		addServicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
 	}
 
 	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
-		customMaxStorage := plan.CustomMaxStorage.ValueBool()
-		addServicePlan.CustomMaxStorage = &customMaxStorage
+		addServicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
 	}
 
 	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
-		addVolumes := plan.AddVolumes.ValueBool()
-		addServicePlan.AddVolumes = &addVolumes
+		addServicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
 	}
 
 	if !plan.SortOrder.IsNull() {
-		sortOrder := plan.SortOrder.ValueInt64()
-		addServicePlan.SortOrder = &sortOrder
+		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
 	}
 
 	if !plan.MemorySizeType.IsNull() || !plan.StorageSizeType.IsNull() ||
