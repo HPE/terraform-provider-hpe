@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
+// go:build experimental
 
 package serviceplan
 
@@ -112,7 +112,7 @@ func getServicePlanAsState(
 		state.ConfigRanges = configRangesValue
 	}
 
-	state.PricesetIds = pricesetIDSet
+	state.PriceSetIds = pricesetIDSet
 	state.Id = convert.Int64ToType(sp.ServicePlan.Id)
 	state.Name = convert.StrToType(sp.ServicePlan.Name)
 	state.Code = convert.StrToType(sp.ServicePlan.Code)
@@ -190,10 +190,10 @@ func setConfigInCreate(
 
 	// top level fields first
 	if !plan.StorageSizeType.IsNull() {
-		config.StorageSizeType := plan.StorageSizeType.ValueStringPointer()
+		config.StorageSizeType = plan.StorageSizeType.ValueStringPointer()
 	}
 	if !plan.MemorySizeType.IsNull() {
-		config.MemorySizeType := plan.MemorySizeType.ValueStringPointer()
+		config.MemorySizeType = plan.MemorySizeType.ValueStringPointer()
 	}
 
 	// ConfigRanges
@@ -295,9 +295,9 @@ func (r *Resource) Create(
 	}
 
 	// optional
-	if !plan.PricesetIds.IsNull() && !plan.PricesetIds.IsUnknown() {
+	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
 		var pricesetIds []int64
-		diags := plan.PricesetIds.ElementsAs(ctx, &pricesetIds, false)
+		diags := plan.PriceSetIds.ElementsAs(ctx, &pricesetIds, false)
 		if resp.Diagnostics.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
@@ -315,7 +315,7 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Description.IsNull() {
-		description := plan.Description.ValueStringPointer()
+		addServicePlan.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.MaxCores.IsNull() {
@@ -410,6 +410,10 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	resp.Diagnostics.AddError(
+		"update instance resource",
+		"update of 'service plan' resource has not been implemented",
+	)
 }
 
 func (r *Resource) Read(
@@ -525,8 +529,9 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.min_memory"),
 					"Conflicting attributes in configuration",
-					`min_memory set when custom_memory has not been `+
-						`set custom_memory to true to add a min_memory value.`,
+					"min_memory set when custom_memory has not been\n"+
+						"set to true.\n"+
+						"Set custom_memory to true to add a min_memory value.",
 				)
 				return
 			}
@@ -534,12 +539,12 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.max_memory"),
 					"Conflicting attributes in configuration",
-					`max_memory set when custom_memory has not been `+
-						`set custom_memory to true to add a max_memory value.`,
+					"max_memory set when custom_memory has not been\n"+
+						"set to true.\n"+
+						"Set custom_memory to true to add a max_memory value.",
 				)
 				return
 			}
-
 		}
 
 		if !config.CustomMaxStorage.ValueBool() {
@@ -548,8 +553,9 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.min_storage"),
 					"Conflicting attributes in configuration",
-					`min_storage set when custom_storage has not been `+
-						`set custom_storage to true to add a min_storage value.`,
+					"min_storage set when custom_storage has not been\n"+
+						"set to true.\n"+
+						"Set custom_storage to true to add a min_storage value.",
 				)
 				return
 			}
@@ -557,12 +563,12 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.max_storage"),
 					"Conflicting attributes in configuration",
-					`max_storage set when custom_storage has not been `+
-						`set custom_storage to true to add a max_storage value.`,
+					"max_storage set when custom_storage has not been\n"+
+						"set to true.\n"+
+						"Set custom_storage to true to add a max_storage value.",
 				)
 				return
 			}
-
 		}
 
 		// customCores is used with minCores and maxCores
@@ -573,8 +579,9 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.min_cores"),
 					"Conflicting attributes in configuration",
-					`min_cores set when custom_cores  has not been `+
-						`set to true to add a min_cores value.`,
+					"min_cores set when custom_cores has not been\n"+
+						"set to true.\n"+
+						"Set custom_cores to true to add a min_cores value.",
 				)
 				return
 			}
@@ -582,12 +589,12 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config_ranges.max_cores"),
 					"Conflicting attributes in configuration",
-					`max_cores set when custom_cores has not been `+
-						`set custom_cores to true to add a max_cores value.`,
+					"max_cores set when custom_cores has not been\n"+
+						"set to true.\n"+
+						"Set custom_cores to true to add a max_cores value.",
 				)
 				return
 			}
-
 		}
 
 		if !config.AddVolumes.ValueBool() {
@@ -596,8 +603,9 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config.min_per_disk_size"),
 					"Conflicting attributes in configuration",
-					`min_per_disk_size set when add_volumes has not been `+
-						`set add_volumes to true to add a min_per_disk_size value.`,
+					"min_per_disk_size set when add_volumes has not\n"+
+						"been set to true.\n"+
+						"Set add_volumes to true to add a min_per_disk_size value.",
 				)
 				return
 			}
@@ -605,13 +613,12 @@ func (r *Resource) ValidateConfig(
 				resp.Diagnostics.AddAttributeError(
 					path.Root("config.max_per_disk_size"),
 					"Conflicting attributes in configuration",
-					`max_per_disk_size set when add_volumes has not been `+
-						`set add_volumes to true to add a max_per_disk_size value.`,
+					"max_per_disk_size set when add_volumes has not\n"+
+						"been set to true.\n"+
+						"Set add_volumes to true to add a max_per_disk_size value.",
 				)
 				return
 			}
-
 		}
-
 	}
 }

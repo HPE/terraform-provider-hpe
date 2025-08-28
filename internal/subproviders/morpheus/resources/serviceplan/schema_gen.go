@@ -5,19 +5,20 @@ package serviceplan
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -111,9 +112,11 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cores_per_socket": schema.Int64Attribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Number of cores per CPU",
 				MarkdownDescription: "Number of cores per CPU",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"custom_cores": schema.BoolAttribute{
 				Optional:            true,
@@ -127,6 +130,9 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Can be used to enable / disable customizable cpu",
 				MarkdownDescription: "Can be used to enable / disable customizable cpu",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"custom_max_memory": schema.BoolAttribute{
 				Optional:            true,
@@ -159,20 +165,29 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 			"max_cores": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Max number of cores",
-				MarkdownDescription: "Max number of cores",
+				Description:         "Max number of total cores",
+				MarkdownDescription: "Max number of total cores",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_cpu": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Max number of CPUs",
-				MarkdownDescription: "Max number of CPUs",
+				Description:         "Max CPU's",
+				MarkdownDescription: "Max CPU's",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_disks": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Max disks allowed",
 				MarkdownDescription: "Max disks allowed",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_memory": schema.Int64Attribute{
 				Required:            true,
@@ -202,10 +217,13 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Service plan name",
 				MarkdownDescription: "Service plan name",
 			},
-			"priceset_ids": schema.SetAttribute{
+			"price_set_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"provision_type_code": schema.StringAttribute{
 				Required:            true,
@@ -217,6 +235,9 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Sort order",
 				MarkdownDescription: "Sort order",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"storage_size_type": schema.StringAttribute{
 				Optional:            true,
@@ -253,7 +274,7 @@ type ServicePlanModel struct {
 	MaxStorage        types.Int64       `tfsdk:"max_storage"`
 	MemorySizeType    types.String      `tfsdk:"memory_size_type"`
 	Name              types.String      `tfsdk:"name"`
-	PricesetIds       types.Set         `tfsdk:"priceset_ids"`
+	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
 	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
 	SortOrder         types.Int64       `tfsdk:"sort_order"`
 	StorageSizeType   types.String      `tfsdk:"storage_size_type"`
@@ -281,6 +302,14 @@ func (t ConfigRangesType) String() string {
 
 func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigRangesValueNull(), nil
+	}
 
 	attributes := in.Attributes()
 
@@ -864,12 +893,14 @@ func (t ConfigRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -928,6 +959,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.MaxCores.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -935,6 +967,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores"] = val
 
 		val, err = v.MaxCoresPerSocket.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -942,6 +975,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores_per_socket"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -949,6 +983,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_memory"] = val
 
 		val, err = v.MaxPerDiskSize.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -956,6 +991,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_per_disk_size"] = val
 
 		val, err = v.MaxSockets.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -963,6 +999,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_sockets"] = val
 
 		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -970,6 +1007,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_storage"] = val
 
 		val, err = v.MinCores.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -977,6 +1015,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores"] = val
 
 		val, err = v.MinCoresPerSocket.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -984,6 +1023,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores_per_socket"] = val
 
 		val, err = v.MinMemory.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -991,6 +1031,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_memory"] = val
 
 		val, err = v.MinPerDiskSize.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -998,6 +1039,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_per_disk_size"] = val
 
 		val, err = v.MinSockets.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1005,6 +1047,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_sockets"] = val
 
 		val, err = v.MinStorage.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
