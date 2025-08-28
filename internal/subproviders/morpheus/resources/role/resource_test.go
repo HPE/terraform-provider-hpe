@@ -3,8 +3,6 @@
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleRole" Multitenant "false" Description "An example role" RoleType "user"
 //go:generate go run ../../../../../cmd/render example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
 
-//go:build experimental
-
 package role_test
 
 import (
@@ -137,7 +135,7 @@ func TestAccMorpheusRoleTenantRequiredAttrsOk(t *testing.T) {
 	resourceConfig := `
 resource "hpe_morpheus_role" "example_required" {
   name = "` + name + `"
-  role_type = "account"
+  role_type = "tenant"
 }
 `
 	checks := []resource.TestCheckFunc{
@@ -160,7 +158,7 @@ resource "hpe_morpheus_role" "example_required" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_required",
 			"role_type",
-			"account",
+			"tenant",
 		),
 		// checks for fields not applicable to tenant roles
 		resource.TestCheckResourceAttr(
@@ -622,7 +620,8 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 	})
 }
 
-// test that we can create a user role with all possible permissions set using strongly-typed permissions
+// test that we can create a user role with all possible permissions set using
+// strongly-typed permissions
 // we test all possible permissions EXCEPT VDI Pool.
 // For now, the VDI pool section of the OpenAPI spec looks to be incorrect
 // and needs to be updated so that we can create one using the generated SDK.
@@ -908,12 +907,11 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 			},
 		},
 	})
-
 }
 
-// the difference between user and account role is that user roles can be assigned
-// group permissions while account roles can be assigned cloud permissions
-func TestAccMorpheusRoleAllPermissionsAccountRoleOk(t *testing.T) {
+// the difference between user and tenant role is that user roles can be assigned
+// group permissions while tenant roles can be assigned cloud permissions
+func TestAccMorpheusRoleTenantAllPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -974,9 +972,9 @@ data "morpheus_workflow" "testacc_workflow" {
   name = morpheus_operational_workflow.testacc_workflow.name
 }
 
-resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
+resource "hpe_morpheus_role" "testacc_role_all_permissions_tenant_role_ok" {
   name      = "` + name + `"
-  role_type = "account"
+  role_type = "tenant"
 
   permissions = {
 	feature_permissions = [
@@ -1046,64 +1044,65 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"role_type",
-			"account",
+			"tenant",
 		),
+		// check fields not available for tenant roles
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"multitenant",
 			"false",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"multitenant_locked",
 			"false",
 		),
-		// check fields not available for account roles
+		// check fields not available for tenant roles
 		resource.TestCheckNoResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_group_access",
 		),
 		// check the default permission access levels
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_cloud_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_instance_type_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_blueprint_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_task_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_workflow_access",
 			"full",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.default_vdi_pool_access",
 			"full",
 		),
 		// check the permissions for resources already existing in morpheus
 		resource.TestCheckTypeSetElemNestedAttrs(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.feature_permissions.*",
 			map[string]string{
 				"code":   "activity",
@@ -1111,7 +1110,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 			},
 		),
 		resource.TestCheckTypeSetElemNestedAttrs(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.feature_permissions.*",
 			map[string]string{
 				"code":   "admin-accounts",
@@ -1119,57 +1118,57 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 			},
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.persona_permissions.0.code",
 			"standard",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.persona_permissions.0.access",
 			"full",
 		),
 		// check the permissions for the resources created with the legacy provider
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.cloud_permissions.0.id",
 			"data.morpheus_cloud.testacc_cloud",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.cloud_permissions.0.access",
 			"full",
 		),
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.blueprint_permissions.0.id",
 			"data.morpheus_blueprint.testacc_blueprint",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.blueprint_permissions.0.access",
 			"full",
 		),
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.instance_type_permissions.0.id",
 			"data.morpheus_instance_type.testacc_instance_type",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.instance_type_permissions.0.access",
 			"full",
 		),
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.task_permissions.0.id",
 			"data.morpheus_task.testacc_task",
 			"id",
 		),
 		resource.TestCheckResourceAttrPair(
-			"hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+			"hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 			"permissions.workflow_permissions.0.id",
 			"data.morpheus_workflow.testacc_workflow",
 			"id",
@@ -1208,10 +1207,9 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_account_role_ok" {
 					"permissions.feature_permissions",
 					"permissions.default_group_access",
 				},
-				ResourceName: "hpe_morpheus_role.testacc_role_all_permissions_account_role_ok",
+				ResourceName: "hpe_morpheus_role.testacc_role_all_permissions_tenant_role_ok",
 				Check:        checkFn,
 			},
 		},
 	})
-
 }

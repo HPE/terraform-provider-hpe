@@ -869,7 +869,7 @@ resource "hpe_morpheus_role" "update_test" {
   name = "` + name + `"
   description = "Initial role description"
   landing_url = "https://initial.example.com"
-  role_type = "account"
+  role_type = "tenant"
   permissions = {
 	default_cloud_access = "none"
 	default_instance_type_access = "none"
@@ -959,7 +959,7 @@ resource "hpe_morpheus_role" "update_test" {
   name = "` + nameUpdated + `"
   description = "Updated role description"
   landing_url = "https://updated.example.com"
-  role_type = "account"
+  role_type = "tenant"
   permissions = {
 	default_cloud_access = "full"
 	default_instance_type_access = "full"
@@ -1027,7 +1027,7 @@ resource "hpe_morpheus_role" "update_test" {
   name = "` + nameUpdated + `"
   description = "Updated role description"
   landing_url = "https://updated.example.com"
-  role_type = "account"
+  role_type = "tenant"
 }
 `
 	// Initial checks
@@ -1050,7 +1050,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"role_type",
-			"account",
+			"tenant",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
@@ -1061,6 +1061,11 @@ resource "hpe_morpheus_role" "update_test" {
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
 			"false",
+		),
+		// checks for fields not applicable to tenant roles
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"permissions.default_group_access",
 		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
@@ -1263,7 +1268,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"role_type",
-			"account",
+			"tenant",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
@@ -1274,6 +1279,11 @@ resource "hpe_morpheus_role" "update_test" {
 			"hpe_morpheus_role.update_test",
 			"multitenant_locked",
 			"false",
+		),
+		// checks for fields not applicable to tenant roles
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.update_test",
+			"permissions.default_group_access",
 		),
 		// Default access levels
 		resource.TestCheckResourceAttr(
@@ -1476,7 +1486,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",
 			"role_type",
-			"account",
+			"tenant",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.update_test",

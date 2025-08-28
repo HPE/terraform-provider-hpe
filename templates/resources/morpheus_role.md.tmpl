@@ -1,0 +1,224 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Roles in HPE Morpheus Enterprise control the access levels for Morpheus resources and features that a User or Tenant has access to.
+
+## Example Usage
+
+{{ tffile "internal/subproviders/morpheus/resources/role/example.tf" }}
+
+
+## Example Usage (Using legacy Morpheus Terraform provider)
+
+{{ tffile "internal/subproviders/morpheus/resources/role/example-using-legacy-provider.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Roles
+
+There are two types of Role available: Tenant Roles and User Roles.
+
+### Tenant Roles
+Tenant Roles set the maximum permission levels for Users in the Tenant. User Role permissions will not exceed the permissions of the Tenant Role.
+
+- Tenant Roles set the maximum permissions for a Tenant
+
+- User Roles in a Tenant cannot exceed the permissions of the Tenant Role
+
+- A Tenant Role can be assigned to one or multiple Tenants
+
+- Tenant Roles determine Cloud access for the Subtenant such that all Clouds in the Master Tenant which have visibility set to Public will show as options in the Tenant Role Cloud Access tab.
+
+Only Master Tenant Clouds given access in the Tenant Role will be accessible in the Subtenant.
+
+### User Roles
+User Roles determine feature, Group, and Instance Type access for all Users. In a multi-Tenant environment, there are two types of User Roles: Single-Tenant User Roles and Multi-Tenant User Roles.
+
+- Single-Tenant User Roles: These exist solely in the Tenant they are created in. All Roles created in a Subtenant will be Single-Tenant User Roles
+
+- Multi-Tenant User Roles: The Master Tenant can create Multi-Tenant User Roles. These Roles are automatically seeded into Subtenants and can be assigned to Subtenant Users. Changes to Multi-Tenant User Roles made in the Master Tenant are propagated to all Subtenants. However, once a Multi-Tenant User Role is edited inside a Subtenant, it is no longer linked to the Multi-Tenant User Role and becomes its own unique Role. It will no longer receive propagated changes.
+
+## Permissions
+Default access levels and fine-grained access levels for HPE Morpheus Enterprise resources can be set using the `permissions` attribute.
+
+Permissions set using the provider behave as overrides to default settings. Unless explicitly set, access levels for resources will retain their default values when using the provider (`none` for features, `default` for non-features).
+
+The `default access` fields control the level of access that resources whose access level is set to `default` will inherit. For example, setting `default_blueprints_access` to `full` will make it so all Blueprints whose access level is set to `default` will inherit an access level of `full` for the Role.
+
+Non-feature fine-grained access levels control the access levels granted to the Role for the various HPE Morpheus Enterprise resources. The available access levels are typically `none`, `read`, `all`, or `default`.
+
+Access to features can be controlled by setting the `feature_permissions` attribute. The available access levels vary by feature. Please note that depending on your HPE Morpheus Enterprise license, configuration, and version, some features may not be available. A list of available feature codes is provided below:
+
+```
+account-usage
+activity
+admin-accounts
+admin-accounts-users
+admin-appliance
+admin-backupSettings
+admin-certificates
+admin-clients
+admin-cm
+admin-containers
+admin-distributed-workers
+admin-environments
+admin-global-policies
+admin-groups
+admin-guidanceSettings
+admin-health
+admin-identity-sources
+admin-keypairs
+admin-licenses
+admin-logSettings
+admin-monitorSettings
+admin-motd
+admin-packages
+admin-plugins
+admin-policies
+admin-profiles
+admin-provisioningSettings
+admin-roles
+admin-server-devices
+admin-server-software
+admin-servers
+admin-servicePlans
+admin-users
+admin-whitelabel
+admin-zones
+app-templates
+apps
+arm-template
+automation-services
+backup-services
+backups
+billing
+catalog
+cloudFormation-template
+code-repositories
+credentials
+dashboard
+deployment-services
+deployments
+execution-request
+executions
+guidance
+helm-template
+infrastructure-boot
+infrastructure-cluster
+infrastructure-dhcp-pool
+infrastructure-domains
+infrastructure-ippools
+infrastructure-kube-cntl
+infrastructure-loadbalancer
+infrastructure-move-server
+infrastructure-nat
+infrastructure-network-dhcp-relay
+infrastructure-network-dhcp-routes
+infrastructure-network-dhcp-server
+infrastructure-network-firewalls
+infrastructure-network-integrations
+infrastructure-network-router-firewalls
+infrastructure-network-router-interfaces
+infrastructure-network-router-redistribution
+infrastructure-network-router-routes
+infrastructure-network-server-groups
+infrastructure-networks
+infrastructure-proxies
+infrastructure-router-dhcp-binding
+infrastructure-router-dhcp-relay
+infrastructure-routers
+infrastructure-securityGroups
+infrastructure-servers-maintenance
+infrastructure-servers-placement
+infrastructure-state
+infrastructure-storage
+infrastructure-storage-browser
+integrations-ansible
+job-executions
+job-templates
+kubernetes-template
+library-advanced-node-type-options
+library-operating-systems
+library-options
+library-templates
+logs
+monitoring
+operations-alarms
+operations-approvals
+operations-budgets
+operations-invoices
+operations-wiki
+projects
+provisioning
+provisioning-add
+provisioning-admin
+provisioning-clone
+provisioning-delete
+provisioning-edit
+provisioning-environment
+provisioning-execute-script
+provisioning-execute-task
+provisioning-execute-workflow
+provisioning-force-delete
+provisioning-import-image
+provisioning-lock
+provisioning-power
+provisioning-reconfigure
+provisioning-reconfigure-add-disk
+provisioning-reconfigure-add-network
+provisioning-reconfigure-change-plan
+provisioning-reconfigure-disk-type
+provisioning-reconfigure-modify-disk
+provisioning-reconfigure-modify-network
+provisioning-reconfigure-remove-disk
+provisioning-reconfigure-remove-network
+provisioning-remove-control
+provisioning-scale
+provisioning-settings
+provisioning-state
+reports
+reports-analytics
+scheduling-execute
+scheduling-power
+security-scan
+service-catalog
+service-catalog-dashboard
+service-catalog-inventory
+services-archives
+services-cypher
+services-image-builder
+services-kubernetes
+services-migrations
+services-network-registry
+services-vdi-copy
+services-vdi-pools
+services-vdi-printer
+snapshots
+task-scripts
+tasks
+terminal
+terminal-access
+terraform-template
+thresholds
+trust-services
+virtual-images
+workflows
+```
+
+## Importing a Role Using Import Blocks
+
+~> When importing a Role using import blocks, the generated config will have to be manually edited to successfully create a Role using it. Read below for more information.
+
+Importing a Role will pick up all fields returned by performing a GET to the API. This results in some properties which are intended to be specific to `user` or `tenant` Roles being read as part of import. For example, for `user` Roles, a value for `default_cloud_access` will be picked up during import and for `tenant` Roles, values for `multitenant`, `multitenant_locked`, and `default_group_access` will be picked up during import. This is due to how HPE Morpheus Enterprise stores Roles internally. When you generate a config using import blocks and run `terraform plan`, the provider will present warning messages informing that certain attributes are only compatible with certain Role types. Remove the incompatible attribute(s) to create the Role successfully.
+
+## More Information
+For more information about Roles in HPE Morpheus Enterprise, please check out the [official documentation](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006474en_us&docLocale=en_US&page=GUID-49067498-304A-4C38-B9C1-D8CF296DD3FA.html#ariaid-title1).
+
+For more information about the HPE Morpheus Enterprise API, please check out the [official API documentation](https://apidocs.morpheusdata.com/).
