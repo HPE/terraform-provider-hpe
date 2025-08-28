@@ -14,10 +14,10 @@ Roles in HPE Morpheus Enterprise control the access levels for Morpheus resource
 
 ```terraform
 resource "hpe_morpheus_role" "example" {
-	name = "ExampleRole"
-	multitenant = false
-        description = "An example role"
-        role_type = "user"
+  name = "ExampleRole"
+  multitenant = false
+  description = "An example role"
+  role_type = "user"
 }
 ```
 
@@ -239,11 +239,11 @@ Read-Only:
 
 - `name` (String)
 
-### Roles
+## Roles
 
 There are two types of Role available: Tenant Roles and User Roles.
 
-## Tenant Roles
+### Tenant Roles
 Tenant Roles set the maximum permission levels for Users in the Tenant. User Role permissions will not exceed the permissions of the Tenant Role.
 
 - Tenant Roles set the maximum permissions for a Tenant
@@ -256,7 +256,7 @@ Tenant Roles set the maximum permission levels for Users in the Tenant. User Rol
 
 Only Master Tenant Clouds given access in the Tenant Role will be accessible in the Subtenant.
 
-## User Roles
+### User Roles
 User Roles determine feature, Group, and Instance Type access for all Users. In a multi-Tenant environment, there are two types of User Roles: Single-Tenant User Roles and Multi-Tenant User Roles.
 
 - Single-Tenant User Roles: These exist solely in the Tenant they are created in. All Roles created in a Subtenant will be Single-Tenant User Roles
