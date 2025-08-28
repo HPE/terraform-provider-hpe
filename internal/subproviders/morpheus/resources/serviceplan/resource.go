@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// go:build experimental
+//go:build experimental
 
 package serviceplan
 
@@ -70,6 +70,7 @@ func getServicePlanAsState(
 			"populate service plan resource",
 			fmt.Sprintf("service plan %d GET failed", id)+errors.ErrMsg(err, hresp),
 		)
+
 		return state, diags
 	}
 
@@ -100,12 +101,17 @@ func getServicePlanAsState(
 		configRanges["max_cores"] = convert.Int64ToType(apiConfig.Ranges.MaxCores.Get())
 		configRanges["min_sockets"] = convert.Int64ToType(apiConfig.Ranges.MinSockets.Get())
 		configRanges["max_sockets"] = convert.Int64ToType(apiConfig.Ranges.MaxSockets.Get())
-		configRanges["min_cores_per_socket"] = convert.Int64ToType(apiConfig.Ranges.MinCoresPerSocket.Get())
-		configRanges["max_cores_per_socket"] = convert.Int64ToType(apiConfig.Ranges.MaxCoresPerSocket.Get())
-		configRanges["min_per_disk_size"] = convert.Int64ToType(apiConfig.Ranges.MinPerDiskSize.Get())
-		configRanges["max_per_disk_size"] = convert.Int64ToType(apiConfig.Ranges.MaxPerDiskSize.Get())
+		configRanges["min_cores_per_socket"] = convert.Int64ToType(
+			apiConfig.Ranges.MinCoresPerSocket.Get())
+		configRanges["max_cores_per_socket"] = convert.Int64ToType(
+			apiConfig.Ranges.MaxCoresPerSocket.Get())
+		configRanges["min_per_disk_size"] = convert.Int64ToType(
+			apiConfig.Ranges.MinPerDiskSize.Get())
+		configRanges["max_per_disk_size"] = convert.Int64ToType(
+			apiConfig.Ranges.MaxPerDiskSize.Get())
 
-		configRangesValue, diags := NewConfigRangesValue(ConfigRangesValue{}.AttributeTypes(ctx), configRanges)
+		configRangesValue, diags := NewConfigRangesValue(
+			ConfigRangesValue{}.AttributeTypes(ctx), configRanges)
 		if diags.HasError() {
 			return state, diags
 		}
@@ -149,7 +155,8 @@ func setProvisionTypeInCreate(
 	pTypes, hresp, err := client.ProvisioningAPI.ListProvisionTypes(ctx).Code(
 		provisionTypeCode).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("GET failed for provision type code %s: %s", provisionTypeCode, errors.ErrMsg(err, hresp))
+		return fmt.Errorf("GET failed for provision type code %s: %s",
+			provisionTypeCode, errors.ErrMsg(err, hresp))
 	}
 
 	var matchingProvisionTypes []sdk.
@@ -182,7 +189,7 @@ func setProvisionTypeInCreate(
 
 // helper function to nest schema values into config struct
 func setConfigInCreate(
-	ctx context.Context,
+	_ context.Context,
 	plan *ServicePlanModel,
 	addServicePlan *sdk.AddServicePlansRequestServicePlan,
 ) {
@@ -300,6 +307,7 @@ func (r *Resource) Create(
 		diags := plan.PriceSetIds.ElementsAs(ctx, &pricesetIds, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
+
 			return
 		}
 
@@ -366,12 +374,14 @@ func (r *Resource) Create(
 
 	addServicePlanRequest := sdk.NewAddServicePlansRequest(*addServicePlan)
 
-	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(ctx).AddServicePlansRequest(*addServicePlanRequest).Execute()
+	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(
+		ctx).AddServicePlansRequest(*addServicePlanRequest).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"create service plan resource",
 			"service plan "+name+" POST failed: "+errors.ErrMsg(err, hresp),
 		)
+
 		return
 	}
 
@@ -380,6 +390,7 @@ func (r *Resource) Create(
 			"create service plan resource",
 			"service plan"+name+" id is nil",
 		)
+
 		return
 	}
 	id := *servicePlan.Id
@@ -388,25 +399,28 @@ func (r *Resource) Create(
 	// write id as soon as possible
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
+
 		return
 	}
 
 	state, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+
 		return
 	}
 }
 
 // update not implemented for now
 func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
+	_ context.Context,
+	_ resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
 	resp.Diagnostics.AddError(
@@ -424,6 +438,7 @@ func (r *Resource) Read(
 
 	diags := req.State.Get(ctx, &plan)
 	if diags.HasError() {
+
 		return
 	}
 
@@ -441,11 +456,13 @@ func (r *Resource) Read(
 	state, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+
 		return
 	}
 }
@@ -460,6 +477,7 @@ func (r *Resource) Delete(
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
+
 		return
 	}
 
