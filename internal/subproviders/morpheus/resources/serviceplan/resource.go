@@ -367,10 +367,7 @@ func (r *Resource) Create(
 		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
 	}
 
-	if !plan.MemorySizeType.IsNull() || !plan.StorageSizeType.IsNull() ||
-		!plan.ConfigRanges.IsNull() {
-		setConfigInCreate(ctx, &plan, addServicePlan)
-	}
+	setConfigInCreate(ctx, &plan, addServicePlan)
 
 	addServicePlanRequest := sdk.NewAddServicePlansRequest(*addServicePlan)
 
