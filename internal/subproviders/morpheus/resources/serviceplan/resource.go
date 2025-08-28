@@ -201,8 +201,7 @@ func setConfigInCreate(
 		ranges := sdk.NewAddServicePlansRequestServicePlanConfigRanges()
 
 		if !plan.ConfigRanges.MinMemory.IsNull() {
-			minMemory := plan.ConfigRanges.MinMemory.ValueInt64Pointer()
-			ranges.MinMemory = minMemory
+			ranges.MinMemory = plan.ConfigRanges.MinMemory.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxMemory.IsNull() {
 			maxMemory := plan.ConfigRanges.MaxMemory.ValueInt64Pointer()
@@ -248,6 +247,7 @@ func setConfigInCreate(
 			maxSockets := plan.ConfigRanges.MaxSockets.ValueInt64Pointer()
 			ranges.MaxSockets = maxSockets
 		}
+
 		config.Ranges = ranges
 	}
 	addServicePlan.Config = config
@@ -372,7 +372,6 @@ func (r *Resource) Create(
 			"create service plan resource",
 			"service plan "+name+" POST failed: "+errors.ErrMsg(err, hresp),
 		)
-
 		return
 	}
 
@@ -441,11 +440,7 @@ func (r *Resource) Read(
 	id := plan.Id.ValueInt64()
 	state, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
-		resp.Diagnostics.AddError(
-			"read service plan resource",
-			fmt.Sprintf("service plan %d: failed to read from api", id),
-		)
-
+		resp.Diagnostics.Append(diags...)
 		return
 	}
 

@@ -112,6 +112,7 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cores_per_socket": schema.Int64Attribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Number of cores per CPU",
 				MarkdownDescription: "Number of cores per CPU",
 				PlanModifiers: []planmodifier.Int64{
