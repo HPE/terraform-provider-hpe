@@ -288,7 +288,7 @@ func (r *Resource) Create(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"create service plan resource",
-			"set provision type POST failed : "+err.Error(),
+			"set provision type ID from code failed : "+err.Error(),
 		)
 
 		return
@@ -298,7 +298,7 @@ func (r *Resource) Create(
 	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
 		var pricesetIds []int64
 		diags := plan.PriceSetIds.ElementsAs(ctx, &pricesetIds, false)
-		if resp.Diagnostics.HasError() {
+		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
