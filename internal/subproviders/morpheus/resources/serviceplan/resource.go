@@ -211,48 +211,37 @@ func setConfigInCreate(
 			ranges.MinMemory = plan.ConfigRanges.MinMemory.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxMemory.IsNull() {
-			maxMemory := plan.ConfigRanges.MaxMemory.ValueInt64Pointer()
-			ranges.MaxMemory = maxMemory
+			ranges.MaxMemory = plan.ConfigRanges.MaxMemory.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MinStorage.IsNull() {
-			minStorage := plan.ConfigRanges.MinStorage.ValueInt64Pointer()
-			ranges.MinStorage = minStorage
+			ranges.MinStorage = plan.ConfigRanges.MinStorage.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxStorage.IsNull() {
-			maxStorage := plan.ConfigRanges.MaxStorage.ValueInt64Pointer()
-			ranges.MaxStorage = maxStorage
+			ranges.MaxStorage = plan.ConfigRanges.MaxStorage.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MinCores.IsNull() {
-			minCores := plan.ConfigRanges.MinCores.ValueInt64Pointer()
-			ranges.MinCores = minCores
+			ranges.MinCores = plan.ConfigRanges.MinCores.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxCores.IsNull() {
-			maxCores := plan.ConfigRanges.MaxCores.ValueInt64Pointer()
-			ranges.MaxCores = maxCores
+			ranges.MaxCores = plan.ConfigRanges.MaxCores.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MinCoresPerSocket.IsNull() {
-			minCoresPerSocket := plan.ConfigRanges.MinCoresPerSocket.ValueInt64Pointer()
-			ranges.MinCoresPerSocket = minCoresPerSocket
+			ranges.MinCoresPerSocket = plan.ConfigRanges.MinCoresPerSocket.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxCoresPerSocket.IsNull() {
-			maxCoresPerSocket := plan.ConfigRanges.MaxCoresPerSocket.ValueInt64Pointer()
-			ranges.MaxCoresPerSocket = maxCoresPerSocket
+			ranges.MaxCoresPerSocket = plan.ConfigRanges.MaxCoresPerSocket.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MinPerDiskSize.IsNull() {
-			minPerDiskSize := plan.ConfigRanges.MinPerDiskSize.ValueInt64Pointer()
-			ranges.MinPerDiskSize = minPerDiskSize
+			ranges.MinPerDiskSize = plan.ConfigRanges.MinPerDiskSize.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxPerDiskSize.IsNull() {
-			maxPerDiskSize := plan.ConfigRanges.MaxPerDiskSize.ValueInt64Pointer()
-			ranges.MaxPerDiskSize = maxPerDiskSize
+			ranges.MaxPerDiskSize = plan.ConfigRanges.MaxPerDiskSize.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MinSockets.IsNull() {
-			minSockets := plan.ConfigRanges.MinSockets.ValueInt64Pointer()
-			ranges.MinSockets = minSockets
+			ranges.MinSockets = plan.ConfigRanges.MinSockets.ValueInt64Pointer()
 		}
 		if !plan.ConfigRanges.MaxSockets.IsNull() {
-			maxSockets := plan.ConfigRanges.MaxSockets.ValueInt64Pointer()
-			ranges.MaxSockets = maxSockets
+			ranges.MaxSockets = plan.ConfigRanges.MaxSockets.ValueInt64Pointer()
 		}
 
 		config.Ranges = ranges
