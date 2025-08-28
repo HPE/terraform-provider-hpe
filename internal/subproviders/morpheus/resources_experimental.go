@@ -33,8 +33,8 @@ func (s SubProvider) GetResources(
 	resources := []func() resource.Resource{
 		group.NewResource,
 		network.NewResource,
-		user.NewResource,
 		role.NewResource,
+		user.NewResource,
 		instance.NewResource,
 	}
 

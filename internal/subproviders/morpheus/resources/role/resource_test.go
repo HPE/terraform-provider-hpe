@@ -3,8 +3,6 @@
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleRole" Multitenant "false" Description "An example role" RoleType "user"
 //go:generate go run ../../../../../cmd/render example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
 
-//go:build experimental
-
 package role_test
 
 import (
@@ -622,7 +620,8 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 	})
 }
 
-// test that we can create a user role with all possible permissions set using strongly-typed permissions
+// test that we can create a user role with all possible permissions set using
+// strongly-typed permissions
 // we test all possible permissions EXCEPT VDI Pool.
 // For now, the VDI pool section of the OpenAPI spec looks to be incorrect
 // and needs to be updated so that we can create one using the generated SDK.
@@ -908,7 +907,6 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 			},
 		},
 	})
-
 }
 
 // the difference between user and tenant role is that user roles can be assigned
@@ -1214,5 +1212,4 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_tenant_role_ok" {
 			},
 		},
 	})
-
 }

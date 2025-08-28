@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package role
 
 import (
@@ -60,8 +58,10 @@ func (d *DataSource) Schema(
 }
 
 // This function breaks out the logic of reading permissions from API response to store to state.
-func populateRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Response) (PermissionsValue, diag.Diagnostics) {
-
+func populateRoleAsStatePermissions(
+	ctx context.Context,
+	r *sdk.GetRole200Response,
+) (PermissionsValue, diag.Diagnostics) {
 	var features []FeaturePermissionsValue
 	for _, v := range r.FeaturePermissions {
 		features = append(features, FeaturePermissionsValue{
@@ -187,7 +187,11 @@ func populateRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Respon
 		return PermissionsValue{}, diags
 	}
 
-	catalogItemTypesSet, diags := types.SetValueFrom(ctx, CatalogItemTypePermissionsValue{}.Type(ctx), catalogItemTypes)
+	catalogItemTypesSet, diags := types.SetValueFrom(
+		ctx,
+		CatalogItemTypePermissionsValue{}.Type(ctx),
+		catalogItemTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -202,7 +206,11 @@ func populateRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Respon
 		return PermissionsValue{}, diags
 	}
 
-	instanceTypesSet, diags := types.SetValueFrom(ctx, InstanceTypePermissionsValue{}.Type(ctx), instanceTypes)
+	instanceTypesSet, diags := types.SetValueFrom(
+		ctx,
+		InstanceTypePermissionsValue{}.Type(ctx),
+		instanceTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -212,7 +220,11 @@ func populateRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Respon
 		return PermissionsValue{}, diags
 	}
 
-	reportTypesSet, diags := types.SetValueFrom(ctx, ReportTypePermissionsValue{}.Type(ctx), reportTypes)
+	reportTypesSet, diags := types.SetValueFrom(
+		ctx,
+		ReportTypePermissionsValue{}.Type(ctx),
+		reportTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -266,7 +278,6 @@ func roleAsState(
 
 	permissions, diags := populateRoleAsStatePermissions(ctx, role)
 	if diags.HasError() {
-
 		return state, diags
 	}
 
