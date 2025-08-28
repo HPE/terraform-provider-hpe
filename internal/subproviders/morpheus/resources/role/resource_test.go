@@ -620,7 +620,8 @@ resource "morpheus_groovy_script_task" "testacc_role_example_legacy_provider_tas
 	})
 }
 
-// test that we can create a user role with all possible permissions set using strongly-typed permissions
+// test that we can create a user role with all possible permissions set using
+// strongly-typed permissions
 // we test all possible permissions EXCEPT VDI Pool.
 // For now, the VDI pool section of the OpenAPI spec looks to be incorrect
 // and needs to be updated so that we can create one using the generated SDK.
@@ -906,7 +907,6 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 			},
 		},
 	})
-
 }
 
 // the difference between user and tenant role is that user roles can be assigned
@@ -1212,5 +1212,4 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_tenant_role_ok" {
 			},
 		},
 	})
-
 }

@@ -53,8 +53,10 @@ func (r *Resource) Schema(
 }
 
 // This function breaks out the logic of reading permissions from API response to store to state.
-func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Response) (PermissionsValue, diag.Diagnostics) {
-
+func populateGetRoleAsStatePermissions(
+	ctx context.Context,
+	r *sdk.GetRole200Response,
+) (PermissionsValue, diag.Diagnostics) {
 	var features []FeaturePermissionsValue
 	for _, v := range r.FeaturePermissions {
 		features = append(features, FeaturePermissionsValue{
@@ -180,7 +182,11 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 		return PermissionsValue{}, diags
 	}
 
-	catalogItemTypesSet, diags := types.SetValueFrom(ctx, CatalogItemTypePermissionsValue{}.Type(ctx), catalogItemTypes)
+	catalogItemTypesSet, diags := types.SetValueFrom(
+		ctx,
+		CatalogItemTypePermissionsValue{}.Type(ctx),
+		catalogItemTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -195,7 +201,11 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 		return PermissionsValue{}, diags
 	}
 
-	instanceTypesSet, diags := types.SetValueFrom(ctx, InstanceTypePermissionsValue{}.Type(ctx), instanceTypes)
+	instanceTypesSet, diags := types.SetValueFrom(
+		ctx,
+		InstanceTypePermissionsValue{}.Type(ctx),
+		instanceTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -205,7 +215,11 @@ func populateGetRoleAsStatePermissions(ctx context.Context, r *sdk.GetRole200Res
 		return PermissionsValue{}, diags
 	}
 
-	reportTypesSet, diags := types.SetValueFrom(ctx, ReportTypePermissionsValue{}.Type(ctx), reportTypes)
+	reportTypesSet, diags := types.SetValueFrom(
+		ctx,
+		ReportTypePermissionsValue{}.Type(ctx),
+		reportTypes,
+	)
 	if diags.HasError() {
 		return PermissionsValue{}, diags
 	}
@@ -279,7 +293,9 @@ func setPermissionsInUpdate(
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		updateRole.SetGlobalCatalogItemTypeAccess(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
+		updateRole.SetGlobalCatalogItemTypeAccess(
+			plan.Permissions.DefaultCatalogItemTypeAccess.ValueString(),
+		)
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
@@ -314,7 +330,8 @@ func setPermissionsInUpdate(
 		updateRole.SetGlobalTaskSetAccess(plan.Permissions.DefaultWorkflowAccess.ValueString())
 	}
 
-	if !plan.Permissions.FeaturePermissions.IsUnknown() && !plan.Permissions.FeaturePermissions.IsNull() {
+	if !plan.Permissions.FeaturePermissions.IsUnknown() &&
+		!plan.Permissions.FeaturePermissions.IsNull() {
 		var planFeaturePermissions []FeaturePermissionsValue
 		diags := plan.Permissions.FeaturePermissions.ElementsAs(ctx, &planFeaturePermissions, false)
 		if diags.HasError() {
@@ -323,10 +340,13 @@ func setPermissionsInUpdate(
 
 		var updateRoleFeaturePermissions []sdk.AddRolesRequestRoleFeaturePermissionsInner
 		for _, v := range planFeaturePermissions {
-			updateRoleFeaturePermissions = append(updateRoleFeaturePermissions, sdk.AddRolesRequestRoleFeaturePermissionsInner{
-				Access: v.Access.ValueString(),
-				Code:   v.Code.ValueString(),
-			})
+			updateRoleFeaturePermissions = append(
+				updateRoleFeaturePermissions,
+				sdk.AddRolesRequestRoleFeaturePermissionsInner{
+					Access: v.Access.ValueString(),
+					Code:   v.Code.ValueString(),
+				},
+			)
 		}
 
 		updateRole.SetFeaturePermissions(updateRoleFeaturePermissions)
@@ -337,7 +357,11 @@ func setPermissionsInUpdate(
 		var updateRoleBlueprintPermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
 
 		var apiStateBlueprintPermissions []BlueprintPermissionsValue
-		diags = apiState.Permissions.BlueprintPermissions.ElementsAs(ctx, &apiStateBlueprintPermissions, false)
+		diags = apiState.Permissions.BlueprintPermissions.ElementsAs(
+			ctx,
+			&apiStateBlueprintPermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -356,18 +380,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planBlueprintPermissions, func(vv BlueprintPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleBlueprintPermissions = append(
+						updateRoleBlueprintPermissions,
+						sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planBlueprintPermissions {
-				updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleBlueprintPermissions = append(
+					updateRoleBlueprintPermissions,
+					sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
@@ -376,10 +406,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateBlueprintPermissions {
-				updateRoleBlueprintPermissions = append(updateRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleBlueprintPermissions = append(
+					updateRoleBlueprintPermissions,
+					sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
@@ -391,7 +424,11 @@ func setPermissionsInUpdate(
 		var updateRoleCatalogItemTypePermissions []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
 
 		var apiStateCatalogItemTypePermissions []CatalogItemTypePermissionsValue
-		diags = apiState.Permissions.CatalogItemTypePermissions.ElementsAs(ctx, &apiStateCatalogItemTypePermissions, false)
+		diags = apiState.Permissions.CatalogItemTypePermissions.ElementsAs(
+			ctx,
+			&apiStateCatalogItemTypePermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -399,7 +436,11 @@ func setPermissionsInUpdate(
 		if !plan.Permissions.CatalogItemTypePermissions.IsNull() {
 
 			var planCatalogItemTypePermissions []CatalogItemTypePermissionsValue
-			diags = plan.Permissions.CatalogItemTypePermissions.ElementsAs(ctx, &planCatalogItemTypePermissions, false)
+			diags = plan.Permissions.CatalogItemTypePermissions.ElementsAs(
+				ctx,
+				&planCatalogItemTypePermissions,
+				false,
+			)
 			if diags.HasError() {
 				return diags
 			}
@@ -407,21 +448,30 @@ func setPermissionsInUpdate(
 			for _, v := range apiStateCatalogItemTypePermissions {
 				// If the permission setting exists in API state, but
 				// NOT in the plan, then reset it to "default".
-				if !slices.ContainsFunc(planCatalogItemTypePermissions, func(vv CatalogItemTypePermissionsValue) bool {
-					return vv.Id.Equal(v.Id)
-				}) {
-					updateRoleCatalogItemTypePermissions = append(updateRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+				if !slices.ContainsFunc(
+					planCatalogItemTypePermissions,
+					func(vv CatalogItemTypePermissionsValue) bool {
+						return vv.Id.Equal(v.Id)
+					},
+				) {
+					updateRoleCatalogItemTypePermissions = append(
+						updateRoleCatalogItemTypePermissions,
+						sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planCatalogItemTypePermissions {
-				updateRoleCatalogItemTypePermissions = append(updateRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleCatalogItemTypePermissions = append(
+					updateRoleCatalogItemTypePermissions,
+					sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
@@ -430,10 +480,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateCatalogItemTypePermissions {
-				updateRoleCatalogItemTypePermissions = append(updateRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleCatalogItemTypePermissions = append(
+					updateRoleCatalogItemTypePermissions,
+					sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
@@ -464,18 +517,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planCloudPermissions, func(vv CloudPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleCloudPermissions = append(updateRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleCloudPermissions = append(
+						updateRoleCloudPermissions,
+						sdk.AddRolesRequestRoleZonesInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planCloudPermissions {
-				updateRoleCloudPermissions = append(updateRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleCloudPermissions = append(
+					updateRoleCloudPermissions,
+					sdk.AddRolesRequestRoleZonesInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetZones(updateRoleCloudPermissions)
@@ -484,10 +543,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateCloudPermissions {
-				updateRoleCloudPermissions = append(updateRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleCloudPermissions = append(
+					updateRoleCloudPermissions,
+					sdk.AddRolesRequestRoleZonesInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetZones(updateRoleCloudPermissions)
@@ -518,18 +580,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planGroupPermissions, func(vv GroupPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleGroupPermissions = append(updateRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleGroupPermissions = append(
+						updateRoleGroupPermissions,
+						sdk.AddRolesRequestRoleSitesInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planGroupPermissions {
-				updateRoleGroupPermissions = append(updateRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleGroupPermissions = append(
+					updateRoleGroupPermissions,
+					sdk.AddRolesRequestRoleSitesInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetSites(updateRoleGroupPermissions)
@@ -538,10 +606,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateGroupPermissions {
-				updateRoleGroupPermissions = append(updateRoleGroupPermissions, sdk.AddRolesRequestRoleSitesInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleGroupPermissions = append(
+					updateRoleGroupPermissions,
+					sdk.AddRolesRequestRoleSitesInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetSites(updateRoleGroupPermissions)
@@ -553,7 +624,11 @@ func setPermissionsInUpdate(
 		var updateRoleInstanceTypePermissions []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
 
 		var apiStateInstanceTypePermissions []InstanceTypePermissionsValue
-		diags = apiState.Permissions.InstanceTypePermissions.ElementsAs(ctx, &apiStateInstanceTypePermissions, false)
+		diags = apiState.Permissions.InstanceTypePermissions.ElementsAs(
+			ctx,
+			&apiStateInstanceTypePermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -561,7 +636,11 @@ func setPermissionsInUpdate(
 		if !plan.Permissions.InstanceTypePermissions.IsNull() {
 
 			var planInstanceTypePermissions []InstanceTypePermissionsValue
-			diags := plan.Permissions.InstanceTypePermissions.ElementsAs(ctx, &planInstanceTypePermissions, false)
+			diags := plan.Permissions.InstanceTypePermissions.ElementsAs(
+				ctx,
+				&planInstanceTypePermissions,
+				false,
+			)
 			if diags.HasError() {
 				return diags
 			}
@@ -569,21 +648,30 @@ func setPermissionsInUpdate(
 			for _, v := range apiStateInstanceTypePermissions {
 				// If the permission setting exists in API state, but
 				// NOT in the plan, then reset it to "default".
-				if !slices.ContainsFunc(planInstanceTypePermissions, func(vv InstanceTypePermissionsValue) bool {
-					return vv.Id.Equal(v.Id)
-				}) {
-					updateRoleInstanceTypePermissions = append(updateRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+				if !slices.ContainsFunc(
+					planInstanceTypePermissions,
+					func(vv InstanceTypePermissionsValue) bool {
+						return vv.Id.Equal(v.Id)
+					},
+				) {
+					updateRoleInstanceTypePermissions = append(
+						updateRoleInstanceTypePermissions,
+						sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planInstanceTypePermissions {
-				updateRoleInstanceTypePermissions = append(updateRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleInstanceTypePermissions = append(
+					updateRoleInstanceTypePermissions,
+					sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
@@ -592,10 +680,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateInstanceTypePermissions {
-				updateRoleInstanceTypePermissions = append(updateRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleInstanceTypePermissions = append(
+					updateRoleInstanceTypePermissions,
+					sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
@@ -607,7 +698,11 @@ func setPermissionsInUpdate(
 		var updateRolePersonaPermissions []sdk.AddRolesRequestRolePersonaPermissionsInner
 
 		var apiStatePersonaPermissions []PersonaPermissionsValue
-		diags = apiState.Permissions.PersonaPermissions.ElementsAs(ctx, &apiStatePersonaPermissions, false)
+		diags = apiState.Permissions.PersonaPermissions.ElementsAs(
+			ctx,
+			&apiStatePersonaPermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -626,18 +721,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planPersonaPermissions, func(vv PersonaPermissionsValue) bool {
 					return vv.Code.Equal(v.Code)
 				}) {
-					updateRolePersonaPermissions = append(updateRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Code:   v.Code.ValueString(),
-					})
+					updateRolePersonaPermissions = append(
+						updateRolePersonaPermissions,
+						sdk.AddRolesRequestRolePersonaPermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Code:   v.Code.ValueString(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planPersonaPermissions {
-				updateRolePersonaPermissions = append(updateRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
-					Access: v.Access.ValueString(),
-					Code:   v.Code.ValueString(),
-				})
+				updateRolePersonaPermissions = append(
+					updateRolePersonaPermissions,
+					sdk.AddRolesRequestRolePersonaPermissionsInner{
+						Access: v.Access.ValueString(),
+						Code:   v.Code.ValueString(),
+					},
+				)
 			}
 
 			updateRole.SetPersonaPermissions(updateRolePersonaPermissions)
@@ -646,10 +747,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStatePersonaPermissions {
-				updateRolePersonaPermissions = append(updateRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Code:   v.Code.ValueString(),
-				})
+				updateRolePersonaPermissions = append(
+					updateRolePersonaPermissions,
+					sdk.AddRolesRequestRolePersonaPermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Code:   v.Code.ValueString(),
+					},
+				)
 			}
 
 			updateRole.SetPersonaPermissions(updateRolePersonaPermissions)
@@ -661,7 +765,11 @@ func setPermissionsInUpdate(
 		var updateRoleReportTypePermissions []sdk.AddRolesRequestRoleReportTypePermissionsInner
 
 		var apiStateReportTypePermissions []ReportTypePermissionsValue
-		diags = apiState.Permissions.ReportTypePermissions.ElementsAs(ctx, &apiStateReportTypePermissions, false)
+		diags = apiState.Permissions.ReportTypePermissions.ElementsAs(
+			ctx,
+			&apiStateReportTypePermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -669,7 +777,11 @@ func setPermissionsInUpdate(
 		if !plan.Permissions.ReportTypePermissions.IsNull() {
 
 			var planReportTypePermissions []ReportTypePermissionsValue
-			diags := plan.Permissions.ReportTypePermissions.ElementsAs(ctx, &planReportTypePermissions, false)
+			diags := plan.Permissions.ReportTypePermissions.ElementsAs(
+				ctx,
+				&planReportTypePermissions,
+				false,
+			)
 			if diags.HasError() {
 				return diags
 			}
@@ -680,18 +792,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planReportTypePermissions, func(vv ReportTypePermissionsValue) bool {
 					return vv.Code.Equal(v.Code)
 				}) {
-					updateRoleReportTypePermissions = append(updateRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Code:   v.Code.ValueString(),
-					})
+					updateRoleReportTypePermissions = append(
+						updateRoleReportTypePermissions,
+						sdk.AddRolesRequestRoleReportTypePermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Code:   v.Code.ValueString(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planReportTypePermissions {
-				updateRoleReportTypePermissions = append(updateRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
-					Access: v.Access.ValueString(),
-					Code:   v.Code.ValueString(),
-				})
+				updateRoleReportTypePermissions = append(
+					updateRoleReportTypePermissions,
+					sdk.AddRolesRequestRoleReportTypePermissionsInner{
+						Access: v.Access.ValueString(),
+						Code:   v.Code.ValueString(),
+					},
+				)
 			}
 
 			updateRole.SetReportTypePermissions(updateRoleReportTypePermissions)
@@ -700,10 +818,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateReportTypePermissions {
-				updateRoleReportTypePermissions = append(updateRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Code:   v.Code.ValueString(),
-				})
+				updateRoleReportTypePermissions = append(
+					updateRoleReportTypePermissions,
+					sdk.AddRolesRequestRoleReportTypePermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Code:   v.Code.ValueString(),
+					},
+				)
 			}
 
 			updateRole.SetReportTypePermissions(updateRoleReportTypePermissions)
@@ -734,18 +855,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planTaskPermissions, func(vv TaskPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleTaskPermissions = append(updateRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleTaskPermissions = append(
+						updateRoleTaskPermissions,
+						sdk.AddRolesRequestRoleTaskPermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planTaskPermissions {
-				updateRoleTaskPermissions = append(updateRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleTaskPermissions = append(
+					updateRoleTaskPermissions,
+					sdk.AddRolesRequestRoleTaskPermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetTaskPermissions(updateRoleTaskPermissions)
@@ -754,10 +881,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateTaskPermissions {
-				updateRoleTaskPermissions = append(updateRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleTaskPermissions = append(
+					updateRoleTaskPermissions,
+					sdk.AddRolesRequestRoleTaskPermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetTaskPermissions(updateRoleTaskPermissions)
@@ -769,7 +899,11 @@ func setPermissionsInUpdate(
 		var updateRoleVdiPoolPermissions []sdk.AddRolesRequestRoleVdiPoolPermissionsInner
 
 		var apiStateVdiPoolPermissions []VdiPoolPermissionsValue
-		diags = apiState.Permissions.VdiPoolPermissions.ElementsAs(ctx, &apiStateVdiPoolPermissions, false)
+		diags = apiState.Permissions.VdiPoolPermissions.ElementsAs(
+			ctx,
+			&apiStateVdiPoolPermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -788,18 +922,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planVdiPoolPermissions, func(vv VdiPoolPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleVdiPoolPermissions = append(updateRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleVdiPoolPermissions = append(
+						updateRoleVdiPoolPermissions,
+						sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planVdiPoolPermissions {
-				updateRoleVdiPoolPermissions = append(updateRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleVdiPoolPermissions = append(
+					updateRoleVdiPoolPermissions,
+					sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
@@ -808,10 +948,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateVdiPoolPermissions {
-				updateRoleVdiPoolPermissions = append(updateRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleVdiPoolPermissions = append(
+					updateRoleVdiPoolPermissions,
+					sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
@@ -823,7 +966,11 @@ func setPermissionsInUpdate(
 		var updateRoleWorkflowPermissions []sdk.AddRolesRequestRoleTaskSetPermissionsInner
 
 		var apiStateWorkflowPermissions []WorkflowPermissionsValue
-		diags = apiState.Permissions.WorkflowPermissions.ElementsAs(ctx, &apiStateWorkflowPermissions, false)
+		diags = apiState.Permissions.WorkflowPermissions.ElementsAs(
+			ctx,
+			&apiStateWorkflowPermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
@@ -842,18 +989,24 @@ func setPermissionsInUpdate(
 				if !slices.ContainsFunc(planWorkflowPermissions, func(vv WorkflowPermissionsValue) bool {
 					return vv.Id.Equal(v.Id)
 				}) {
-					updateRoleWorkflowPermissions = append(updateRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
-						Access: DefaultPermissionAccessLevel,
-						Id:     v.Id.ValueInt64(),
-					})
+					updateRoleWorkflowPermissions = append(
+						updateRoleWorkflowPermissions,
+						sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+							Access: DefaultPermissionAccessLevel,
+							Id:     v.Id.ValueInt64(),
+						},
+					)
 				}
 			}
 
 			for _, v := range planWorkflowPermissions {
-				updateRoleWorkflowPermissions = append(updateRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
-					Access: v.Access.ValueString(),
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleWorkflowPermissions = append(
+					updateRoleWorkflowPermissions,
+					sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+						Access: v.Access.ValueString(),
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetTaskSetPermissions(updateRoleWorkflowPermissions)
@@ -862,10 +1015,13 @@ func setPermissionsInUpdate(
 			// For when we remove permissions from config.
 			// Resets everything obtained from the GET to their default values.
 			for _, v := range apiStateWorkflowPermissions {
-				updateRoleWorkflowPermissions = append(updateRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
-					Access: DefaultPermissionAccessLevel,
-					Id:     v.Id.ValueInt64(),
-				})
+				updateRoleWorkflowPermissions = append(
+					updateRoleWorkflowPermissions,
+					sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+						Access: DefaultPermissionAccessLevel,
+						Id:     v.Id.ValueInt64(),
+					},
+				)
 			}
 
 			updateRole.SetTaskSetPermissions(updateRoleWorkflowPermissions)
@@ -888,7 +1044,9 @@ func setPermissionsInCreate(
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		addRole.SetGlobalCatalogItemTypeAccess(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
+		addRole.SetGlobalCatalogItemTypeAccess(
+			plan.Permissions.DefaultCatalogItemTypeAccess.ValueString(),
+		)
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
@@ -932,10 +1090,13 @@ func setPermissionsInCreate(
 
 		var addRoleFeaturePermissions []sdk.AddRolesRequestRoleFeaturePermissionsInner
 		for _, v := range featurePermissions {
-			addRoleFeaturePermissions = append(addRoleFeaturePermissions, sdk.AddRolesRequestRoleFeaturePermissionsInner{
-				Access: v.Access.ValueString(),
-				Code:   v.Code.ValueString(),
-			})
+			addRoleFeaturePermissions = append(
+				addRoleFeaturePermissions,
+				sdk.AddRolesRequestRoleFeaturePermissionsInner{
+					Access: v.Access.ValueString(),
+					Code:   v.Code.ValueString(),
+				},
+			)
 		}
 
 		addRole.SetFeaturePermissions(addRoleFeaturePermissions)
@@ -950,10 +1111,13 @@ func setPermissionsInCreate(
 
 		var addRoleBlueprintPermissions []sdk.AddRolesRequestRoleAppTemplatePermissionsInner
 		for _, v := range blueprintPermissions {
-			addRoleBlueprintPermissions = append(addRoleBlueprintPermissions, sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleBlueprintPermissions = append(
+				addRoleBlueprintPermissions,
+				sdk.AddRolesRequestRoleAppTemplatePermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetAppTemplatePermissions(addRoleBlueprintPermissions)
@@ -961,17 +1125,24 @@ func setPermissionsInCreate(
 
 	if !plan.Permissions.CatalogItemTypePermissions.IsUnknown() {
 		var catalogItemTypePermissions []CatalogItemTypePermissionsValue
-		diags = plan.Permissions.CatalogItemTypePermissions.ElementsAs(ctx, &catalogItemTypePermissions, false)
+		diags = plan.Permissions.CatalogItemTypePermissions.ElementsAs(
+			ctx,
+			&catalogItemTypePermissions,
+			false,
+		)
 		if diags.HasError() {
 			return diags
 		}
 
 		var addRoleCatalogItemTypePermissions []sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner
 		for _, v := range catalogItemTypePermissions {
-			addRoleCatalogItemTypePermissions = append(addRoleCatalogItemTypePermissions, sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleCatalogItemTypePermissions = append(
+				addRoleCatalogItemTypePermissions,
+				sdk.AddRolesRequestRoleCatalogItemTypePermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetCatalogItemTypePermissions(addRoleCatalogItemTypePermissions)
@@ -986,10 +1157,13 @@ func setPermissionsInCreate(
 
 		var addRoleCloudPermissions []sdk.AddRolesRequestRoleZonesInner
 		for _, v := range cloudPermissions {
-			addRoleCloudPermissions = append(addRoleCloudPermissions, sdk.AddRolesRequestRoleZonesInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleCloudPermissions = append(
+				addRoleCloudPermissions,
+				sdk.AddRolesRequestRoleZonesInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetZones(addRoleCloudPermissions)
@@ -1022,10 +1196,13 @@ func setPermissionsInCreate(
 
 		var addRoleInstanceTypePermissions []sdk.AddRolesRequestRoleInstanceTypePermissionsInner
 		for _, v := range instanceTypePermissions {
-			addRoleInstanceTypePermissions = append(addRoleInstanceTypePermissions, sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleInstanceTypePermissions = append(
+				addRoleInstanceTypePermissions,
+				sdk.AddRolesRequestRoleInstanceTypePermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetInstanceTypePermissions(addRoleInstanceTypePermissions)
@@ -1040,10 +1217,13 @@ func setPermissionsInCreate(
 
 		var addRolePersonaPermissions []sdk.AddRolesRequestRolePersonaPermissionsInner
 		for _, v := range personaPermissions {
-			addRolePersonaPermissions = append(addRolePersonaPermissions, sdk.AddRolesRequestRolePersonaPermissionsInner{
-				Access: v.Access.ValueString(),
-				Code:   v.Code.ValueString(),
-			})
+			addRolePersonaPermissions = append(
+				addRolePersonaPermissions,
+				sdk.AddRolesRequestRolePersonaPermissionsInner{
+					Access: v.Access.ValueString(),
+					Code:   v.Code.ValueString(),
+				},
+			)
 		}
 
 		addRole.SetPersonaPermissions(addRolePersonaPermissions)
@@ -1058,10 +1238,13 @@ func setPermissionsInCreate(
 
 		var addRoleReportTypePermissions []sdk.AddRolesRequestRoleReportTypePermissionsInner
 		for _, v := range reportTypePermissions {
-			addRoleReportTypePermissions = append(addRoleReportTypePermissions, sdk.AddRolesRequestRoleReportTypePermissionsInner{
-				Access: v.Access.ValueString(),
-				Code:   v.Code.ValueString(),
-			})
+			addRoleReportTypePermissions = append(
+				addRoleReportTypePermissions,
+				sdk.AddRolesRequestRoleReportTypePermissionsInner{
+					Access: v.Access.ValueString(),
+					Code:   v.Code.ValueString(),
+				},
+			)
 		}
 
 		addRole.SetReportTypePermissions(addRoleReportTypePermissions)
@@ -1077,10 +1260,13 @@ func setPermissionsInCreate(
 
 		var addRoleTaskPermissions []sdk.AddRolesRequestRoleTaskPermissionsInner
 		for _, v := range taskPermissions {
-			addRoleTaskPermissions = append(addRoleTaskPermissions, sdk.AddRolesRequestRoleTaskPermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleTaskPermissions = append(
+				addRoleTaskPermissions,
+				sdk.AddRolesRequestRoleTaskPermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetTaskPermissions(addRoleTaskPermissions)
@@ -1095,10 +1281,13 @@ func setPermissionsInCreate(
 		}
 
 		for _, v := range vdiPoolPermissions {
-			addRoleVdiPoolPermissions = append(addRoleVdiPoolPermissions, sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleVdiPoolPermissions = append(
+				addRoleVdiPoolPermissions,
+				sdk.AddRolesRequestRoleVdiPoolPermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetVdiPoolPermissions(addRoleVdiPoolPermissions)
@@ -1113,10 +1302,13 @@ func setPermissionsInCreate(
 		}
 
 		for _, v := range workflowPermissions {
-			addRoleWorkflowPermissions = append(addRoleWorkflowPermissions, sdk.AddRolesRequestRoleTaskSetPermissionsInner{
-				Access: v.Access.ValueString(),
-				Id:     v.Id.ValueInt64(),
-			})
+			addRoleWorkflowPermissions = append(
+				addRoleWorkflowPermissions,
+				sdk.AddRolesRequestRoleTaskSetPermissionsInner{
+					Access: v.Access.ValueString(),
+					Id:     v.Id.ValueInt64(),
+				},
+			)
 		}
 
 		addRole.SetTaskSetPermissions(addRoleWorkflowPermissions)
@@ -1146,7 +1338,6 @@ func getRoleAsState(
 
 	permissions, diags := populateGetRoleAsStatePermissions(ctx, r)
 	if diags.HasError() {
-
 		return state, diags
 	}
 
@@ -1319,7 +1510,7 @@ func (r *Resource) Create(
 		apiState.Permissions.DefaultWorkflowAccess = types.StringNull()
 	}
 
-	// for the case of ommitting permissions field
+	// for the case of omitting permissions field
 	if plan.Permissions.IsNull() {
 		apiState.Permissions = NewPermissionsValueNull()
 	}
@@ -1331,14 +1522,18 @@ func (r *Resource) Create(
 	// If the user provided a config with feature permissions as part of the create,
 	// then set the feature permissions to what was in the plan (optional).
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
-
 		// Only feature permissions requires this more complicated create logic.
 		// This is because if the user sets feature permissions, we can only store to state
 		// the set of feature permissions that were set by the user.
-		if !plan.Permissions.FeaturePermissions.IsNull() && !plan.Permissions.FeaturePermissions.IsUnknown() {
+		if !plan.Permissions.FeaturePermissions.IsNull() &&
+			!plan.Permissions.FeaturePermissions.IsUnknown() {
 
 			var planFeaturePermissions []FeaturePermissionsValue
-			diags := plan.Permissions.FeaturePermissions.ElementsAs(ctx, &planFeaturePermissions, false)
+			diags := plan.Permissions.FeaturePermissions.ElementsAs(
+				ctx,
+				&planFeaturePermissions,
+				false,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1346,7 +1541,11 @@ func (r *Resource) Create(
 			}
 
 			var apiStateFeaturePermissions []FeaturePermissionsValue
-			diags = apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
+			diags = apiState.Permissions.FeaturePermissions.ElementsAs(
+				ctx,
+				&apiStateFeaturePermissions,
+				false,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1376,7 +1575,11 @@ func (r *Resource) Create(
 				}
 			}
 
-			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), planFeaturePermissions)
+			featuresSetWithComputed, diags := types.SetValueFrom(
+				ctx,
+				FeaturePermissionsValue{}.Type(ctx),
+				planFeaturePermissions,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1385,7 +1588,6 @@ func (r *Resource) Create(
 
 			apiState.Permissions.FeaturePermissions = featuresSetWithComputed
 		}
-
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &apiState)...)
@@ -1473,13 +1675,12 @@ func (r *Resource) Read(
 		apiState.Permissions.FeaturePermissions = types.SetNull(FeaturePermissionsValue{}.Type(ctx))
 	}
 
-	// for the case of ommitting permissions field
+	// for the case of omitting permissions field
 	if state.Permissions.IsNull() {
 		apiState.Permissions = NewPermissionsValueNull()
 	}
 
 	if !state.Permissions.IsNull() && !state.Permissions.IsUnknown() {
-
 		// We extract all feature permissions from API state into a []FeaturePermissionsValue.
 		// Then we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
 		// Then we check if the feature permissions in Terraform state are a subset of those in API state.
@@ -1488,10 +1689,15 @@ func (r *Resource) Read(
 		// We need to do this because the API returns ALL feature permissions in a GET,
 		// not just the ones whose default values were overridden by the user.
 
-		if !state.Permissions.FeaturePermissions.IsNull() && !state.Permissions.FeaturePermissions.IsUnknown() {
+		if !state.Permissions.FeaturePermissions.IsNull() &&
+			!state.Permissions.FeaturePermissions.IsUnknown() {
 
 			var apiStateFeaturePermissions []FeaturePermissionsValue
-			diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
+			diags := apiState.Permissions.FeaturePermissions.ElementsAs(
+				ctx,
+				&apiStateFeaturePermissions,
+				false,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1543,7 +1749,11 @@ func (r *Resource) Read(
 			}
 
 			// If we get to here, the permissions in state are a subset of those in API state.
-			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), stateFeaturePermissions)
+			featuresSetWithComputed, diags := types.SetValueFrom(
+				ctx,
+				FeaturePermissionsValue{}.Type(ctx),
+				stateFeaturePermissions,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1610,6 +1820,7 @@ func (r *Resource) Update(
 			"update role resource",
 			fmt.Sprintf("role %d: failed to create client: ", id)+err.Error(),
 		)
+
 		return
 	}
 
@@ -1618,7 +1829,8 @@ func (r *Resource) Update(
 	// 2. Perform a PUT to both reset the existing permissions levels and
 	// apply the permissions levels from the Terraform plan in the same PUT.
 
-	// Doing the steps in that order will ensure that our Terraform config will act as an override for defaults.
+	// Doing the steps in that order will ensure that our Terraform config
+	// will act as an override for defaults.
 
 	// 1. Perform a GET so we know which non-feature permissions to reset
 	getRole, diags := getRoleAsState(ctx, id, client)
@@ -1653,6 +1865,7 @@ func (r *Resource) Update(
 			"update role resource",
 			fmt.Sprintf("role %d PUT failed: ", id)+errors.ErrMsg(err, hresp),
 		)
+
 		return
 	}
 
@@ -1661,6 +1874,7 @@ func (r *Resource) Update(
 			"update role resource",
 			fmt.Sprintf("role %d: id is nil", id),
 		)
+
 		return
 	}
 
@@ -1670,6 +1884,7 @@ func (r *Resource) Update(
 			"update role resource",
 			fmt.Sprintf("role %d: id mismatch %d != %d", id, id, newID),
 		)
+
 		return
 	}
 
@@ -1680,6 +1895,7 @@ func (r *Resource) Update(
 			"update role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
 		)
+
 		return
 	}
 
@@ -1735,7 +1951,6 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
-
 		// We extract all feature permissions from API state into a []FeaturePermissionsValue.
 		// Then we extract the feature permissions from Terraform state to a []FeaturePermissionsValue.
 		// Then we check if the feature permissions in Terraform state are a subset of those in API state.
@@ -1744,10 +1959,15 @@ func (r *Resource) Update(
 		// We need to do this because the API returns ALL feature permissions in a GET,
 		// not just the ones whose default values were overridden by the user.
 
-		if !plan.Permissions.FeaturePermissions.IsNull() && !plan.Permissions.FeaturePermissions.IsUnknown() {
+		if !plan.Permissions.FeaturePermissions.IsNull() &&
+			!plan.Permissions.FeaturePermissions.IsUnknown() {
 
 			var apiStateFeaturePermissions []FeaturePermissionsValue
-			diags := apiState.Permissions.FeaturePermissions.ElementsAs(ctx, &apiStateFeaturePermissions, false)
+			diags := apiState.Permissions.FeaturePermissions.ElementsAs(
+				ctx,
+				&apiStateFeaturePermissions,
+				false,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1767,7 +1987,6 @@ func (r *Resource) Update(
 				if n := slices.IndexFunc(apiStateFeaturePermissions, func(vv FeaturePermissionsValue) bool {
 					// We should only compare on code as it acts as an ID and the other fields are computed.
 					return vv.Code.Equal(v.Code)
-
 				}); n > -1 {
 					// If there's a match, update the permissions to store to state with the computed values.
 					// We set access to detect drift in API and plan
@@ -1789,7 +2008,11 @@ func (r *Resource) Update(
 			}
 
 			// If we get to here, the permissions in plan + state are a subset of those in API state.
-			featuresSetWithComputed, diags := types.SetValueFrom(ctx, FeaturePermissionsValue{}.Type(ctx), planFeaturePermissions)
+			featuresSetWithComputed, diags := types.SetValueFrom(
+				ctx,
+				FeaturePermissionsValue{}.Type(ctx),
+				planFeaturePermissions,
+			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
 
@@ -1854,29 +2077,37 @@ func (r *Resource) ImportState(
 	// support the optional typing of the various permissions fields.
 	// By doing this, import will populate permissions with all values read from the API,
 	// while maintaining the optional behaviour on Create.
-	emptyPermissions, diags := NewPermissionsValue(PermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"default_blueprint_access":         types.StringUnknown(),
-		"default_catalog_item_type_access": types.StringUnknown(),
-		"default_cloud_access":             types.StringUnknown(),
-		"default_group_access":             types.StringUnknown(),
-		"default_instance_type_access":     types.StringUnknown(),
-		"default_persona_access":           types.StringUnknown(),
-		"default_report_type_access":       types.StringUnknown(),
-		"default_task_access":              types.StringUnknown(),
-		"default_vdi_pool_access":          types.StringUnknown(),
-		"default_workflow_access":          types.StringUnknown(),
-		"feature_permissions":              types.SetUnknown(FeaturePermissionsValue{}.Type(ctx)),
-		"blueprint_permissions":            types.SetUnknown(BlueprintPermissionsValue{}.Type(ctx)),
-		"catalog_item_type_permissions":    types.SetUnknown(CatalogItemTypePermissionsValue{}.Type(ctx)),
-		"cloud_permissions":                types.SetUnknown(CloudPermissionsValue{}.Type(ctx)),
-		"group_permissions":                types.SetUnknown(GroupPermissionsValue{}.Type(ctx)),
-		"instance_type_permissions":        types.SetUnknown(InstanceTypePermissionsValue{}.Type(ctx)),
-		"persona_permissions":              types.SetUnknown(PersonaPermissionsValue{}.Type(ctx)),
-		"report_type_permissions":          types.SetUnknown(ReportTypePermissionsValue{}.Type(ctx)),
-		"task_permissions":                 types.SetUnknown(TaskPermissionsValue{}.Type(ctx)),
-		"vdi_pool_permissions":             types.SetUnknown(VdiPoolPermissionsValue{}.Type(ctx)),
-		"workflow_permissions":             types.SetUnknown(WorkflowPermissionsValue{}.Type(ctx)),
-	})
+	emptyPermissions, diags := NewPermissionsValue(
+		PermissionsValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"default_blueprint_access":         types.StringUnknown(),
+			"default_catalog_item_type_access": types.StringUnknown(),
+			"default_cloud_access":             types.StringUnknown(),
+			"default_group_access":             types.StringUnknown(),
+			"default_instance_type_access":     types.StringUnknown(),
+			"default_persona_access":           types.StringUnknown(),
+			"default_report_type_access":       types.StringUnknown(),
+			"default_task_access":              types.StringUnknown(),
+			"default_vdi_pool_access":          types.StringUnknown(),
+			"default_workflow_access":          types.StringUnknown(),
+			"feature_permissions":              types.SetUnknown(FeaturePermissionsValue{}.Type(ctx)),
+			"blueprint_permissions":            types.SetUnknown(BlueprintPermissionsValue{}.Type(ctx)),
+			"catalog_item_type_permissions": types.SetUnknown(
+				CatalogItemTypePermissionsValue{}.Type(ctx),
+			),
+			"cloud_permissions":         types.SetUnknown(CloudPermissionsValue{}.Type(ctx)),
+			"group_permissions":         types.SetUnknown(GroupPermissionsValue{}.Type(ctx)),
+			"instance_type_permissions": types.SetUnknown(InstanceTypePermissionsValue{}.Type(ctx)),
+			"persona_permissions":       types.SetUnknown(PersonaPermissionsValue{}.Type(ctx)),
+			"report_type_permissions":   types.SetUnknown(ReportTypePermissionsValue{}.Type(ctx)),
+			"task_permissions":          types.SetUnknown(TaskPermissionsValue{}.Type(ctx)),
+			"vdi_pool_permissions":      types.SetUnknown(VdiPoolPermissionsValue{}.Type(ctx)),
+			"workflow_permissions":      types.SetUnknown(WorkflowPermissionsValue{}.Type(ctx)),
+		},
+	)
+	if diags.HasError() {
+		return
+	}
 	emptyPermissions.state = attr.ValueStateKnown
 
 	diags = resp.State.SetAttribute(ctx, path.Root("permissions"), emptyPermissions)
