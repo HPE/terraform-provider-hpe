@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -71,6 +73,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusUserExample(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -78,17 +81,22 @@ func TestAccMorpheusUserExample(t *testing.T) {
 	// nolint: goconst
 	providerConfig := testhelpers.ProviderBlock()
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	path := "../../../../../examples/resources/hpe_morpheus_user/resource.tf"
 	exampleConfig, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Error reading example config: %v", err)
 	}
 
+	// Replace the hardcoded username with our generated name
+	configWithGeneratedName := strings.Replace(string(exampleConfig), "testacc-example", name, 1)
+
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.example",
 			"username",
-			"testacc-example",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.example",
@@ -179,7 +187,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + string(exampleConfig),
+				Config:   providerConfig + configWithGeneratedName,
 				Check:    checkFn,
 				PlanOnly: false,
 			},
@@ -199,13 +207,15 @@ func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
 	// nolint: goconst
 	providerConfig := testhelpers.ProviderBlock()
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-TestAccMorpheusUserUpdateTestIdOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
@@ -220,7 +230,7 @@ resource "hpe_morpheus_user" "foo" {
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-TestAccMorpheusUserUpdateTestIdOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
@@ -244,10 +254,12 @@ func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	// nolint: goconst
 	resourceConfig := `
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
@@ -255,7 +267,7 @@ resource "hpe_morpheus_user" "foo" {
 `
 	resourceConfigPostImport := `
 resource "hpe_morpheus_user" "foo" {
-	username = "testacc-TestAccMorpheusUserRequiredAttrsOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	# password_wo = "Secret123!"
 	role_ids = [3]
@@ -265,7 +277,7 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserRequiredAttrsOk",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -358,6 +370,8 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	baseChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -367,7 +381,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserUpdateOk",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -474,7 +488,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserUpdateOkChanged",
+			name+"Updated",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -570,7 +584,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -594,7 +608,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -619,7 +633,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -644,7 +658,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects first_name change
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -669,7 +683,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects last_name change to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -694,7 +708,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects last_name change
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -719,7 +733,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects password_wo_version to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	# changed
@@ -744,7 +758,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects no change if only password_wo is changed
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	# changed
 	# password_wo = "Secret123!"
@@ -769,7 +783,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed role_ids
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -795,7 +809,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	# changed
-	username = "testacc-TestAccMorpheusUserUpdateOkNew"
+	username = "` + name + `Updated"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -819,7 +833,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed windows username
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -844,7 +858,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed linux username
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -869,7 +883,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed linux password version
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -894,7 +908,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed windows password version
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -919,7 +933,7 @@ resource "hpe_morpheus_user" "foo" {
 # checks plan detects changed linux key pair id
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserUpdateOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -945,7 +959,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	# changed
-	username = "testacc-TestAccMorpheusUserUpdateOkChanged"
+	username = "` + name + `Updated"
 	# changed
 	email = "bar@hpe.com"
 	# changed
@@ -983,7 +997,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	# changed
-	username = "testacc-TestAccMorpheusUserUpdateOkChanged"
+	username = "` + name + `Updated"
 	# changed
 	email = "bar@hpe.com"
 	# changed
@@ -1028,6 +1042,8 @@ func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	resourceCfg := `
 # Role id 0 causes a test failure because it is ignored by
 # the server and only the other two roles are created
@@ -1040,7 +1056,7 @@ func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserAllAttrsOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -1068,7 +1084,7 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserAllAttrsOk",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1215,6 +1231,9 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingRoles(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1225,7 +1244,7 @@ provider "hpe" {
 }
 
 resource "hpe_morpheus_user" "foo" {
-	username = "test2"
+	username = "` + name + `"
 	email = "bar@hpe.com"
 	password = "Secret123!"
 	# role_ids = [3,1]
@@ -1248,6 +1267,9 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1258,7 +1280,7 @@ provider "hpe" {
 }
 
 resource "hpe_morpheus_user" "foo" {
-	#username = "test2"
+	#username = "` + name + `"
 	email = "bar@hpe.com"
 	password = "Secret123!"
 	role_ids = [3,1]
@@ -1281,6 +1303,9 @@ resource "hpe_morpheus_user" "foo" {
 
 func TestAccMorpheusUserMissingEmail(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1291,7 +1316,7 @@ provider "hpe" {
 }
 
 resource "hpe_morpheus_user" "foo" {
-	username = "test2"
+	username = "` + name + `"
 	#email = "bar@hpe.com"
 	password = "Secret123!"
 	role_ids = [3,1]
@@ -1316,6 +1341,9 @@ resource "hpe_morpheus_user" "foo" {
 // correctly identified as missing during plan (i.e. before Create is called)
 func TestAccMorpheusUserMissingPasswordWo(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -1326,7 +1354,7 @@ provider "hpe" {
 }
 
 resource "hpe_morpheus_user" "foo" {
-	username = "test2"
+	username = "` + name + `"
 	email = "bar@hpe.com"
 	#password_wo = "Secret123!"
 	role_ids = [3,1]
@@ -1364,12 +1392,14 @@ func TestAccMorpheusUserImportOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	// nolint: gosec
 	resourceCfgWithPassword := `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserImportOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
@@ -1387,7 +1417,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
-	username = "testacc-TestAccMorpheusUserImportOk"
+	username = "` + name + `"
 	email = "foo@hpe.com"
         #password_wo = "Secret123!"
         #password_wo_version = 1
@@ -1433,7 +1463,7 @@ destroy = false
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
-			"testacc-TestAccMorpheusUserImportOk",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
