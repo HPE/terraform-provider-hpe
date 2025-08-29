@@ -1,0 +1,12 @@
+resource "hpe_morpheus_service_plan" "example_service_plan" {
+  name = "{{.Name}}"
+  code = "{{.Code}}"
+  max_memory = {{.MaxMemory}}
+  max_storage = {{.MaxStorage}}
+  provision_type_code = "{{.ProvisionTypeCode}}"
+  custom_max_storage = {{.CustomMaxStorage}}
+  config_ranges = {
+    min_storage = {{.ConfigRangesMinStorage}}
+    max_storage = {{.ConfigRangesMaxStorage}}
+  }
+}
