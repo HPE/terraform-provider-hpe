@@ -1,5 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
+//go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912"
+
 //go:build experimental
 
 package serviceplan_test
@@ -141,7 +143,7 @@ resource "hpe_morpheus_service_plan" "example_all" {
   max_cpu                = 0
   max_disks              = 2
   memory_size_type       = "mb"
-  priceset_ids           = [1]
+  price_set_ids           = [1]
   provision_type_code    = "arm"
   sort_order             = 0
   storage_size_type      = "gb"
@@ -253,15 +255,15 @@ resource "hpe_morpheus_service_plan" "example_all" {
 			"gb",
 		),
 
-		// Set (priceset_ids)
+		// Set (price_set_ids)
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_service_plan.example_all",
-			"priceset_ids.#",
+			"price_set_ids.#",
 			"1",
 		),
 		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_service_plan.example_all",
-			"priceset_ids.*",
+			"price_set_ids.*",
 			"1",
 		),
 
@@ -337,6 +339,94 @@ resource "hpe_morpheus_service_plan" "example_all" {
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_service_plan.example_all",
+				Check:             checkFn,
+			},
+		},
+	})
+}
+
+// Tests that our example file template used for docs is a valid config
+func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"Name", name,
+		"Code", code,
+		"MaxMemory", "4294967296",
+		"MaxStorage", "536870912",
+		"ProvisionTypeCode", "arm",
+		"CustomMaxStorage", "true",
+		"ConfigRangesMinStorage", "268435456",
+		"ConfigRangesMaxStorage", "536870912")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"code",
+			code,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"max_memory",
+			"4294967296",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"max_storage",
+			"536870912",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"provision_type_code",
+			"arm",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"custom_max_storage",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"config_ranges.min_storage",
+			"268435456",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"config_ranges.max_storage",
+			"536870912",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true, // Check state post import
+				ResourceName:      "hpe_morpheus_service_plan.example_service_plan",
 				Check:             checkFn,
 			},
 		},
