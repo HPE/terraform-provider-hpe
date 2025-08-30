@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/role"
@@ -30,6 +31,7 @@ func (s SubProvider) GetResources(
 	_ context.Context,
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{
+		cloud.NewResource,
 		group.NewResource,
 		network.NewResource,
 		user.NewResource,
