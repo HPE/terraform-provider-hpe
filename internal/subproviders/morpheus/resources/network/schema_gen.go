@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -242,6 +243,9 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "List of tenant account ids that are allowed access",
 				MarkdownDescription: "List of tenant account ids that are allowed access",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"type_id": schema.Int64Attribute{
 				Required:            true,
