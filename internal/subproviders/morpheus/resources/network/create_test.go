@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
+// Uses Azure
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -122,6 +123,7 @@ resource "hpe_morpheus_network" "foo" {
 
 // TestAccMorpheusNetworkResourceCreateAllAttrsOk tests creating a network resource
 // with all available fields populated and validates that each field is set correctly
+// Uses Azure
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -670,6 +672,206 @@ resource "hpe_morpheus_network" "aws" {
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.aws", "id"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusNetworkResourceCreateGcp tests creating a GCP network
+// resource with specific configuration including mtu and autoCreate settings
+func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	// Generate unique name for this test run
+	uniqueName := acctest.RandomWithPrefix(t.Name())
+
+	// Build the configuration with GCP-specific settings
+	providerConfig := testhelpers.ProviderBlock()
+	configText := providerConfig + `
+variable "name" {
+  description = "Network name"
+  type        = string
+  default     = "TestAccMorpheusNetworkResourceCreateGcp"
+}
+
+variable "description" {
+  description = "Network description"
+  type        = string
+  default     = "GCP network"
+}
+
+variable "cloud_id" {
+  description = "Cloud (zone) id"
+  type        = number
+  default     = 6
+}
+
+variable "pool_id" {
+  description = "Network pool id"
+  type        = number
+  default     = 1
+}
+
+variable "group_id" {
+  description = "Group (site) id"
+  type        = number
+  default     = 8
+}
+
+variable "type_id" {
+  description = "Network type id"
+  type        = number
+  default     = 38
+}
+
+variable "cidr" {
+  description = "CIDR Network"
+  type        = string
+  default     = "10.0.0.0/8"
+}
+
+variable "zone_pool_id" {
+  description = "Zone pool id"
+  type        = number
+  default     = 85990
+}
+
+variable "config_mtu" {
+  description = "MTU setting for network config"
+  type        = string
+  default     = "1460"
+}
+
+variable "config_auto_create" {
+  description = "Auto create setting for network config"
+  type        = bool
+  default     = true
+}
+
+variable "active" {
+  description = "Whether network is active"
+  type        = bool
+  default     = true
+}
+
+variable "dhcp_server" {
+  description = "Whether DHCP server is enabled"
+  type        = bool
+  default     = false
+}
+
+variable "appliance_url_proxy_bypass" {
+  description = "Whether to bypass proxy for appliance URL"
+  type        = bool
+  default     = true
+}
+
+variable "visibility" {
+  description = "Network visibility"
+  type        = string
+  default     = "private"
+}
+
+resource "hpe_morpheus_network" "gcp" {
+  name                         = var.name
+  description                  = var.description
+  cloud_id                     = var.cloud_id
+  pool_id                      = var.pool_id
+  group_id                     = var.group_id
+  type_id                      = var.type_id
+  config = {
+    mtu        = var.config_mtu
+    autoCreate = var.config_auto_create
+  }
+  active                       = var.active
+  dhcp_server                  = var.dhcp_server
+  appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
+  resource_permissions = {
+    all = true
+  }
+  tenant_ids                   = [1]
+  visibility                   = var.visibility
+  cidr                         = var.cidr
+  zone_pool_id                 = var.zone_pool_id
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: configText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName),
+					// All other values use defaults
+				},
+				Check: resource.ComposeTestCheckFunc(
+					// Check basic required fields
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "name", uniqueName,
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "description", "GCP network",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "cloud_id", "6",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "pool_id", "1",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "group_id", "8",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "type_id", "38",
+					),
+
+					// Check network configuration fields
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "active", "true",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "dhcp_server", "false",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "appliance_url_proxy_bypass", "true",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "visibility", "private",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "cidr", "10.0.0.0/8",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "zone_pool_id", "85990",
+					),
+
+					// Check config object fields specific to GCP
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "config.mtu", "1460",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "config.autoCreate", "true",
+					),
+
+					// Check resource permissions
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "resource_permissions.all", "true",
+					),
+
+					// Check tenant_ids
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.gcp", "tenant_ids.#", "1",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.gcp", "tenant_ids.*", "1",
+					),
+
+					// Check that the resource was created with an ID
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.gcp", "id",
+					),
 				),
 			},
 		},

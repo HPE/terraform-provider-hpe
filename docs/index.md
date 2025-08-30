@@ -16,6 +16,11 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the terraform binary to work properly.
 
+->In some circumstances users may need to use this provider and the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest)
+in the same configuration.  To ensure that Morpheus API SSL cert checking is consistent across both providers
+the `MORPHEUS_API_SECURE` environment variable (set to true) can be used to enable SSL cert checking in the Morpheus provider.
+Morpheus API SSL cert checking is enabled by default in this provider.
+
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
@@ -110,7 +115,7 @@ provider "hpe" {
 In this release (v0.0.1) the following resources have been added:
 - hpe_morpheus_instance for HPE MVM or HPE VME instances
 - hpe_morpheus_user for Morpheus users
-- hpe_morpheus_role for Morpheus roles (user and account)
+- hpe_morpheus_role for Morpheus roles (user and tenant)
 
 In this release (v0.0.1) the following data sources have been added:
 - hpe_morpheus_cloud

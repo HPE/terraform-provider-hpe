@@ -73,8 +73,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Configuration object. Settings vary by type. (Dynamic)",
-				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
+				Description:         "Configuration object. Settings vary by type.",
+				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
 					morpheusvalidators.ValidObjectMap(),
 				},
@@ -212,14 +212,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"resource_permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"all": schema.BoolAttribute{
-						Optional:            true,
 						Computed:            true,
 						Description:         "Pass true to allow access all groups",
 						MarkdownDescription: "Pass true to allow access all groups",
 					},
 					"group_ids": schema.SetAttribute{
 						ElementType:         types.Int64Type,
-						Optional:            true,
 						Computed:            true,
 						Description:         "Array of group (site) IDs that are allowed access",
 						MarkdownDescription: "Array of group (site) IDs that are allowed access",
@@ -230,7 +228,6 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional: true,
 				Computed: true,
 			},
 			"search_domains": schema.StringAttribute{
