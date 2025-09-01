@@ -228,6 +228,7 @@ func (r *Resource) Create(
 		}
 	}
 
+	var tenants []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []types.Int64
 		diags := plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)
@@ -236,7 +237,6 @@ func (r *Resource) Create(
 			return
 		}
 
-		var tenants []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
 		for _, idVal := range tenantIDs {
 			if !idVal.IsNull() {
 				tenant := sdk.
@@ -248,38 +248,6 @@ func (r *Resource) Create(
 		if len(tenants) > 0 {
 			createNetwork.SetTenants(tenants)
 		}
-	}
-
-	if !plan.ResourcePermissions.IsNull() &&
-		!plan.ResourcePermissions.IsUnknown() {
-		resourcePermission := sdk.
-			NewCreateNetworksRequestNetworkResourcePermission()
-
-		allValue := plan.ResourcePermissions.All.ValueBool()
-		resourcePermission.SetAll(allValue)
-
-		if !plan.ResourcePermissions.GroupIds.IsNull() &&
-			!plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var groupIDs []types.Int64
-			diags := plan.ResourcePermissions.GroupIds.ElementsAs(ctx,
-				&groupIDs, false)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-
-			var sites []int64
-			for _, idVal := range groupIDs {
-				if !idVal.IsNull() {
-					sites = append(sites, idVal.ValueInt64())
-				}
-			}
-			if len(sites) > 0 {
-				resourcePermission.SetSites(sites)
-			}
-		}
-
-		createNetwork.SetResourcePermission(*resourcePermission)
 	}
 
 	createNetworkReq := sdk.NewCreateNetworksRequest()
