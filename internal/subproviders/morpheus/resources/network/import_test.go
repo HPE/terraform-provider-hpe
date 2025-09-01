@@ -112,9 +112,6 @@ resource "hpe_morpheus_network" "net1" {
 	search_domains = null
 	appliance_url_proxy_bypass = true
 	no_proxy = null
-	resource_permissions = {
-		all = true
-	}
 	tenant_ids = [1,2]
 	visibility = var.visibility
 	cidr = var.cidr
@@ -217,10 +214,10 @@ destroy = false
 			"visibility",
 			"private",
 		),
-		resource.TestCheckResourceAttr(
+		// Check resource permissions (computed-only)
+		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_network.net1",
 			"resource_permissions.all",
-			"true",
 		),
 		// Note: Removed config checks as it's not returned by API and causes state drift
 	}
