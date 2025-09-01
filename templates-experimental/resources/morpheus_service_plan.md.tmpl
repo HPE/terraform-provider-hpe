@@ -1,0 +1,47 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ $lines := split .Description "\n" }}{{ index $lines 0 | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+Service Plans in HPE Morpheus Enterprise determine the memory, storage, and cores configuration during provisioning and reconfiguration of an Instance.
+
+{{ index $lines 0 }}
+{{ range $i, $line := $lines }} {{- if gt $i 0 -}}
+{{ $line }}{{ end }}
+{{ end }}
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile "internal/subproviders/morpheus/resources/serviceplan/example.tf" }}
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{ codefile "shell" .ImportFile }}
+{{- end }}
+
+## Service Plans
+
+Service Plans determine the memory, storage, and cores configuration during provisioning and reconfiguration. A set of Service Plans are seeded by HPE Morpheus Enterprise for private cloud provision types as well as some public clouds. Additional Plans and Prices are synced in for other public clouds when the corresponding cloud types are added to an appliance. Users can create new Service Plans or edit the system-seeded Service Plans for Private Cloud types. Service Plans configurations cannot be created or edited for Public Cloud provision types.
+
+## Custom Ranges
+The custom ranges found in the `config_ranges` attributes control the minimum and maximum ranges of various system properties when the Service Plan is applied to an instance. For these to be set, the accompanying `custom` Boolean attribute for must be set to `true`. For example, to set a maximum storage for the Service Plan, set `custom_max_storage` to `true` and set the `max_storage` attribute to the desired max storage.
+
+~>Custom Range storage and memory values units (GB/MB) are inherited from the `storage` and `memory` GB/MB settings in the same Service Plan. For example, if `storage` is configured for for 40 GB, a custom range for `storage` would also be in GB.
+
+## More Information
+
+For more information about Service Plans in HPE Morpheus Enterprise, please check out the [official documentation](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006474en_us&page=GUID-C1E03C38-4DD6-43E9-8310-61A2FE452243.html).
+
+For more information about the HPE Morpheus Enterprise API, please check out the [official API documentation](https://apidocs.morpheusdata.com/).
