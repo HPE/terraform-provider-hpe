@@ -344,6 +344,8 @@ resource "hpe_morpheus_service_plan" "test_all" {
     max_sockets           = 10
     min_cores_per_socket  = 1
     max_cores_per_socket  = 10
+    min_per_disk_size     = 1
+    max_per_disk_size     = 2
   }
 }
 `
@@ -510,6 +512,16 @@ data "hpe_morpheus_service_plan" "test_all" {
 			"data.hpe_morpheus_service_plan.test_all",
 			"config_ranges.max_cores_per_socket",
 			"10",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_per_disk_size",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_per_disk_size",
+			"2",
 		),
 	}
 
