@@ -30,8 +30,8 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	_, hresp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
-			"delete group resource",
-			fmt.Sprintf("group %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
+			"delete cloud resource",
+			fmt.Sprintf("cloud %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return
