@@ -5,6 +5,8 @@
 package network_test
 
 import (
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -27,7 +29,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "terraform-network-minimal"
+  default     = "TestAccMorpheusNetworkResourceCreateRequiredAttrsOk"
 }
 
 variable "cloud_id" {
@@ -51,7 +53,7 @@ variable "type_id" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "example-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {
@@ -73,6 +75,9 @@ variable "cidr" {
 }
 
 resource "hpe_morpheus_network" "foo" {
+  active   = true
+  pool_id     = 1
+  tenant_ids = [1,2]
   name     = var.name
   cloud_id = var.cloud_id
   group_id = var.group_id
@@ -107,11 +112,14 @@ resource "hpe_morpheus_network" "foo" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.resourceGroupId", "example-resource-group"),
+						"hpe_morpheus_network.foo", "config.resourceGroupId", "morph-qa"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "config.subnetName", "example-subnet"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "config.subnetCidr", "10.0.1.0/24"),
+					// Check resource permissions (computed-only)
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.foo", "resource_permissions.all"),
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.foo", "id"),
@@ -248,9 +256,6 @@ resource "hpe_morpheus_network" "all_attrs" {
     "location"           = var.config_location
     "additionalField"    = var.config_additional_field
   }
-  resource_permissions = {
-    all = true
-  }
   tenant_ids = [1, 2, 3]
 }
 `
@@ -303,9 +308,9 @@ resource "hpe_morpheus_network" "all_attrs" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.all_attrs", "config.additionalField", "test-value"),
 
-					// Check resource permissions
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "resource_permissions.all", "true"),
+					// Check resource permissions (computed-only)
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.all_attrs", "resource_permissions.all"),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
@@ -422,9 +427,6 @@ resource "hpe_morpheus_network" "foo" {
   active                       = var.active
   dhcp_server                  = var.dhcp_server
   appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  resource_permissions = {
-    all = true
-  }
   tenant_ids  = [1]
   visibility  = var.visibility
   cidr        = var.cidr
@@ -464,11 +466,12 @@ resource "hpe_morpheus_network" "foo" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "resource_permissions.all", "true"),
-					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "tenant_ids.#", "1"),
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.foo", "tenant_ids.*", "1"),
+					// Check resource permissions (computed-only)
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.foo", "resource_permissions.all"),
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.foo", "id"),
@@ -478,129 +481,26 @@ resource "hpe_morpheus_network" "foo" {
 	})
 }
 
-// TestAccMorpheusNetworkAws tests creating an AWS subnet network
+// TestAccMorpheusNetworkResourceCreateAWSExample tests creating an AWS subnet network
 // resource with specific configuration including assignPublicIp and
-// availabilityZone settings
-func TestAccMorpheusNetworkResourceCreateAws(t *testing.T) {
+// availabilityZone settings using example files
+func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
-	// Build the configuration with AWS-specific settings
-	providerConfig := testhelpers.ProviderBlock()
-	configText := providerConfig + `
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-aws-test"
-}
+	// Path to example configuration files
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network"
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "AWS subnet"
-}
+	// Read the resource.tf file from disk
+	resourceContent, err := ioutil.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	if err != nil {
+		t.Fatalf("Failed to read resource.tf: %v", err)
+	}
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 207
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 36
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.200.99.0/24"
-}
-
-variable "zone_pool_id" {
-  description = "Zone pool id"
-  type        = number
-  default     = 12329
-}
-
-variable "config_assign_public_ip" {
-  description = "Assign public IP setting for network config"
-  type        = bool
-  default     = true
-}
-
-variable "config_availability_zone" {
-  description = "Availability zone setting for network config"
-  type        = string
-  default     = "us-west-1a"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = true
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
-}
-
-resource "hpe_morpheus_network" "aws" {
-  name                         = var.name
-  description                  = var.description
-  cloud_id                     = var.cloud_id
-  pool_id                      = var.pool_id
-  group_id                     = var.group_id
-  type_id                      = var.type_id
-  config = {
-    assignPublicIp   = var.config_assign_public_ip
-    availabilityZone = var.config_availability_zone
-  }
-  active                       = var.active
-  dhcp_server                  = var.dhcp_server
-  appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  resource_permissions = {
-    all = true
-  }
-  tenant_ids                   = [1]
-  visibility                   = var.visibility
-  cidr                         = var.cidr
-  zone_pool_id                 = var.zone_pool_id
-
-  lifecycle {
-    ignore_changes = [ name, display_name, description ]
-  }
-}
-`
+	// Combine provider config and resource file content
+	configText := testhelpers.ProviderBlock() + "\n" + string(resourceContent)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -609,7 +509,7 @@ resource "hpe_morpheus_network" "aws" {
 				Config: configText,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
-					// All other values use defaults
+					// All other values use defaults from resource.tf
 				},
 				Check: resource.ComposeTestCheckFunc(
 					// Check basic required fields
@@ -656,10 +556,9 @@ resource "hpe_morpheus_network" "aws" {
 						"hpe_morpheus_network.aws",
 						"config.availabilityZone", "us-west-1a"),
 
-					// Check resource permissions
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.aws",
-						"resource_permissions.all", "true"),
+					// Check resource permissions (computed-only)
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.aws", "resource_permissions.all"),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
@@ -787,9 +686,6 @@ resource "hpe_morpheus_network" "gcp" {
   active                       = var.active
   dhcp_server                  = var.dhcp_server
   appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  resource_permissions = {
-    all = true
-  }
   tenant_ids                   = [1]
   visibility                   = var.visibility
   cidr                         = var.cidr
@@ -855,10 +751,9 @@ resource "hpe_morpheus_network" "gcp" {
 						"hpe_morpheus_network.gcp", "config.autoCreate", "true",
 					),
 
-					// Check resource permissions
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.gcp", "resource_permissions.all", "true",
-					),
+					// Check resource permissions (computed-only)
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.gcp", "resource_permissions.all"),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
