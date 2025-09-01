@@ -36,16 +36,20 @@ func (r *Resource) Delete(
 		return
 	}
 
-	id := state.Id.ValueInt64()
-
 	// Create a custom timeout for the delete operation
 	// Mainly needed for GCP network delete, which is
 	// synchronous, and can take some time
-	deleteCtx, cancel := context.WithTimeout(ctx, constants.NetworkDeleteTimeout)
-	defer cancel()
+	// TODO: redo this, we should use the morpheus client
+	// with a context to set timeouts, rather than digging
+	// into the http client like this
+	if httpClient := client.GetConfig().HTTPClient; httpClient != nil {
+		httpClient.Timeout = constants.NetworkDeleteTimeout
+	}
+
+	id := state.Id.ValueInt64()
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting network %d", id))
-	_, hresp, err := client.NetworksAPI.DeleteNetwork(deleteCtx, id).
+	_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).
 		Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
