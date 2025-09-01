@@ -36,5 +36,8 @@ func (r *Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp 
 	resp.Schema = CloudResourceSchema(ctx)
 }
 
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+}
+
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 }
