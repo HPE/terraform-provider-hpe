@@ -9,10 +9,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 
@@ -158,7 +156,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	createRequest := sdk.NewAddCloudsRequest(*addCloud)
-	tflog.Info(ctx, "==== createRequest ====", map[string]any{"request": spew.Sdump(createRequest)})
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
