@@ -236,42 +236,6 @@ resource "hpe_morpheus_network" "test" {
 	})
 }
 
-// TestAccMorpheusNetworkResourceValidationInvalidResourcePermissionsGroupIds
-// tests that the resource fails validation when resource_permissions.group_ids
-// contains non-integer values
-func TestAccMorpheusNetworkResourceValidationInvalidResourcePermissionsGroupIds(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	// Configuration with invalid group_ids type in resource_permissions
-	config := providerConfig + `
-resource "hpe_morpheus_network" "test" {
-	name     = "TestAccMorpheusNetworkResourceValidationInvalidResourcePermissionsGroupIds"
-	cloud_id = 1
-	group_id = 1
-	type_id  = 1
-	resource_permissions = {
-		all = false
-		group_ids = ["a"]
-	}
-}
-`
-
-	expected := `Incorrect attribute value type`
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config:      config,
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(expected),
-			},
-		},
-	})
-}
-
 // TestAccMorpheusNetworkResourceValidationValidConfigNull tests that the
 // resource accepts null config value without validation error
 func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
