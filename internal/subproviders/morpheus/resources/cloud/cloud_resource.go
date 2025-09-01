@@ -35,6 +35,3 @@ func (r *Resource) Metadata(ctx context.Context, req resource.MetadataRequest, r
 func (r *Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = CloudResourceSchema(ctx)
 }
-
-func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-}
