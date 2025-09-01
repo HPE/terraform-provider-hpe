@@ -1,9 +1,5 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250814115258-5d820c745ce9 h1:O83aE8ujL1IVEdSi/fyArGhBkEEmHwbUJL6QQJ6um90=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250814115258-5d820c745ce9/go.mod h1:CpbMVklvvUIC4XC9WXKIDDyY9hk1RhK3kVr/PEuu9Gk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250821122023-2b0aa6729dff h1:Ne46f/fs9jWmPy2yvAgzp6LNLhyytZmW3cBneg3XgEg=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250821122023-2b0aa6729dff/go.mod h1:CpbMVklvvUIC4XC9WXKIDDyY9hk1RhK3kVr/PEuu9Gk=
 github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250901101422-fbe972c2c9e1 h1:of+TCwT4mxvkdAjR7MB1dwGraRVXZ809/V0JbcMIByk=
 github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250901101422-fbe972c2c9e1/go.mod h1:CpbMVklvvUIC4XC9WXKIDDyY9hk1RhK3kVr/PEuu9Gk=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
@@ -98,8 +94,6 @@ github.com/hashicorp/terraform-json v0.24.0 h1:rUiyF+x1kYawXeRth6fKFm/MdfBS6+lW4
 github.com/hashicorp/terraform-json v0.24.0/go.mod h1:Nfj5ubo9xbu9uiAoZVBsNOjvNKB66Oyrvtit74kC7ow=
 github.com/hashicorp/terraform-plugin-framework v1.14.1 h1:jaT1yvU/kEKEsxnbrn4ZHlgcxyIfjvZ41BLdlLk52fY=
 github.com/hashicorp/terraform-plugin-framework v1.14.1/go.mod h1:xNUKmvTs6ldbwTuId5euAtg37dTxuyj3LHS3uj7BHQ4=
-github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0 h1:SJXL5FfJJm17554Kpt9jFXngdM6fXbnUnZ6iT2IeiYA=
-github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0/go.mod h1:p0phD0IYhsu9bR4+6OetVvvH59I6LwjXGnTVEr8ox6E=
 github.com/hashicorp/terraform-plugin-framework-validators v0.17.0 h1:0uYQcqqgW3BMyyve07WJgpKorXST3zkpzvrOnf3mpbg=
 github.com/hashicorp/terraform-plugin-framework-validators v0.17.0/go.mod h1:VwdfgE/5Zxm43flraNa0VjcvKQOGVrcO4X8peIri0T0=
 github.com/hashicorp/terraform-plugin-go v0.26.0 h1:cuIzCv4qwigug3OS7iKhpGAbZTiypAfFQmw8aE65O2M=
