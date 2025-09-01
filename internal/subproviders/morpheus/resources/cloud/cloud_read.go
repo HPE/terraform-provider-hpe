@@ -9,12 +9,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 
@@ -55,7 +53,6 @@ func getCloudAsState(
 	state.GroupId = convert.Int64ToType(cloud.Groups[0].Id)
 
 	cfg := cloud.GetConfig()
-	tflog.Info(ctx, "==== cfg ====", map[string]any{"cfg": spew.Sdump(cfg)})
 
 	switch cloud.ZoneType.GetCode() {
 	case "standard":
@@ -87,7 +84,6 @@ func getCloudAsState(
 			}
 
 			state.ConfigHvm = configHvm
-			tflog.Info(ctx, "==== state.ConfigHvm ====", map[string]any{"state.ConfigHvm": spew.Sdump(state.ConfigHvm)})
 		}
 	default:
 		diags.AddError(
@@ -119,8 +115,6 @@ func getCloudAsState(
 	state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
 	state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
 	state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
-
-	tflog.Info(ctx, "==== state ====", map[string]any{"state": spew.Sdump(state)})
 
 	return state, diags
 }
