@@ -1,0 +1,26 @@
+resource "hpe_morpheus_cloud" "example" {
+  name      = "MyCloud"
+  tenant_id = 1
+  group_id  = 1
+
+  code                     = "mycloud"
+  external_id              = "mycloud"
+  labels                   = ["Label1", "Label2"]
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  costing_mode             = "costing"
+  data_center_name         = "aDatacenter"
+  enabled                  = true
+  guidance_mode            = "off"
+  import_existing_vms      = "off"
+  keyboard_layout          = "us"
+  location                 = "somewhere"
+  security_mode            = "off"
+  visibility               = "public"
+
+  config_hvm = {
+    certificate_provider          = "internal"
+    enable_network_type_selection = false
+  }
+}
