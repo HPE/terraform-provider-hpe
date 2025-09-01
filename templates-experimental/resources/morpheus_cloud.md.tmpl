@@ -1,0 +1,112 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }
+
+## Example Usage
+
+{{ tffile "internal/subproviders/morpheus/resources/cloud/example.tf" }}
+
+## Argument Reference
+
+The following arguments are supported:
+
+### Required Arguments
+
+* `name` - (Required) A unique name scoped to your account for the cloud.
+* `group_id` - (Required) Specifies which Server group this cloud should be assigned to. **Note:** Changing this forces a new resource to be created.
+* `tenant_id` - (Required) Specifies which Tenant this cloud should be assigned to. **Note:** Changing this forces a new resource to be created.
+
+### Optional Arguments
+
+#### General Configuration
+
+* `code` - (Optional) Optional code for use with policies.
+* `location` - (Optional) Optional location for your cloud.
+* `data_center_name` - (Optional) A custom name used to reference the datacenter for the cloud.
+* `visibility` - (Optional) The visibility of the cloud. Valid values are `private` and `public`. Defaults to `private`.
+* `enabled` - (Optional) Can be used to disable the cloud. Defaults to `true`.
+* `labels` - (Optional) Array of label strings, can be used for filtering.
+* `external_id` - (Optional) The external id of the cloud.
+
+#### Agent and Provisioning Settings
+
+* `agent_install_mode` - (Optional) The method used to install the Morpheus agent on virtual machines provisioned in the cloud. Valid values are `ssh` and `cloudInit`. Defaults to `cloudInit`.
+* `appliance_url` - (Optional) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
+* `auto_recover_power_state` - (Optional) Automatically Power on VMs. Defaults to `false`.
+* `import_existing_vms` - (Optional) Whether to import existing virtual machines. Valid values are `off`, `basic`, and `full`.
+
+#### Cost and Guidance Settings
+
+* `costing_mode` - (Optional) Whether to enable costing on the cloud. Valid values are `off`, `costing`, `reservations`, and `full`. Defaults to `off`.
+* `guidance_mode` - (Optional) Whether to enable guidance recommendations on the cloud. Valid values are `off` and `manual`. Defaults to `off`.
+
+#### Security Settings
+
+* `security_mode` - (Optional) Host firewall setting, also known as "local firewall". Valid values are `off` and `internal`. Defaults to `off`.
+
+#### Console Settings
+
+* `keyboard_layout` - (Optional) The keyboard layout to use for the console.
+
+#### HVM Cloud Configuration
+
+* `config_hvm` - (Optional) HVM Cloud specific configuration block. This block supports:
+  * `certificate_provider` - (Optional) Certificate provider for the HVM cloud.
+  * `enable_network_type_selection` - (Optional) Whether to enable the user to select the network interface type during provisioning.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the cloud.
+
+## Import
+
+Clouds can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_cloud.example 123
+```
+
+## Notes
+
+### Cloud Support
+
+Currently, only the HVM cloud configuration is supported. The `config_hvm` block provides HVM-specific configuration options.
+
+### Agent Installation Modes
+
+* `ssh` - The Morpheus agent is installed via SSH connection to the virtual machine.
+* `cloudInit` - The Morpheus agent is installed using cloud-init during the VM provisioning process. This is the recommended method for most cloud platforms.
+
+### Costing Modes
+
+* `off` - No costing functionality enabled.
+* `costing` - Basic cost tracking enabled.
+* `reservations` - Cost tracking with reservation support.
+* `full` - Complete costing functionality with all features enabled.
+
+### Import Existing VMs
+
+* `off` - Do not import existing virtual machines.
+* `basic` - Import existing VMs with basic information only.
+* `full` - Import existing VMs with complete configuration and metadata.
+
+### Security Modes
+
+* `off` - Host firewall is disabled.
+* `internal` - Host firewall is enabled for internal network protection.
+
+### Resource Dependencies
+
+Before creating a cloud resource, ensure that:
+
+1. The specified `group_id` exists and is accessible.
+2. The specified `tenant_id` exists and the user has appropriate permissions.
+3. Any referenced certificate providers in `config_hvm.certificate_provider` are properly configured in Morpheus.
