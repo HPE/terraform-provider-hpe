@@ -45,8 +45,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	switch {
 	case !plan.ConfigHvm.IsNull():
-		cloudTypeCode = "standard"
-
 		config := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2{}
 
 		if !plan.ConfigHvm.CertificateProvider.IsNull() {
