@@ -178,40 +178,6 @@ func (r *Resource) Update(
 		network.SetNetworkProxy(*networkProxy)
 	}
 
-	// Handle resource permissions
-	if !plan.ResourcePermissions.IsNull() &&
-		!plan.ResourcePermissions.IsUnknown() {
-		resourcePermissions := sdk.
-			NewUpdateNetworkRequestNetworkResourcePermissions()
-
-		allValue := plan.ResourcePermissions.All.ValueBool()
-		resourcePermissions.SetAll(allValue)
-
-		if !plan.ResourcePermissions.GroupIds.IsNull() &&
-			!plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var groupIDs []types.Int64
-			diags := plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &groupIDs, false)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-
-			var sites []sdk.UpdateClusterDatastoreRequestDatastorePermissionsResourcePermissionsSitesInner
-			for _, groupID := range groupIDs {
-				if !groupID.IsNull() {
-					site := sdk.NewUpdateClusterDatastoreRequestDatastorePermissionsResourcePermissionsSitesInner()
-					site.SetId(groupID.ValueInt64())
-					sites = append(sites, *site)
-				}
-			}
-			if len(sites) > 0 {
-				resourcePermissions.SetSites(sites)
-			}
-		}
-
-		network.SetResourcePermissions(*resourcePermissions)
-	}
-
 	updateNetworkReq := sdk.NewUpdateNetworkRequest()
 	updateNetworkReq.SetNetwork(*network)
 

@@ -10,6 +10,7 @@ package serviceplan_test
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -291,6 +292,252 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 				Config:      config,
 				Check:       checkFn,
 				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
+// test to verify that all of the attributes from a created service plan can be read
+func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig := `
+resource "hpe_morpheus_service_plan" "test_all" {
+  name                   = "` + name + `"
+  code                   = "` + code + `"
+  max_memory             = 4294967296
+  max_storage            = 0
+  add_volumes            = true
+  cores_per_socket       = 1
+  custom_cores           = true
+  custom_cpu             = false
+  custom_max_memory      = true
+  custom_max_storage     = true
+  description            = "test serviceplan"
+  max_cores              = 1
+  max_cpu                = 0
+  max_disks              = 2
+  memory_size_type       = "mb"
+  price_set_ids           = [1]
+  provision_type_code    = "arm"
+  sort_order             = 0
+  storage_size_type      = "gb"
+
+  config_ranges =  {
+    min_storage           = 1
+    max_storage           = 2
+    min_memory            = 1048576
+    max_memory            = 2097152
+    min_cores             = 1
+    max_cores             = 2
+    min_sockets           = 1
+    max_sockets           = 10
+    min_cores_per_socket  = 1
+    max_cores_per_socket  = 10
+    min_per_disk_size     = 1
+    max_per_disk_size     = 2
+  }
+}
+`
+	dataSourceConfig := `
+data "hpe_morpheus_service_plan" "test_all" {
+  name = "` + name + `"
+  provision_type_code = "arm"
+}
+
+`
+
+	checks := []resource.TestCheckFunc{
+		// Top-level attributes
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"code",
+			code,
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"max_memory",
+			"4294967296",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"max_storage",
+			"0",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"add_volumes",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"cores_per_socket",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"custom_cores",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"custom_cpu",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"custom_max_memory",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"custom_max_storage",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"description",
+			"test serviceplan",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"max_cores",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"max_cpu",
+			"0",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"max_disks",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"memory_size_type",
+			"mb",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"provision_type_code",
+			"arm",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"sort_order",
+			"0",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"storage_size_type",
+			"gb",
+		),
+
+		// Set (price_set_ids)
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"price_set_ids.#",
+			"1",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"price_set_ids.*",
+			"1",
+		),
+
+		// Nested block (config_ranges)
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_storage",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_storage",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_memory",
+			"1048576",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_memory",
+			"2097152",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_cores",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_cores",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_sockets",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_sockets",
+			"10",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_cores_per_socket",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_cores_per_socket",
+			"10",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.min_per_disk_size",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"config_ranges.max_per_disk_size",
+			"2",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				ExpectNonEmptyPlan: false,
+				Config:             providerConfig + resourceConfig,
+			},
+			{
+				ExpectNonEmptyPlan: false,
+				Config:             providerConfig + resourceConfig + dataSourceConfig,
+				Check:              checkFn,
 			},
 		},
 	})
