@@ -1,0 +1,25 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+Service Plans in HPE Morpheus Enterprise determine the memory, storage, and cores configuration during provisioning and reconfiguration of an Instance.
+
+{{ .Description | trimspace }}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## More Information
+
+For more information about Service Plans in HPE Morpheus Enterprise, please check out the [official documentation](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006474en_us&page=GUID-C1E03C38-4DD6-43E9-8310-61A2FE452243.html).
+
+For more information about the HPE Morpheus Enterprise API, please check out the [official API documentation](https://apidocs.morpheusdata.com/).
