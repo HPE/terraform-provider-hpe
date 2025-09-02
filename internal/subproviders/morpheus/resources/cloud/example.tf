@@ -1,11 +1,11 @@
 resource "hpe_morpheus_cloud" "example" {
-  name      = "MyCloud"
+  name      = "TestCloud"
   tenant_id = 1
   group_id  = 1
 
-  code                     = "mycloud"
-  external_id              = "mycloud"
-  labels                   = ["Label1", "Label2"]
+  code                     = "aCode"
+  external_id              = "aCode"
+  labels                   = ["aLabel1", "aLabel2"]
   agent_install_mode       = "ssh"
   appliance_url            = "https://somewhere.com"
   auto_recover_power_state = true
