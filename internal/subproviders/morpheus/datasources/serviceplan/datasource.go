@@ -11,7 +11,10 @@ import (
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
@@ -161,6 +164,72 @@ func getServicePlan(
 	return nil, errors.New(ErrorNoValidSearchTerms)
 }
 
+func servicePlanAsState(
+	ctx context.Context,
+	servicePlan *sdk.GetServicePlans200ResponseServicePlan,
+) (ServicePlanModel, diag.Diagnostics) {
+	var state ServicePlanModel
+	var diags diag.Diagnostics
+
+	priceSetIDValues := []attr.Value{}
+	for _, v := range servicePlan.PriceSets {
+		priceSetIDValues = append(priceSetIDValues, convert.Int64ToType(v.Id))
+	}
+
+	priceSetIDSet, diags := types.SetValue(types.Int64Type, priceSetIDValues)
+	if diags.HasError() {
+		return state, diags
+	}
+
+	if servicePlan.Config.Ranges != nil {
+		configRangesValue, diags := NewConfigRangesValue(
+			ConfigRangesValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"min_storage":          convert.Int64ToType(servicePlan.Config.Ranges.MinStorage.Get()),
+				"max_storage":          convert.Int64ToType(servicePlan.Config.Ranges.MaxStorage.Get()),
+				"min_memory":           convert.Int64ToType(servicePlan.Config.Ranges.MinMemory.Get()),
+				"max_memory":           convert.Int64ToType(servicePlan.Config.Ranges.MaxMemory.Get()),
+				"min_cores":            convert.Int64ToType(servicePlan.Config.Ranges.MinCores.Get()),
+				"max_cores":            convert.Int64ToType(servicePlan.Config.Ranges.MaxCores.Get()),
+				"min_sockets":          convert.Int64ToType(servicePlan.Config.Ranges.MinSockets.Get()),
+				"max_sockets":          convert.Int64ToType(servicePlan.Config.Ranges.MaxSockets.Get()),
+				"min_cores_per_socket": convert.Int64ToType(servicePlan.Config.Ranges.MinCoresPerSocket.Get()),
+				"max_cores_per_socket": convert.Int64ToType(servicePlan.Config.Ranges.MaxCoresPerSocket.Get()),
+				"min_per_disk_size":    convert.Int64ToType(servicePlan.Config.Ranges.MinPerDiskSize.Get()),
+				"max_per_disk_size":    convert.Int64ToType(servicePlan.Config.Ranges.MaxPerDiskSize.Get()),
+			},
+		)
+		if diags.HasError() {
+			return state, diags
+		}
+
+		state.ConfigRanges = configRangesValue
+	}
+
+	state.AddVolumes = convert.BoolToType(servicePlan.AddVolumes.Get())
+	state.Code = convert.StrToType(servicePlan.Code)
+	state.CoresPerSocket = convert.Int64ToType(servicePlan.CoresPerSocket.Get())
+	state.CustomCores = convert.BoolToType(servicePlan.CustomCores)
+	state.CustomCpu = convert.BoolToType(servicePlan.CustomCpu)
+	state.CustomMaxMemory = convert.BoolToType(servicePlan.CustomMaxMemory.Get())
+	state.CustomMaxStorage = convert.BoolToType(servicePlan.CustomMaxStorage.Get())
+	state.Description = convert.StrToType(servicePlan.Description)
+	state.Id = convert.Int64ToType(servicePlan.Id)
+	state.MaxCores = convert.Int64ToType(servicePlan.MaxCores.Get())
+	state.MaxCpu = convert.Int64ToType(servicePlan.MaxCpu.Get())
+	state.MaxDisks = convert.Int64ToType(servicePlan.MaxDisks.Get())
+	state.MaxMemory = convert.Int64ToType(servicePlan.MaxMemory)
+	state.MaxStorage = convert.Int64ToType(servicePlan.MaxStorage)
+	state.MemorySizeType = convert.StrToType(servicePlan.Config.MemorySizeType.Get())
+	state.Name = convert.StrToType(servicePlan.Name)
+	state.PriceSetIds = priceSetIDSet
+	state.ProvisionTypeCode = convert.StrToType(servicePlan.ProvisionType.Code)
+	state.SortOrder = convert.Int64ToType(servicePlan.SortOrder)
+	state.StorageSizeType = convert.StrToType(servicePlan.Config.StorageSizeType.Get())
+
+	return state, diags
+}
+
 // Read refreshes the Terraform state with the latest data.
 func (d *DataSource) Read(
 	ctx context.Context,
@@ -196,13 +265,13 @@ func (d *DataSource) Read(
 		return
 	}
 
-	data.Id = convert.Int64ToType(plan.Id)
-	data.Name = convert.StrToType(plan.Name)
-	data.Code = convert.StrToType(plan.Code)
-	data.Description = convert.StrToType(plan.Description)
-	planProvisionType := plan.ProvisionType.GetCode()
-	data.ProvisionTypeCode = convert.StrToType(&planProvisionType)
+	apiState, diags := servicePlanAsState(ctx, plan)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
 
-	diags = resp.State.Set(ctx, &data)
+		return
+	}
+
+	diags = resp.State.Set(ctx, &apiState)
 	resp.Diagnostics.Append(diags...)
 }

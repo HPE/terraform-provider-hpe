@@ -4,12 +4,17 @@ package serviceplan
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -17,10 +22,104 @@ import (
 func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"add_volumes": schema.BoolAttribute{
+				Computed: true,
+			},
 			"code": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The code of the Morpheus service plan",
 				MarkdownDescription: "The code of the Morpheus service plan",
+			},
+			"config_ranges": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_cores": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max cores",
+						MarkdownDescription: "Custom max cores",
+					},
+					"max_cores_per_socket": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max cores allowed per socket",
+						MarkdownDescription: "Custom max cores allowed per socket",
+					},
+					"max_memory": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max memory in bytes",
+						MarkdownDescription: "Custom max memory in bytes",
+					},
+					"max_per_disk_size": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max per disk size in GB",
+						MarkdownDescription: "Custom max per disk size in GB",
+					},
+					"max_sockets": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max sockets",
+						MarkdownDescription: "Custom max sockets",
+					},
+					"max_storage": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom max storage in GB",
+						MarkdownDescription: "Custom max storage in GB",
+					},
+					"min_cores": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min cores",
+						MarkdownDescription: "Custom min cores",
+					},
+					"min_cores_per_socket": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min cores allowed per socket",
+						MarkdownDescription: "Custom min cores allowed per socket",
+					},
+					"min_memory": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min memory in bytes",
+						MarkdownDescription: "Custom min memory in bytes",
+					},
+					"min_per_disk_size": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min per disk size in GB",
+						MarkdownDescription: "Custom min per disk size in GB",
+					},
+					"min_sockets": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min sockets",
+						MarkdownDescription: "Custom min sockets",
+					},
+					"min_storage": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Custom min storage in GB",
+						MarkdownDescription: "Custom min storage in GB",
+					},
+				},
+				CustomType: ConfigRangesType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigRangesValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The min and max ranges that instances using this service plan must conform to.",
+				MarkdownDescription: "The min and max ranges that instances using this service plan must conform to.",
+			},
+			"cores_per_socket": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Number of cores per CPU",
+				MarkdownDescription: "Number of cores per CPU",
+			},
+			"custom_cores": schema.BoolAttribute{
+				Computed: true,
+			},
+			"custom_cpu": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Can be used to enable / disable customizable cpu",
+				MarkdownDescription: "Can be used to enable / disable customizable cpu",
+			},
+			"custom_max_memory": schema.BoolAttribute{
+				Computed: true,
+			},
+			"custom_max_storage": schema.BoolAttribute{
+				Computed: true,
 			},
 			"description": schema.StringAttribute{
 				Computed:            true,
@@ -39,6 +138,30 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"max_cores": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Max number of total cores",
+				MarkdownDescription: "Max number of total cores",
+			},
+			"max_cpu": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Max CPUs",
+				MarkdownDescription: "Max CPUs",
+			},
+			"max_disks": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Max disks allowed",
+				MarkdownDescription: "Max disks allowed",
+			},
+			"max_memory": schema.Int64Attribute{
+				Computed: true,
+			},
+			"max_storage": schema.Int64Attribute{
+				Computed: true,
+			},
+			"memory_size_type": schema.StringAttribute{
+				Computed: true,
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -49,6 +172,10 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 						path.MatchRoot("provision_type_code"),
 					}...),
 				},
+			},
+			"price_set_ids": schema.SetAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
 			},
 			"provision_type_code": schema.StringAttribute{
 				Optional:            true,
@@ -61,14 +188,975 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"sort_order": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Sort order",
+				MarkdownDescription: "Sort order",
+			},
+			"storage_size_type": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 	}
 }
 
 type ServicePlanModel struct {
-	Code              types.String `tfsdk:"code"`
-	Description       types.String `tfsdk:"description"`
-	Id                types.Int64  `tfsdk:"id"`
-	Name              types.String `tfsdk:"name"`
-	ProvisionTypeCode types.String `tfsdk:"provision_type_code"`
+	AddVolumes        types.Bool        `tfsdk:"add_volumes"`
+	Code              types.String      `tfsdk:"code"`
+	ConfigRanges      ConfigRangesValue `tfsdk:"config_ranges"`
+	CoresPerSocket    types.Int64       `tfsdk:"cores_per_socket"`
+	CustomCores       types.Bool        `tfsdk:"custom_cores"`
+	CustomCpu         types.Bool        `tfsdk:"custom_cpu"`
+	CustomMaxMemory   types.Bool        `tfsdk:"custom_max_memory"`
+	CustomMaxStorage  types.Bool        `tfsdk:"custom_max_storage"`
+	Description       types.String      `tfsdk:"description"`
+	Id                types.Int64       `tfsdk:"id"`
+	MaxCores          types.Int64       `tfsdk:"max_cores"`
+	MaxCpu            types.Int64       `tfsdk:"max_cpu"`
+	MaxDisks          types.Int64       `tfsdk:"max_disks"`
+	MaxMemory         types.Int64       `tfsdk:"max_memory"`
+	MaxStorage        types.Int64       `tfsdk:"max_storage"`
+	MemorySizeType    types.String      `tfsdk:"memory_size_type"`
+	Name              types.String      `tfsdk:"name"`
+	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
+	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
+	SortOrder         types.Int64       `tfsdk:"sort_order"`
+	StorageSizeType   types.String      `tfsdk:"storage_size_type"`
+}
+
+var _ basetypes.ObjectTypable = ConfigRangesType{}
+
+type ConfigRangesType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigRangesType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigRangesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigRangesType) String() string {
+	return "ConfigRangesType"
+}
+
+func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigRangesValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return nil, diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+	}
+
+	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores_per_socket is missing from object`)
+
+		return nil, diags
+	}
+
+	maxCoresPerSocketVal, ok := maxCoresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return nil, diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+	}
+
+	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_per_disk_size is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPerDiskSizeVal, ok := maxPerDiskSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
+	}
+
+	maxSocketsAttribute, ok := attributes["max_sockets"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_sockets is missing from object`)
+
+		return nil, diags
+	}
+
+	maxSocketsVal, ok := maxSocketsAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return nil, diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
+	}
+
+	minCoresAttribute, ok := attributes["min_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_cores is missing from object`)
+
+		return nil, diags
+	}
+
+	minCoresVal, ok := minCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
+	}
+
+	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_cores_per_socket is missing from object`)
+
+		return nil, diags
+	}
+
+	minCoresPerSocketVal, ok := minCoresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
+	}
+
+	minMemoryAttribute, ok := attributes["min_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_memory is missing from object`)
+
+		return nil, diags
+	}
+
+	minMemoryVal, ok := minMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
+	}
+
+	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_per_disk_size is missing from object`)
+
+		return nil, diags
+	}
+
+	minPerDiskSizeVal, ok := minPerDiskSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
+	}
+
+	minSocketsAttribute, ok := attributes["min_sockets"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_sockets is missing from object`)
+
+		return nil, diags
+	}
+
+	minSocketsVal, ok := minSocketsAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
+	}
+
+	minStorageAttribute, ok := attributes["min_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_storage is missing from object`)
+
+		return nil, diags
+	}
+
+	minStorageVal, ok := minStorageAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigRangesValue{
+		MaxCores:          maxCoresVal,
+		MaxCoresPerSocket: maxCoresPerSocketVal,
+		MaxMemory:         maxMemoryVal,
+		MaxPerDiskSize:    maxPerDiskSizeVal,
+		MaxSockets:        maxSocketsVal,
+		MaxStorage:        maxStorageVal,
+		MinCores:          minCoresVal,
+		MinCoresPerSocket: minCoresPerSocketVal,
+		MinMemory:         minMemoryVal,
+		MinPerDiskSize:    minPerDiskSizeVal,
+		MinSockets:        minSocketsVal,
+		MinStorage:        minStorageVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigRangesValueNull() ConfigRangesValue {
+	return ConfigRangesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigRangesValueUnknown() ConfigRangesValue {
+	return ConfigRangesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigRangesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigRangesValue Attribute Value",
+				"While creating a ConfigRangesValue value, a missing attribute value was detected. "+
+					"A ConfigRangesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigRangesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigRangesValue Attribute Type",
+				"While creating a ConfigRangesValue value, an invalid attribute value was detected. "+
+					"A ConfigRangesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigRangesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigRangesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigRangesValue Attribute Value",
+				"While creating a ConfigRangesValue value, an extra attribute value was detected. "+
+					"A ConfigRangesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigRangesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+	}
+
+	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores_per_socket is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxCoresPerSocketVal, ok := maxCoresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+	}
+
+	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_per_disk_size is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxPerDiskSizeVal, ok := maxPerDiskSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
+	}
+
+	maxSocketsAttribute, ok := attributes["max_sockets"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_sockets is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxSocketsVal, ok := maxSocketsAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
+	}
+
+	minCoresAttribute, ok := attributes["min_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_cores is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minCoresVal, ok := minCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
+	}
+
+	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_cores_per_socket is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minCoresPerSocketVal, ok := minCoresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
+	}
+
+	minMemoryAttribute, ok := attributes["min_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_memory is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minMemoryVal, ok := minMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
+	}
+
+	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_per_disk_size is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minPerDiskSizeVal, ok := minPerDiskSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
+	}
+
+	minSocketsAttribute, ok := attributes["min_sockets"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_sockets is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minSocketsVal, ok := minSocketsAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
+	}
+
+	minStorageAttribute, ok := attributes["min_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`min_storage is missing from object`)
+
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	minStorageVal, ok := minStorageAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigRangesValueUnknown(), diags
+	}
+
+	return ConfigRangesValue{
+		MaxCores:          maxCoresVal,
+		MaxCoresPerSocket: maxCoresPerSocketVal,
+		MaxMemory:         maxMemoryVal,
+		MaxPerDiskSize:    maxPerDiskSizeVal,
+		MaxSockets:        maxSocketsVal,
+		MaxStorage:        maxStorageVal,
+		MinCores:          minCoresVal,
+		MinCoresPerSocket: minCoresPerSocketVal,
+		MinMemory:         minMemoryVal,
+		MinPerDiskSize:    minPerDiskSizeVal,
+		MinSockets:        minSocketsVal,
+		MinStorage:        minStorageVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigRangesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigRangesValue {
+	object, diags := NewConfigRangesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigRangesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigRangesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigRangesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigRangesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigRangesValueMust(ConfigRangesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigRangesType) ValueType(ctx context.Context) attr.Value {
+	return ConfigRangesValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigRangesValue{}
+
+type ConfigRangesValue struct {
+	MaxCores          basetypes.Int64Value `tfsdk:"max_cores"`
+	MaxCoresPerSocket basetypes.Int64Value `tfsdk:"max_cores_per_socket"`
+	MaxMemory         basetypes.Int64Value `tfsdk:"max_memory"`
+	MaxPerDiskSize    basetypes.Int64Value `tfsdk:"max_per_disk_size"`
+	MaxSockets        basetypes.Int64Value `tfsdk:"max_sockets"`
+	MaxStorage        basetypes.Int64Value `tfsdk:"max_storage"`
+	MinCores          basetypes.Int64Value `tfsdk:"min_cores"`
+	MinCoresPerSocket basetypes.Int64Value `tfsdk:"min_cores_per_socket"`
+	MinMemory         basetypes.Int64Value `tfsdk:"min_memory"`
+	MinPerDiskSize    basetypes.Int64Value `tfsdk:"min_per_disk_size"`
+	MinSockets        basetypes.Int64Value `tfsdk:"min_sockets"`
+	MinStorage        basetypes.Int64Value `tfsdk:"min_storage"`
+	state             attr.ValueState
+}
+
+func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 12)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_cores"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_cores_per_socket"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_memory"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_per_disk_size"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_sockets"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_storage"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_cores"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_cores_per_socket"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_memory"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_per_disk_size"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_sockets"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["min_storage"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 12)
+
+		val, err = v.MaxCores.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_cores"] = val
+
+		val, err = v.MaxCoresPerSocket.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_cores_per_socket"] = val
+
+		val, err = v.MaxMemory.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_memory"] = val
+
+		val, err = v.MaxPerDiskSize.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_per_disk_size"] = val
+
+		val, err = v.MaxSockets.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_sockets"] = val
+
+		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_storage"] = val
+
+		val, err = v.MinCores.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_cores"] = val
+
+		val, err = v.MinCoresPerSocket.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_cores_per_socket"] = val
+
+		val, err = v.MinMemory.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_memory"] = val
+
+		val, err = v.MinPerDiskSize.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_per_disk_size"] = val
+
+		val, err = v.MinSockets.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_sockets"] = val
+
+		val, err = v.MinStorage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["min_storage"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigRangesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigRangesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigRangesValue) String() string {
+	return "ConfigRangesValue"
+}
+
+func (v ConfigRangesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_cores":            basetypes.Int64Type{},
+		"max_cores_per_socket": basetypes.Int64Type{},
+		"max_memory":           basetypes.Int64Type{},
+		"max_per_disk_size":    basetypes.Int64Type{},
+		"max_sockets":          basetypes.Int64Type{},
+		"max_storage":          basetypes.Int64Type{},
+		"min_cores":            basetypes.Int64Type{},
+		"min_cores_per_socket": basetypes.Int64Type{},
+		"min_memory":           basetypes.Int64Type{},
+		"min_per_disk_size":    basetypes.Int64Type{},
+		"min_sockets":          basetypes.Int64Type{},
+		"min_storage":          basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_cores":            v.MaxCores,
+			"max_cores_per_socket": v.MaxCoresPerSocket,
+			"max_memory":           v.MaxMemory,
+			"max_per_disk_size":    v.MaxPerDiskSize,
+			"max_sockets":          v.MaxSockets,
+			"max_storage":          v.MaxStorage,
+			"min_cores":            v.MinCores,
+			"min_cores_per_socket": v.MinCoresPerSocket,
+			"min_memory":           v.MinMemory,
+			"min_per_disk_size":    v.MinPerDiskSize,
+			"min_sockets":          v.MinSockets,
+			"min_storage":          v.MinStorage,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigRangesValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigRangesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxCores.Equal(other.MaxCores) {
+		return false
+	}
+
+	if !v.MaxCoresPerSocket.Equal(other.MaxCoresPerSocket) {
+		return false
+	}
+
+	if !v.MaxMemory.Equal(other.MaxMemory) {
+		return false
+	}
+
+	if !v.MaxPerDiskSize.Equal(other.MaxPerDiskSize) {
+		return false
+	}
+
+	if !v.MaxSockets.Equal(other.MaxSockets) {
+		return false
+	}
+
+	if !v.MaxStorage.Equal(other.MaxStorage) {
+		return false
+	}
+
+	if !v.MinCores.Equal(other.MinCores) {
+		return false
+	}
+
+	if !v.MinCoresPerSocket.Equal(other.MinCoresPerSocket) {
+		return false
+	}
+
+	if !v.MinMemory.Equal(other.MinMemory) {
+		return false
+	}
+
+	if !v.MinPerDiskSize.Equal(other.MinPerDiskSize) {
+		return false
+	}
+
+	if !v.MinSockets.Equal(other.MinSockets) {
+		return false
+	}
+
+	if !v.MinStorage.Equal(other.MinStorage) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigRangesValue) Type(ctx context.Context) attr.Type {
+	return ConfigRangesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigRangesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_cores":            basetypes.Int64Type{},
+		"max_cores_per_socket": basetypes.Int64Type{},
+		"max_memory":           basetypes.Int64Type{},
+		"max_per_disk_size":    basetypes.Int64Type{},
+		"max_sockets":          basetypes.Int64Type{},
+		"max_storage":          basetypes.Int64Type{},
+		"min_cores":            basetypes.Int64Type{},
+		"min_cores_per_socket": basetypes.Int64Type{},
+		"min_memory":           basetypes.Int64Type{},
+		"min_per_disk_size":    basetypes.Int64Type{},
+		"min_sockets":          basetypes.Int64Type{},
+		"min_storage":          basetypes.Int64Type{},
+	}
 }
