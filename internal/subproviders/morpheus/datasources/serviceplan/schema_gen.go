@@ -154,14 +154,10 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Max disks allowed",
 			},
 			"max_memory": schema.Int64Attribute{
-				Computed:            true,
-				Description:         "Max memory size in bytes",
-				MarkdownDescription: "Max memory size in bytes",
+				Computed: true,
 			},
 			"max_storage": schema.Int64Attribute{
-				Computed:            true,
-				Description:         "Max storage size in bytes",
-				MarkdownDescription: "Max storage size in bytes",
+				Computed: true,
 			},
 			"memory_size_type": schema.StringAttribute{
 				Computed: true,
@@ -192,6 +188,11 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"sort_order": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Sort order",
+				MarkdownDescription: "Sort order",
+			},
 			"storage_size_type": schema.StringAttribute{
 				Computed: true,
 			},
@@ -219,6 +220,7 @@ type ServicePlanModel struct {
 	Name              types.String      `tfsdk:"name"`
 	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
 	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
+	SortOrder         types.Int64       `tfsdk:"sort_order"`
 	StorageSizeType   types.String      `tfsdk:"storage_size_type"`
 }
 
