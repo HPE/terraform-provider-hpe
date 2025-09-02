@@ -3,7 +3,7 @@
 package network_test
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -329,11 +329,11 @@ resource "hpe_morpheus_network" "all_attrs" {
 	})
 }
 
-func TestAccMorpheusNetworkResourceCreateResourcePermissionsAllFalse(t *testing.T) {
+func TestAccMorpheusNetworkResourceCreateResourcePermissionsAllFalse(_ *testing.T) {
 	// TODO: Write test when PCCP-3372 is fixed
 }
 
-func TestAccMorpheusNetworkResourceCreateResourcePermissionsWithGroupIds(t *testing.T) {
+func TestAccMorpheusNetworkResourceCreateResourcePermissionsWithGroupIds(_ *testing.T) {
 	// TODO: Write test when PCCP-4209 is fixed
 }
 
@@ -492,7 +492,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	examplePath := "../../../../../examples/resources/hpe_morpheus_network"
 
 	// Read the resource.tf file from disk
-	resourceContent, err := ioutil.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
 	if err != nil {
 		t.Fatalf("Failed to read resource.tf: %v", err)
 	}

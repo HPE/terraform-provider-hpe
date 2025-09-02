@@ -22,6 +22,7 @@ func TestMain(m *testing.M) {
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", morpheus.New())()
+
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
 
