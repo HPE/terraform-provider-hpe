@@ -977,7 +977,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudOneOf(t *testing.T) {
+func TestAccMorpheusCloudValidationOneOf(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -1061,7 +1061,7 @@ func TestAccMorpheusCloudOneOf(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudRequiredAttrs(t *testing.T) {
+func TestAccMorpheusCloudValidationRequiredAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
