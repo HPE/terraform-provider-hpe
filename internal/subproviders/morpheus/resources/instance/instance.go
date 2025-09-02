@@ -160,8 +160,7 @@ func getInstanceAsState(
 	state.CloudId = convert.Int64ToType(instance.Cloud.Id)
 
 	// config
-	// assume the config is whatever the plan says for now
-	state.Config = plan.Config
+	state.Config = types.DynamicNull()
 
 	// evars
 	// API may respond with more evars than what the user set so we need to
@@ -270,9 +269,24 @@ func getInstanceAsState(
 	state.TaskSetId = plan.TaskSetId
 
 	// volumes
+	apiVolumes := slices.DeleteFunc(
+		resp.GetInstance().Volumes,
+		func(v sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner) bool {
+			if v.Name == nil {
+				return false
+			}
+
+			if strings.HasPrefix(*v.Name, "CD ROM") {
+				return true
+			}
+
+			return false
+		},
+	)
+
 	volumes, d := convert.ToSetType(
 		ctx,
-		resp.GetInstance().Volumes,
+		apiVolumes,
 		func(
 			in sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
 		) VolumesValue {
@@ -382,10 +396,24 @@ func (g *Resource) Create(
 	// config
 	configMap := make(map[string]any)
 	if !data.Config.IsNull() {
-		if err := json.Unmarshal([]byte(data.Config.ValueString()), &configMap); err != nil {
+		configValue := data.Config.UnderlyingValue()
+		configAny, err := convert.ValueToAny(ctx, configValue)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create instance resource",
+				"instance: failed to convert config: "+
+					err.Error(),
+			)
+
+			return
+		}
+		configDataMap, ok := configAny.(map[string]any)
+		if ok {
+			configMap = configDataMap
+		} else {
 			resp.Diagnostics.AddError(
 				"error creating instance",
-				"could not parse JSON value for config: "+err.Error(),
+				"could not parse config value",
 			)
 		}
 	}
