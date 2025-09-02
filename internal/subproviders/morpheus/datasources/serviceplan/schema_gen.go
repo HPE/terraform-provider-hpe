@@ -154,10 +154,14 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Max disks allowed",
 			},
 			"max_memory": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Max memory size in bytes",
+				MarkdownDescription: "Max memory size in bytes",
 			},
 			"max_storage": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Max storage size in bytes",
+				MarkdownDescription: "Max storage size in bytes",
 			},
 			"memory_size_type": schema.StringAttribute{
 				Computed: true,
