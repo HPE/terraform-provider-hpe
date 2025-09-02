@@ -160,7 +160,6 @@ func getInstanceAsState(
 	state.CloudId = convert.Int64ToType(instance.Cloud.Id)
 
 	// config
-	// assume the config is whatever the plan says for now
 	state.Config = types.DynamicNull()
 
 	// evars
