@@ -330,6 +330,7 @@ resource "hpe_morpheus_service_plan" "test_all" {
   memory_size_type       = "mb"
   price_set_ids           = [1]
   provision_type_code    = "arm"
+  sort_order             = 0
   storage_size_type      = "gb"
 
   config_ranges =  {
@@ -437,6 +438,11 @@ data "hpe_morpheus_service_plan" "test_all" {
 			"data.hpe_morpheus_service_plan.test_all",
 			"provision_type_code",
 			"arm",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_service_plan.test_all",
+			"sort_order",
+			"0",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_service_plan.test_all",
