@@ -10,11 +10,11 @@ Service Plans in HPE Morpheus Enterprise determine the memory, storage, and core
 
 {{ .Description | trimspace }}
 
-{{ if .HasExample -}}
 ## Example Usage
 
-{{ tffile .ExampleFile }}
-{{- end }}
+{{ tffile "internal/subproviders/morpheus/datasources/serviceplan/example-id.tf" }}
+
+{{ tffile "internal/subproviders/morpheus/datasources/serviceplan/example-name-provision.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
