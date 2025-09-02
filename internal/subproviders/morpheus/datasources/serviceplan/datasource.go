@@ -224,7 +224,6 @@ func servicePlanAsState(
 	state.Name = convert.StrToType(servicePlan.Name)
 	state.PriceSetIds = priceSetIDSet
 	state.ProvisionTypeCode = convert.StrToType(servicePlan.ProvisionType.Code)
-	state.SortOrder = convert.Int64ToType(servicePlan.SortOrder)
 	state.StorageSizeType = convert.StrToType(servicePlan.Config.StorageSizeType.Get())
 
 	return state, diags
