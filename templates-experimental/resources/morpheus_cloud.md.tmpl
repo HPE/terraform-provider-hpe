@@ -12,17 +12,17 @@ description: |-
 
 {{ tffile "internal/subproviders/morpheus/resources/cloud/example.tf" }}
 
-## Argument Reference
+## Attribute Reference
 
-The following arguments are supported:
+The following attributes are supported:
 
-### Required Arguments
+### Required Attributes
 
 * `name` - (Required) A unique name scoped to your account for the cloud.
 * `group_id` - (Required) Specifies which Server group this cloud should be assigned to. **Note:** Changing this forces a new resource to be created.
 * `tenant_id` - (Required) Specifies which Tenant this cloud should be assigned to. **Note:** Changing this forces a new resource to be created.
 
-### Optional Arguments
+### Optional Attributes
 
 #### General Configuration
 
@@ -60,9 +60,9 @@ The following arguments are supported:
   * `certificate_provider` - (Optional) Certificate provider for the HVM cloud.
   * `enable_network_type_selection` - (Optional) Whether to enable the user to select the network interface type during provisioning.
 
-## Attributes Reference
+## Computed Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all attributes above, the following computed attributes are exported:
 
 * `id` - The ID of the cloud.
 
