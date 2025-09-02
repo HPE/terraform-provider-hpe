@@ -17,15 +17,16 @@ import (
 // TestAccMorpheusNetworkResourceUpdateOk tests updating a network resource
 // with comprehensive validation of all updateable fields
 func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	defer testhelpers.RecordResult(t)
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
-
-	providerConfig := testhelpers.ProviderBlock()
 
 	// Base configuration with variables for all parameters
 	baseConfigText := providerConfig + `
@@ -385,13 +386,18 @@ resource "hpe_morpheus_network" "foo" {
 // attribute forces resource replacement due to the RequiresReplace plan modifier
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique names for this test run
 	initialName := acctest.RandomWithPrefix(t.Name() + "-initial")
 	updatedName := acctest.RandomWithPrefix(t.Name() + "-updated")
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -565,12 +571,17 @@ resource "hpe_morpheus_network" "name_change_test" {
 // or cidr_ipv6 attributes forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -816,12 +827,17 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 // attribute forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"

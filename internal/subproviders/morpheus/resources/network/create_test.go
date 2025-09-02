@@ -17,12 +17,17 @@ import (
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables and defaults for required fields only
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -132,12 +137,17 @@ resource "hpe_morpheus_network" "foo" {
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with all available fields
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -341,12 +351,17 @@ func TestAccMorpheusNetworkResourceCreateResourcePermissionsWithGroupIds(_ *test
 // with host-specific configuration and empty config object
 func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables and defaults for host network
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -484,6 +499,12 @@ resource "hpe_morpheus_network" "foo" {
 // availabilityZone settings using example files
 func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -498,7 +519,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	}
 
 	// Combine provider config and resource file content
-	configText := testhelpers.ProviderBlock() + "\n" + string(resourceContent)
+	configText := providerConfig + "\n" + string(resourceContent)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -579,12 +600,17 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 // resource with specific configuration including mtu and autoCreate settings
 func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with GCP-specific settings
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
