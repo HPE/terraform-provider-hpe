@@ -32,13 +32,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Cloud ID to provision the instance onto.",
 				MarkdownDescription: "The Cloud ID to provision the instance onto.",
 			},
-			"config": schema.StringAttribute{
+			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Configuration object. Settings vary by type. (Dynamic)",
-				MarkdownDescription: "Configuration object. Settings vary by type. (Dynamic)",
-				Validators: []validator.String{
-					morpheusvalidators.JSONValidator{},
+				Description:         "Configuration object. Settings vary by type.",
+				MarkdownDescription: "Configuration object. Settings vary by type.",
+				Validators: []validator.Dynamic{
+					morpheusvalidators.ValidObjectMap(),
 				},
 			},
 			"evars": schema.SetNestedAttribute{
@@ -183,7 +183,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 			},
@@ -289,22 +288,22 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceModel struct {
-	CloudId           types.Int64  `tfsdk:"cloud_id"`
-	Config            types.String `tfsdk:"config"`
-	Evars             types.Set    `tfsdk:"evars"`
-	GroupId           types.Int64  `tfsdk:"group_id"`
-	Id                types.Int64  `tfsdk:"id"`
-	InstanceContext   types.String `tfsdk:"instance_context"`
-	InstanceTypeId    types.Int64  `tfsdk:"instance_type_id"`
-	LayoutId          types.Int64  `tfsdk:"layout_id"`
-	LayoutSize        types.Int64  `tfsdk:"layout_size"`
-	Name              types.String `tfsdk:"name"`
-	NetworkInterfaces types.Set    `tfsdk:"network_interfaces"`
-	PlanId            types.Int64  `tfsdk:"plan_id"`
-	Ports             types.Set    `tfsdk:"ports"`
-	Tags              types.Set    `tfsdk:"tags"`
-	TaskSetId         types.Int64  `tfsdk:"task_set_id"`
-	Volumes           types.Set    `tfsdk:"volumes"`
+	CloudId           types.Int64   `tfsdk:"cloud_id"`
+	Config            types.Dynamic `tfsdk:"config"`
+	Evars             types.Set     `tfsdk:"evars"`
+	GroupId           types.Int64   `tfsdk:"group_id"`
+	Id                types.Int64   `tfsdk:"id"`
+	InstanceContext   types.String  `tfsdk:"instance_context"`
+	InstanceTypeId    types.Int64   `tfsdk:"instance_type_id"`
+	LayoutId          types.Int64   `tfsdk:"layout_id"`
+	LayoutSize        types.Int64   `tfsdk:"layout_size"`
+	Name              types.String  `tfsdk:"name"`
+	NetworkInterfaces types.Set     `tfsdk:"network_interfaces"`
+	PlanId            types.Int64   `tfsdk:"plan_id"`
+	Ports             types.Set     `tfsdk:"ports"`
+	Tags              types.Set     `tfsdk:"tags"`
+	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
+	Volumes           types.Set     `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}
