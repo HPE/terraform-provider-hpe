@@ -1,0 +1,52 @@
+data "hpe_morpheus_cloud" "vme_cloud" {
+  name = "HPE Alletra VME" 
+}
+
+data "hpe_morpheus_service_plan" "vme_512mb" {
+    name                = "1 CPU, 1GB Memory"
+    provision_type_code = "kvm"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name               = "TestInstance"
+  cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id   # HPE Alletra VME
+  layout_id          = 5385   # Single KVM VM
+  instance_type_id   = 9 # (HVM) mvm-cluster
+  layout_size        = 1
+
+  group_id           = 1
+  plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+  
+  instance_context   = "dev"
+  network_interfaces = [
+    {
+      network_id = 103481
+      ip_mode    = "dhcp"
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume  = true
+      name         = "root"
+      size         = 10
+      storage_type = 1
+      datastore_id = 38658
+    }
+  ]
+
+  tags = [
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config = {
+    resourcePoolId       = "pool-62299"
+    poolProviderType     = "mvm"
+    nestedVirtualization = "off"
+    noAgent              = true
+    createUser           = false
+  }
+}

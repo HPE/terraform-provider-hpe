@@ -162,6 +162,10 @@ func getInstanceAsState(
 	// config
 	state.Config = types.DynamicNull()
 
+	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+		state.Config = plan.Config
+	}
+
 	// evars
 	// API may respond with more evars than what the user set so we need to
 	// check the /instance/{id}/envs endpoint which gives us the user specified
