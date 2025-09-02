@@ -238,6 +238,9 @@ resource "hpe_morpheus_network" "test" {
 // resource accepts null config value without validation error
 func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
 
 	providerConfig := testhelpers.ProviderBlock()
 
