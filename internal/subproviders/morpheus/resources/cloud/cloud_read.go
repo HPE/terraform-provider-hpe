@@ -117,7 +117,11 @@ func getCloudAsState(
 	return state, diags
 }
 
-func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	var plan CloudModel
 
 	diags := req.State.Get(ctx, &plan)
