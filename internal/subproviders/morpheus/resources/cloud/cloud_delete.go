@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package cloud
 
 import (
@@ -14,7 +12,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 )
 
-func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	var data CloudModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)

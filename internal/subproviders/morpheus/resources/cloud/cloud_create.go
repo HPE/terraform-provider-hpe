@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package cloud
 
 import (
@@ -18,7 +16,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 )
 
-func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+const defaultCloudType = "standard"
+
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	var plan CloudModel
 
 	// Read Terraform plan data into the model
@@ -28,8 +32,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	name := plan.Name.ValueString()
-	groupId := plan.GroupId.ValueInt64()
-	tenantId := plan.TenantId.ValueInt64()
+	groupID := plan.GroupId.ValueInt64()
+	tenantID := plan.TenantId.ValueInt64()
 
 	var config CloudModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -41,7 +45,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		AddCloudsRequestZoneConfigAnyOf: &sdk.AddCloudsRequestZoneConfigAnyOf{},
 	}
 
-	cloudTypeCode := "standard"
+	cloudTypeCode := defaultCloudType
 
 	switch {
 	case !plan.ConfigHvm.IsNull():
@@ -94,10 +98,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		},
 	}
 
-	addCloud := sdk.NewAddCloudsRequestZone(name, groupId, cloudType, addCloudConfig)
+	addCloud := sdk.NewAddCloudsRequestZone(name, groupID, cloudType, addCloudConfig)
 	addCloud.AdditionalProperties = make(map[string]any)
 
-	addCloud.SetAccountId(tenantId)
+	addCloud.SetAccountId(tenantID)
 
 	if !plan.AgentInstallMode.IsNull() {
 		addCloud.SetAgentMode(plan.AgentInstallMode.ValueString())
