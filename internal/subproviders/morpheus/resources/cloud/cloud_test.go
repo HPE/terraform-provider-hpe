@@ -2,8 +2,6 @@
 
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
 
-//go:build experimental
-
 package cloud_test
 
 import (

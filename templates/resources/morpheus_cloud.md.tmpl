@@ -1,0 +1,61 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
+HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
+
+-> Currently, only the HVM cloud configuration is supported. The `config_hvm` block provides HVM-specific configuration options.
+
+## Example Usage
+
+{{ tffile "internal/subproviders/morpheus/resources/cloud/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Clouds can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_cloud.example 123
+```
+
+## Notes
+
+### Agent Installation Modes
+
+- `ssh` The Morpheus agent is installed via SSH connection to the virtual machine.
+- `cloudInit` The Morpheus agent is installed using cloud-init during the VM provisioning process. This is the recommended method for most cloud platforms.
+
+### Costing Modes
+
+- `off` No costing functionality enabled.
+- `costing` Basic cost tracking enabled.
+- `reservations` Cost tracking with reservation support.
+- `full` Complete costing functionality with all features enabled.
+
+### Import Existing VMs
+
+- `off` Do not import existing virtual machines.
+- `basic` Import existing VMs with basic information only.
+- `full` Import existing VMs with complete configuration and metadata.
+
+### Security Modes
+
+- `off` Host firewall is disabled.
+- `internal` Host firewall is enabled for internal network protection.
+
+### Resource Dependencies
+
+Before creating a cloud resource, ensure that:
+
+1. The specified `group_id` exists and is accessible.
+2. The specified `tenant_id` exists and the user has appropriate permissions.
+3. Any referenced certificate providers in `config_hvm.certificate_provider` are properly configured in Morpheus.
