@@ -2,8 +2,6 @@
 
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912"
 
-//go:build experimental
-
 package serviceplan_test
 
 import (
