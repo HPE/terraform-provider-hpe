@@ -24,12 +24,14 @@ jobs:
       - run: go version
       - run: terraform version
       - run: make docs
-      - run: git diff --exit-code
       - run: |
-          set -euo pipefail
-
-          if ! git diff --quiet; then
-              echo "Docs not in sync"
-              git --no-pager diff --stat
-              exit 1
-          fi
+        echo "Checking all doc files are in sync with checked-in"
+        status="$(git status --short)"
+        if [[ ! -z $status ]]
+        then
+            echo "some doc files are out of sync or missing"
+            echo "run `make docs` and commit the changes"
+            echo "$status"
+            exit 1
+        fi
+        echo "Input and generated seem up-to-date"
