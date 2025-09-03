@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package network_test
 
 import (
@@ -22,10 +20,11 @@ func TestAccMorpheusNetworkImport(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
+
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
-
-	providerConfig := testhelpers.ProviderBlock()
 
 	// nolint: gosec
 	resourceCfg := `
