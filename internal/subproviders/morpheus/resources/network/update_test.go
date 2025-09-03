@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package network_test
 
 import (
@@ -19,15 +17,16 @@ import (
 // TestAccMorpheusNetworkResourceUpdateOk tests updating a network resource
 // with comprehensive validation of all updateable fields
 func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	defer testhelpers.RecordResult(t)
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
-
-	providerConfig := testhelpers.ProviderBlock()
 
 	// Base configuration with variables for all parameters
 	baseConfigText := providerConfig + `
@@ -236,148 +235,149 @@ resource "hpe_morpheus_network" "foo" {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{{ // Step 1: Create resource
-			Config:          baseConfigText,
-			ConfigVariables: baseConfigVars,
-			Check:           checkFn,
-			PlanOnly:        false,
-		}, { // Step 2: Plan only - verify no changes
-			Config:             baseConfigText,
-			ConfigVariables:    baseConfigVars,
-			Check:              checkFn,
-			ExpectNonEmptyPlan: false,
-			PlanOnly:           true,
-		}, { // Step 3: Plan only - test name change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name": config.StringVariable(uniqueName + "New"), // CHANGED
+		Steps: []resource.TestStep{
+			{ // Step 1: Create resource
+				Config:          baseConfigText,
+				ConfigVariables: baseConfigVars,
+				Check:           checkFn,
+				PlanOnly:        false,
+			}, { // Step 2: Plan only - verify no changes
+				Config:             baseConfigText,
+				ConfigVariables:    baseConfigVars,
+				Check:              checkFn,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			}, { // Step 3: Plan only - test name change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName + "New"), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 4: Plan only - test description change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":        config.StringVariable(uniqueName),
+					"description": config.StringVariable("Changed network description"),
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 5: Plan only - test pool_id change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":    config.StringVariable(uniqueName),
+					"pool_id": config.IntegerVariable(2), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 6: Plan only - test cidr change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName),
+					"cidr": config.StringVariable("10.51.0.0/16"), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 7: Plan only - test visibility change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":       config.StringVariable(uniqueName),
+					"visibility": config.StringVariable("public"), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 8: Plan only - test active change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":   config.StringVariable(uniqueName),
+					"active": config.BoolVariable(false), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 9: Plan only - test dhcp_server change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":        config.StringVariable(uniqueName),
+					"dhcp_server": config.BoolVariable(true), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 10: Plan only - test appliance_url_proxy_bypass change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":                       config.StringVariable(uniqueName),
+					"appliance_url_proxy_bypass": config.BoolVariable(false), // CHANGED
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 11: Plan only - test config change detection
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name":                     config.StringVariable(uniqueName),
+					"config_resource_group_id": config.StringVariable("changed-resource-group"),
+				},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			}, { // Step 12: Apply comprehensive changes - modify many fields
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					// Keep original name
+					"name":        config.StringVariable(uniqueName),
+					"description": config.StringVariable("Comprehensive update test"),
+					"pool_id":     config.IntegerVariable(2),
+					// Keep original CIDR
+					"cidr":                       config.StringVariable("10.50.0.0/16"),
+					"visibility":                 config.StringVariable("public"),
+					"active":                     config.BoolVariable(false),
+					"dhcp_server":                config.BoolVariable(true),
+					"appliance_url_proxy_bypass": config.BoolVariable(false),
+					"config_resource_group_id":   config.StringVariable("updated-resource-group"),
+					"config_subnet_name":         config.StringVariable("updated-subnet"),
+					"config_subnet_cidr":         config.StringVariable("10.99.1.0/24"),
+				},
+				Check: resource.ComposeTestCheckFunc(
+					// Verify all updated fields
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "name", uniqueName), // Name unchanged
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "description", "Comprehensive update test"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "pool_id", "2"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16"), // CIDR unchanged
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "visibility", "public"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "active", "false"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "dhcp_server", "true"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "false"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "config.resourceGroupId", "updated-resource-group"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "config.subnetName", "updated-subnet"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "config.subnetCidr", "10.99.1.0/24"),
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.foo", "resource_permissions.all"),
+					// Check tenant_ids unchanged
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "tenant_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.foo", "tenant_ids.*", "1"),
+					// Verify fields that shouldn't change
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "cloud_id", "4617"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "group_id", "1"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "type_id", "35"),
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.foo", "id"),
+				),
+				PlanOnly: false,
 			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 4: Plan only - test description change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":        config.StringVariable(uniqueName),
-				"description": config.StringVariable("Changed network description"),
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 5: Plan only - test pool_id change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":    config.StringVariable(uniqueName),
-				"pool_id": config.IntegerVariable(2), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 6: Plan only - test cidr change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name": config.StringVariable(uniqueName),
-				"cidr": config.StringVariable("10.51.0.0/16"), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 7: Plan only - test visibility change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":       config.StringVariable(uniqueName),
-				"visibility": config.StringVariable("public"), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 8: Plan only - test active change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":   config.StringVariable(uniqueName),
-				"active": config.BoolVariable(false), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 9: Plan only - test dhcp_server change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":        config.StringVariable(uniqueName),
-				"dhcp_server": config.BoolVariable(true), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 10: Plan only - test appliance_url_proxy_bypass change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":                       config.StringVariable(uniqueName),
-				"appliance_url_proxy_bypass": config.BoolVariable(false), // CHANGED
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 11: Plan only - test config change detection
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				"name":                     config.StringVariable(uniqueName),
-				"config_resource_group_id": config.StringVariable("changed-resource-group"),
-			},
-			ExpectNonEmptyPlan: true,
-			PlanOnly:           true,
-		}, { // Step 12: Apply comprehensive changes - modify many fields
-			Config: baseConfigText,
-			ConfigVariables: config.Variables{
-				// Keep original name
-				"name":        config.StringVariable(uniqueName),
-				"description": config.StringVariable("Comprehensive update test"),
-				"pool_id":     config.IntegerVariable(2),
-				// Keep original CIDR
-				"cidr":                       config.StringVariable("10.50.0.0/16"),
-				"visibility":                 config.StringVariable("public"),
-				"active":                     config.BoolVariable(false),
-				"dhcp_server":                config.BoolVariable(true),
-				"appliance_url_proxy_bypass": config.BoolVariable(false),
-				"config_resource_group_id":   config.StringVariable("updated-resource-group"),
-				"config_subnet_name":         config.StringVariable("updated-subnet"),
-				"config_subnet_cidr":         config.StringVariable("10.99.1.0/24"),
-			},
-			Check: resource.ComposeTestCheckFunc(
-				// Verify all updated fields
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "name", uniqueName), // Name unchanged
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "description", "Comprehensive update test"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "pool_id", "2"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16"), // CIDR unchanged
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "visibility", "public"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "active", "false"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "dhcp_server", "true"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "false"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "config.resourceGroupId", "updated-resource-group"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "config.subnetName", "updated-subnet"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "config.subnetCidr", "10.99.1.0/24"),
-				resource.TestCheckResourceAttrSet(
-					"hpe_morpheus_network.foo", "resource_permissions.all"),
-				// Check tenant_ids unchanged
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "tenant_ids.#", "1"),
-				resource.TestCheckTypeSetElemAttr(
-					"hpe_morpheus_network.foo", "tenant_ids.*", "1"),
-				// Verify fields that shouldn't change
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "cloud_id", "4617"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "group_id", "1"),
-				resource.TestCheckResourceAttr(
-					"hpe_morpheus_network.foo", "type_id", "35"),
-				resource.TestCheckResourceAttrSet(
-					"hpe_morpheus_network.foo", "id"),
-			),
-			PlanOnly: false,
-		},
 		},
 	})
 }
@@ -386,13 +386,18 @@ resource "hpe_morpheus_network" "foo" {
 // attribute forces resource replacement due to the RequiresReplace plan modifier
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique names for this test run
 	initialName := acctest.RandomWithPrefix(t.Name() + "-initial")
 	updatedName := acctest.RandomWithPrefix(t.Name() + "-updated")
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -480,7 +485,8 @@ resource "hpe_morpheus_network" "name_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.resourceGroupId", "name-change-resource-group"),
+						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
+						"name-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -502,6 +508,7 @@ resource "hpe_morpheus_network" "name_change_test" {
 							return fmt.Errorf("Not found: %s", resourceName)
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -525,7 +532,8 @@ resource "hpe_morpheus_network" "name_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.resourceGroupId", "name-change-resource-group"),
+						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
+						"name-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -550,6 +558,7 @@ resource "hpe_morpheus_network" "name_change_test" {
 							return fmt.Errorf("Expected resource ID to change due to name change (RequiresReplace), "+
 								"but ID remained the same: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
@@ -562,12 +571,17 @@ resource "hpe_morpheus_network" "name_change_test" {
 // or cidr_ipv6 attributes forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -664,7 +678,8 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId", "cidr-change-resource-group"),
+						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
+						"cidr-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -685,6 +700,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 							return fmt.Errorf("Not found: hpe_morpheus_network.cidr_change_test")
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -712,7 +728,8 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32"), // unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId", "cidr-change-resource-group"),
+						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
+						"cidr-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -738,6 +755,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 								"but ID remained the same: %s", currentResourceID)
 						}
 						afterCidrChangeID = currentResourceID
+
 						return nil
 					},
 				),
@@ -766,7 +784,8 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16"), // unchanged from step 2
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId", "cidr-change-resource-group"),
+						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
+						"cidr-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -788,13 +807,14 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 						}
 						currentResourceID := rs.Primary.ID
 						if currentResourceID == afterCidrChangeID {
-							return fmt.Errorf("Expected resource ID to change due to IPv6 CIDR change (RequiresReplace), "+
-								"but ID remained the same: %s", currentResourceID)
+							return fmt.Errorf("Expected resource ID to change due to IPv6 CIDR change "+
+								"(RequiresReplace), but ID remained the same: %s", currentResourceID)
 						}
 						if currentResourceID == initialResourceID {
 							return fmt.Errorf("Resource ID reverted to initial ID, "+
 								"this should not happen: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
@@ -807,12 +827,17 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 // attribute forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	providerConfig := testhelpers.ProviderBlock()
 	configText := providerConfig + `
 variable "name" {
   description = "Network name"
@@ -912,7 +937,8 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "2"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId", "tenant-change-resource-group"),
+						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
+						"tenant-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -929,6 +955,7 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 							return fmt.Errorf("Not found: hpe_morpheus_network.tenant_change_test")
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -962,7 +989,8 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16"), // unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId", "tenant-change-resource-group"),
+						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
+						"tenant-change-resource-group"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet"),
 					resource.TestCheckResourceAttr(
@@ -980,10 +1008,11 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 						}
 						currentResourceID := rs.Primary.ID
 						if currentResourceID == initialResourceID {
-							return fmt.Errorf("Expected resource ID to change due to tenant_ids change (RequiresReplace), "+
-								"but ID remained the same: %s", currentResourceID)
+							return fmt.Errorf("Expected resource ID to change due to tenant_ids change "+
+								"(RequiresReplace), but ID remained the same: %s", currentResourceID)
 						}
 						afterTenantChangeID = currentResourceID
+
 						return nil
 					},
 				),
@@ -1031,13 +1060,14 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 						}
 						currentResourceID := rs.Primary.ID
 						if currentResourceID == afterTenantChangeID {
-							return fmt.Errorf("Expected resource ID to change due to tenant_ids change (RequiresReplace), "+
-								"but ID remained the same: %s", currentResourceID)
+							return fmt.Errorf("Expected resource ID to change due to tenant_ids change "+
+								"(RequiresReplace), but ID remained the same: %s", currentResourceID)
 						}
 						if currentResourceID == initialResourceID {
 							return fmt.Errorf("Resource ID reverted to initial ID, "+
 								"this should not happen: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
