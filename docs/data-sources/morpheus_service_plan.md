@@ -48,8 +48,8 @@ data "hpe_morpheus_service_plan" "test" {
 - `max_cores` (Number) Max number of total cores
 - `max_cpu` (Number) Max CPUs
 - `max_disks` (Number) Max disks allowed
-- `max_memory` (Number)
-- `max_storage` (Number)
+- `max_memory` (Number) Max memory size in bytes
+- `max_storage` (Number) Max storage size in bytes
 - `memory_size_type` (String)
 - `price_set_ids` (Set of Number)
 - `sort_order` (Number) Sort order
