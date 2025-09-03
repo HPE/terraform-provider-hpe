@@ -290,8 +290,8 @@ func (r *Resource) Create(
 
 	// optional
 	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
-		var pricesetIds []int64
-		diags := plan.PriceSetIds.ElementsAs(ctx, &pricesetIds, false)
+		var priceSetIDs []int64
+		diags := plan.PriceSetIds.ElementsAs(ctx, &priceSetIDs, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 
@@ -299,7 +299,7 @@ func (r *Resource) Create(
 		}
 
 		var pricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
-		for _, v := range pricesetIds {
+		for _, v := range priceSetIDs {
 			priceset := sdk.AddServicePlansRequestServicePlanPriceSetsInner{
 				Id: &v,
 			}
@@ -327,7 +327,6 @@ func (r *Resource) Create(
 
 	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
 		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
-
 	}
 
 	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
@@ -383,7 +382,6 @@ func (r *Resource) Create(
 	// write id as soon as possible
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
-
 		return
 	}
 
@@ -396,7 +394,6 @@ func (r *Resource) Create(
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-
 		return
 	}
 }
@@ -422,7 +419,6 @@ func (r *Resource) Read(
 
 	diags := req.State.Get(ctx, &plan)
 	if diags.HasError() {
-
 		return
 	}
 
@@ -446,7 +442,6 @@ func (r *Resource) Read(
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-
 		return
 	}
 }
@@ -461,7 +456,6 @@ func (r *Resource) Delete(
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
-
 		return
 	}
 
@@ -530,6 +524,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_memory to true to add a min_memory value.",
 				)
+
 				return
 			}
 			if !config.ConfigRanges.MaxMemory.IsNull() {
@@ -540,6 +535,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_memory to true to add a max_memory value.",
 				)
+
 				return
 			}
 		}
@@ -554,6 +550,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_storage to true to add a min_storage value.",
 				)
+
 				return
 			}
 			if !config.ConfigRanges.MaxStorage.IsNull() {
@@ -564,6 +561,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_storage to true to add a max_storage value.",
 				)
+
 				return
 			}
 		}
@@ -580,6 +578,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_cores to true to add a min_cores value.",
 				)
+
 				return
 			}
 			if !config.ConfigRanges.MaxCores.IsNull() {
@@ -590,6 +589,7 @@ func (r *Resource) ValidateConfig(
 						"set to true.\n"+
 						"Set custom_cores to true to add a max_cores value.",
 				)
+
 				return
 			}
 		}
@@ -604,6 +604,7 @@ func (r *Resource) ValidateConfig(
 						"been set to true.\n"+
 						"Set add_volumes to true to add a min_per_disk_size value.",
 				)
+
 				return
 			}
 			if !config.ConfigRanges.MaxPerDiskSize.IsNull() {
@@ -614,6 +615,7 @@ func (r *Resource) ValidateConfig(
 						"been set to true.\n"+
 						"Set add_volumes to true to add a max_per_disk_size value.",
 				)
+
 				return
 			}
 		}
