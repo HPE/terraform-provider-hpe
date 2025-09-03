@@ -27,7 +27,7 @@ type Resource struct {
 }
 
 func (r *Resource) Metadata(
-	ctx context.Context,
+	_ context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
@@ -36,7 +36,7 @@ func (r *Resource) Metadata(
 
 func (r *Resource) Schema(
 	ctx context.Context,
-	req resource.SchemaRequest,
+	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = CloudResourceSchema(ctx)
