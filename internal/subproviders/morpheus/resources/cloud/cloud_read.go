@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package cloud
 
 import (
@@ -119,7 +117,11 @@ func getCloudAsState(
 	return state, diags
 }
 
-func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	var plan CloudModel
 
 	diags := req.State.Get(ctx, &plan)

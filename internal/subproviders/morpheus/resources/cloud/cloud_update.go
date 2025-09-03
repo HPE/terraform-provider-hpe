@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package cloud
 
 import (
@@ -17,7 +15,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 )
 
-func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	var plan, state, config CloudModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -125,7 +127,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	}
 
 	if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() {
-		updateCloud.Config["enableNetworkTypeSelection"] = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBool()
+		updateCloud.Config["enableNetworkTypeSelection"] = plan.
+			ConfigHvm.EnableNetworkTypeSelection.ValueBool()
 	}
 
 	client, err := r.NewClient(ctx)
