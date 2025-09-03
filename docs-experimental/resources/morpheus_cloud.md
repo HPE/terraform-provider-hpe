@@ -9,6 +9,7 @@ description: |-
 
 
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
+HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
 -> Currently, only the HVM cloud configuration is supported. The `config_hvm` block provides HVM-specific configuration options.
 
