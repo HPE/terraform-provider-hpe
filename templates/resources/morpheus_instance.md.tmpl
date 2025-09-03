@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Instance is a virtual machine or container deployed and managed by HPE Morpheus.
+Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
+monitoring, and eventual decommissioning.
+
+-> Currently only HVM instances are supported. Updating is currently not 
+supported.
+
+## Example Usage
+
+{{ tffile "internal/subproviders/morpheus/resources/instance/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
