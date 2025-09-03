@@ -25,4 +25,11 @@ jobs:
       - run: terraform version
       - run: make docs
       - run: git diff --exit-code
+      - run: |
+          set -euo pipefail
 
+          if ! git diff --quiet; then
+              echo "Docs not in sync"
+              git --no-pager diff --stat
+              exit 1
+          fi
