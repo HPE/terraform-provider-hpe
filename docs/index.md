@@ -118,8 +118,8 @@ provider "hpe" {
 by Terraform versions 1.11 and later.
 
 ->The `hpe_morpheus_instance` and `hpe_morpheus_network` resources use a `Dynamic` attribute for `config`.  This means
-that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.  Examples of thesei
-are show in the documentation.
+that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.  Examples of these
+are shown in the documentation.
 
 
 In this release (v0.0.1) the following resources have been added:
