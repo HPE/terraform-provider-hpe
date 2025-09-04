@@ -81,6 +81,9 @@ resource "hpe_morpheus_instance" "example" {
 - `instance_type_id` (Number) The type of instance by id we want to fetch.
 - `layout_id` (Number) The layout id for the instance type that you want to provision. i.e. single process or cluster
 - `name` (String) Name of the instance to be created.
+- `network_interfaces` (Attributes Set) The networkInterfaces parameter is for network configuration.
+
+The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces))
 - `plan_id` (Number) The id for the memory and storage option pre-configured within Morpheus.
 
 ### Optional
@@ -90,9 +93,6 @@ resource "hpe_morpheus_instance" "example" {
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
 - `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
-- `network_interfaces` (Attributes Set) The networkInterfaces parameter is for network configuration.
-
-The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces))
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
@@ -104,15 +104,6 @@ The layout may have default ports, which are defined in node types, that are alw
 
 - `id` (Number) The ID of this resource.
 
-<a id="nestedatt--evars"></a>
-### Nested Schema for `evars`
-
-Required:
-
-- `name` (String)
-- `value` (String)
-
-
 <a id="nestedatt--network_interfaces"></a>
 ### Nested Schema for `network_interfaces`
 
@@ -122,6 +113,15 @@ Optional:
 - `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
 - `network_group_id` (Number) id of the network group to be used.
 - `network_id` (Number) id of the network to be used.
+
+
+<a id="nestedatt--evars"></a>
+### Nested Schema for `evars`
+
+Required:
+
+- `name` (String)
+- `value` (String)
 
 
 <a id="nestedatt--ports"></a>
