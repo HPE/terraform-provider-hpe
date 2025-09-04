@@ -196,8 +196,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 				},
-				Optional:            true,
-				Computed:            true,
+				Required:            true,
 				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				PlanModifiers: []planmodifier.Set{
