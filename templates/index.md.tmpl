@@ -53,6 +53,8 @@ be toggled off be setting `insecure` to `true` in the provider block.
 
 ### Release Notes
 
+## New functionality
+
 In this release (v0.0.1) the following resources have been added:
 - hpe_morpheus_instance for HPE MVM or HPE VME instances
 - hpe_morpheus_user for Morpheus users
@@ -65,5 +67,8 @@ In this release (v0.0.1) the following data sources have been added:
 - hpe_morpheus_instance_layout
 - hpe_morpheus_network
 
+## Known Issues
+
+- hpe_morpheus_user will force recreation if an attribute is updated
 
 {{ .SchemaMarkdown | trimspace }}
