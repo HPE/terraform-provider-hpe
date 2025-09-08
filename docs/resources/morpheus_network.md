@@ -8,8 +8,32 @@ description: |-
 
 
 
+~> **Note** Some network types (for example, Amazon) update the network `name`
+and some other attributes a few minutes after creation. This requires using a
+`lifecycle` block as shown below. If this `lifecycle` block is missing, then
+a subsequent `terraform apply` may attempt to delete the network.
+
+If required, a `lifecycle` block may be added as follows:
+
+```hcl
+resource "hpe_morpheus_network" "a" {
+  name = "network A"
+  display_name = "network A"
+  description = "First network"
+
+  .
+  .
+  .
+
+  lifecycle {
+    ignore_changes = [ name, display_name, description ]
+  }
+}
+```
 
 ## Example Usage
+
+### AWS Network
 
 ```terraform
 variable "name" {
@@ -121,6 +145,322 @@ resource "hpe_morpheus_network" "aws" {
 }
 ```
 
+### Azure Network
+
+```terraform
+variable "name" {
+  description = "Network name"
+  type        = string
+  default     = "terraform-network-all-attrs"
+}
+
+variable "description" {
+  description = "Network description"
+  type        = string
+  default     = "Network with all attributes set"
+}
+
+variable "cloud_id" {
+  description = "Cloud (zone) id"
+  type        = number
+  default     = 4617
+}
+
+variable "pool_id" {
+  description = "Network pool id"
+  type        = number
+  default     = 1
+}
+
+variable "group_id" {
+  description = "Group (site) id"
+  type        = number
+  default     = 1
+}
+
+variable "type_id" {
+  description = "Network type id"
+  type        = number
+  default     = 35
+}
+
+variable "cidr" {
+  description = "CIDR Network"
+  type        = string
+  default     = "10.100.0.0/16"
+}
+
+variable "visibility" {
+  description = "Network visibility"
+  type        = string
+  default     = "public"
+}
+
+variable "active" {
+  description = "Whether network is active"
+  type        = bool
+  default     = true
+}
+
+variable "dhcp_server" {
+  description = "Whether DHCP server is enabled"
+  type        = bool
+  default     = true
+}
+
+variable "appliance_url_proxy_bypass" {
+  description = "Whether to bypass proxy for appliance URL"
+  type        = bool
+  default     = false
+}
+
+variable "config_resource_group_id" {
+  description = "Resource Group ID for network config"
+  type        = string
+  default     = "all-attrs-resource-group"
+}
+
+variable "config_subnet_name" {
+  description = "Subnet name for network config"
+  type        = string
+  default     = "all-attrs-subnet"
+}
+
+variable "config_subnet_cidr" {
+  description = "Subnet CIDR for network config"
+  type        = string
+  default     = "10.100.1.0/24"
+}
+
+variable "config_location" {
+  description = "Location for network config"
+  type        = string
+  default     = "eastus"
+}
+
+variable "config_additional_field" {
+  description = "Additional config field"
+  type        = string
+  default     = "test-value"
+}
+
+resource "hpe_morpheus_network" "all_attrs" {
+  name                       = var.name
+  description                = var.description
+  cloud_id                   = var.cloud_id
+  pool_id                    = var.pool_id
+  group_id                   = var.group_id
+  type_id                    = var.type_id
+  cidr                       = var.cidr
+  visibility                 = var.visibility
+  active                     = var.active
+  dhcp_server                = var.dhcp_server
+  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  config = {
+    "resourceGroupId" = var.config_resource_group_id
+    "subnetName"      = var.config_subnet_name
+    "subnetCidr"      = var.config_subnet_cidr
+    "location"        = var.config_location
+    "additionalField" = var.config_additional_field
+  }
+  tenant_ids = [1, 2, 3]
+}
+```
+
+### GCP Network
+
+```terraform
+variable "name" {
+  description = "Network name"
+  type        = string
+  default     = "TestAccMorpheusNetworkResourceCreateGcp"
+}
+
+variable "description" {
+  description = "Network description"
+  type        = string
+  default     = "GCP network"
+}
+
+variable "cloud_id" {
+  description = "Cloud (zone) id"
+  type        = number
+  default     = 6
+}
+
+variable "pool_id" {
+  description = "Network pool id"
+  type        = number
+  default     = 1
+}
+
+variable "group_id" {
+  description = "Group (site) id"
+  type        = number
+  default     = 8
+}
+
+variable "type_id" {
+  description = "Network type id"
+  type        = number
+  default     = 38
+}
+
+variable "cidr" {
+  description = "CIDR Network"
+  type        = string
+  default     = "10.0.0.0/8"
+}
+
+variable "zone_pool_id" {
+  description = "Zone pool id"
+  type        = number
+  default     = 85990
+}
+
+variable "config_mtu" {
+  description = "MTU setting for network config"
+  type        = string
+  default     = "1460"
+}
+
+variable "config_auto_create" {
+  description = "Auto create setting for network config"
+  type        = bool
+  default     = true
+}
+
+variable "active" {
+  description = "Whether network is active"
+  type        = bool
+  default     = true
+}
+
+variable "dhcp_server" {
+  description = "Whether DHCP server is enabled"
+  type        = bool
+  default     = false
+}
+
+variable "appliance_url_proxy_bypass" {
+  description = "Whether to bypass proxy for appliance URL"
+  type        = bool
+  default     = true
+}
+
+variable "visibility" {
+  description = "Network visibility"
+  type        = string
+  default     = "private"
+}
+
+resource "hpe_morpheus_network" "gcp" {
+  name        = var.name
+  description = var.description
+  cloud_id    = var.cloud_id
+  pool_id     = var.pool_id
+  group_id    = var.group_id
+  type_id     = var.type_id
+  config = {
+    mtu        = var.config_mtu
+    autoCreate = var.config_auto_create
+  }
+  active                     = var.active
+  dhcp_server                = var.dhcp_server
+  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  tenant_ids                 = [1]
+  visibility                 = var.visibility
+  cidr                       = var.cidr
+  zone_pool_id               = var.zone_pool_id
+}
+```
+
+### Host Network
+
+```terraform
+variable "name" {
+  description = "Network name"
+  type        = string
+  default     = "terraform-host-network"
+}
+
+variable "description" {
+  description = "Network description"
+  type        = string
+  default     = "A test host network"
+}
+
+variable "cloud_id" {
+  description = "Cloud (zone) id"
+  type        = number
+  default     = 17
+}
+
+variable "pool_id" {
+  description = "Network pool id"
+  type        = number
+  default     = 1
+}
+
+variable "group_id" {
+  description = "Group (site) id"
+  type        = number
+  default     = 1
+}
+
+variable "type_id" {
+  description = "Network type id"
+  type        = number
+  default     = 1
+}
+
+variable "cidr" {
+  description = "CIDR Network"
+  type        = string
+  default     = "10.0.0.0/8"
+}
+
+variable "visibility" {
+  description = "Network visibility"
+  type        = string
+  default     = "private"
+}
+
+variable "active" {
+  description = "Whether network is active"
+  type        = bool
+  default     = true
+}
+
+variable "dhcp_server" {
+  description = "Whether DHCP server is enabled"
+  type        = bool
+  default     = false
+}
+
+variable "appliance_url_proxy_bypass" {
+  description = "Whether to bypass proxy for appliance URL"
+  type        = bool
+  default     = true
+}
+
+resource "hpe_morpheus_network" "host" {
+  name                       = var.name
+  description                = var.description
+  cloud_id                   = var.cloud_id
+  pool_id                    = var.pool_id
+  group_id                   = var.group_id
+  type_id                    = var.type_id
+  config                     = {}
+  active                     = var.active
+  dhcp_server                = var.dhcp_server
+  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  tenant_ids                 = [1]
+  visibility                 = var.visibility
+  cidr                       = var.cidr
+}
+```
+
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
@@ -177,5 +517,3 @@ Read-Only:
 
 - `all` (Boolean) Pass true to allow access all groups
 - `group_ids` (Set of Number) Array of group (site) IDs that are allowed access
-
-
