@@ -19,6 +19,7 @@ This provider requires 64-bit versions of the terraform binary to work properly.
 ->In some circumstances users may need to use this provider and the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest)
 in the same configuration.  To ensure that Morpheus API SSL cert checking is consistent across both providers
 the `MORPHEUS_API_SECURE` environment variable (set to true) can be used to enable SSL cert checking in the Morpheus provider.
+This environment variable is supported by versions 0.14.0 and later of the Morpheus provider.  Note that
 Morpheus API SSL cert checking is enabled by default in this provider.
 
 ## Morpheus
