@@ -147,126 +147,17 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
-	// Build the configuration with all available fields
-	configText := providerConfig + `
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-network-all-attrs"
-}
+	// Path to example configuration files
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/azure"
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "Network with all attributes set"
-}
+	// Read the resource.tf file from disk
+	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	if err != nil {
+		t.Fatalf("Failed to read resource.tf: %v", err)
+	}
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 4617
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 35
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.100.0.0/16"
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "public"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = true
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = false
-}
-
-variable "config_resource_group_id" {
-  description = "Resource Group ID for network config"
-  type        = string
-  default     = "all-attrs-resource-group"
-}
-
-variable "config_subnet_name" {
-  description = "Subnet name for network config"
-  type        = string
-  default     = "all-attrs-subnet"
-}
-
-variable "config_subnet_cidr" {
-  description = "Subnet CIDR for network config"
-  type        = string
-  default     = "10.100.1.0/24"
-}
-
-variable "config_location" {
-  description = "Location for network config"
-  type        = string
-  default     = "eastus"
-}
-
-variable "config_additional_field" {
-  description = "Additional config field"
-  type        = string
-  default     = "test-value"
-}
-
-resource "hpe_morpheus_network" "all_attrs" {
-  name                         = var.name
-  description                  = var.description
-  cloud_id                     = var.cloud_id
-  pool_id                      = var.pool_id
-  group_id                     = var.group_id
-  type_id                      = var.type_id
-  cidr                         = var.cidr
-  visibility                   = var.visibility
-  active                       = var.active
-  dhcp_server                  = var.dhcp_server
-  appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  config = {
-    "resourceGroupId"    = var.config_resource_group_id
-    "subnetName"         = var.config_subnet_name
-    "subnetCidr"         = var.config_subnet_cidr
-    "location"           = var.config_location
-    "additionalField"    = var.config_additional_field
-  }
-  tenant_ids = [1, 2, 3]
-}
-`
+	// Combine provider config and resource file content
+	configText := providerConfig + "\n" + string(resourceContent)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -361,90 +252,17 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
-	// Build the configuration with variables and defaults for host network
-	configText := providerConfig + `
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-host-network"
-}
+	// Path to example configuration files
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/host"
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "A test host network"
-}
+	// Read the resource.tf file from disk
+	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	if err != nil {
+		t.Fatalf("Failed to read resource.tf: %v", err)
+	}
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 17
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 1
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.0.0.0/8"
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = false
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-resource "hpe_morpheus_network" "foo" {
-  name        = var.name
-  description = var.description
-  cloud_id    = var.cloud_id
-  pool_id     = var.pool_id
-  group_id    = var.group_id
-  type_id     = var.type_id
-  config = {}
-  active                       = var.active
-  dhcp_server                  = var.dhcp_server
-  appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  tenant_ids  = [1]
-  visibility  = var.visibility
-  cidr        = var.cidr
-}
-`
+	// Combine provider config and resource file content
+	configText := providerConfig + "\n" + string(resourceContent)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -457,37 +275,37 @@ resource "hpe_morpheus_network" "foo" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "name", uniqueName),
+						"hpe_morpheus_network.host", "name", uniqueName),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "description", "A test host network"),
+						"hpe_morpheus_network.host", "description", "A test host network"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cloud_id", "17"),
+						"hpe_morpheus_network.host", "cloud_id", "17"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "pool_id", "1"),
+						"hpe_morpheus_network.host", "pool_id", "1"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "group_id", "1"),
+						"hpe_morpheus_network.host", "group_id", "1"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "type_id", "1"),
+						"hpe_morpheus_network.host", "type_id", "1"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "active", "true"),
+						"hpe_morpheus_network.host", "active", "true"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "dhcp_server", "false"),
+						"hpe_morpheus_network.host", "dhcp_server", "false"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "true"),
+						"hpe_morpheus_network.host", "appliance_url_proxy_bypass", "true"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "visibility", "private"),
+						"hpe_morpheus_network.host", "visibility", "private"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8"),
+						"hpe_morpheus_network.host", "cidr", "10.0.0.0/8"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.host", "tenant_ids.#", "1"),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.host", "tenant_ids.*", "1"),
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "resource_permissions.all"),
+						"hpe_morpheus_network.host", "resource_permissions.all"),
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "id"),
+						"hpe_morpheus_network.host", "id"),
 				),
 			},
 		},
@@ -610,112 +428,17 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
-	// Build the configuration with GCP-specific settings
-	configText := providerConfig + `
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "TestAccMorpheusNetworkResourceCreateGcp"
-}
+	// Path to example configuration files
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/gcp"
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "GCP network"
-}
+	// Read the resource.tf file from disk
+	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	if err != nil {
+		t.Fatalf("Failed to read resource.tf: %v", err)
+	}
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 6
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 8
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 38
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.0.0.0/8"
-}
-
-variable "zone_pool_id" {
-  description = "Zone pool id"
-  type        = number
-  default     = 85990
-}
-
-variable "config_mtu" {
-  description = "MTU setting for network config"
-  type        = string
-  default     = "1460"
-}
-
-variable "config_auto_create" {
-  description = "Auto create setting for network config"
-  type        = bool
-  default     = true
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = false
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
-}
-
-resource "hpe_morpheus_network" "gcp" {
-  name                         = var.name
-  description                  = var.description
-  cloud_id                     = var.cloud_id
-  pool_id                      = var.pool_id
-  group_id                     = var.group_id
-  type_id                      = var.type_id
-  config = {
-    mtu        = var.config_mtu
-    autoCreate = var.config_auto_create
-  }
-  active                       = var.active
-  dhcp_server                  = var.dhcp_server
-  appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-  tenant_ids                   = [1]
-  visibility                   = var.visibility
-  cidr                         = var.cidr
-  zone_pool_id                 = var.zone_pool_id
-}
-`
+	// Combine provider config and resource file content
+	configText := providerConfig + "\n" + string(resourceContent)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
