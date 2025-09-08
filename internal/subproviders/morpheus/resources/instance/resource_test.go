@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../cmd/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate go run ../../../../../cmd/render resources/hpe_morpheus_instance example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 
 package instance_test
 

@@ -2,8 +2,8 @@
 
 package serviceplan_test
 
-//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../cmd/render example-name-provision.tf.tmpl Name "Example name" ProvisionTypeCode "arm"
+//go:generate go run ../../../../../cmd/render data-sources/hpe_morpheus_service_plan example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render data-sources/hpe_morpheus_service_plan example-name-provision.tf.tmpl Name "Example name" ProvisionTypeCode "arm"
 
 import (
 	"os"

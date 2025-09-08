@@ -1,7 +1,7 @@
 package environment_test
 
-//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+//go:generate go run ../../../../../cmd/render resources/hpe_morpheus_environment example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render resources/hpe_morpheus_environment example-name.tf.tmpl Name "Example name"
 
 import (
 	"fmt"

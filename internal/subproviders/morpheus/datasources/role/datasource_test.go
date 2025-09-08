@@ -2,8 +2,8 @@
 
 package role_test
 
-//go:generate go run ../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../cmd/render example-name.tf.tmpl Name "\"Example name\""
+//go:generate go run ../../../../../cmd/render data-sources/hpe_morpheus_role example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../cmd/render data-sources/hpe_morpheus_role example-name.tf.tmpl Name "\"Example name\""
 
 import (
 	"os"

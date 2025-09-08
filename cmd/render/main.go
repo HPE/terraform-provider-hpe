@@ -3,14 +3,34 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-func main() {
-	name := os.Args[1]
-	args := os.Args[2:len(os.Args)]
+const usage = `
+Usage: 
+go run render <type/name> <example_path> [args...]
 
-	testhelpers.WriteExample(name, args...)
+Example:
+go run render resources/hpe_morpheus_group group.tf.tmpl Name 'Test'
+  `
+
+func main() {
+	if len(os.Args) < 2 || !strings.Contains(os.Args[1], "/") {
+		fmt.Println(usage)
+		os.Exit(1)
+	}
+
+	dest := os.Args[1]
+	fn := os.Args[2]
+
+	var args []string
+	if len(os.Args) > 3 {
+		args = os.Args[3:len(os.Args)]
+	}
+
+	testhelpers.WriteExample(dest, fn, args...)
 }

@@ -1,23 +1,23 @@
 data "hpe_morpheus_cloud" "vme_cloud" {
-  name = "HPE Alletra VME" 
+  name = "HPE Alletra VME"
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
-    name                = "1 CPU, 1GB Memory"
-    provision_type_code = "kvm"
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "kvm"
 }
 
 resource "hpe_morpheus_instance" "example" {
-  name               = "TestInstance"
-  cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id   # HPE Alletra VME
-  layout_id          = 5385   # Single KVM VM
-  instance_type_id   = 9 # (HVM) mvm-cluster
-  layout_size        = 1
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
+  layout_id        = 5385                                 # Single KVM VM
+  instance_type_id = 9                                    # (HVM) mvm-cluster
+  layout_size      = 1
 
-  group_id           = 1
-  plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
-  
-  instance_context   = "dev"
+  group_id = 1
+  plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+
+  instance_context = "dev"
   network_interfaces = [
     {
       network_id = 103481
