@@ -34,8 +34,8 @@ There are two ways to authenticate with Morpheus:
 
 With either method the URL of the Morpheus instance must be provided as `url`.
 
-By default the provider will check the Morpheus server key and will fail if it is not valid.  This can be
-be toggled off be setting `insecure` to `true` in the provider block.
+By default the provider will check the Morpheus server certificate and will fail if it is not valid.  This can be
+be toggled off by setting `insecure` to `true` in the provider block.
 
 ### Example Usage
 
@@ -51,25 +51,40 @@ be toggled off be setting `insecure` to `true` in the provider block.
 
 {{ tffile "examples/provider/morpheus/provider-insecure.tf" }}
 
-### Release Notes
+## Release Notes
 
-## New functionality
+### New functionality
+->The `hpe_morpheus_user` resource uses a `WriteOnly` password field.  `WriteOnly` attributes are supported
+by Terraform versions 1.11 and later.
+
+->The `hpe_morpheus_instance` and `hpe_morpheus_network` resources use a `Dynamic` attribute for `config`.  This means
+that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.  Examples of these
+are shown in the documentation.
+
 
 In this release (v0.0.1) the following resources have been added:
-- hpe_morpheus_instance for HPE MVM or HPE VME instances
-- hpe_morpheus_user for Morpheus users
+- hpe_morpheus_cloud for HPE HVM or HPE VME clouds
+- hpe_morpheus_group
+- hpe_morpheus_instance for HPE HVM or HPE VME instances (Create, Delete and Read - no Update)
+- hpe_morpheus_network
 - hpe_morpheus_role for Morpheus roles (user and tenant)
+- hpe_morpheus_service_plan (Create, Delete and Read - no Update)
+- hpe_morpheus_user (Create, Delete and Read - no Update)
 
 In this release (v0.0.1) the following data sources have been added:
 - hpe_morpheus_cloud
+- hpe_morpheus_environment
+- hpe_morpheus_group
+- hpe_morpheus_instance_type_layout
 - hpe_morpheus_network
-- hpe_morpheus_instance_type
-- hpe_morpheus_instance_layout
-- hpe_morpheus_network
+- hpe_morpheus_role
+- hpe_morpheus_service_plan
 
-## Known Issues
+### Known Issues
 
-- hpe_morpheus_user will force recreation if an attribute is updated
+- hpe_morpheus_instance has issues with using the same `datastore_id` with multiple volumes, please use
+  a different `datastore_id` for each volume.
 - hpe_morpheus_network switchId is not supported yet, prevents creating some network types, eg OVS Port Group
+- hpe_morpheus_user will force recreation if an attribute is updated
 
 {{ .SchemaMarkdown | trimspace }}
