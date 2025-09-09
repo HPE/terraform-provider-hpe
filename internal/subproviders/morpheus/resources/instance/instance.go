@@ -581,12 +581,27 @@ func (g *Resource) Create(
 		)
 	}
 
-	backoff.Retry(
+	if r, err := backoff.Retry(
 		ctx,
 		waitForReady,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(45*time.Minute),
-	)
+	); err != nil {
+		var status string
+
+		if r.GetInstance().Status != nil {
+			status = *r.GetInstance().Status
+		}
+
+		resp.Diagnostics.AddError(
+			"create instance resource",
+			fmt.Sprintf(
+				"instance %d: provisioning failed current status is: %v",
+				data.Id.ValueInt64(),
+				status,
+			),
+		)
+	}
 
 	state, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
@@ -633,10 +648,11 @@ func (g *Resource) Delete(
 
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
 		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, data.Id.ValueInt64()).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
+		if err != nil && hresp.StatusCode != http.StatusNotFound {
 			return nil, backoff.Permanent(err)
 		}
 
+		// 404 status code counts as a successful delete
 		if hresp.StatusCode == http.StatusNotFound {
 			return nil, nil
 		}
@@ -650,12 +666,17 @@ func (g *Resource) Delete(
 		)
 	}
 
-	backoff.Retry(
+	if _, err := backoff.Retry(
 		ctx,
 		waitForDeleted,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(45*time.Minute),
-	)
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"delete instance resource",
+			fmt.Sprintf("instance %d: DELETE failed ", id)+err.Error(),
+		)
+	}
 }
 
 // Read implements resource.Resource.
