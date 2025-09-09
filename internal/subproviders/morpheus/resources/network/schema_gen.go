@@ -70,6 +70,9 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "Cloud (zone) id",
 				MarkdownDescription: "Cloud (zone) id",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(), // force new,
+				},
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
@@ -237,6 +240,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Search Domains",
 				MarkdownDescription: "Search Domains",
 			},
+			"switch_id": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Network switch identifier",
+				MarkdownDescription: "Network switch identifier",
+			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
@@ -312,6 +321,7 @@ type NetworkModel struct {
 	PoolIpv6Id              types.Int64              `tfsdk:"pool_ipv6_id"`
 	ResourcePermissions     ResourcePermissionsValue `tfsdk:"resource_permissions"`
 	SearchDomains           types.String             `tfsdk:"search_domains"`
+	SwitchId                types.String             `tfsdk:"switch_id"`
 	TenantIds               types.Set                `tfsdk:"tenant_ids"`
 	TypeId                  types.Int64              `tfsdk:"type_id"`
 	Visibility              types.String             `tfsdk:"visibility"`
