@@ -89,5 +89,7 @@ In this release (v0.0.1) the following data sources have been added:
   in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
 - hpe_morpheus_network switchId is not supported yet, prevents creating some network types, eg OVS Port Group
 - hpe_morpheus_user will force recreation if an attribute is updated
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
 
 {{ .SchemaMarkdown | trimspace }}
