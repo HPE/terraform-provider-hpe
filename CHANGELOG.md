@@ -24,5 +24,7 @@ In this release (v0.0.1) the following data sources have been added:
 
 - hpe_morpheus_instance has issues with using the same `datastore_id` with multiple volumes, please use
   a different `datastore_id` for each volume.
+- hpe_morpheus_instance depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
 - hpe_morpheus_network switchId is not supported yet, prevents creating some network types, eg OVS Port Group
 - hpe_morpheus_user will force recreation if an attribute is updated
