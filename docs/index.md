@@ -25,7 +25,7 @@ Morpheus API SSL cert checking is enabled by default in this provider.
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v0.0.1).
+release notes for the current version (v0.1.0).
 
 ### Authentication
 
@@ -122,7 +122,7 @@ that the `config` block can contain arbitrary nested attributes which will be ev
 are shown in the documentation.
 
 
-In this release (v0.0.1) the following resources have been added:
+In this release (v0.1.0) the following resources have been added:
 - hpe_morpheus_cloud for HPE HVM or HPE VME clouds
 - hpe_morpheus_group
 - hpe_morpheus_instance for HPE HVM or HPE VME instances (Create, Delete and Read - no Update)
@@ -131,7 +131,7 @@ In this release (v0.0.1) the following resources have been added:
 - hpe_morpheus_service_plan (Create, Delete and Read - no Update)
 - hpe_morpheus_user (Create, Delete and Read - no Update)
 
-In this release (v0.0.1) the following data sources have been added:
+In this release (v0.1.0) the following data sources have been added:
 - hpe_morpheus_cloud
 - hpe_morpheus_environment
 - hpe_morpheus_group
