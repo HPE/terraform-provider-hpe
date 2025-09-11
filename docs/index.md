@@ -47,7 +47,7 @@ be toggled off by setting `insecure` to `true` in the provider block.
 
 terraform {
   required_providers {
-    hpegl = {
+    hpe = {
       source  = "HPE/hpe"
       version = "= 0.0.1"
     }
@@ -71,7 +71,7 @@ provider "hpe" {
 
 terraform {
   required_providers {
-    hpegl = {
+    hpe = {
       source  = "HPE/hpe"
       version = "= 0.0.1"
     }
@@ -94,7 +94,7 @@ provider "hpe" {
 
 terraform {
   required_providers {
-    hpegl = {
+    hpe = {
       source  = "HPE/hpe"
       version = "= 0.0.1"
     }

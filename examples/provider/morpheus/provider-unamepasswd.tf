@@ -2,7 +2,7 @@
 
 terraform {
   required_providers {
-    hpegl = {
+    hpe = {
       source  = "HPE/hpe"
       version = "= 0.0.1"
     }
