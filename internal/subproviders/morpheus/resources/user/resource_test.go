@@ -1902,3 +1902,173 @@ destroy = false
 		},
 	})
 }
+
+// Test that when tenant_id is not set (use state for unknown)
+// updating last_name results in update operation, not delete/recreate
+func TestAccMorpheusUserUpdateLastNameWithoutTenantIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	var userID string
+
+	resource.Test(
+		t,
+		resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	last_name = "Doe"
+	linux_key_pair_id = 100
+}`,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Capture the user ID for comparison in subsequent steps
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources["hpe_morpheus_user.foo"]
+							if rs == nil {
+								return fmt.Errorf("resource not found")
+							}
+							userID = rs.Primary.ID
+
+							return nil
+						},
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"username",
+							name,
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"email",
+							"foo@hpe.com",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"first_name",
+							"John",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"last_name",
+							"Doe",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.0",
+							"3",
+						),
+						// tenant_id should be computed from state (not set in config)
+						resource.TestCheckResourceAttrSet(
+							"hpe_morpheus_user.foo",
+							"tenant_id",
+						),
+					),
+				},
+				{
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is still NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	# Changed: update last_name
+	last_name = "Smith"
+	linux_key_pair_id = 100
+}`,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify the user ID hasn't changed (proving it's an update, not recreate)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources["hpe_morpheus_user.foo"]
+							if rs == nil {
+								return fmt.Errorf("resource not found")
+							}
+							if rs.Primary.ID != userID {
+								return fmt.Errorf(
+									"user ID changed from %s to %s, indicating resource was recreated instead of updated",
+									userID,
+									rs.Primary.ID,
+								)
+							}
+
+							return nil
+						},
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"username",
+							name,
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"email",
+							"foo@hpe.com",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"first_name",
+							"John",
+						),
+						// Verify last_name was updated
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"last_name",
+							"Smith",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.0",
+							"3",
+						),
+						// tenant_id should still be computed from state
+						resource.TestCheckResourceAttrSet(
+							"hpe_morpheus_user.foo",
+							"tenant_id",
+						),
+					),
+					// This is the key assertion: we expect this to be an update, not a recreate
+					// If the resource gets deleted/recreated, the test will fail
+					ExpectNonEmptyPlan: false, // After update, plan should be empty
+				},
+				{
+					// Verify the plan shows no changes after the update
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is still NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	last_name = "Smith"
+	linux_key_pair_id = 100
+}`,
+					PlanOnly:           true,
+					ExpectNonEmptyPlan: false,
+				},
+			},
+		},
+	)
+}
