@@ -97,6 +97,9 @@ func getNetworkAsState(
 			net.SearchDomains.Get(),
 		)
 	}
+	if net.SwitchId.IsSet() {
+		state.SwitchId = convert.StrToType(net.SwitchId.Get())
+	}
 
 	if net.Pool != nil && net.Pool.Id != nil {
 		state.PoolId = convert.Int64ToType(net.Pool.Id)

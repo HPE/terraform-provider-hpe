@@ -519,3 +519,87 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 		},
 	})
 }
+
+// TestAccMorpheusNetworkResourceCreateOVSPortGroup tests creating an OVS Port Group network
+// for cloud ID 7714.
+func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// nolint: goconst
+	providerConfig := testhelpers.ProviderBlock()
+
+	// Generate unique name for this test run
+	uniqueName := acctest.RandomWithPrefix(t.Name())
+
+	// Path to example configuration files
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/ovs_port_group"
+
+	// Read the resource.tf file from disk
+	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
+	if err != nil {
+		t.Fatalf("Failed to read resource.tf: %v", err)
+	}
+
+	// Combine provider config and resource file content
+	configText := providerConfig + "\n" + string(resourceContent)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: configText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName),
+					// All other values use defaults
+				},
+				Check: resource.ComposeTestCheckFunc(
+					// Standard checks
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "name", uniqueName),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "description", "OVS Port Group network"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "cloud_id", "7714"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "pool_id", "3251"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "group_id", "1"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "type_id", "63"),
+					// Check OVS-specific fields
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "switch_id", "Compute"),
+					// Additional standard checks
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "active", "true"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "dhcp_server", "false"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "appliance_url_proxy_bypass", "true"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "visibility", "public"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "cidr", "10.32.148.0/22"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "zone_pool_id", "62299"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "vlan_id", "43"),
+					// Check permissions
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.ovs_port_group", "resource_permissions.all"),
+					// Check tenant IDs
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "tenant_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.ovs_port_group", "tenant_ids.*", "1"),
+					// ID check
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network.ovs_port_group", "id"),
+				),
+			},
+		},
+	})
+}
