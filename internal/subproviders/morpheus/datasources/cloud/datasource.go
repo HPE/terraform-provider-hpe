@@ -56,33 +56,52 @@ func (d *DataSource) Schema(
 func getCloudByID(
 	ctx context.Context,
 	id int64,
+	data *CloudModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
+) error {
 	c, hresp, err := apiClient.CloudsAPI.GetClouds(ctx, id).Execute()
 	if c == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for cloud %d", id)
+		return fmt.Errorf("GET failed for cloud %d", id)
 	}
 
 	cloud := c.GetZone()
 
-	return &cloud, nil
+	data.Id = convert.Int64ToType(cloud.Id)
+	data.Name = convert.StrToType(cloud.Name)
+	data.Code = convert.StrToType(cloud.Code)
+	data.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	data.ExternalId = convert.StrToType(cloud.ExternalId.Get())
+	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
+	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
+	data.Labels = convert.StrSliceToSet(cloud.Labels)
+	data.Location = convert.StrToType(cloud.Location.Get())
+	data.TimeZone = convert.StrToType(cloud.Timezone.Get())
+
+	var groupIDs []int64
+	for _, g := range cloud.Groups {
+		groupIDs = append(groupIDs, (*g.Id))
+	}
+	data.GroupIds = convert.Int64SliceToSet(groupIDs)
+
+	return nil
 }
 
 func getCloudByName(
 	ctx context.Context,
-	data CloudModel,
+	data *CloudModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
+) error {
 	name := data.Name.ValueString()
 
 	req := apiClient.CloudsAPI.ListClouds(ctx).Name(name)
 
 	cs, hresp, err := req.Execute()
 	if cs == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for cloud %s", name)
+		return fmt.Errorf("GET failed for cloud %s", name)
 	}
 
-	var clouds []sdk.ListClouds200ResponseAllOfZonesInner
+	clouds := cs.Zones
+	clouds = nil
 
 	for _, c := range cs.Zones {
 		if c.GetName() == name {
@@ -90,27 +109,46 @@ func getCloudByName(
 		}
 	}
 
-	if len(clouds) == 1 {
-		return &clouds[0], nil
-	} else if len(clouds) > 1 {
-		return nil, errors.New(consts.ErrorMultipleClouds)
+	if len(clouds) > 1 {
+		return errors.New(consts.ErrorMultipleClouds)
+	} else if len(clouds) == 0 {
+		return errors.New(consts.ErrorNoCloudFound)
 	}
 
-	return nil, errors.New(consts.ErrorNoCloudFound)
+	cloud := clouds[0]
+
+	data.Id = convert.Int64ToType(cloud.Id)
+	data.Name = convert.StrToType(cloud.Name)
+	data.Code = convert.StrToType(cloud.Code)
+	data.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	data.ExternalId = convert.StrToType(cloud.ExternalId.Get())
+	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
+	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
+	data.Labels = convert.StrSliceToSet(cloud.Labels)
+	data.Location = convert.StrToType(cloud.Location.Get())
+	data.TimeZone = convert.StrToType(cloud.Timezone.Get())
+
+	var groupIDs []int64
+	for _, g := range cloud.Groups {
+		groupIDs = append(groupIDs, (*g.Id))
+	}
+	data.GroupIds = convert.Int64SliceToSet(groupIDs)
+
+	return nil
 }
 
 func getCloud(
 	ctx context.Context,
-	data CloudModel,
+	data *CloudModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListClouds200ResponseAllOfZonesInner, error) {
+) error {
 	if !data.Id.IsNull() {
-		return getCloudByID(ctx, data.Id.ValueInt64(), apiClient)
+		return getCloudByID(ctx, data.Id.ValueInt64(), data, apiClient)
 	} else if !data.Name.IsNull() {
 		return getCloudByName(ctx, data, apiClient)
 	}
 
-	return nil, errors.New(consts.ErrorNoValidSearchTerms)
+	return errors.New(consts.ErrorNoValidSearchTerms)
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -138,8 +176,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	cloud, err := getCloud(ctx, data, apiClient)
-	if err != nil {
+	if err := getCloud(ctx, &data, apiClient); err != nil {
 		resp.Diagnostics.AddError(
 			summary,
 			err.Error(),
@@ -147,23 +184,6 @@ func (d *DataSource) Read(
 
 		return
 	}
-
-	data.Id = convert.Int64ToType(cloud.Id)
-	data.Name = convert.StrToType(cloud.Name)
-	data.Code = convert.StrToType(cloud.Code)
-	data.CostingMode = convert.StrToType(cloud.CostingMode.Get())
-	data.ExternalId = convert.StrToType(cloud.ExternalId.Get())
-	data.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
-	data.InventoryLevel = convert.StrToType(cloud.InventoryLevel)
-	data.Labels = convert.StrSliceToSet(cloud.Labels)
-	data.Location = convert.StrToType(cloud.Location.Get())
-	data.TimeZone = convert.StrToType(cloud.Timezone.Get())
-
-	var groupIDs []int64
-	for _, g := range cloud.Groups {
-		groupIDs = append(groupIDs, (*g.Id))
-	}
-	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
