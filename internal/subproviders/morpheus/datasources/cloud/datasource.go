@@ -101,6 +101,7 @@ func getCloudByName(
 	}
 
 	clouds := cs.Zones
+	_ = clouds
 	clouds = nil
 
 	for _, c := range cs.Zones {
