@@ -61,29 +61,40 @@ func (d *DataSource) Schema(
 func getEnvironmentByID(
 	ctx context.Context,
 	id int64,
+	data *EnvironmentModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListEnvironments200ResponseAllOfEnvironmentsInner, error) {
+) error {
 	e, hresp, err := apiClient.EnvironmentsAPI.GetEnvironments(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for environment %d", id)
+		return fmt.Errorf("GET failed for environment %d", id)
 	}
 
 	environment := e.GetEnvironment()
 
-	return &environment, nil
+	data.Active = convert.BoolToType(environment.Active)
+	data.Code = convert.StrToType(environment.Code)
+	data.Description = convert.StrToType(environment.Description)
+	data.Id = convert.Int64ToType(environment.Id)
+	data.Name = convert.StrToType(environment.Name)
+	data.Visibility = convert.StrToType(environment.Visibility)
+
+	return nil
 }
 
 func getEnvironmentByName(
 	ctx context.Context,
 	name string,
+	data *EnvironmentModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListEnvironments200ResponseAllOfEnvironmentsInner, error) {
+) error {
 	es, hresp, err := apiClient.EnvironmentsAPI.ListEnvironments(ctx).Name(name).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for environment %s", name)
+		return fmt.Errorf("GET failed for environment %s", name)
 	}
 
-	var environments []sdk.ListEnvironments200ResponseAllOfEnvironmentsInner
+	environments := es.Environments
+	_ = environments
+	environments = nil
 
 	for _, e := range es.Environments {
 		if e.GetName() == name {
@@ -91,27 +102,36 @@ func getEnvironmentByName(
 		}
 	}
 
-	if len(environments) == 1 {
-		return &environments[0], nil
+	if len(environments) == 0 {
+		return errors.New(ErrorNoEnvironmentFound)
 	} else if len(environments) > 1 {
-		return nil, errors.New(ErrorMultipleEnvironments)
+		return errors.New(ErrorMultipleEnvironments)
 	}
 
-	return nil, errors.New(ErrorNoEnvironmentFound)
+	environment := environments[0]
+
+	data.Active = convert.BoolToType(environment.Active)
+	data.Code = convert.StrToType(environment.Code)
+	data.Description = convert.StrToType(environment.Description)
+	data.Id = convert.Int64ToType(environment.Id)
+	data.Name = convert.StrToType(environment.Name)
+	data.Visibility = convert.StrToType(environment.Visibility)
+
+	return nil
 }
 
 func getEnvironment(
 	ctx context.Context,
-	data EnvironmentModel,
+	data *EnvironmentModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListEnvironments200ResponseAllOfEnvironmentsInner, error) {
+) error {
 	if !data.Id.IsNull() {
-		return getEnvironmentByID(ctx, data.Id.ValueInt64(), apiClient)
+		return getEnvironmentByID(ctx, data.Id.ValueInt64(), data, apiClient)
 	} else if !data.Name.IsNull() {
-		return getEnvironmentByName(ctx, data.Name.ValueString(), apiClient)
+		return getEnvironmentByName(ctx, data.Name.ValueString(), data, apiClient)
 	}
 
-	return nil, errors.New(ErrorNoValidSearchTerms)
+	return errors.New(ErrorNoValidSearchTerms)
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -139,8 +159,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	environment, err := getEnvironment(ctx, data, apiClient)
-	if err != nil {
+	if err := getEnvironment(ctx, &data, apiClient); err != nil {
 		resp.Diagnostics.AddError(
 			summary,
 			err.Error(),
@@ -148,13 +167,6 @@ func (d *DataSource) Read(
 
 		return
 	}
-
-	data.Active = convert.BoolToType(environment.Active)
-	data.Code = convert.StrToType(environment.Code)
-	data.Description = convert.StrToType(environment.Description)
-	data.Id = convert.Int64ToType(environment.Id)
-	data.Name = convert.StrToType(environment.Name)
-	data.Visibility = convert.StrToType(environment.Visibility)
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)
