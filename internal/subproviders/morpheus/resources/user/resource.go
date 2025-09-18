@@ -315,7 +315,7 @@ func (r *Resource) Update(
 		updateUser.SetLastName(plan.LastName.ValueString())
 	}
 
-	if plan.LinuxKeyPairId.IsUnknown() {
+	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.SetLinuxKeyPairIdNil()
 	} else {
 		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())

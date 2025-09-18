@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 func checkRole(
 	resourceName string,
 	roleIDAttr string,
-	expectedRoles map[string]struct{},
+	expectedRoles *map[string]struct{},
 ) func(*terraform.State) error {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -38,22 +38,22 @@ func checkRole(
 		}
 
 		roleID := rs.Primary.Attributes[roleIDAttr]
-		if _, ok := expectedRoles[roleID]; !ok {
+		if _, ok := (*expectedRoles)[roleID]; !ok {
 			return fmt.Errorf("role ID %s not found ", roleID)
 		}
 
-		delete(expectedRoles, roleID)
+		delete(*expectedRoles, roleID)
 
 		return nil
 	}
 }
 
 func checkStrayRoles(
-	expectedRoles map[string]struct{},
+	expectedRoles *map[string]struct{},
 ) func(*terraform.State) error {
 	return func(_ *terraform.State) error {
-		if len(expectedRoles) != 0 {
-			return fmt.Errorf("not all role_ids found %s", expectedRoles)
+		if len(*expectedRoles) != 0 {
+			return fmt.Errorf("not all role_ids found %s", *expectedRoles)
 		}
 
 		return nil
@@ -458,14 +458,14 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedRoles,
+			&expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedRoles,
+			&expectedRoles,
 		),
-		checkStrayRoles(expectedRoles),
+		checkStrayRoles(&expectedRoles),
 	}
 
 	passwordWoCheck := resource.TestCheckResourceAttr(
@@ -567,9 +567,9 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedUpdateRoles,
+			&expectedUpdateRoles,
 		),
-		checkStrayRoles(expectedUpdateRoles),
+		checkStrayRoles(&expectedUpdateRoles),
 	}
 
 	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
@@ -1125,14 +1125,14 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedRoles,
+			&expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedRoles,
+			&expectedRoles,
 		),
-		checkStrayRoles(expectedRoles),
+		checkStrayRoles(&expectedRoles),
 	}
 
 	passwordWoCheck := resource.TestCheckResourceAttr(
@@ -1221,14 +1221,14 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedUpdateRoles,
+			&expectedUpdateRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedUpdateRoles,
+			&expectedUpdateRoles,
 		),
-		checkStrayRoles(expectedUpdateRoles),
+		checkStrayRoles(&expectedUpdateRoles),
 	}
 
 	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
@@ -1241,6 +1241,7 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
+	# create
 	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
@@ -1263,13 +1264,13 @@ resource "hpe_morpheus_user" "foo" {
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
+	# post create plan
 	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
 	first_name = "foo"
-	# changed
 	last_name = "bar"
 	linux_username = "linus"
 	linux_password_wo = "Linux123!"
@@ -1288,6 +1289,7 @@ resource "hpe_morpheus_user" "foo" {
 				Config: providerConfig + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
+	# update 1
 	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
@@ -1311,13 +1313,13 @@ resource "hpe_morpheus_user" "foo" {
 				Config: providerConfig + `
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
+	# post update 1 plan
 	username = "` + name + `"
 	email = "foo@hpe.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
 	first_name = "foo"
-	# changed
 	last_name = "bar2"
 	linux_username = "linus"
 	linux_password_wo = "Linux123!"
@@ -1330,7 +1332,59 @@ resource "hpe_morpheus_user" "foo" {
 }`,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
-				Check:              checkUpdateFn,
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# update 2
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					func(_ *terraform.State) error {
+						expectedRoles = map[string]struct{}{"3": {}, "1": {}}
+
+						return nil
+					},
+					checkFn,
+				),
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# post update 2 plan
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -1443,14 +1497,14 @@ resource "hpe_morpheus_user" "foo" {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedRoles,
+			&expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedRoles,
+			&expectedRoles,
 		),
-		checkStrayRoles(expectedRoles),
+		checkStrayRoles(&expectedRoles),
 	}
 
 	passwordWoCheck := resource.TestCheckResourceAttr(
@@ -1819,8 +1873,8 @@ destroy = false
 			"hpe_morpheus_user.foo",
 			"password_wo",
 		),
-		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedCreateRoles),
-		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedCreateRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", &expectedCreateRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", &expectedCreateRoles),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(
@@ -1875,8 +1929,8 @@ destroy = false
 			"hpe_morpheus_user.foo",
 			"password_wo",
 		),
-		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedImportRoles),
-		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedImportRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", &expectedImportRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", &expectedImportRoles),
 	}
 
 	checkImportFn := resource.ComposeAggregateTestCheckFunc(
