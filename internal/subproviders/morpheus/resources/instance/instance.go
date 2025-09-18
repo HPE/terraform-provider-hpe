@@ -192,7 +192,7 @@ func getInstanceAsState(
 	state.Evars = evars
 
 	// group_id
-	state.GroupId = convert.Int64ToType(instance.Group.Id)
+	state.GroupId = convert.Int64ToType(instance.Group.Get().Id)
 
 	// id
 	state.Id = convert.Int64ToType(instance.Id)

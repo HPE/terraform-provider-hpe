@@ -41,9 +41,9 @@ func (r *Resource) Create(
 
 	createNetwork := sdk.NewCreateNetworksRequestNetworkWithDefaults()
 	createNetwork.SetName(name)
-	createNetwork.SetSite(*sdk.NewCreateNetworksRequestNetworkSite(
-		plan.GroupId.ValueInt64(),
-	))
+	site := sdk.NewCreateNetworksRequestNetworkSite()
+	site.SetId(plan.GroupId.ValueInt64())
+	createNetwork.SetSite(*site)
 	createNetwork.SetZone(*sdk.NewCreateNetworksRequestNetworkZone(
 		plan.CloudId.ValueInt64(),
 	))
