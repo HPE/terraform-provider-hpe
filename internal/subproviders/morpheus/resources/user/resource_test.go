@@ -552,12 +552,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"receive_notifications",
-			"false",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"receive_notifications",
-			"false",
+			"true",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -955,6 +950,31 @@ resource "hpe_morpheus_user" "foo" {
 			},
 			{
 				Config: providerConfig + `
+# checks plan detects changed receive_notifications
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	# changed
+	receive_notifications = true
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
 # checks apply of changes to all changeable fields
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
@@ -980,7 +1000,8 @@ resource "hpe_morpheus_user" "foo" {
 	linux_password_wo_version = 2
 	# changed
 	linux_key_pair_id = 101
-	receive_notifications = false
+	# changed
+	receive_notifications = true
 	# changed
 	windows_username = "gates"
 	# changed
@@ -1018,7 +1039,8 @@ resource "hpe_morpheus_user" "foo" {
 	linux_password_wo_version = 2
 	# changed
 	linux_key_pair_id = 101
-	receive_notifications = false
+	# changed
+	receive_notifications = true
 	# changed
 	windows_username = "gates"
 	# changed
