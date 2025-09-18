@@ -49,11 +49,11 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteEnvironment(t, environment.GetID())
+		testhelpers.DeleteEnvironment(t, environment.ID)
 	})
 
-	environmentID := fmt.Sprintf("%d", environment.GetID())
-	environmentName := environment.GetName()
+	environmentID := fmt.Sprintf("%d", environment.ID)
+	environmentName := environment.Name
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -99,11 +99,11 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		testhelpers.DeleteEnvironment(t, environment.GetID())
+		testhelpers.DeleteEnvironment(t, environment.ID)
 	})
 
-	environmentID := fmt.Sprintf("%d", environment.GetID())
-	environmentName := environment.GetName()
+	environmentID := fmt.Sprintf("%d", environment.ID)
+	environmentName := environment.Name
 
 	providerConfig := testhelpers.ProviderBlock()
 	dataSourceConfig, err := testhelpers.RenderExample(t,
