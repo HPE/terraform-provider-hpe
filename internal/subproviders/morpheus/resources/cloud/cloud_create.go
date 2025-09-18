@@ -60,19 +60,21 @@ func (r *Resource) Create(
 			config.EnableNetworkTypeSelection = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBoolPointer()
 		}
 
-		configAnyOfHvm := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2AsAddCloudsRequestZoneConfigAnyOf(config)
+		configAnyOfHvm := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2AsAddCloudsRequestZoneConfigAnyOf(
+			config,
+		)
 
 		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &configAnyOfHvm
 	}
 
 	// TODO: support other cloud types
 	genConfig := addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2
-	if genConfig == nil {
+	if genConfig == nil { //nolint: staticcheck
 		genConfig := sdk.NewAddCloudsRequestZoneConfigAnyOfOneOf2()
 		addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2 = genConfig
 	}
 
-	if genConfig.AdditionalProperties == nil {
+	if genConfig.AdditionalProperties == nil { //nolint: staticcheck
 		genConfig.AdditionalProperties = make(map[string]any)
 	}
 
