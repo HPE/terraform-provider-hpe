@@ -12,9 +12,14 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
-func CreateEnvironment(t *testing.T) (
-	*sdk.ListEnvironments200ResponseAllOfEnvironmentsInner, error,
-) {
+// TestEnvironment is a simplified struct for test usage.
+type TestEnvironment struct {
+	ID   int64
+	Name string
+	Code string
+}
+
+func CreateEnvironment(t *testing.T) (*TestEnvironment, error) {
 	t.Helper()
 
 	name := fmt.Sprintf("testacc-%s-%s", t.Name(), rand.Text())
@@ -37,7 +42,11 @@ func CreateEnvironment(t *testing.T) (
 
 	environment := e.GetEnvironment()
 
-	return &environment, nil
+	return &TestEnvironment{
+		ID:   environment.GetId(),
+		Name: environment.GetName(),
+		Code: environment.GetCode(),
+	}, nil
 }
 
 func DeleteEnvironment(t *testing.T, id int64) error {
