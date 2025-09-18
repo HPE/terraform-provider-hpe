@@ -41,15 +41,17 @@ func (r *Resource) Create(
 		return
 	}
 
-	addCloudConfig := sdk.AddCloudsRequestZoneConfig{
-		AddCloudsRequestZoneConfigAnyOf: &sdk.AddCloudsRequestZoneConfigAnyOf{},
-	}
+	addCloud := sdk.NewAddCloudsRequestZoneWithDefaults()
+	addCloud.SetName(name)
+	addCloud.SetGroupId(groupID)
+
+	addCloudConfig := addCloud.GetConfig()
 
 	cloudTypeCode := defaultCloudType
 
 	switch {
 	case !plan.ConfigHvm.IsNull():
-		config := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2{}
+		config := sdk.NewAddCloudsRequestZoneConfigAnyOfOneOf2()
 
 		if !plan.ConfigHvm.CertificateProvider.IsNull() {
 			config.CertificateProvider = plan.ConfigHvm.CertificateProvider.ValueStringPointer()
@@ -58,13 +60,15 @@ func (r *Resource) Create(
 			config.EnableNetworkTypeSelection = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBoolPointer()
 		}
 
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2 = &config
+		configAnyOfHvm := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2AsAddCloudsRequestZoneConfigAnyOf(config)
+
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &configAnyOfHvm
 	}
 
 	// TODO: support other cloud types
 	genConfig := addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2
 	if genConfig == nil {
-		genConfig = &sdk.AddCloudsRequestZoneConfigAnyOfOneOf2{}
+		genConfig := sdk.NewAddCloudsRequestZoneConfigAnyOfOneOf2()
 		addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2 = genConfig
 	}
 
@@ -92,13 +96,16 @@ func (r *Resource) Create(
 		genConfig.AdditionalProperties["consoleKeymap"] = plan.KeyboardLayout.ValueStringPointer()
 	}
 
-	cloudType := sdk.AddCloudsRequestZoneZoneType{
-		AddCloudsRequestZoneZoneTypeAnyOf1: &sdk.AddCloudsRequestZoneZoneTypeAnyOf1{
-			Code: &cloudTypeCode,
-		},
-	}
+	addCloud.SetConfig(addCloudConfig)
 
-	addCloud := sdk.NewAddCloudsRequestZone(name, groupID, cloudType, addCloudConfig)
+	cloudTypeWithCode := sdk.NewAddCloudsRequestZoneZoneTypeAnyOf1()
+	cloudTypeWithCode.SetCode(cloudTypeCode)
+
+	cloudType := addCloud.GetZoneType()
+	cloudType.AddCloudsRequestZoneZoneTypeAnyOf1 = cloudTypeWithCode
+
+	addCloud.SetZoneType(cloudType)
+
 	addCloud.AdditionalProperties = make(map[string]any)
 
 	addCloud.SetAccountId(tenantID)
