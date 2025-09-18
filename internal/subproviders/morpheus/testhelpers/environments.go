@@ -12,7 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
-// TestEnvironment is a simplified struct for test usage.
+// TestEnvironment is a simplified environment struct for test usage.
 type TestEnvironment struct {
 	ID   int64
 	Name string
@@ -70,4 +70,37 @@ func DeleteEnvironment(t *testing.T, id int64) error {
 	}
 
 	return fmt.Errorf("DELETE failed for Environment %d: %v", id, err)
+}
+
+// GetID returns the ID of the TestEnvironment.
+func (e *TestEnvironment) GetID() int64 {
+	if e == nil {
+		var ret int64
+
+		return ret
+	}
+
+	return e.ID
+}
+
+// GetName returns the Name of the TestEnvironment.
+func (e *TestEnvironment) GetName() string {
+	if e == nil {
+		var ret string
+
+		return ret
+	}
+
+	return e.Name
+}
+
+// GetCode returns the Code of the TestEnvironment.
+func (e *TestEnvironment) GetCode() string {
+	if e == nil {
+		var ret string
+
+		return ret
+	}
+
+	return e.Code
 }
