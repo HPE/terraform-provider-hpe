@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "github.com/hpe/hpe",
+		Address: "registry.terraform.io/HPE/hpe",
 		Debug:   debug,
 	}
 
