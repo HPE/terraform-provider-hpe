@@ -92,9 +92,7 @@ func getEnvironmentByName(
 		return fmt.Errorf("GET failed for environment %s", name)
 	}
 
-	environments := es.Environments
-	_ = environments
-	environments = nil
+	environments := sdk.NewListEnvironments200Response().Environments
 
 	for _, e := range es.Environments {
 		if e.GetName() == name {

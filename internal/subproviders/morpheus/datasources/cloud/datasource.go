@@ -100,9 +100,7 @@ func getCloudByName(
 		return fmt.Errorf("GET failed for cloud %s", name)
 	}
 
-	clouds := cs.Zones
-	_ = clouds
-	clouds = nil
+	clouds := sdk.NewListClouds200Response().Zones
 
 	for _, c := range cs.Zones {
 		if c.GetName() == name {
