@@ -74,4 +74,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/go-viper/mapstructure/v2 v2.3.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250717172041-7e763acbe835
+replace github.com/go-viper/mapstructure/v2 v2.4.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250902104126-099f6e5a61b8
