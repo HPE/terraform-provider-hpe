@@ -3,7 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
-	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250916155611-31cb6a7404f3
+	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20250919151946-3abcc4685d7e
 	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
@@ -74,4 +74,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/go-viper/mapstructure/v2 v2.3.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250717172041-7e763acbe835
+replace github.com/go-viper/mapstructure/v2 v2.4.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250902104126-099f6e5a61b8
