@@ -28,6 +28,11 @@ func main() {
 	p := provider.New(
 		version,
 		morpheus.New(),
+		// subprovider2.New(),
+		// subprovider3.New(),
+		// .
+		// .
+		// .
 	)
 
 	var opts []tf6server.ServeOpt
