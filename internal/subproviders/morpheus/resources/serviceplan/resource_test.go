@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912"
+//go:generate go run ../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912" SortOrder "10000"
 
 package serviceplan_test
 
@@ -54,6 +54,7 @@ resource "hpe_morpheus_service_plan" "example_required" {
   name                   = "` + name + `"
   code                   = "` + code + `"
   max_memory             = 4294967296
+  sort_order             = 10000
   max_storage            = 0
 	provision_type_code    = "arm"
 }
@@ -84,6 +85,11 @@ resource "hpe_morpheus_service_plan" "example_required" {
 			"hpe_morpheus_service_plan.example_required",
 			"provision_type_code",
 			"arm",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_required",
+			"sort_order",
+			"10000",
 		),
 	}
 
@@ -143,7 +149,7 @@ resource "hpe_morpheus_service_plan" "example_all" {
   memory_size_type       = "mb"
   price_set_ids           = [1]
   provision_type_code    = "arm"
-  sort_order             = 0
+  sort_order             = 10000
   storage_size_type      = "gb"
 
   config_ranges =  {
@@ -245,7 +251,7 @@ resource "hpe_morpheus_service_plan" "example_all" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_service_plan.example_all",
 			"sort_order",
-			"0",
+			"10000",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_service_plan.example_all",
@@ -358,6 +364,7 @@ func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
 		"Code", code,
+		"SortOrder", "10000",
 		"MaxMemory", "4294967296",
 		"MaxStorage", "536870912",
 		"ProvisionTypeCode", "arm",
