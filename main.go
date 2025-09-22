@@ -3,11 +3,13 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
@@ -23,11 +25,6 @@ func main() {
 	)
 	flag.Parse()
 
-	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/HPE/hpe",
-		Debug:   debug,
-	}
-
 	p := provider.New(
 		version,
 		morpheus.New(),
@@ -38,8 +35,27 @@ func main() {
 		// .
 	)
 
-	err := providerserver.Serve(context.Background(), p, opts)
-	if err != nil {
+	var opts []tf6server.ServeOpt
+	if debug {
+		homeDir, _ := os.UserHomeDir()
+		config := filepath.Join(homeDir, ".config", "terraform-provider-hpe")
+		configFile := filepath.Join(config, "debug.env")
+
+		if err := os.MkdirAll(config, os.ModePerm); err != nil {
+			log.Fatal("could not create a debug config folder: ", err)
+		}
+
+		opts = append(opts,
+			tf6server.WithManagedDebug(),
+			tf6server.WithManagedDebugEnvFilePath(configFile),
+		)
+	}
+
+	if err := tf6server.Serve(
+		"registry.terraform.io/HPE/hpe",
+		providerserver.NewProtocol6(p()),
+		opts...,
+	); err != nil {
 		log.Fatal(err.Error())
 	}
 }
