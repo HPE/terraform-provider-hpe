@@ -78,4 +78,5 @@ resource "hpe_morpheus_network" "host" {
   tenant_ids                 = [1]
   visibility                 = var.visibility
   cidr                       = var.cidr
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }

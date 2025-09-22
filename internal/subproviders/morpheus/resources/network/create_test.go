@@ -86,6 +86,7 @@ resource "hpe_morpheus_network" "foo" {
   group_id = var.group_id
   type_id  = var.type_id
   cidr     = var.cidr
+  labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
   config = {
     "resourceGroupId" = var.config_resource_group_id
     "subnetName"      = var.config_subnet_name
@@ -120,6 +121,17 @@ resource "hpe_morpheus_network" "foo" {
 						"hpe_morpheus_network.foo", "config.subnetName", "example-subnet"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "config.subnetCidr", "10.0.1.0/24"),
+					// Check labels
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.foo", "labels.#", "4"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.foo", "labels.*", "terraform"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.foo", "labels.*", "acctest"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.foo", "labels.*", "hpe_morpheus_network"),
+					resource.TestCheckTypeSetElemAttr(
+						"hpe_morpheus_network.foo", "labels.*", "sweepable"),
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.foo", "resource_permissions.all"),
