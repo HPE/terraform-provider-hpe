@@ -70,7 +70,10 @@ resource "hpe_morpheus_cloud" "example" {
 - `agent_install_mode` (String) The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
 - `appliance_url` (String) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
+- `cloud_type_code` (String) Cloud (zone) type code
+- `cloud_type_id` (Number) Cloud (zone) type id
 - `code` (String) Optional code for use with policies
+- `config` (Dynamic) Generic Cloud Configuration
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
