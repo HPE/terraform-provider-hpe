@@ -3,22 +3,17 @@
 package network_test
 
 import (
-	"fmt"
-	"net/http"
 	"os"
 	"testing"
 
-	"github.com/google/uuid"
-	"github.com/h2non/gock"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
@@ -29,158 +24,155 @@ func TestMain(m *testing.M) {
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	httpClient := &http.Client{}
-	gock.InterceptClient(httpClient)
-
-	clientFactoryFunc := func(m model.SubModel) *clientfactory.ClientFactory {
-		return clientfactory.New(
-			m,
-			clientfactory.WithFactoryHTTPClient(httpClient),
-		)
-	}
-
-	providerInstance := provider.New(
-		"test",
-		morpheus.New(morpheus.WithClientFactory(clientFactoryFunc)),
-	)()
+	providerInstance := provider.New("test", morpheus.New())()
 
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
 
 var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer,
-	error,
+	tfprotov6.ProviderServer, error,
 ){
 	"hpe": newProviderWithError,
 }
 
 func TestNetworkDataSourceExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	defer gock.Off()
-
-	providerConfig := `
-provider "hpe" {
-	morpheus {
-		url = "http://net1.test"
-		access_token = "abc123"
-		insecure = true
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
 	}
+
+	// Use the standard provider config from testhelpers (no gock mocking)
+	providerConfig := testhelpers.ProviderBlock()
+
+	// Generate unique name for this test run
+	uniqueName := acctest.RandomWithPrefix(t.Name())
+
+	// Network resource configuration (using host network type for simplicity)
+	networkResourceConfig := `
+variable "name" {
+  description = "Network name"
+  type        = string
+  default     = "TestNetworkDataSourceExample"
+}
+
+variable "description" {
+  description = "Network description"
+  type        = string
+  default     = "A test network for datasource acceptance testing"
+}
+
+variable "display_name" {
+  description = "Network display name"
+  type        = string
+  default     = "Test Network Display Name"
+}
+
+variable "cloud_id" {
+  description = "Cloud (zone) id"
+  type        = number
+  default     = 17
+}
+
+variable "pool_id" {
+  description = "Network pool id"
+  type        = number
+  default     = 1
+}
+
+variable "group_id" {
+  description = "Group (site) id"
+  type        = number
+  default     = 1
+}
+
+variable "type_id" {
+  description = "Network type id"
+  type        = number
+  default     = 1
+}
+
+variable "cidr" {
+  description = "CIDR Network"
+  type        = string
+  default     = "10.0.0.0/24"
+}
+
+variable "visibility" {
+  description = "Network visibility"
+  type        = string
+  default     = "private"
+}
+
+variable "active" {
+  description = "Whether network is active"
+  type        = bool
+  default     = true
+}
+
+variable "dhcp_server" {
+  description = "Whether DHCP server is enabled"
+  type        = bool
+  default     = false
+}
+
+variable "appliance_url_proxy_bypass" {
+  description = "Whether to bypass proxy for appliance URL"
+  type        = bool
+  default     = true
+}
+
+resource "hpe_morpheus_network" "test" {
+  name                       = var.name
+  description                = var.description
+  display_name               = var.display_name
+  cloud_id                   = var.cloud_id
+  pool_id                    = var.pool_id
+  group_id                   = var.group_id
+  type_id                    = var.type_id
+  config                     = {}
+  active                     = var.active
+  dhcp_server                = var.dhcp_server
+  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  tenant_ids                 = [1]
+  visibility                 = var.visibility
+  cidr                       = var.cidr
+}
+
+data "hpe_morpheus_network" "example" {
+  name = hpe_morpheus_network.test.name
 }
 `
-
-	path := "../../../../../examples/data-sources/hpe_morpheus_network/data-source.tf"
-	exampleConfig, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("Error reading example config: %v", err)
-	}
-
-	prefix := fmt.Sprintf("testacc-%s", uuid.New().String())
-
-	networkResponseJSON := `{
-    "network": {
-        "id": 123,
-        "name": "` + prefix + "-example" + `",
-        "displayName": "` + prefix + "-example" + `",
-        "description": "A test network for basic acceptance testing",
-        "labels": ["test-label-1", "test-label-2"],
-        "tags": [],
-        "group": null,
-        "zone": null,
-        "type": {
-            "id": 52,
-            "name": "ACI Endpoint Group",
-            "code": "aciVxlan"
-        },
-        "owner": {
-            "id": 1,
-            "name": "Morpheus QA"
-        },
-        "ipv4Enabled": true,
-        "ipv6Enabled": false,
-        "category": "aci.epg.44",
-        "cidr": "10.0.0.0/24",
-        "visibility": "private",
-        "active": true,
-        "defaultNetwork": false,
-        "subnets": [],
-        "tenants": []
-    }
-}`
-
-	networksListJSON := `{
-    "networks": [{
-        "id": 123,
-        "name": "` + prefix + "-example" + `",
-        "displayName": "testacc-TestAccNetworkDataSourceBasic",
-        "description": "A test network for basic acceptance testing",
-        "labels": ["test-label-1", "test-label-2"],
-        "tags": [],
-        "group": null,
-        "zone": null,
-        "type": {
-            "id": 52,
-            "name": "ACI Endpoint Group",
-            "code": "aciVxlan"
-        },
-        "owner": {
-            "id": 1,
-            "name": "Morpheus QA"
-        },
-        "ipv4Enabled": true,
-        "ipv6Enabled": false,
-        "category": "aci.epg.44",
-        "cidr": "10.0.0.0/24",
-        "visibility": "private",
-        "active": true,
-        "defaultNetwork": false,
-        "subnets": [],
-        "tenants": []
-    }]
-}`
-
-	gock.New("http://net1.test").
-		Get("/api/networks($)").
-		MatchParam("name", prefix+"-example").
-		Persist().
-		Reply(200).
-		SetHeader("Content-Type", "application/json").
-		JSON(networksListJSON)
-
-	gock.New("http://net1.test").
-		Get("/api/networks/123").
-		Persist().
-		Reply(200).
-		SetHeader("Content-Type", "application/json").
-		JSON(networkResponseJSON)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + string(exampleConfig),
+				Config: providerConfig + networkResourceConfig,
 				ConfigVariables: config.Variables{
-					"prefix": config.StringVariable(prefix),
+					"name": config.StringVariable(uniqueName),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// Check that datasource reads the created network correctly
 					resource.TestCheckResourceAttr(
 						"data.hpe_morpheus_network.example",
 						"name",
-						prefix+"-example",
+						uniqueName,
 					),
-					resource.TestCheckResourceAttr(
+					resource.TestCheckResourceAttrPair(
 						"data.hpe_morpheus_network.example",
 						"id",
-						"123",
-					),
-					resource.TestCheckResourceAttr(
-						"data.hpe_morpheus_network.example",
-						"display_name",
-						prefix+"-example",
+						"hpe_morpheus_network.test",
+						"id",
 					),
 					resource.TestCheckResourceAttr(
 						"data.hpe_morpheus_network.example",
 						"description",
-						"A test network for basic acceptance testing",
+						"A test network for datasource acceptance testing",
+					),
+					resource.TestCheckResourceAttr(
+						"data.hpe_morpheus_network.example",
+						"display_name",
+						"Test Network Display Name",
 					),
 					resource.TestCheckResourceAttr(
 						"data.hpe_morpheus_network.example",
@@ -197,21 +189,8 @@ provider "hpe" {
 						"active",
 						"true",
 					),
-					resource.TestCheckResourceAttr(
-						"data.hpe_morpheus_network.example",
-						"labels.#",
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						"data.hpe_morpheus_network.example",
-						"labels.0",
-						"test-label-1",
-					),
-					resource.TestCheckResourceAttr(
-						"data.hpe_morpheus_network.example",
-						"labels.1",
-						"test-label-2",
-					),
+					// Note: cloud_id, group_id, and type_id are not available in the datasource schema
+					// Only checking the attributes that are actually exposed by the datasource
 				),
 			},
 		},

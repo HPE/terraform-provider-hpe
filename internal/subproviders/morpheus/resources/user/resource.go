@@ -239,7 +239,6 @@ func (r *Resource) Create(
 // LinuxUsername
 // WindowsUsername
 // LinuxKeyPairId
-// ReceiveNotifications
 // TenantId
 func (r *Resource) Update(
 	ctx context.Context,
@@ -315,7 +314,7 @@ func (r *Resource) Update(
 		updateUser.SetLastName(plan.LastName.ValueString())
 	}
 
-	if plan.LinuxKeyPairId.IsNull() {
+	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.SetLinuxKeyPairIdNil()
 	} else {
 		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
@@ -332,6 +331,8 @@ func (r *Resource) Update(
 	} else {
 		updateUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
 	}
+
+	updateUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
 
 	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
 		if config.LinuxPasswordWo.IsUnknown() {

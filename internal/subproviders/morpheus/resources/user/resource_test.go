@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 func checkRole(
 	resourceName string,
 	roleIDAttr string,
-	expectedRoles map[string]struct{},
+	expectedRoles *map[string]struct{},
 ) func(*terraform.State) error {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -38,22 +38,22 @@ func checkRole(
 		}
 
 		roleID := rs.Primary.Attributes[roleIDAttr]
-		if _, ok := expectedRoles[roleID]; !ok {
+		if _, ok := (*expectedRoles)[roleID]; !ok {
 			return fmt.Errorf("role ID %s not found ", roleID)
 		}
 
-		delete(expectedRoles, roleID)
+		delete(*expectedRoles, roleID)
 
 		return nil
 	}
 }
 
 func checkStrayRoles(
-	expectedRoles map[string]struct{},
+	expectedRoles *map[string]struct{},
 ) func(*terraform.State) error {
 	return func(_ *terraform.State) error {
-		if len(expectedRoles) != 0 {
-			return fmt.Errorf("not all role_ids found %s", expectedRoles)
+		if len(*expectedRoles) != 0 {
+			return fmt.Errorf("not all role_ids found %s", *expectedRoles)
 		}
 
 		return nil
@@ -458,14 +458,14 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedRoles,
+			&expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedRoles,
+			&expectedRoles,
 		),
-		checkStrayRoles(expectedRoles),
+		checkStrayRoles(&expectedRoles),
 	}
 
 	passwordWoCheck := resource.TestCheckResourceAttr(
@@ -552,12 +552,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"receive_notifications",
-			"false",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"receive_notifications",
-			"false",
+			"true",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -567,9 +562,9 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedUpdateRoles,
+			&expectedUpdateRoles,
 		),
-		checkStrayRoles(expectedUpdateRoles),
+		checkStrayRoles(&expectedUpdateRoles),
 	}
 
 	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
@@ -955,6 +950,31 @@ resource "hpe_morpheus_user" "foo" {
 			},
 			{
 				Config: providerConfig + `
+# checks plan detects changed receive_notifications
+resource "hpe_morpheus_user" "foo" {
+	tenant_id = 1
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	# changed
+	receive_notifications = true
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
 # checks apply of changes to all changeable fields
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
@@ -980,7 +1000,8 @@ resource "hpe_morpheus_user" "foo" {
 	linux_password_wo_version = 2
 	# changed
 	linux_key_pair_id = 101
-	receive_notifications = false
+	# changed
+	receive_notifications = true
 	# changed
 	windows_username = "gates"
 	# changed
@@ -1018,7 +1039,8 @@ resource "hpe_morpheus_user" "foo" {
 	linux_password_wo_version = 2
 	# changed
 	linux_key_pair_id = 101
-	receive_notifications = false
+	# changed
+	receive_notifications = true
 	# changed
 	windows_username = "gates"
 	# changed
@@ -1027,6 +1049,362 @@ resource "hpe_morpheus_user" "foo" {
 	windows_password_wo_version = 2
 }`,
 				Check:              checkUpdateFn,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	baseChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"first_name",
+			"foo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"last_name",
+			"bar",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"foo@hpe.com",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+			"100",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"2",
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.0",
+			&expectedRoles,
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.1",
+			&expectedRoles,
+		),
+		checkStrayRoles(&expectedRoles),
+	}
+
+	passwordWoCheck := resource.TestCheckResourceAttr(
+		"hpe_morpheus_user.foo",
+		"password_wo_version",
+		"1",
+	)
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		append(baseChecks, passwordWoCheck)...,
+	)
+
+	expectedUpdateRoles := map[string]struct{}{"3": {}, "1": {}}
+	updateChecks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"username",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"first_name",
+			"foo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"last_name",
+			"bar2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"email",
+			"foo@hpe.com",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"password_wo_version",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_username",
+			"linus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_password_wo",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"linux_key_pair_id",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_username",
+			"bill",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo_version",
+			"1",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_user.foo",
+			"windows_password_wo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"receive_notifications",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_user.foo",
+			"role_ids.#",
+			"2",
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.0",
+			&expectedUpdateRoles,
+		),
+		checkRole(
+			"hpe_morpheus_user.foo",
+			"role_ids.1",
+			&expectedUpdateRoles,
+		),
+		checkStrayRoles(&expectedUpdateRoles),
+	}
+
+	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(
+		updateChecks...,
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# create
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				Check:    checkFn,
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# post create plan
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				Check:              checkFn,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: providerConfig + `
+# checks plan has no effect
+resource "hpe_morpheus_user" "foo" {
+	# update 1
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	# changed
+	last_name = "bar2"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	#linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				Check: checkUpdateFn,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects first_name change to null
+resource "hpe_morpheus_user" "foo" {
+	# post update 1 plan
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar2"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	#linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# update 2
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					func(_ *terraform.State) error {
+						expectedRoles = map[string]struct{}{"3": {}, "1": {}}
+
+						return nil
+					},
+					checkFn,
+				),
+				PlanOnly: false,
+			},
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# post update 2 plan
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	password_wo_version = 1
+	role_ids = [3,1]
+	first_name = "foo"
+	last_name = "bar"
+	linux_username = "linus"
+	linux_password_wo = "Linux123!"
+	linux_password_wo_version = 1
+	linux_key_pair_id = 100
+	receive_notifications = false
+	windows_username = "bill"
+	windows_password_wo = "Windows123!"
+	windows_password_wo_version = 1
+}`,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -1141,14 +1519,14 @@ resource "hpe_morpheus_user" "foo" {
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			expectedRoles,
+			&expectedRoles,
 		),
 		checkRole(
 			"hpe_morpheus_user.foo",
 			"role_ids.1",
-			expectedRoles,
+			&expectedRoles,
 		),
-		checkStrayRoles(expectedRoles),
+		checkStrayRoles(&expectedRoles),
 	}
 
 	passwordWoCheck := resource.TestCheckResourceAttr(
@@ -1517,8 +1895,8 @@ destroy = false
 			"hpe_morpheus_user.foo",
 			"password_wo",
 		),
-		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedCreateRoles),
-		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedCreateRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", &expectedCreateRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", &expectedCreateRoles),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(
@@ -1573,8 +1951,8 @@ destroy = false
 			"hpe_morpheus_user.foo",
 			"password_wo",
 		),
-		checkRole("hpe_morpheus_user.foo", "role_ids.0", expectedImportRoles),
-		checkRole("hpe_morpheus_user.foo", "role_ids.1", expectedImportRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.0", &expectedImportRoles),
+		checkRole("hpe_morpheus_user.foo", "role_ids.1", &expectedImportRoles),
 	}
 
 	checkImportFn := resource.ComposeAggregateTestCheckFunc(
@@ -1599,4 +1977,174 @@ destroy = false
 			},
 		},
 	})
+}
+
+// Test that when tenant_id is not set (use state for unknown)
+// updating last_name results in update operation, not delete/recreate
+func TestAccMorpheusUserUpdateLastNameWithoutTenantIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	var userID string
+
+	resource.Test(
+		t,
+		resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	last_name = "Doe"
+	linux_key_pair_id = 100
+}`,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Capture the user ID for comparison in subsequent steps
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources["hpe_morpheus_user.foo"]
+							if rs == nil {
+								return fmt.Errorf("resource not found")
+							}
+							userID = rs.Primary.ID
+
+							return nil
+						},
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"username",
+							name,
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"email",
+							"foo@hpe.com",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"first_name",
+							"John",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"last_name",
+							"Doe",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.0",
+							"3",
+						),
+						// tenant_id should be computed from state (not set in config)
+						resource.TestCheckResourceAttrSet(
+							"hpe_morpheus_user.foo",
+							"tenant_id",
+						),
+					),
+				},
+				{
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is still NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	# Changed: update last_name
+	last_name = "Smith"
+	linux_key_pair_id = 100
+}`,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify the user ID hasn't changed (proving it's an update, not recreate)
+						func(s *terraform.State) error {
+							rs := s.RootModule().Resources["hpe_morpheus_user.foo"]
+							if rs == nil {
+								return fmt.Errorf("resource not found")
+							}
+							if rs.Primary.ID != userID {
+								return fmt.Errorf(
+									"user ID changed from %s to %s, indicating resource was recreated instead of updated",
+									userID,
+									rs.Primary.ID,
+								)
+							}
+
+							return nil
+						},
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"username",
+							name,
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"email",
+							"foo@hpe.com",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"first_name",
+							"John",
+						),
+						// Verify last_name was updated
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"last_name",
+							"Smith",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.#",
+							"1",
+						),
+						resource.TestCheckResourceAttr(
+							"hpe_morpheus_user.foo",
+							"role_ids.0",
+							"3",
+						),
+						// tenant_id should still be computed from state
+						resource.TestCheckResourceAttrSet(
+							"hpe_morpheus_user.foo",
+							"tenant_id",
+						),
+					),
+					// This is the key assertion: we expect this to be an update, not a recreate
+					// If the resource gets deleted/recreated, the test will fail
+					ExpectNonEmptyPlan: false, // After update, plan should be empty
+				},
+				{
+					// Verify the plan shows no changes after the update
+					Config: providerConfig + `
+resource "hpe_morpheus_user" "foo" {
+	# Note: tenant_id is still NOT set - uses "state for unknown"
+	username = "` + name + `"
+	email = "foo@hpe.com"
+	password_wo = "Secret123!"
+	role_ids = [3]
+	first_name = "John"
+	last_name = "Smith"
+	linux_key_pair_id = 100
+}`,
+					PlanOnly:           true,
+					ExpectNonEmptyPlan: false,
+				},
+			},
+		},
+	)
 }
