@@ -27,7 +27,12 @@ linters:
       keywords:
         - OPTIMIZE
     lll:
-      line-length: 100
+      line-length: 120
+    revive:
+      rules:
+        - name: var-naming
+          # Suppress warnings about Id "initialism" - i.e. make Id and ID valid
+          arguments: [ [ "ID", "URL", "API" ] ]
   exclusions:
     generated: lax
     presets:

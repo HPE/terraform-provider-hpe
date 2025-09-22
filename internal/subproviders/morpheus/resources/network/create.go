@@ -163,6 +163,10 @@ func (r *Resource) Create(
 		createNetwork.SetSearchDomains(plan.SearchDomains.ValueString())
 	}
 
+	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
+		createNetwork.SetSwitchId(plan.SwitchId.ValueString())
+	}
+
 	if !plan.TypeId.IsNull() && !plan.TypeId.IsUnknown() {
 		networkType := sdk.NewCreateNetworksRequestNetworkType(
 			plan.TypeId.ValueInt64(),

@@ -92,6 +92,10 @@ func (r *Resource) Update(
 		network.SetSearchDomains(plan.SearchDomains.ValueString())
 	}
 
+	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
+		network.SetSwitchId(plan.SwitchId.ValueString())
+	}
+
 	if !plan.ApplianceUrlProxyBypass.IsNull() && !plan.ApplianceUrlProxyBypass.IsUnknown() {
 		network.SetApplianceUrlProxyBypass(plan.ApplianceUrlProxyBypass.ValueBool())
 	}

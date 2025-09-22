@@ -49,4 +49,8 @@ resource "hpe_morpheus_network" "a" {
 
 {{ tffile "examples/resources/hpe_morpheus_network/host/resource.tf" }}
 
+### OVS Port Group Network
+
+{{ tffile "examples/resources/hpe_morpheus_network/ovs_port_group/resource.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}
