@@ -1,6 +1,7 @@
 resource "hpe_morpheus_service_plan" "example_service_plan" {
   name = "{{.Name}}"
   code = "{{.Code}}"
+  sort_order = {{.SortOrder}}
   max_memory = {{.MaxMemory}}
   max_storage = {{.MaxStorage}}
   provision_type_code = "{{.ProvisionTypeCode}}"
