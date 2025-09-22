@@ -49,11 +49,26 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Automatically Power on VMs",
 				Default:             booldefault.StaticBool(false),
 			},
+			"cloud_type_code": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Cloud (zone) type code",
+				MarkdownDescription: "Cloud (zone) type code",
+			},
+			"cloud_type_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Cloud (zone) type id",
+				MarkdownDescription: "Cloud (zone) type id",
+			},
 			"code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Optional code for use with policies",
 				MarkdownDescription: "Optional code for use with policies",
+			},
+			"config": schema.DynamicAttribute{
+				Optional:            true,
+				Description:         "Generic Cloud Configuration",
+				MarkdownDescription: "Generic Cloud Configuration",
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -136,11 +151,6 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether to import existing virtual machines (off, basic, full)",
 				MarkdownDescription: "Whether to import existing virtual machines (off, basic, full)",
 				Validators: []validator.String{
-					stringvalidator.OneOf(
-						"off",
-						"basic",
-						"full",
-					),
 					stringvalidator.OneOf("off", "basic", "full"),
 				},
 			},
@@ -208,7 +218,10 @@ type CloudModel struct {
 	AgentInstallMode      types.String   `tfsdk:"agent_install_mode"`
 	ApplianceUrl          types.String   `tfsdk:"appliance_url"`
 	AutoRecoverPowerState types.Bool     `tfsdk:"auto_recover_power_state"`
+	CloudTypeCode         types.String   `tfsdk:"cloud_type_code"`
+	CloudTypeId           types.Int64    `tfsdk:"cloud_type_id"`
 	Code                  types.String   `tfsdk:"code"`
+	Config                types.Dynamic  `tfsdk:"config"`
 	ConfigHvm             ConfigHvmValue `tfsdk:"config_hvm"`
 	CostingMode           types.String   `tfsdk:"costing_mode"`
 	DataCenterName        types.String   `tfsdk:"data_center_name"`
