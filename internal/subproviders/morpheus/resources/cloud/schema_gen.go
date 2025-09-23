@@ -5,9 +5,11 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -53,6 +55,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Cloud (zone) type code",
 				MarkdownDescription: "Cloud (zone) type code",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("cloud_type_id")}...),
+				},
 			},
 			"cloud_type_id": schema.Int64Attribute{
 				Optional:            true,
@@ -69,6 +74,10 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Generic Cloud Configuration",
 				MarkdownDescription: "Generic Cloud Configuration",
+				Validators: []validator.Dynamic{
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("cloud_type_code"), path.MatchRoot("cloud_type_id")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("cloud_hvm")}...),
+				},
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
