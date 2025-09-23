@@ -101,7 +101,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.example",
 			"email",
-			"user@example.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.example",
@@ -216,7 +216,7 @@ func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 	tenant_id = 1
@@ -231,7 +231,7 @@ resource "hpe_morpheus_user" "foo" {
 				Config: providerConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 	# changed
@@ -260,7 +260,7 @@ func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
 	resourceConfig := `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 }
@@ -268,7 +268,7 @@ resource "hpe_morpheus_user" "foo" {
 	resourceConfigPostImport := `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	# password_wo = "Secret123!"
 	role_ids = [3]
 }
@@ -282,7 +282,7 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -396,7 +396,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -505,7 +505,7 @@ func TestAccMorpheusUserUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"bar@hpe.com",
+			"bar@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -580,7 +580,7 @@ resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -604,7 +604,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -629,7 +629,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -654,7 +654,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -679,7 +679,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -704,7 +704,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -729,7 +729,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	# changed
 	# password_wo_version = 1
@@ -754,7 +754,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	# changed
 	# password_wo = "Secret123!"
 	password_wo_version = 1
@@ -779,7 +779,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	# changed
@@ -805,7 +805,7 @@ resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	# changed
 	username = "` + name + `Updated"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -829,7 +829,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -854,7 +854,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -879,7 +879,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -904,7 +904,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -929,7 +929,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -954,7 +954,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -981,7 +981,7 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	username = "` + name + `Updated"
 	# changed
-	email = "bar@hpe.com"
+	email = "bar@testacc.com"
 	# changed
 	password_wo = "Secret456!"
 	# changed
@@ -1020,7 +1020,7 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	username = "` + name + `Updated"
 	# changed
-	email = "bar@hpe.com"
+	email = "bar@testacc.com"
 	# changed
 	password_wo = "Secret456!"
 	# changed
@@ -1085,7 +1085,7 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1187,7 +1187,7 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1265,7 +1265,7 @@ func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
 resource "hpe_morpheus_user" "foo" {
 	# create
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1288,7 +1288,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# post create plan
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1313,7 +1313,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# update 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1337,7 +1337,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# post update 1 plan
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1360,7 +1360,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# update 2
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1390,7 +1390,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# post update 2 plan
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1427,7 +1427,7 @@ func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
 # the server and only the other two roles are created
 #resource "hpe_morpheus_user" "bar" {
 #username = "test101"
-#email = "foo@hpe.com"
+#email = "foo@testacc.com"
 #password = "Secret123!"
 #roles = [3,0,1]
 #}
@@ -1435,7 +1435,7 @@ resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1467,7 +1467,7 @@ resource "hpe_morpheus_user" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1623,7 +1623,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "bar@hpe.com"
+	email = "bar@testacc.com"
 	password = "Secret123!"
 	# role_ids = [3,1]
 }
@@ -1659,7 +1659,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	#username = "` + name + `"
-	email = "bar@hpe.com"
+	email = "bar@testacc.com"
 	password = "Secret123!"
 	role_ids = [3,1]
 }
@@ -1695,7 +1695,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	#email = "bar@hpe.com"
+	#email = "bar@testacc.com"
 	password = "Secret123!"
 	role_ids = [3,1]
 }
@@ -1733,7 +1733,7 @@ provider "hpe" {
 
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
-	email = "bar@hpe.com"
+	email = "bar@testacc.com"
 	#password_wo = "Secret123!"
 	role_ids = [3,1]
 }
@@ -1778,7 +1778,7 @@ resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	role_ids = [3,1]
@@ -1796,7 +1796,7 @@ resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = 1
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
         #password_wo = "Secret123!"
         #password_wo_version = 1
 	role_ids = [3,1]
@@ -1846,7 +1846,7 @@ destroy = false
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"email",
-			"foo@hpe.com",
+			"foo@testacc.com",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -2002,7 +2002,7 @@ func TestAccMorpheusUserUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is NOT set - uses "state for unknown"
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 	first_name = "John"
@@ -2028,7 +2028,7 @@ resource "hpe_morpheus_user" "foo" {
 						resource.TestCheckResourceAttr(
 							"hpe_morpheus_user.foo",
 							"email",
-							"foo@hpe.com",
+							"foo@testacc.com",
 						),
 						resource.TestCheckResourceAttr(
 							"hpe_morpheus_user.foo",
@@ -2062,7 +2062,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 	first_name = "John"
@@ -2095,7 +2095,7 @@ resource "hpe_morpheus_user" "foo" {
 						resource.TestCheckResourceAttr(
 							"hpe_morpheus_user.foo",
 							"email",
-							"foo@hpe.com",
+							"foo@testacc.com",
 						),
 						resource.TestCheckResourceAttr(
 							"hpe_morpheus_user.foo",
@@ -2134,7 +2134,7 @@ resource "hpe_morpheus_user" "foo" {
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"
-	email = "foo@hpe.com"
+	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
 	first_name = "John"

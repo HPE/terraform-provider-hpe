@@ -1,7 +1,7 @@
 resource "hpe_morpheus_user" "example" {
   tenant_id                   = 1
   username                    = "testacc-example"
-  email                       = "user@example.com"
+  email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1
   role_ids                    = [1]
