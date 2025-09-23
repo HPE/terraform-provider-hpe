@@ -100,4 +100,5 @@ resource "hpe_morpheus_network" "gcp" {
   visibility                 = var.visibility
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }

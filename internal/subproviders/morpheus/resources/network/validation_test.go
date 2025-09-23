@@ -24,6 +24,7 @@ resource "hpe_morpheus_network" "test" {
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	# name is missing - this should cause validation error
 }
 `
@@ -55,6 +56,7 @@ resource "hpe_morpheus_network" "test" {
 	name     = "TestAccMorpheusNetworkResourceValidationMissingCloudId"
 	group_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	# cloud_id is missing - this should cause validation error
 }
 `
@@ -86,6 +88,7 @@ resource "hpe_morpheus_network" "test" {
 	name     = "TestAccMorpheusNetworkResourceValidationMissingGroupId"
 	cloud_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	# group_id is missing - this should cause validation error
 }
 `
@@ -117,6 +120,7 @@ resource "hpe_morpheus_network" "test" {
 	name     = "TestAccMorpheusNetworkResourceValidationMissingTypeId"
 	cloud_id = 1
 	group_id = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	# type_id is missing - this should cause validation error
 }
 `
@@ -150,6 +154,7 @@ resource "hpe_morpheus_network" "test" {
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	config   = "invalid"
 }
 `
@@ -183,6 +188,7 @@ resource "hpe_morpheus_network" "test" {
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	pool_id  = "not_valid_int"
 }
 `
@@ -216,6 +222,7 @@ resource "hpe_morpheus_network" "test" {
 	cloud_id   = 1
 	group_id   = 1
 	type_id    = 1
+	labels     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	tenant_ids = "not_valid_set"
 }
 `
@@ -251,6 +258,7 @@ resource "hpe_morpheus_network" "test" {
 	cloud_id = 1
 	group_id = 1
 	type_id  = 1
+	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	config   = null
 }
 `

@@ -138,6 +138,7 @@ resource "hpe_morpheus_network" "aws" {
   visibility                 = var.visibility
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]
@@ -256,6 +257,7 @@ resource "hpe_morpheus_network" "all_attrs" {
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
   config = {
     "resourceGroupId" = var.config_resource_group_id
     "subnetName"      = var.config_subnet_name
@@ -372,6 +374,7 @@ resource "hpe_morpheus_network" "gcp" {
   visibility                 = var.visibility
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }
 ```
 
@@ -458,6 +461,7 @@ resource "hpe_morpheus_network" "host" {
   tenant_ids                 = [1]
   visibility                 = var.visibility
   cidr                       = var.cidr
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }
 ```
 
@@ -565,6 +569,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
   vlan_id                    = var.vlan_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]

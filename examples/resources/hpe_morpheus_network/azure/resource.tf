@@ -106,6 +106,7 @@ resource "hpe_morpheus_network" "all_attrs" {
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
   config = {
     "resourceGroupId" = var.config_resource_group_id
     "subnetName"      = var.config_subnet_name

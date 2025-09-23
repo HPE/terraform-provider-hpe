@@ -14,7 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
 )
 
-func TestAccMorpheusNetworkImport(t *testing.T) {
+func TestAccMorpheusNetworkResourceImport(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -31,7 +31,7 @@ func TestAccMorpheusNetworkImport(t *testing.T) {
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "TestAccMorpheusNetworkImport"
+  default     = "TestAccMorpheusNetworkResourceImport"
 }
 
 variable "description" {
@@ -114,6 +114,7 @@ resource "hpe_morpheus_network" "net1" {
 	tenant_ids = [1,2]
 	visibility = var.visibility
 	cidr = var.cidr
+	labels = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }
 `
 
@@ -212,6 +213,32 @@ destroy = false
 			"hpe_morpheus_network.net1",
 			"visibility",
 			"private",
+		),
+		// Check labels
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network.net1",
+			"labels.#",
+			"4",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_network.net1",
+			"labels.*",
+			"terraform",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_network.net1",
+			"labels.*",
+			"acctest",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_network.net1",
+			"labels.*",
+			"hpe_morpheus_network",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_network.net1",
+			"labels.*",
+			"sweepable",
 		),
 		// Check resource permissions (computed-only)
 		resource.TestCheckResourceAttrSet(

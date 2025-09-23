@@ -37,3 +37,7 @@ docs-experimental:
 	go generate -tags=experimental ./...
 	cd tools && env GOFLAGS="-tags=experimental" go generate
 	rm -rf templates-combined-temp
+
+sweep:
+	go test -v ./internal/subproviders/morpheus/test/sweep/... \
+	  -sweep=all -sweep-run=hpe_morpheus_network
