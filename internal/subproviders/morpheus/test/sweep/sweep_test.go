@@ -10,6 +10,7 @@ import (
 
 func init() {
 	Networks()
+	Users()
 }
 
 func TestMain(m *testing.M) {

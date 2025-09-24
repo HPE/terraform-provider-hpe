@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test docs docs-experimental experimental
+.PHONY: build linter lint test docs docs-experimental experimental sweep
 
 build:
 	go build
@@ -40,4 +40,4 @@ docs-experimental:
 
 sweep:
 	go test -v ./internal/subproviders/morpheus/test/sweep/... \
-	  -sweep=all -sweep-run=hpe_morpheus_network
+	  -sweep=all -sweep-run=hpe_morpheus_network,hpe_morpheus_user
