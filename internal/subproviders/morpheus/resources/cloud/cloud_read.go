@@ -18,11 +18,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
 )
 
+const standardCloud = "standard"
+
 // populate cloud resource model with current API values
 func getCloudAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	plan CloudModel,
 ) (CloudModel, diag.Diagnostics) {
 	var state CloudModel
 	var diags diag.Diagnostics
@@ -39,6 +42,15 @@ func getCloudAsState(
 
 	cloud := c.GetZone()
 
+	if !cloud.IsSetConfig() {
+		diags.AddError(
+			"populate cloud resource",
+			fmt.Sprintf("cloud %d missing config", id),
+		)
+
+		return state, diags
+	}
+
 	if len(cloud.Groups) == 0 {
 		diags.AddError(
 			"populate cloud resource",
@@ -48,12 +60,48 @@ func getCloudAsState(
 		return state, diags
 	}
 
+	importing := false
+	if plan.Name.IsNull() {
+		importing = true
+	}
+
 	state.GroupId = convert.Int64ToType(cloud.Groups[0].Id)
+	state.AgentInstallMode = convert.StrToType(cloud.AgentMode)
+	state.AutoRecoverPowerState = convert.BoolToType(cloud.AutoRecoverPowerState)
+	if *cloud.Code != "standard" { // workaround an API bug
+		state.Code = convert.StrToType(cloud.Code)
+	}
+	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	state.Enabled = convert.BoolToType(cloud.Enabled)
+	state.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
+	state.Id = convert.Int64ToType(cloud.Id)
+	state.Labels = convert.StrSliceToSet(cloud.Labels)
+	state.Location = convert.StrToType(cloud.Location.Get())
+	state.Name = convert.StrToType(cloud.Name)
+	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
+	state.TenantId = convert.Int64ToType(cloud.AccountId)
+	state.Visibility = convert.StrToType(cloud.Visibility)
 
 	cfg := cloud.GetConfig()
 
-	switch cloud.ZoneType.GetCode() {
-	case "standard":
+	// Move these common fields up
+	state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
+	cfg.ApplianceUrl.Unset()
+	state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
+	cfg.DatacenterName.Unset()
+	state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
+	cfg.ExternalId.Unset()
+	state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
+	cfg.InventoryLevel.Unset()
+	state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+	cfg.ConsoleKeymap.Unset()
+
+	// Remove possibly buggy API fields
+	cfg.ConfigCmdbDiscovery = nil
+
+	switch {
+	case importing && *cloud.ZoneType.Code == standardCloud,
+		!plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		attrTypes := make(map[string]attr.Type)
 		attrValues := make(map[string]attr.Value)
 
@@ -78,41 +126,30 @@ func getCloudAsState(
 					fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
 				)
 
-				return CloudModel{}, diags
+				return state, diags
 			}
 
 			state.ConfigHvm = configHvm
 		}
 	default:
-		diags.AddError(
-			"populate cloud resource",
-			fmt.Sprintf("cloud %d: unsupported cloud type configuration", id),
-		)
+		state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
 
-		return CloudModel{}, diags
+		state.Config = types.DynamicNull()
+
+		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+			state.Config = plan.Config
+		} else {
+			state.Config, err = convert.StructToDynamic(ctx, cfg)
+			if err != nil {
+				diags.AddError(
+					"create cloud resource",
+					"cloud: failed to convert config: "+err.Error(),
+				)
+
+				return state, diags
+			}
+		}
 	}
-
-	state.AgentInstallMode = convert.StrToType(cloud.AgentMode)
-	state.AutoRecoverPowerState = convert.BoolToType(cloud.AutoRecoverPowerState)
-	if *cloud.Code != "standard" {
-		state.Code = convert.StrToType(cloud.Code)
-	}
-	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
-	state.Enabled = convert.BoolToType(cloud.Enabled)
-	state.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
-	state.Id = convert.Int64ToType(cloud.Id)
-	state.Labels = convert.StrSliceToSet(cloud.Labels)
-	state.Location = convert.StrToType(cloud.Location.Get())
-	state.Name = convert.StrToType(cloud.Name)
-	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
-	state.TenantId = convert.Int64ToType(cloud.AccountId)
-	state.Visibility = convert.StrToType(cloud.Visibility)
-
-	state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-	state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-	state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-	state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-	state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
 
 	return state, diags
 }
@@ -141,7 +178,7 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, pdiags := getCloudAsState(ctx, id, client)
+	state, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
