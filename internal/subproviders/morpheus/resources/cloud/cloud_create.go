@@ -5,6 +5,7 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/sdkfuncs"
 )
 
 const defaultCloudType = "standard"
@@ -49,53 +51,72 @@ func (r *Resource) Create(
 
 	cloudTypeCode := defaultCloudType
 
-	switch {
-	case !plan.ConfigHvm.IsNull():
-		config := sdk.NewAddCloudsRequestZoneConfigAnyOfOneOf2()
+	configAdditionalProperties := make(map[string]any)
 
-		if !plan.ConfigHvm.CertificateProvider.IsNull() {
+	// TODO: update the openapi spec to get SDK fields for these values
+	if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+		configAdditionalProperties["applianceUrl"] = plan.ApplianceUrl.ValueStringPointer()
+	}
+
+	if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+		configAdditionalProperties["datacenterName"] = plan.DataCenterName.ValueStringPointer()
+	}
+
+	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+		configAdditionalProperties["externalId"] = plan.ExternalId.ValueStringPointer()
+	}
+
+	if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+		configAdditionalProperties["inventoryLevel"] = plan.ImportExistingVms.ValueStringPointer()
+	}
+
+	if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+		configAdditionalProperties["consoleKeymap"] = plan.KeyboardLayout.ValueStringPointer()
+	}
+
+	switch {
+	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+		config := sdkfuncs.NewHvmCloudConfig()
+
+		config.AdditionalProperties = configAdditionalProperties
+
+		if !plan.ConfigHvm.CertificateProvider.IsNull() && !plan.ConfigHvm.CertificateProvider.IsUnknown() {
 			config.CertificateProvider = plan.ConfigHvm.CertificateProvider.ValueStringPointer()
 		}
-		if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() {
+		if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() && !plan.ConfigHvm.EnableNetworkTypeSelection.IsUnknown() {
 			config.EnableNetworkTypeSelection = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBoolPointer()
 		}
 
-		configAnyOfHvm := sdk.AddCloudsRequestZoneConfigAnyOfOneOf2AsAddCloudsRequestZoneConfigAnyOf(
-			config,
-		)
+		addHvmConfig := sdkfuncs.AddCloudRequestHVMConfig(config)
 
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &configAnyOfHvm
-	}
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &addHvmConfig
 
-	// TODO: support other cloud types
-	genConfig := addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2
-	if genConfig == nil { //nolint: staticcheck
-		genConfig := sdk.NewAddCloudsRequestZoneConfigAnyOfOneOf2()
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf.AddCloudsRequestZoneConfigAnyOfOneOf2 = genConfig
-	}
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		configValue := plan.Config.UnderlyingValue()
+		configMap, err := convert.ValueToAny(ctx, configValue)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create cloud resource",
+				"cloud "+name+": failed to convert config: "+
+					err.Error(),
+			)
 
-	if genConfig.AdditionalProperties == nil { //nolint: staticcheck
-		genConfig.AdditionalProperties = make(map[string]any)
-	}
+			return
+		}
 
-	if !plan.ApplianceUrl.IsNull() {
-		genConfig.AdditionalProperties["applianceUrl"] = plan.ApplianceUrl.ValueStringPointer()
-	}
+		configDataMap, ok := configMap.(map[string]any)
+		if !ok {
+			resp.Diagnostics.AddError(
+				"create cloud resource",
+				"cloud "+name+": config must be a valid object/map",
+			)
 
-	if !plan.DataCenterName.IsNull() {
-		genConfig.AdditionalProperties["datacenterName"] = plan.DataCenterName.ValueStringPointer()
-	}
+			return
+		}
 
-	if !plan.ExternalId.IsNull() {
-		genConfig.AdditionalProperties["externalId"] = plan.ExternalId.ValueStringPointer()
-	}
+		maps.Copy(configDataMap, configAdditionalProperties)
 
-	if !plan.ImportExistingVms.IsNull() {
-		genConfig.AdditionalProperties["inventoryLevel"] = plan.ImportExistingVms.ValueStringPointer()
-	}
-
-	if !plan.KeyboardLayout.IsNull() {
-		genConfig.AdditionalProperties["consoleKeymap"] = plan.KeyboardLayout.ValueStringPointer()
+		addCloudConfig.MapmapOfStringAny = &configDataMap
 	}
 
 	addCloud.SetConfig(addCloudConfig)
@@ -198,7 +219,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, pdiags := getCloudAsState(ctx, id, client)
+	state, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
