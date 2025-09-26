@@ -5,24 +5,22 @@ package instance
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -35,18 +33,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The Cloud ID to provision the instance onto.",
 				MarkdownDescription: "The Cloud ID to provision the instance onto.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Configuration object. Settings vary by type.",
 				MarkdownDescription: "Configuration object. Settings vary by type.",
-				PlanModifiers: []planmodifier.Dynamic{
-					dynamicplanmodifier.RequiresReplace(),
-				},
 				Validators: []validator.Dynamic{
 					morpheusvalidators.ValidObjectMap(),
 				},
@@ -56,15 +48,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"value": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 					},
 					CustomType: EvarsType{
@@ -77,23 +63,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Environment Variables, an array of objects that have name and value.",
 				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The Group ID to provision the instance into.",
 				MarkdownDescription: "The Group ID to provision the instance into.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
-					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"instance_context": schema.StringAttribute{
@@ -101,43 +80,28 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Environment",
 				MarkdownDescription: "Environment",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"instance_type_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The type of instance by id we want to fetch.",
 				MarkdownDescription: "The type of instance by id we want to fetch.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"layout_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The layout id for the instance type that you want to provision. i.e. single process or cluster",
 				MarkdownDescription: "The layout id for the instance type that you want to provision. i.e. single process or cluster",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"layout_size": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Apply a multiply factor of containers/vms within the instance.",
 				MarkdownDescription: "Apply a multiply factor of containers/vms within the instance.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
-				Default: int64default.StaticInt64(1),
+				Default:             int64default.StaticInt64(1),
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "Name of the instance to be created.",
 				MarkdownDescription: "Name of the instance to be created.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"network_interfaces": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -147,18 +111,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The ip address. Not applicable when using DHCP or IP Pools.",
 							MarkdownDescription: "The ip address. Not applicable when using DHCP or IP Pools.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"ip_mode": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
 							MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 							Validators: []validator.String{
 								stringvalidator.OneOf(
 									"static",
@@ -171,9 +129,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "id of the network group to be used.",
 							MarkdownDescription: "id of the network group to be used.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
 									path.MatchRoot("network_id"),
@@ -185,9 +140,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "id of the network to be used.",
 							MarkdownDescription: "id of the network to be used.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
 						},
 					},
 					CustomType: NetworkInterfacesType{
@@ -199,17 +151,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"plan_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The id for the memory and storage option pre-configured within Morpheus.",
 				MarkdownDescription: "The id for the memory and storage option pre-configured within Morpheus.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"ports": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -218,26 +164,17 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Optional:            true,
 							Description:         "Enable a load balancer and set load balancer protocol. HTTP, HTTPS, or TCP.",
 							MarkdownDescription: "Enable a load balancer and set load balancer protocol. HTTP, HTTPS, or TCP.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"name": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "A name for the port.",
 							MarkdownDescription: "A name for the port.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"port": schema.Int64Attribute{
 							Required:            true,
 							Description:         "Port number.",
 							MarkdownDescription: "Port number.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
 						},
 					},
 					CustomType: PortsType{
@@ -249,24 +186,15 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"tags": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"value": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 					},
 					CustomType: TagsType{
@@ -279,36 +207,28 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Metadata tags, Array of objects having a name and value.",
 				MarkdownDescription: "Metadata tags, Array of objects having a name and value.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"task_set_id": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
-			"volumes": schema.SetNestedAttribute{
+			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"controller_mount_point": schema.StringAttribute{
 							Optional:            true,
+							Computed:            true,
 							Description:         "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
 							MarkdownDescription: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
 							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
+								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
 						"datastore_auto_selection": schema.StringAttribute{
 							Optional:            true,
 							Description:         "Auto selection can be specified as auto or autoCluster (for clusters).",
 							MarkdownDescription: "Auto selection can be specified as auto or autoCluster (for clusters).",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 							Validators: []validator.String{
 								stringvalidator.OneOf(
 									"auto",
@@ -322,16 +242,15 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Description:         "The ID of the specific datastore.",
 							MarkdownDescription: "The ID of the specific datastore.",
 							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
+								int64planmodifier.UseStateForUnknown(),
 							},
 						},
 						"id": schema.Int64Attribute{
-							Optional:            true,
 							Computed:            true,
 							Description:         "The id for the LV configuration being created.",
 							MarkdownDescription: "The id for the LV configuration being created.",
 							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
+								int64planmodifier.UseStateForUnknown(),
 							},
 						},
 						"name": schema.StringAttribute{
@@ -340,7 +259,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Description:         "Name/type of the LV being created.",
 							MarkdownDescription: "Name/type of the LV being created.",
 							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
+								stringplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+										return
+									}
+									if !req.StateValue.Equal(req.ConfigValue) {
+										resp.RequiresReplace = true
+									}
+								}, "require replace if volume name has changed", "require replace if volume name has changed"),
 							},
 						},
 						"root_volume": schema.BoolAttribute{
@@ -348,25 +274,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "If set to false then a non-root LV will be created.",
 							MarkdownDescription: "If set to false then a non-root LV will be created.",
-							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.RequiresReplace(),
-							},
 						},
 						"size": schema.Int64Attribute{
 							Optional:            true,
 							Description:         "Size of the LV to be created in GBs.  Uses default from service plan.",
 							MarkdownDescription: "Size of the LV to be created in GBs.  Uses default from service plan.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
 						},
 						"size_id": schema.Int64Attribute{
 							Optional:            true,
 							Description:         "Can be used to select pre-existing LV choices from Morpheus.",
 							MarkdownDescription: "Can be used to select pre-existing LV choices from Morpheus.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
-							},
 						},
 						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
@@ -374,7 +291,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Description:         "Identifier for LV type",
 							MarkdownDescription: "Identifier for LV type",
 							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplace(),
+								int64planmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
+									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+										return
+									}
+									if !req.StateValue.Equal(req.ConfigValue) {
+										resp.RequiresReplace = true
+									}
+								}, "require replace if volume storage type id has changed", "require replace if volume storage type id has changed"),
 							},
 						},
 					},
@@ -388,9 +312,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 		},
 	}
@@ -412,7 +333,7 @@ type InstanceModel struct {
 	Ports             types.Set     `tfsdk:"ports"`
 	Tags              types.Set     `tfsdk:"tags"`
 	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
-	Volumes           types.Set     `tfsdk:"volumes"`
+	Volumes           types.List    `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}

@@ -13,6 +13,8 @@ func volumeMapper(
 	volume := sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigVolumesInner{}
 	if !vol.Id.IsNull() {
 		volume.SetId(vol.Id.ValueInt64())
+	} else {
+		volume.SetId(-1)
 	}
 
 	if !vol.Name.IsNull() {

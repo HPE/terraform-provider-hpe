@@ -226,8 +226,10 @@ func getInstanceAsState(
 			v.IpAddress = convert.StrToType(in.IpAddress)
 			v.IpMode = convert.StrToType(in.IpMode)
 
-			groupID := int64(in.Network.GetGroup())
-			v.NetworkGroupId = types.Int64Value(groupID)
+			if in.Network.Group != nil {
+				groupID := int64(in.Network.GetGroup())
+				v.NetworkGroupId = types.Int64Value(groupID)
+			}
 
 			v.NetworkId = convert.Int64ToType(in.Network.Id)
 
@@ -288,7 +290,7 @@ func getInstanceAsState(
 		},
 	)
 
-	volumes, d := convert.ToSetType(
+	volumes, d := convert.ToListType(
 		ctx,
 		apiVolumes,
 		func(
@@ -541,7 +543,7 @@ func (g *Resource) Create(
 	}
 
 	// volumes
-	volumes, diags := convert.FromSetType(ctx, data.Volumes, volumeMapper)
+	volumes, diags := convert.FromListType(ctx, data.Volumes, volumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -708,16 +710,4 @@ func (g *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-}
-
-// Update implements resource.Resource.
-func (g *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	resp.Diagnostics.AddError(
-		"update instance resource",
-		"update of 'instance' resources has not been implemented",
-	)
 }
