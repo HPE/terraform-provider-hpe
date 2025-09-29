@@ -5,12 +5,9 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -19,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -55,14 +53,6 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Cloud (zone) type code",
 				MarkdownDescription: "Cloud (zone) type code",
-				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("cloud_type_id")}...),
-				},
-			},
-			"cloud_type_id": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "Cloud (zone) type id",
-				MarkdownDescription: "Cloud (zone) type id",
 			},
 			"code": schema.StringAttribute{
 				Optional:            true,
@@ -224,7 +214,6 @@ type CloudModel struct {
 	ApplianceUrl          types.String   `tfsdk:"appliance_url"`
 	AutoRecoverPowerState types.Bool     `tfsdk:"auto_recover_power_state"`
 	CloudTypeCode         types.String   `tfsdk:"cloud_type_code"`
-	CloudTypeId           types.Int64    `tfsdk:"cloud_type_id"`
 	Code                  types.String   `tfsdk:"code"`
 	Config                types.Dynamic  `tfsdk:"config"`
 	ConfigHvm             ConfigHvmValue `tfsdk:"config_hvm"`
@@ -478,12 +467,14 @@ func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -522,6 +513,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -529,6 +521,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["certificate_provider"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

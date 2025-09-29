@@ -71,7 +71,6 @@ resource "hpe_morpheus_cloud" "example" {
 - `appliance_url` (String) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
 - `cloud_type_code` (String) Cloud (zone) type code
-- `cloud_type_id` (Number) Cloud (zone) type id
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
