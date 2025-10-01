@@ -400,14 +400,204 @@ func (r *Resource) Create(
 
 // update not implemented for now
 func (r *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
+	ctx context.Context,
+	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	resp.Diagnostics.AddError(
-		"update instance resource",
-		"update of 'service plan' resource has not been implemented",
-	)
+	var plan, state ServicePlanModel
+
+	// Get prior state (has the ID) before touching any Value* methods.
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.Id.IsNull() || state.Id.IsUnknown() {
+		resp.Diagnostics.AddError("update service plan resource",
+			"missing id in prior state")
+		return
+	}
+	id := state.Id.ValueInt64()
+
+	servicePlan := sdk.NewUpdateServicePlansRequestServicePlan()
+	// Set all updateable fields from plan
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		servicePlan.Name = plan.Name.ValueStringPointer()
+	}
+
+	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
+		servicePlan.Code = plan.Code.ValueStringPointer()
+	}
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		servicePlan.Description = plan.Description.ValueStringPointer()
+	}
+
+	/*
+		if !plan.Editable.IsNull() && !plan.Editable.IsUnknown() {
+			servicePlan.Editable = plan.Editable.ValueBoolPointer()
+		}
+	*/
+
+	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
+		servicePlan.MaxStorage = plan.MaxStorage.ValueInt64Pointer()
+	}
+
+	if !plan.MaxMemory.IsNull() && !plan.MaxMemory.IsUnknown() {
+		servicePlan.MaxMemory = plan.MaxMemory.ValueInt64Pointer()
+	}
+
+	if !plan.MaxCores.IsNull() && !plan.MaxCores.IsUnknown() {
+		servicePlan.MaxCores = *sdk.NewNullableInt64(plan.MaxCores.ValueInt64Pointer())
+	}
+
+	if !plan.MaxDisks.IsNull() && !plan.MaxDisks.IsUnknown() {
+		servicePlan.MaxDisks = *sdk.NewNullableInt64(plan.MaxDisks.ValueInt64Pointer())
+	}
+
+	if !plan.ProvisionTypeCode.IsNull() && !plan.ProvisionTypeCode.IsUnknown() {
+		// Ensure ProvisionType struct is initialized before assigning nested fields.
+		if servicePlan.ProvisionType == nil {
+			servicePlan.ProvisionType = &sdk.UpdateServicePlansRequestServicePlanProvisionType{}
+		}
+		servicePlan.ProvisionType.Code = plan.ProvisionTypeCode.ValueStringPointer()
+	}
+
+	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
+		servicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
+	}
+
+	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
+		servicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
+		servicePlan.CustomMaxStorage = *sdk.NewNullableBool(plan.CustomMaxStorage.ValueBoolPointer())
+	}
+	/* Commented out fields not present in ServicePlanModel
+	if !plan.CustomMaxDataStorage.IsNull() && !plan.CustomMaxDataStorage.IsUnknown() {
+		servicePlan.CustomMaxDataStorage = *sdk.NewNullableBool(plan.CustomMaxDataStorage.ValueBoolPointer())
+	}*/
+
+	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
+		servicePlan.CustomMaxMemory = *sdk.NewNullableBool(plan.CustomMaxMemory.ValueBoolPointer())
+	}
+
+	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
+		servicePlan.AddVolumes = *sdk.NewNullableBool(plan.AddVolumes.ValueBoolPointer())
+	}
+
+	if !plan.SortOrder.IsNull() && !plan.SortOrder.IsUnknown() {
+		servicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
+	}
+
+	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
+		var priceSetIDs []int64
+		diags := plan.PriceSetIds.ElementsAs(ctx, &priceSetIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		var pricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
+		for _, v := range priceSetIDs {
+			priceset := sdk.AddServicePlansRequestServicePlanPriceSetsInner{
+				Id: &v,
+			}
+			pricesets = append(pricesets, priceset)
+		}
+		// Convert to UpdateServicePlansRequestServicePlanPriceSetsInner
+		var updatePricesets []sdk.UpdateServicePlansRequestServicePlanPriceSetsInner
+		for _, ps := range pricesets {
+			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{
+				Id: ps.Id,
+			})
+		}
+		servicePlan.PriceSets = updatePricesets
+	}
+
+	// Config
+	// You may need to build UpdateServicePlansRequestServicePlanConfig from plan.ConfigRanges etc.
+	// Example:
+	if !plan.ConfigRanges.IsNull() {
+		config := &sdk.UpdateServicePlansRequestServicePlanConfig{}
+		ranges := sdk.UpdateServicePlansRequestServicePlanConfigRanges{}
+		if !plan.ConfigRanges.MinMemory.IsNull() {
+			ranges.MinMemory = *sdk.NewNullableInt64(plan.ConfigRanges.MinMemory.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxMemory.IsNull() {
+			ranges.MaxMemory = *sdk.NewNullableInt64(plan.ConfigRanges.MaxMemory.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MinStorage.IsNull() {
+			ranges.MinStorage = *sdk.NewNullableInt64(plan.ConfigRanges.MinStorage.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxStorage.IsNull() {
+			ranges.MaxStorage = *sdk.NewNullableInt64(plan.ConfigRanges.MaxStorage.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MinCores.IsNull() {
+			ranges.MinCores = *sdk.NewNullableInt64(plan.ConfigRanges.MinCores.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxCores.IsNull() {
+			ranges.MaxCores = *sdk.NewNullableInt64(plan.ConfigRanges.MaxCores.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MinCoresPerSocket.IsNull() {
+			ranges.MinCoresPerSocket = *sdk.NewNullableInt64(plan.ConfigRanges.MinCoresPerSocket.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxCoresPerSocket.IsNull() {
+			ranges.MaxCoresPerSocket = *sdk.NewNullableInt64(plan.ConfigRanges.MaxCoresPerSocket.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MinPerDiskSize.IsNull() {
+			ranges.MinPerDiskSize = *sdk.NewNullableInt64(plan.ConfigRanges.MinPerDiskSize.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxPerDiskSize.IsNull() {
+			ranges.MaxPerDiskSize = *sdk.NewNullableInt64(plan.ConfigRanges.MaxPerDiskSize.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MinSockets.IsNull() {
+			ranges.MinSockets = *sdk.NewNullableInt64(plan.ConfigRanges.MinSockets.ValueInt64Pointer())
+		}
+		if !plan.ConfigRanges.MaxSockets.IsNull() {
+			ranges.MaxSockets = *sdk.NewNullableInt64(plan.ConfigRanges.MaxSockets.ValueInt64Pointer())
+		}
+		config.Ranges = &ranges
+		servicePlan.Config = config
+	}
+
+	updateServicePlanReq := sdk.NewUpdateServicePlansRequest(*servicePlan)
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	_, hresp, err := client.ServicePlansAPI.UpdateServicePlans(ctx, id).
+		UpdateServicePlansRequest(*updateServicePlanReq).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			fmt.Sprintf("service plan %d UPDATE failed: %s",
+				id, errors.ErrMsg(err, hresp)),
+		)
+
+		return
+	}
+
+	updatedState, diags := getServicePlanAsState(ctx, id, client)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			fmt.Sprintf("service plan %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }
 
 func (r *Resource) Read(
