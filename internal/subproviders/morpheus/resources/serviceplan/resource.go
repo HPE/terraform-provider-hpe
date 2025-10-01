@@ -185,6 +185,50 @@ func setProvisionTypeInCreate(
 	return nil
 }
 
+// helper function to set provisionType in updateServicePlan struct
+func setProvisionTypeInUpdate(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan *ServicePlanModel,
+	updateServicePlan *sdk.UpdateServicePlansRequestServicePlan,
+) error {
+	provisionTypeCode := plan.ProvisionTypeCode.ValueString()
+
+	pTypes, hresp, err := client.ProvisioningAPI.ListProvisionTypes(ctx).Code(
+		provisionTypeCode).Execute()
+	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
+		return fmt.Errorf("GET failed for provision type code %s: %s",
+			provisionTypeCode, errors.ErrMsg(err, hresp))
+	}
+
+	var matchingProvisionTypes []sdk.
+		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
+	for _, pt := range pTypes.GetProvisionTypes() {
+		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
+			matchingProvisionTypes = append(matchingProvisionTypes, pt)
+		}
+	}
+
+	if len(matchingProvisionTypes) == 0 {
+		return fmt.Errorf("provision type with code %s not found", provisionTypeCode)
+	}
+
+	if len(matchingProvisionTypes) > 1 {
+		return fmt.Errorf("multiple provision types with code %s found", provisionTypeCode)
+	}
+
+	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
+	if !ok {
+		return fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
+	}
+
+	provisionType := &sdk.AddClusterLayoutsRequestLayoutProvisionType{}
+	provisionType.Id = *pTypeID
+	updateServicePlan.ProvisionType = provisionType
+
+	return nil
+}
+
 // helper function to nest schema values into config struct
 func setConfigInCreate(
 	_ context.Context,
@@ -245,6 +289,67 @@ func setConfigInCreate(
 		config.Ranges = ranges
 	}
 	addServicePlan.Config = config
+}
+
+// helper function to nest schema values into config struct for updates
+func setConfigInUpdate(
+	_ context.Context,
+	plan *ServicePlanModel,
+	updateServicePlan *sdk.UpdateServicePlansRequestServicePlan,
+) {
+	config := &sdk.UpdateServicePlansRequestServicePlanConfig{}
+
+	// top level config fields
+	if !plan.StorageSizeType.IsNull() && !plan.StorageSizeType.IsUnknown() {
+		config.StorageSizeType = plan.StorageSizeType.ValueStringPointer()
+	}
+	if !plan.MemorySizeType.IsNull() && !plan.MemorySizeType.IsUnknown() {
+		config.MemorySizeType = plan.MemorySizeType.ValueStringPointer()
+	}
+
+	// ConfigRanges
+	if !plan.ConfigRanges.IsNull() {
+		ranges := sdk.UpdateServicePlansRequestServicePlanConfigRanges{}
+		if !plan.ConfigRanges.MinMemory.IsNull() {
+			ranges.MinMemory = plan.ConfigRanges.MinMemory.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxMemory.IsNull() {
+			ranges.MaxMemory = plan.ConfigRanges.MaxMemory.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MinStorage.IsNull() {
+			ranges.MinStorage = plan.ConfigRanges.MinStorage.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxStorage.IsNull() {
+			ranges.MaxStorage = plan.ConfigRanges.MaxStorage.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MinCores.IsNull() {
+			ranges.MinCores = plan.ConfigRanges.MinCores.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxCores.IsNull() {
+			ranges.MaxCores = plan.ConfigRanges.MaxCores.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MinCoresPerSocket.IsNull() {
+			ranges.MinCoresPerSocket = plan.ConfigRanges.MinCoresPerSocket.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxCoresPerSocket.IsNull() {
+			ranges.MaxCoresPerSocket = plan.ConfigRanges.MaxCoresPerSocket.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MinPerDiskSize.IsNull() {
+			ranges.MinPerDiskSize = plan.ConfigRanges.MinPerDiskSize.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxPerDiskSize.IsNull() {
+			ranges.MaxPerDiskSize = plan.ConfigRanges.MaxPerDiskSize.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MinSockets.IsNull() {
+			ranges.MinSockets = plan.ConfigRanges.MinSockets.ValueInt64Pointer()
+		}
+		if !plan.ConfigRanges.MaxSockets.IsNull() {
+			ranges.MaxSockets = plan.ConfigRanges.MaxSockets.ValueInt64Pointer()
+		}
+		config.Ranges = &ranges
+	}
+
+	updateServicePlan.Config = config
 }
 
 func (r *Resource) Create(
@@ -398,16 +503,163 @@ func (r *Resource) Create(
 	}
 }
 
-// update not implemented for now
 func (r *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
+	ctx context.Context,
+	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	resp.Diagnostics.AddError(
-		"update instance resource",
-		"update of 'service plan' resource has not been implemented",
-	)
+	var plan, state ServicePlanModel
+
+	// Get prior state (has the ID) before touching any Value* methods.
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.Id.IsNull() || state.Id.IsUnknown() {
+		resp.Diagnostics.AddError("update service plan resource",
+			"missing id in prior state")
+		return
+	}
+	id := state.Id.ValueInt64()
+
+	servicePlan := sdk.NewUpdateServicePlansRequestServicePlan()
+	// Set all updateable fields from plan
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		servicePlan.Name = plan.Name.ValueStringPointer()
+	}
+
+	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
+		servicePlan.Code = plan.Code.ValueStringPointer()
+	}
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		servicePlan.Description = plan.Description.ValueStringPointer()
+	}
+
+	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
+		servicePlan.MaxStorage = plan.MaxStorage.ValueInt64Pointer()
+	}
+
+	if !plan.MaxMemory.IsNull() && !plan.MaxMemory.IsUnknown() {
+		servicePlan.MaxMemory = plan.MaxMemory.ValueInt64Pointer()
+	}
+
+	if !plan.MaxCores.IsNull() && !plan.MaxCores.IsUnknown() {
+		servicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
+	}
+
+	if !plan.MaxDisks.IsNull() && !plan.MaxDisks.IsUnknown() {
+		servicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
+	}
+
+	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
+		servicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
+	}
+
+	if !plan.MaxCpu.IsNull() && !plan.MaxCpu.IsUnknown() {
+		servicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
+	}
+
+	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
+		servicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
+	}
+
+	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
+		servicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
+		servicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
+		servicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
+	}
+
+	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
+		servicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
+	}
+
+	if !plan.SortOrder.IsNull() && !plan.SortOrder.IsUnknown() {
+		servicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
+	}
+
+	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
+		var priceSetIDs []int64
+		diags := plan.PriceSetIds.ElementsAs(ctx, &priceSetIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		var pricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
+		for _, v := range priceSetIDs {
+			priceset := sdk.AddServicePlansRequestServicePlanPriceSetsInner{
+				Id: &v,
+			}
+			pricesets = append(pricesets, priceset)
+		}
+		// Convert to UpdateServicePlansRequestServicePlanPriceSetsInner
+		var updatePricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
+		for _, ps := range pricesets {
+			updatePricesets = append(updatePricesets, sdk.AddServicePlansRequestServicePlanPriceSetsInner{
+				Id: ps.Id,
+			})
+		}
+		servicePlan.PriceSets = updatePricesets
+	}
+
+	setConfigInUpdate(ctx, &plan, servicePlan)
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	// Handle provision type if specified - must be done before creating the request
+	if !plan.ProvisionTypeCode.IsNull() && !plan.ProvisionTypeCode.IsUnknown() {
+		err := setProvisionTypeInUpdate(ctx, client, &plan, servicePlan)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update service plan resource",
+				"set provision type ID from code failed: "+err.Error(),
+			)
+			return
+		}
+	}
+
+	updateServicePlanReq := sdk.NewUpdateServicePlansRequest(*servicePlan)
+
+	_, hresp, err := client.ServicePlansAPI.UpdateServicePlans(ctx, id).
+		UpdateServicePlansRequest(*updateServicePlanReq).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			fmt.Sprintf("service plan %d UPDATE failed: %s",
+				id, errors.ErrMsg(err, hresp)),
+		)
+
+		return
+	}
+
+	updatedState, diags := getServicePlanAsState(ctx, id, client)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"update service plan resource",
+			fmt.Sprintf("service plan %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }
 
 func (r *Resource) Read(
@@ -513,8 +765,8 @@ func (r *Resource) ValidateConfig(
 
 	if !config.ConfigRanges.IsNull() {
 
-		// ValueBool returns false if value was set to false, or if state is null or unknown
-		if !config.CustomMaxMemory.ValueBool() {
+		// Only validate if the boolean value is explicitly false (not null/unknown)
+		if !config.CustomMaxMemory.IsNull() && !config.CustomMaxMemory.IsUnknown() && !config.CustomMaxMemory.ValueBool() {
 
 			if !config.ConfigRanges.MinMemory.IsNull() {
 				resp.Diagnostics.AddAttributeError(
@@ -540,7 +792,7 @@ func (r *Resource) ValidateConfig(
 			}
 		}
 
-		if !config.CustomMaxStorage.ValueBool() {
+		if !config.CustomMaxStorage.IsNull() && !config.CustomMaxStorage.IsUnknown() && !config.CustomMaxStorage.ValueBool() {
 
 			if !config.ConfigRanges.MinStorage.IsNull() {
 				resp.Diagnostics.AddAttributeError(
@@ -568,7 +820,7 @@ func (r *Resource) ValidateConfig(
 
 		// customCores is used with minCores and maxCores
 		// if customCores is false or null, then min max should not be specified
-		if !config.CustomCores.ValueBool() {
+		if !config.CustomCores.IsNull() && !config.CustomCores.IsUnknown() && !config.CustomCores.ValueBool() {
 
 			if !config.ConfigRanges.MinCores.IsNull() {
 				resp.Diagnostics.AddAttributeError(
@@ -594,7 +846,7 @@ func (r *Resource) ValidateConfig(
 			}
 		}
 
-		if !config.AddVolumes.ValueBool() {
+		if !config.AddVolumes.IsNull() && !config.AddVolumes.IsUnknown() && !config.AddVolumes.ValueBool() {
 
 			if !config.ConfigRanges.MinPerDiskSize.IsNull() {
 				resp.Diagnostics.AddAttributeError(

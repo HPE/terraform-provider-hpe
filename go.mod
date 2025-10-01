@@ -73,3 +73,5 @@ require (
 )
 
 replace github.com/go-viper/mapstructure/v2 v2.4.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250902104126-099f6e5a61b8
+
+replace github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251001122913-1f822867c74d => ../hpe-morpheus-go-sdk
