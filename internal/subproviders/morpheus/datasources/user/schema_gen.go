@@ -386,9 +386,6 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"tenant_id": schema.Int64Attribute{
-				Computed: true,
-			},
 			"username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -423,7 +420,6 @@ type UserModel struct {
 	ReceiveNotifications types.Bool          `tfsdk:"receive_notifications"`
 	Roles                types.Set           `tfsdk:"roles"`
 	Tenant               TenantValue         `tfsdk:"tenant"`
-	TenantId             types.Int64         `tfsdk:"tenant_id"`
 	Username             types.String        `tfsdk:"username"`
 	WindowsUsername      types.String        `tfsdk:"windows_username"`
 }

@@ -202,7 +202,6 @@ func getUserByID(
 	}
 
 	data.AccountExpired = convert.BoolToType(user.AccountExpired)
-	data.TenantId = convert.Int64ToType(user.AccountId)
 	data.AccountLocked = convert.BoolToType(user.AccountLocked)
 	data.DisplayName = convert.StrToType(user.DisplayName)
 	data.Email = convert.StrToType(user.Email)

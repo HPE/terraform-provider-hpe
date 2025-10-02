@@ -329,10 +329,6 @@ data "hpe_morpheus_user" "test_all" {
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_user.test_all",
-			"tenant_id",
-		),
-		resource.TestCheckResourceAttrSet(
-			"data.hpe_morpheus_user.test_all",
 			"roles.#",
 		),
 		resource.TestCheckResourceAttrSet(
