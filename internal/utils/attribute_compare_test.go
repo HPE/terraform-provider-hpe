@@ -219,6 +219,31 @@ func diagnosticsKeysPlanFromApi(plan basetypes.ObjectValue, fromApi map[string]a
 	return diags
 }
 
+func keysNotInPlan(plan basetypes.ObjectValue, fromApi map[string]any) map[string]any {
+	planAttrs := plan.Attributes()
+	// Build map of keys in planAttrs
+	planKeys := make(map[string]struct{})
+	for k := range planAttrs {
+		planKeys[k] = struct{}{}
+	}
+	// Build map of keys in fromApiMap
+	fromApiKeys := make(map[string]struct{})
+	for k := range fromApi {
+		fromApiKeys[k] = struct{}{}
+	}
+
+	// Now compare the keys in both maps
+	// Find keys in fromApiMap that are not in planAttribute
+	apiKeysNotInPlan := make(map[string]any)
+	for k, v := range fromApiKeys {
+		if _, ok := planKeys[k]; !ok {
+			apiKeysNotInPlan[k] = v
+		}
+	}
+
+	return apiKeysNotInPlan
+}
+
 func TestCheckPlanAttributeAgainstAPIAttribute(t *testing.T) {
 	// create example plan and fromApi
 	planGeneric := createExamplePlanObjectGeneric(t)
@@ -227,87 +252,99 @@ func TestCheckPlanAttributeAgainstAPIAttribute(t *testing.T) {
 	fromApiHVM := createExampleFromApiCloudHVM(t)
 
 	tests := []struct {
-		name      string
-		plan      any
-		fromApi   any
-		keyMap    map[string]string
-		wantDiags diag.Diagnostics
+		name          string
+		plan          any
+		fromApi       any
+		keyMap        map[string]string
+		keysNotInPlan map[string]any
+		wantDiags     diag.Diagnostics
 	}{
 		{
-			name:      "HVM Camel case plan and fromApi match exactly",
-			plan:      planHVMCamelCase.getObjectValue(),
-			fromApi:   fromApiHVM.getConfigType(),
-			keyMap:    nil,
-			wantDiags: nil,
+			name:          "HVM Camel case plan and fromApi match exactly",
+			plan:          planHVMCamelCase.getObjectValue(),
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        nil,
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM Camel case plan Dynamic and fromApi match exactly",
-			plan:      planHVMCamelCase.getDynamicValue(),
-			fromApi:   fromApiHVM.getConfigType(),
-			keyMap:    nil,
-			wantDiags: nil,
+			name:          "HVM Camel case plan Dynamic and fromApi match exactly",
+			plan:          planHVMCamelCase.getDynamicValue(),
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        nil,
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM Camel case plan and fromApi Map match exactly",
-			plan:      planHVMCamelCase.getObjectValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    nil,
-			wantDiags: nil,
+			name:          "HVM Camel case plan and fromApi Map match exactly",
+			plan:          planHVMCamelCase.getObjectValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        nil,
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM Camel case plan Dynamic and fromApi Map match exactly",
-			plan:      planHVMCamelCase.getDynamicValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    nil,
-			wantDiags: nil,
+			name:          "HVM Camel case plan Dynamic and fromApi Map match exactly",
+			plan:          planHVMCamelCase.getDynamicValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        nil,
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM SnakeCase plan and fromApi match exactly with keyMap",
-			plan:      planHVMSnakeCase.getObjectValue(),
-			fromApi:   fromApiHVM.getConfigType(),
-			keyMap:    createPlanKeyMapHVM(),
-			wantDiags: nil,
+			name:          "HVM SnakeCase plan and fromApi match exactly with keyMap",
+			plan:          planHVMSnakeCase.getObjectValue(),
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        createPlanKeyMapHVM(),
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM SnakeCase plan Dynamic and fromApi match exactly with keyMap",
-			plan:      planHVMSnakeCase.getObjectValue(),
-			fromApi:   fromApiHVM.getConfigType(),
-			keyMap:    createPlanKeyMapHVM(),
-			wantDiags: nil,
+			name:          "HVM SnakeCase plan Dynamic and fromApi match exactly with keyMap",
+			plan:          planHVMSnakeCase.getObjectValue(),
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        createPlanKeyMapHVM(),
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM SnakeCase plan and fromApi Map match exactly with keyMap",
-			plan:      planHVMSnakeCase.getObjectValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    createPlanKeyMapHVM(),
-			wantDiags: nil,
+			name:          "HVM SnakeCase plan and fromApi Map match exactly with keyMap",
+			plan:          planHVMSnakeCase.getObjectValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        createPlanKeyMapHVM(),
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM SnakeCase plan Dynamic and fromApi Map match exactly with keyMap",
-			plan:      planHVMSnakeCase.getDynamicValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    createPlanKeyMapHVM(),
-			wantDiags: nil,
+			name:          "HVM SnakeCase plan Dynamic and fromApi Map match exactly with keyMap",
+			plan:          planHVMSnakeCase.getDynamicValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        createPlanKeyMapHVM(),
+			keysNotInPlan: map[string]any{},
+			wantDiags:     nil,
 		},
 		{
-			name:      "HVM SnakeCase plan Dynamic and fromApi Map no keyMap returns diags",
-			plan:      planHVMSnakeCase.getDynamicValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    nil,
-			wantDiags: diagnosticsKeysPlanFromApi(planHVMSnakeCase.getObjectValue(), fromApiHVM.getData()),
+			name:          "HVM SnakeCase plan Dynamic and fromApi Map no keyMap returns diags",
+			plan:          planHVMSnakeCase.getDynamicValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        nil,
+			keysNotInPlan: keysNotInPlan(planHVMSnakeCase.getObjectValue(), fromApiHVM.getData()),
+			wantDiags:     diagnosticsKeysPlanFromApi(planHVMSnakeCase.getObjectValue(), fromApiHVM.getData()),
 		},
 		{
-			name:      "Generic plan Dynamic and fromApi Map no keyMap returns diags",
-			plan:      planGeneric.getDynamicValue(),
-			fromApi:   fromApiHVM.getData(),
-			keyMap:    nil,
-			wantDiags: diagnosticsKeysPlanFromApi(planGeneric.getObjectValue(), fromApiHVM.getData()),
+			name:          "Generic plan Dynamic and fromApi Map no keyMap returns diags",
+			plan:          planGeneric.getDynamicValue(),
+			fromApi:       fromApiHVM.getData(),
+			keyMap:        nil,
+			keysNotInPlan: keysNotInPlan(planGeneric.getObjectValue(), fromApiHVM.getData()),
+			wantDiags:     diagnosticsKeysPlanFromApi(planGeneric.getObjectValue(), fromApiHVM.getData()),
 		},
 		{
-			name:    "Invalid plan type returns diag",
-			plan:    12345,
-			fromApi: fromApiHVM.getConfigType(),
-			keyMap:  nil,
+			name:          "Invalid plan type returns diag",
+			plan:          12345,
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        nil,
+			keysNotInPlan: nil,
 			wantDiags: diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
@@ -316,10 +353,11 @@ func TestCheckPlanAttributeAgainstAPIAttribute(t *testing.T) {
 			},
 		},
 		{
-			name:    "Invalid fromApi type returns diag",
-			plan:    planHVMCamelCase.getObjectValue(),
-			fromApi: 12345,
-			keyMap:  nil,
+			name:          "Invalid fromApi type returns diag",
+			plan:          planHVMCamelCase.getObjectValue(),
+			fromApi:       12345,
+			keyMap:        nil,
+			keysNotInPlan: nil,
 			wantDiags: diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
@@ -328,14 +366,16 @@ func TestCheckPlanAttributeAgainstAPIAttribute(t *testing.T) {
 			},
 		},
 		{
-			name:    "Invalid plan Dynamic with non-object value returns diag",
-			plan:    basetypes.NewDynamicValue(basetypes.NewStringValue("not-an-object")),
-			fromApi: fromApiHVM.getConfigType(),
-			keyMap:  nil,
+			name:          "Invalid plan Dynamic with non-object value returns diag",
+			plan:          basetypes.NewDynamicValue(basetypes.NewStringValue("not-an-object")),
+			fromApi:       fromApiHVM.getConfigType(),
+			keyMap:        nil,
+			keysNotInPlan: nil,
 			wantDiags: diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
-					"expected planAttribute to be basetypes.DynamicValue of ObjectType, got basetypes.StringValue",
+					"expected planAttribute to be basetypes.DynamicValue of ObjectType,"+
+						" got basetypes.StringValue",
 				),
 			},
 		},
@@ -343,8 +383,10 @@ func TestCheckPlanAttributeAgainstAPIAttribute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotDiags := CheckPlanAttributeAgainstAPIAttribute(context.Background(), tt.plan, tt.fromApi, tt.keyMap)
+			keysNotInPlan, gotDiags := CheckPlanAttributeAgainstAPIAttribute(
+				context.Background(), tt.plan, tt.fromApi, tt.keyMap)
 			assert.ElementsMatch(t, tt.wantDiags, gotDiags)
+			assert.Equal(t, tt.keysNotInPlan, keysNotInPlan)
 		})
 	}
 }

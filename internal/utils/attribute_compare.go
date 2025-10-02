@@ -15,7 +15,8 @@ import (
 // CheckPlanAttributeAgainstAPIAttribute compares the keys in a plan Attribute (which is expected to be a
 // basetypes.ObjectValuable or basetypes.DynamicValue of ObjectType) against the keys in the corresponding
 // Attribute returned by the API (which is expected to be a map[string]any or sdk.MappedNullable). It returns
-// a diag.Diagnostics containing warnings for any keys that are in one but not the other.
+// a diag.Diagnostics containing warnings for any keys that are in one but not the other along with a map of
+// keys that are in the API response but not in the plan.
 // This can help identify misconfigurations or misunderstandings of the API.
 //
 // keyMap is an optional mapping of plan keys to fromApi keys, to account for any differences in naming.
@@ -30,10 +31,10 @@ func CheckPlanAttributeAgainstAPIAttribute(
 	planAttribute any,
 	apiAttribute any,
 	keyMap map[string]string,
-) diag.Diagnostics {
+) (map[string]any, diag.Diagnostics) {
 	if planAttribute == nil || apiAttribute == nil {
 		// Nothing to compare, return empty diags
-		return diag.Diagnostics{}
+		return nil, diag.Diagnostics{}
 	}
 
 	// Extract ObjectValue from planAttribute, or else return warning diag
@@ -44,7 +45,7 @@ func CheckPlanAttributeAgainstAPIAttribute(
 		dynamicValue := plan.UnderlyingValue()
 		dynamicObject, ok := dynamicValue.(basetypes.ObjectValue)
 		if !ok {
-			return diag.Diagnostics{
+			return nil, diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
 					fmt.Sprintf("expected planAttribute to be basetypes.DynamicValue of ObjectType, got %T", dynamicValue),
@@ -58,7 +59,7 @@ func CheckPlanAttributeAgainstAPIAttribute(
 		// Convert to ObjectValue and execute ToObjectValue to get Object
 		planObjectValue, diagObject := plan.ToObjectValue(ctx)
 		if diagObject.HasError() {
-			return diag.Diagnostics{
+			return nil, diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
 					fmt.Sprintf("expected planAttribute to be basetypes.ObjectValuable, got error: %v", diagObject),
@@ -70,7 +71,7 @@ func CheckPlanAttributeAgainstAPIAttribute(
 
 	default:
 		// Can't do anything with other types
-		return diag.Diagnostics{
+		return nil, diag.Diagnostics{
 			diag.NewWarningDiagnostic(
 				"check config",
 				fmt.Sprintf("expected planAttribute to be basetypes.DynamicValue or basetypes.ObjectValuable, got %T", plan),
@@ -89,7 +90,7 @@ func CheckPlanAttributeAgainstAPIAttribute(
 		// Convert using ToMap()
 		apiMap, err := fromApi.ToMap()
 		if err != nil {
-			return diag.Diagnostics{
+			return nil, diag.Diagnostics{
 				diag.NewWarningDiagnostic(
 					"check config",
 					fmt.Sprintf("expected apiAttribute to be sdk.MappedNullable, got error: %v", err),
@@ -101,7 +102,7 @@ func CheckPlanAttributeAgainstAPIAttribute(
 
 	default:
 		// Can't do anything with other types
-		return diag.Diagnostics{
+		return nil, diag.Diagnostics{
 			diag.NewWarningDiagnostic(
 				"check config",
 				fmt.Sprintf("expected apiAttribute to be map[string]any or sdk.MappedNullable, got %T", fromApi),
@@ -153,14 +154,16 @@ func CheckPlanAttributeAgainstAPIAttribute(
 	}
 
 	// Find keys in fromApiMap that are not in planAttribute
-	for k := range fromApiKeys {
+	apiKeysNotInPlan := make(map[string]any)
+	for k, v := range fromApiKeys {
 		if _, ok := planKeys[k]; !ok {
 			diags.AddWarning(
 				"check config",
 				fmt.Sprintf("key '%s' in API response not found in plan", k),
 			)
+			apiKeysNotInPlan[k] = v
 		}
 	}
 
-	return diags
+	return apiKeysNotInPlan, diags
 }
