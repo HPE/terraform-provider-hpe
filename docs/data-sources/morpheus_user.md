@@ -21,7 +21,6 @@ description: |-
 ### Read-Only
 
 - `access` (Attributes) (see [below for nested schema](#nestedatt--access))
-- `account` (Attributes) (see [below for nested schema](#nestedatt--account))
 - `account_expired` (Boolean)
 - `account_locked` (Boolean)
 - `default_persona` (Attributes) (see [below for nested schema](#nestedatt--default_persona))
@@ -36,7 +35,7 @@ description: |-
 - `password_expired` (Boolean)
 - `receive_notifications` (Boolean)
 - `roles` (Attributes Set) (see [below for nested schema](#nestedatt--roles))
-- `tenant_id` (Number)
+- `tenant` (Attributes) (see [below for nested schema](#nestedatt--tenant))
 - `windows_username` (String)
 
 <a id="nestedatt--access"></a>
@@ -173,15 +172,6 @@ Read-Only:
 
 
 
-<a id="nestedatt--account"></a>
-### Nested Schema for `account`
-
-Read-Only:
-
-- `id` (Number)
-- `name` (String)
-
-
 <a id="nestedatt--default_persona"></a>
 ### Nested Schema for `default_persona`
 
@@ -199,6 +189,15 @@ Read-Only:
 
 - `authority` (String)
 - `description` (String)
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--tenant"></a>
+### Nested Schema for `tenant`
+
+Read-Only:
+
 - `id` (Number)
 - `name` (String)
 

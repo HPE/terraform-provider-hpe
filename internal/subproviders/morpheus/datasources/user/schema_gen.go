@@ -282,22 +282,6 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"account": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.Int64Attribute{
-						Computed: true,
-					},
-					"name": schema.StringAttribute{
-						Computed: true,
-					},
-				},
-				CustomType: AccountType{
-					ObjectType: types.ObjectType{
-						AttrTypes: AccountValue{}.AttributeTypes(ctx),
-					},
-				},
-				Computed: true,
-			},
 			"account_expired": schema.BoolAttribute{
 				Computed: true,
 			},
@@ -386,7 +370,20 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"tenant_id": schema.Int64Attribute{
+			"tenant": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: TenantType{
+					ObjectType: types.ObjectType{
+						AttrTypes: TenantValue{}.AttributeTypes(ctx),
+					},
+				},
 				Computed: true,
 			},
 			"username": schema.StringAttribute{
@@ -407,7 +404,6 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 
 type UserModel struct {
 	Access               AccessValue         `tfsdk:"access"`
-	Account              AccountValue        `tfsdk:"account"`
 	AccountExpired       types.Bool          `tfsdk:"account_expired"`
 	AccountLocked        types.Bool          `tfsdk:"account_locked"`
 	DefaultPersona       DefaultPersonaValue `tfsdk:"default_persona"`
@@ -423,7 +419,7 @@ type UserModel struct {
 	PasswordExpired      types.Bool          `tfsdk:"password_expired"`
 	ReceiveNotifications types.Bool          `tfsdk:"receive_notifications"`
 	Roles                types.Set           `tfsdk:"roles"`
-	TenantId             types.Int64         `tfsdk:"tenant_id"`
+	Tenant               TenantValue         `tfsdk:"tenant"`
 	Username             types.String        `tfsdk:"username"`
 	WindowsUsername      types.String        `tfsdk:"windows_username"`
 }
@@ -6887,393 +6883,6 @@ func (v WorkflowsValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	}
 }
 
-var _ basetypes.ObjectTypable = AccountType{}
-
-type AccountType struct {
-	basetypes.ObjectType
-}
-
-func (t AccountType) Equal(o attr.Type) bool {
-	other, ok := o.(AccountType)
-
-	if !ok {
-		return false
-	}
-
-	return t.ObjectType.Equal(other.ObjectType)
-}
-
-func (t AccountType) String() string {
-	return "AccountType"
-}
-
-func (t AccountType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	if in.IsUnknown() {
-		return NewAccountValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewAccountValueNull(), nil
-	}
-
-	attributes := in.Attributes()
-
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return nil, diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return nil, diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return AccountValue{
-		Id:    idVal,
-		Name:  nameVal,
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewAccountValueNull() AccountValue {
-	return AccountValue{
-		state: attr.ValueStateNull,
-	}
-}
-
-func NewAccountValueUnknown() AccountValue {
-	return AccountValue{
-		state: attr.ValueStateUnknown,
-	}
-}
-
-func NewAccountValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (AccountValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
-	ctx := context.Background()
-
-	for name, attributeType := range attributeTypes {
-		attribute, ok := attributes[name]
-
-		if !ok {
-			diags.AddError(
-				"Missing AccountValue Attribute Value",
-				"While creating a AccountValue value, a missing attribute value was detected. "+
-					"A AccountValue must contain values for all attributes, even if null or unknown. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AccountValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
-			)
-
-			continue
-		}
-
-		if !attributeType.Equal(attribute.Type(ctx)) {
-			diags.AddError(
-				"Invalid AccountValue Attribute Type",
-				"While creating a AccountValue value, an invalid attribute value was detected. "+
-					"A AccountValue must use a matching attribute type for the value. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("AccountValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("AccountValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
-			)
-		}
-	}
-
-	for name := range attributes {
-		_, ok := attributeTypes[name]
-
-		if !ok {
-			diags.AddError(
-				"Extra AccountValue Attribute Value",
-				"While creating a AccountValue value, an extra attribute value was detected. "+
-					"A AccountValue must not contain values beyond the expected attribute types. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra AccountValue Attribute Name: %s", name),
-			)
-		}
-	}
-
-	if diags.HasError() {
-		return NewAccountValueUnknown(), diags
-	}
-
-	idAttribute, ok := attributes["id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`id is missing from object`)
-
-		return NewAccountValueUnknown(), diags
-	}
-
-	idVal, ok := idAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
-	}
-
-	nameAttribute, ok := attributes["name"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`name is missing from object`)
-
-		return NewAccountValueUnknown(), diags
-	}
-
-	nameVal, ok := nameAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
-	}
-
-	if diags.HasError() {
-		return NewAccountValueUnknown(), diags
-	}
-
-	return AccountValue{
-		Id:    idVal,
-		Name:  nameVal,
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewAccountValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) AccountValue {
-	object, diags := NewAccountValue(attributeTypes, attributes)
-
-	if diags.HasError() {
-		// This could potentially be added to the diag package.
-		diagsStrings := make([]string, 0, len(diags))
-
-		for _, diagnostic := range diags {
-			diagsStrings = append(diagsStrings, fmt.Sprintf(
-				"%s | %s | %s",
-				diagnostic.Severity(),
-				diagnostic.Summary(),
-				diagnostic.Detail()))
-		}
-
-		panic("NewAccountValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
-	}
-
-	return object
-}
-
-func (t AccountType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
-	if in.Type() == nil {
-		return NewAccountValueNull(), nil
-	}
-
-	if !in.Type().Equal(t.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
-	}
-
-	if !in.IsKnown() {
-		return NewAccountValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewAccountValueNull(), nil
-	}
-
-	attributes := map[string]attr.Value{}
-
-	val := map[string]tftypes.Value{}
-
-	err := in.As(&val)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[k] = a
-	}
-
-	return NewAccountValueMust(AccountValue{}.AttributeTypes(ctx), attributes), nil
-}
-
-func (t AccountType) ValueType(ctx context.Context) attr.Value {
-	return AccountValue{}
-}
-
-var _ basetypes.ObjectValuable = AccountValue{}
-
-type AccountValue struct {
-	Id    basetypes.Int64Value  `tfsdk:"id"`
-	Name  basetypes.StringValue `tfsdk:"name"`
-	state attr.ValueState
-}
-
-func (v AccountValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
-
-	var val tftypes.Value
-	var err error
-
-	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
-
-	objectType := tftypes.Object{AttributeTypes: attrTypes}
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
-
-		val, err = v.Id.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["id"] = val
-
-		val, err = v.Name.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["name"] = val
-
-		if err := tftypes.ValidateValue(objectType, vals); err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		return tftypes.NewValue(objectType, vals), nil
-	case attr.ValueStateNull:
-		return tftypes.NewValue(objectType, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-}
-
-func (v AccountValue) IsNull() bool {
-	return v.state == attr.ValueStateNull
-}
-
-func (v AccountValue) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
-}
-
-func (v AccountValue) String() string {
-	return "AccountValue"
-}
-
-func (v AccountValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attributeTypes := map[string]attr.Type{
-		"id":   basetypes.Int64Type{},
-		"name": basetypes.StringType{},
-	}
-
-	if v.IsNull() {
-		return types.ObjectNull(attributeTypes), diags
-	}
-
-	if v.IsUnknown() {
-		return types.ObjectUnknown(attributeTypes), diags
-	}
-
-	objVal, diags := types.ObjectValue(
-		attributeTypes,
-		map[string]attr.Value{
-			"id":   v.Id,
-			"name": v.Name,
-		})
-
-	return objVal, diags
-}
-
-func (v AccountValue) Equal(o attr.Value) bool {
-	other, ok := o.(AccountValue)
-
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state != attr.ValueStateKnown {
-		return true
-	}
-
-	if !v.Id.Equal(other.Id) {
-		return false
-	}
-
-	if !v.Name.Equal(other.Name) {
-		return false
-	}
-
-	return true
-}
-
-func (v AccountValue) Type(ctx context.Context) attr.Type {
-	return AccountType{
-		basetypes.ObjectType{
-			AttrTypes: v.AttributeTypes(ctx),
-		},
-	}
-}
-
-func (v AccountValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":   basetypes.Int64Type{},
-		"name": basetypes.StringType{},
-	}
-}
-
 var _ basetypes.ObjectTypable = DefaultPersonaType{}
 
 type DefaultPersonaType struct {
@@ -8210,5 +7819,392 @@ func (v RolesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"description": basetypes.StringType{},
 		"id":          basetypes.Int64Type{},
 		"name":        basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = TenantType{}
+
+type TenantType struct {
+	basetypes.ObjectType
+}
+
+func (t TenantType) Equal(o attr.Type) bool {
+	other, ok := o.(TenantType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t TenantType) String() string {
+	return "TenantType"
+}
+
+func (t TenantType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewTenantValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTenantValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return TenantValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTenantValueNull() TenantValue {
+	return TenantValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewTenantValueUnknown() TenantValue {
+	return TenantValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewTenantValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (TenantValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing TenantValue Attribute Value",
+				"While creating a TenantValue value, a missing attribute value was detected. "+
+					"A TenantValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TenantValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid TenantValue Attribute Type",
+				"While creating a TenantValue value, an invalid attribute value was detected. "+
+					"A TenantValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TenantValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("TenantValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra TenantValue Attribute Value",
+				"While creating a TenantValue value, an extra attribute value was detected. "+
+					"A TenantValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra TenantValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewTenantValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewTenantValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewTenantValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewTenantValueUnknown(), diags
+	}
+
+	return TenantValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTenantValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) TenantValue {
+	object, diags := NewTenantValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewTenantValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t TenantType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewTenantValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewTenantValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTenantValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewTenantValueMust(TenantValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t TenantType) ValueType(ctx context.Context) attr.Value {
+	return TenantValue{}
+}
+
+var _ basetypes.ObjectValuable = TenantValue{}
+
+type TenantValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v TenantValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v TenantValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v TenantValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v TenantValue) String() string {
+	return "TenantValue"
+}
+
+func (v TenantValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v TenantValue) Equal(o attr.Value) bool {
+	other, ok := o.(TenantValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v TenantValue) Type(ctx context.Context) attr.Type {
+	return TenantType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v TenantValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
 	}
 }
