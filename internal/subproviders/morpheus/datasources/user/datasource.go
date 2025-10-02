@@ -457,28 +457,21 @@ func getUserByID(
 	}
 
 	data.AccountExpired = convert.BoolToType(user.AccountExpired)
-	data.AccountId = convert.Int64ToType(user.AccountId)
+	data.TenantId = convert.Int64ToType(user.AccountId)
 	data.AccountLocked = convert.BoolToType(user.AccountLocked)
-	data.DateCreated = convert.TimeToStrType(user.DateCreated)
 	data.DisplayName = convert.StrToType(user.DisplayName)
 	data.Email = convert.StrToType(user.Email)
 	data.Enabled = convert.BoolToType(user.Enabled)
 	data.FirstName = convert.StrToType(user.FirstName)
 	data.Id = convert.Int64ToType(user.Id)
 	data.IsUsing2fa = convert.BoolToType(user.IsUsing2FA)
-	data.LastLoginDate = convert.TimeToStrType(user.LastLoginDate)
 	data.LastName = convert.StrToType(user.LastName)
-	data.LastUpdated = convert.TimeToStrType(user.LastUpdated)
 	data.LinuxKeyPairId = convert.Int64ToType(user.LinuxKeyPairId.Get())
-	data.LinuxPassword = convert.StrToType(user.LinuxPassword.Get())
 	data.LinuxUsername = convert.StrToType(user.LinuxUsername.Get())
-	data.LoginAttempts = convert.Int64ToType(user.LoginAttempts)
-	data.LoginCount = convert.Int64ToType(user.LoginCount)
 	data.PasswordExpired = convert.BoolToType(user.PasswordExpired)
 	data.ReceiveNotifications = convert.BoolToType(user.ReceiveNotifications)
 	data.Roles = roleSet
 	data.Username = convert.StrToType(user.Username)
-	data.WindowsPassword = convert.StrToType(user.WindowsPassword.Get())
 	data.WindowsUsername = convert.StrToType(user.WindowsUsername.Get())
 
 	return diags

@@ -301,13 +301,7 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 			"account_expired": schema.BoolAttribute{
 				Computed: true,
 			},
-			"account_id": schema.Int64Attribute{
-				Computed: true,
-			},
 			"account_locked": schema.BoolAttribute{
-				Computed: true,
-			},
-			"date_created": schema.StringAttribute{
 				Computed: true,
 			},
 			"default_persona": schema.SingleNestedAttribute{
@@ -353,28 +347,13 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 			"is_using2fa": schema.BoolAttribute{
 				Computed: true,
 			},
-			"last_login_date": schema.StringAttribute{
-				Computed: true,
-			},
 			"last_name": schema.StringAttribute{
-				Computed: true,
-			},
-			"last_updated": schema.StringAttribute{
 				Computed: true,
 			},
 			"linux_key_pair_id": schema.Int64Attribute{
 				Computed: true,
 			},
-			"linux_password": schema.StringAttribute{
-				Computed: true,
-			},
 			"linux_username": schema.StringAttribute{
-				Computed: true,
-			},
-			"login_attempts": schema.Int64Attribute{
-				Computed: true,
-			},
-			"login_count": schema.Int64Attribute{
 				Computed: true,
 			},
 			"password_expired": schema.BoolAttribute{
@@ -407,6 +386,9 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
+			"tenant_id": schema.Int64Attribute{
+				Computed: true,
+			},
 			"username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -415,9 +397,6 @@ func UserDataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
-			},
-			"windows_password": schema.StringAttribute{
-				Computed: true,
 			},
 			"windows_username": schema.StringAttribute{
 				Computed: true,
@@ -430,9 +409,7 @@ type UserModel struct {
 	Access               AccessValue         `tfsdk:"access"`
 	Account              AccountValue        `tfsdk:"account"`
 	AccountExpired       types.Bool          `tfsdk:"account_expired"`
-	AccountId            types.Int64         `tfsdk:"account_id"`
 	AccountLocked        types.Bool          `tfsdk:"account_locked"`
-	DateCreated          types.String        `tfsdk:"date_created"`
 	DefaultPersona       DefaultPersonaValue `tfsdk:"default_persona"`
 	DisplayName          types.String        `tfsdk:"display_name"`
 	Email                types.String        `tfsdk:"email"`
@@ -440,19 +417,14 @@ type UserModel struct {
 	FirstName            types.String        `tfsdk:"first_name"`
 	Id                   types.Int64         `tfsdk:"id"`
 	IsUsing2fa           types.Bool          `tfsdk:"is_using2fa"`
-	LastLoginDate        types.String        `tfsdk:"last_login_date"`
 	LastName             types.String        `tfsdk:"last_name"`
-	LastUpdated          types.String        `tfsdk:"last_updated"`
 	LinuxKeyPairId       types.Int64         `tfsdk:"linux_key_pair_id"`
-	LinuxPassword        types.String        `tfsdk:"linux_password"`
 	LinuxUsername        types.String        `tfsdk:"linux_username"`
-	LoginAttempts        types.Int64         `tfsdk:"login_attempts"`
-	LoginCount           types.Int64         `tfsdk:"login_count"`
 	PasswordExpired      types.Bool          `tfsdk:"password_expired"`
 	ReceiveNotifications types.Bool          `tfsdk:"receive_notifications"`
 	Roles                types.Set           `tfsdk:"roles"`
+	TenantId             types.Int64         `tfsdk:"tenant_id"`
 	Username             types.String        `tfsdk:"username"`
-	WindowsPassword      types.String        `tfsdk:"windows_password"`
 	WindowsUsername      types.String        `tfsdk:"windows_username"`
 }
 

@@ -16,7 +16,6 @@ description: |-
 ### Optional
 
 - `id` (Number) Morpheus ID of the Object being referenced
-- `include_access` (Boolean) Include `access` information in the response. This is the permissions, clouds, instanceTypes, etc. that the user is authorized for based on their assigned Role(s).
 - `username` (String) The username of the user
 
 ### Read-Only
@@ -24,27 +23,20 @@ description: |-
 - `access` (Attributes) (see [below for nested schema](#nestedatt--access))
 - `account` (Attributes) (see [below for nested schema](#nestedatt--account))
 - `account_expired` (Boolean)
-- `account_id` (Number)
 - `account_locked` (Boolean)
-- `date_created` (String)
 - `default_persona` (Attributes) (see [below for nested schema](#nestedatt--default_persona))
 - `display_name` (String)
 - `email` (String)
 - `enabled` (Boolean)
 - `first_name` (String)
 - `is_using2fa` (Boolean)
-- `last_login_date` (String)
 - `last_name` (String)
-- `last_updated` (String)
 - `linux_key_pair_id` (Number)
-- `linux_password` (String)
 - `linux_username` (String)
-- `login_attempts` (Number)
-- `login_count` (Number)
 - `password_expired` (Boolean)
 - `receive_notifications` (Boolean)
 - `roles` (Attributes Set) (see [below for nested schema](#nestedatt--roles))
-- `windows_password` (String)
+- `tenant_id` (Number)
 - `windows_username` (String)
 
 <a id="nestedatt--access"></a>
@@ -52,20 +44,20 @@ description: |-
 
 Read-Only:
 
-- `app_templates` (Attributes Set) (see [below for nested schema](#nestedatt--access--app_templates))
+- `blueprints` (Attributes Set) (see [below for nested schema](#nestedatt--access--blueprints))
 - `catalog_item_types` (Attributes Set) (see [below for nested schema](#nestedatt--access--catalog_item_types))
+- `clouds` (Attributes Set) (see [below for nested schema](#nestedatt--access--clouds))
 - `features` (Attributes Set) (see [below for nested schema](#nestedatt--access--features))
+- `groups` (Attributes Set) (see [below for nested schema](#nestedatt--access--groups))
 - `instance_types` (Attributes Set) (see [below for nested schema](#nestedatt--access--instance_types))
 - `personas` (Attributes Set) (see [below for nested schema](#nestedatt--access--personas))
 - `report_types` (Attributes Set) (see [below for nested schema](#nestedatt--access--report_types))
-- `sites` (Attributes Set) (see [below for nested schema](#nestedatt--access--sites))
-- `task_sets` (Attributes Set) (see [below for nested schema](#nestedatt--access--task_sets))
 - `tasks` (Attributes Set) (see [below for nested schema](#nestedatt--access--tasks))
 - `vdi_pools` (Attributes Set) (see [below for nested schema](#nestedatt--access--vdi_pools))
-- `zones` (Attributes Set) (see [below for nested schema](#nestedatt--access--zones))
+- `workflows` (Attributes Set) (see [below for nested schema](#nestedatt--access--workflows))
 
-<a id="nestedatt--access--app_templates"></a>
-### Nested Schema for `access.app_templates`
+<a id="nestedatt--access--blueprints"></a>
+### Nested Schema for `access.blueprints`
 
 Read-Only:
 
@@ -84,6 +76,16 @@ Read-Only:
 - `name` (String)
 
 
+<a id="nestedatt--access--clouds"></a>
+### Nested Schema for `access.clouds`
+
+Read-Only:
+
+- `access` (String)
+- `id` (Number)
+- `name` (String)
+
+
 <a id="nestedatt--access--features"></a>
 ### Nested Schema for `access.features`
 
@@ -93,6 +95,16 @@ Read-Only:
 - `code` (String)
 - `name` (String)
 - `sub_category` (String)
+
+
+<a id="nestedatt--access--groups"></a>
+### Nested Schema for `access.groups`
+
+Read-Only:
+
+- `access` (String)
+- `id` (Number)
+- `name` (String)
 
 
 <a id="nestedatt--access--instance_types"></a>
@@ -128,27 +140,6 @@ Read-Only:
 - `name` (String)
 
 
-<a id="nestedatt--access--sites"></a>
-### Nested Schema for `access.sites`
-
-Read-Only:
-
-- `access` (String)
-- `id` (Number)
-- `name` (String)
-
-
-<a id="nestedatt--access--task_sets"></a>
-### Nested Schema for `access.task_sets`
-
-Read-Only:
-
-- `access` (String)
-- `code` (String)
-- `id` (Number)
-- `name` (String)
-
-
 <a id="nestedatt--access--tasks"></a>
 ### Nested Schema for `access.tasks`
 
@@ -170,12 +161,13 @@ Read-Only:
 - `name` (String)
 
 
-<a id="nestedatt--access--zones"></a>
-### Nested Schema for `access.zones`
+<a id="nestedatt--access--workflows"></a>
+### Nested Schema for `access.workflows`
 
 Read-Only:
 
 - `access` (String)
+- `code` (String)
 - `id` (Number)
 - `name` (String)
 

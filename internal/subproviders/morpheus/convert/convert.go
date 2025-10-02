@@ -5,7 +5,6 @@ package convert
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -68,15 +67,6 @@ func Int64ToType(i *int64) types.Int64 {
 	}
 
 	return types.Int64Value(*i)
-}
-
-// Converts a time.Time pointer to a RFC3339 formatted string (standard format for Terraform)
-func TimeToStrType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }
 
 func Int64SliceToSet(items []int64) types.Set {
