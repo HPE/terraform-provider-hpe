@@ -156,268 +156,13 @@ func getUserByID(
 	}
 
 	// Handle Access complex object
-	if access, accessOk := user.GetAccessOk(); accessOk {
-		buildAppTemplates := func() types.Set {
-			appTemplatesValues := []attr.Value{}
-			for _, in := range access.GetAppTemplates() {
-				appTemplatesValues = append(appTemplatesValues,
-					NewBlueprintsValueMust(BlueprintsValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(appTemplatesValues) == 0 {
-				return types.SetNull(BlueprintsValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(BlueprintsValue{}.Type(ctx), appTemplatesValues)
+	access, accessDiags := getAccessAsState(ctx, user)
+	if accessDiags.HasError() {
+		diags.Append(accessDiags...)
 
-			return set
-		}
-		appTemplatesSet := buildAppTemplates()
-
-		buildCatalogItemTypes := func() types.Set {
-			catalogItemTypesValues := []attr.Value{}
-			for _, in := range access.GetCatalogItemTypes() {
-				catalogItemTypesValues = append(catalogItemTypesValues,
-					NewCatalogItemTypesValueMust(CatalogItemTypesValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(catalogItemTypesValues) == 0 {
-				return types.SetNull(CatalogItemTypesValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(CatalogItemTypesValue{}.Type(ctx), catalogItemTypesValues)
-
-			return set
-		}
-		catalogItemTypesSet := buildCatalogItemTypes()
-
-		buildFeatures := func() types.Set {
-			featureValues := []attr.Value{}
-			for _, in := range access.GetFeatures() {
-				featureValues = append(featureValues,
-					NewFeaturesValueMust(FeaturesValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access":       types.StringValue(in.GetAccess()),
-							"code":         types.StringValue(in.GetCode()),
-							"name":         types.StringValue(in.GetName()),
-							"sub_category": types.StringValue(in.GetSubCategory()),
-						}),
-				)
-			}
-			if len(featureValues) == 0 {
-				return types.SetNull(FeaturesValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(FeaturesValue{}.Type(ctx), featureValues)
-
-			return set
-		}
-		featuresSet := buildFeatures()
-
-		buildInstanceTypes := func() types.Set {
-			instanceTypesValues := []attr.Value{}
-			for _, in := range access.GetInstanceTypes() {
-				instanceTypesValues = append(instanceTypesValues,
-					NewInstanceTypesValueMust(InstanceTypesValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"code":   types.StringValue(in.GetCode()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(instanceTypesValues) == 0 {
-				return types.SetNull(InstanceTypesValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(InstanceTypesValue{}.Type(ctx), instanceTypesValues)
-
-			return set
-		}
-		instanceTypesSet := buildInstanceTypes()
-
-		buildPersonas := func() types.Set {
-			personasValues := []attr.Value{}
-			for _, in := range access.GetPersonas() {
-				personasValues = append(personasValues,
-					NewPersonasValueMust(PersonasValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"code":   types.StringValue(in.GetCode()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(personasValues) == 0 {
-				return types.SetNull(PersonasValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(PersonasValue{}.Type(ctx), personasValues)
-
-			return set
-		}
-		personasSet := buildPersonas()
-
-		buildReportTypes := func() types.Set {
-			reportTypeValues := []attr.Value{}
-			for _, in := range access.GetReportTypes() {
-				reportTypeValues = append(reportTypeValues,
-					NewReportTypesValueMust(ReportTypesValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"code":   types.StringValue(in.GetCode()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(reportTypeValues) == 0 {
-				return types.SetNull(ReportTypesValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(ReportTypesValue{}.Type(ctx), reportTypeValues)
-
-			return set
-		}
-		reportTypesSet := buildReportTypes()
-
-		buildSites := func() types.Set {
-			sitesValues := []attr.Value{}
-			for _, in := range access.GetSites() {
-				sitesValues = append(sitesValues, NewGroupsValueMust(
-					GroupsValue{}.AttributeTypes(ctx),
-					map[string]attr.Value{
-						"access": types.StringValue(in.GetAccess()),
-						"id":     types.Int64Value(in.GetId()),
-						"name":   types.StringValue(in.GetName()),
-					}),
-				)
-			}
-			if len(sitesValues) == 0 {
-				return types.SetNull(GroupsValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(GroupsValue{}.Type(ctx), sitesValues)
-
-			return set
-		}
-		sitesSet := buildSites()
-
-		buildTaskSets := func() types.Set {
-			taskSetsValue := []attr.Value{}
-			for _, in := range access.GetTaskSets() {
-				taskSetsValue = append(taskSetsValue,
-					NewWorkflowsValueMust(WorkflowsValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"code":   convert.StrToType(in.Code.Get()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(taskSetsValue) == 0 {
-				return types.SetNull(WorkflowsValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(WorkflowsValue{}.Type(ctx), taskSetsValue)
-
-			return set
-		}
-		taskSetsSet := buildTaskSets()
-
-		buildTasks := func() types.Set {
-			tasksValues := []attr.Value{}
-			for _, in := range access.GetTasks() {
-				tasksValues = append(tasksValues, NewTasksValueMust(
-					TasksValue{}.AttributeTypes(ctx),
-					map[string]attr.Value{
-						"access": types.StringValue(in.GetAccess()),
-						"code":   convert.StrToType(in.Code.Get()),
-						"id":     types.Int64Value(in.GetId()),
-						"name":   types.StringValue(in.GetName()),
-					}),
-				)
-			}
-			if len(tasksValues) == 0 {
-				return types.SetNull(TasksValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(TasksValue{}.Type(ctx), tasksValues)
-
-			return set
-		}
-		tasksSet := buildTasks()
-
-		buildVdiPools := func() types.Set {
-			vdiPoolsValues := []attr.Value{}
-			for _, in := range access.GetVdiPools() {
-				vdiPoolsValues = append(vdiPoolsValues,
-					NewVdiPoolsValueMust(VdiPoolsValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(vdiPoolsValues) == 0 {
-				return types.SetNull(VdiPoolsValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(VdiPoolsValue{}.Type(ctx), vdiPoolsValues)
-
-			return set
-		}
-		vdiPoolsSet := buildVdiPools()
-
-		buildZones := func() types.Set {
-			zonesValues := []attr.Value{}
-			for _, in := range access.GetZones() {
-				zonesValues = append(zonesValues,
-					NewCloudsValueMust(CloudsValue{}.AttributeTypes(ctx),
-						map[string]attr.Value{
-							"access": types.StringValue(in.GetAccess()),
-							"id":     types.Int64Value(in.GetId()),
-							"name":   types.StringValue(in.GetName()),
-						}),
-				)
-			}
-			if len(zonesValues) == 0 {
-				return types.SetNull(CloudsValue{}.Type(ctx))
-			}
-			set, _ := types.SetValue(CloudsValue{}.Type(ctx), zonesValues)
-
-			return set
-		}
-		zonesSet := buildZones()
-
-		attributes := map[string]attr.Value{
-			"app_templates":      appTemplatesSet,
-			"catalog_item_types": catalogItemTypesSet,
-			"features":           featuresSet,
-			"instance_types":     instanceTypesSet,
-			"personas":           personasSet,
-			"report_types":       reportTypesSet,
-			"sites":              sitesSet,
-			"task_sets":          taskSetsSet,
-			"tasks":              tasksSet,
-			"vdi_pools":          vdiPoolsSet,
-			"zones":              zonesSet,
-		}
-
-		accessValue, accessDiags := NewAccessValue(AccessValue{}.AttributeTypes(ctx), attributes)
-		if accessDiags.HasError() {
-			diags.Append(accessDiags...)
-
-			return diags
-		}
-		data.Access = accessValue
-	} else {
-		data.Access = NewAccessValueNull()
+		return diags
 	}
+	data.Access = access
 
 	if account, accountOk := user.GetAccountOk(); accountOk {
 		accountValue, accountDiags := NewAccountValue(
@@ -475,6 +220,194 @@ func getUserByID(
 	data.WindowsUsername = convert.StrToType(user.WindowsUsername.Get())
 
 	return diags
+}
+
+func getAccessAsState(
+	ctx context.Context,
+	user *sdk.ListUsers200ResponseAllOfUsersInner,
+) (AccessValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	access, accessOk := user.GetAccessOk()
+	if !accessOk {
+		return NewAccessValueNull(), diags
+	}
+
+	// Collect element structs first
+	var blueprints []BlueprintsValue
+	for _, in := range access.GetAppTemplates() {
+		blueprints = append(blueprints, BlueprintsValue{
+			Access: types.StringValue(in.GetAccess()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var catalogItemTypes []CatalogItemTypesValue
+	for _, in := range access.GetCatalogItemTypes() {
+		catalogItemTypes = append(catalogItemTypes, CatalogItemTypesValue{
+			Access: types.StringValue(in.GetAccess()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var features []FeaturesValue
+	for _, in := range access.GetFeatures() {
+		features = append(features, FeaturesValue{
+			Access:      types.StringValue(in.GetAccess()),
+			Code:        types.StringValue(in.GetCode()),
+			Name:        types.StringValue(in.GetName()),
+			SubCategory: types.StringValue(in.GetSubCategory()),
+			state:       attr.ValueStateKnown,
+		})
+	}
+
+	var instanceTypes []InstanceTypesValue
+	for _, in := range access.GetInstanceTypes() {
+		instanceTypes = append(instanceTypes, InstanceTypesValue{
+			Access: types.StringValue(in.GetAccess()),
+			Code:   types.StringValue(in.GetCode()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var personas []PersonasValue
+	for _, in := range access.GetPersonas() {
+		personas = append(personas, PersonasValue{
+			Access: types.StringValue(in.GetAccess()),
+			Code:   types.StringValue(in.GetCode()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var reportTypes []ReportTypesValue
+	for _, in := range access.GetReportTypes() {
+		reportTypes = append(reportTypes, ReportTypesValue{
+			Access: types.StringValue(in.GetAccess()),
+			Code:   types.StringValue(in.GetCode()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var groups []GroupsValue
+	for _, in := range access.GetSites() {
+		groups = append(groups, GroupsValue{
+			Access: types.StringValue(in.GetAccess()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var workflows []WorkflowsValue
+	for _, in := range access.GetTaskSets() {
+		workflows = append(workflows, WorkflowsValue{
+			Access: types.StringValue(in.GetAccess()),
+			Code:   convert.StrToType(in.Code.Get()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var tasks []TasksValue
+	for _, in := range access.GetTasks() {
+		tasks = append(tasks, TasksValue{
+			Access: types.StringValue(in.GetAccess()),
+			Code:   convert.StrToType(in.Code.Get()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var vdiPools []VdiPoolsValue
+	for _, in := range access.GetVdiPools() {
+		vdiPools = append(vdiPools, VdiPoolsValue{
+			Access: types.StringValue(in.GetAccess()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	var clouds []CloudsValue
+	for _, in := range access.GetZones() {
+		clouds = append(clouds, CloudsValue{
+			Access: types.StringValue(in.GetAccess()),
+			Id:     types.Int64Value(in.GetId()),
+			Name:   types.StringValue(in.GetName()),
+			state:  attr.ValueStateKnown,
+		})
+	}
+
+	blueprintsSet, diags := types.SetValueFrom(ctx, BlueprintsValue{}.Type(ctx), blueprints)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	catalogItemTypesSet, diags := types.SetValueFrom(ctx, CatalogItemTypesValue{}.Type(ctx), catalogItemTypes)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	featuresSet, diags := types.SetValueFrom(ctx, FeaturesValue{}.Type(ctx), features)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	instanceTypesSet, diags := types.SetValueFrom(ctx, InstanceTypesValue{}.Type(ctx), instanceTypes)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	personasSet, diags := types.SetValueFrom(ctx, PersonasValue{}.Type(ctx), personas)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	reportTypesSet, diags := types.SetValueFrom(ctx, ReportTypesValue{}.Type(ctx), reportTypes)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	groupsSet, diags := types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groups)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	workflowsSet, diags := types.SetValueFrom(ctx, WorkflowsValue{}.Type(ctx), workflows)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	tasksSet, diags := types.SetValueFrom(ctx, TasksValue{}.Type(ctx), tasks)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	vdiPoolsSet, diags := types.SetValueFrom(ctx, VdiPoolsValue{}.Type(ctx), vdiPools)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+	cloudsSet, diags := types.SetValueFrom(ctx, CloudsValue{}.Type(ctx), clouds)
+	if diags.HasError() {
+		return NewAccessValueNull(), diags
+	}
+
+	return NewAccessValue(AccessValue{}.AttributeTypes(ctx), map[string]attr.Value{
+		"blueprints":         blueprintsSet,
+		"catalog_item_types": catalogItemTypesSet,
+		"features":           featuresSet,
+		"instance_types":     instanceTypesSet,
+		"personas":           personasSet,
+		"report_types":       reportTypesSet,
+		"groups":             groupsSet,
+		"workflows":          workflowsSet,
+		"tasks":              tasksSet,
+		"vdi_pools":          vdiPoolsSet,
+		"clouds":             cloudsSet,
+	})
 }
 
 func getUser(
