@@ -164,22 +164,22 @@ func getUserByID(
 	}
 	data.Access = access
 
-	if account, accountOk := user.GetAccountOk(); accountOk {
-		accountValue, accountDiags := NewAccountValue(
-			AccountValue{}.AttributeTypes(ctx),
+	if tenant, tenantOk := user.GetAccountOk(); tenantOk {
+		tenantValue, tenantDiags := NewTenantValue(
+			TenantValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"id":   convert.Int64ToType(account.Id),
-				"name": convert.StrToType(account.Name),
+				"id":   convert.Int64ToType(tenant.Id),
+				"name": convert.StrToType(tenant.Name),
 			},
 		)
-		if accountDiags.HasError() {
-			diags.Append(accountDiags...)
+		if tenantDiags.HasError() {
+			diags.Append(tenantDiags...)
 
 			return diags
 		}
-		data.Account = accountValue
+		data.Tenant = tenantValue
 	} else {
-		data.Account = NewAccountValueNull()
+		data.Tenant = NewTenantValueNull()
 	}
 
 	if defaultPersona, defaultPersonaOk := user.GetDefaultPersonaOk(); defaultPersonaOk {

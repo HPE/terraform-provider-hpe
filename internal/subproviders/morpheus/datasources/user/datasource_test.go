@@ -337,11 +337,11 @@ data "hpe_morpheus_user" "test_all" {
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_user.test_all",
-			"account.id",
+			"tenant.id",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_user.test_all",
-			"account.name",
+			"tenant.name",
 		),
 		/* Can't test this yet as we cannot assign a default persona via terraform yet
 		resource.TestCheckResourceAttrSet(
