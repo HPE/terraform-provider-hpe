@@ -105,12 +105,9 @@ func getUserByID(
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
+	// Create user request with access included
 	getUserRequest := apiClient.UsersAPI.GetUser(ctx, id)
-
-	// Add includeAccess parameter if specified
-	if !data.IncludeAccess.IsNull() && data.IncludeAccess.ValueBool() {
-		getUserRequest = getUserRequest.IncludeAccess(true)
-	}
+	getUserRequest = getUserRequest.IncludeAccess(true)
 
 	u, hresp, err := getUserRequest.Execute()
 	if u == nil || err != nil || hresp.StatusCode != http.StatusOK {
@@ -164,7 +161,7 @@ func getUserByID(
 			appTemplatesValues := []attr.Value{}
 			for _, in := range access.GetAppTemplates() {
 				appTemplatesValues = append(appTemplatesValues,
-					NewAppTemplatesValueMust(AppTemplatesValue{}.AttributeTypes(ctx),
+					NewBlueprintsValueMust(BlueprintsValue{}.AttributeTypes(ctx),
 						map[string]attr.Value{
 							"access": types.StringValue(in.GetAccess()),
 							"id":     types.Int64Value(in.GetId()),
@@ -173,9 +170,9 @@ func getUserByID(
 				)
 			}
 			if len(appTemplatesValues) == 0 {
-				return types.SetNull(AppTemplatesValue{}.Type(ctx))
+				return types.SetNull(BlueprintsValue{}.Type(ctx))
 			}
-			set, _ := types.SetValue(AppTemplatesValue{}.Type(ctx), appTemplatesValues)
+			set, _ := types.SetValue(BlueprintsValue{}.Type(ctx), appTemplatesValues)
 
 			return set
 		}
@@ -293,8 +290,8 @@ func getUserByID(
 		buildSites := func() types.Set {
 			sitesValues := []attr.Value{}
 			for _, in := range access.GetSites() {
-				sitesValues = append(sitesValues, NewSitesValueMust(
-					SitesValue{}.AttributeTypes(ctx),
+				sitesValues = append(sitesValues, NewGroupsValueMust(
+					GroupsValue{}.AttributeTypes(ctx),
 					map[string]attr.Value{
 						"access": types.StringValue(in.GetAccess()),
 						"id":     types.Int64Value(in.GetId()),
@@ -303,9 +300,9 @@ func getUserByID(
 				)
 			}
 			if len(sitesValues) == 0 {
-				return types.SetNull(SitesValue{}.Type(ctx))
+				return types.SetNull(GroupsValue{}.Type(ctx))
 			}
-			set, _ := types.SetValue(SitesValue{}.Type(ctx), sitesValues)
+			set, _ := types.SetValue(GroupsValue{}.Type(ctx), sitesValues)
 
 			return set
 		}
@@ -315,7 +312,7 @@ func getUserByID(
 			taskSetsValue := []attr.Value{}
 			for _, in := range access.GetTaskSets() {
 				taskSetsValue = append(taskSetsValue,
-					NewTaskSetsValueMust(TaskSetsValue{}.AttributeTypes(ctx),
+					NewWorkflowsValueMust(WorkflowsValue{}.AttributeTypes(ctx),
 						map[string]attr.Value{
 							"access": types.StringValue(in.GetAccess()),
 							"code":   convert.StrToType(in.Code.Get()),
@@ -325,9 +322,9 @@ func getUserByID(
 				)
 			}
 			if len(taskSetsValue) == 0 {
-				return types.SetNull(TaskSetsValue{}.Type(ctx))
+				return types.SetNull(WorkflowsValue{}.Type(ctx))
 			}
-			set, _ := types.SetValue(TaskSetsValue{}.Type(ctx), taskSetsValue)
+			set, _ := types.SetValue(WorkflowsValue{}.Type(ctx), taskSetsValue)
 
 			return set
 		}
@@ -380,7 +377,7 @@ func getUserByID(
 			zonesValues := []attr.Value{}
 			for _, in := range access.GetZones() {
 				zonesValues = append(zonesValues,
-					NewZonesValueMust(ZonesValue{}.AttributeTypes(ctx),
+					NewCloudsValueMust(CloudsValue{}.AttributeTypes(ctx),
 						map[string]attr.Value{
 							"access": types.StringValue(in.GetAccess()),
 							"id":     types.Int64Value(in.GetId()),
@@ -389,9 +386,9 @@ func getUserByID(
 				)
 			}
 			if len(zonesValues) == 0 {
-				return types.SetNull(ZonesValue{}.Type(ctx))
+				return types.SetNull(CloudsValue{}.Type(ctx))
 			}
-			set, _ := types.SetValue(ZonesValue{}.Type(ctx), zonesValues)
+			set, _ := types.SetValue(CloudsValue{}.Type(ctx), zonesValues)
 
 			return set
 		}
