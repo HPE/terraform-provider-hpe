@@ -175,7 +175,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, pdiags := getCloudAsState(ctx, newid, client)
+	state, pdiags := getCloudAsState(ctx, newid, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
