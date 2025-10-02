@@ -1,6 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 //go:generate go run ../../../../../cmd/render example.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
+//go:generate go run ../../../../../cmd/render example_generic.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
 
 package cloud_test
 
@@ -182,6 +183,161 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 				ResourceName:      "hpe_morpheus_cloud.example",
 				Check:             checkFn,
 			},
+		},
+	})
+}
+
+// Tests that our example file template used for docs is a valid config
+func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	resourceConfig, err := testhelpers.RenderExample(t, "example_generic.tf.tmpl",
+		"Name", name,
+		"Code", code,
+		"Label", "aLabel",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"cloud_type_code",
+			"standard",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"code",
+			code,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.#",
+			"2",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"aLabel1",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"aLabel2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"agent_install_mode",
+			"ssh",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"appliance_url",
+			"https://somewhere.com",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"auto_recover_power_state",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"costing_mode",
+			"costing",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"data_center_name",
+			"aDatacenter",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"enabled",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"external_id",
+			code,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"guidance_mode",
+			"off",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"import_existing_vms",
+			"off",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"keyboard_layout",
+			"us",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"location",
+			"somewhere",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"security_mode",
+			"off",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"visibility",
+			"public",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"config.certificateProvider",
+			"internal",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cloud.example",
+			"config.enableNetworkTypeSelection",
+			"false",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			// Disabling the import test for now as we have no creds for testing
+			// any type of cloud except standard
+			// {
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true, // Check state post import
+			// 	ResourceName:      "hpe_morpheus_cloud.example",
+			// 	Check:             checkFn,
+			// },
 		},
 	})
 }

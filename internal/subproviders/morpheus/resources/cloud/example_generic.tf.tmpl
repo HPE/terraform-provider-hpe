@@ -4,27 +4,28 @@ resource "hpe_morpheus_cloud" "example" {
   group_id  = 1
 
   code             = "{{.Code}}"
-  external_id      = "{{.Code}}"
   labels           = ["{{.Label}}1", "{{.Label}}2"]
-  data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
   visibility       = "public"
+  cloud_type_code  = "standard"
 
   agent_install_mode       = "ssh"
-  appliance_url            = "https://somewhere.com"
   auto_recover_power_state = true
-  import_existing_vms      = "off"
 
   costing_mode  = "costing"
   guidance_mode = "off"
 
   security_mode = "off"
 
+  appliance_url            = "https://somewhere.com"
   keyboard_layout = "us"
+  data_center_name = "aDatacenter"
+  external_id      = "{{.Code}}"
+  import_existing_vms      = "off"
 
-  config_hvm = {
-    certificate_provider          = "internal"
-    enable_network_type_selection = false
+  config = {
+    certificateProvider          = "internal"
+    enableNetworkTypeSelection = false
   }
 }
