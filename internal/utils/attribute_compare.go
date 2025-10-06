@@ -111,12 +111,19 @@ func CheckPlanAttributeAgainstAPIAttribute(
 	}
 
 	// Check the keys in the planAttribute against fromApiMap
-	planAttrs := planObject.Attributes()
-	// Build map of keys in planAttrs
 	planKeys := make(map[string]struct{})
-	for k := range planAttrs {
-		planKeys[k] = struct{}{}
+	switch attrs := planObject.Attributes(); {
+	case len(attrs) == 0:
+		planAttrTypes := planObject.AttributeTypes(context.Background())
+		for k := range planAttrTypes {
+			planKeys[k] = struct{}{}
+		}
+	default:
+		for k := range attrs {
+			planKeys[k] = struct{}{}
+		}
 	}
+
 	// Build map of keys in fromApiMap
 	fromApiKeys := make(map[string]struct{})
 	for k := range fromApiMap {
