@@ -53,6 +53,7 @@ resource "hpe_morpheus_role" "example_with_legacy_provider" {
 
 ### Optional
 
+- `default_persona_code` (String) The code of the default Persona to assign to the Role.
 - `description` (String) Description
 - `landing_url` (String) An optional override for the default landing page after login for a user.
 - `multitenant` (Boolean) Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*
