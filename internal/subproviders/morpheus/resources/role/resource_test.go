@@ -80,6 +80,10 @@ resource "hpe_morpheus_role" "example_required" {
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.example_required",
+			"default_persona_code",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
 			"landing_url",
 		),
 		// checks for computed
@@ -152,6 +156,10 @@ resource "hpe_morpheus_role" "example_required" {
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_role.example_required",
+			"default_persona_code",
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_role.example_required",
 			"landing_url",
 		),
 		// check the role type
@@ -209,6 +217,7 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 resource "hpe_morpheus_role" "example_all" {
   name = "` + name + `"
   description = "test"
+  default_persona_code = "standard"
   landing_url = "https://test.com"
   multitenant = true
   multitenant_locked = true
@@ -235,6 +244,11 @@ resource "hpe_morpheus_role" "example_all" {
 			"hpe_morpheus_role.example_all",
 			"description",
 			"test",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_role.example_all",
+			"default_persona_code",
+			"standard",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_role.example_all",
