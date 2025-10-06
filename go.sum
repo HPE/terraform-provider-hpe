@@ -1,7 +1,7 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251001122913-1f822867c74d h1:cnu8K+tIPjIAA25UgnMMZzUv9qWsnirpJGMNy1i/Yk4=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251001122913-1f822867c74d/go.mod h1:GPkKVeXv0go/+jzI15RDeM0jIskuQRlMydsvQiKT6VY=
+github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251006105443-82f76e242c7d h1:jqAvrZGm3jS8w3Z+zddX8vPK1eI/MC7A7TQHuiABJEg=
+github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251006105443-82f76e242c7d/go.mod h1:GPkKVeXv0go/+jzI15RDeM0jIskuQRlMydsvQiKT6VY=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.1.6 h1:ZcV+Ropw6Qn0AX9brlQLAUXfqLBc7Bl+f/DmNxpLfdw=
