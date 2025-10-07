@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package datastore
 
 import (
@@ -191,9 +189,9 @@ func (r *Resource) Create(
 
 	// For now, we need to call update to set resourcePermission and tenantPermissions
 	// because the API does not set these on create, even if provided.
-	state, pdiags = updateDatastore(ctx, plan.Id.ValueInt64(), plan, state, client)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	state, gdiags = updateDatastore(ctx, plan.Id.ValueInt64(), plan, state, client)
+	if gdiags.HasError() {
+		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
 			"create datastore resource",
 			fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),

@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/cloud"
-	// "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/datastore"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/resources/network"
@@ -36,7 +36,7 @@ func (s SubProvider) GetResources(
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{
 		cloud.NewResource,
-		// datastore.NewResource,
+		datastore.NewResource,
 		group.NewResource,
 		instance.NewResource,
 		network.NewResource,
