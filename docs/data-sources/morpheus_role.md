@@ -34,12 +34,23 @@ data "hpe_morpheus_role" "test" {
 
 ### Read-Only
 
+- `default_persona` (Attributes) The default Persona assigned to the Role. (see [below for nested schema](#nestedatt--default_persona))
 - `description` (String)
 - `landing_url` (String) An optional override for the default landing page after login for a user.
 - `multitenant` (Boolean) Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant*
 - `multitenant_locked` (Boolean) Multitenant Locked prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant*
 - `permissions` (Attributes) The set of permissions to assign to the role (see [below for nested schema](#nestedatt--permissions))
 - `role_type` (String) Role type
+
+<a id="nestedatt--default_persona"></a>
+### Nested Schema for `default_persona`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `name` (String)
+
 
 <a id="nestedatt--permissions"></a>
 ### Nested Schema for `permissions`

@@ -172,6 +172,7 @@ func TestAccMorpheusFindRoleVerifyAttributes(t *testing.T) {
 	resourceConfig := `
 resource "hpe_morpheus_role" "test_user" {
   name = "` + name + `-user"
+  default_persona_code = "standard"
   description = "test"
   landing_url = "https://test.morpheus.com"
   multitenant = false
@@ -190,6 +191,7 @@ resource "hpe_morpheus_role" "test_user" {
 
 resource "hpe_morpheus_role" "test_tenant" {
   name = "` + name + `-tenant"
+  default_persona_code = "standard"
   description = "test"
   landing_url = "https://test.morpheus.com"
   role_type = "tenant"
@@ -231,6 +233,21 @@ data "hpe_morpheus_role" "test_tenant" {
 			"data.hpe_morpheus_role.test_user",
 			"description",
 			"test",
+		),
+		// the IDs of the persona will differ across Morpheus installations
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_role.test_user",
+			"default_persona.id",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role.test_user",
+			"default_persona.code",
+			"standard",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role.test_user",
+			"default_persona.name",
+			"Standard",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role.test_user",
@@ -281,6 +298,21 @@ data "hpe_morpheus_role" "test_tenant" {
 			"data.hpe_morpheus_role.test_tenant",
 			"description",
 			"test",
+		),
+		// the IDs of the persona will differ across Morpheus installations
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_role.test_tenant",
+			"default_persona.id",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role.test_tenant",
+			"default_persona.code",
+			"standard",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_role.test_tenant",
+			"default_persona.name",
+			"Standard",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role.test_tenant",
