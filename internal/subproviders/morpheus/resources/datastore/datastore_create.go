@@ -189,22 +189,18 @@ func (r *Resource) Create(
 		return
 	}
 
-	// TODO reenable this when we add datastore_update.go
-	/*
-		// For now, we need to call update to set resourcePermission and tenantPermissions
-		// because the API does not set these on create, even if provided.
-		state, pdiags = updateDatastoreFunc(ctx, plan.Id.ValueInt64(), plan, state, client)
-		if pdiags.HasError() {
-			resp.Diagnostics.Append(pdiags...)
-			resp.Diagnostics.AddError(
-				"create datastore resource",
-				fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),
-			)
+	// For now, we need to call update to set resourcePermission and tenantPermissions
+	// because the API does not set these on create, even if provided.
+	state, pdiags = updateDatastoreFunc(ctx, plan.Id.ValueInt64(), plan, state, client)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"create datastore resource",
+			fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),
+		)
 
-			return
-		}
-
-	*/
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
