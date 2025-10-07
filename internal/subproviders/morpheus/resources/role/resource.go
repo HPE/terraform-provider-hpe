@@ -1343,6 +1343,7 @@ func getRoleAsState(
 
 	state.Id = convert.Int64ToType(r.Role.Id)
 	state.Name = convert.StrToType(r.Role.Name)
+	state.DefaultPersonaCode = convert.StrToType(r.Role.GetDefaultPersona().Code)
 	state.Description = convert.StrToType(r.Role.Description.Get())
 	state.LandingUrl = convert.StrToType(r.Role.LandingUrl.Get())
 	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
@@ -1377,6 +1378,10 @@ func (r *Resource) Create(
 	addRole.SetAuthority(name)
 
 	// optional
+	if !plan.DefaultPersonaCode.IsUnknown() && !plan.DefaultPersonaCode.IsNull() {
+		addRole.SetDefaultPersona(plan.DefaultPersonaCode.ValueString())
+	}
+
 	if !plan.Description.IsUnknown() {
 		addRole.SetDescription(plan.Description.ValueString())
 	}
@@ -1794,6 +1799,12 @@ func (r *Resource) Update(
 	updateRole.SetAuthority(plan.Name.ValueString())
 
 	// optional fields
+	if plan.DefaultPersonaCode.IsNull() {
+		updateRole.SetDefaultPersonaNil()
+	} else {
+		updateRole.SetDefaultPersona(plan.DefaultPersonaCode.ValueString())
+	}
+
 	if plan.Description.IsNull() {
 		updateRole.SetDescriptionNil()
 	} else {
