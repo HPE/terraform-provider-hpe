@@ -22,6 +22,27 @@ import (
 func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"default_persona": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Computed: true,
+					},
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: DefaultPersonaType{
+					ObjectType: types.ObjectType{
+						AttrTypes: DefaultPersonaValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The default Persona assigned to the Role.",
+				MarkdownDescription: "The default Persona assigned to the Role.",
+			},
 			"description": schema.StringAttribute{
 				Computed: true,
 			},
@@ -607,14 +628,457 @@ func RoleDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type RoleModel struct {
-	Description       types.String     `tfsdk:"description"`
-	Id                types.Int64      `tfsdk:"id"`
-	LandingUrl        types.String     `tfsdk:"landing_url"`
-	Multitenant       types.Bool       `tfsdk:"multitenant"`
-	MultitenantLocked types.Bool       `tfsdk:"multitenant_locked"`
-	Name              types.String     `tfsdk:"name"`
-	Permissions       PermissionsValue `tfsdk:"permissions"`
-	RoleType          types.String     `tfsdk:"role_type"`
+	DefaultPersona    DefaultPersonaValue `tfsdk:"default_persona"`
+	Description       types.String        `tfsdk:"description"`
+	Id                types.Int64         `tfsdk:"id"`
+	LandingUrl        types.String        `tfsdk:"landing_url"`
+	Multitenant       types.Bool          `tfsdk:"multitenant"`
+	MultitenantLocked types.Bool          `tfsdk:"multitenant_locked"`
+	Name              types.String        `tfsdk:"name"`
+	Permissions       PermissionsValue    `tfsdk:"permissions"`
+	RoleType          types.String        `tfsdk:"role_type"`
+}
+
+var _ basetypes.ObjectTypable = DefaultPersonaType{}
+
+type DefaultPersonaType struct {
+	basetypes.ObjectType
+}
+
+func (t DefaultPersonaType) Equal(o attr.Type) bool {
+	other, ok := o.(DefaultPersonaType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t DefaultPersonaType) String() string {
+	return "DefaultPersonaType"
+}
+
+func (t DefaultPersonaType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewDefaultPersonaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewDefaultPersonaValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return DefaultPersonaValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewDefaultPersonaValueNull() DefaultPersonaValue {
+	return DefaultPersonaValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewDefaultPersonaValueUnknown() DefaultPersonaValue {
+	return DefaultPersonaValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewDefaultPersonaValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (DefaultPersonaValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing DefaultPersonaValue Attribute Value",
+				"While creating a DefaultPersonaValue value, a missing attribute value was detected. "+
+					"A DefaultPersonaValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("DefaultPersonaValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid DefaultPersonaValue Attribute Type",
+				"While creating a DefaultPersonaValue value, an invalid attribute value was detected. "+
+					"A DefaultPersonaValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("DefaultPersonaValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("DefaultPersonaValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra DefaultPersonaValue Attribute Value",
+				"While creating a DefaultPersonaValue value, an extra attribute value was detected. "+
+					"A DefaultPersonaValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra DefaultPersonaValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewDefaultPersonaValueUnknown(), diags
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewDefaultPersonaValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewDefaultPersonaValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewDefaultPersonaValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewDefaultPersonaValueUnknown(), diags
+	}
+
+	return DefaultPersonaValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewDefaultPersonaValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) DefaultPersonaValue {
+	object, diags := NewDefaultPersonaValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewDefaultPersonaValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t DefaultPersonaType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewDefaultPersonaValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewDefaultPersonaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewDefaultPersonaValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewDefaultPersonaValueMust(DefaultPersonaValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t DefaultPersonaType) ValueType(ctx context.Context) attr.Value {
+	return DefaultPersonaValue{}
+}
+
+var _ basetypes.ObjectValuable = DefaultPersonaValue{}
+
+type DefaultPersonaValue struct {
+	Code  basetypes.StringValue `tfsdk:"code"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v DefaultPersonaValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v DefaultPersonaValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v DefaultPersonaValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v DefaultPersonaValue) String() string {
+	return "DefaultPersonaValue"
+}
+
+func (v DefaultPersonaValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"code": v.Code,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v DefaultPersonaValue) Equal(o attr.Value) bool {
+	other, ok := o.(DefaultPersonaValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v DefaultPersonaValue) Type(ctx context.Context) attr.Type {
+	return DefaultPersonaType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v DefaultPersonaValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = PermissionsType{}
