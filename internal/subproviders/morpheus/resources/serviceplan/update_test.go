@@ -1,7 +1,6 @@
 package serviceplan_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -20,11 +19,13 @@ func TestAccMorpheusServicePlanResourceUpdateAllAttrsOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	uniqueName := acctest.RandomWithPrefix(t.Name())
-	uniqueCode := strings.ToLower(uniqueName)
 
 	baseConfigText := providerConfig + `
 variable "name" { type = string }
-variable "code" { type = string }
+variable "code" { 
+  type = string 
+  default = "test-serviceplan-code"
+}
 variable "description" {
   type    = string
   default = "test serviceplan"
@@ -171,40 +172,12 @@ resource "hpe_morpheus_service_plan" "test" {
 `
 
 	baseConfigVars := config.Variables{
-		"name":                               config.StringVariable(uniqueName),
-		"code":                               config.StringVariable(uniqueCode),
-		"description":                        config.StringVariable("test serviceplan"),
-		"add_volumes":                        config.BoolVariable(true),
-		"custom_max_storage":                 config.BoolVariable(true),
-		"max_cores":                          config.IntegerVariable(1),
-		"config_ranges_min_storage":          config.IntegerVariable(1),
-		"config_ranges_max_storage":          config.IntegerVariable(2),
-		"provision_type_code":                config.StringVariable("kvm"),
-		"max_memory":                         config.IntegerVariable(4294967296),
-		"max_storage":                        config.IntegerVariable(0),
-		"cores_per_socket":                   config.IntegerVariable(1),
-		"custom_cores":                       config.BoolVariable(true),
-		"custom_cpu":                         config.BoolVariable(false),
-		"custom_max_memory":                  config.BoolVariable(true),
-		"max_cpu":                            config.IntegerVariable(0),
-		"max_disks":                          config.IntegerVariable(2),
-		"memory_size_type":                   config.StringVariable("mb"),
-		"price_set_ids":                      config.ListVariable(config.IntegerVariable(1)),
-		"sort_order":                         config.IntegerVariable(10000),
-		"storage_size_type":                  config.StringVariable("gb"),
-		"config_ranges_min_memory":           config.IntegerVariable(1048576),
-		"config_ranges_max_memory":           config.IntegerVariable(2097152),
-		"config_ranges_min_cores":            config.IntegerVariable(1),
-		"config_ranges_max_cores":            config.IntegerVariable(2),
-		"config_ranges_min_sockets":          config.IntegerVariable(1),
-		"config_ranges_max_sockets":          config.IntegerVariable(10),
-		"config_ranges_min_cores_per_socket": config.IntegerVariable(1),
-		"config_ranges_max_cores_per_socket": config.IntegerVariable(10),
+		"name": config.StringVariable(uniqueName),
 	}
 
 	baseChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "name", uniqueName),
-		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", uniqueCode),
+		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", "test-serviceplan-code"),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "description", "test serviceplan"),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_memory", "4294967296"),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_storage", "0"),
@@ -250,121 +223,153 @@ resource "hpe_morpheus_service_plan" "test" {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
+			}, { // name change
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName + "-updated"),
+				},
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			}, { // code change
+				Config: baseConfigText,
+				ConfigVariables: config.Variables{
+					"name": config.StringVariable(uniqueName),
+					"code": config.StringVariable("updated-serviceplan-code"),
+				},
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
 			}, { // description change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":        config.StringVariable(uniqueName),
 					"description": config.StringVariable("Updated description"),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // max_memory change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":       config.StringVariable(uniqueName),
 					"max_memory": config.IntegerVariable(8589934592), // 8GB
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // max_storage change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":        config.StringVariable(uniqueName),
 					"max_storage": config.IntegerVariable(10737418240), // 10GB
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // cores_per_socket change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":             config.StringVariable(uniqueName),
 					"cores_per_socket": config.IntegerVariable(2),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // custom_cores toggle
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":         config.StringVariable(uniqueName),
 					"custom_cores": config.BoolVariable(false),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // custom_cpu toggle
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":       config.StringVariable(uniqueName),
 					"custom_cpu": config.BoolVariable(true),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // custom_max_memory toggle
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":              config.StringVariable(uniqueName),
 					"custom_max_memory": config.BoolVariable(false),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // custom_max_storage toggle
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":               config.StringVariable(uniqueName),
 					"custom_max_storage": config.BoolVariable(false),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // add_volumes toggle
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":        config.StringVariable(uniqueName),
 					"add_volumes": config.BoolVariable(false),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // max_cores change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":      config.StringVariable(uniqueName),
 					"max_cores": config.IntegerVariable(4),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // max_cpu change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":    config.StringVariable(uniqueName),
 					"max_cpu": config.IntegerVariable(100),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // max_disks change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":      config.StringVariable(uniqueName),
 					"max_disks": config.IntegerVariable(5),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // memory_size_type change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":             config.StringVariable(uniqueName),
 					"memory_size_type": config.StringVariable("gb"),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // sort_order change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":       config.StringVariable(uniqueName),
 					"sort_order": config.IntegerVariable(20000),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // storage_size_type change
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":              config.StringVariable(uniqueName),
 					"storage_size_type": config.StringVariable("mb"),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // provision_type_code change from kvm to arm
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":                config.StringVariable(uniqueName),
 					"provision_type_code": config.StringVariable("arm"),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // config_ranges changes
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":                               config.StringVariable(uniqueName),
 					"config_ranges_min_storage":          config.IntegerVariable(2),
 					"config_ranges_max_storage":          config.IntegerVariable(4),
 					"config_ranges_min_memory":           config.IntegerVariable(2097152),
@@ -375,12 +380,13 @@ resource "hpe_morpheus_service_plan" "test" {
 					"config_ranges_max_sockets":          config.IntegerVariable(20),
 					"config_ranges_min_cores_per_socket": config.IntegerVariable(2),
 					"config_ranges_max_cores_per_socket": config.IntegerVariable(20),
-				}),
+				},
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			}, { // comprehensive apply with multiple updates
 				Config: baseConfigText,
-				ConfigVariables: mergeConfigVars(baseConfigVars, config.Variables{
+				ConfigVariables: config.Variables{
+					"name":                               config.StringVariable(uniqueName),
 					"description":                        config.StringVariable("Comprehensive update test"),
 					"max_memory":                         config.IntegerVariable(8589934592),
 					"max_storage":                        config.IntegerVariable(10737418240),
@@ -402,10 +408,10 @@ resource "hpe_morpheus_service_plan" "test" {
 					"config_ranges_max_sockets":          config.IntegerVariable(20),
 					"config_ranges_min_cores_per_socket": config.IntegerVariable(2),
 					"config_ranges_max_cores_per_socket": config.IntegerVariable(20),
-				}),
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "name", uniqueName),
-					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", uniqueCode),
+					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", "test-serviceplan-code"),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "description", "Comprehensive update test"),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_memory", "8589934592"),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_storage", "10737418240"),
@@ -431,16 +437,4 @@ resource "hpe_morpheus_service_plan" "test" {
 			},
 		},
 	})
-}
-
-// Helper function to merge config variables
-func mergeConfigVars(base config.Variables, overrides config.Variables) config.Variables {
-	result := make(config.Variables)
-	for k, v := range base {
-		result[k] = v
-	}
-	for k, v := range overrides {
-		result[k] = v
-	}
-	return result
 }

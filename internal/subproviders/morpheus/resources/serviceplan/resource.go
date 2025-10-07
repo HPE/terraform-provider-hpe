@@ -517,11 +517,6 @@ func (r *Resource) Update(
 		return
 	}
 
-	if state.Id.IsNull() || state.Id.IsUnknown() {
-		resp.Diagnostics.AddError("update service plan resource",
-			"missing id in prior state")
-		return
-	}
 	id := state.Id.ValueInt64()
 
 	servicePlan := sdk.NewUpdateServicePlansRequestServicePlan()
@@ -593,18 +588,10 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		var pricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
-		for _, v := range priceSetIDs {
-			priceset := sdk.AddServicePlansRequestServicePlanPriceSetsInner{
-				Id: &v,
-			}
-			pricesets = append(pricesets, priceset)
-		}
-		// Convert to UpdateServicePlansRequestServicePlanPriceSetsInner
 		var updatePricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
-		for _, ps := range pricesets {
+		for _, psid := range priceSetIDs {
 			updatePricesets = append(updatePricesets, sdk.AddServicePlansRequestServicePlanPriceSetsInner{
-				Id: ps.Id,
+				Id: &psid,
 			})
 		}
 		servicePlan.PriceSets = updatePricesets
@@ -630,6 +617,7 @@ func (r *Resource) Update(
 				"update service plan resource",
 				"set provision type ID from code failed: "+err.Error(),
 			)
+
 			return
 		}
 	}
