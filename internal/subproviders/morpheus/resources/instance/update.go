@@ -20,7 +20,6 @@ func (g *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-
 	client, err := g.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -29,12 +28,12 @@ func (g *Resource) Update(
 	}
 
 	var plan InstanceModel
-	var state InstanceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	var state InstanceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -48,7 +47,7 @@ func (g *Resource) Update(
 	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstance()
 
 	// name
-	if !plan.Name.IsNull() {
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
 		instanceUpdateRequest.Name = plan.Name.ValueStringPointer()
 		instanceUpdateRequest.DisplayName = plan.Name.ValueStringPointer()
 	}
@@ -59,19 +58,19 @@ func (g *Resource) Update(
 	// }
 
 	// instance_context
-	if !plan.InstanceContext.IsNull() {
+	if !plan.InstanceContext.IsNull() && !plan.InstanceContext.IsUnknown() {
 		instanceUpdateRequest.InstanceContext = plan.InstanceContext.ValueStringPointer()
 	}
 
 	// group_id
-	if !plan.GroupId.IsNull() {
+	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
 		site := sdk.NewUpdateInstanceRequestInstanceSite()
 		site.Id = plan.GroupId.ValueInt64Pointer()
 		instanceUpdateRequest.Site = site
 	}
 
 	// tags
-	if !plan.Tags.IsNull() {
+	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
 		tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert tags")
@@ -83,120 +82,111 @@ func (g *Resource) Update(
 	}
 
 	updateRequest.SetInstance(*instanceUpdateRequest)
-	updateResp, httpResp, err := updateInstance.UpdateInstanceRequest(*updateRequest).Execute()
+	_, httpResp, err := updateInstance.UpdateInstanceRequest(*updateRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError("error updating instance", errfmt.ErrMsg(err, httpResp))
 
 		return
 	}
 
-	_ = updateResp
-
-	needResize := false
-
-	if !state.PlanId.Equal(plan.PlanId) {
-		needResize = true
-	}
-
-	// compare state and plan volumes so we only resize if required
-
-	// compare state and plan network_interfaces so we only resize if required
-
-	if needResize {
-		resp.Diagnostics.AddWarning("instance requires a resize", "attributes changed in the plan which will require resizing the instance")
-	}
-
 	resizeInstance := client.InstancesAPI.ResizeInstance(ctx, plan.Id.ValueInt64())
 	resizeRequest := sdk.NewResizeInstanceRequest()
 
-	// plan_id
-	if !plan.PlanId.IsNull() || !plan.PlanId.IsUnknown() {
-		resizeRequest.Instance = sdk.NewResizeInstanceRequestInstance()
-		resizeRequest.Instance.Plan = sdk.NewResizeInstanceRequestInstancePlan()
-		resizeRequest.Instance.Plan.SetId(plan.PlanId.ValueInt64())
-	}
+	resizing := !state.PlanId.Equal(plan.PlanId)
 
-	// volumes
-	volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
-	if diags.HasError() {
-		tflog.Error(ctx, "cannot convert volumes")
-		resp.Diagnostics.Append(diags...)
+	// compare state and plan volumes so we only resize if required
+	// TODO: make this compare each volume rather than just length
+	if len(state.Volumes.Elements()) != len(plan.Volumes.Elements()) {
+		resizing = true
 
-		return
-	}
+		volumes, diags := convert.FromSetType(ctx, plan.Volumes, volumeMapper)
+		if diags.HasError() {
+			tflog.Error(ctx, "cannot convert volumes")
+			resp.Diagnostics.Append(diags...)
 
-	resizeRequest.SetDeleteOriginalVolumes(true)
-	resizeRequest.SetVolumes(volumes)
-
-	// network_interfaces
-	networkInterfaces, diags := convert.FromSetType(
-		ctx,
-		plan.NetworkInterfaces,
-		networkInterfaceMapper,
-	)
-	if diags.HasError() {
-		tflog.Error(ctx, "cannot convert network interfaces")
-		resp.Diagnostics.Append(diags...)
-
-		return
-	}
-	resizeRequest.SetNetworkInterfaces(networkInterfaces)
-
-	resizeResp, httpResp, err := resizeInstance.ResizeInstanceRequest(*resizeRequest).Execute()
-	if err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("error resizing instance", errfmt.ErrMsg(err, httpResp))
-
-		return
-	}
-
-	tflog.Info(ctx, fmt.Sprintln(resizeResp))
-
-	waitForReady := func() (*sdk.GetInstance200Response, error) {
-		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			return nil, backoff.Permanent(err)
+			return
 		}
 
-		status := resp.Instance.GetStatus()
+		resizeRequest.SetDeleteOriginalVolumes(false)
+		resizeRequest.SetVolumes(volumes)
+	}
 
-		return resp, checkStatusDone(
-			status,
-			CreateTargetStatuses,
-			CreateErrorStatuses,
+	// compare state and plan network_interfaces so we only resize if required
+	// TODO: make this compare each network interface rather than just length
+	if len(state.NetworkInterfaces.Elements()) != len(plan.NetworkInterfaces.Elements()) {
+		resizing = true
+
+		networkInterfaces, diags := convert.FromSetType(
+			ctx,
+			plan.NetworkInterfaces,
+			networkInterfaceMapper,
 		)
-	}
+		if diags.HasError() {
+			tflog.Error(ctx, "cannot convert network interfaces")
+			resp.Diagnostics.Append(diags...)
 
-	if r, err := backoff.Retry(
-		ctx,
-		waitForReady,
-		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
-		backoff.WithMaxElapsedTime(45*time.Minute),
-	); err != nil {
-		var status string
-
-		if r.GetInstance().Status != nil {
-			status = *r.GetInstance().Status
+			return
 		}
 
-		resp.Diagnostics.AddError(
-			"resize instance resource",
-			fmt.Sprintf(
-				"instance %d: resizing failed current status is: %v",
-				plan.Id.ValueInt64(),
+		resizeRequest.SetNetworkInterfaces(networkInterfaces)
+	}
+
+	if resizing {
+		// plan_id
+		if !plan.PlanId.IsNull() || !plan.PlanId.IsUnknown() {
+			resizeRequest.Instance = sdk.NewResizeInstanceRequestInstance()
+			resizeRequest.Instance.Plan = sdk.NewResizeInstanceRequestInstancePlan()
+			resizeRequest.Instance.Plan.SetId(plan.PlanId.ValueInt64())
+		}
+
+		resizeResp, httpResp, err := resizeInstance.ResizeInstanceRequest(*resizeRequest).Execute()
+		if err != nil || httpResp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError("error resizing instance", errfmt.ErrMsg(err, httpResp))
+
+			return
+		}
+
+		tflog.Info(ctx, fmt.Sprintln(resizeResp))
+
+		waitForReady := func() (string, error) {
+			resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
+			if err != nil || hresp.StatusCode != http.StatusOK {
+				return "", backoff.Permanent(err)
+			}
+
+			status := resp.Instance.GetStatus()
+
+			return status, checkStatusDone(
 				status,
-			),
-		)
+				UpdateTargetStatuses,
+				UpdateErrorStatuses,
+			)
+		}
+
+		if status, err := backoff.Retry(
+			ctx,
+			waitForReady,
+			backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+			backoff.WithMaxElapsedTime(45*time.Minute),
+		); err != nil {
+			resp.Diagnostics.AddError(
+				"resize instance resource",
+				fmt.Sprintf(
+					"instance %d: resizing failed current status is: %s",
+					plan.Id.ValueInt64(),
+					status,
+				),
+			)
+		}
 	}
 
-	state2, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
+	newState, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state2)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	fmt.Println(resp.State)
 }

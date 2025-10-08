@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -151,6 +152,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+							return
+						}
+						if !req.StateValue.Equal(req.ConfigValue) {
+							resp.RequiresReplace = true
+						}
+					}, "require replace if network interface layout has changed", "require replace if network interface layout has changed"),
+				},
 			},
 			"plan_id": schema.Int64Attribute{
 				Required:            true,
@@ -213,7 +224,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
-			"volumes": schema.ListNestedAttribute{
+			"volumes": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"controller_mount_point": schema.StringAttribute{
@@ -258,16 +269,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "Name/type of the LV being created.",
 							MarkdownDescription: "Name/type of the LV being created.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
-									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-										return
-									}
-									if !req.StateValue.Equal(req.ConfigValue) {
-										resp.RequiresReplace = true
-									}
-								}, "require replace if volume name has changed", "require replace if volume name has changed"),
-							},
 						},
 						"root_volume": schema.BoolAttribute{
 							Optional:            true,
@@ -287,19 +288,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
-							Computed:            true,
 							Description:         "Identifier for LV type",
 							MarkdownDescription: "Identifier for LV type",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
-									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-										return
-									}
-									if !req.StateValue.Equal(req.ConfigValue) {
-										resp.RequiresReplace = true
-									}
-								}, "require replace if volume storage type id has changed", "require replace if volume storage type id has changed"),
-							},
 						},
 					},
 					CustomType: VolumesType{
@@ -312,6 +302,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+							return
+						}
+						if !req.StateValue.Equal(req.ConfigValue) {
+							resp.RequiresReplace = true
+						}
+					}, "require replace if volume layout has changed", "require replace if volume layout has changed"),
+				},
 			},
 		},
 	}
@@ -333,7 +333,7 @@ type InstanceModel struct {
 	Ports             types.Set     `tfsdk:"ports"`
 	Tags              types.Set     `tfsdk:"tags"`
 	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
-	Volumes           types.List    `tfsdk:"volumes"`
+	Volumes           types.Set     `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}
@@ -569,14 +569,12 @@ func (t EvarsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -615,7 +613,6 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -623,7 +620,6 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["name"] = val
 
 		val, err = v.Value.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1032,14 +1028,12 @@ func (t NetworkInterfacesType) ValueFromTerraform(ctx context.Context, in tftype
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1082,7 +1076,6 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.IpAddress.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1090,7 +1083,6 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["ip_address"] = val
 
 		val, err = v.IpMode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1098,7 +1090,6 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["ip_mode"] = val
 
 		val, err = v.NetworkGroupId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1106,7 +1097,6 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["network_group_id"] = val
 
 		val, err = v.NetworkId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1491,14 +1481,12 @@ func (t PortsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1539,7 +1527,6 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.LoadBalancerProtocol.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1547,7 +1534,6 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["load_balancer_protocol"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1555,7 +1541,6 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["name"] = val
 
 		val, err = v.Port.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1895,14 +1880,12 @@ func (t TagsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (att
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1941,7 +1924,6 @@ func (v TagsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1949,7 +1931,6 @@ func (v TagsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["name"] = val
 
 		val, err = v.Value.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2548,14 +2529,12 @@ func (t VolumesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2608,7 +2587,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 9)
 
 		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2616,7 +2594,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["controller_mount_point"] = val
 
 		val, err = v.DatastoreAutoSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2624,7 +2601,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["datastore_auto_selection"] = val
 
 		val, err = v.DatastoreId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2632,7 +2608,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["datastore_id"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2640,7 +2615,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2648,7 +2622,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["name"] = val
 
 		val, err = v.RootVolume.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2656,7 +2629,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["root_volume"] = val
 
 		val, err = v.Size.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2664,7 +2636,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["size"] = val
 
 		val, err = v.SizeId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2672,7 +2643,6 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["size_id"] = val
 
 		val, err = v.StorageTypeId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

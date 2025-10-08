@@ -11,29 +11,29 @@ func volumeMapper(
 	vol VolumesValue,
 ) sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigVolumesInner {
 	volume := sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigVolumesInner{}
-	if !vol.Id.IsNull() {
+	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
 		volume.SetId(vol.Id.ValueInt64())
 	} else {
 		volume.SetId(-1)
 	}
 
-	if !vol.Name.IsNull() {
+	if !vol.Name.IsNull() && !vol.Name.IsUnknown() {
 		volume.SetName(vol.Name.ValueString())
 	}
 
-	if !vol.RootVolume.IsNull() {
+	if !vol.RootVolume.IsNull() && !vol.RootVolume.IsUnknown() {
 		volume.SetRootVolume(vol.RootVolume.ValueBool())
 	}
 
-	if !vol.Size.IsNull() {
+	if !vol.Size.IsNull() && !vol.Size.IsUnknown() {
 		volume.SetSize(vol.Size.ValueInt64())
 	}
 
-	if !vol.StorageTypeId.IsNull() {
+	if !vol.StorageTypeId.IsNull() && !vol.StorageTypeId.IsUnknown() {
 		volume.SetStorageType(vol.StorageTypeId.ValueInt64())
 	}
 
-	if !vol.DatastoreId.IsNull() {
+	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
 		volume.DatastoreId = &sdk.
 			AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigVolumesInnerDatastoreId{}
 
@@ -41,7 +41,7 @@ func volumeMapper(
 		volume.DatastoreId.String = &id
 	}
 
-	if !vol.DatastoreAutoSelection.IsNull() {
+	if !vol.DatastoreAutoSelection.IsNull() && !vol.DatastoreAutoSelection.IsUnknown() {
 		volume.DatastoreId = &sdk.
 			AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigVolumesInnerDatastoreId{}
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
