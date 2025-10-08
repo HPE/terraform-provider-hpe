@@ -185,7 +185,7 @@ func updateDatastoreFunc(
 	}
 
 	if diags.HasError() {
-		return DatastoreModel{}, diags
+		return state, diags
 	}
 
 	state, pdiags := getDatastoreAsState(ctx, id, plan, client)
