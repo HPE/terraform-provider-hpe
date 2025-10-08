@@ -24,7 +24,7 @@ var (
 	sitesPermissionsUpdateFunc    = sdk.NewUpdateCloudDatastoresRequestDatastoreResourcePermissionsSitesInnerWithDefaults
 )
 
-func updateDatastoreFunc(
+func updateDatastore(
 	ctx context.Context,
 	id int64,
 	plan DatastoreModel,
@@ -231,7 +231,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := updateDatastoreFunc(ctx, state.Id.ValueInt64(), plan, state, client)
+	state, diags := updateDatastore(ctx, state.Id.ValueInt64(), plan, state, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 

@@ -191,7 +191,7 @@ func (r *Resource) Create(
 
 	// For now, we need to call update to set resourcePermission and tenantPermissions
 	// because the API does not set these on create, even if provided.
-	state, pdiags = updateDatastoreFunc(ctx, plan.Id.ValueInt64(), plan, state, client)
+	state, pdiags = updateDatastore(ctx, plan.Id.ValueInt64(), plan, state, client)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
