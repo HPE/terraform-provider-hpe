@@ -4,6 +4,8 @@ package convert
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -361,4 +363,105 @@ func TupleToValue(
 	}
 
 	return types.TupleValueMust(tupleType.ElemTypes, vl), nil
+}
+
+func StructToDynamic(ctx context.Context, s any) (types.Dynamic, error) {
+	var dyn types.Dynamic
+
+	bytes, err := json.Marshal(s)
+	if err != nil {
+		return dyn, err
+	}
+
+	var structMap map[string]any
+	if err = json.Unmarshal(bytes, &structMap); err != nil {
+		return dyn, err
+	}
+
+	return MapToDynamic(ctx, structMap)
+}
+
+func MapToDynamic(ctx context.Context, m map[string]any) (types.Dynamic, error) {
+	objectValue, err := MapToObject(ctx, m)
+	if err != nil {
+		return types.DynamicNull(), err
+	}
+
+	return types.DynamicValue(objectValue), nil
+}
+
+func MapToObject(ctx context.Context, m map[string]any) (types.Object, error) {
+	if m == nil {
+		return types.ObjectNull(nil), nil
+	}
+
+	attrTypes := make(map[string]attr.Type)
+	attrValues := make(map[string]attr.Value)
+
+	for key, value := range m {
+		attrValue, attrType, err := AnyToAttrPair(ctx, value)
+		if err != nil {
+			return types.ObjectNull(nil), err
+		}
+		attrTypes[key] = attrType
+		attrValues[key] = attrValue
+	}
+
+	obj, diags := types.ObjectValue(attrTypes, attrValues)
+	if diags.HasError() {
+		return types.Object{}, errors.New("error creating object value")
+	}
+
+	return obj, nil
+}
+
+func AnyToAttrPair(ctx context.Context, value any) (attr.Value, attr.Type, error) {
+	switch v := value.(type) {
+	case string:
+		return types.StringValue(v), types.StringType, nil
+	case int:
+		return types.Int64Value(int64(v)), types.Int64Type, nil
+	case int64:
+		return types.Int64Value(v), types.Int64Type, nil
+	case float64:
+		return types.Float64Value(v), types.Float64Type, nil
+	case bool:
+		return types.BoolValue(v), types.BoolType, nil
+	case []any:
+		if len(v) == 0 {
+			return types.ListNull(types.StringType), types.ListType{ElemType: types.StringType}, nil
+		}
+
+		elemValues := make([]attr.Value, len(v))
+		var elemType attr.Type
+
+		for i, item := range v {
+			val, typ, err := AnyToAttrPair(ctx, item)
+			if err != nil {
+				return nil, nil, err
+			}
+			elemValues[i] = val
+			if i == 0 {
+				elemType = typ
+			}
+		}
+
+		listValue, diags := types.ListValue(elemType, elemValues)
+		if diags.HasError() {
+			return nil, nil, errors.New("error creating list value")
+		}
+
+		return listValue, types.ListType{ElemType: elemType}, nil
+	case map[string]any:
+		objValue, err := MapToObject(ctx, v)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return objValue, objValue.Type(ctx), nil
+	case nil:
+		return types.StringNull(), types.StringType, nil
+	default:
+		return types.StringValue(fmt.Sprintf("%v", v)), types.StringType, nil
+	}
 }

@@ -5,8 +5,6 @@ package role
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -27,6 +26,19 @@ import (
 func RoleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"default_persona_code": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The code of the default Persona to assign to the Role.",
+				MarkdownDescription: "The code of the default Persona to assign to the Role.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"api",
+						"serviceCatalog",
+						"standard",
+						"vdi",
+					),
+				},
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Description",
@@ -623,14 +635,15 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type RoleModel struct {
-	Description       types.String     `tfsdk:"description"`
-	Id                types.Int64      `tfsdk:"id"`
-	LandingUrl        types.String     `tfsdk:"landing_url"`
-	Multitenant       types.Bool       `tfsdk:"multitenant"`
-	MultitenantLocked types.Bool       `tfsdk:"multitenant_locked"`
-	Name              types.String     `tfsdk:"name"`
-	Permissions       PermissionsValue `tfsdk:"permissions"`
-	RoleType          types.String     `tfsdk:"role_type"`
+	DefaultPersonaCode types.String     `tfsdk:"default_persona_code"`
+	Description        types.String     `tfsdk:"description"`
+	Id                 types.Int64      `tfsdk:"id"`
+	LandingUrl         types.String     `tfsdk:"landing_url"`
+	Multitenant        types.Bool       `tfsdk:"multitenant"`
+	MultitenantLocked  types.Bool       `tfsdk:"multitenant_locked"`
+	Name               types.String     `tfsdk:"name"`
+	Permissions        PermissionsValue `tfsdk:"permissions"`
+	RoleType           types.String     `tfsdk:"role_type"`
 }
 
 var _ basetypes.ObjectTypable = PermissionsType{}

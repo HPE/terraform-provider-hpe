@@ -281,8 +281,18 @@ func roleAsState(
 		return state, diags
 	}
 
+	defaultPersona, diags := NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
+		"code": convert.StrToType(role.Role.GetDefaultPersona().Code),
+		"id":   convert.Int64ToType(role.Role.GetDefaultPersona().Id),
+		"name": convert.StrToType(role.Role.GetDefaultPersona().Name),
+	})
+	if diags.HasError() {
+		return state, diags
+	}
+
 	state.Id = convert.Int64ToType(role.Role.Id)
 	state.Name = convert.StrToType(role.Role.Name)
+	state.DefaultPersona = defaultPersona
 	state.Description = convert.StrToType(role.Role.Description.Get())
 	state.LandingUrl = convert.StrToType(role.Role.LandingUrl.Get())
 	state.Multitenant = convert.BoolToType(role.Role.Multitenant)

@@ -17,13 +17,10 @@ HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
 ```terraform
 resource "hpe_morpheus_cloud" "example" {
-  # Required fields
   name      = "TestCloud"
   tenant_id = 1
   group_id  = 1
 
-
-  # General configuration
   code             = "aCode"
   external_id      = "aCode"
   labels           = ["aLabel1", "aLabel2"]
@@ -32,23 +29,18 @@ resource "hpe_morpheus_cloud" "example" {
   location         = "somewhere"
   visibility       = "public"
 
-  # Agent and provisioning settings
   agent_install_mode       = "ssh"
   appliance_url            = "https://somewhere.com"
   auto_recover_power_state = true
   import_existing_vms      = "off"
 
-  # Cost and guidance settings
   costing_mode  = "costing"
   guidance_mode = "off"
 
-  # Security settings
   security_mode = "off"
 
-  # Console settings
   keyboard_layout = "us"
 
-  # HVM-specific configuration
   config_hvm = {
     certificate_provider          = "internal"
     enable_network_type_selection = false
@@ -71,7 +63,6 @@ resource "hpe_morpheus_cloud" "example" {
 - `appliance_url` (String) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
 - `cloud_type_code` (String) Cloud (zone) type code
-- `cloud_type_id` (Number) Cloud (zone) type id
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
