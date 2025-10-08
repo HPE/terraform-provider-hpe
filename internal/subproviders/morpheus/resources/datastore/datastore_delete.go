@@ -34,8 +34,8 @@ func (r *Resource) Delete(
 	_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
-			"delete cloud resource",
-			fmt.Sprintf("cloud %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
+			"delete datastore resource",
+			fmt.Sprintf("datastore %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return
@@ -65,7 +65,7 @@ func (r *Resource) Delete(
 		resp.Diagnostics.AddError(
 			"delete datastore resource",
 			fmt.Sprintf(
-				"datastore %d: destroy failed current statusCode is: %v",
+				"datastore %d: DELETE failed current statusCode is: %v",
 				id,
 				statusCode,
 			),
