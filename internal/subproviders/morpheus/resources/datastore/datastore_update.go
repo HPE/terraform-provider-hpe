@@ -29,7 +29,6 @@ func updateDatastore(
 	state DatastoreModel,
 	client *sdk.APIClient,
 ) (DatastoreModel, diag.Diagnostics) {
-
 	var diags diag.Diagnostics
 
 	name := plan.Name.ValueString()

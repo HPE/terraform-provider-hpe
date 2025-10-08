@@ -122,6 +122,7 @@ func (r *Resource) Create(
 			"create datastore resource",
 			"datastore "+name+": invalid associated_resource_type "+associatedResourceType+", must be 'Cloud' or 'Cluster'",
 		)
+
 		return
 	}
 
@@ -204,5 +205,4 @@ func (r *Resource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 }

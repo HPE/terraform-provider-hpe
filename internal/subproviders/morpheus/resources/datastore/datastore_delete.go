@@ -62,7 +62,6 @@ func (r *Resource) Delete(
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(5*time.Minute),
 	); err != nil {
-
 		resp.Diagnostics.AddError(
 			"delete datastore resource",
 			fmt.Sprintf(

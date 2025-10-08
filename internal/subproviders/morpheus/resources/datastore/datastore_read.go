@@ -106,7 +106,8 @@ func getDatastoreAsState(
 		// Check returned config against plan
 		keysMap := map[string]string{
 			"source_dir_path": "sourceDirPath",
-			"source_hostname": "sourceHostname"}
+			"source_hostname": "sourceHostname",
+		}
 		_, pdiags := utils.CheckPlanAttributeAgainstAPIAttribute(ctx, plan.ConfigNfs, datastore.Config, keysMap)
 		diags = append(diags, pdiags...)
 
@@ -134,7 +135,8 @@ func getDatastoreAsState(
 		// Check returned config against plan
 		keysMap := map[string]string{
 			"enable_ransomware": "enableRansomware",
-			"protocol_type":     "protocolType"}
+			"protocol_type":     "protocolType",
+		}
 		keysFromMap, pdiags := utils.CheckPlanAttributeAgainstAPIAttribute(
 			ctx, plan.ConfigAlletrampHvm, datastore.Config, keysMap)
 		diags = append(diags, pdiags...)
@@ -190,7 +192,7 @@ func getDatastoreAsState(
 		keysFromMap, pdiags := utils.CheckPlanAttributeAgainstAPIAttribute(ctx, plan.Config, datastore.Config, nil)
 		diags = append(diags, pdiags...)
 		apiConfigForConfig := datastore.Config
-		for k, _ := range keysFromMap {
+		for k := range keysFromMap {
 			if _, ok := datastore.Config[k]; ok {
 				delete(apiConfigForConfig, k)
 			}
@@ -304,6 +306,7 @@ func getDatastoreAsState(
 				in sdk.ListDatastores200ResponseAllOfDatastoresInnerDatastoresInner,
 			) DatastoresValue {
 				id64 := int64(*in.Id)
+
 				return DatastoresValue{
 					Id:    convert.Int64ToType(&id64),
 					Name:  convert.StrToType(in.Name),
@@ -326,7 +329,7 @@ func createConfigFromApiDynamic(
 	var diags diag.Diagnostics
 	// We get more information back from the API, we put this in config_from_api
 	apiConfigForConfigApi := make(map[string]any)
-	for k, _ := range keysFromMap {
+	for k := range keysFromMap {
 		if _, ok := config[k]; ok {
 			apiConfigForConfigApi[k] = config[k]
 		}
