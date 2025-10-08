@@ -153,33 +153,27 @@ func updateDatastoreFunc(
 	}
 
 	// Wait for the datastore to be ready
-	waitForReady := func() (*sdk.GetDatastores200Response, error) {
+	waitForReady := func() (string, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
-			return nil, backoff.Permanent(err)
+			return "", backoff.Permanent(err)
 		}
 
 		status := response.GetDatastore().Status
 
-		return response, checkStatusDone(
+		return status, checkStatusDone(
 			status,
 			CreateTargetStatuses,
 			CreateErrorStatuses,
 		)
 	}
 
-	if r, err := backoff.Retry(
+	if status, err := backoff.Retry(
 		ctx,
 		waitForReady,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(45*time.Minute),
 	); err != nil {
-		var status string
-
-		if r != nil {
-			status = r.GetDatastore().Status
-		}
-
 		diags.AddError(
 			"update datastore resource",
 			fmt.Sprintf(
@@ -188,6 +182,10 @@ func updateDatastoreFunc(
 				status,
 			),
 		)
+	}
+
+	if diags.HasError() {
+		return DatastoreModel{}, diags
 	}
 
 	state, pdiags := getDatastoreAsState(ctx, id, plan, client)
