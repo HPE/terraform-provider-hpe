@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package datastore
 
 import (
@@ -31,7 +29,6 @@ func updateDatastore(
 	state DatastoreModel,
 	client *sdk.APIClient,
 ) (DatastoreModel, diag.Diagnostics) {
-
 	var diags diag.Diagnostics
 
 	name := plan.Name.ValueString()

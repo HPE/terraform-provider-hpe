@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:build experimental
-
 package datastore
 
 import (
@@ -49,7 +47,7 @@ func datastoreCreateDatastore(ctx context.Context,
 	case associatedResourceTypeCloud:
 		datastoreCreate.SetRefType(cloudRefType)
 		// TODO allow the following when API has been fixed
-	//case associatedResourceTypeCluster:
+	// case associatedResourceTypeCluster:
 	//	datastoreCreate.SetRefType(clusterRefType)
 	default:
 		resp.Diagnostics.AddError(
