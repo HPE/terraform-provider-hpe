@@ -223,7 +223,6 @@ func getDatastoreAsState(
 	state.Tenants = plan.Tenants
 
 	// Set StorageServer to that returned by the API
-	state.StorageServer = NewStorageServerValueNull()
 	if server, ok := datastore.GetStorageServerOk(); ok && server != nil {
 		storageServer := StorageServerValue{}
 		storageServer.Id = convert.Int64ToType(server.Id)
@@ -363,7 +362,7 @@ func (r *Resource) Read(
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"read cloud resource",
+			"read datastore resource",
 			"new client call failed with "+err.Error(),
 		)
 
@@ -384,7 +383,4 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }

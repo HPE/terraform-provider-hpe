@@ -20,6 +20,8 @@ var (
 	resourcePermissionsFuncCluster = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
 	permissionsSitesFuncCluster    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
 	datastoreTypeFuncCluster       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	nfsConfigFuncCluster           = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults
+	alletrampHvmConfigFuncCluster  = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults
 )
 
 func datastoreCreateCluster(ctx context.Context,
@@ -48,7 +50,7 @@ func datastoreCreateCluster(ctx context.Context,
 	createConfig := datastoreCreate.GetConfig()
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
-		nfsConfig := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults()
+		nfsConfig := nfsConfigFuncCluster()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
 			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
@@ -65,7 +67,7 @@ func datastoreCreateCluster(ctx context.Context,
 		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf = nfsConfig
 
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
-		alletrampHvmConfig := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults()
+		alletrampHvmConfig := alletrampHvmConfigFuncCluster()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			alletrampHvmConfig.SetEnableRansomware(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
@@ -150,7 +152,6 @@ func datastoreCreateCluster(ctx context.Context,
 			return 0
 		}
 
-		// tenantPermissions := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults()
 		var tenantPermissions []sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner
 		for _, tenantsValue := range tenantsValues {
 			tenantPermission := tenantsFuncCluster()

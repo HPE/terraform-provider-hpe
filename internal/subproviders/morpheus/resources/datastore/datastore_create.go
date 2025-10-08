@@ -12,12 +12,10 @@ import (
 	"slices"
 	"time"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
 const (
@@ -57,19 +55,15 @@ func (r *Resource) Create(
 ) {
 	var plan, cfg DatastoreModel
 
-	tflog.Info(ctx, "creating datastore")
-
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Info(ctx, "error getting plan")
 		return
 	}
 
 	// Read configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &cfg)...)
 	if resp.Diagnostics.HasError() {
-		tflog.Info(ctx, "error getting config")
 		return
 	}
 
@@ -88,7 +82,7 @@ func (r *Resource) Create(
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"create cloud resource",
+			"create datastore resource",
 			"cloud "+name+": failed to create client: "+err.Error(),
 		)
 
@@ -180,9 +174,13 @@ func (r *Resource) Create(
 		)
 	}
 
-	state, pdiags := getDatastoreAsState(ctx, plan.Id.ValueInt64(), plan, client)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	state, gdiags := getDatastoreAsState(ctx, plan.Id.ValueInt64(), plan, client)
+	if gdiags.HasError() {
+		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
 			"create datastore resource",
 			fmt.Sprintf("datastore %d: failed to read from api", plan.Id.ValueInt64()),

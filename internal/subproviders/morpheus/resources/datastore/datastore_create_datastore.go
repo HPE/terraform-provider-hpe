@@ -16,10 +16,13 @@ import (
 )
 
 var (
-	permissionsFunc      = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsPlansFunc = sdk.NewListBackupSettings200ResponseBackupSettingsDefaultScheduleWithDefaults
-	permissionsSitesFunc = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	tenantsFunc          = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
+	permissionsFunc        = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
+	permissionsPlansFunc   = sdk.NewListBackupSettings200ResponseBackupSettingsDefaultScheduleWithDefaults
+	permissionsSitesFunc   = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	tenantsFunc            = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
+	nfsConfigFunc          = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults
+	alletrampHvmConfigFunc = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults
+	storageServerFunc      = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
 )
 
 type (
@@ -63,7 +66,7 @@ func datastoreCreateDatastore(ctx context.Context,
 	createConfig := datastoreCreate.GetConfig()
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
-		nfsConfig := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults()
+		nfsConfig := nfsConfigFunc()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
 			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
@@ -79,7 +82,7 @@ func datastoreCreateDatastore(ctx context.Context,
 
 		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf = nfsConfig
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
-		alletrampHvmConfig := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults()
+		alletrampHvmConfig := alletrampHvmConfigFunc()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			alletrampHvmConfig.SetEnableRansomware(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
@@ -139,7 +142,7 @@ func datastoreCreateDatastore(ctx context.Context,
 
 	// Optional fields
 	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
-		storageServerConfig := sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults()
+		storageServerConfig := storageServerFunc()
 		storageServerConfig.SetId(plan.StorageServer.Id.ValueInt64())
 		datastoreCreate.SetStorageServer(*storageServerConfig)
 	}
@@ -164,7 +167,6 @@ func datastoreCreateDatastore(ctx context.Context,
 			return 0
 		}
 
-		// tenantPermissions := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults()
 		tenantPermissions := tenantsFunc()
 		var accounts []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
 		for _, tenantsValue := range tenantsValues {
