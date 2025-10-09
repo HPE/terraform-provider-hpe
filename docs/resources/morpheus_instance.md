@@ -19,25 +19,25 @@ supported.
 
 ```terraform
 data "hpe_morpheus_cloud" "vme_cloud" {
-  name = "HPE Alletra VME" 
+  name = "HPE Alletra VME"
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
-    name                = "1 CPU, 1GB Memory"
-    provision_type_code = "kvm"
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "kvm"
 }
 
 resource "hpe_morpheus_instance" "example" {
-  name               = "TestInstance"
-  cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id   # HPE Alletra VME
-  layout_id          = 5385   # Single KVM VM
-  instance_type_id   = 9 # (HVM) mvm-cluster
-  layout_size        = 1
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
+  layout_id        = 5385                                 # Single KVM VM
+  instance_type_id = 9                  # (HVM) mvm-cluster
+  layout_size      = 1
 
-  group_id           = 1
-  plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
-  
-  instance_context   = "dev"
+  group_id = 1
+  plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+
+  instance_context = "dev"
   network_interfaces = [
     {
       network_id = 103481
@@ -47,11 +47,18 @@ resource "hpe_morpheus_instance" "example" {
 
   volumes = [
     {
-      root_volume  = true
-      name         = "root"
-      size         = 10
-      storage_type = 1
-      datastore_id = 38658
+      root_volume     = true
+      name            = "root"
+      size            = 10
+      storage_type_id = 1
+      datastore_id    = 38658
+    },
+    {
+      root_volume     = false
+      name            = "data"
+      size            = 10
+      storage_type_id = 1
+      datastore_id    = 38658
     }
   ]
 
@@ -160,9 +167,12 @@ The current list of storage controllers is returned for instances and servers fo
 Use /api/provision-types?code=vmware to see the available controllerTypes for vmware."
 - `datastore_auto_selection` (String) Auto selection can be specified as auto or autoCluster (for clusters).
 - `datastore_id` (Number) The ID of the specific datastore.
-- `id` (Number) The id for the LV configuration being created.
 - `name` (String) Name/type of the LV being created.
 - `root_volume` (Boolean) If set to false then a non-root LV will be created.
 - `size` (Number) Size of the LV to be created in GBs.  Uses default from service plan.
 - `size_id` (Number) Can be used to select pre-existing LV choices from Morpheus.
 - `storage_type_id` (Number) Identifier for LV type
+
+Read-Only:
+
+- `id` (Number) The id for the LV configuration being created.
