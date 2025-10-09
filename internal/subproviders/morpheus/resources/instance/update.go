@@ -10,9 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/convert"
 	errfmt "github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/errors"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 )
 
 // Update implements resource.Resource.
