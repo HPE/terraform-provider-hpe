@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -311,10 +312,34 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							resp.RequiresReplace = true
 						}
 					}, "require replace if volume layout has changed", "require replace if volume layout has changed"),
+					FunModifier(ctx),
 				},
 			},
 		},
 	}
+}
+
+// funModifier implements the plan modifier.
+type funModifier struct{}
+
+// Description returns a human-readable description of the plan modifier.
+func (m funModifier) Description(_ context.Context) string {
+	return "Let's have some fun"
+}
+
+// MarkdownDescription returns a markdown description of the plan modifier.
+func (m funModifier) MarkdownDescription(_ context.Context) string {
+	return "Let's have some fun"
+}
+
+// PlanModifyBool implements the plan modification logic.
+func (m funModifier) PlanModifySet(ctx context.Context, req planmodifier.SetRequest, resp *planmodifier.SetResponse) {
+	tflog.Error(ctx, fmt.Sprintf("&&&&&&&&&&&&&&&&&&&&&&&& req: %#v", req))
+	// panic(fmt.Sprintf("&&&&&&&&&&&&&&&&&&&&&&&& req: %#v", req.PlanValue))
+}
+
+func FunModifier(ctx context.Context) planmodifier.Set {
+	return funModifier{}
 }
 
 type InstanceModel struct {
