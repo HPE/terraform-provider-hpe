@@ -5,9 +5,13 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -16,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -64,6 +67,10 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Generic Cloud Configuration",
 				MarkdownDescription: "Generic Cloud Configuration",
+				Validators: []validator.Dynamic{
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm")}...),
+				},
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -467,14 +474,12 @@ func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -513,7 +518,6 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -521,7 +525,6 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["certificate_provider"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
