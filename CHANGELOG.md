@@ -4,14 +4,16 @@ In this release (v0.2.0) we have added the following resource functionality:
 - hpe_morpheus_datastore resource has been added (Create, Delete, Read, Update)
 - hpe_morpheus_service_plan Update functionality has been added
 - hpe_morpheus_cloud now has a dynamic `config` block to support arbitrary cloud configuration options
+- hpe_morpheus_role now supports setting a `Default Persona`
 
 We have added the following data-source functionality:
 - hpe_morpheus_datastore data-source has been added
+- hpe_morpheus_role now supports reading `Default Persona` information
 
 We have fixed the following issues:
 - hpe_morpheus_user would force recreation if an attribute was updated, this has been fixed
 - hpe_morpheus_network switchId is now supported
-- hpe_morpheus_role `default persona` issue has been fixed
+- hpe_morpheus_role data-source `Default Persona` issue has been fixed
 
 ## New known issues
 
