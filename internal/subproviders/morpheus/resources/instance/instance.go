@@ -60,6 +60,19 @@ var (
 		"suspended",
 		"restoring",
 	}
+
+	UpdateTargetStatuses = []string{
+		"running",
+	}
+
+	UpdateErrorStatuses = []string{
+		"denied",
+		"cancelled",
+		"failed",
+		"suspended",
+		"removing",
+		"pendingRemoval",
+	}
 )
 
 func NewResource() resource.Resource {
@@ -226,8 +239,10 @@ func getInstanceAsState(
 			v.IpAddress = convert.StrToType(in.IpAddress)
 			v.IpMode = convert.StrToType(in.IpMode)
 
-			groupID := int64(in.Network.GetGroup())
-			v.NetworkGroupId = types.Int64Value(groupID)
+			if in.Network.Group != nil {
+				groupID := int64(in.Network.GetGroup())
+				v.NetworkGroupId = types.Int64Value(groupID)
+			}
 
 			v.NetworkId = convert.Int64ToType(in.Network.Id)
 
@@ -377,9 +392,9 @@ func (g *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var data InstanceModel
+	var plan InstanceModel
 
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -393,14 +408,14 @@ func (g *Resource) Create(
 
 	// cloud_id
 	reqInstance := sdk.NewAddInstanceRequestWithDefaults()
-	if !data.CloudId.IsNull() {
-		reqInstance.SetZoneId(data.CloudId.ValueInt64())
+	if !plan.CloudId.IsNull() {
+		reqInstance.SetZoneId(plan.CloudId.ValueInt64())
 	}
 
 	// config
 	configMap := make(map[string]any)
-	if !data.Config.IsNull() {
-		configValue := data.Config.UnderlyingValue()
+	if !plan.Config.IsNull() {
+		configValue := plan.Config.UnderlyingValue()
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -426,7 +441,7 @@ func (g *Resource) Create(
 	}
 
 	// evars
-	evars, diags := convert.FromSetType(ctx, data.Evars, evarMapper)
+	evars, diags := convert.FromSetType(ctx, plan.Evars, evarMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert evars")
 		resp.Diagnostics.Append(diags...)
@@ -437,21 +452,21 @@ func (g *Resource) Create(
 
 	// group_id
 	reqInstance.Instance.SetSite(
-		*sdk.NewAddInstanceRequestInstanceSite(data.GroupId.ValueInt64()),
+		*sdk.NewAddInstanceRequestInstanceSite(plan.GroupId.ValueInt64()),
 	)
 
 	// instance_context
-	if !data.InstanceContext.IsNull() {
-		reqInstance.Instance.SetInstanceContext(data.InstanceContext.ValueString())
+	if !plan.InstanceContext.IsNull() {
+		reqInstance.Instance.SetInstanceContext(plan.InstanceContext.ValueString())
 	}
 
 	// instance_type_id
-	if !data.InstanceTypeId.IsNull() {
+	if !plan.InstanceTypeId.IsNull() {
 		// instance creation API does not support specifying an instance type
 		// ID directly instead it expects an instance type code. For consistency
 		// we prefer to use ID in Terraform. This means we need to make an extra
 		// API call to get the instance type code value.
-		code, diags := getInstanceTypeCode(ctx, client, data.InstanceTypeId.ValueInt64())
+		code, diags := getInstanceTypeCode(ctx, client, plan.InstanceTypeId.ValueInt64())
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 
@@ -466,28 +481,28 @@ func (g *Resource) Create(
 	}
 
 	// layout_id
-	if !data.LayoutId.IsNull() {
+	if !plan.LayoutId.IsNull() {
 		reqInstance.Instance.SetLayout(
 			*sdk.NewAddInstanceRequestInstanceLayout(
-				data.LayoutId.ValueInt64(),
+				plan.LayoutId.ValueInt64(),
 			),
 		)
 	}
 
 	// layout_size
-	if !data.LayoutSize.IsNull() {
-		reqInstance.SetLayoutSize(data.LayoutSize.ValueInt64())
+	if !plan.LayoutSize.IsNull() {
+		reqInstance.SetLayoutSize(plan.LayoutSize.ValueInt64())
 	}
 
 	// name
-	if !data.Name.IsNull() {
-		reqInstance.Instance.SetName(data.Name.ValueString())
+	if !plan.Name.IsNull() {
+		reqInstance.Instance.SetName(plan.Name.ValueString())
 	}
 
 	// network_interfaces
 	networkInterfaces, diags := convert.FromSetType(
 		ctx,
-		data.NetworkInterfaces,
+		plan.NetworkInterfaces,
 		networkInterfaceMapper,
 	)
 	if diags.HasError() {
@@ -499,16 +514,16 @@ func (g *Resource) Create(
 	reqInstance.SetNetworkInterfaces(networkInterfaces)
 
 	// plan_id
-	if !data.PlanId.IsNull() {
+	if !plan.PlanId.IsNull() {
 		reqInstance.Instance.SetPlan(
-			sdk.AddInstanceRequestInstancePlan{Id: data.PlanId.ValueInt64()},
+			sdk.AddInstanceRequestInstancePlan{Id: plan.PlanId.ValueInt64()},
 		)
 	}
 
 	// ports
 	ports, diags := convert.FromSetType(
 		ctx,
-		data.Ports,
+		plan.Ports,
 		func(in PortsValue) sdk.AddInstanceRequestPortsInner {
 			return sdk.AddInstanceRequestPortsInner{
 				Port: in.Port.ValueInt64(),
@@ -526,7 +541,7 @@ func (g *Resource) Create(
 	reqInstance.SetPorts(ports)
 
 	// tags
-	tags, diags := convert.FromSetType(ctx, data.Tags, tagMapper)
+	tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -536,12 +551,12 @@ func (g *Resource) Create(
 	reqInstance.SetTags(tags)
 
 	// task_set_id
-	if !data.TaskSetId.IsNull() {
-		reqInstance.SetTaskSetId(data.TaskSetId.ValueInt64())
+	if !plan.TaskSetId.IsNull() {
+		reqInstance.SetTaskSetId(plan.TaskSetId.ValueInt64())
 	}
 
 	// volumes
-	volumes, diags := convert.FromSetType(ctx, data.Volumes, volumeMapper)
+	volumes, diags := convert.FromSetType(ctx, plan.Volumes, volumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -559,51 +574,45 @@ func (g *Resource) Create(
 		return
 	}
 
-	data.Id = convert.Int64ToType(instance.Instance.Id)
+	plan.Id = convert.Int64ToType(instance.Instance.Id)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	waitForReady := func() (*sdk.GetInstance200Response, error) {
-		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, data.Id.ValueInt64()).Execute()
+	waitForReady := func() (string, error) {
+		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
-			return nil, backoff.Permanent(err)
+			return "", backoff.Permanent(err)
 		}
 
 		status := resp.Instance.GetStatus()
 
-		return resp, checkStatusDone(
+		return status, checkStatusDone(
 			status,
 			CreateTargetStatuses,
 			CreateErrorStatuses,
 		)
 	}
 
-	if r, err := backoff.Retry(
+	if status, err := backoff.Retry(
 		ctx,
 		waitForReady,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(45*time.Minute),
 	); err != nil {
-		var status string
-
-		if r.GetInstance().Status != nil {
-			status = *r.GetInstance().Status
-		}
-
 		resp.Diagnostics.AddError(
 			"create instance resource",
 			fmt.Sprintf(
-				"instance %d: provisioning failed current status is: %v",
-				data.Id.ValueInt64(),
+				"instance %d: provisioning failed current status is: %s",
+				plan.Id.ValueInt64(),
 				status,
 			),
 		)
 	}
 
-	state, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, diag := getInstanceAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -708,16 +717,4 @@ func (g *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-}
-
-// Update implements resource.Resource.
-func (g *Resource) Update(
-	_ context.Context,
-	_ resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	resp.Diagnostics.AddError(
-		"update instance resource",
-		"update of 'instance' resources has not been implemented",
-	)
 }
