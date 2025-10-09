@@ -24,6 +24,10 @@ may fail to delete.  Always delete VMs and other resources using the datastore b
 -> NFS datastores may remain in a `provisioning` state indefinitely if the NFS server is not reachable or the share is not accessible.
 Ensure the Morpheus appliance can reach the NFS server and that the share is accessible before creating.
 
+-> One of the config blocks must be specified, either `config_alletramp_hvm`, `config_nfs`, or the generic `config`.
+
+-> When creating `Cluster` datastores, the `storage_server` block is required.
+
 ## Example Usage
 
 {{ tffile "internal/subproviders/morpheus/resources/datastore/example_alletramp_hvm.tf" }}
