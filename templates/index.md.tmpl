@@ -54,6 +54,13 @@ be toggled off by setting `insecure` to `true` in the provider block.
 
 ## Release Notes
 
+->The `hpe_morpheus_user` resource uses a `WriteOnly` password field.  `WriteOnly` attributes are supported
+by Terraform versions 1.11 and later.
+
+->The `hpe_morpheus_instance` and `hpe_morpheus_network` resources use a `Dynamic` attribute for `config`.  This means
+that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.  Examples of these
+are shown in the documentation.
+
 ### New functionality
 
 ->The `hpe_morpheus_datastore` and `hpe_morpheus_cloud` resources use a `Dynamic` attribute for `config`.  This means
