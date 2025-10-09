@@ -254,6 +254,11 @@ func getInstanceAsState(
 	diags.Append(d...)
 	state.NetworkInterfaces = interfaces
 
+	// var ifs []NetworkInterfacesValue
+	// for _, i := range resp.GetInstance().Interfaces {
+	//
+	// }
+
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
 
@@ -303,7 +308,7 @@ func getInstanceAsState(
 		},
 	)
 
-	volumes, d := convert.ToSetType(
+	volumes, d := convert.ToListType(
 		ctx,
 		apiVolumes,
 		func(
@@ -556,7 +561,7 @@ func (g *Resource) Create(
 	}
 
 	// volumes
-	volumes, diags := convert.FromSetType(ctx, plan.Volumes, volumeMapper)
+	volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)

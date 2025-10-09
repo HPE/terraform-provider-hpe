@@ -101,7 +101,7 @@ func (g *Resource) Update(
 	if len(state.Volumes.Elements()) != len(plan.Volumes.Elements()) {
 		resizing = true
 
-		volumes, diags := convert.FromSetType(ctx, plan.Volumes, volumeMapper)
+		volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert volumes")
 			resp.Diagnostics.Append(diags...)

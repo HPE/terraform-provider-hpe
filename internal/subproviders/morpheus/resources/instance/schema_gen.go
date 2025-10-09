@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -224,7 +225,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
-			"volumes": schema.SetNestedAttribute{
+			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"controller_mount_point": schema.StringAttribute{
@@ -302,8 +303,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
 						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
 							return
 						}
@@ -333,7 +334,7 @@ type InstanceModel struct {
 	Ports             types.Set     `tfsdk:"ports"`
 	Tags              types.Set     `tfsdk:"tags"`
 	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
-	Volumes           types.Set     `tfsdk:"volumes"`
+	Volumes           types.List    `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}
