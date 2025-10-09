@@ -25,7 +25,7 @@ Morpheus API SSL cert checking is enabled by default in this provider.
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v0.1.0).
+release notes for the current version (v0.2.0).
 
 ### Authentication
 
