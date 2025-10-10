@@ -144,15 +144,25 @@ func getUserByID(
 		}
 	}
 
-	roleSet, roleDiags := types.SetValueFrom(ctx, RolesType{
-		ObjectType: types.ObjectType{
-			AttrTypes: RolesValue{}.AttributeTypes(ctx),
-		},
-	}, roleValues)
-	if roleDiags.HasError() {
-		diags.Append(roleDiags...)
+	var roleSet types.Set
+	if len(roleValues) == 0 {
+		roleSet = types.SetValueMust(RolesType{
+			ObjectType: types.ObjectType{
+				AttrTypes: RolesValue{}.AttributeTypes(ctx),
+			},
+		}, []attr.Value{})
+	} else {
+		var roleDiags diag.Diagnostics
+		roleSet, roleDiags = types.SetValueFrom(ctx, RolesType{
+			ObjectType: types.ObjectType{
+				AttrTypes: RolesValue{}.AttributeTypes(ctx),
+			},
+		}, roleValues)
+		if roleDiags.HasError() {
+			diags.Append(roleDiags...)
 
-		return diags
+			return diags
+		}
 	}
 
 	// Handle Access complex object
@@ -349,49 +359,148 @@ func getAccessAsState(
 		})
 	}
 
-	blueprintsSet, diags := types.SetValueFrom(ctx, BlueprintsValue{}.Type(ctx), blueprints)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+	// Create sets, ensuring empty slices result in empty sets rather than null
+	var blueprintsSet types.Set
+	if len(blueprints) == 0 {
+		blueprintsSet = types.SetValueMust(BlueprintsValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		blueprintsSet, setDiags = types.SetValueFrom(ctx, BlueprintsValue{}.Type(ctx), blueprints)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	catalogItemTypesSet, diags := types.SetValueFrom(ctx, CatalogItemTypesValue{}.Type(ctx), catalogItemTypes)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var catalogItemTypesSet types.Set
+	if len(catalogItemTypes) == 0 {
+		catalogItemTypesSet = types.SetValueMust(CatalogItemTypesValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		catalogItemTypesSet, setDiags = types.SetValueFrom(ctx, CatalogItemTypesValue{}.Type(ctx), catalogItemTypes)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	featuresSet, diags := types.SetValueFrom(ctx, FeaturesValue{}.Type(ctx), features)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var featuresSet types.Set
+	if len(features) == 0 {
+		featuresSet = types.SetValueMust(FeaturesValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		featuresSet, setDiags = types.SetValueFrom(ctx, FeaturesValue{}.Type(ctx), features)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	instanceTypesSet, diags := types.SetValueFrom(ctx, InstanceTypesValue{}.Type(ctx), instanceTypes)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var instanceTypesSet types.Set
+	if len(instanceTypes) == 0 {
+		instanceTypesSet = types.SetValueMust(InstanceTypesValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		instanceTypesSet, setDiags = types.SetValueFrom(ctx, InstanceTypesValue{}.Type(ctx), instanceTypes)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	personasSet, diags := types.SetValueFrom(ctx, PersonasValue{}.Type(ctx), personas)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var personasSet types.Set
+	if len(personas) == 0 {
+		personasSet = types.SetValueMust(PersonasValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		personasSet, setDiags = types.SetValueFrom(ctx, PersonasValue{}.Type(ctx), personas)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	reportTypesSet, diags := types.SetValueFrom(ctx, ReportTypesValue{}.Type(ctx), reportTypes)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var reportTypesSet types.Set
+	if len(reportTypes) == 0 {
+		reportTypesSet = types.SetValueMust(ReportTypesValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		reportTypesSet, setDiags = types.SetValueFrom(ctx, ReportTypesValue{}.Type(ctx), reportTypes)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	groupsSet, diags := types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groups)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var groupsSet types.Set
+	if len(groups) == 0 {
+		groupsSet = types.SetValueMust(GroupsValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		groupsSet, setDiags = types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groups)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	workflowsSet, diags := types.SetValueFrom(ctx, WorkflowsValue{}.Type(ctx), workflows)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var workflowsSet types.Set
+	if len(workflows) == 0 {
+		workflowsSet = types.SetValueMust(WorkflowsValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		workflowsSet, setDiags = types.SetValueFrom(ctx, WorkflowsValue{}.Type(ctx), workflows)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	tasksSet, diags := types.SetValueFrom(ctx, TasksValue{}.Type(ctx), tasks)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var tasksSet types.Set
+	if len(tasks) == 0 {
+		tasksSet = types.SetValueMust(TasksValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		tasksSet, setDiags = types.SetValueFrom(ctx, TasksValue{}.Type(ctx), tasks)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	vdiPoolsSet, diags := types.SetValueFrom(ctx, VdiPoolsValue{}.Type(ctx), vdiPools)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var vdiPoolsSet types.Set
+	if len(vdiPools) == 0 {
+		vdiPoolsSet = types.SetValueMust(VdiPoolsValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		vdiPoolsSet, setDiags = types.SetValueFrom(ctx, VdiPoolsValue{}.Type(ctx), vdiPools)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
-	cloudsSet, diags := types.SetValueFrom(ctx, CloudsValue{}.Type(ctx), clouds)
-	if diags.HasError() {
-		return NewAccessValueNull(), diags
+
+	var cloudsSet types.Set
+	if len(clouds) == 0 {
+		cloudsSet = types.SetValueMust(CloudsValue{}.Type(ctx), []attr.Value{})
+	} else {
+		var setDiags diag.Diagnostics
+		cloudsSet, setDiags = types.SetValueFrom(ctx, CloudsValue{}.Type(ctx), clouds)
+		if setDiags.HasError() {
+			diags.Append(setDiags...)
+
+			return NewAccessValueNull(), diags
+		}
 	}
 
 	return NewAccessValue(AccessValue{}.AttributeTypes(ctx), map[string]attr.Value{
