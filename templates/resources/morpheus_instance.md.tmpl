@@ -15,6 +15,10 @@ monitoring, and eventual decommissioning.
 -> Currently only HVM instances are supported. Updating is currently not 
 supported.
 
+-> Only one network interface is supported at this time.
+
+-> With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
+
 ## Example Usage
 
 {{ tffile "internal/subproviders/morpheus/resources/instance/example.tf" }}
