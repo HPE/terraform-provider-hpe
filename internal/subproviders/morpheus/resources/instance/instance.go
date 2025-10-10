@@ -256,35 +256,36 @@ func getInstanceAsState(
 
 	// TODO: find a way to make sure each slice matches up correctly
 	if len(resp.GetInstance().Interfaces) == len(resp.GetInstance().ConnectionInfo) {
-		var ifs []NetworkInterfacesValue
+		var ifaces []NetworkInterfacesValue
 
 		for _, iface := range resp.GetInstance().Interfaces {
-			v := NetworkInterfacesValue{}
+			ifaceVal := NetworkInterfacesValue{}
 
-			v.IpAddress = convert.StrToType(iface.IpAddress)
-			v.IpMode = convert.StrToType(iface.IpMode)
+			ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
+			ifaceVal.IpMode = convert.StrToType(iface.IpMode)
 
 			if iface.Network.Group != nil {
 				groupID := int64(iface.Network.GetGroup())
-				v.NetworkGroupId = types.Int64Value(groupID)
+				ifaceVal.NetworkGroupId = types.Int64Value(groupID)
 			}
 
-			v.NetworkId = convert.Int64ToType(iface.Network.Id)
+			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
 
-			v.state = attr.ValueStateKnown
+			ifaceVal.state = attr.ValueStateKnown
 
-			ifs = append(ifs, v)
+			ifaces = append(ifaces, ifaceVal)
 		}
 
-		var newIfs []NetworkInterfacesValue
+		var newIfaces []NetworkInterfacesValue
+
 		for i, conn := range resp.GetInstance().ConnectionInfo {
-			iface := ifs[i]
+			iface := ifaces[i]
 			iface.IpAddress = convert.StrToType(conn.Ip)
 
-			newIfs = append(newIfs, iface)
+			newIfaces = append(newIfaces, iface)
 		}
 
-		networkIface := types.ObjectType{
+		networkInterfaceObject := types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"ip_address":       types.StringType,
 				"ip_mode":          types.StringType,
@@ -293,7 +294,7 @@ func getInstanceAsState(
 			},
 		}
 
-		setVal, d := types.SetValueFrom(ctx, networkIface, newIfs)
+		networkInterfacesSet, d := types.SetValueFrom(ctx, networkInterfaceObject, newIfaces)
 		diags.Append(d...)
 
 		if diags.HasError() {
@@ -302,7 +303,7 @@ func getInstanceAsState(
 			return state, diags
 		}
 
-		state.NetworkInterfaces = setVal
+		state.NetworkInterfaces = networkInterfacesSet
 	}
 
 	// plan_id
