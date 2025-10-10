@@ -44,6 +44,22 @@ resource "hpe_morpheus_instance" "example" {
 
   tags = [
     {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
       name  = "managed_by"
       value = "terraform"
     }
