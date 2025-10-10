@@ -145,6 +145,11 @@ We have fixed the following issues:
 - hpe_morpheus_datastore when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
   The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
   and that the share is accessible before creating.
+- hpe_morpheus_datastore delete is not guaranteed to succeed. AlletraMP HVM datastores will delete but NFS datastores
+  may fail to delete. Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- hpe_morpheus_instance only supports 1 network
+- hpe_morpheus_instance in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
 
 ### Known Issues from previous releases
 
