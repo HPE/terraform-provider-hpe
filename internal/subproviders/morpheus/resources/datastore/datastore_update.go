@@ -36,11 +36,25 @@ func updateDatastore(
 	updateDatastore := sdk.NewUpdateCloudDatastoresRequestDatastoreWithDefaults()
 	updateDatastore.AdditionalProperties = make(map[string]any)
 
-	if !plan.Visibility.IsNull() {
+	// If the plan has unknown value for Visibility, use the state values
+	// We can't use a PlanModifier for this since we call updateDatastore during Create
+	// and Update, and in Create the state is not available since it hasn't been
+	// written-out yet
+	switch plan.Visibility.IsUnknown() {
+	case true:
+		updateDatastore.SetVisibility(state.Visibility.ValueString())
+	case false:
 		updateDatastore.SetVisibility(plan.Visibility.ValueString())
 	}
 
-	if !plan.Active.IsNull() {
+	// If the plan has unknown value for Active, use the state values
+	// We can't use a PlanModifier for this since we call updateDatastore during Create
+	// and Update, and in Create the state is not available since it hasn't been
+	// written-out yet
+	switch plan.Active.IsUnknown() {
+	case true:
+		updateDatastore.SetActive(state.Active.ValueBool())
+	case false:
 		updateDatastore.SetActive(plan.Active.ValueBool())
 	}
 
