@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	Instances()
 	Networks()
 	Users()
 }

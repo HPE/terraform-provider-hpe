@@ -15,6 +15,10 @@ monitoring, and eventual decommissioning.
 -> Currently only HVM instances are supported. Updating is currently not 
 supported.
 
+-> Only one network interface is supported at this time.
+
+-> With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
+
 ## Example Usage
 
 ```terraform
@@ -64,6 +68,22 @@ resource "hpe_morpheus_instance" "example" {
 
   tags = [
     {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
       name  = "managed_by"
       value = "terraform"
     }
@@ -105,7 +125,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
-- `volumes` (Attributes Set) Logical Volume configuration to create additional LVs at provision time (see [below for nested schema](#nestedatt--volumes))
+- `volumes` (Attributes List) Logical Volume configuration to create additional LVs at provision time (see [below for nested schema](#nestedatt--volumes))
 
 ### Read-Only
 

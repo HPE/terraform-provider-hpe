@@ -11,9 +11,11 @@ description: |-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
--> Currently, only the HVM cloud configuration is supported. The `config_hvm` block provides HVM-specific configuration options.
+-> A `config_hvm` or `config` block is required. They can be empty.
 
-## Example Usage
+-> `cloud_type_code` must be set if using a generic `config` block.
+
+## Example Usage (HVM)
 
 ```terraform
 resource "hpe_morpheus_cloud" "example" {
@@ -44,6 +46,42 @@ resource "hpe_morpheus_cloud" "example" {
   config_hvm = {
     certificate_provider          = "internal"
     enable_network_type_selection = false
+  }
+}
+```
+
+## Example Usage (Generic)
+
+```terraform
+resource "hpe_morpheus_cloud" "example" {
+  name      = "TestCloud"
+  tenant_id = 1
+  group_id  = 1
+
+  code             = "aCode"
+  labels           = ["aLabel1", "aLabel2"]
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+  cloud_type_code  = "standard"
+
+  agent_install_mode       = "ssh"
+  auto_recover_power_state = true
+
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  security_mode = "off"
+
+  appliance_url            = "https://somewhere.com"
+  keyboard_layout = "us"
+  data_center_name = "aDatacenter"
+  external_id      = "aCode"
+  import_existing_vms      = "off"
+
+  config = {
+    certificateProvider          = "internal"
+    enableNetworkTypeSelection = false
   }
 }
 ```

@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusFindUserByUsername(t *testing.T) {
+func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -50,7 +50,7 @@ func TestAccMorpheusFindUserByUsername(t *testing.T) {
 resource "hpe_morpheus_user" "test_user" {
 	username = "` + username + `"
 	role_ids = [1]
-	email    = "` + username + `@example.com"
+	email    = "foo@testacc.com"
 	password_wo = "Test123!!"
 }
 `
@@ -95,7 +95,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindUserById(t *testing.T) {
+func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -111,7 +111,7 @@ func TestAccMorpheusFindUserById(t *testing.T) {
 resource "hpe_morpheus_user" "test_user" {
 	username = "` + username + `"
 	role_ids = [1]
-	email    = "` + username + `@example.com"
+	email    = "foo@testacc.com"
 	password_wo = "Test123!!"
 }
 `
@@ -143,7 +143,7 @@ resource "hpe_morpheus_user" "test_user" {
 	})
 }
 
-func TestAccMorpheusFindUserNotFound(t *testing.T) {
+func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -181,7 +181,7 @@ func TestAccMorpheusFindUserNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindUserNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -212,7 +212,7 @@ func TestAccMorpheusFindUserNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindUserBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -252,7 +252,7 @@ func TestAccMorpheusFindUserBothSearchAttrs(t *testing.T) {
 }
 
 // Test to verify that all of the attributes from a created user can be read
-func TestAccMorpheusFindUserVerifyAttributes(t *testing.T) {
+func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -261,7 +261,7 @@ func TestAccMorpheusFindUserVerifyAttributes(t *testing.T) {
 	}
 
 	username := acctest.RandomWithPrefix(t.Name())
-	email := username + "@example.com"
+	email := "foo@testacc.com"
 	firstName := "TestFirst"
 	lastName := "TestLast"
 

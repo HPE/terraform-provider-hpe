@@ -229,30 +229,81 @@ func getInstanceAsState(
 	state.Name = convert.StrToType(instance.Name)
 
 	// network_interfaces
-	interfaces, d := convert.ToSetType(
-		ctx,
-		resp.GetInstance().Interfaces,
-		func(
-			in sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
-		) NetworkInterfacesValue {
-			v := NetworkInterfacesValue{}
-			v.IpAddress = convert.StrToType(in.IpAddress)
-			v.IpMode = convert.StrToType(in.IpMode)
+	// interfaces, d := convert.ToSetType(
+	// 	ctx,
+	// 	resp.GetInstance().Interfaces,
+	// 	func(
+	// 		in sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
+	// 	) NetworkInterfacesValue {
+	// 		v := NetworkInterfacesValue{}
+	// 		v.IpAddress = convert.StrToType(in.IpAddress)
+	// 		v.IpMode = convert.StrToType(in.IpMode)
+	//
+	// 		if in.Network.Group != nil {
+	// 			groupID := int64(in.Network.GetGroup())
+	// 			v.NetworkGroupId = types.Int64Value(groupID)
+	// 		}
+	//
+	// 		v.NetworkId = convert.Int64ToType(in.Network.Id)
+	//
+	// 		v.state = attr.ValueStateKnown
+	//
+	// 		return v
+	// 	},
+	// )
+	// diags.Append(d...)
+	// state.NetworkInterfaces = interfaces
 
-			if in.Network.Group != nil {
-				groupID := int64(in.Network.GetGroup())
+	// TODO: find a way to make sure each slice matches up correctly
+	if len(resp.GetInstance().Interfaces) == len(resp.GetInstance().ConnectionInfo) {
+		var ifs []NetworkInterfacesValue
+
+		for _, iface := range resp.GetInstance().Interfaces {
+			v := NetworkInterfacesValue{}
+
+			v.IpAddress = convert.StrToType(iface.IpAddress)
+			v.IpMode = convert.StrToType(iface.IpMode)
+
+			if iface.Network.Group != nil {
+				groupID := int64(iface.Network.GetGroup())
 				v.NetworkGroupId = types.Int64Value(groupID)
 			}
 
-			v.NetworkId = convert.Int64ToType(in.Network.Id)
+			v.NetworkId = convert.Int64ToType(iface.Network.Id)
 
 			v.state = attr.ValueStateKnown
 
-			return v
-		},
-	)
-	diags.Append(d...)
-	state.NetworkInterfaces = interfaces
+			ifs = append(ifs, v)
+		}
+
+		var newIfs []NetworkInterfacesValue
+		for i, conn := range resp.GetInstance().ConnectionInfo {
+			iface := ifs[i]
+			iface.IpAddress = convert.StrToType(conn.Ip)
+
+			newIfs = append(newIfs, iface)
+		}
+
+		networkIface := types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"ip_address":       types.StringType,
+				"ip_mode":          types.StringType,
+				"network_group_id": types.Int64Type,
+				"network_id":       types.Int64Type,
+			},
+		}
+
+		setVal, d := types.SetValueFrom(ctx, networkIface, newIfs)
+		diags.Append(d...)
+
+		if diags.HasError() {
+			tflog.Error(ctx, "cannot convert network interfaces")
+
+			return state, diags
+		}
+
+		state.NetworkInterfaces = setVal
+	}
 
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
@@ -303,7 +354,7 @@ func getInstanceAsState(
 		},
 	)
 
-	volumes, d := convert.ToSetType(
+	volumes, d := convert.ToListType(
 		ctx,
 		apiVolumes,
 		func(
@@ -556,7 +607,7 @@ func (g *Resource) Create(
 	}
 
 	// volumes
-	volumes, diags := convert.FromSetType(ctx, plan.Volumes, volumeMapper)
+	volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
