@@ -26,7 +26,7 @@ Ensure the Morpheus appliance can reach the NFS server and that the share is acc
 
 -> One of the config blocks must be specified, either `config_alletramp_hvm`, `config_nfs`, or the generic `config`.
 
--> When creating `Cluster` datastores, the `storage_server` block is required.
+-> When creating `associated_resource_type` `Cluster` datastores, the `storage_server` block is required.
 
 ## Example Usage
 
@@ -43,7 +43,7 @@ For example:
 terraform import hpe_morpheus_datastore.example 123
 ```
 
-Note that when importing any `resource_permissions` or `tenants` will not be populated.  You will need to perform an update
+Note that when importing a datastore the `resource_permissions` and `tenants` will not be populated.  You will need to perform an update
 to the imported datastore to set these attributes.
 
 ## Notes
