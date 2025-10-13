@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	Datastores()
 	Instances()
 	Networks()
 	Users()
