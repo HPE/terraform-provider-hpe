@@ -47,7 +47,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindCloudById(t *testing.T) {
+func TestAccMorpheusCloudDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -57,19 +57,44 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
 # assume tenant_id 1 exists
-resource "morpheus_standard_cloud" "test_cloud" {
-  name = "` + name + `"
-  code = "standard"
+resource "hpe_morpheus_cloud" "test_cloud" {
+  name      = "` + name + `"
   tenant_id = 1
+  group_id  = 1
+
+  code             = "` + name + `"
+  external_id      = "` + name + `"
+  labels           = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  security_mode = "off"
+
+  keyboard_layout = "us"
+
+  config_hvm = {
+    certificate_provider          = "internal"
+    enable_network_type_selection = false
+  }
 }
 `
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "morpheus_standard_cloud.test_cloud.id")
+		"example-id.tf.tmpl", "Id", "hpe_morpheus_cloud.test_cloud.id")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,12 +110,6 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -101,7 +120,7 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	})
 }
 
-func TestAccMorpheusFindCloudByName(t *testing.T) {
+func TestAccMorpheusCloudDataSourceFindByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -111,19 +130,44 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
 # assume tenant_id 1 exists
-resource "morpheus_standard_cloud" "test_cloud" {
-  name = "` + name + `"
-  code = "standard"
+resource "hpe_morpheus_cloud" "test_cloud" {
+  name      = "` + name + `"
   tenant_id = 1
+  group_id  = 1
+
+  code             = "` + name + `"
+  external_id      = "` + name + `"
+  labels           = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  security_mode = "off"
+
+  keyboard_layout = "us"
+
+  config_hvm = {
+    certificate_provider          = "internal"
+    enable_network_type_selection = false
+  }
 }
 `
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-name.tf.tmpl", "Name", "morpheus_standard_cloud.test_cloud.name")
+		"example-name.tf.tmpl", "Name", "hpe_morpheus_cloud.test_cloud.name")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,12 +183,6 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -155,7 +193,7 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	})
 }
 
-func TestAccMorpheusFindCloudNotFound(t *testing.T) {
+func TestAccMorpheusCloudDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -193,7 +231,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusCloudDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -224,7 +262,7 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusCloudDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
