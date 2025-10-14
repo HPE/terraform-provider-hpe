@@ -111,7 +111,29 @@ func NewAPIClient(
 		opt(&options)
 	}
 
-	if options.httpclient == nil {
+	if options.httpclient != nil {
+		// Use the provided custom HTTP client (e.g., VCR client) but wrap with auth
+		var authRoundTripper http.RoundTripper
+		if token != "" {
+			authRoundTripper = auth.NewTokenRoundTripper(
+				context.Background(),
+				options.httpclient.Transport,
+				token,
+			)
+		} else {
+			authRoundTripper = auth.NewCredsRoundTripper(
+				context.Background(),
+				options.httpclient.Transport,
+				url,
+				username,
+				password,
+			)
+		}
+		c.GetConfig().HTTPClient = &http.Client{
+			Transport: authRoundTripper,
+			Timeout:   options.httpclient.Timeout,
+		}
+	} else {
 		var transport http.RoundTripper
 
 		transport = &http.Transport{

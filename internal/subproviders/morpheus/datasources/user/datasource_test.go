@@ -3,6 +3,8 @@
 package user_test
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"testing"
@@ -14,9 +16,14 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/datasources/user/consts"
+	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
+
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
 const providerConfigOffline = `
@@ -31,6 +38,16 @@ provider "hpe" {
 
 func TestMain(m *testing.M) {
 	code := m.Run()
+
+	// Stop and save all VCR recorders
+	for testName, recorder := range globalRecorders {
+		if err := recorder.Stop(); err != nil {
+			fmt.Printf("❌ Error stopping VCR recorder for %s: %v\n", testName, err)
+		} else {
+			fmt.Printf("💾 VCR Cassette saved for test: %s\n", testName)
+		}
+	}
+
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -38,10 +55,6 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	username := acctest.RandomWithPrefix(t.Name())
 	providerConfig := testhelpers.ProviderBlock()
@@ -72,7 +85,7 @@ resource "hpe_morpheus_user" "test_user" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceFindByUsername"),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + userResourceConfig,
@@ -85,23 +98,106 @@ resource "hpe_morpheus_user" "test_user" {
 	})
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
+var globalRecorders map[string]*recorder.Recorder
+
+func init() {
+	globalRecorders = make(map[string]*recorder.Recorder)
+}
+
+// debugTransport wraps the VCR transport to log all requests
+type debugTransport struct {
+	Transport http.RoundTripper
+}
+
+func (d *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	fmt.Printf("🌐 HTTP Request: %s %s\n", req.Method, req.URL.String())
+	resp, err := d.Transport.RoundTrip(req)
+	if err != nil {
+		fmt.Printf("❌ HTTP Error: %v\n", err)
+		return resp, err
+	}
+	fmt.Printf("✅ HTTP Response: %d %s\n", resp.StatusCode, resp.Status)
+	return resp, err
+}
+
+func getOrCreateRecorder(testName string) (*recorder.Recorder, error) {
+	if r, exists := globalRecorders[testName]; exists {
+		fmt.Printf("🔄 Reusing existing VCR Recorder for test: %s\n", testName)
+		return r, nil
+	}
+
+	// Determine mode based on testing.Short()
+	var mode recorder.Mode
+	var modeStr string
+	if testing.Short() {
+		// Short mode: replay only (fast tests)
+		mode = recorder.ModeReplayOnly
+		modeStr = "replay-only"
+	} else {
+		// Full mode: record or replay with new episodes (can record new interactions)
+		mode = recorder.ModeReplayWithNewEpisodes
+		modeStr = "record-with-new-episodes"
+	}
+
+	cassetteName := fmt.Sprintf("testdata/%s", testName)
+	r, err := recorder.New(cassetteName,
+		recorder.WithMode(mode),
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			fmt.Printf("🎥 VCR AfterCapture [%s]: %s %s -> %d %s\n",
+				testName, i.Request.Method, i.Request.URL, i.Response.Code, i.Response.Status)
+			return nil
+		}, recorder.AfterCaptureHook))
+	if err != nil {
+		return nil, err
+	}
+
+	globalRecorders[testName] = r
+
+	fmt.Printf("🎬 VCR Recorder created for test: %s (cassette: %s, mode: %s, new cassette: %v)\n",
+		testName, cassetteName, modeStr, r.IsNewCassette())
+
+	return r, nil
+}
+
+func newProviderWithVCR(testName string) (tfprotov6.ProviderServer, error) {
+	r, err := getOrCreateRecorder(testName)
+	if err != nil {
+		return nil, err
+	}
+
+	f := func(m model.SubModel) *clientfactory.ClientFactory {
+		// example of passing in custom http client
+		client := r.GetDefaultClient()
+
+		// Wrap the client transport to log ALL HTTP requests
+		originalTransport := client.Transport
+		client.Transport = &debugTransport{
+			Transport: originalTransport,
+		}
+
+		fmt.Printf("🔌 VCR HTTP Client created for test %s: %T (transport: %T)\n", testName, client, client.Transport)
+
+		return clientfactory.New(
+			m,
+			clientfactory.WithFactoryHTTPClient(client),
+		)
+	}
+	providerInstance := provider.New("test", morpheus.New(morpheus.WithClientFactory(f)))()
 
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
 
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hpe": newProviderWithError,
+func createTestProviderFactories(testName string) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"hpe": func() (tfprotov6.ProviderServer, error) {
+			return newProviderWithVCR(testName)
+		},
+	}
 }
 
 func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	username := acctest.RandomWithPrefix(t.Name())
 
@@ -133,7 +229,7 @@ resource "hpe_morpheus_user" "test_user" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceFindById"),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + userResourceConfig + dataSourceConfig,
@@ -146,10 +242,6 @@ resource "hpe_morpheus_user" "test_user" {
 func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -170,7 +262,7 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	expected := consts.ErrorNoUserFound
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceNotFound"),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -201,7 +293,7 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 	expected := consts.ErrorNoValidUserTerms
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceNoSearchAttrs"),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -215,10 +307,6 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -240,7 +328,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	expected := environment.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceBothSearchAttrs"),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -255,10 +343,6 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	username := acctest.RandomWithPrefix(t.Name())
 	email := "foo@testacc.com"
@@ -402,7 +486,7 @@ data "hpe_morpheus_user" "test_all" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: createTestProviderFactories("TestAccMorpheusUserDataSourceVerifyAttributes"),
 		Steps: []resource.TestStep{
 			{
 				ExpectNonEmptyPlan: false,
