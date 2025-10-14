@@ -40,7 +40,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusCloudExampleOk(t *testing.T) {
+func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -77,7 +77,27 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"labels.#",
-			"2",
+			"6",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"terraform",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"acctest",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"hpe_morpheus_cloud",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"sweepable",
 		),
 		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_cloud.example",
@@ -188,7 +208,7 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
+func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -230,7 +250,27 @@ func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"labels.#",
-			"2",
+			"6",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"terraform",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"acctest",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"hpe_morpheus_cloud",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"sweepable",
 		),
 		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_cloud.example",
@@ -342,7 +382,7 @@ func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudUpdate(t *testing.T) {
+func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -369,7 +409,27 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"labels.#",
-			"2",
+			"6",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"terraform",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"acctest",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"hpe_morpheus_cloud",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_cloud.example",
+			"labels.*",
+			"sweepable",
 		),
 		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_cloud.example",
@@ -474,7 +534,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -506,7 +566,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -538,7 +598,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -570,7 +630,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "changed"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -602,7 +662,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "changed"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -634,7 +694,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "cloudInit"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -666,7 +726,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://changed.com"
 						auto_recover_power_state = true
@@ -698,7 +758,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = false
@@ -730,7 +790,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -762,7 +822,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -794,7 +854,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -826,7 +886,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -858,7 +918,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -890,7 +950,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -922,7 +982,10 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2", "Label3"]
+						labels = [
+							"terraform", "acctest", "hpe_morpheus_cloud", "sweepable",
+							"Label1", "Label2", "Label3"
+						]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -946,7 +1009,27 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							"hpe_morpheus_cloud.example",
 							"labels.#",
-							"3",
+							"7",
+						),
+						resource.TestCheckTypeSetElemAttr(
+							"hpe_morpheus_cloud.example",
+							"labels.*",
+							"terraform",
+						),
+						resource.TestCheckTypeSetElemAttr(
+							"hpe_morpheus_cloud.example",
+							"labels.*",
+							"acctest",
+						),
+						resource.TestCheckTypeSetElemAttr(
+							"hpe_morpheus_cloud.example",
+							"labels.*",
+							"hpe_morpheus_cloud",
+						),
+						resource.TestCheckTypeSetElemAttr(
+							"hpe_morpheus_cloud.example",
+							"labels.*",
+							"sweepable",
 						),
 						resource.TestCheckTypeSetElemAttr(
 							"hpe_morpheus_cloud.example",
@@ -977,7 +1060,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -1009,7 +1092,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -1041,7 +1124,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -1073,7 +1156,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -1105,7 +1188,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 
 						code                     = "` + code + `"
 						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
+						labels                   = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "Label1", "Label2"]
 						agent_install_mode       = "ssh"
 						appliance_url            = "https://somewhere.com"
 						auto_recover_power_state = true
@@ -1131,7 +1214,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudValidationOneOf(t *testing.T) {
+func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -1215,7 +1298,7 @@ func TestAccMorpheusCloudValidationOneOf(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudValidationRequiredAttrs(t *testing.T) {
+func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

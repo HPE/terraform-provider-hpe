@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	Clouds()
 	Datastores()
 	Instances()
 	Networks()

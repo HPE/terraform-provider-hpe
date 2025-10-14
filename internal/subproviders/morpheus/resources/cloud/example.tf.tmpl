@@ -5,7 +5,7 @@ resource "hpe_morpheus_cloud" "example" {
 
   code             = "{{.Code}}"
   external_id      = "{{.Code}}"
-  labels           = ["{{.Label}}1", "{{.Label}}2"]
+  labels           = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "{{.Label}}1", "{{.Label}}2"]
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"

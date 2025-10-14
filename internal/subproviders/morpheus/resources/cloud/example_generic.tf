@@ -4,7 +4,7 @@ resource "hpe_morpheus_cloud" "example" {
   group_id  = 1
 
   code             = "aCode"
-  labels           = ["aLabel1", "aLabel2"]
+  labels           = ["terraform", "acctest", "hpe_morpheus_cloud", "sweepable", "aLabel1", "aLabel2"]
   enabled          = true
   location         = "somewhere"
   visibility       = "public"
