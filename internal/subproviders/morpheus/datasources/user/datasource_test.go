@@ -3,10 +3,14 @@
 package user_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -57,6 +61,10 @@ func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix(t.Name())
+
+	// Set the username for VCR replay
+	setTestUsername("TestAccMorpheusUserDataSourceFindByUsername", username)
+
 	providerConfig := testhelpers.ProviderBlock()
 
 	userResourceConfig := `
@@ -99,9 +107,237 @@ resource "hpe_morpheus_user" "test_user" {
 }
 
 var globalRecorders map[string]*recorder.Recorder
+var testUsernameMap map[string]string // Maps test name to current username
 
 func init() {
 	globalRecorders = make(map[string]*recorder.Recorder)
+	testUsernameMap = make(map[string]string)
+}
+
+// setTestUsername stores the current test's username for use in hooks
+func setTestUsername(testName, username string) {
+	testUsernameMap[testName] = username
+	fmt.Printf("🏷️  Test username set for %s: %s\n", testName, username)
+}
+
+// getTestUsername retrieves the current test's username
+func getTestUsername(testName string) string {
+	if username, exists := testUsernameMap[testName]; exists {
+		return username
+	}
+	return ""
+}
+
+// customUsernameMatcher is a custom matcher for VCR that normalizes usernames
+// in request bodies to handle dynamic test names with random suffixes
+func customUsernameMatcher(incomingReq *http.Request, recordedReq cassette.Request) bool {
+	// For GET requests with username query parameters, normalize the URL before comparing
+	if incomingReq.Method == "GET" && strings.Contains(incomingReq.URL.String(), "username=") {
+		normalizedIncomingURL := normalizeUsernameInURL(incomingReq.URL.String())
+		normalizedRecordedURL := normalizeUsernameInURL(recordedReq.URL)
+
+		if normalizedRecordedURL != normalizedIncomingURL {
+			return false
+		}
+
+		// Check method match
+		if recordedReq.Method != incomingReq.Method {
+			return false
+		}
+
+		// Check headers match (excluding dynamic ones like Authorization)
+		return headersMatch(recordedReq.Headers, incomingReq.Header)
+	}
+
+	// For other requests, use the original logic
+	// Check if URL and method match first
+	if recordedReq.URL != incomingReq.URL.String() || recordedReq.Method != incomingReq.Method {
+		return false
+	}
+
+	// Check headers match (excluding dynamic ones like Authorization)
+	if !headersMatch(recordedReq.Headers, incomingReq.Header) {
+		return false
+	}
+
+	// For POST requests with JSON bodies containing usernames, normalize them
+	if incomingReq.Method == "POST" && recordedReq.Body != "" && incomingReq.Body != nil {
+		// Read the incoming request body
+		var bodyBytes []byte
+		if incomingReq.Body != nil {
+			var err error
+			bodyBytes, err = io.ReadAll(incomingReq.Body)
+			if err != nil {
+				return false
+			}
+			// Restore the body for subsequent use
+			incomingReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		}
+
+		return normalizedBodiesMatch(recordedReq.Body, string(bodyBytes))
+	}
+
+	// For GET requests and other requests without body, standard matching is sufficient
+	// since URL, method, and headers already match
+	return true
+}
+
+// normalizeUsernameInURL replaces dynamic username suffixes in URL query parameters
+func normalizeUsernameInURL(url string) string {
+	// Find username query parameter and normalize it
+	re := regexp.MustCompile(`(\?|&)username=([^&]+)`)
+	return re.ReplaceAllStringFunc(url, func(match string) string {
+		parts := strings.SplitN(match, "=", 2)
+		if len(parts) == 2 {
+			username := parts[1]
+			// Replace the random suffix with a placeholder
+			usernameRe := regexp.MustCompile(`^([^-]+)-\d+$`)
+			if matches := usernameRe.FindStringSubmatch(username); len(matches) > 1 {
+				return parts[0] + "=" + matches[1] + "-PLACEHOLDER"
+			}
+		}
+		return match
+	})
+}
+
+// headersMatch compares headers, ignoring dynamic ones like Authorization
+func headersMatch(recorded map[string][]string, incoming http.Header) bool {
+	// Compare only static headers
+	staticHeaders := []string{"Accept", "Content-Type", "User-Agent"}
+
+	for _, headerName := range staticHeaders {
+		recordedValues := recorded[headerName]
+		incomingValues := incoming[headerName]
+
+		if len(recordedValues) != len(incomingValues) {
+			return false
+		}
+
+		for i, val := range recordedValues {
+			if i >= len(incomingValues) || val != incomingValues[i] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// normalizedBodiesMatch compares JSON request bodies with username normalization
+func normalizedBodiesMatch(recordedBody, incomingBody string) bool {
+	// Parse both bodies as JSON
+	var recordedData, incomingData map[string]interface{}
+
+	if err := json.Unmarshal([]byte(recordedBody), &recordedData); err != nil {
+		// If not JSON, fall back to exact match
+		return recordedBody == incomingBody
+	}
+
+	if err := json.Unmarshal([]byte(incomingBody), &incomingData); err != nil {
+		return false
+	}
+
+	// Normalize usernames in both request bodies
+	normalizeUsernameInData(recordedData)
+	normalizeUsernameInData(incomingData)
+
+	// Convert back to JSON strings for comparison
+	recordedNormalized, err1 := json.Marshal(recordedData)
+	incomingNormalized, err2 := json.Marshal(incomingData)
+
+	if err1 != nil || err2 != nil {
+		return false
+	}
+
+	return string(recordedNormalized) == string(incomingNormalized)
+}
+
+// normalizeUsernameInData replaces dynamic username suffixes with a fixed placeholder
+func normalizeUsernameInData(data map[string]interface{}) {
+	if user, ok := data["user"].(map[string]interface{}); ok {
+		// List of username fields that need normalization
+		usernameFields := []string{"username", "linuxUsername", "windowsUsername"}
+
+		for _, field := range usernameFields {
+			if username, ok := user[field].(string); ok && username != "" {
+				// Replace the random suffix with a placeholder
+				// Pattern: TestName-RandomNumber -> TestName-PLACEHOLDER
+				re := regexp.MustCompile(`^([^-]+)-\d+$`)
+				if matches := re.FindStringSubmatch(username); len(matches) > 1 {
+					user[field] = matches[1] + "-PLACEHOLDER"
+				}
+			}
+		}
+	}
+}
+
+// beforeResponseReplayHook replaces recorded usernames with current test usernames
+func beforeResponseReplayHook(testName string) func(*cassette.Interaction) error {
+	return func(i *cassette.Interaction) error {
+		currentUsername := getTestUsername(testName)
+		if currentUsername == "" {
+			// If no username is set, we can't do replacement
+			return nil
+		}
+
+		// List of username fields that need replacement in responses
+		usernameFields := []string{"username", "linuxUsername", "windowsUsername"}
+
+		for _, field := range usernameFields {
+			// Find the recorded username pattern in the response body for this field
+			fieldPattern := fmt.Sprintf(`"%s":"([^"]+)"`, field)
+			re := regexp.MustCompile(fieldPattern)
+			matches := re.FindAllStringSubmatch(i.Response.Body, -1)
+
+			for _, match := range matches {
+				if len(match) > 1 {
+					recordedUsername := match[1]
+
+					// Check if this looks like a test-generated username with the pattern TestName-RandomNumber
+					basePattern := regexp.MustCompile(`^([^-]+)-\d+$`)
+					if baseMatches := basePattern.FindStringSubmatch(recordedUsername); len(baseMatches) > 1 {
+						recordedBaseName := baseMatches[1]
+
+						// Check if the recorded base name matches our current test name pattern
+						if strings.Contains(testName, recordedBaseName) || strings.Contains(currentUsername, recordedBaseName) {
+							// Replace with the current test's username
+							i.Response.Body = strings.ReplaceAll(i.Response.Body, recordedUsername, currentUsername)
+
+							fmt.Printf("🔄 VCR %s replaced: %s -> %s in response for test %s\n",
+								field, recordedUsername, currentUsername, testName)
+						}
+					}
+				}
+			}
+		}
+
+		// Also handle displayName which might be "FirstName LastName" format
+		displayNamePattern := `"displayName":"([^"]+)"`
+		re := regexp.MustCompile(displayNamePattern)
+		matches := re.FindAllStringSubmatch(i.Response.Body, -1)
+
+		for _, match := range matches {
+			if len(match) > 1 {
+				recordedDisplayName := match[1]
+				// Check if displayName contains the recorded username pattern
+				basePattern := regexp.MustCompile(`([^-]+)-\d+`)
+				if baseMatches := basePattern.FindStringSubmatch(recordedDisplayName); len(baseMatches) > 1 {
+					recordedBaseName := baseMatches[1]
+
+					if strings.Contains(testName, recordedBaseName) || strings.Contains(currentUsername, recordedBaseName) {
+						// Replace the username part in displayName
+						newDisplayName := basePattern.ReplaceAllString(recordedDisplayName, currentUsername)
+						i.Response.Body = strings.ReplaceAll(i.Response.Body, recordedDisplayName, newDisplayName)
+
+						fmt.Printf("🔄 VCR displayName replaced: %s -> %s in response for test %s\n",
+							recordedDisplayName, newDisplayName, testName)
+					}
+				}
+			}
+		}
+
+		return nil
+	}
 }
 
 // debugTransport wraps the VCR transport to log all requests
@@ -142,6 +378,13 @@ func getOrCreateRecorder(testName string) (*recorder.Recorder, error) {
 	cassetteName := fmt.Sprintf("testdata/%s", testName)
 	r, err := recorder.New(cassetteName,
 		recorder.WithMode(mode),
+		// Add custom matcher to handle dynamic usernames in request bodies
+		recorder.WithMatcher(customUsernameMatcher),
+		// Enable replayable interactions to allow same interaction to be replayed multiple times
+		recorder.WithReplayableInteractions(true),
+		// Add hook to replace usernames in responses during replay
+		recorder.WithHook(beforeResponseReplayHook(testName), recorder.BeforeResponseReplayHook),
+		// Keep the existing after capture hook for logging
 		recorder.WithHook(func(i *cassette.Interaction) error {
 			fmt.Printf("🎥 VCR AfterCapture [%s]: %s %s -> %d %s\n",
 				testName, i.Request.Method, i.Request.URL, i.Response.Code, i.Response.Status)
@@ -200,6 +443,9 @@ func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix(t.Name())
+
+	// Set the username for VCR replay
+	setTestUsername("TestAccMorpheusUserDataSourceFindById", username)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -345,6 +591,10 @@ func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	t.Parallel()
 
 	username := acctest.RandomWithPrefix(t.Name())
+
+	// Set the username for VCR replay
+	setTestUsername("TestAccMorpheusUserDataSourceVerifyAttributes", username)
+
 	email := "foo@testacc.com"
 	firstName := "TestFirst"
 	lastName := "TestLast"
