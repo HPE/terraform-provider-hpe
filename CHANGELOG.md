@@ -18,8 +18,9 @@ We have fixed the following issues:
 ## New known issues
 
 - We have seen an issue with authentication for an existing user when using username/password.  The issue manifests
-  as "500" errors on authentication which will not go away on retry.  It is under investigation.  To work around
-  this issue please generate an `access_token` from the Morpheus UI (for the `morph-api` Client for example) and use
+  as "500" errors on authentication which will not go away on retry.  It is an issue with Morpheus itself and is
+  fixed from the `8.0.11` release onwards.  To work around this issue in earlier Morpheus releases
+  please generate an `access_token` from the Morpheus UI (for the `morph-api` Client for example) and use
   that instead of username/password.
 - hpe_morpheus_datastore when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
   The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
