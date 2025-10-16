@@ -60,7 +60,8 @@ func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	username := acctest.RandomWithPrefix(t.Name())
+	// Get username for VCR replay - use cassette username in replay mode, generate new in record mode
+	username := getTestUsernameForMode(t, "TestAccMorpheusUserDataSourceFindByUsername")
 
 	// Set the username for VCR replay
 	setTestUsername("TestAccMorpheusUserDataSourceFindByUsername", username)
@@ -128,9 +129,55 @@ func getTestUsername(testName string) string {
 	return ""
 }
 
+// getTestUsernameForMode returns appropriate username based on test mode (record vs replay)
+func getTestUsernameForMode(t *testing.T, testName string) string {
+	if testing.Short() {
+		// In replay-only mode, try to extract username from cassette
+		cassettePath := fmt.Sprintf("testdata/%s.yaml", testName)
+		fmt.Printf("🔍 Looking for cassette at: %s\n", cassettePath)
+		if username := extractUsernameFromCassette(cassettePath, testName); username != "" {
+			fmt.Printf("✅ Extracted username from cassette: %s\n", username)
+			return username
+		}
+		fmt.Printf("⚠️  Could not extract username from cassette, using fallback\n")
+		// Fallback to deterministic username if cassette doesn't exist or can't be read
+		return fmt.Sprintf("%s-replay", testName)
+	}
+	// In record mode, generate a new random username
+	return acctest.RandomWithPrefix(testName)
+}
+
+// extractUsernameFromCassette reads the cassette file and extracts the username from the first POST request
+func extractUsernameFromCassette(cassettePath, testName string) string {
+	// Try to read the cassette file
+	if _, err := os.Stat(cassettePath); os.IsNotExist(err) {
+		fmt.Printf("❌ Cassette file does not exist: %s\n", cassettePath)
+		return ""
+	}
+
+	content, err := os.ReadFile(cassettePath)
+	if err != nil {
+		fmt.Printf("❌ Error reading cassette file: %v\n", err)
+		return ""
+	}
+
+	// Look for username in the request body using regex that handles JSON escaping
+	// The pattern looks for \"username\":\"USERNAME\" where backslashes escape the quotes
+	re := regexp.MustCompile(`\\"username\\":\\"([^"\\]+)\\"`)
+	if matches := re.FindStringSubmatch(string(content)); len(matches) > 1 {
+		username := matches[1]
+		fmt.Printf("✅ Found username in cassette: %s\n", username)
+		return username
+	}
+	fmt.Printf("❌ No username found in cassette content\n")
+	return ""
+}
+
 // customUsernameMatcher is a custom matcher for VCR that normalizes usernames
 // in request bodies to handle dynamic test names with random suffixes
 func customUsernameMatcher(incomingReq *http.Request, recordedReq cassette.Request) bool {
+	fmt.Printf("🔍 Custom matcher called - Method: %s, URL: %s\n", incomingReq.Method, incomingReq.URL.String())
+
 	// For GET requests with username query parameters, normalize the URL before comparing
 	if incomingReq.Method == "GET" && strings.Contains(incomingReq.URL.String(), "username=") {
 		normalizedIncomingURL := normalizeUsernameInURL(incomingReq.URL.String())
@@ -152,11 +199,14 @@ func customUsernameMatcher(incomingReq *http.Request, recordedReq cassette.Reque
 	// For other requests, use the original logic
 	// Check if URL and method match first
 	if recordedReq.URL != incomingReq.URL.String() || recordedReq.Method != incomingReq.Method {
+		fmt.Printf("❌ URL or method mismatch: recorded URL=%s, incoming URL=%s, recorded method=%s, incoming method=%s\n",
+			recordedReq.URL, incomingReq.URL.String(), recordedReq.Method, incomingReq.Method)
 		return false
 	}
 
 	// Check headers match (excluding dynamic ones like Authorization)
 	if !headersMatch(recordedReq.Headers, incomingReq.Header) {
+		fmt.Printf("❌ Headers mismatch\n")
 		return false
 	}
 
@@ -174,7 +224,13 @@ func customUsernameMatcher(incomingReq *http.Request, recordedReq cassette.Reque
 			incomingReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 		}
 
-		return normalizedBodiesMatch(recordedReq.Body, string(bodyBytes))
+		result := normalizedBodiesMatch(recordedReq.Body, string(bodyBytes))
+		fmt.Printf("🔍 Body comparison result: %v\n", result)
+		if !result {
+			fmt.Printf("❌ Body mismatch - recorded: %s\n", recordedReq.Body)
+			fmt.Printf("❌ Body mismatch - incoming: %s\n", string(bodyBytes))
+		}
+		return result
 	}
 
 	// For GET requests and other requests without body, standard matching is sufficient
@@ -202,7 +258,8 @@ func normalizeUsernameInURL(url string) string {
 
 // headersMatch compares headers, ignoring dynamic ones like Authorization
 func headersMatch(recorded map[string][]string, incoming http.Header) bool {
-	// Compare only static headers
+	// Compare only static headers - Authorization is deliberately excluded
+	// since it's removed by the BeforeSaveHook for security
 	staticHeaders := []string{"Accept", "Content-Type", "User-Agent"}
 
 	for _, headerName := range staticHeaders {
@@ -237,9 +294,9 @@ func normalizedBodiesMatch(recordedBody, incomingBody string) bool {
 		return false
 	}
 
-	// Normalize usernames in both request bodies
-	normalizeUsernameInData(recordedData)
-	normalizeUsernameInData(incomingData)
+	// Normalize usernames and passwords in both request bodies to handle sanitization
+	normalizeDataForMatching(recordedData)
+	normalizeDataForMatching(incomingData)
 
 	// Convert back to JSON strings for comparison
 	recordedNormalized, err1 := json.Marshal(recordedData)
@@ -266,6 +323,33 @@ func normalizeUsernameInData(data map[string]interface{}) {
 				if matches := re.FindStringSubmatch(username); len(matches) > 1 {
 					user[field] = matches[1] + "-PLACEHOLDER"
 				}
+			}
+		}
+	}
+}
+
+// normalizeDataForMatching normalizes both usernames and passwords for VCR matching
+func normalizeDataForMatching(data map[string]interface{}) {
+	if user, ok := data["user"].(map[string]interface{}); ok {
+		// Normalize username fields
+		usernameFields := []string{"username", "linuxUsername", "windowsUsername"}
+		for _, field := range usernameFields {
+			if username, ok := user[field].(string); ok && username != "" {
+				// Replace the random suffix with a placeholder
+				// Pattern: TestName-RandomNumber -> TestName-PLACEHOLDER
+				re := regexp.MustCompile(`^([^-]+)-\d+$`)
+				if matches := re.FindStringSubmatch(username); len(matches) > 1 {
+					user[field] = matches[1] + "-PLACEHOLDER"
+				}
+			}
+		}
+
+		// Normalize password fields to match sanitized cassettes
+		passwordFields := []string{"password", "linuxPassword", "windowsPassword"}
+		for _, field := range passwordFields {
+			if password, ok := user[field].(string); ok && password != "" {
+				// Replace any actual password with the redacted placeholder
+				user[field] = "[REDACTED]"
 			}
 		}
 	}
@@ -384,6 +468,50 @@ func getOrCreateRecorder(testName string) (*recorder.Recorder, error) {
 		recorder.WithReplayableInteractions(true),
 		// Add hook to replace usernames in responses during replay
 		recorder.WithHook(beforeResponseReplayHook(testName), recorder.BeforeResponseReplayHook),
+		// Add hook to remove sensitive headers before saving to cassette
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			// Remove Authorization header to prevent sensitive tokens from being saved
+			if i.Request.Headers != nil {
+				delete(i.Request.Headers, "Authorization")
+				fmt.Printf("🔒 VCR Authorization header removed for %s %s\n", i.Request.Method, i.Request.URL)
+			}
+
+			// Sanitize sensitive data in request bodies
+			if i.Request.Body != "" {
+				// Remove passwords from request bodies
+				passwordRegex := regexp.MustCompile(`"password":"[^"]*"`)
+				i.Request.Body = passwordRegex.ReplaceAllString(i.Request.Body, `"password":"[REDACTED]"`)
+
+				linuxPasswordRegex := regexp.MustCompile(`"linuxPassword":"[^"]*"`)
+				i.Request.Body = linuxPasswordRegex.ReplaceAllString(i.Request.Body, `"linuxPassword":"[REDACTED]"`)
+
+				windowsPasswordRegex := regexp.MustCompile(`"windowsPassword":"[^"]*"`)
+				i.Request.Body = windowsPasswordRegex.ReplaceAllString(i.Request.Body, `"windowsPassword":"[REDACTED]"`)
+			}
+
+			// Sanitize sensitive data in response bodies
+			if i.Response.Body != "" {
+				// Replace account names with generic names
+				accountNameRegex := regexp.MustCompile(`"name":"[^"]*QA[^"]*"`)
+				i.Response.Body = accountNameRegex.ReplaceAllString(i.Response.Body, `"name":"Test Account"`)
+			}
+
+			// Remove sensitive response headers
+			if i.Response.Headers != nil {
+				delete(i.Response.Headers, "Set-Cookie")
+				delete(i.Response.Headers, "XSRF-TOKEN")
+
+				// Sanitize CSP nonces
+				if csp, exists := i.Response.Headers["Content-Security-Policy"]; exists {
+					for j, cspValue := range csp {
+						nonceRegex := regexp.MustCompile(`'nonce-[^']*'`)
+						i.Response.Headers["Content-Security-Policy"][j] = nonceRegex.ReplaceAllString(cspValue, "'nonce-REDACTED'")
+					}
+				}
+			}
+
+			return nil
+		}, recorder.BeforeSaveHook),
 		// Keep the existing after capture hook for logging
 		recorder.WithHook(func(i *cassette.Interaction) error {
 			fmt.Printf("🎥 VCR AfterCapture [%s]: %s %s -> %d %s\n",
@@ -442,7 +570,7 @@ func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	username := acctest.RandomWithPrefix(t.Name())
+	username := getTestUsernameForMode(t, "TestAccMorpheusUserDataSourceFindById")
 
 	// Set the username for VCR replay
 	setTestUsername("TestAccMorpheusUserDataSourceFindById", username)
@@ -590,7 +718,7 @@ func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	username := acctest.RandomWithPrefix(t.Name())
+	username := getTestUsernameForMode(t, "TestAccMorpheusUserDataSourceVerifyAttributes")
 
 	// Set the username for VCR replay
 	setTestUsername("TestAccMorpheusUserDataSourceVerifyAttributes", username)
