@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 
-	"github.com/HPE/terraform-provider-hpe/internal/provider"
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/provider"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
 )
 
 var version = "dev"
