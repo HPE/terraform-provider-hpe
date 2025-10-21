@@ -77,8 +77,8 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 
 	return map[string]schema.Attribute{
 		"url": schema.StringAttribute{
-			MarkdownDescription: "Morpheus instance URL",
-			Required:            true,
+			Description: "Morpheus instance URL",
+			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.Any(
 					stringvalidator.AlsoRequires(parentBlock.AtName("username")),
@@ -87,31 +87,31 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 			},
 		},
 		"username": schema.StringAttribute{
-			MarkdownDescription: "Morpheus username for authentication, required if password is set",
-			Optional:            true,
+			Description: "Morpheus username for authentication, required if password is set",
+			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.AlsoRequires(parentBlock.AtName("password")),
 			},
 		},
 		"password": schema.StringAttribute{
-			MarkdownDescription: "Morpheus password for authentication, required if username is set",
-			Optional:            true,
-			Sensitive:           true,
+			Description: "Morpheus password for authentication, required if username is set",
+			Optional:    true,
+			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.AlsoRequires(parentBlock.AtName("username")),
 			},
 		},
 		"access_token": schema.StringAttribute{
-			MarkdownDescription: "Morpheus access token for authentication",
-			Optional:            true,
-			Sensitive:           true,
+			Description: "Morpheus access token for authentication",
+			Optional:    true,
+			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.ConflictsWith(parentBlock.AtName("username")),
 				stringvalidator.ConflictsWith(parentBlock.AtName("password")),
 			},
 		},
 		"insecure": schema.BoolAttribute{
-			MarkdownDescription: "Explicitly allow the provider to perform " +
+			Description: "Explicitly allow the provider to perform " +
 				"\"insecure\" SSL requests. If omitted, " +
 				"default value is `false`",
 			Optional: true,

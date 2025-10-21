@@ -3,16 +3,21 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
+	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
 var version = "dev"
@@ -51,9 +56,26 @@ func main() {
 		)
 	}
 
+	// sdkv2 Morpheus provider server
+	originalMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Morpheus.Provider().GRPCProvider)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Combine framework and sdkv2 providers
+	providers := []func() tfprotov6.ProviderServer{
+		providerserver.NewProtocol6(p()),
+		func() tfprotov6.ProviderServer { return originalMorpheus },
+	}
+
+	muxServer, err := tf6muxserver.NewMuxServer(context.Background(), providers...)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	if err := tf6server.Serve(
 		"registry.terraform.io/HPE/hpe",
-		providerserver.NewProtocol6(p()),
+		muxServer.ProviderServer,
 		opts...,
 	); err != nil {
 		log.Fatal(err.Error())

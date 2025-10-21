@@ -170,7 +170,7 @@ We have fixed the following issues:
 
 ### Optional
 
-- `morpheus` (Block List) (see [below for nested schema](#nestedblock--morpheus))
+- `morpheus` (Block List, Max: 1) (see [below for nested schema](#nestedblock--morpheus))
 
 <a id="nestedblock--morpheus"></a>
 ### Nested Schema for `morpheus`
