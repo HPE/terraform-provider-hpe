@@ -39,14 +39,15 @@ certificate or an internal certificate authority.
 We recommend fixing the certificate issue. If you need to bypass this check,
 proceed with caution and understand the security implications of doing so. You can
 disable certificate verification by either setting the provider argument
-"secure = false" in your provider configuration or by setting the environment
-variable MORPHEUS_API_SECURE to false.
-provider "morpheus" {
-	url = "https://..."
-	.
-	.
-	.
-	secure = false <-- set to false to disable certificate verification
+"insecure = true" in your provider configuration.
+provider "hpe" {
+	morpheus {
+       url = "https://..."
+	   .
+	   .
+	   .
+	   insecure = true <-- set to true to disable certificate verification
+    }
 }
 `
 
@@ -71,14 +72,16 @@ func (c *Config) Client() (*morpheus.Client, diag.Diagnostics) {
 				Severity: diag.Warning,
 				Summary:  "SSL Certificate Verification Disabled",
 				Detail: `
-SSL certificate verification is disabled. To enable verification, set "secure = true" in your
-provider configuration or set environment variable MORPHEUS_API_SECURE to true.
-provider "morpheus" {
-	url = "https://..."
-	.
-	.
-	.
-	secure = true <-- set to true to enable certificate verification
+SSL certificate verification is disabled. To enable verification, set "insecure = false" in your
+provider configuration.
+provider "hpe" {
+	morpheus { 
+       url = "https://..."
+	   .
+	   .
+	   .
+	   insecure = false <-- set to false to enable certificate verification
+    }
 }
 `,
 			})

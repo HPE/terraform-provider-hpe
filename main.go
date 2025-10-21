@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// sdkv2 Morpheus provider server
-	originalMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Morpheus.Provider().GRPCProvider)
+	legacyMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Morpheus.Provider().GRPCProvider)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -65,7 +65,7 @@ func main() {
 	// Combine framework and sdkv2 providers
 	providers := []func() tfprotov6.ProviderServer{
 		providerserver.NewProtocol6(p()),
-		func() tfprotov6.ProviderServer { return originalMorpheus },
+		func() tfprotov6.ProviderServer { return legacyMorpheus },
 	}
 
 	muxServer, err := tf6muxserver.NewMuxServer(context.Background(), providers...)
