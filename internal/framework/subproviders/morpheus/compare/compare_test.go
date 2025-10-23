@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/compare"
 
