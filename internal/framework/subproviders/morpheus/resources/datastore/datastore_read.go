@@ -94,9 +94,6 @@ func getDatastoreAsState(
 			tenants, resourcePermissions, pdiags := populateCloudDatastoreInformation(
 				ctx, id, *datastore.RefId, client)
 			diags = append(diags, pdiags...)
-			if diags.HasError() {
-				return state, diags
-			}
 			state.Tenants = tenants
 			state.ResourcePermissions = resourcePermissions
 
@@ -114,9 +111,6 @@ func getDatastoreAsState(
 			tenants, resourcePermissions, pdiags := populateClusterDatastoreInformation(
 				ctx, id, *datastore.RefId, client)
 			diags = append(diags, pdiags...)
-			if diags.HasError() {
-				return state, diags
-			}
 			state.Tenants = tenants
 			state.ResourcePermissions = resourcePermissions
 
@@ -364,7 +358,7 @@ func populateCloudDatastoreInformation(
 	var diags diag.Diagnostics
 
 	// Get cloud datastore information
-	cdResp, hresp, err := client.CloudsAPI.GetCloudDatastores(ctx, float32(cloudId), id).Execute()
+	cdResp, hresp, err := client.CloudsAPI.GetCloudDatastores(ctx, cloudId, id).Execute()
 	if err != nil {
 		diags.AddWarning(
 			"populate datastore resource",
@@ -462,7 +456,7 @@ func populateClusterDatastoreInformation(
 	var diags diag.Diagnostics
 
 	// Get cluster datastore information
-	cdResp, hresp, err := client.ClustersAPI.GetClusterDatastore(ctx, int32(clusterId), id).Execute() // nolint:gosec
+	cdResp, hresp, err := client.ClustersAPI.GetClusterDatastore(ctx, clusterId, id).Execute()
 	if err != nil {
 		diags.AddWarning(
 			"populate datastore resource",
