@@ -5,8 +5,12 @@ package policy
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -18,6 +22,41 @@ import (
 func PolicyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"accounts": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Array of tenants to scope the policy to",
+				MarkdownDescription: "Array of tenants to scope the policy to",
+			},
+			"config": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{},
+				CustomType: ConfigType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigValue{}.AttributeTypes(ctx),
+					},
+				},
+				Required:            true,
+				Description:         "A map of config values. The expected values vary by policy type. See `Retrieves all Policy Types` endpoint for `fieldName`(s) of required options.",
+				MarkdownDescription: "A map of config values. The expected values vary by policy type. See `Retrieves all Policy Types` endpoint for `fieldName`(s) of required options.",
+			},
+			"config_approval": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"account_integration_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigApprovalType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigApprovalValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Approve Delete\n- Approve Provisiong\n- Approve Reconfigure\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Approve Delete\n- Approve Provisiong\n- Approve Reconfigure\n",
+			},
 			"config_backup_creation": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"create_backup": schema.BoolAttribute{
@@ -39,6 +78,770 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration settings for the following policy types:\n- Backup Creation\n",
 				MarkdownDescription: "Configuration settings for the following policy types:\n- Backup Creation\n",
 			},
+			"config_backup_targets": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"backup_storage_ids": schema.SetAttribute{
+						ElementType: types.Int64Type,
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+				CustomType: ConfigBackupTargetsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigBackupTargetsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Backup Targets\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Backup Targets\n",
+			},
+			"config_budget": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_price": schema.NumberAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"max_price_currency": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"max_price_unit": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigBudgetType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigBudgetValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Budget\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Budget\n",
+			},
+			"config_cluster_resource_name": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"server_naming_conflict": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"server_naming_pattern": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"server_naming_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigClusterResourceNameType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigClusterResourceNameValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Cluster Resource Name\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Cluster Resource Name\n",
+			},
+			"config_cypher_access": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"delete": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"key_pattern": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"list": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"read": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"update": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"write": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigCypherAccessType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigCypherAccessValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Cypher Access\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Cypher Access\n",
+			},
+			"config_delayed_delete": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"removal_age": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigDelayedDeleteType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigDelayedDeleteValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Delayed Delete\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Delayed Delete\n",
+			},
+			"config_expiration": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"account_integration_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_age": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_allow_extend": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"lifecycle_auto_renew": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"lifecycle_extensions_before_approval": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_hide_fixed": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_message": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_notify": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_renewal": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"lifecycle_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigExpirationType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigExpirationValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Expiration\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Expiration\n",
+			},
+			"config_file_share_storage_quota": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_storage": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigFileShareStorageQuotaType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigFileShareStorageQuotaValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- File Share Storage Quota\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- File Share Storage Quota\n",
+			},
+			"config_hostname": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"host_naming_pattern": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"host_naming_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigHostnameType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHostnameValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Hostname\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Hostname\n",
+			},
+			"config_instance_name": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"naming_conflict": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"naming_pattern": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"naming_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigInstanceNameType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigInstanceNameValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Instance Name\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Instance Name\n",
+			},
+			"config_max_containers": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_containers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxContainersType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxContainersValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Containers\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Containers\n",
+			},
+			"config_max_cores": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"exclude_containers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"max_cores": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxCoresType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxCoresValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Cores\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Cores\n",
+			},
+			"config_max_hosts": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_hosts": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxHostsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxHostsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Hosts\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Hosts\n",
+			},
+			"config_max_load_balancer_pools": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_pools": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxLoadBalancerPoolsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxLoadBalancerPoolsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Load Balancer Pools\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Load Balancer Pools\n",
+			},
+			"config_max_memory": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"exclude_containers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"max_memory": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"anyof0": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
+							},
+							"anyof1": schema.Int64Attribute{
+								Optional: true,
+								Computed: true,
+							},
+						},
+						CustomType: MaxMemoryType{
+							ObjectType: types.ObjectType{
+								AttrTypes: MaxMemoryValue{}.AttributeTypes(ctx),
+							},
+						},
+						Required:            true,
+						Description:         "Max Memory (GB)",
+						MarkdownDescription: "Max Memory (GB)",
+					},
+				},
+				CustomType: ConfigMaxMemoryType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxMemoryValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Memory\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Memory\n",
+			},
+			"config_max_pool_members": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_pool_members": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxPoolMembersType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxPoolMembersValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Pool Members\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Pool Members\n",
+			},
+			"config_max_storage": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"exclude_containers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"max_storage": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxStorageType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxStorageValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Storage\n- Object Storage Quota\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Storage\n- Object Storage Quota\n",
+			},
+			"config_max_virtual_servers": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_virtual_servers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxVirtualServersType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxVirtualServersValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max Virtual Servers\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max Virtual Servers\n",
+			},
+			"config_max_vms": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_vms": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxVmsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxVmsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Max VMs\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Max VMs\n",
+			},
+			"config_message_of_the_day": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"motd": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"_full_page": schema.BoolAttribute{
+								Optional: true,
+								Computed: true,
+							},
+							"message": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
+							},
+							"title": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
+							},
+							"type": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
+							},
+						},
+						CustomType: MotdType{
+							ObjectType: types.ObjectType{
+								AttrTypes: MotdValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional: true,
+						Computed: true,
+					},
+					"motd_full_page": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"motddate": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"motdmessage": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"motdtitle": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"motdtype": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMessageOfTheDayType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMessageOfTheDayValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Message of the Day\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Message of the Day\n",
+			},
+			"config_network_quota": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_networks": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigNetworkQuotaType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigNetworkQuotaValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Network Quota\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Network Quota\n",
+			},
+			"config_power_schedule": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"power_schedule": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"power_schedule_hide_fixed": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"power_schedule_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigPowerScheduleType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigPowerScheduleValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Power Schedule\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Power Schedule\n",
+			},
+			"config_router_quota": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_routers": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigRouterQuotaType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigRouterQuotaValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Router Quota\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Router Quota\n",
+			},
+			"config_shutdown": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"account_integration_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_age": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_allow_extend": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"shutdown_auto_renew": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"shutdown_extensions_before_approval": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_hide_fixed": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_message": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_notify": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_renewal": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"shutdown_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigShutdownType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigShutdownValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Shutdown\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Shutdown\n",
+			},
+			"config_storage_server_storage_quota": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_storage": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"storage_server_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigStorageServerStorageQuotaType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigStorageServerStorageQuotaValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Storage Server Storage Quota\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Storage Server Storage Quota\n",
+			},
+			"config_tags": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"key": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"strict": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"value": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"value_list_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigTagsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigTagsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Tags\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Tags\n",
+			},
+			"config_user_creation": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"create_user": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+					},
+					"create_user_type": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigUserCreationType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigUserCreationValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- User Creation\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- User Creation\n",
+			},
+			"config_user_group_creation": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"user_group": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigUserGroupCreationType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigUserGroupCreationValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- User Group Creation\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- User Group Creation\n",
+			},
+			"config_workflow": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"workflow_id": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+					},
+				},
+				CustomType: ConfigWorkflowType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigWorkflowValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Configuration settings for the following policy types:\n- Workflow\n",
+				MarkdownDescription: "Configuration settings for the following policy types:\n- Workflow\n",
+			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "A description for the policy",
+				MarkdownDescription: "A description for the policy",
+			},
+			"each_user": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Apply individually to each user in role.  Only when `refType` equals `Role`",
+				MarkdownDescription: "Apply individually to each user in role.  Only when `refType` equals `Role`",
+			},
+			"enabled": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set to false to disable",
+				MarkdownDescription: "Set to false to disable",
+				Default:             booldefault.StaticBool(true),
+			},
 			"id": schema.Int64Attribute{
 				Computed: true,
 			},
@@ -47,14 +850,825 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "A name for the policy",
 				MarkdownDescription: "A name for the policy",
 			},
+			"owner": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: OwnerType{
+					ObjectType: types.ObjectType{
+						AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
+			"policy_type": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Computed:            true,
+						Description:         "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
+						MarkdownDescription: "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"deleteApproval",
+								"provisionApproval",
+								"reconfigureApproval",
+								"workflowApproval",
+								"createBackup",
+								"backupStorage",
+								"maxPrice",
+								"serverNaming",
+								"cypher",
+								"delayedRemoval",
+								"lifecycle",
+								"storageShareQuota",
+								"hostNaming",
+								"naming",
+								"maxContainers",
+								"maxCores",
+								"maxHosts",
+								"maxPools",
+								"maxMemory",
+								"maxPoolMembers",
+								"maxSnapshots",
+								"maxStorage",
+								"maxVirtualServers",
+								"maxVms",
+								"motd",
+								"maxNetworks",
+								"storageBucketQuota",
+								"powerSchedule",
+								"maxRouters",
+								"shutdown",
+								"storageServerQuota",
+								"tags",
+								"createUser",
+								"createUserGroup",
+								"workflow",
+							),
+						},
+					},
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: PolicyTypeType{
+					ObjectType: types.ObjectType{
+						AttrTypes: PolicyTypeValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
+			"ref_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Scope object ID (`group`,`cloud`,`user`, etc)",
+				MarkdownDescription: "Scope object ID (`group`,`cloud`,`user`, etc)",
+			},
+			"ref_type": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"oneof0": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"ComputeSite",
+								"ComputeZone",
+								"User",
+								"Role",
+								"Network",
+								"Plan",
+							),
+						},
+					},
+				},
+				CustomType: RefTypeType{
+					ObjectType: types.ObjectType{
+						AttrTypes: RefTypeValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Scope object type.  If none specified, will default to Global (null)",
+				MarkdownDescription: "Scope object type.  If none specified, will default to Global (null)",
+			},
+			"role": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"authority": schema.StringAttribute{
+						Computed: true,
+					},
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+				},
+				CustomType: RoleType{
+					ObjectType: types.ObjectType{
+						AttrTypes: RoleValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
+			"site": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: SiteType{
+					ObjectType: types.ObjectType{
+						AttrTypes: SiteValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
+			"success": schema.BoolAttribute{
+				Computed: true,
+			},
+			"user": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"username": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: UserType{
+					ObjectType: types.ObjectType{
+						AttrTypes: UserValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
+			"zone": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: ZoneType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ZoneValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
+			},
 		},
 	}
 }
 
 type PolicyModel struct {
-	ConfigBackupCreation ConfigBackupCreationValue `tfsdk:"config_backup_creation"`
-	Id                   types.Int64               `tfsdk:"id"`
-	Name                 types.String              `tfsdk:"name"`
+	Accounts                        types.Set                            `tfsdk:"accounts"`
+	Config                          ConfigValue                          `tfsdk:"config"`
+	ConfigApproval                  ConfigApprovalValue                  `tfsdk:"config_approval"`
+	ConfigBackupCreation            ConfigBackupCreationValue            `tfsdk:"config_backup_creation"`
+	ConfigBackupTargets             ConfigBackupTargetsValue             `tfsdk:"config_backup_targets"`
+	ConfigBudget                    ConfigBudgetValue                    `tfsdk:"config_budget"`
+	ConfigClusterResourceName       ConfigClusterResourceNameValue       `tfsdk:"config_cluster_resource_name"`
+	ConfigCypherAccess              ConfigCypherAccessValue              `tfsdk:"config_cypher_access"`
+	ConfigDelayedDelete             ConfigDelayedDeleteValue             `tfsdk:"config_delayed_delete"`
+	ConfigExpiration                ConfigExpirationValue                `tfsdk:"config_expiration"`
+	ConfigFileShareStorageQuota     ConfigFileShareStorageQuotaValue     `tfsdk:"config_file_share_storage_quota"`
+	ConfigHostname                  ConfigHostnameValue                  `tfsdk:"config_hostname"`
+	ConfigInstanceName              ConfigInstanceNameValue              `tfsdk:"config_instance_name"`
+	ConfigMaxContainers             ConfigMaxContainersValue             `tfsdk:"config_max_containers"`
+	ConfigMaxCores                  ConfigMaxCoresValue                  `tfsdk:"config_max_cores"`
+	ConfigMaxHosts                  ConfigMaxHostsValue                  `tfsdk:"config_max_hosts"`
+	ConfigMaxLoadBalancerPools      ConfigMaxLoadBalancerPoolsValue      `tfsdk:"config_max_load_balancer_pools"`
+	ConfigMaxMemory                 ConfigMaxMemoryValue                 `tfsdk:"config_max_memory"`
+	ConfigMaxPoolMembers            ConfigMaxPoolMembersValue            `tfsdk:"config_max_pool_members"`
+	ConfigMaxStorage                ConfigMaxStorageValue                `tfsdk:"config_max_storage"`
+	ConfigMaxVirtualServers         ConfigMaxVirtualServersValue         `tfsdk:"config_max_virtual_servers"`
+	ConfigMaxVms                    ConfigMaxVmsValue                    `tfsdk:"config_max_vms"`
+	ConfigMessageOfTheDay           ConfigMessageOfTheDayValue           `tfsdk:"config_message_of_the_day"`
+	ConfigNetworkQuota              ConfigNetworkQuotaValue              `tfsdk:"config_network_quota"`
+	ConfigPowerSchedule             ConfigPowerScheduleValue             `tfsdk:"config_power_schedule"`
+	ConfigRouterQuota               ConfigRouterQuotaValue               `tfsdk:"config_router_quota"`
+	ConfigShutdown                  ConfigShutdownValue                  `tfsdk:"config_shutdown"`
+	ConfigStorageServerStorageQuota ConfigStorageServerStorageQuotaValue `tfsdk:"config_storage_server_storage_quota"`
+	ConfigTags                      ConfigTagsValue                      `tfsdk:"config_tags"`
+	ConfigUserCreation              ConfigUserCreationValue              `tfsdk:"config_user_creation"`
+	ConfigUserGroupCreation         ConfigUserGroupCreationValue         `tfsdk:"config_user_group_creation"`
+	ConfigWorkflow                  ConfigWorkflowValue                  `tfsdk:"config_workflow"`
+	Description                     types.String                         `tfsdk:"description"`
+	EachUser                        types.Bool                           `tfsdk:"each_user"`
+	Enabled                         types.Bool                           `tfsdk:"enabled"`
+	Id                              types.Int64                          `tfsdk:"id"`
+	Name                            types.String                         `tfsdk:"name"`
+	Owner                           OwnerValue                           `tfsdk:"owner"`
+	PolicyType                      PolicyTypeValue                      `tfsdk:"policy_type"`
+	RefId                           types.Int64                          `tfsdk:"ref_id"`
+	RefType                         RefTypeValue                         `tfsdk:"ref_type"`
+	Role                            RoleValue                            `tfsdk:"role"`
+	Site                            SiteValue                            `tfsdk:"site"`
+	Success                         types.Bool                           `tfsdk:"success"`
+	User                            UserValue                            `tfsdk:"user"`
+	Zone                            ZoneValue                            `tfsdk:"zone"`
+}
+
+var _ basetypes.ObjectTypable = ConfigType{}
+
+type ConfigType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigType) String() string {
+	return "ConfigType"
+}
+
+func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigValueNull() ConfigValue {
+	return ConfigValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigValueUnknown() ConfigValue {
+	return ConfigValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigValue Attribute Value",
+				"While creating a ConfigValue value, a missing attribute value was detected. "+
+					"A ConfigValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigValue Attribute Type",
+				"While creating a ConfigValue value, an invalid attribute value was detected. "+
+					"A ConfigValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigValue Attribute Value",
+				"While creating a ConfigValue value, an extra attribute value was detected. "+
+					"A ConfigValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigValueUnknown(), diags
+	}
+
+	if diags.HasError() {
+		return NewConfigValueUnknown(), diags
+	}
+
+	return ConfigValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigValue {
+	object, diags := NewConfigValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigValueMust(ConfigValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigType) ValueType(ctx context.Context) attr.Value {
+	return ConfigValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigValue{}
+
+type ConfigValue struct {
+	state attr.ValueState
+}
+
+func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 0)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 0)
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigValue) String() string {
+	return "ConfigValue"
+}
+
+func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{})
+
+	return objVal, diags
+}
+
+func (v ConfigValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	return true
+}
+
+func (v ConfigValue) Type(ctx context.Context) attr.Type {
+	return ConfigType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{}
+}
+
+var _ basetypes.ObjectTypable = ConfigApprovalType{}
+
+type ConfigApprovalType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigApprovalType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigApprovalType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigApprovalType) String() string {
+	return "ConfigApprovalType"
+}
+
+func (t ConfigApprovalType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigApprovalValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigApprovalValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return nil, diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigApprovalValue{
+		AccountIntegrationId: accountIntegrationIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigApprovalValueNull() ConfigApprovalValue {
+	return ConfigApprovalValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigApprovalValueUnknown() ConfigApprovalValue {
+	return ConfigApprovalValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigApprovalValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigApprovalValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigApprovalValue Attribute Value",
+				"While creating a ConfigApprovalValue value, a missing attribute value was detected. "+
+					"A ConfigApprovalValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigApprovalValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigApprovalValue Attribute Type",
+				"While creating a ConfigApprovalValue value, an invalid attribute value was detected. "+
+					"A ConfigApprovalValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigApprovalValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigApprovalValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigApprovalValue Attribute Value",
+				"While creating a ConfigApprovalValue value, an extra attribute value was detected. "+
+					"A ConfigApprovalValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigApprovalValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	return ConfigApprovalValue{
+		AccountIntegrationId: accountIntegrationIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigApprovalValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigApprovalValue {
+	object, diags := NewConfigApprovalValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigApprovalValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigApprovalType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigApprovalValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigApprovalValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigApprovalValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigApprovalValueMust(ConfigApprovalValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigApprovalType) ValueType(ctx context.Context) attr.Value {
+	return ConfigApprovalValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigApprovalValue{}
+
+type ConfigApprovalValue struct {
+	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
+	state                attr.ValueState
+}
+
+func (v ConfigApprovalValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["account_integration_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigApprovalValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigApprovalValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigApprovalValue) String() string {
+	return "ConfigApprovalValue"
+}
+
+func (v ConfigApprovalValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"account_integration_id": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"account_integration_id": v.AccountIntegrationId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigApprovalValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigApprovalValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigApprovalValue) Type(ctx context.Context) attr.Type {
+	return ConfigApprovalType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigApprovalValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"account_integration_id": basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = ConfigBackupCreationType{}
@@ -441,5 +2055,15449 @@ func (v ConfigBackupCreationValue) AttributeTypes(ctx context.Context) map[strin
 	return map[string]attr.Type{
 		"create_backup":      basetypes.BoolType{},
 		"create_backup_type": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigBackupTargetsType{}
+
+type ConfigBackupTargetsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigBackupTargetsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigBackupTargetsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigBackupTargetsType) String() string {
+	return "ConfigBackupTargetsType"
+}
+
+func (t ConfigBackupTargetsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigBackupTargetsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBackupTargetsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	backupStorageIdsAttribute, ok := attributes["backup_storage_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`backup_storage_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	backupStorageIdsVal, ok := backupStorageIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`backup_storage_ids expected to be basetypes.SetValue, was: %T`, backupStorageIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigBackupTargetsValue{
+		BackupStorageIds: backupStorageIdsVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBackupTargetsValueNull() ConfigBackupTargetsValue {
+	return ConfigBackupTargetsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigBackupTargetsValueUnknown() ConfigBackupTargetsValue {
+	return ConfigBackupTargetsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigBackupTargetsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigBackupTargetsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigBackupTargetsValue Attribute Value",
+				"While creating a ConfigBackupTargetsValue value, a missing attribute value was detected. "+
+					"A ConfigBackupTargetsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBackupTargetsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigBackupTargetsValue Attribute Type",
+				"While creating a ConfigBackupTargetsValue value, an invalid attribute value was detected. "+
+					"A ConfigBackupTargetsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBackupTargetsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigBackupTargetsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigBackupTargetsValue Attribute Value",
+				"While creating a ConfigBackupTargetsValue value, an extra attribute value was detected. "+
+					"A ConfigBackupTargetsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigBackupTargetsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigBackupTargetsValueUnknown(), diags
+	}
+
+	backupStorageIdsAttribute, ok := attributes["backup_storage_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`backup_storage_ids is missing from object`)
+
+		return NewConfigBackupTargetsValueUnknown(), diags
+	}
+
+	backupStorageIdsVal, ok := backupStorageIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`backup_storage_ids expected to be basetypes.SetValue, was: %T`, backupStorageIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigBackupTargetsValueUnknown(), diags
+	}
+
+	return ConfigBackupTargetsValue{
+		BackupStorageIds: backupStorageIdsVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBackupTargetsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigBackupTargetsValue {
+	object, diags := NewConfigBackupTargetsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigBackupTargetsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigBackupTargetsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigBackupTargetsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigBackupTargetsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBackupTargetsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigBackupTargetsValueMust(ConfigBackupTargetsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigBackupTargetsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigBackupTargetsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigBackupTargetsValue{}
+
+type ConfigBackupTargetsValue struct {
+	BackupStorageIds basetypes.SetValue `tfsdk:"backup_storage_ids"`
+	state            attr.ValueState
+}
+
+func (v ConfigBackupTargetsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["backup_storage_ids"] = basetypes.SetType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.BackupStorageIds.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["backup_storage_ids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigBackupTargetsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigBackupTargetsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigBackupTargetsValue) String() string {
+	return "ConfigBackupTargetsValue"
+}
+
+func (v ConfigBackupTargetsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var backupStorageIdsVal basetypes.SetValue
+	switch {
+	case v.BackupStorageIds.IsUnknown():
+		backupStorageIdsVal = types.SetUnknown(types.Int64Type)
+	case v.BackupStorageIds.IsNull():
+		backupStorageIdsVal = types.SetNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		backupStorageIdsVal, d = types.SetValue(types.Int64Type, v.BackupStorageIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"backup_storage_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"backup_storage_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"backup_storage_ids": backupStorageIdsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigBackupTargetsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigBackupTargetsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.BackupStorageIds.Equal(other.BackupStorageIds) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigBackupTargetsValue) Type(ctx context.Context) attr.Type {
+	return ConfigBackupTargetsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigBackupTargetsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"backup_storage_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigBudgetType{}
+
+type ConfigBudgetType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigBudgetType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigBudgetType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigBudgetType) String() string {
+	return "ConfigBudgetType"
+}
+
+func (t ConfigBudgetType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigBudgetValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBudgetValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxPriceAttribute, ok := attributes["max_price"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPriceVal, ok := maxPriceAttribute.(basetypes.NumberValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price expected to be basetypes.NumberValue, was: %T`, maxPriceAttribute))
+	}
+
+	maxPriceCurrencyAttribute, ok := attributes["max_price_currency"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price_currency is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPriceCurrencyVal, ok := maxPriceCurrencyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price_currency expected to be basetypes.StringValue, was: %T`, maxPriceCurrencyAttribute))
+	}
+
+	maxPriceUnitAttribute, ok := attributes["max_price_unit"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price_unit is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPriceUnitVal, ok := maxPriceUnitAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price_unit expected to be basetypes.StringValue, was: %T`, maxPriceUnitAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigBudgetValue{
+		MaxPrice:         maxPriceVal,
+		MaxPriceCurrency: maxPriceCurrencyVal,
+		MaxPriceUnit:     maxPriceUnitVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBudgetValueNull() ConfigBudgetValue {
+	return ConfigBudgetValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigBudgetValueUnknown() ConfigBudgetValue {
+	return ConfigBudgetValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigBudgetValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigBudgetValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigBudgetValue Attribute Value",
+				"While creating a ConfigBudgetValue value, a missing attribute value was detected. "+
+					"A ConfigBudgetValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBudgetValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigBudgetValue Attribute Type",
+				"While creating a ConfigBudgetValue value, an invalid attribute value was detected. "+
+					"A ConfigBudgetValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBudgetValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigBudgetValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigBudgetValue Attribute Value",
+				"While creating a ConfigBudgetValue value, an extra attribute value was detected. "+
+					"A ConfigBudgetValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigBudgetValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigBudgetValueUnknown(), diags
+	}
+
+	maxPriceAttribute, ok := attributes["max_price"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price is missing from object`)
+
+		return NewConfigBudgetValueUnknown(), diags
+	}
+
+	maxPriceVal, ok := maxPriceAttribute.(basetypes.NumberValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price expected to be basetypes.NumberValue, was: %T`, maxPriceAttribute))
+	}
+
+	maxPriceCurrencyAttribute, ok := attributes["max_price_currency"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price_currency is missing from object`)
+
+		return NewConfigBudgetValueUnknown(), diags
+	}
+
+	maxPriceCurrencyVal, ok := maxPriceCurrencyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price_currency expected to be basetypes.StringValue, was: %T`, maxPriceCurrencyAttribute))
+	}
+
+	maxPriceUnitAttribute, ok := attributes["max_price_unit"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_price_unit is missing from object`)
+
+		return NewConfigBudgetValueUnknown(), diags
+	}
+
+	maxPriceUnitVal, ok := maxPriceUnitAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_price_unit expected to be basetypes.StringValue, was: %T`, maxPriceUnitAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigBudgetValueUnknown(), diags
+	}
+
+	return ConfigBudgetValue{
+		MaxPrice:         maxPriceVal,
+		MaxPriceCurrency: maxPriceCurrencyVal,
+		MaxPriceUnit:     maxPriceUnitVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBudgetValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigBudgetValue {
+	object, diags := NewConfigBudgetValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigBudgetValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigBudgetType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigBudgetValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigBudgetValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBudgetValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigBudgetValueMust(ConfigBudgetValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigBudgetType) ValueType(ctx context.Context) attr.Value {
+	return ConfigBudgetValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigBudgetValue{}
+
+type ConfigBudgetValue struct {
+	MaxPrice         basetypes.NumberValue `tfsdk:"max_price"`
+	MaxPriceCurrency basetypes.StringValue `tfsdk:"max_price_currency"`
+	MaxPriceUnit     basetypes.StringValue `tfsdk:"max_price_unit"`
+	state            attr.ValueState
+}
+
+func (v ConfigBudgetValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_price"] = basetypes.NumberType{}.TerraformType(ctx)
+	attrTypes["max_price_currency"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_price_unit"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.MaxPrice.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_price"] = val
+
+		val, err = v.MaxPriceCurrency.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_price_currency"] = val
+
+		val, err = v.MaxPriceUnit.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_price_unit"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigBudgetValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigBudgetValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigBudgetValue) String() string {
+	return "ConfigBudgetValue"
+}
+
+func (v ConfigBudgetValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_price":          basetypes.NumberType{},
+		"max_price_currency": basetypes.StringType{},
+		"max_price_unit":     basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_price":          v.MaxPrice,
+			"max_price_currency": v.MaxPriceCurrency,
+			"max_price_unit":     v.MaxPriceUnit,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigBudgetValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigBudgetValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxPrice.Equal(other.MaxPrice) {
+		return false
+	}
+
+	if !v.MaxPriceCurrency.Equal(other.MaxPriceCurrency) {
+		return false
+	}
+
+	if !v.MaxPriceUnit.Equal(other.MaxPriceUnit) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigBudgetValue) Type(ctx context.Context) attr.Type {
+	return ConfigBudgetType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigBudgetValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_price":          basetypes.NumberType{},
+		"max_price_currency": basetypes.StringType{},
+		"max_price_unit":     basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigClusterResourceNameType{}
+
+type ConfigClusterResourceNameType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigClusterResourceNameType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigClusterResourceNameType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigClusterResourceNameType) String() string {
+	return "ConfigClusterResourceNameType"
+}
+
+func (t ConfigClusterResourceNameType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigClusterResourceNameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigClusterResourceNameValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	serverNamingConflictAttribute, ok := attributes["server_naming_conflict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_conflict is missing from object`)
+
+		return nil, diags
+	}
+
+	serverNamingConflictVal, ok := serverNamingConflictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_conflict expected to be basetypes.BoolValue, was: %T`, serverNamingConflictAttribute))
+	}
+
+	serverNamingPatternAttribute, ok := attributes["server_naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_pattern is missing from object`)
+
+		return nil, diags
+	}
+
+	serverNamingPatternVal, ok := serverNamingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_pattern expected to be basetypes.StringValue, was: %T`, serverNamingPatternAttribute))
+	}
+
+	serverNamingTypeAttribute, ok := attributes["server_naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_type is missing from object`)
+
+		return nil, diags
+	}
+
+	serverNamingTypeVal, ok := serverNamingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_type expected to be basetypes.StringValue, was: %T`, serverNamingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigClusterResourceNameValue{
+		ServerNamingConflict: serverNamingConflictVal,
+		ServerNamingPattern:  serverNamingPatternVal,
+		ServerNamingType:     serverNamingTypeVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigClusterResourceNameValueNull() ConfigClusterResourceNameValue {
+	return ConfigClusterResourceNameValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigClusterResourceNameValueUnknown() ConfigClusterResourceNameValue {
+	return ConfigClusterResourceNameValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigClusterResourceNameValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigClusterResourceNameValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigClusterResourceNameValue Attribute Value",
+				"While creating a ConfigClusterResourceNameValue value, a missing attribute value was detected. "+
+					"A ConfigClusterResourceNameValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigClusterResourceNameValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigClusterResourceNameValue Attribute Type",
+				"While creating a ConfigClusterResourceNameValue value, an invalid attribute value was detected. "+
+					"A ConfigClusterResourceNameValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigClusterResourceNameValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigClusterResourceNameValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigClusterResourceNameValue Attribute Value",
+				"While creating a ConfigClusterResourceNameValue value, an extra attribute value was detected. "+
+					"A ConfigClusterResourceNameValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigClusterResourceNameValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigClusterResourceNameValueUnknown(), diags
+	}
+
+	serverNamingConflictAttribute, ok := attributes["server_naming_conflict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_conflict is missing from object`)
+
+		return NewConfigClusterResourceNameValueUnknown(), diags
+	}
+
+	serverNamingConflictVal, ok := serverNamingConflictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_conflict expected to be basetypes.BoolValue, was: %T`, serverNamingConflictAttribute))
+	}
+
+	serverNamingPatternAttribute, ok := attributes["server_naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_pattern is missing from object`)
+
+		return NewConfigClusterResourceNameValueUnknown(), diags
+	}
+
+	serverNamingPatternVal, ok := serverNamingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_pattern expected to be basetypes.StringValue, was: %T`, serverNamingPatternAttribute))
+	}
+
+	serverNamingTypeAttribute, ok := attributes["server_naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`server_naming_type is missing from object`)
+
+		return NewConfigClusterResourceNameValueUnknown(), diags
+	}
+
+	serverNamingTypeVal, ok := serverNamingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`server_naming_type expected to be basetypes.StringValue, was: %T`, serverNamingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigClusterResourceNameValueUnknown(), diags
+	}
+
+	return ConfigClusterResourceNameValue{
+		ServerNamingConflict: serverNamingConflictVal,
+		ServerNamingPattern:  serverNamingPatternVal,
+		ServerNamingType:     serverNamingTypeVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigClusterResourceNameValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigClusterResourceNameValue {
+	object, diags := NewConfigClusterResourceNameValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigClusterResourceNameValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigClusterResourceNameType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigClusterResourceNameValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigClusterResourceNameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigClusterResourceNameValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigClusterResourceNameValueMust(ConfigClusterResourceNameValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigClusterResourceNameType) ValueType(ctx context.Context) attr.Value {
+	return ConfigClusterResourceNameValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigClusterResourceNameValue{}
+
+type ConfigClusterResourceNameValue struct {
+	ServerNamingConflict basetypes.BoolValue   `tfsdk:"server_naming_conflict"`
+	ServerNamingPattern  basetypes.StringValue `tfsdk:"server_naming_pattern"`
+	ServerNamingType     basetypes.StringValue `tfsdk:"server_naming_type"`
+	state                attr.ValueState
+}
+
+func (v ConfigClusterResourceNameValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["server_naming_conflict"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["server_naming_pattern"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["server_naming_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.ServerNamingConflict.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["server_naming_conflict"] = val
+
+		val, err = v.ServerNamingPattern.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["server_naming_pattern"] = val
+
+		val, err = v.ServerNamingType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["server_naming_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigClusterResourceNameValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigClusterResourceNameValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigClusterResourceNameValue) String() string {
+	return "ConfigClusterResourceNameValue"
+}
+
+func (v ConfigClusterResourceNameValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"server_naming_conflict": basetypes.BoolType{},
+		"server_naming_pattern":  basetypes.StringType{},
+		"server_naming_type":     basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"server_naming_conflict": v.ServerNamingConflict,
+			"server_naming_pattern":  v.ServerNamingPattern,
+			"server_naming_type":     v.ServerNamingType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigClusterResourceNameValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigClusterResourceNameValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ServerNamingConflict.Equal(other.ServerNamingConflict) {
+		return false
+	}
+
+	if !v.ServerNamingPattern.Equal(other.ServerNamingPattern) {
+		return false
+	}
+
+	if !v.ServerNamingType.Equal(other.ServerNamingType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigClusterResourceNameValue) Type(ctx context.Context) attr.Type {
+	return ConfigClusterResourceNameType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigClusterResourceNameValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"server_naming_conflict": basetypes.BoolType{},
+		"server_naming_pattern":  basetypes.StringType{},
+		"server_naming_type":     basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigCypherAccessType{}
+
+type ConfigCypherAccessType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigCypherAccessType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigCypherAccessType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigCypherAccessType) String() string {
+	return "ConfigCypherAccessType"
+}
+
+func (t ConfigCypherAccessType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigCypherAccessValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigCypherAccessValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	deleteAttribute, ok := attributes["delete"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`delete is missing from object`)
+
+		return nil, diags
+	}
+
+	deleteVal, ok := deleteAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`delete expected to be basetypes.BoolValue, was: %T`, deleteAttribute))
+	}
+
+	keyPatternAttribute, ok := attributes["key_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key_pattern is missing from object`)
+
+		return nil, diags
+	}
+
+	keyPatternVal, ok := keyPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key_pattern expected to be basetypes.StringValue, was: %T`, keyPatternAttribute))
+	}
+
+	listAttribute, ok := attributes["list"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`list is missing from object`)
+
+		return nil, diags
+	}
+
+	listVal, ok := listAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`list expected to be basetypes.BoolValue, was: %T`, listAttribute))
+	}
+
+	readAttribute, ok := attributes["read"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`read is missing from object`)
+
+		return nil, diags
+	}
+
+	readVal, ok := readAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`read expected to be basetypes.BoolValue, was: %T`, readAttribute))
+	}
+
+	updateAttribute, ok := attributes["update"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`update is missing from object`)
+
+		return nil, diags
+	}
+
+	updateVal, ok := updateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`update expected to be basetypes.BoolValue, was: %T`, updateAttribute))
+	}
+
+	writeAttribute, ok := attributes["write"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`write is missing from object`)
+
+		return nil, diags
+	}
+
+	writeVal, ok := writeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`write expected to be basetypes.BoolValue, was: %T`, writeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigCypherAccessValue{
+		Delete:     deleteVal,
+		KeyPattern: keyPatternVal,
+		List:       listVal,
+		Read:       readVal,
+		Update:     updateVal,
+		Write:      writeVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigCypherAccessValueNull() ConfigCypherAccessValue {
+	return ConfigCypherAccessValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigCypherAccessValueUnknown() ConfigCypherAccessValue {
+	return ConfigCypherAccessValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigCypherAccessValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigCypherAccessValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigCypherAccessValue Attribute Value",
+				"While creating a ConfigCypherAccessValue value, a missing attribute value was detected. "+
+					"A ConfigCypherAccessValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigCypherAccessValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigCypherAccessValue Attribute Type",
+				"While creating a ConfigCypherAccessValue value, an invalid attribute value was detected. "+
+					"A ConfigCypherAccessValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigCypherAccessValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigCypherAccessValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigCypherAccessValue Attribute Value",
+				"While creating a ConfigCypherAccessValue value, an extra attribute value was detected. "+
+					"A ConfigCypherAccessValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigCypherAccessValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	deleteAttribute, ok := attributes["delete"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`delete is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	deleteVal, ok := deleteAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`delete expected to be basetypes.BoolValue, was: %T`, deleteAttribute))
+	}
+
+	keyPatternAttribute, ok := attributes["key_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key_pattern is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	keyPatternVal, ok := keyPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key_pattern expected to be basetypes.StringValue, was: %T`, keyPatternAttribute))
+	}
+
+	listAttribute, ok := attributes["list"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`list is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	listVal, ok := listAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`list expected to be basetypes.BoolValue, was: %T`, listAttribute))
+	}
+
+	readAttribute, ok := attributes["read"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`read is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	readVal, ok := readAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`read expected to be basetypes.BoolValue, was: %T`, readAttribute))
+	}
+
+	updateAttribute, ok := attributes["update"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`update is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	updateVal, ok := updateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`update expected to be basetypes.BoolValue, was: %T`, updateAttribute))
+	}
+
+	writeAttribute, ok := attributes["write"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`write is missing from object`)
+
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	writeVal, ok := writeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`write expected to be basetypes.BoolValue, was: %T`, writeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigCypherAccessValueUnknown(), diags
+	}
+
+	return ConfigCypherAccessValue{
+		Delete:     deleteVal,
+		KeyPattern: keyPatternVal,
+		List:       listVal,
+		Read:       readVal,
+		Update:     updateVal,
+		Write:      writeVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigCypherAccessValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigCypherAccessValue {
+	object, diags := NewConfigCypherAccessValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigCypherAccessValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigCypherAccessType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigCypherAccessValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigCypherAccessValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigCypherAccessValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigCypherAccessValueMust(ConfigCypherAccessValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigCypherAccessType) ValueType(ctx context.Context) attr.Value {
+	return ConfigCypherAccessValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigCypherAccessValue{}
+
+type ConfigCypherAccessValue struct {
+	Delete     basetypes.BoolValue   `tfsdk:"delete"`
+	KeyPattern basetypes.StringValue `tfsdk:"key_pattern"`
+	List       basetypes.BoolValue   `tfsdk:"list"`
+	Read       basetypes.BoolValue   `tfsdk:"read"`
+	Update     basetypes.BoolValue   `tfsdk:"update"`
+	Write      basetypes.BoolValue   `tfsdk:"write"`
+	state      attr.ValueState
+}
+
+func (v ConfigCypherAccessValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 6)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["delete"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["key_pattern"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["list"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["read"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["update"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["write"] = basetypes.BoolType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.Delete.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["delete"] = val
+
+		val, err = v.KeyPattern.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["key_pattern"] = val
+
+		val, err = v.List.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["list"] = val
+
+		val, err = v.Read.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["read"] = val
+
+		val, err = v.Update.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["update"] = val
+
+		val, err = v.Write.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["write"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigCypherAccessValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigCypherAccessValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigCypherAccessValue) String() string {
+	return "ConfigCypherAccessValue"
+}
+
+func (v ConfigCypherAccessValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"delete":      basetypes.BoolType{},
+		"key_pattern": basetypes.StringType{},
+		"list":        basetypes.BoolType{},
+		"read":        basetypes.BoolType{},
+		"update":      basetypes.BoolType{},
+		"write":       basetypes.BoolType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"delete":      v.Delete,
+			"key_pattern": v.KeyPattern,
+			"list":        v.List,
+			"read":        v.Read,
+			"update":      v.Update,
+			"write":       v.Write,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigCypherAccessValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigCypherAccessValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Delete.Equal(other.Delete) {
+		return false
+	}
+
+	if !v.KeyPattern.Equal(other.KeyPattern) {
+		return false
+	}
+
+	if !v.List.Equal(other.List) {
+		return false
+	}
+
+	if !v.Read.Equal(other.Read) {
+		return false
+	}
+
+	if !v.Update.Equal(other.Update) {
+		return false
+	}
+
+	if !v.Write.Equal(other.Write) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigCypherAccessValue) Type(ctx context.Context) attr.Type {
+	return ConfigCypherAccessType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigCypherAccessValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"delete":      basetypes.BoolType{},
+		"key_pattern": basetypes.StringType{},
+		"list":        basetypes.BoolType{},
+		"read":        basetypes.BoolType{},
+		"update":      basetypes.BoolType{},
+		"write":       basetypes.BoolType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigDelayedDeleteType{}
+
+type ConfigDelayedDeleteType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigDelayedDeleteType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigDelayedDeleteType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigDelayedDeleteType) String() string {
+	return "ConfigDelayedDeleteType"
+}
+
+func (t ConfigDelayedDeleteType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigDelayedDeleteValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigDelayedDeleteValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	removalAgeAttribute, ok := attributes["removal_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`removal_age is missing from object`)
+
+		return nil, diags
+	}
+
+	removalAgeVal, ok := removalAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`removal_age expected to be basetypes.StringValue, was: %T`, removalAgeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigDelayedDeleteValue{
+		RemovalAge: removalAgeVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigDelayedDeleteValueNull() ConfigDelayedDeleteValue {
+	return ConfigDelayedDeleteValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigDelayedDeleteValueUnknown() ConfigDelayedDeleteValue {
+	return ConfigDelayedDeleteValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigDelayedDeleteValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigDelayedDeleteValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigDelayedDeleteValue Attribute Value",
+				"While creating a ConfigDelayedDeleteValue value, a missing attribute value was detected. "+
+					"A ConfigDelayedDeleteValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigDelayedDeleteValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigDelayedDeleteValue Attribute Type",
+				"While creating a ConfigDelayedDeleteValue value, an invalid attribute value was detected. "+
+					"A ConfigDelayedDeleteValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigDelayedDeleteValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigDelayedDeleteValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigDelayedDeleteValue Attribute Value",
+				"While creating a ConfigDelayedDeleteValue value, an extra attribute value was detected. "+
+					"A ConfigDelayedDeleteValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigDelayedDeleteValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigDelayedDeleteValueUnknown(), diags
+	}
+
+	removalAgeAttribute, ok := attributes["removal_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`removal_age is missing from object`)
+
+		return NewConfigDelayedDeleteValueUnknown(), diags
+	}
+
+	removalAgeVal, ok := removalAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`removal_age expected to be basetypes.StringValue, was: %T`, removalAgeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigDelayedDeleteValueUnknown(), diags
+	}
+
+	return ConfigDelayedDeleteValue{
+		RemovalAge: removalAgeVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigDelayedDeleteValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigDelayedDeleteValue {
+	object, diags := NewConfigDelayedDeleteValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigDelayedDeleteValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigDelayedDeleteType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigDelayedDeleteValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigDelayedDeleteValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigDelayedDeleteValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigDelayedDeleteValueMust(ConfigDelayedDeleteValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigDelayedDeleteType) ValueType(ctx context.Context) attr.Value {
+	return ConfigDelayedDeleteValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigDelayedDeleteValue{}
+
+type ConfigDelayedDeleteValue struct {
+	RemovalAge basetypes.StringValue `tfsdk:"removal_age"`
+	state      attr.ValueState
+}
+
+func (v ConfigDelayedDeleteValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["removal_age"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.RemovalAge.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["removal_age"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigDelayedDeleteValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigDelayedDeleteValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigDelayedDeleteValue) String() string {
+	return "ConfigDelayedDeleteValue"
+}
+
+func (v ConfigDelayedDeleteValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"removal_age": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"removal_age": v.RemovalAge,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigDelayedDeleteValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigDelayedDeleteValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.RemovalAge.Equal(other.RemovalAge) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigDelayedDeleteValue) Type(ctx context.Context) attr.Type {
+	return ConfigDelayedDeleteType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigDelayedDeleteValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"removal_age": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigExpirationType{}
+
+type ConfigExpirationType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigExpirationType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigExpirationType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigExpirationType) String() string {
+	return "ConfigExpirationType"
+}
+
+func (t ConfigExpirationType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigExpirationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigExpirationValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return nil, diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	lifecycleAgeAttribute, ok := attributes["lifecycle_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_age is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleAgeVal, ok := lifecycleAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_age expected to be basetypes.StringValue, was: %T`, lifecycleAgeAttribute))
+	}
+
+	lifecycleAllowExtendAttribute, ok := attributes["lifecycle_allow_extend"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_allow_extend is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.StringValue, was: %T`, lifecycleAllowExtendAttribute))
+	}
+
+	lifecycleAutoRenewAttribute, ok := attributes["lifecycle_auto_renew"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_auto_renew is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.StringValue, was: %T`, lifecycleAutoRenewAttribute))
+	}
+
+	lifecycleExtensionsBeforeApprovalAttribute, ok := attributes["lifecycle_extensions_before_approval"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_extensions_before_approval is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleExtensionsBeforeApprovalVal, ok := lifecycleExtensionsBeforeApprovalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_extensions_before_approval expected to be basetypes.StringValue, was: %T`, lifecycleExtensionsBeforeApprovalAttribute))
+	}
+
+	lifecycleHideFixedAttribute, ok := attributes["lifecycle_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_hide_fixed is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleHideFixedVal, ok := lifecycleHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_hide_fixed expected to be basetypes.BoolValue, was: %T`, lifecycleHideFixedAttribute))
+	}
+
+	lifecycleMessageAttribute, ok := attributes["lifecycle_message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_message is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleMessageVal, ok := lifecycleMessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_message expected to be basetypes.StringValue, was: %T`, lifecycleMessageAttribute))
+	}
+
+	lifecycleNotifyAttribute, ok := attributes["lifecycle_notify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_notify is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleNotifyVal, ok := lifecycleNotifyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_notify expected to be basetypes.StringValue, was: %T`, lifecycleNotifyAttribute))
+	}
+
+	lifecycleRenewalAttribute, ok := attributes["lifecycle_renewal"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_renewal is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleRenewalVal, ok := lifecycleRenewalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_renewal expected to be basetypes.StringValue, was: %T`, lifecycleRenewalAttribute))
+	}
+
+	lifecycleTypeAttribute, ok := attributes["lifecycle_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_type is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleTypeVal, ok := lifecycleTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_type expected to be basetypes.StringValue, was: %T`, lifecycleTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigExpirationValue{
+		AccountIntegrationId:              accountIntegrationIdVal,
+		LifecycleAge:                      lifecycleAgeVal,
+		LifecycleAllowExtend:              lifecycleAllowExtendVal,
+		LifecycleAutoRenew:                lifecycleAutoRenewVal,
+		LifecycleExtensionsBeforeApproval: lifecycleExtensionsBeforeApprovalVal,
+		LifecycleHideFixed:                lifecycleHideFixedVal,
+		LifecycleMessage:                  lifecycleMessageVal,
+		LifecycleNotify:                   lifecycleNotifyVal,
+		LifecycleRenewal:                  lifecycleRenewalVal,
+		LifecycleType:                     lifecycleTypeVal,
+		state:                             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigExpirationValueNull() ConfigExpirationValue {
+	return ConfigExpirationValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigExpirationValueUnknown() ConfigExpirationValue {
+	return ConfigExpirationValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigExpirationValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigExpirationValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigExpirationValue Attribute Value",
+				"While creating a ConfigExpirationValue value, a missing attribute value was detected. "+
+					"A ConfigExpirationValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigExpirationValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigExpirationValue Attribute Type",
+				"While creating a ConfigExpirationValue value, an invalid attribute value was detected. "+
+					"A ConfigExpirationValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigExpirationValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigExpirationValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigExpirationValue Attribute Value",
+				"While creating a ConfigExpirationValue value, an extra attribute value was detected. "+
+					"A ConfigExpirationValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigExpirationValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	lifecycleAgeAttribute, ok := attributes["lifecycle_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_age is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleAgeVal, ok := lifecycleAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_age expected to be basetypes.StringValue, was: %T`, lifecycleAgeAttribute))
+	}
+
+	lifecycleAllowExtendAttribute, ok := attributes["lifecycle_allow_extend"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_allow_extend is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.StringValue, was: %T`, lifecycleAllowExtendAttribute))
+	}
+
+	lifecycleAutoRenewAttribute, ok := attributes["lifecycle_auto_renew"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_auto_renew is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.StringValue, was: %T`, lifecycleAutoRenewAttribute))
+	}
+
+	lifecycleExtensionsBeforeApprovalAttribute, ok := attributes["lifecycle_extensions_before_approval"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_extensions_before_approval is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleExtensionsBeforeApprovalVal, ok := lifecycleExtensionsBeforeApprovalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_extensions_before_approval expected to be basetypes.StringValue, was: %T`, lifecycleExtensionsBeforeApprovalAttribute))
+	}
+
+	lifecycleHideFixedAttribute, ok := attributes["lifecycle_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_hide_fixed is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleHideFixedVal, ok := lifecycleHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_hide_fixed expected to be basetypes.BoolValue, was: %T`, lifecycleHideFixedAttribute))
+	}
+
+	lifecycleMessageAttribute, ok := attributes["lifecycle_message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_message is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleMessageVal, ok := lifecycleMessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_message expected to be basetypes.StringValue, was: %T`, lifecycleMessageAttribute))
+	}
+
+	lifecycleNotifyAttribute, ok := attributes["lifecycle_notify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_notify is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleNotifyVal, ok := lifecycleNotifyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_notify expected to be basetypes.StringValue, was: %T`, lifecycleNotifyAttribute))
+	}
+
+	lifecycleRenewalAttribute, ok := attributes["lifecycle_renewal"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_renewal is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleRenewalVal, ok := lifecycleRenewalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_renewal expected to be basetypes.StringValue, was: %T`, lifecycleRenewalAttribute))
+	}
+
+	lifecycleTypeAttribute, ok := attributes["lifecycle_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_type is missing from object`)
+
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	lifecycleTypeVal, ok := lifecycleTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_type expected to be basetypes.StringValue, was: %T`, lifecycleTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigExpirationValueUnknown(), diags
+	}
+
+	return ConfigExpirationValue{
+		AccountIntegrationId:              accountIntegrationIdVal,
+		LifecycleAge:                      lifecycleAgeVal,
+		LifecycleAllowExtend:              lifecycleAllowExtendVal,
+		LifecycleAutoRenew:                lifecycleAutoRenewVal,
+		LifecycleExtensionsBeforeApproval: lifecycleExtensionsBeforeApprovalVal,
+		LifecycleHideFixed:                lifecycleHideFixedVal,
+		LifecycleMessage:                  lifecycleMessageVal,
+		LifecycleNotify:                   lifecycleNotifyVal,
+		LifecycleRenewal:                  lifecycleRenewalVal,
+		LifecycleType:                     lifecycleTypeVal,
+		state:                             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigExpirationValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigExpirationValue {
+	object, diags := NewConfigExpirationValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigExpirationValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigExpirationType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigExpirationValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigExpirationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigExpirationValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigExpirationValueMust(ConfigExpirationValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigExpirationType) ValueType(ctx context.Context) attr.Value {
+	return ConfigExpirationValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigExpirationValue{}
+
+type ConfigExpirationValue struct {
+	AccountIntegrationId              basetypes.StringValue `tfsdk:"account_integration_id"`
+	LifecycleAge                      basetypes.StringValue `tfsdk:"lifecycle_age"`
+	LifecycleAllowExtend              basetypes.StringValue `tfsdk:"lifecycle_allow_extend"`
+	LifecycleAutoRenew                basetypes.StringValue `tfsdk:"lifecycle_auto_renew"`
+	LifecycleExtensionsBeforeApproval basetypes.StringValue `tfsdk:"lifecycle_extensions_before_approval"`
+	LifecycleHideFixed                basetypes.BoolValue   `tfsdk:"lifecycle_hide_fixed"`
+	LifecycleMessage                  basetypes.StringValue `tfsdk:"lifecycle_message"`
+	LifecycleNotify                   basetypes.StringValue `tfsdk:"lifecycle_notify"`
+	LifecycleRenewal                  basetypes.StringValue `tfsdk:"lifecycle_renewal"`
+	LifecycleType                     basetypes.StringValue `tfsdk:"lifecycle_type"`
+	state                             attr.ValueState
+}
+
+func (v ConfigExpirationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 10)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_age"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_allow_extend"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_auto_renew"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_extensions_before_approval"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_hide_fixed"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["lifecycle_message"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_notify"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_renewal"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 10)
+
+		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["account_integration_id"] = val
+
+		val, err = v.LifecycleAge.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_age"] = val
+
+		val, err = v.LifecycleAllowExtend.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_allow_extend"] = val
+
+		val, err = v.LifecycleAutoRenew.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_auto_renew"] = val
+
+		val, err = v.LifecycleExtensionsBeforeApproval.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_extensions_before_approval"] = val
+
+		val, err = v.LifecycleHideFixed.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_hide_fixed"] = val
+
+		val, err = v.LifecycleMessage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_message"] = val
+
+		val, err = v.LifecycleNotify.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_notify"] = val
+
+		val, err = v.LifecycleRenewal.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_renewal"] = val
+
+		val, err = v.LifecycleType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigExpirationValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigExpirationValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigExpirationValue) String() string {
+	return "ConfigExpirationValue"
+}
+
+func (v ConfigExpirationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"account_integration_id":               basetypes.StringType{},
+		"lifecycle_age":                        basetypes.StringType{},
+		"lifecycle_allow_extend":               basetypes.StringType{},
+		"lifecycle_auto_renew":                 basetypes.StringType{},
+		"lifecycle_extensions_before_approval": basetypes.StringType{},
+		"lifecycle_hide_fixed":                 basetypes.BoolType{},
+		"lifecycle_message":                    basetypes.StringType{},
+		"lifecycle_notify":                     basetypes.StringType{},
+		"lifecycle_renewal":                    basetypes.StringType{},
+		"lifecycle_type":                       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"account_integration_id":               v.AccountIntegrationId,
+			"lifecycle_age":                        v.LifecycleAge,
+			"lifecycle_allow_extend":               v.LifecycleAllowExtend,
+			"lifecycle_auto_renew":                 v.LifecycleAutoRenew,
+			"lifecycle_extensions_before_approval": v.LifecycleExtensionsBeforeApproval,
+			"lifecycle_hide_fixed":                 v.LifecycleHideFixed,
+			"lifecycle_message":                    v.LifecycleMessage,
+			"lifecycle_notify":                     v.LifecycleNotify,
+			"lifecycle_renewal":                    v.LifecycleRenewal,
+			"lifecycle_type":                       v.LifecycleType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigExpirationValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigExpirationValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
+		return false
+	}
+
+	if !v.LifecycleAge.Equal(other.LifecycleAge) {
+		return false
+	}
+
+	if !v.LifecycleAllowExtend.Equal(other.LifecycleAllowExtend) {
+		return false
+	}
+
+	if !v.LifecycleAutoRenew.Equal(other.LifecycleAutoRenew) {
+		return false
+	}
+
+	if !v.LifecycleExtensionsBeforeApproval.Equal(other.LifecycleExtensionsBeforeApproval) {
+		return false
+	}
+
+	if !v.LifecycleHideFixed.Equal(other.LifecycleHideFixed) {
+		return false
+	}
+
+	if !v.LifecycleMessage.Equal(other.LifecycleMessage) {
+		return false
+	}
+
+	if !v.LifecycleNotify.Equal(other.LifecycleNotify) {
+		return false
+	}
+
+	if !v.LifecycleRenewal.Equal(other.LifecycleRenewal) {
+		return false
+	}
+
+	if !v.LifecycleType.Equal(other.LifecycleType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigExpirationValue) Type(ctx context.Context) attr.Type {
+	return ConfigExpirationType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigExpirationValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"account_integration_id":               basetypes.StringType{},
+		"lifecycle_age":                        basetypes.StringType{},
+		"lifecycle_allow_extend":               basetypes.StringType{},
+		"lifecycle_auto_renew":                 basetypes.StringType{},
+		"lifecycle_extensions_before_approval": basetypes.StringType{},
+		"lifecycle_hide_fixed":                 basetypes.BoolType{},
+		"lifecycle_message":                    basetypes.StringType{},
+		"lifecycle_notify":                     basetypes.StringType{},
+		"lifecycle_renewal":                    basetypes.StringType{},
+		"lifecycle_type":                       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigFileShareStorageQuotaType{}
+
+type ConfigFileShareStorageQuotaType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigFileShareStorageQuotaType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigFileShareStorageQuotaType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigFileShareStorageQuotaType) String() string {
+	return "ConfigFileShareStorageQuotaType"
+}
+
+func (t ConfigFileShareStorageQuotaType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigFileShareStorageQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigFileShareStorageQuotaValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return nil, diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigFileShareStorageQuotaValue{
+		MaxStorage: maxStorageVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigFileShareStorageQuotaValueNull() ConfigFileShareStorageQuotaValue {
+	return ConfigFileShareStorageQuotaValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigFileShareStorageQuotaValueUnknown() ConfigFileShareStorageQuotaValue {
+	return ConfigFileShareStorageQuotaValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigFileShareStorageQuotaValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigFileShareStorageQuotaValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigFileShareStorageQuotaValue Attribute Value",
+				"While creating a ConfigFileShareStorageQuotaValue value, a missing attribute value was detected. "+
+					"A ConfigFileShareStorageQuotaValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigFileShareStorageQuotaValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigFileShareStorageQuotaValue Attribute Type",
+				"While creating a ConfigFileShareStorageQuotaValue value, an invalid attribute value was detected. "+
+					"A ConfigFileShareStorageQuotaValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigFileShareStorageQuotaValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigFileShareStorageQuotaValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigFileShareStorageQuotaValue Attribute Value",
+				"While creating a ConfigFileShareStorageQuotaValue value, an extra attribute value was detected. "+
+					"A ConfigFileShareStorageQuotaValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigFileShareStorageQuotaValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigFileShareStorageQuotaValueUnknown(), diags
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return NewConfigFileShareStorageQuotaValueUnknown(), diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigFileShareStorageQuotaValueUnknown(), diags
+	}
+
+	return ConfigFileShareStorageQuotaValue{
+		MaxStorage: maxStorageVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigFileShareStorageQuotaValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigFileShareStorageQuotaValue {
+	object, diags := NewConfigFileShareStorageQuotaValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigFileShareStorageQuotaValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigFileShareStorageQuotaType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigFileShareStorageQuotaValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigFileShareStorageQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigFileShareStorageQuotaValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigFileShareStorageQuotaValueMust(ConfigFileShareStorageQuotaValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigFileShareStorageQuotaType) ValueType(ctx context.Context) attr.Value {
+	return ConfigFileShareStorageQuotaValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigFileShareStorageQuotaValue{}
+
+type ConfigFileShareStorageQuotaValue struct {
+	MaxStorage basetypes.StringValue `tfsdk:"max_storage"`
+	state      attr.ValueState
+}
+
+func (v ConfigFileShareStorageQuotaValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_storage"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_storage"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigFileShareStorageQuotaValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigFileShareStorageQuotaValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigFileShareStorageQuotaValue) String() string {
+	return "ConfigFileShareStorageQuotaValue"
+}
+
+func (v ConfigFileShareStorageQuotaValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_storage": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_storage": v.MaxStorage,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigFileShareStorageQuotaValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigFileShareStorageQuotaValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxStorage.Equal(other.MaxStorage) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigFileShareStorageQuotaValue) Type(ctx context.Context) attr.Type {
+	return ConfigFileShareStorageQuotaType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigFileShareStorageQuotaValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_storage": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigHostnameType{}
+
+type ConfigHostnameType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHostnameType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHostnameType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHostnameType) String() string {
+	return "ConfigHostnameType"
+}
+
+func (t ConfigHostnameType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHostnameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHostnameValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	hostNamingPatternAttribute, ok := attributes["host_naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_naming_pattern is missing from object`)
+
+		return nil, diags
+	}
+
+	hostNamingPatternVal, ok := hostNamingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_naming_pattern expected to be basetypes.StringValue, was: %T`, hostNamingPatternAttribute))
+	}
+
+	hostNamingTypeAttribute, ok := attributes["host_naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_naming_type is missing from object`)
+
+		return nil, diags
+	}
+
+	hostNamingTypeVal, ok := hostNamingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_naming_type expected to be basetypes.StringValue, was: %T`, hostNamingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHostnameValue{
+		HostNamingPattern: hostNamingPatternVal,
+		HostNamingType:    hostNamingTypeVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHostnameValueNull() ConfigHostnameValue {
+	return ConfigHostnameValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHostnameValueUnknown() ConfigHostnameValue {
+	return ConfigHostnameValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHostnameValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHostnameValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHostnameValue Attribute Value",
+				"While creating a ConfigHostnameValue value, a missing attribute value was detected. "+
+					"A ConfigHostnameValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHostnameValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHostnameValue Attribute Type",
+				"While creating a ConfigHostnameValue value, an invalid attribute value was detected. "+
+					"A ConfigHostnameValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHostnameValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHostnameValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHostnameValue Attribute Value",
+				"While creating a ConfigHostnameValue value, an extra attribute value was detected. "+
+					"A ConfigHostnameValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHostnameValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHostnameValueUnknown(), diags
+	}
+
+	hostNamingPatternAttribute, ok := attributes["host_naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_naming_pattern is missing from object`)
+
+		return NewConfigHostnameValueUnknown(), diags
+	}
+
+	hostNamingPatternVal, ok := hostNamingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_naming_pattern expected to be basetypes.StringValue, was: %T`, hostNamingPatternAttribute))
+	}
+
+	hostNamingTypeAttribute, ok := attributes["host_naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_naming_type is missing from object`)
+
+		return NewConfigHostnameValueUnknown(), diags
+	}
+
+	hostNamingTypeVal, ok := hostNamingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_naming_type expected to be basetypes.StringValue, was: %T`, hostNamingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHostnameValueUnknown(), diags
+	}
+
+	return ConfigHostnameValue{
+		HostNamingPattern: hostNamingPatternVal,
+		HostNamingType:    hostNamingTypeVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHostnameValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHostnameValue {
+	object, diags := NewConfigHostnameValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHostnameValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHostnameType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHostnameValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHostnameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHostnameValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHostnameValueMust(ConfigHostnameValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHostnameType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHostnameValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHostnameValue{}
+
+type ConfigHostnameValue struct {
+	HostNamingPattern basetypes.StringValue `tfsdk:"host_naming_pattern"`
+	HostNamingType    basetypes.StringValue `tfsdk:"host_naming_type"`
+	state             attr.ValueState
+}
+
+func (v ConfigHostnameValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["host_naming_pattern"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["host_naming_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.HostNamingPattern.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_naming_pattern"] = val
+
+		val, err = v.HostNamingType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_naming_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHostnameValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHostnameValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHostnameValue) String() string {
+	return "ConfigHostnameValue"
+}
+
+func (v ConfigHostnameValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"host_naming_pattern": basetypes.StringType{},
+		"host_naming_type":    basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"host_naming_pattern": v.HostNamingPattern,
+			"host_naming_type":    v.HostNamingType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHostnameValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHostnameValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.HostNamingPattern.Equal(other.HostNamingPattern) {
+		return false
+	}
+
+	if !v.HostNamingType.Equal(other.HostNamingType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHostnameValue) Type(ctx context.Context) attr.Type {
+	return ConfigHostnameType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHostnameValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"host_naming_pattern": basetypes.StringType{},
+		"host_naming_type":    basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigInstanceNameType{}
+
+type ConfigInstanceNameType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigInstanceNameType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigInstanceNameType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigInstanceNameType) String() string {
+	return "ConfigInstanceNameType"
+}
+
+func (t ConfigInstanceNameType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigInstanceNameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigInstanceNameValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	namingConflictAttribute, ok := attributes["naming_conflict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_conflict is missing from object`)
+
+		return nil, diags
+	}
+
+	namingConflictVal, ok := namingConflictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_conflict expected to be basetypes.BoolValue, was: %T`, namingConflictAttribute))
+	}
+
+	namingPatternAttribute, ok := attributes["naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_pattern is missing from object`)
+
+		return nil, diags
+	}
+
+	namingPatternVal, ok := namingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_pattern expected to be basetypes.StringValue, was: %T`, namingPatternAttribute))
+	}
+
+	namingTypeAttribute, ok := attributes["naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_type is missing from object`)
+
+		return nil, diags
+	}
+
+	namingTypeVal, ok := namingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_type expected to be basetypes.StringValue, was: %T`, namingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigInstanceNameValue{
+		NamingConflict: namingConflictVal,
+		NamingPattern:  namingPatternVal,
+		NamingType:     namingTypeVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigInstanceNameValueNull() ConfigInstanceNameValue {
+	return ConfigInstanceNameValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigInstanceNameValueUnknown() ConfigInstanceNameValue {
+	return ConfigInstanceNameValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigInstanceNameValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigInstanceNameValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigInstanceNameValue Attribute Value",
+				"While creating a ConfigInstanceNameValue value, a missing attribute value was detected. "+
+					"A ConfigInstanceNameValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigInstanceNameValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigInstanceNameValue Attribute Type",
+				"While creating a ConfigInstanceNameValue value, an invalid attribute value was detected. "+
+					"A ConfigInstanceNameValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigInstanceNameValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigInstanceNameValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigInstanceNameValue Attribute Value",
+				"While creating a ConfigInstanceNameValue value, an extra attribute value was detected. "+
+					"A ConfigInstanceNameValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigInstanceNameValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigInstanceNameValueUnknown(), diags
+	}
+
+	namingConflictAttribute, ok := attributes["naming_conflict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_conflict is missing from object`)
+
+		return NewConfigInstanceNameValueUnknown(), diags
+	}
+
+	namingConflictVal, ok := namingConflictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_conflict expected to be basetypes.BoolValue, was: %T`, namingConflictAttribute))
+	}
+
+	namingPatternAttribute, ok := attributes["naming_pattern"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_pattern is missing from object`)
+
+		return NewConfigInstanceNameValueUnknown(), diags
+	}
+
+	namingPatternVal, ok := namingPatternAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_pattern expected to be basetypes.StringValue, was: %T`, namingPatternAttribute))
+	}
+
+	namingTypeAttribute, ok := attributes["naming_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`naming_type is missing from object`)
+
+		return NewConfigInstanceNameValueUnknown(), diags
+	}
+
+	namingTypeVal, ok := namingTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`naming_type expected to be basetypes.StringValue, was: %T`, namingTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigInstanceNameValueUnknown(), diags
+	}
+
+	return ConfigInstanceNameValue{
+		NamingConflict: namingConflictVal,
+		NamingPattern:  namingPatternVal,
+		NamingType:     namingTypeVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigInstanceNameValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigInstanceNameValue {
+	object, diags := NewConfigInstanceNameValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigInstanceNameValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigInstanceNameType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigInstanceNameValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigInstanceNameValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigInstanceNameValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigInstanceNameValueMust(ConfigInstanceNameValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigInstanceNameType) ValueType(ctx context.Context) attr.Value {
+	return ConfigInstanceNameValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigInstanceNameValue{}
+
+type ConfigInstanceNameValue struct {
+	NamingConflict basetypes.BoolValue   `tfsdk:"naming_conflict"`
+	NamingPattern  basetypes.StringValue `tfsdk:"naming_pattern"`
+	NamingType     basetypes.StringValue `tfsdk:"naming_type"`
+	state          attr.ValueState
+}
+
+func (v ConfigInstanceNameValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["naming_conflict"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["naming_pattern"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["naming_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.NamingConflict.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["naming_conflict"] = val
+
+		val, err = v.NamingPattern.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["naming_pattern"] = val
+
+		val, err = v.NamingType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["naming_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigInstanceNameValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigInstanceNameValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigInstanceNameValue) String() string {
+	return "ConfigInstanceNameValue"
+}
+
+func (v ConfigInstanceNameValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"naming_conflict": basetypes.BoolType{},
+		"naming_pattern":  basetypes.StringType{},
+		"naming_type":     basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"naming_conflict": v.NamingConflict,
+			"naming_pattern":  v.NamingPattern,
+			"naming_type":     v.NamingType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigInstanceNameValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigInstanceNameValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.NamingConflict.Equal(other.NamingConflict) {
+		return false
+	}
+
+	if !v.NamingPattern.Equal(other.NamingPattern) {
+		return false
+	}
+
+	if !v.NamingType.Equal(other.NamingType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigInstanceNameValue) Type(ctx context.Context) attr.Type {
+	return ConfigInstanceNameType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigInstanceNameValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"naming_conflict": basetypes.BoolType{},
+		"naming_pattern":  basetypes.StringType{},
+		"naming_type":     basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxContainersType{}
+
+type ConfigMaxContainersType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxContainersType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxContainersType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxContainersType) String() string {
+	return "ConfigMaxContainersType"
+}
+
+func (t ConfigMaxContainersType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxContainersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxContainersValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxContainersAttribute, ok := attributes["max_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_containers is missing from object`)
+
+		return nil, diags
+	}
+
+	maxContainersVal, ok := maxContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_containers expected to be basetypes.StringValue, was: %T`, maxContainersAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxContainersValue{
+		MaxContainers: maxContainersVal,
+		state:         attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxContainersValueNull() ConfigMaxContainersValue {
+	return ConfigMaxContainersValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxContainersValueUnknown() ConfigMaxContainersValue {
+	return ConfigMaxContainersValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxContainersValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxContainersValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxContainersValue Attribute Value",
+				"While creating a ConfigMaxContainersValue value, a missing attribute value was detected. "+
+					"A ConfigMaxContainersValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxContainersValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxContainersValue Attribute Type",
+				"While creating a ConfigMaxContainersValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxContainersValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxContainersValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxContainersValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxContainersValue Attribute Value",
+				"While creating a ConfigMaxContainersValue value, an extra attribute value was detected. "+
+					"A ConfigMaxContainersValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxContainersValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxContainersValueUnknown(), diags
+	}
+
+	maxContainersAttribute, ok := attributes["max_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_containers is missing from object`)
+
+		return NewConfigMaxContainersValueUnknown(), diags
+	}
+
+	maxContainersVal, ok := maxContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_containers expected to be basetypes.StringValue, was: %T`, maxContainersAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxContainersValueUnknown(), diags
+	}
+
+	return ConfigMaxContainersValue{
+		MaxContainers: maxContainersVal,
+		state:         attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxContainersValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxContainersValue {
+	object, diags := NewConfigMaxContainersValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxContainersValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxContainersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxContainersValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxContainersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxContainersValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxContainersValueMust(ConfigMaxContainersValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxContainersType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxContainersValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxContainersValue{}
+
+type ConfigMaxContainersValue struct {
+	MaxContainers basetypes.StringValue `tfsdk:"max_containers"`
+	state         attr.ValueState
+}
+
+func (v ConfigMaxContainersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_containers"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxContainers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_containers"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxContainersValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxContainersValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxContainersValue) String() string {
+	return "ConfigMaxContainersValue"
+}
+
+func (v ConfigMaxContainersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_containers": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_containers": v.MaxContainers,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxContainersValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxContainersValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxContainers.Equal(other.MaxContainers) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxContainersValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxContainersType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxContainersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_containers": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxCoresType{}
+
+type ConfigMaxCoresType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxCoresType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxCoresType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxCoresType) String() string {
+	return "ConfigMaxCoresType"
+}
+
+func (t ConfigMaxCoresType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxCoresValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxCoresValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return nil, diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return nil, diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.StringValue, was: %T`, maxCoresAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxCoresValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxCores:          maxCoresVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxCoresValueNull() ConfigMaxCoresValue {
+	return ConfigMaxCoresValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxCoresValueUnknown() ConfigMaxCoresValue {
+	return ConfigMaxCoresValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxCoresValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxCoresValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxCoresValue Attribute Value",
+				"While creating a ConfigMaxCoresValue value, a missing attribute value was detected. "+
+					"A ConfigMaxCoresValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxCoresValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxCoresValue Attribute Type",
+				"While creating a ConfigMaxCoresValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxCoresValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxCoresValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxCoresValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxCoresValue Attribute Value",
+				"While creating a ConfigMaxCoresValue value, an extra attribute value was detected. "+
+					"A ConfigMaxCoresValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxCoresValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxCoresValueUnknown(), diags
+	}
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return NewConfigMaxCoresValueUnknown(), diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return NewConfigMaxCoresValueUnknown(), diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.StringValue, was: %T`, maxCoresAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxCoresValueUnknown(), diags
+	}
+
+	return ConfigMaxCoresValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxCores:          maxCoresVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxCoresValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxCoresValue {
+	object, diags := NewConfigMaxCoresValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxCoresValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxCoresType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxCoresValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxCoresValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxCoresValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxCoresValueMust(ConfigMaxCoresValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxCoresType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxCoresValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxCoresValue{}
+
+type ConfigMaxCoresValue struct {
+	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	MaxCores          basetypes.StringValue `tfsdk:"max_cores"`
+	state             attr.ValueState
+}
+
+func (v ConfigMaxCoresValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_cores"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.ExcludeContainers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["exclude_containers"] = val
+
+		val, err = v.MaxCores.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_cores"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxCoresValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxCoresValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxCoresValue) String() string {
+	return "ConfigMaxCoresValue"
+}
+
+func (v ConfigMaxCoresValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_cores":          basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"exclude_containers": v.ExcludeContainers,
+			"max_cores":          v.MaxCores,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxCoresValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxCoresValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ExcludeContainers.Equal(other.ExcludeContainers) {
+		return false
+	}
+
+	if !v.MaxCores.Equal(other.MaxCores) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxCoresValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxCoresType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxCoresValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_cores":          basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxHostsType{}
+
+type ConfigMaxHostsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxHostsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxHostsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxHostsType) String() string {
+	return "ConfigMaxHostsType"
+}
+
+func (t ConfigMaxHostsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxHostsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxHostsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxHostsAttribute, ok := attributes["max_hosts"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_hosts is missing from object`)
+
+		return nil, diags
+	}
+
+	maxHostsVal, ok := maxHostsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_hosts expected to be basetypes.StringValue, was: %T`, maxHostsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxHostsValue{
+		MaxHosts: maxHostsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxHostsValueNull() ConfigMaxHostsValue {
+	return ConfigMaxHostsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxHostsValueUnknown() ConfigMaxHostsValue {
+	return ConfigMaxHostsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxHostsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxHostsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxHostsValue Attribute Value",
+				"While creating a ConfigMaxHostsValue value, a missing attribute value was detected. "+
+					"A ConfigMaxHostsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxHostsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxHostsValue Attribute Type",
+				"While creating a ConfigMaxHostsValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxHostsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxHostsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxHostsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxHostsValue Attribute Value",
+				"While creating a ConfigMaxHostsValue value, an extra attribute value was detected. "+
+					"A ConfigMaxHostsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxHostsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxHostsValueUnknown(), diags
+	}
+
+	maxHostsAttribute, ok := attributes["max_hosts"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_hosts is missing from object`)
+
+		return NewConfigMaxHostsValueUnknown(), diags
+	}
+
+	maxHostsVal, ok := maxHostsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_hosts expected to be basetypes.StringValue, was: %T`, maxHostsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxHostsValueUnknown(), diags
+	}
+
+	return ConfigMaxHostsValue{
+		MaxHosts: maxHostsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxHostsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxHostsValue {
+	object, diags := NewConfigMaxHostsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxHostsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxHostsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxHostsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxHostsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxHostsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxHostsValueMust(ConfigMaxHostsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxHostsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxHostsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxHostsValue{}
+
+type ConfigMaxHostsValue struct {
+	MaxHosts basetypes.StringValue `tfsdk:"max_hosts"`
+	state    attr.ValueState
+}
+
+func (v ConfigMaxHostsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_hosts"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxHosts.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_hosts"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxHostsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxHostsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxHostsValue) String() string {
+	return "ConfigMaxHostsValue"
+}
+
+func (v ConfigMaxHostsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_hosts": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_hosts": v.MaxHosts,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxHostsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxHostsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxHosts.Equal(other.MaxHosts) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxHostsValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxHostsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxHostsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_hosts": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxLoadBalancerPoolsType{}
+
+type ConfigMaxLoadBalancerPoolsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxLoadBalancerPoolsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxLoadBalancerPoolsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxLoadBalancerPoolsType) String() string {
+	return "ConfigMaxLoadBalancerPoolsType"
+}
+
+func (t ConfigMaxLoadBalancerPoolsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxLoadBalancerPoolsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxLoadBalancerPoolsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxPoolsAttribute, ok := attributes["max_pools"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_pools is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPoolsVal, ok := maxPoolsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_pools expected to be basetypes.StringValue, was: %T`, maxPoolsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxLoadBalancerPoolsValue{
+		MaxPools: maxPoolsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxLoadBalancerPoolsValueNull() ConfigMaxLoadBalancerPoolsValue {
+	return ConfigMaxLoadBalancerPoolsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxLoadBalancerPoolsValueUnknown() ConfigMaxLoadBalancerPoolsValue {
+	return ConfigMaxLoadBalancerPoolsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxLoadBalancerPoolsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxLoadBalancerPoolsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxLoadBalancerPoolsValue Attribute Value",
+				"While creating a ConfigMaxLoadBalancerPoolsValue value, a missing attribute value was detected. "+
+					"A ConfigMaxLoadBalancerPoolsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxLoadBalancerPoolsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxLoadBalancerPoolsValue Attribute Type",
+				"While creating a ConfigMaxLoadBalancerPoolsValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxLoadBalancerPoolsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxLoadBalancerPoolsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxLoadBalancerPoolsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxLoadBalancerPoolsValue Attribute Value",
+				"While creating a ConfigMaxLoadBalancerPoolsValue value, an extra attribute value was detected. "+
+					"A ConfigMaxLoadBalancerPoolsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxLoadBalancerPoolsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxLoadBalancerPoolsValueUnknown(), diags
+	}
+
+	maxPoolsAttribute, ok := attributes["max_pools"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_pools is missing from object`)
+
+		return NewConfigMaxLoadBalancerPoolsValueUnknown(), diags
+	}
+
+	maxPoolsVal, ok := maxPoolsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_pools expected to be basetypes.StringValue, was: %T`, maxPoolsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxLoadBalancerPoolsValueUnknown(), diags
+	}
+
+	return ConfigMaxLoadBalancerPoolsValue{
+		MaxPools: maxPoolsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxLoadBalancerPoolsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxLoadBalancerPoolsValue {
+	object, diags := NewConfigMaxLoadBalancerPoolsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxLoadBalancerPoolsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxLoadBalancerPoolsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxLoadBalancerPoolsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxLoadBalancerPoolsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxLoadBalancerPoolsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxLoadBalancerPoolsValueMust(ConfigMaxLoadBalancerPoolsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxLoadBalancerPoolsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxLoadBalancerPoolsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxLoadBalancerPoolsValue{}
+
+type ConfigMaxLoadBalancerPoolsValue struct {
+	MaxPools basetypes.StringValue `tfsdk:"max_pools"`
+	state    attr.ValueState
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_pools"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxPools.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_pools"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) String() string {
+	return "ConfigMaxLoadBalancerPoolsValue"
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_pools": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_pools": v.MaxPools,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxLoadBalancerPoolsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxPools.Equal(other.MaxPools) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxLoadBalancerPoolsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxLoadBalancerPoolsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_pools": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxMemoryType{}
+
+type ConfigMaxMemoryType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxMemoryType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxMemoryType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxMemoryType) String() string {
+	return "ConfigMaxMemoryType"
+}
+
+func (t ConfigMaxMemoryType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxMemoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxMemoryValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return nil, diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return nil, diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.ObjectValue, was: %T`, maxMemoryAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxMemoryValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxMemory:         maxMemoryVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxMemoryValueNull() ConfigMaxMemoryValue {
+	return ConfigMaxMemoryValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxMemoryValueUnknown() ConfigMaxMemoryValue {
+	return ConfigMaxMemoryValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxMemoryValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxMemoryValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxMemoryValue Attribute Value",
+				"While creating a ConfigMaxMemoryValue value, a missing attribute value was detected. "+
+					"A ConfigMaxMemoryValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxMemoryValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxMemoryValue Attribute Type",
+				"While creating a ConfigMaxMemoryValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxMemoryValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxMemoryValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxMemoryValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxMemoryValue Attribute Value",
+				"While creating a ConfigMaxMemoryValue value, an extra attribute value was detected. "+
+					"A ConfigMaxMemoryValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxMemoryValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxMemoryValueUnknown(), diags
+	}
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return NewConfigMaxMemoryValueUnknown(), diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return NewConfigMaxMemoryValueUnknown(), diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.ObjectValue, was: %T`, maxMemoryAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxMemoryValueUnknown(), diags
+	}
+
+	return ConfigMaxMemoryValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxMemory:         maxMemoryVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxMemoryValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxMemoryValue {
+	object, diags := NewConfigMaxMemoryValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxMemoryValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxMemoryType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxMemoryValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxMemoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxMemoryValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxMemoryValueMust(ConfigMaxMemoryValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxMemoryType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxMemoryValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxMemoryValue{}
+
+type ConfigMaxMemoryValue struct {
+	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	MaxMemory         basetypes.ObjectValue `tfsdk:"max_memory"`
+	state             attr.ValueState
+}
+
+func (v ConfigMaxMemoryValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_memory"] = basetypes.ObjectType{
+		AttrTypes: MaxMemoryValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.ExcludeContainers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["exclude_containers"] = val
+
+		val, err = v.MaxMemory.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_memory"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxMemoryValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxMemoryValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxMemoryValue) String() string {
+	return "ConfigMaxMemoryValue"
+}
+
+func (v ConfigMaxMemoryValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var maxMemoryVal basetypes.ObjectValue
+
+	if v.MaxMemory.IsNull() {
+		maxMemoryVal = types.ObjectNull(
+			MaxMemoryValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.MaxMemory.IsUnknown() {
+		maxMemoryVal = types.ObjectUnknown(
+			MaxMemoryValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.MaxMemory.IsNull() && !v.MaxMemory.IsUnknown() {
+		maxMemoryVal = types.ObjectValueMust(
+			MaxMemoryValue{}.AttributeTypes(ctx),
+			v.MaxMemory.Attributes(),
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_memory": basetypes.ObjectType{
+			AttrTypes: MaxMemoryValue{}.AttributeTypes(ctx),
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"exclude_containers": v.ExcludeContainers,
+			"max_memory":         maxMemoryVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxMemoryValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxMemoryValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ExcludeContainers.Equal(other.ExcludeContainers) {
+		return false
+	}
+
+	if !v.MaxMemory.Equal(other.MaxMemory) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxMemoryValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxMemoryType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxMemoryValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_memory": basetypes.ObjectType{
+			AttrTypes: MaxMemoryValue{}.AttributeTypes(ctx),
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = MaxMemoryType{}
+
+type MaxMemoryType struct {
+	basetypes.ObjectType
+}
+
+func (t MaxMemoryType) Equal(o attr.Type) bool {
+	other, ok := o.(MaxMemoryType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t MaxMemoryType) String() string {
+	return "MaxMemoryType"
+}
+
+func (t MaxMemoryType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewMaxMemoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMaxMemoryValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	anyof0Attribute, ok := attributes["anyof0"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`anyof0 is missing from object`)
+
+		return nil, diags
+	}
+
+	anyof0Val, ok := anyof0Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`anyof0 expected to be basetypes.StringValue, was: %T`, anyof0Attribute))
+	}
+
+	anyof1Attribute, ok := attributes["anyof1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`anyof1 is missing from object`)
+
+		return nil, diags
+	}
+
+	anyof1Val, ok := anyof1Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`anyof1 expected to be basetypes.Int64Value, was: %T`, anyof1Attribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return MaxMemoryValue{
+		Anyof0: anyof0Val,
+		Anyof1: anyof1Val,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMaxMemoryValueNull() MaxMemoryValue {
+	return MaxMemoryValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewMaxMemoryValueUnknown() MaxMemoryValue {
+	return MaxMemoryValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewMaxMemoryValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (MaxMemoryValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing MaxMemoryValue Attribute Value",
+				"While creating a MaxMemoryValue value, a missing attribute value was detected. "+
+					"A MaxMemoryValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MaxMemoryValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid MaxMemoryValue Attribute Type",
+				"While creating a MaxMemoryValue value, an invalid attribute value was detected. "+
+					"A MaxMemoryValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MaxMemoryValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("MaxMemoryValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra MaxMemoryValue Attribute Value",
+				"While creating a MaxMemoryValue value, an extra attribute value was detected. "+
+					"A MaxMemoryValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra MaxMemoryValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewMaxMemoryValueUnknown(), diags
+	}
+
+	anyof0Attribute, ok := attributes["anyof0"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`anyof0 is missing from object`)
+
+		return NewMaxMemoryValueUnknown(), diags
+	}
+
+	anyof0Val, ok := anyof0Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`anyof0 expected to be basetypes.StringValue, was: %T`, anyof0Attribute))
+	}
+
+	anyof1Attribute, ok := attributes["anyof1"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`anyof1 is missing from object`)
+
+		return NewMaxMemoryValueUnknown(), diags
+	}
+
+	anyof1Val, ok := anyof1Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`anyof1 expected to be basetypes.Int64Value, was: %T`, anyof1Attribute))
+	}
+
+	if diags.HasError() {
+		return NewMaxMemoryValueUnknown(), diags
+	}
+
+	return MaxMemoryValue{
+		Anyof0: anyof0Val,
+		Anyof1: anyof1Val,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMaxMemoryValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) MaxMemoryValue {
+	object, diags := NewMaxMemoryValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewMaxMemoryValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t MaxMemoryType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewMaxMemoryValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewMaxMemoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMaxMemoryValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewMaxMemoryValueMust(MaxMemoryValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t MaxMemoryType) ValueType(ctx context.Context) attr.Value {
+	return MaxMemoryValue{}
+}
+
+var _ basetypes.ObjectValuable = MaxMemoryValue{}
+
+type MaxMemoryValue struct {
+	Anyof0 basetypes.StringValue `tfsdk:"anyof0"`
+	Anyof1 basetypes.Int64Value  `tfsdk:"anyof1"`
+	state  attr.ValueState
+}
+
+func (v MaxMemoryValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["anyof0"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["anyof1"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Anyof0.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["anyof0"] = val
+
+		val, err = v.Anyof1.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["anyof1"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v MaxMemoryValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v MaxMemoryValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v MaxMemoryValue) String() string {
+	return "MaxMemoryValue"
+}
+
+func (v MaxMemoryValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"anyof0": basetypes.StringType{},
+		"anyof1": basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"anyof0": v.Anyof0,
+			"anyof1": v.Anyof1,
+		})
+
+	return objVal, diags
+}
+
+func (v MaxMemoryValue) Equal(o attr.Value) bool {
+	other, ok := o.(MaxMemoryValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Anyof0.Equal(other.Anyof0) {
+		return false
+	}
+
+	if !v.Anyof1.Equal(other.Anyof1) {
+		return false
+	}
+
+	return true
+}
+
+func (v MaxMemoryValue) Type(ctx context.Context) attr.Type {
+	return MaxMemoryType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v MaxMemoryValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"anyof0": basetypes.StringType{},
+		"anyof1": basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxPoolMembersType{}
+
+type ConfigMaxPoolMembersType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxPoolMembersType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxPoolMembersType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxPoolMembersType) String() string {
+	return "ConfigMaxPoolMembersType"
+}
+
+func (t ConfigMaxPoolMembersType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxPoolMembersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxPoolMembersValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxPoolMembersAttribute, ok := attributes["max_pool_members"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_pool_members is missing from object`)
+
+		return nil, diags
+	}
+
+	maxPoolMembersVal, ok := maxPoolMembersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_pool_members expected to be basetypes.StringValue, was: %T`, maxPoolMembersAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxPoolMembersValue{
+		MaxPoolMembers: maxPoolMembersVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxPoolMembersValueNull() ConfigMaxPoolMembersValue {
+	return ConfigMaxPoolMembersValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxPoolMembersValueUnknown() ConfigMaxPoolMembersValue {
+	return ConfigMaxPoolMembersValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxPoolMembersValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxPoolMembersValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxPoolMembersValue Attribute Value",
+				"While creating a ConfigMaxPoolMembersValue value, a missing attribute value was detected. "+
+					"A ConfigMaxPoolMembersValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxPoolMembersValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxPoolMembersValue Attribute Type",
+				"While creating a ConfigMaxPoolMembersValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxPoolMembersValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxPoolMembersValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxPoolMembersValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxPoolMembersValue Attribute Value",
+				"While creating a ConfigMaxPoolMembersValue value, an extra attribute value was detected. "+
+					"A ConfigMaxPoolMembersValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxPoolMembersValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxPoolMembersValueUnknown(), diags
+	}
+
+	maxPoolMembersAttribute, ok := attributes["max_pool_members"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_pool_members is missing from object`)
+
+		return NewConfigMaxPoolMembersValueUnknown(), diags
+	}
+
+	maxPoolMembersVal, ok := maxPoolMembersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_pool_members expected to be basetypes.StringValue, was: %T`, maxPoolMembersAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxPoolMembersValueUnknown(), diags
+	}
+
+	return ConfigMaxPoolMembersValue{
+		MaxPoolMembers: maxPoolMembersVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxPoolMembersValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxPoolMembersValue {
+	object, diags := NewConfigMaxPoolMembersValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxPoolMembersValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxPoolMembersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxPoolMembersValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxPoolMembersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxPoolMembersValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxPoolMembersValueMust(ConfigMaxPoolMembersValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxPoolMembersType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxPoolMembersValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxPoolMembersValue{}
+
+type ConfigMaxPoolMembersValue struct {
+	MaxPoolMembers basetypes.StringValue `tfsdk:"max_pool_members"`
+	state          attr.ValueState
+}
+
+func (v ConfigMaxPoolMembersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_pool_members"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxPoolMembers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_pool_members"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxPoolMembersValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxPoolMembersValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxPoolMembersValue) String() string {
+	return "ConfigMaxPoolMembersValue"
+}
+
+func (v ConfigMaxPoolMembersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_pool_members": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_pool_members": v.MaxPoolMembers,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxPoolMembersValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxPoolMembersValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxPoolMembers.Equal(other.MaxPoolMembers) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxPoolMembersValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxPoolMembersType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxPoolMembersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_pool_members": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxStorageType{}
+
+type ConfigMaxStorageType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxStorageType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxStorageType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxStorageType) String() string {
+	return "ConfigMaxStorageType"
+}
+
+func (t ConfigMaxStorageType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxStorageValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxStorageValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return nil, diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return nil, diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxStorageValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxStorage:        maxStorageVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxStorageValueNull() ConfigMaxStorageValue {
+	return ConfigMaxStorageValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxStorageValueUnknown() ConfigMaxStorageValue {
+	return ConfigMaxStorageValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxStorageValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxStorageValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxStorageValue Attribute Value",
+				"While creating a ConfigMaxStorageValue value, a missing attribute value was detected. "+
+					"A ConfigMaxStorageValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxStorageValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxStorageValue Attribute Type",
+				"While creating a ConfigMaxStorageValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxStorageValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxStorageValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxStorageValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxStorageValue Attribute Value",
+				"While creating a ConfigMaxStorageValue value, an extra attribute value was detected. "+
+					"A ConfigMaxStorageValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxStorageValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxStorageValueUnknown(), diags
+	}
+
+	excludeContainersAttribute, ok := attributes["exclude_containers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`exclude_containers is missing from object`)
+
+		return NewConfigMaxStorageValueUnknown(), diags
+	}
+
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return NewConfigMaxStorageValueUnknown(), diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxStorageValueUnknown(), diags
+	}
+
+	return ConfigMaxStorageValue{
+		ExcludeContainers: excludeContainersVal,
+		MaxStorage:        maxStorageVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxStorageValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxStorageValue {
+	object, diags := NewConfigMaxStorageValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxStorageValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxStorageType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxStorageValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxStorageValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxStorageValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxStorageValueMust(ConfigMaxStorageValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxStorageType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxStorageValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxStorageValue{}
+
+type ConfigMaxStorageValue struct {
+	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	MaxStorage        basetypes.StringValue `tfsdk:"max_storage"`
+	state             attr.ValueState
+}
+
+func (v ConfigMaxStorageValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_storage"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.ExcludeContainers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["exclude_containers"] = val
+
+		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_storage"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxStorageValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxStorageValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxStorageValue) String() string {
+	return "ConfigMaxStorageValue"
+}
+
+func (v ConfigMaxStorageValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_storage":        basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"exclude_containers": v.ExcludeContainers,
+			"max_storage":        v.MaxStorage,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxStorageValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxStorageValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ExcludeContainers.Equal(other.ExcludeContainers) {
+		return false
+	}
+
+	if !v.MaxStorage.Equal(other.MaxStorage) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxStorageValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxStorageType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxStorageValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"exclude_containers": basetypes.StringType{},
+		"max_storage":        basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxVirtualServersType{}
+
+type ConfigMaxVirtualServersType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxVirtualServersType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxVirtualServersType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxVirtualServersType) String() string {
+	return "ConfigMaxVirtualServersType"
+}
+
+func (t ConfigMaxVirtualServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxVirtualServersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxVirtualServersValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxVirtualServersAttribute, ok := attributes["max_virtual_servers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_virtual_servers is missing from object`)
+
+		return nil, diags
+	}
+
+	maxVirtualServersVal, ok := maxVirtualServersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_virtual_servers expected to be basetypes.StringValue, was: %T`, maxVirtualServersAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxVirtualServersValue{
+		MaxVirtualServers: maxVirtualServersVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxVirtualServersValueNull() ConfigMaxVirtualServersValue {
+	return ConfigMaxVirtualServersValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxVirtualServersValueUnknown() ConfigMaxVirtualServersValue {
+	return ConfigMaxVirtualServersValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxVirtualServersValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxVirtualServersValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxVirtualServersValue Attribute Value",
+				"While creating a ConfigMaxVirtualServersValue value, a missing attribute value was detected. "+
+					"A ConfigMaxVirtualServersValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxVirtualServersValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxVirtualServersValue Attribute Type",
+				"While creating a ConfigMaxVirtualServersValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxVirtualServersValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxVirtualServersValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxVirtualServersValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxVirtualServersValue Attribute Value",
+				"While creating a ConfigMaxVirtualServersValue value, an extra attribute value was detected. "+
+					"A ConfigMaxVirtualServersValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxVirtualServersValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxVirtualServersValueUnknown(), diags
+	}
+
+	maxVirtualServersAttribute, ok := attributes["max_virtual_servers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_virtual_servers is missing from object`)
+
+		return NewConfigMaxVirtualServersValueUnknown(), diags
+	}
+
+	maxVirtualServersVal, ok := maxVirtualServersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_virtual_servers expected to be basetypes.StringValue, was: %T`, maxVirtualServersAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxVirtualServersValueUnknown(), diags
+	}
+
+	return ConfigMaxVirtualServersValue{
+		MaxVirtualServers: maxVirtualServersVal,
+		state:             attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxVirtualServersValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxVirtualServersValue {
+	object, diags := NewConfigMaxVirtualServersValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxVirtualServersValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxVirtualServersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxVirtualServersValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxVirtualServersValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxVirtualServersValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxVirtualServersValueMust(ConfigMaxVirtualServersValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxVirtualServersType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxVirtualServersValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxVirtualServersValue{}
+
+type ConfigMaxVirtualServersValue struct {
+	MaxVirtualServers basetypes.StringValue `tfsdk:"max_virtual_servers"`
+	state             attr.ValueState
+}
+
+func (v ConfigMaxVirtualServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_virtual_servers"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxVirtualServers.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_virtual_servers"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxVirtualServersValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxVirtualServersValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxVirtualServersValue) String() string {
+	return "ConfigMaxVirtualServersValue"
+}
+
+func (v ConfigMaxVirtualServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_virtual_servers": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_virtual_servers": v.MaxVirtualServers,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxVirtualServersValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxVirtualServersValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxVirtualServers.Equal(other.MaxVirtualServers) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxVirtualServersValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxVirtualServersType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxVirtualServersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_virtual_servers": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxVmsType{}
+
+type ConfigMaxVmsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxVmsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxVmsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxVmsType) String() string {
+	return "ConfigMaxVmsType"
+}
+
+func (t ConfigMaxVmsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxVmsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxVmsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxVmsAttribute, ok := attributes["max_vms"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_vms is missing from object`)
+
+		return nil, diags
+	}
+
+	maxVmsVal, ok := maxVmsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_vms expected to be basetypes.StringValue, was: %T`, maxVmsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxVmsValue{
+		MaxVms: maxVmsVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxVmsValueNull() ConfigMaxVmsValue {
+	return ConfigMaxVmsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxVmsValueUnknown() ConfigMaxVmsValue {
+	return ConfigMaxVmsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxVmsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxVmsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxVmsValue Attribute Value",
+				"While creating a ConfigMaxVmsValue value, a missing attribute value was detected. "+
+					"A ConfigMaxVmsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxVmsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxVmsValue Attribute Type",
+				"While creating a ConfigMaxVmsValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxVmsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxVmsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxVmsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxVmsValue Attribute Value",
+				"While creating a ConfigMaxVmsValue value, an extra attribute value was detected. "+
+					"A ConfigMaxVmsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxVmsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxVmsValueUnknown(), diags
+	}
+
+	maxVmsAttribute, ok := attributes["max_vms"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_vms is missing from object`)
+
+		return NewConfigMaxVmsValueUnknown(), diags
+	}
+
+	maxVmsVal, ok := maxVmsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_vms expected to be basetypes.StringValue, was: %T`, maxVmsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxVmsValueUnknown(), diags
+	}
+
+	return ConfigMaxVmsValue{
+		MaxVms: maxVmsVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxVmsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxVmsValue {
+	object, diags := NewConfigMaxVmsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxVmsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxVmsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxVmsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxVmsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxVmsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxVmsValueMust(ConfigMaxVmsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxVmsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxVmsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxVmsValue{}
+
+type ConfigMaxVmsValue struct {
+	MaxVms basetypes.StringValue `tfsdk:"max_vms"`
+	state  attr.ValueState
+}
+
+func (v ConfigMaxVmsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_vms"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxVms.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_vms"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxVmsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxVmsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxVmsValue) String() string {
+	return "ConfigMaxVmsValue"
+}
+
+func (v ConfigMaxVmsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_vms": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_vms": v.MaxVms,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxVmsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxVmsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxVms.Equal(other.MaxVms) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxVmsValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxVmsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxVmsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_vms": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMessageOfTheDayType{}
+
+type ConfigMessageOfTheDayType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMessageOfTheDayType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMessageOfTheDayType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMessageOfTheDayType) String() string {
+	return "ConfigMessageOfTheDayType"
+}
+
+func (t ConfigMessageOfTheDayType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMessageOfTheDayValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMessageOfTheDayValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	motdAttribute, ok := attributes["motd"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motd is missing from object`)
+
+		return nil, diags
+	}
+
+	motdVal, ok := motdAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motd expected to be basetypes.ObjectValue, was: %T`, motdAttribute))
+	}
+
+	motdFullPageAttribute, ok := attributes["motd_full_page"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motd_full_page is missing from object`)
+
+		return nil, diags
+	}
+
+	motdFullPageVal, ok := motdFullPageAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motd_full_page expected to be basetypes.BoolValue, was: %T`, motdFullPageAttribute))
+	}
+
+	motddateAttribute, ok := attributes["motddate"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motddate is missing from object`)
+
+		return nil, diags
+	}
+
+	motddateVal, ok := motddateAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motddate expected to be basetypes.StringValue, was: %T`, motddateAttribute))
+	}
+
+	motdmessageAttribute, ok := attributes["motdmessage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdmessage is missing from object`)
+
+		return nil, diags
+	}
+
+	motdmessageVal, ok := motdmessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdmessage expected to be basetypes.StringValue, was: %T`, motdmessageAttribute))
+	}
+
+	motdtitleAttribute, ok := attributes["motdtitle"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdtitle is missing from object`)
+
+		return nil, diags
+	}
+
+	motdtitleVal, ok := motdtitleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdtitle expected to be basetypes.StringValue, was: %T`, motdtitleAttribute))
+	}
+
+	motdtypeAttribute, ok := attributes["motdtype"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdtype is missing from object`)
+
+		return nil, diags
+	}
+
+	motdtypeVal, ok := motdtypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdtype expected to be basetypes.StringValue, was: %T`, motdtypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMessageOfTheDayValue{
+		Motd:         motdVal,
+		MotdFullPage: motdFullPageVal,
+		Motddate:     motddateVal,
+		Motdmessage:  motdmessageVal,
+		Motdtitle:    motdtitleVal,
+		Motdtype:     motdtypeVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMessageOfTheDayValueNull() ConfigMessageOfTheDayValue {
+	return ConfigMessageOfTheDayValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMessageOfTheDayValueUnknown() ConfigMessageOfTheDayValue {
+	return ConfigMessageOfTheDayValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMessageOfTheDayValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMessageOfTheDayValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMessageOfTheDayValue Attribute Value",
+				"While creating a ConfigMessageOfTheDayValue value, a missing attribute value was detected. "+
+					"A ConfigMessageOfTheDayValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMessageOfTheDayValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMessageOfTheDayValue Attribute Type",
+				"While creating a ConfigMessageOfTheDayValue value, an invalid attribute value was detected. "+
+					"A ConfigMessageOfTheDayValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMessageOfTheDayValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMessageOfTheDayValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMessageOfTheDayValue Attribute Value",
+				"While creating a ConfigMessageOfTheDayValue value, an extra attribute value was detected. "+
+					"A ConfigMessageOfTheDayValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMessageOfTheDayValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdAttribute, ok := attributes["motd"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motd is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdVal, ok := motdAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motd expected to be basetypes.ObjectValue, was: %T`, motdAttribute))
+	}
+
+	motdFullPageAttribute, ok := attributes["motd_full_page"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motd_full_page is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdFullPageVal, ok := motdFullPageAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motd_full_page expected to be basetypes.BoolValue, was: %T`, motdFullPageAttribute))
+	}
+
+	motddateAttribute, ok := attributes["motddate"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motddate is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motddateVal, ok := motddateAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motddate expected to be basetypes.StringValue, was: %T`, motddateAttribute))
+	}
+
+	motdmessageAttribute, ok := attributes["motdmessage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdmessage is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdmessageVal, ok := motdmessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdmessage expected to be basetypes.StringValue, was: %T`, motdmessageAttribute))
+	}
+
+	motdtitleAttribute, ok := attributes["motdtitle"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdtitle is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdtitleVal, ok := motdtitleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdtitle expected to be basetypes.StringValue, was: %T`, motdtitleAttribute))
+	}
+
+	motdtypeAttribute, ok := attributes["motdtype"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`motdtype is missing from object`)
+
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	motdtypeVal, ok := motdtypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`motdtype expected to be basetypes.StringValue, was: %T`, motdtypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMessageOfTheDayValueUnknown(), diags
+	}
+
+	return ConfigMessageOfTheDayValue{
+		Motd:         motdVal,
+		MotdFullPage: motdFullPageVal,
+		Motddate:     motddateVal,
+		Motdmessage:  motdmessageVal,
+		Motdtitle:    motdtitleVal,
+		Motdtype:     motdtypeVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMessageOfTheDayValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMessageOfTheDayValue {
+	object, diags := NewConfigMessageOfTheDayValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMessageOfTheDayValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMessageOfTheDayType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMessageOfTheDayValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMessageOfTheDayValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMessageOfTheDayValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMessageOfTheDayValueMust(ConfigMessageOfTheDayValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMessageOfTheDayType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMessageOfTheDayValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMessageOfTheDayValue{}
+
+type ConfigMessageOfTheDayValue struct {
+	Motd         basetypes.ObjectValue `tfsdk:"motd"`
+	MotdFullPage basetypes.BoolValue   `tfsdk:"motd_full_page"`
+	Motddate     basetypes.StringValue `tfsdk:"motddate"`
+	Motdmessage  basetypes.StringValue `tfsdk:"motdmessage"`
+	Motdtitle    basetypes.StringValue `tfsdk:"motdtitle"`
+	Motdtype     basetypes.StringValue `tfsdk:"motdtype"`
+	state        attr.ValueState
+}
+
+func (v ConfigMessageOfTheDayValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 6)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["motd"] = basetypes.ObjectType{
+		AttrTypes: MotdValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
+	attrTypes["motd_full_page"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["motddate"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["motdmessage"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["motdtitle"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["motdtype"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.Motd.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motd"] = val
+
+		val, err = v.MotdFullPage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motd_full_page"] = val
+
+		val, err = v.Motddate.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motddate"] = val
+
+		val, err = v.Motdmessage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motdmessage"] = val
+
+		val, err = v.Motdtitle.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motdtitle"] = val
+
+		val, err = v.Motdtype.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["motdtype"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMessageOfTheDayValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMessageOfTheDayValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMessageOfTheDayValue) String() string {
+	return "ConfigMessageOfTheDayValue"
+}
+
+func (v ConfigMessageOfTheDayValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var motdVal basetypes.ObjectValue
+
+	if v.Motd.IsNull() {
+		motdVal = types.ObjectNull(
+			MotdValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.Motd.IsUnknown() {
+		motdVal = types.ObjectUnknown(
+			MotdValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.Motd.IsNull() && !v.Motd.IsUnknown() {
+		motdVal = types.ObjectValueMust(
+			MotdValue{}.AttributeTypes(ctx),
+			v.Motd.Attributes(),
+		)
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"motd": basetypes.ObjectType{
+			AttrTypes: MotdValue{}.AttributeTypes(ctx),
+		},
+		"motd_full_page": basetypes.BoolType{},
+		"motddate":       basetypes.StringType{},
+		"motdmessage":    basetypes.StringType{},
+		"motdtitle":      basetypes.StringType{},
+		"motdtype":       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"motd":           motdVal,
+			"motd_full_page": v.MotdFullPage,
+			"motddate":       v.Motddate,
+			"motdmessage":    v.Motdmessage,
+			"motdtitle":      v.Motdtitle,
+			"motdtype":       v.Motdtype,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMessageOfTheDayValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMessageOfTheDayValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Motd.Equal(other.Motd) {
+		return false
+	}
+
+	if !v.MotdFullPage.Equal(other.MotdFullPage) {
+		return false
+	}
+
+	if !v.Motddate.Equal(other.Motddate) {
+		return false
+	}
+
+	if !v.Motdmessage.Equal(other.Motdmessage) {
+		return false
+	}
+
+	if !v.Motdtitle.Equal(other.Motdtitle) {
+		return false
+	}
+
+	if !v.Motdtype.Equal(other.Motdtype) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMessageOfTheDayValue) Type(ctx context.Context) attr.Type {
+	return ConfigMessageOfTheDayType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMessageOfTheDayValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"motd": basetypes.ObjectType{
+			AttrTypes: MotdValue{}.AttributeTypes(ctx),
+		},
+		"motd_full_page": basetypes.BoolType{},
+		"motddate":       basetypes.StringType{},
+		"motdmessage":    basetypes.StringType{},
+		"motdtitle":      basetypes.StringType{},
+		"motdtype":       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = MotdType{}
+
+type MotdType struct {
+	basetypes.ObjectType
+}
+
+func (t MotdType) Equal(o attr.Type) bool {
+	other, ok := o.(MotdType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t MotdType) String() string {
+	return "MotdType"
+}
+
+func (t MotdType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewMotdValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMotdValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	fullPageAttribute, ok := attributes["_full_page"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`_full_page is missing from object`)
+
+		return nil, diags
+	}
+
+	fullPageVal, ok := fullPageAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`_full_page expected to be basetypes.BoolValue, was: %T`, fullPageAttribute))
+	}
+
+	messageAttribute, ok := attributes["message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`message is missing from object`)
+
+		return nil, diags
+	}
+
+	messageVal, ok := messageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`message expected to be basetypes.StringValue, was: %T`, messageAttribute))
+	}
+
+	titleAttribute, ok := attributes["title"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`title is missing from object`)
+
+		return nil, diags
+	}
+
+	titleVal, ok := titleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`title expected to be basetypes.StringValue, was: %T`, titleAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return nil, diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.StringValue, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return MotdValue{
+		FullPage: fullPageVal,
+		Message:  messageVal,
+		Title:    titleVal,
+		MotdType: typeVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMotdValueNull() MotdValue {
+	return MotdValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewMotdValueUnknown() MotdValue {
+	return MotdValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewMotdValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (MotdValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing MotdValue Attribute Value",
+				"While creating a MotdValue value, a missing attribute value was detected. "+
+					"A MotdValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MotdValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid MotdValue Attribute Type",
+				"While creating a MotdValue value, an invalid attribute value was detected. "+
+					"A MotdValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MotdValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("MotdValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra MotdValue Attribute Value",
+				"While creating a MotdValue value, an extra attribute value was detected. "+
+					"A MotdValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra MotdValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewMotdValueUnknown(), diags
+	}
+
+	fullPageAttribute, ok := attributes["_full_page"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`_full_page is missing from object`)
+
+		return NewMotdValueUnknown(), diags
+	}
+
+	fullPageVal, ok := fullPageAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`_full_page expected to be basetypes.BoolValue, was: %T`, fullPageAttribute))
+	}
+
+	messageAttribute, ok := attributes["message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`message is missing from object`)
+
+		return NewMotdValueUnknown(), diags
+	}
+
+	messageVal, ok := messageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`message expected to be basetypes.StringValue, was: %T`, messageAttribute))
+	}
+
+	titleAttribute, ok := attributes["title"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`title is missing from object`)
+
+		return NewMotdValueUnknown(), diags
+	}
+
+	titleVal, ok := titleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`title expected to be basetypes.StringValue, was: %T`, titleAttribute))
+	}
+
+	typeAttribute, ok := attributes["type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`type is missing from object`)
+
+		return NewMotdValueUnknown(), diags
+	}
+
+	typeVal, ok := typeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`type expected to be basetypes.StringValue, was: %T`, typeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewMotdValueUnknown(), diags
+	}
+
+	return MotdValue{
+		FullPage: fullPageVal,
+		Message:  messageVal,
+		Title:    titleVal,
+		MotdType: typeVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMotdValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) MotdValue {
+	object, diags := NewMotdValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewMotdValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t MotdType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewMotdValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewMotdValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMotdValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewMotdValueMust(MotdValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t MotdType) ValueType(ctx context.Context) attr.Value {
+	return MotdValue{}
+}
+
+var _ basetypes.ObjectValuable = MotdValue{}
+
+type MotdValue struct {
+	FullPage basetypes.BoolValue   `tfsdk:"_full_page"`
+	Message  basetypes.StringValue `tfsdk:"message"`
+	Title    basetypes.StringValue `tfsdk:"title"`
+	MotdType basetypes.StringValue `tfsdk:"type"`
+	state    attr.ValueState
+}
+
+func (v MotdValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["_full_page"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["message"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["title"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.FullPage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["_full_page"] = val
+
+		val, err = v.Message.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["message"] = val
+
+		val, err = v.Title.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["title"] = val
+
+		val, err = v.MotdType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v MotdValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v MotdValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v MotdValue) String() string {
+	return "MotdValue"
+}
+
+func (v MotdValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"_full_page": basetypes.BoolType{},
+		"message":    basetypes.StringType{},
+		"title":      basetypes.StringType{},
+		"type":       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"_full_page": v.FullPage,
+			"message":    v.Message,
+			"title":      v.Title,
+			"type":       v.MotdType,
+		})
+
+	return objVal, diags
+}
+
+func (v MotdValue) Equal(o attr.Value) bool {
+	other, ok := o.(MotdValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.FullPage.Equal(other.FullPage) {
+		return false
+	}
+
+	if !v.Message.Equal(other.Message) {
+		return false
+	}
+
+	if !v.Title.Equal(other.Title) {
+		return false
+	}
+
+	if !v.MotdType.Equal(other.MotdType) {
+		return false
+	}
+
+	return true
+}
+
+func (v MotdValue) Type(ctx context.Context) attr.Type {
+	return MotdType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v MotdValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"_full_page": basetypes.BoolType{},
+		"message":    basetypes.StringType{},
+		"title":      basetypes.StringType{},
+		"type":       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigNetworkQuotaType{}
+
+type ConfigNetworkQuotaType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigNetworkQuotaType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNetworkQuotaType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigNetworkQuotaType) String() string {
+	return "ConfigNetworkQuotaType"
+}
+
+func (t ConfigNetworkQuotaType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigNetworkQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNetworkQuotaValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxNetworksAttribute, ok := attributes["max_networks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_networks is missing from object`)
+
+		return nil, diags
+	}
+
+	maxNetworksVal, ok := maxNetworksAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_networks expected to be basetypes.StringValue, was: %T`, maxNetworksAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigNetworkQuotaValue{
+		MaxNetworks: maxNetworksVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNetworkQuotaValueNull() ConfigNetworkQuotaValue {
+	return ConfigNetworkQuotaValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigNetworkQuotaValueUnknown() ConfigNetworkQuotaValue {
+	return ConfigNetworkQuotaValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigNetworkQuotaValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNetworkQuotaValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigNetworkQuotaValue Attribute Value",
+				"While creating a ConfigNetworkQuotaValue value, a missing attribute value was detected. "+
+					"A ConfigNetworkQuotaValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNetworkQuotaValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigNetworkQuotaValue Attribute Type",
+				"While creating a ConfigNetworkQuotaValue value, an invalid attribute value was detected. "+
+					"A ConfigNetworkQuotaValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNetworkQuotaValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNetworkQuotaValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigNetworkQuotaValue Attribute Value",
+				"While creating a ConfigNetworkQuotaValue value, an extra attribute value was detected. "+
+					"A ConfigNetworkQuotaValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigNetworkQuotaValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigNetworkQuotaValueUnknown(), diags
+	}
+
+	maxNetworksAttribute, ok := attributes["max_networks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_networks is missing from object`)
+
+		return NewConfigNetworkQuotaValueUnknown(), diags
+	}
+
+	maxNetworksVal, ok := maxNetworksAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_networks expected to be basetypes.StringValue, was: %T`, maxNetworksAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigNetworkQuotaValueUnknown(), diags
+	}
+
+	return ConfigNetworkQuotaValue{
+		MaxNetworks: maxNetworksVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNetworkQuotaValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNetworkQuotaValue {
+	object, diags := NewConfigNetworkQuotaValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigNetworkQuotaValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigNetworkQuotaType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigNetworkQuotaValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigNetworkQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNetworkQuotaValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigNetworkQuotaValueMust(ConfigNetworkQuotaValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigNetworkQuotaType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNetworkQuotaValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigNetworkQuotaValue{}
+
+type ConfigNetworkQuotaValue struct {
+	MaxNetworks basetypes.StringValue `tfsdk:"max_networks"`
+	state       attr.ValueState
+}
+
+func (v ConfigNetworkQuotaValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_networks"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxNetworks.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_networks"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigNetworkQuotaValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigNetworkQuotaValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigNetworkQuotaValue) String() string {
+	return "ConfigNetworkQuotaValue"
+}
+
+func (v ConfigNetworkQuotaValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_networks": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_networks": v.MaxNetworks,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigNetworkQuotaValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNetworkQuotaValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxNetworks.Equal(other.MaxNetworks) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigNetworkQuotaValue) Type(ctx context.Context) attr.Type {
+	return ConfigNetworkQuotaType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigNetworkQuotaValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_networks": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigPowerScheduleType{}
+
+type ConfigPowerScheduleType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigPowerScheduleType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigPowerScheduleType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigPowerScheduleType) String() string {
+	return "ConfigPowerScheduleType"
+}
+
+func (t ConfigPowerScheduleType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigPowerScheduleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigPowerScheduleValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	powerScheduleAttribute, ok := attributes["power_schedule"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule is missing from object`)
+
+		return nil, diags
+	}
+
+	powerScheduleVal, ok := powerScheduleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule expected to be basetypes.StringValue, was: %T`, powerScheduleAttribute))
+	}
+
+	powerScheduleHideFixedAttribute, ok := attributes["power_schedule_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule_hide_fixed is missing from object`)
+
+		return nil, diags
+	}
+
+	powerScheduleHideFixedVal, ok := powerScheduleHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule_hide_fixed expected to be basetypes.BoolValue, was: %T`, powerScheduleHideFixedAttribute))
+	}
+
+	powerScheduleTypeAttribute, ok := attributes["power_schedule_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule_type is missing from object`)
+
+		return nil, diags
+	}
+
+	powerScheduleTypeVal, ok := powerScheduleTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule_type expected to be basetypes.StringValue, was: %T`, powerScheduleTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigPowerScheduleValue{
+		PowerSchedule:          powerScheduleVal,
+		PowerScheduleHideFixed: powerScheduleHideFixedVal,
+		PowerScheduleType:      powerScheduleTypeVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigPowerScheduleValueNull() ConfigPowerScheduleValue {
+	return ConfigPowerScheduleValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigPowerScheduleValueUnknown() ConfigPowerScheduleValue {
+	return ConfigPowerScheduleValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigPowerScheduleValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigPowerScheduleValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigPowerScheduleValue Attribute Value",
+				"While creating a ConfigPowerScheduleValue value, a missing attribute value was detected. "+
+					"A ConfigPowerScheduleValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigPowerScheduleValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigPowerScheduleValue Attribute Type",
+				"While creating a ConfigPowerScheduleValue value, an invalid attribute value was detected. "+
+					"A ConfigPowerScheduleValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigPowerScheduleValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigPowerScheduleValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigPowerScheduleValue Attribute Value",
+				"While creating a ConfigPowerScheduleValue value, an extra attribute value was detected. "+
+					"A ConfigPowerScheduleValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigPowerScheduleValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigPowerScheduleValueUnknown(), diags
+	}
+
+	powerScheduleAttribute, ok := attributes["power_schedule"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule is missing from object`)
+
+		return NewConfigPowerScheduleValueUnknown(), diags
+	}
+
+	powerScheduleVal, ok := powerScheduleAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule expected to be basetypes.StringValue, was: %T`, powerScheduleAttribute))
+	}
+
+	powerScheduleHideFixedAttribute, ok := attributes["power_schedule_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule_hide_fixed is missing from object`)
+
+		return NewConfigPowerScheduleValueUnknown(), diags
+	}
+
+	powerScheduleHideFixedVal, ok := powerScheduleHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule_hide_fixed expected to be basetypes.BoolValue, was: %T`, powerScheduleHideFixedAttribute))
+	}
+
+	powerScheduleTypeAttribute, ok := attributes["power_schedule_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`power_schedule_type is missing from object`)
+
+		return NewConfigPowerScheduleValueUnknown(), diags
+	}
+
+	powerScheduleTypeVal, ok := powerScheduleTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`power_schedule_type expected to be basetypes.StringValue, was: %T`, powerScheduleTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigPowerScheduleValueUnknown(), diags
+	}
+
+	return ConfigPowerScheduleValue{
+		PowerSchedule:          powerScheduleVal,
+		PowerScheduleHideFixed: powerScheduleHideFixedVal,
+		PowerScheduleType:      powerScheduleTypeVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigPowerScheduleValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigPowerScheduleValue {
+	object, diags := NewConfigPowerScheduleValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigPowerScheduleValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigPowerScheduleType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigPowerScheduleValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigPowerScheduleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigPowerScheduleValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigPowerScheduleValueMust(ConfigPowerScheduleValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigPowerScheduleType) ValueType(ctx context.Context) attr.Value {
+	return ConfigPowerScheduleValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigPowerScheduleValue{}
+
+type ConfigPowerScheduleValue struct {
+	PowerSchedule          basetypes.StringValue `tfsdk:"power_schedule"`
+	PowerScheduleHideFixed basetypes.BoolValue   `tfsdk:"power_schedule_hide_fixed"`
+	PowerScheduleType      basetypes.StringValue `tfsdk:"power_schedule_type"`
+	state                  attr.ValueState
+}
+
+func (v ConfigPowerScheduleValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["power_schedule"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["power_schedule_hide_fixed"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["power_schedule_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.PowerSchedule.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["power_schedule"] = val
+
+		val, err = v.PowerScheduleHideFixed.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["power_schedule_hide_fixed"] = val
+
+		val, err = v.PowerScheduleType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["power_schedule_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigPowerScheduleValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigPowerScheduleValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigPowerScheduleValue) String() string {
+	return "ConfigPowerScheduleValue"
+}
+
+func (v ConfigPowerScheduleValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"power_schedule":            basetypes.StringType{},
+		"power_schedule_hide_fixed": basetypes.BoolType{},
+		"power_schedule_type":       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"power_schedule":            v.PowerSchedule,
+			"power_schedule_hide_fixed": v.PowerScheduleHideFixed,
+			"power_schedule_type":       v.PowerScheduleType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigPowerScheduleValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigPowerScheduleValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.PowerSchedule.Equal(other.PowerSchedule) {
+		return false
+	}
+
+	if !v.PowerScheduleHideFixed.Equal(other.PowerScheduleHideFixed) {
+		return false
+	}
+
+	if !v.PowerScheduleType.Equal(other.PowerScheduleType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigPowerScheduleValue) Type(ctx context.Context) attr.Type {
+	return ConfigPowerScheduleType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigPowerScheduleValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"power_schedule":            basetypes.StringType{},
+		"power_schedule_hide_fixed": basetypes.BoolType{},
+		"power_schedule_type":       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigRouterQuotaType{}
+
+type ConfigRouterQuotaType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigRouterQuotaType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigRouterQuotaType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigRouterQuotaType) String() string {
+	return "ConfigRouterQuotaType"
+}
+
+func (t ConfigRouterQuotaType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigRouterQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigRouterQuotaValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxRoutersAttribute, ok := attributes["max_routers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_routers is missing from object`)
+
+		return nil, diags
+	}
+
+	maxRoutersVal, ok := maxRoutersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_routers expected to be basetypes.StringValue, was: %T`, maxRoutersAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigRouterQuotaValue{
+		MaxRouters: maxRoutersVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigRouterQuotaValueNull() ConfigRouterQuotaValue {
+	return ConfigRouterQuotaValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigRouterQuotaValueUnknown() ConfigRouterQuotaValue {
+	return ConfigRouterQuotaValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigRouterQuotaValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigRouterQuotaValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigRouterQuotaValue Attribute Value",
+				"While creating a ConfigRouterQuotaValue value, a missing attribute value was detected. "+
+					"A ConfigRouterQuotaValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigRouterQuotaValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigRouterQuotaValue Attribute Type",
+				"While creating a ConfigRouterQuotaValue value, an invalid attribute value was detected. "+
+					"A ConfigRouterQuotaValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigRouterQuotaValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigRouterQuotaValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigRouterQuotaValue Attribute Value",
+				"While creating a ConfigRouterQuotaValue value, an extra attribute value was detected. "+
+					"A ConfigRouterQuotaValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigRouterQuotaValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigRouterQuotaValueUnknown(), diags
+	}
+
+	maxRoutersAttribute, ok := attributes["max_routers"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_routers is missing from object`)
+
+		return NewConfigRouterQuotaValueUnknown(), diags
+	}
+
+	maxRoutersVal, ok := maxRoutersAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_routers expected to be basetypes.StringValue, was: %T`, maxRoutersAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigRouterQuotaValueUnknown(), diags
+	}
+
+	return ConfigRouterQuotaValue{
+		MaxRouters: maxRoutersVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigRouterQuotaValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigRouterQuotaValue {
+	object, diags := NewConfigRouterQuotaValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigRouterQuotaValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigRouterQuotaType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigRouterQuotaValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigRouterQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigRouterQuotaValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigRouterQuotaValueMust(ConfigRouterQuotaValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigRouterQuotaType) ValueType(ctx context.Context) attr.Value {
+	return ConfigRouterQuotaValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigRouterQuotaValue{}
+
+type ConfigRouterQuotaValue struct {
+	MaxRouters basetypes.StringValue `tfsdk:"max_routers"`
+	state      attr.ValueState
+}
+
+func (v ConfigRouterQuotaValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_routers"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxRouters.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_routers"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigRouterQuotaValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigRouterQuotaValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigRouterQuotaValue) String() string {
+	return "ConfigRouterQuotaValue"
+}
+
+func (v ConfigRouterQuotaValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_routers": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_routers": v.MaxRouters,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigRouterQuotaValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigRouterQuotaValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxRouters.Equal(other.MaxRouters) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigRouterQuotaValue) Type(ctx context.Context) attr.Type {
+	return ConfigRouterQuotaType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigRouterQuotaValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_routers": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigShutdownType{}
+
+type ConfigShutdownType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigShutdownType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigShutdownType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigShutdownType) String() string {
+	return "ConfigShutdownType"
+}
+
+func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigShutdownValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigShutdownValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return nil, diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	shutdownAgeAttribute, ok := attributes["shutdown_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_age is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownAgeVal, ok := shutdownAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_age expected to be basetypes.StringValue, was: %T`, shutdownAgeAttribute))
+	}
+
+	shutdownAllowExtendAttribute, ok := attributes["shutdown_allow_extend"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_allow_extend is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.StringValue, was: %T`, shutdownAllowExtendAttribute))
+	}
+
+	shutdownAutoRenewAttribute, ok := attributes["shutdown_auto_renew"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_auto_renew is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.StringValue, was: %T`, shutdownAutoRenewAttribute))
+	}
+
+	shutdownExtensionsBeforeApprovalAttribute, ok := attributes["shutdown_extensions_before_approval"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_extensions_before_approval is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownExtensionsBeforeApprovalVal, ok := shutdownExtensionsBeforeApprovalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_extensions_before_approval expected to be basetypes.StringValue, was: %T`, shutdownExtensionsBeforeApprovalAttribute))
+	}
+
+	shutdownHideFixedAttribute, ok := attributes["shutdown_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_hide_fixed is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownHideFixedVal, ok := shutdownHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_hide_fixed expected to be basetypes.BoolValue, was: %T`, shutdownHideFixedAttribute))
+	}
+
+	shutdownMessageAttribute, ok := attributes["shutdown_message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_message is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownMessageVal, ok := shutdownMessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_message expected to be basetypes.StringValue, was: %T`, shutdownMessageAttribute))
+	}
+
+	shutdownNotifyAttribute, ok := attributes["shutdown_notify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_notify is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownNotifyVal, ok := shutdownNotifyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_notify expected to be basetypes.StringValue, was: %T`, shutdownNotifyAttribute))
+	}
+
+	shutdownRenewalAttribute, ok := attributes["shutdown_renewal"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_renewal is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownRenewalVal, ok := shutdownRenewalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_renewal expected to be basetypes.StringValue, was: %T`, shutdownRenewalAttribute))
+	}
+
+	shutdownTypeAttribute, ok := attributes["shutdown_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_type is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownTypeVal, ok := shutdownTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_type expected to be basetypes.StringValue, was: %T`, shutdownTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigShutdownValue{
+		AccountIntegrationId:             accountIntegrationIdVal,
+		ShutdownAge:                      shutdownAgeVal,
+		ShutdownAllowExtend:              shutdownAllowExtendVal,
+		ShutdownAutoRenew:                shutdownAutoRenewVal,
+		ShutdownExtensionsBeforeApproval: shutdownExtensionsBeforeApprovalVal,
+		ShutdownHideFixed:                shutdownHideFixedVal,
+		ShutdownMessage:                  shutdownMessageVal,
+		ShutdownNotify:                   shutdownNotifyVal,
+		ShutdownRenewal:                  shutdownRenewalVal,
+		ShutdownType:                     shutdownTypeVal,
+		state:                            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigShutdownValueNull() ConfigShutdownValue {
+	return ConfigShutdownValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigShutdownValueUnknown() ConfigShutdownValue {
+	return ConfigShutdownValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigShutdownValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigShutdownValue Attribute Value",
+				"While creating a ConfigShutdownValue value, a missing attribute value was detected. "+
+					"A ConfigShutdownValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigShutdownValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigShutdownValue Attribute Type",
+				"While creating a ConfigShutdownValue value, an invalid attribute value was detected. "+
+					"A ConfigShutdownValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigShutdownValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigShutdownValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigShutdownValue Attribute Value",
+				"While creating a ConfigShutdownValue value, an extra attribute value was detected. "+
+					"A ConfigShutdownValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigShutdownValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`account_integration_id is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
+	}
+
+	shutdownAgeAttribute, ok := attributes["shutdown_age"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_age is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownAgeVal, ok := shutdownAgeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_age expected to be basetypes.StringValue, was: %T`, shutdownAgeAttribute))
+	}
+
+	shutdownAllowExtendAttribute, ok := attributes["shutdown_allow_extend"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_allow_extend is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.StringValue, was: %T`, shutdownAllowExtendAttribute))
+	}
+
+	shutdownAutoRenewAttribute, ok := attributes["shutdown_auto_renew"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_auto_renew is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.StringValue, was: %T`, shutdownAutoRenewAttribute))
+	}
+
+	shutdownExtensionsBeforeApprovalAttribute, ok := attributes["shutdown_extensions_before_approval"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_extensions_before_approval is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownExtensionsBeforeApprovalVal, ok := shutdownExtensionsBeforeApprovalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_extensions_before_approval expected to be basetypes.StringValue, was: %T`, shutdownExtensionsBeforeApprovalAttribute))
+	}
+
+	shutdownHideFixedAttribute, ok := attributes["shutdown_hide_fixed"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_hide_fixed is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownHideFixedVal, ok := shutdownHideFixedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_hide_fixed expected to be basetypes.BoolValue, was: %T`, shutdownHideFixedAttribute))
+	}
+
+	shutdownMessageAttribute, ok := attributes["shutdown_message"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_message is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownMessageVal, ok := shutdownMessageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_message expected to be basetypes.StringValue, was: %T`, shutdownMessageAttribute))
+	}
+
+	shutdownNotifyAttribute, ok := attributes["shutdown_notify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_notify is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownNotifyVal, ok := shutdownNotifyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_notify expected to be basetypes.StringValue, was: %T`, shutdownNotifyAttribute))
+	}
+
+	shutdownRenewalAttribute, ok := attributes["shutdown_renewal"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_renewal is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownRenewalVal, ok := shutdownRenewalAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_renewal expected to be basetypes.StringValue, was: %T`, shutdownRenewalAttribute))
+	}
+
+	shutdownTypeAttribute, ok := attributes["shutdown_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_type is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownTypeVal, ok := shutdownTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_type expected to be basetypes.StringValue, was: %T`, shutdownTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	return ConfigShutdownValue{
+		AccountIntegrationId:             accountIntegrationIdVal,
+		ShutdownAge:                      shutdownAgeVal,
+		ShutdownAllowExtend:              shutdownAllowExtendVal,
+		ShutdownAutoRenew:                shutdownAutoRenewVal,
+		ShutdownExtensionsBeforeApproval: shutdownExtensionsBeforeApprovalVal,
+		ShutdownHideFixed:                shutdownHideFixedVal,
+		ShutdownMessage:                  shutdownMessageVal,
+		ShutdownNotify:                   shutdownNotifyVal,
+		ShutdownRenewal:                  shutdownRenewalVal,
+		ShutdownType:                     shutdownTypeVal,
+		state:                            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigShutdownValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigShutdownValue {
+	object, diags := NewConfigShutdownValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigShutdownValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigShutdownType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigShutdownValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigShutdownValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigShutdownValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigShutdownValueMust(ConfigShutdownValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigShutdownType) ValueType(ctx context.Context) attr.Value {
+	return ConfigShutdownValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigShutdownValue{}
+
+type ConfigShutdownValue struct {
+	AccountIntegrationId             basetypes.StringValue `tfsdk:"account_integration_id"`
+	ShutdownAge                      basetypes.StringValue `tfsdk:"shutdown_age"`
+	ShutdownAllowExtend              basetypes.StringValue `tfsdk:"shutdown_allow_extend"`
+	ShutdownAutoRenew                basetypes.StringValue `tfsdk:"shutdown_auto_renew"`
+	ShutdownExtensionsBeforeApproval basetypes.StringValue `tfsdk:"shutdown_extensions_before_approval"`
+	ShutdownHideFixed                basetypes.BoolValue   `tfsdk:"shutdown_hide_fixed"`
+	ShutdownMessage                  basetypes.StringValue `tfsdk:"shutdown_message"`
+	ShutdownNotify                   basetypes.StringValue `tfsdk:"shutdown_notify"`
+	ShutdownRenewal                  basetypes.StringValue `tfsdk:"shutdown_renewal"`
+	ShutdownType                     basetypes.StringValue `tfsdk:"shutdown_type"`
+	state                            attr.ValueState
+}
+
+func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 10)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_age"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_allow_extend"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_auto_renew"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_extensions_before_approval"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_hide_fixed"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["shutdown_message"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_notify"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_renewal"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 10)
+
+		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["account_integration_id"] = val
+
+		val, err = v.ShutdownAge.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_age"] = val
+
+		val, err = v.ShutdownAllowExtend.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_allow_extend"] = val
+
+		val, err = v.ShutdownAutoRenew.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_auto_renew"] = val
+
+		val, err = v.ShutdownExtensionsBeforeApproval.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_extensions_before_approval"] = val
+
+		val, err = v.ShutdownHideFixed.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_hide_fixed"] = val
+
+		val, err = v.ShutdownMessage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_message"] = val
+
+		val, err = v.ShutdownNotify.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_notify"] = val
+
+		val, err = v.ShutdownRenewal.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_renewal"] = val
+
+		val, err = v.ShutdownType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigShutdownValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigShutdownValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigShutdownValue) String() string {
+	return "ConfigShutdownValue"
+}
+
+func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"account_integration_id":              basetypes.StringType{},
+		"shutdown_age":                        basetypes.StringType{},
+		"shutdown_allow_extend":               basetypes.StringType{},
+		"shutdown_auto_renew":                 basetypes.StringType{},
+		"shutdown_extensions_before_approval": basetypes.StringType{},
+		"shutdown_hide_fixed":                 basetypes.BoolType{},
+		"shutdown_message":                    basetypes.StringType{},
+		"shutdown_notify":                     basetypes.StringType{},
+		"shutdown_renewal":                    basetypes.StringType{},
+		"shutdown_type":                       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"account_integration_id":              v.AccountIntegrationId,
+			"shutdown_age":                        v.ShutdownAge,
+			"shutdown_allow_extend":               v.ShutdownAllowExtend,
+			"shutdown_auto_renew":                 v.ShutdownAutoRenew,
+			"shutdown_extensions_before_approval": v.ShutdownExtensionsBeforeApproval,
+			"shutdown_hide_fixed":                 v.ShutdownHideFixed,
+			"shutdown_message":                    v.ShutdownMessage,
+			"shutdown_notify":                     v.ShutdownNotify,
+			"shutdown_renewal":                    v.ShutdownRenewal,
+			"shutdown_type":                       v.ShutdownType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigShutdownValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigShutdownValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
+		return false
+	}
+
+	if !v.ShutdownAge.Equal(other.ShutdownAge) {
+		return false
+	}
+
+	if !v.ShutdownAllowExtend.Equal(other.ShutdownAllowExtend) {
+		return false
+	}
+
+	if !v.ShutdownAutoRenew.Equal(other.ShutdownAutoRenew) {
+		return false
+	}
+
+	if !v.ShutdownExtensionsBeforeApproval.Equal(other.ShutdownExtensionsBeforeApproval) {
+		return false
+	}
+
+	if !v.ShutdownHideFixed.Equal(other.ShutdownHideFixed) {
+		return false
+	}
+
+	if !v.ShutdownMessage.Equal(other.ShutdownMessage) {
+		return false
+	}
+
+	if !v.ShutdownNotify.Equal(other.ShutdownNotify) {
+		return false
+	}
+
+	if !v.ShutdownRenewal.Equal(other.ShutdownRenewal) {
+		return false
+	}
+
+	if !v.ShutdownType.Equal(other.ShutdownType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigShutdownValue) Type(ctx context.Context) attr.Type {
+	return ConfigShutdownType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigShutdownValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"account_integration_id":              basetypes.StringType{},
+		"shutdown_age":                        basetypes.StringType{},
+		"shutdown_allow_extend":               basetypes.StringType{},
+		"shutdown_auto_renew":                 basetypes.StringType{},
+		"shutdown_extensions_before_approval": basetypes.StringType{},
+		"shutdown_hide_fixed":                 basetypes.BoolType{},
+		"shutdown_message":                    basetypes.StringType{},
+		"shutdown_notify":                     basetypes.StringType{},
+		"shutdown_renewal":                    basetypes.StringType{},
+		"shutdown_type":                       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigStorageServerStorageQuotaType{}
+
+type ConfigStorageServerStorageQuotaType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigStorageServerStorageQuotaType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigStorageServerStorageQuotaType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigStorageServerStorageQuotaType) String() string {
+	return "ConfigStorageServerStorageQuotaType"
+}
+
+func (t ConfigStorageServerStorageQuotaType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigStorageServerStorageQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigStorageServerStorageQuotaValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return nil, diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	storageServerIdAttribute, ok := attributes["storage_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_server_id is missing from object`)
+
+		return nil, diags
+	}
+
+	storageServerIdVal, ok := storageServerIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_server_id expected to be basetypes.StringValue, was: %T`, storageServerIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigStorageServerStorageQuotaValue{
+		MaxStorage:      maxStorageVal,
+		StorageServerId: storageServerIdVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigStorageServerStorageQuotaValueNull() ConfigStorageServerStorageQuotaValue {
+	return ConfigStorageServerStorageQuotaValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigStorageServerStorageQuotaValueUnknown() ConfigStorageServerStorageQuotaValue {
+	return ConfigStorageServerStorageQuotaValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigStorageServerStorageQuotaValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigStorageServerStorageQuotaValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigStorageServerStorageQuotaValue Attribute Value",
+				"While creating a ConfigStorageServerStorageQuotaValue value, a missing attribute value was detected. "+
+					"A ConfigStorageServerStorageQuotaValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigStorageServerStorageQuotaValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigStorageServerStorageQuotaValue Attribute Type",
+				"While creating a ConfigStorageServerStorageQuotaValue value, an invalid attribute value was detected. "+
+					"A ConfigStorageServerStorageQuotaValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigStorageServerStorageQuotaValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigStorageServerStorageQuotaValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigStorageServerStorageQuotaValue Attribute Value",
+				"While creating a ConfigStorageServerStorageQuotaValue value, an extra attribute value was detected. "+
+					"A ConfigStorageServerStorageQuotaValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigStorageServerStorageQuotaValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigStorageServerStorageQuotaValueUnknown(), diags
+	}
+
+	maxStorageAttribute, ok := attributes["max_storage"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_storage is missing from object`)
+
+		return NewConfigStorageServerStorageQuotaValueUnknown(), diags
+	}
+
+	maxStorageVal, ok := maxStorageAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_storage expected to be basetypes.StringValue, was: %T`, maxStorageAttribute))
+	}
+
+	storageServerIdAttribute, ok := attributes["storage_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_server_id is missing from object`)
+
+		return NewConfigStorageServerStorageQuotaValueUnknown(), diags
+	}
+
+	storageServerIdVal, ok := storageServerIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_server_id expected to be basetypes.StringValue, was: %T`, storageServerIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigStorageServerStorageQuotaValueUnknown(), diags
+	}
+
+	return ConfigStorageServerStorageQuotaValue{
+		MaxStorage:      maxStorageVal,
+		StorageServerId: storageServerIdVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigStorageServerStorageQuotaValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigStorageServerStorageQuotaValue {
+	object, diags := NewConfigStorageServerStorageQuotaValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigStorageServerStorageQuotaValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigStorageServerStorageQuotaType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigStorageServerStorageQuotaValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigStorageServerStorageQuotaValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigStorageServerStorageQuotaValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigStorageServerStorageQuotaValueMust(ConfigStorageServerStorageQuotaValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigStorageServerStorageQuotaType) ValueType(ctx context.Context) attr.Value {
+	return ConfigStorageServerStorageQuotaValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigStorageServerStorageQuotaValue{}
+
+type ConfigStorageServerStorageQuotaValue struct {
+	MaxStorage      basetypes.StringValue `tfsdk:"max_storage"`
+	StorageServerId basetypes.StringValue `tfsdk:"storage_server_id"`
+	state           attr.ValueState
+}
+
+func (v ConfigStorageServerStorageQuotaValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_storage"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["storage_server_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_storage"] = val
+
+		val, err = v.StorageServerId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_server_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigStorageServerStorageQuotaValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigStorageServerStorageQuotaValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigStorageServerStorageQuotaValue) String() string {
+	return "ConfigStorageServerStorageQuotaValue"
+}
+
+func (v ConfigStorageServerStorageQuotaValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_storage":       basetypes.StringType{},
+		"storage_server_id": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_storage":       v.MaxStorage,
+			"storage_server_id": v.StorageServerId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigStorageServerStorageQuotaValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigStorageServerStorageQuotaValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxStorage.Equal(other.MaxStorage) {
+		return false
+	}
+
+	if !v.StorageServerId.Equal(other.StorageServerId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigStorageServerStorageQuotaValue) Type(ctx context.Context) attr.Type {
+	return ConfigStorageServerStorageQuotaType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigStorageServerStorageQuotaValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_storage":       basetypes.StringType{},
+		"storage_server_id": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigTagsType{}
+
+type ConfigTagsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigTagsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigTagsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigTagsType) String() string {
+	return "ConfigTagsType"
+}
+
+func (t ConfigTagsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigTagsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigTagsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	keyAttribute, ok := attributes["key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key is missing from object`)
+
+		return nil, diags
+	}
+
+	keyVal, ok := keyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
+	}
+
+	strictAttribute, ok := attributes["strict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`strict is missing from object`)
+
+		return nil, diags
+	}
+
+	strictVal, ok := strictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`strict expected to be basetypes.BoolValue, was: %T`, strictAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return nil, diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute))
+	}
+
+	valueListIdAttribute, ok := attributes["value_list_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value_list_id is missing from object`)
+
+		return nil, diags
+	}
+
+	valueListIdVal, ok := valueListIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value_list_id expected to be basetypes.StringValue, was: %T`, valueListIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigTagsValue{
+		Key:         keyVal,
+		Strict:      strictVal,
+		Value:       valueVal,
+		ValueListId: valueListIdVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigTagsValueNull() ConfigTagsValue {
+	return ConfigTagsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigTagsValueUnknown() ConfigTagsValue {
+	return ConfigTagsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigTagsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigTagsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigTagsValue Attribute Value",
+				"While creating a ConfigTagsValue value, a missing attribute value was detected. "+
+					"A ConfigTagsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigTagsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigTagsValue Attribute Type",
+				"While creating a ConfigTagsValue value, an invalid attribute value was detected. "+
+					"A ConfigTagsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigTagsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigTagsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigTagsValue Attribute Value",
+				"While creating a ConfigTagsValue value, an extra attribute value was detected. "+
+					"A ConfigTagsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigTagsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	keyAttribute, ok := attributes["key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`key is missing from object`)
+
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	keyVal, ok := keyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`key expected to be basetypes.StringValue, was: %T`, keyAttribute))
+	}
+
+	strictAttribute, ok := attributes["strict"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`strict is missing from object`)
+
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	strictVal, ok := strictAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`strict expected to be basetypes.BoolValue, was: %T`, strictAttribute))
+	}
+
+	valueAttribute, ok := attributes["value"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value is missing from object`)
+
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	valueVal, ok := valueAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute))
+	}
+
+	valueListIdAttribute, ok := attributes["value_list_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`value_list_id is missing from object`)
+
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	valueListIdVal, ok := valueListIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`value_list_id expected to be basetypes.StringValue, was: %T`, valueListIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigTagsValueUnknown(), diags
+	}
+
+	return ConfigTagsValue{
+		Key:         keyVal,
+		Strict:      strictVal,
+		Value:       valueVal,
+		ValueListId: valueListIdVal,
+		state:       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigTagsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigTagsValue {
+	object, diags := NewConfigTagsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigTagsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigTagsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigTagsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigTagsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigTagsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigTagsValueMust(ConfigTagsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigTagsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigTagsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigTagsValue{}
+
+type ConfigTagsValue struct {
+	Key         basetypes.StringValue `tfsdk:"key"`
+	Strict      basetypes.BoolValue   `tfsdk:"strict"`
+	Value       basetypes.StringValue `tfsdk:"value"`
+	ValueListId basetypes.StringValue `tfsdk:"value_list_id"`
+	state       attr.ValueState
+}
+
+func (v ConfigTagsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["key"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["strict"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["value"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["value_list_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Key.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["key"] = val
+
+		val, err = v.Strict.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["strict"] = val
+
+		val, err = v.Value.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value"] = val
+
+		val, err = v.ValueListId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["value_list_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigTagsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigTagsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigTagsValue) String() string {
+	return "ConfigTagsValue"
+}
+
+func (v ConfigTagsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"key":           basetypes.StringType{},
+		"strict":        basetypes.BoolType{},
+		"value":         basetypes.StringType{},
+		"value_list_id": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"key":           v.Key,
+			"strict":        v.Strict,
+			"value":         v.Value,
+			"value_list_id": v.ValueListId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigTagsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigTagsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Key.Equal(other.Key) {
+		return false
+	}
+
+	if !v.Strict.Equal(other.Strict) {
+		return false
+	}
+
+	if !v.Value.Equal(other.Value) {
+		return false
+	}
+
+	if !v.ValueListId.Equal(other.ValueListId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigTagsValue) Type(ctx context.Context) attr.Type {
+	return ConfigTagsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigTagsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"key":           basetypes.StringType{},
+		"strict":        basetypes.BoolType{},
+		"value":         basetypes.StringType{},
+		"value_list_id": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigUserCreationType{}
+
+type ConfigUserCreationType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigUserCreationType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigUserCreationType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigUserCreationType) String() string {
+	return "ConfigUserCreationType"
+}
+
+func (t ConfigUserCreationType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigUserCreationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigUserCreationValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	createUserTypeAttribute, ok := attributes["create_user_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user_type is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserTypeVal, ok := createUserTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user_type expected to be basetypes.StringValue, was: %T`, createUserTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigUserCreationValue{
+		CreateUser:     createUserVal,
+		CreateUserType: createUserTypeVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigUserCreationValueNull() ConfigUserCreationValue {
+	return ConfigUserCreationValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigUserCreationValueUnknown() ConfigUserCreationValue {
+	return ConfigUserCreationValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigUserCreationValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigUserCreationValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigUserCreationValue Attribute Value",
+				"While creating a ConfigUserCreationValue value, a missing attribute value was detected. "+
+					"A ConfigUserCreationValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigUserCreationValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigUserCreationValue Attribute Type",
+				"While creating a ConfigUserCreationValue value, an invalid attribute value was detected. "+
+					"A ConfigUserCreationValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigUserCreationValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigUserCreationValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigUserCreationValue Attribute Value",
+				"While creating a ConfigUserCreationValue value, an extra attribute value was detected. "+
+					"A ConfigUserCreationValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigUserCreationValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigUserCreationValueUnknown(), diags
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return NewConfigUserCreationValueUnknown(), diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	createUserTypeAttribute, ok := attributes["create_user_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user_type is missing from object`)
+
+		return NewConfigUserCreationValueUnknown(), diags
+	}
+
+	createUserTypeVal, ok := createUserTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user_type expected to be basetypes.StringValue, was: %T`, createUserTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigUserCreationValueUnknown(), diags
+	}
+
+	return ConfigUserCreationValue{
+		CreateUser:     createUserVal,
+		CreateUserType: createUserTypeVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigUserCreationValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigUserCreationValue {
+	object, diags := NewConfigUserCreationValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigUserCreationValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigUserCreationType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigUserCreationValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigUserCreationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigUserCreationValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigUserCreationValueMust(ConfigUserCreationValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigUserCreationType) ValueType(ctx context.Context) attr.Value {
+	return ConfigUserCreationValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigUserCreationValue{}
+
+type ConfigUserCreationValue struct {
+	CreateUser     basetypes.BoolValue   `tfsdk:"create_user"`
+	CreateUserType basetypes.StringValue `tfsdk:"create_user_type"`
+	state          attr.ValueState
+}
+
+func (v ConfigUserCreationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["create_user_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.CreateUser.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user"] = val
+
+		val, err = v.CreateUserType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigUserCreationValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigUserCreationValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigUserCreationValue) String() string {
+	return "ConfigUserCreationValue"
+}
+
+func (v ConfigUserCreationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"create_user":      basetypes.BoolType{},
+		"create_user_type": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"create_user":      v.CreateUser,
+			"create_user_type": v.CreateUserType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigUserCreationValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigUserCreationValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.CreateUserType.Equal(other.CreateUserType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigUserCreationValue) Type(ctx context.Context) attr.Type {
+	return ConfigUserCreationType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigUserCreationValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"create_user":      basetypes.BoolType{},
+		"create_user_type": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigUserGroupCreationType{}
+
+type ConfigUserGroupCreationType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigUserGroupCreationType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigUserGroupCreationType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigUserGroupCreationType) String() string {
+	return "ConfigUserGroupCreationType"
+}
+
+func (t ConfigUserGroupCreationType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigUserGroupCreationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigUserGroupCreationValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	userGroupAttribute, ok := attributes["user_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_group is missing from object`)
+
+		return nil, diags
+	}
+
+	userGroupVal, ok := userGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_group expected to be basetypes.StringValue, was: %T`, userGroupAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigUserGroupCreationValue{
+		UserGroup: userGroupVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigUserGroupCreationValueNull() ConfigUserGroupCreationValue {
+	return ConfigUserGroupCreationValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigUserGroupCreationValueUnknown() ConfigUserGroupCreationValue {
+	return ConfigUserGroupCreationValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigUserGroupCreationValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigUserGroupCreationValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigUserGroupCreationValue Attribute Value",
+				"While creating a ConfigUserGroupCreationValue value, a missing attribute value was detected. "+
+					"A ConfigUserGroupCreationValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigUserGroupCreationValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigUserGroupCreationValue Attribute Type",
+				"While creating a ConfigUserGroupCreationValue value, an invalid attribute value was detected. "+
+					"A ConfigUserGroupCreationValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigUserGroupCreationValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigUserGroupCreationValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigUserGroupCreationValue Attribute Value",
+				"While creating a ConfigUserGroupCreationValue value, an extra attribute value was detected. "+
+					"A ConfigUserGroupCreationValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigUserGroupCreationValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigUserGroupCreationValueUnknown(), diags
+	}
+
+	userGroupAttribute, ok := attributes["user_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_group is missing from object`)
+
+		return NewConfigUserGroupCreationValueUnknown(), diags
+	}
+
+	userGroupVal, ok := userGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_group expected to be basetypes.StringValue, was: %T`, userGroupAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigUserGroupCreationValueUnknown(), diags
+	}
+
+	return ConfigUserGroupCreationValue{
+		UserGroup: userGroupVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigUserGroupCreationValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigUserGroupCreationValue {
+	object, diags := NewConfigUserGroupCreationValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigUserGroupCreationValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigUserGroupCreationType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigUserGroupCreationValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigUserGroupCreationValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigUserGroupCreationValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigUserGroupCreationValueMust(ConfigUserGroupCreationValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigUserGroupCreationType) ValueType(ctx context.Context) attr.Value {
+	return ConfigUserGroupCreationValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigUserGroupCreationValue{}
+
+type ConfigUserGroupCreationValue struct {
+	UserGroup basetypes.StringValue `tfsdk:"user_group"`
+	state     attr.ValueState
+}
+
+func (v ConfigUserGroupCreationValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["user_group"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.UserGroup.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["user_group"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigUserGroupCreationValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigUserGroupCreationValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigUserGroupCreationValue) String() string {
+	return "ConfigUserGroupCreationValue"
+}
+
+func (v ConfigUserGroupCreationValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"user_group": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"user_group": v.UserGroup,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigUserGroupCreationValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigUserGroupCreationValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.UserGroup.Equal(other.UserGroup) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigUserGroupCreationValue) Type(ctx context.Context) attr.Type {
+	return ConfigUserGroupCreationType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigUserGroupCreationValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"user_group": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigWorkflowType{}
+
+type ConfigWorkflowType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigWorkflowType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigWorkflowType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigWorkflowType) String() string {
+	return "ConfigWorkflowType"
+}
+
+func (t ConfigWorkflowType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigWorkflowValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigWorkflowValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	workflowIdAttribute, ok := attributes["workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowIdVal, ok := workflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_id expected to be basetypes.StringValue, was: %T`, workflowIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigWorkflowValue{
+		WorkflowId: workflowIdVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigWorkflowValueNull() ConfigWorkflowValue {
+	return ConfigWorkflowValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigWorkflowValueUnknown() ConfigWorkflowValue {
+	return ConfigWorkflowValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigWorkflowValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigWorkflowValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigWorkflowValue Attribute Value",
+				"While creating a ConfigWorkflowValue value, a missing attribute value was detected. "+
+					"A ConfigWorkflowValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigWorkflowValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigWorkflowValue Attribute Type",
+				"While creating a ConfigWorkflowValue value, an invalid attribute value was detected. "+
+					"A ConfigWorkflowValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigWorkflowValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigWorkflowValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigWorkflowValue Attribute Value",
+				"While creating a ConfigWorkflowValue value, an extra attribute value was detected. "+
+					"A ConfigWorkflowValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigWorkflowValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigWorkflowValueUnknown(), diags
+	}
+
+	workflowIdAttribute, ok := attributes["workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_id is missing from object`)
+
+		return NewConfigWorkflowValueUnknown(), diags
+	}
+
+	workflowIdVal, ok := workflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_id expected to be basetypes.StringValue, was: %T`, workflowIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigWorkflowValueUnknown(), diags
+	}
+
+	return ConfigWorkflowValue{
+		WorkflowId: workflowIdVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigWorkflowValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigWorkflowValue {
+	object, diags := NewConfigWorkflowValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigWorkflowValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigWorkflowType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigWorkflowValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigWorkflowValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigWorkflowValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigWorkflowValueMust(ConfigWorkflowValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigWorkflowType) ValueType(ctx context.Context) attr.Value {
+	return ConfigWorkflowValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigWorkflowValue{}
+
+type ConfigWorkflowValue struct {
+	WorkflowId basetypes.StringValue `tfsdk:"workflow_id"`
+	state      attr.ValueState
+}
+
+func (v ConfigWorkflowValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["workflow_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.WorkflowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigWorkflowValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigWorkflowValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigWorkflowValue) String() string {
+	return "ConfigWorkflowValue"
+}
+
+func (v ConfigWorkflowValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"workflow_id": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"workflow_id": v.WorkflowId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigWorkflowValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigWorkflowValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.WorkflowId.Equal(other.WorkflowId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigWorkflowValue) Type(ctx context.Context) attr.Type {
+	return ConfigWorkflowType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigWorkflowValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"workflow_id": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = OwnerType{}
+
+type OwnerType struct {
+	basetypes.ObjectType
+}
+
+func (t OwnerType) Equal(o attr.Type) bool {
+	other, ok := o.(OwnerType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t OwnerType) String() string {
+	return "OwnerType"
+}
+
+func (t OwnerType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewOwnerValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewOwnerValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return OwnerValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewOwnerValueNull() OwnerValue {
+	return OwnerValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewOwnerValueUnknown() OwnerValue {
+	return OwnerValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewOwnerValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (OwnerValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing OwnerValue Attribute Value",
+				"While creating a OwnerValue value, a missing attribute value was detected. "+
+					"A OwnerValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid OwnerValue Attribute Type",
+				"While creating a OwnerValue value, an invalid attribute value was detected. "+
+					"A OwnerValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra OwnerValue Attribute Value",
+				"While creating a OwnerValue value, an extra attribute value was detected. "+
+					"A OwnerValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra OwnerValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewOwnerValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewOwnerValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewOwnerValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewOwnerValueUnknown(), diags
+	}
+
+	return OwnerValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewOwnerValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) OwnerValue {
+	object, diags := NewOwnerValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewOwnerValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t OwnerType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewOwnerValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewOwnerValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewOwnerValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewOwnerValueMust(OwnerValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t OwnerType) ValueType(ctx context.Context) attr.Value {
+	return OwnerValue{}
+}
+
+var _ basetypes.ObjectValuable = OwnerValue{}
+
+type OwnerValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v OwnerValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v OwnerValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v OwnerValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v OwnerValue) String() string {
+	return "OwnerValue"
+}
+
+func (v OwnerValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v OwnerValue) Equal(o attr.Value) bool {
+	other, ok := o.(OwnerValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v OwnerValue) Type(ctx context.Context) attr.Type {
+	return OwnerType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v OwnerValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = PolicyTypeType{}
+
+type PolicyTypeType struct {
+	basetypes.ObjectType
+}
+
+func (t PolicyTypeType) Equal(o attr.Type) bool {
+	other, ok := o.(PolicyTypeType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PolicyTypeType) String() string {
+	return "PolicyTypeType"
+}
+
+func (t PolicyTypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPolicyTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPolicyTypeValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PolicyTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPolicyTypeValueNull() PolicyTypeValue {
+	return PolicyTypeValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPolicyTypeValueUnknown() PolicyTypeValue {
+	return PolicyTypeValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPolicyTypeValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PolicyTypeValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PolicyTypeValue Attribute Value",
+				"While creating a PolicyTypeValue value, a missing attribute value was detected. "+
+					"A PolicyTypeValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PolicyTypeValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PolicyTypeValue Attribute Type",
+				"While creating a PolicyTypeValue value, an invalid attribute value was detected. "+
+					"A PolicyTypeValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PolicyTypeValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PolicyTypeValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PolicyTypeValue Attribute Value",
+				"While creating a PolicyTypeValue value, an extra attribute value was detected. "+
+					"A PolicyTypeValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PolicyTypeValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPolicyTypeValueUnknown(), diags
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewPolicyTypeValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewPolicyTypeValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewPolicyTypeValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPolicyTypeValueUnknown(), diags
+	}
+
+	return PolicyTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPolicyTypeValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PolicyTypeValue {
+	object, diags := NewPolicyTypeValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPolicyTypeValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PolicyTypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPolicyTypeValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPolicyTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPolicyTypeValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPolicyTypeValueMust(PolicyTypeValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PolicyTypeType) ValueType(ctx context.Context) attr.Value {
+	return PolicyTypeValue{}
+}
+
+var _ basetypes.ObjectValuable = PolicyTypeValue{}
+
+type PolicyTypeValue struct {
+	Code  basetypes.StringValue `tfsdk:"code"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v PolicyTypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Code.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PolicyTypeValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PolicyTypeValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PolicyTypeValue) String() string {
+	return "PolicyTypeValue"
+}
+
+func (v PolicyTypeValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"code": v.Code,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v PolicyTypeValue) Equal(o attr.Value) bool {
+	other, ok := o.(PolicyTypeValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v PolicyTypeValue) Type(ctx context.Context) attr.Type {
+	return PolicyTypeType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PolicyTypeValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = RefTypeType{}
+
+type RefTypeType struct {
+	basetypes.ObjectType
+}
+
+func (t RefTypeType) Equal(o attr.Type) bool {
+	other, ok := o.(RefTypeType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t RefTypeType) String() string {
+	return "RefTypeType"
+}
+
+func (t RefTypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewRefTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewRefTypeValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	oneof0Attribute, ok := attributes["oneof0"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`oneof0 is missing from object`)
+
+		return nil, diags
+	}
+
+	oneof0Val, ok := oneof0Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`oneof0 expected to be basetypes.StringValue, was: %T`, oneof0Attribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return RefTypeValue{
+		Oneof0: oneof0Val,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewRefTypeValueNull() RefTypeValue {
+	return RefTypeValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewRefTypeValueUnknown() RefTypeValue {
+	return RefTypeValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewRefTypeValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (RefTypeValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing RefTypeValue Attribute Value",
+				"While creating a RefTypeValue value, a missing attribute value was detected. "+
+					"A RefTypeValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("RefTypeValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid RefTypeValue Attribute Type",
+				"While creating a RefTypeValue value, an invalid attribute value was detected. "+
+					"A RefTypeValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("RefTypeValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("RefTypeValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra RefTypeValue Attribute Value",
+				"While creating a RefTypeValue value, an extra attribute value was detected. "+
+					"A RefTypeValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra RefTypeValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewRefTypeValueUnknown(), diags
+	}
+
+	oneof0Attribute, ok := attributes["oneof0"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`oneof0 is missing from object`)
+
+		return NewRefTypeValueUnknown(), diags
+	}
+
+	oneof0Val, ok := oneof0Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`oneof0 expected to be basetypes.StringValue, was: %T`, oneof0Attribute))
+	}
+
+	if diags.HasError() {
+		return NewRefTypeValueUnknown(), diags
+	}
+
+	return RefTypeValue{
+		Oneof0: oneof0Val,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewRefTypeValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) RefTypeValue {
+	object, diags := NewRefTypeValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewRefTypeValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t RefTypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewRefTypeValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewRefTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewRefTypeValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewRefTypeValueMust(RefTypeValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t RefTypeType) ValueType(ctx context.Context) attr.Value {
+	return RefTypeValue{}
+}
+
+var _ basetypes.ObjectValuable = RefTypeValue{}
+
+type RefTypeValue struct {
+	Oneof0 basetypes.StringValue `tfsdk:"oneof0"`
+	state  attr.ValueState
+}
+
+func (v RefTypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["oneof0"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.Oneof0.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["oneof0"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v RefTypeValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v RefTypeValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v RefTypeValue) String() string {
+	return "RefTypeValue"
+}
+
+func (v RefTypeValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"oneof0": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"oneof0": v.Oneof0,
+		})
+
+	return objVal, diags
+}
+
+func (v RefTypeValue) Equal(o attr.Value) bool {
+	other, ok := o.(RefTypeValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Oneof0.Equal(other.Oneof0) {
+		return false
+	}
+
+	return true
+}
+
+func (v RefTypeValue) Type(ctx context.Context) attr.Type {
+	return RefTypeType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v RefTypeValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"oneof0": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = RoleType{}
+
+type RoleType struct {
+	basetypes.ObjectType
+}
+
+func (t RoleType) Equal(o attr.Type) bool {
+	other, ok := o.(RoleType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t RoleType) String() string {
+	return "RoleType"
+}
+
+func (t RoleType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewRoleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewRoleValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	authorityAttribute, ok := attributes["authority"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`authority is missing from object`)
+
+		return nil, diags
+	}
+
+	authorityVal, ok := authorityAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`authority expected to be basetypes.StringValue, was: %T`, authorityAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return RoleValue{
+		Authority: authorityVal,
+		Id:        idVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewRoleValueNull() RoleValue {
+	return RoleValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewRoleValueUnknown() RoleValue {
+	return RoleValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewRoleValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (RoleValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing RoleValue Attribute Value",
+				"While creating a RoleValue value, a missing attribute value was detected. "+
+					"A RoleValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("RoleValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid RoleValue Attribute Type",
+				"While creating a RoleValue value, an invalid attribute value was detected. "+
+					"A RoleValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("RoleValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("RoleValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra RoleValue Attribute Value",
+				"While creating a RoleValue value, an extra attribute value was detected. "+
+					"A RoleValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra RoleValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewRoleValueUnknown(), diags
+	}
+
+	authorityAttribute, ok := attributes["authority"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`authority is missing from object`)
+
+		return NewRoleValueUnknown(), diags
+	}
+
+	authorityVal, ok := authorityAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`authority expected to be basetypes.StringValue, was: %T`, authorityAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewRoleValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return NewRoleValueUnknown(), diags
+	}
+
+	return RoleValue{
+		Authority: authorityVal,
+		Id:        idVal,
+		state:     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewRoleValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) RoleValue {
+	object, diags := NewRoleValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewRoleValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t RoleType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewRoleValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewRoleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewRoleValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewRoleValueMust(RoleValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t RoleType) ValueType(ctx context.Context) attr.Value {
+	return RoleValue{}
+}
+
+var _ basetypes.ObjectValuable = RoleValue{}
+
+type RoleValue struct {
+	Authority basetypes.StringValue `tfsdk:"authority"`
+	Id        basetypes.Int64Value  `tfsdk:"id"`
+	state     attr.ValueState
+}
+
+func (v RoleValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["authority"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Authority.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["authority"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v RoleValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v RoleValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v RoleValue) String() string {
+	return "RoleValue"
+}
+
+func (v RoleValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"authority": basetypes.StringType{},
+		"id":        basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"authority": v.Authority,
+			"id":        v.Id,
+		})
+
+	return objVal, diags
+}
+
+func (v RoleValue) Equal(o attr.Value) bool {
+	other, ok := o.(RoleValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Authority.Equal(other.Authority) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	return true
+}
+
+func (v RoleValue) Type(ctx context.Context) attr.Type {
+	return RoleType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v RoleValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"authority": basetypes.StringType{},
+		"id":        basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = SiteType{}
+
+type SiteType struct {
+	basetypes.ObjectType
+}
+
+func (t SiteType) Equal(o attr.Type) bool {
+	other, ok := o.(SiteType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t SiteType) String() string {
+	return "SiteType"
+}
+
+func (t SiteType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewSiteValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSiteValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return SiteValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSiteValueNull() SiteValue {
+	return SiteValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewSiteValueUnknown() SiteValue {
+	return SiteValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewSiteValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (SiteValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing SiteValue Attribute Value",
+				"While creating a SiteValue value, a missing attribute value was detected. "+
+					"A SiteValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SiteValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid SiteValue Attribute Type",
+				"While creating a SiteValue value, an invalid attribute value was detected. "+
+					"A SiteValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SiteValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("SiteValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra SiteValue Attribute Value",
+				"While creating a SiteValue value, an extra attribute value was detected. "+
+					"A SiteValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra SiteValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewSiteValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewSiteValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewSiteValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewSiteValueUnknown(), diags
+	}
+
+	return SiteValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSiteValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) SiteValue {
+	object, diags := NewSiteValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewSiteValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t SiteType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewSiteValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewSiteValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSiteValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewSiteValueMust(SiteValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t SiteType) ValueType(ctx context.Context) attr.Value {
+	return SiteValue{}
+}
+
+var _ basetypes.ObjectValuable = SiteValue{}
+
+type SiteValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v SiteValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v SiteValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v SiteValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v SiteValue) String() string {
+	return "SiteValue"
+}
+
+func (v SiteValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v SiteValue) Equal(o attr.Value) bool {
+	other, ok := o.(SiteValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v SiteValue) Type(ctx context.Context) attr.Type {
+	return SiteType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v SiteValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = UserType{}
+
+type UserType struct {
+	basetypes.ObjectType
+}
+
+func (t UserType) Equal(o attr.Type) bool {
+	other, ok := o.(UserType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t UserType) String() string {
+	return "UserType"
+}
+
+func (t UserType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewUserValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewUserValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	usernameAttribute, ok := attributes["username"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`username is missing from object`)
+
+		return nil, diags
+	}
+
+	usernameVal, ok := usernameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return UserValue{
+		Id:       idVal,
+		Username: usernameVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewUserValueNull() UserValue {
+	return UserValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewUserValueUnknown() UserValue {
+	return UserValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewUserValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (UserValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing UserValue Attribute Value",
+				"While creating a UserValue value, a missing attribute value was detected. "+
+					"A UserValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("UserValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid UserValue Attribute Type",
+				"While creating a UserValue value, an invalid attribute value was detected. "+
+					"A UserValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("UserValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("UserValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra UserValue Attribute Value",
+				"While creating a UserValue value, an extra attribute value was detected. "+
+					"A UserValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra UserValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewUserValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewUserValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	usernameAttribute, ok := attributes["username"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`username is missing from object`)
+
+		return NewUserValueUnknown(), diags
+	}
+
+	usernameVal, ok := usernameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewUserValueUnknown(), diags
+	}
+
+	return UserValue{
+		Id:       idVal,
+		Username: usernameVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewUserValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) UserValue {
+	object, diags := NewUserValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewUserValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t UserType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewUserValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewUserValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewUserValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewUserValueMust(UserValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t UserType) ValueType(ctx context.Context) attr.Value {
+	return UserValue{}
+}
+
+var _ basetypes.ObjectValuable = UserValue{}
+
+type UserValue struct {
+	Id       basetypes.Int64Value  `tfsdk:"id"`
+	Username basetypes.StringValue `tfsdk:"username"`
+	state    attr.ValueState
+}
+
+func (v UserValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["username"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Username.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["username"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v UserValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v UserValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v UserValue) String() string {
+	return "UserValue"
+}
+
+func (v UserValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":       basetypes.Int64Type{},
+		"username": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":       v.Id,
+			"username": v.Username,
+		})
+
+	return objVal, diags
+}
+
+func (v UserValue) Equal(o attr.Value) bool {
+	other, ok := o.(UserValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Username.Equal(other.Username) {
+		return false
+	}
+
+	return true
+}
+
+func (v UserValue) Type(ctx context.Context) attr.Type {
+	return UserType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v UserValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":       basetypes.Int64Type{},
+		"username": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ZoneType{}
+
+type ZoneType struct {
+	basetypes.ObjectType
+}
+
+func (t ZoneType) Equal(o attr.Type) bool {
+	other, ok := o.(ZoneType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ZoneType) String() string {
+	return "ZoneType"
+}
+
+func (t ZoneType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewZoneValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewZoneValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ZoneValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewZoneValueNull() ZoneValue {
+	return ZoneValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewZoneValueUnknown() ZoneValue {
+	return ZoneValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewZoneValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ZoneValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ZoneValue Attribute Value",
+				"While creating a ZoneValue value, a missing attribute value was detected. "+
+					"A ZoneValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ZoneValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ZoneValue Attribute Type",
+				"While creating a ZoneValue value, an invalid attribute value was detected. "+
+					"A ZoneValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ZoneValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ZoneValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ZoneValue Attribute Value",
+				"While creating a ZoneValue value, an extra attribute value was detected. "+
+					"A ZoneValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ZoneValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewZoneValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewZoneValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewZoneValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewZoneValueUnknown(), diags
+	}
+
+	return ZoneValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewZoneValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ZoneValue {
+	object, diags := NewZoneValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewZoneValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ZoneType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewZoneValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewZoneValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewZoneValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewZoneValueMust(ZoneValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ZoneType) ValueType(ctx context.Context) attr.Value {
+	return ZoneValue{}
+}
+
+var _ basetypes.ObjectValuable = ZoneValue{}
+
+type ZoneValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v ZoneValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ZoneValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ZoneValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ZoneValue) String() string {
+	return "ZoneValue"
+}
+
+func (v ZoneValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v ZoneValue) Equal(o attr.Value) bool {
+	other, ok := o.(ZoneValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v ZoneValue) Type(ctx context.Context) attr.Type {
+	return ZoneType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ZoneValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
 	}
 }

@@ -1,0 +1,25 @@
+# Configure the HPE provider
+terraform {
+  required_providers {
+    hpe = {
+      source = "HPE/hpe"
+    }
+  }
+}
+
+# Create a Morpheus policy with max memory configuration
+resource "hpe_morpheus_policy" "example_policy" {
+  name        = "{{.Name}}"
+  description = "Example policy created via Terraform"
+  enabled     = true
+
+  # Required empty config field
+  config = {}
+
+  # Max memory policy configuration
+  config_max_memory = {
+    max_memory = {
+      anyof1 = {{.ConfigMaxMemoryMaxMemory}}  # Memory limit in bytes
+    }
+  }
+}
