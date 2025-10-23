@@ -1,6 +1,6 @@
 package sdkfuncs
 
-import "github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+import "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 var (
 	// Cloud

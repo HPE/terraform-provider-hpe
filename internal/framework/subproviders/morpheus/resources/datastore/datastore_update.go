@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/cenkalti/backoff/v5"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 

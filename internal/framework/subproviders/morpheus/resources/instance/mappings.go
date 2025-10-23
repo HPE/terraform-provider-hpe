@@ -3,7 +3,7 @@ package instance
 import (
 	"strconv"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 )
 
 // Map Terraform volume value into an API request struct
