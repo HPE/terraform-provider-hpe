@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912" SortOrder "10000"
+//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912" SortOrder "10000" CoresPerSocket "1"
 
 package serviceplan_test
 
@@ -56,6 +56,7 @@ resource "hpe_morpheus_service_plan" "example_required" {
   max_memory             = 4294967296
   sort_order             = 10000
   max_storage            = 0
+  cores_per_socket       = 1
 	provision_type_code    = "arm"
 }
 	`
@@ -90,6 +91,11 @@ resource "hpe_morpheus_service_plan" "example_required" {
 			"hpe_morpheus_service_plan.example_required",
 			"sort_order",
 			"10000",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_required",
+			"cores_per_socket",
+			"1",
 		),
 	}
 
@@ -369,6 +375,7 @@ func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
 		"MaxStorage", "536870912",
 		"ProvisionTypeCode", "arm",
 		"CustomMaxStorage", "true",
+		"CoresPerSocket", "1",
 		"ConfigRangesMinStorage", "268435456",
 		"ConfigRangesMaxStorage", "536870912")
 	if err != nil {
@@ -405,6 +412,11 @@ func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
 			"hpe_morpheus_service_plan.example_service_plan",
 			"custom_max_storage",
 			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_service_plan.example_service_plan",
+			"cores_per_socket",
+			"1",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_service_plan.example_service_plan",
