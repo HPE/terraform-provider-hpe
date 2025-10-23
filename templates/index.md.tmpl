@@ -25,7 +25,7 @@ Morpheus API SSL cert checking is enabled by default in this provider.
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v0.2.0).
+release notes for the current version (v0.3.0).
 
 ### Authentication
 
@@ -57,47 +57,24 @@ be toggled off by setting `insecure` to `true` in the provider block.
 ->The `hpe_morpheus_user` resource uses a `WriteOnly` password field.  `WriteOnly` attributes are supported
 by Terraform versions 1.11 and later.
 
-->The `hpe_morpheus_instance` and `hpe_morpheus_network` resources use a `Dynamic` attribute for `config`.  This means
-that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.  Examples of these
-are shown in the documentation.
+->The `hpe_morpheus_instance`, `hpe_morpheus_network`, `hpe_morpheus_datastore` and `hpe_morpheus_cloud` resources use
+a `Dynamic` attribute for `config`.  This means that the `config` block can contain arbitrary nested attributes which
+will be evaluated at run-time.  Examples of these are shown in the documentation.
 
 ### New functionality
 
-->The `hpe_morpheus_datastore` and `hpe_morpheus_cloud` resources use a `Dynamic` attribute for `config`.  This means
-that the `config` block can contain arbitrary nested attributes which will be evaluated at run-time.
-
-In this release (v0.2.0) we have added the following resource functionality:
-- hpe_morpheus_datastore resource has been added (Create, Delete, Read, Update)
-- hpe_morpheus_service_plan Update functionality has been added
-- hpe_morpheus_cloud now has a dynamic `config` block to support arbitrary cloud configuration options
-- hpe_morpheus_role now supports setting a `Default Persona`
-
-We have added the following data-source functionality:
-- hpe_morpheus_datastore data-source has been added
-- hpe_morpheus_role now supports reading `Default Persona` information
-
-We have fixed the following issues:
-- hpe_morpheus_user would force recreation if an attribute was updated, this has been fixed
-- hpe_morpheus_network switchId is now supported
-- hpe_morpheus_role data-source `Default Persona` issue has been fixed
+In this release (v0.3.0) we have added the following resource functionality:
+- hpe_morpheus_image resource has been added (Create, Delete, Read, Update)
+- hpe_morpheus_policy resource has been added (Create, Delete, Read, Update)
+- hpe_morpheus_instance Update functionality has been added
+- hpe_morpheus_service_plan `cores_per_socket` is now required
+- hpe_morpheus_datastore import will now populate `resource_permissions` (`groups` only) and `tenants`
 
 ### New known issues
 
-- We have seen an issue with authentication for an existing user when using username/password.  The issue manifests
-  as "500" errors on authentication which will not go away on retry.  It is an issue with Morpheus itself and is
-  fixed from the `8.0.11` release onwards.  To work around this issue in earlier Morpheus releases
-  please generate an `access_token` from the Morpheus UI (for the `morph-api` Client for example) and use
-  that instead of username/password.
-- hpe_morpheus_datastore when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
-  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
-  and that the share is accessible before creating.
-- hpe_morpheus_datastore delete is not guaranteed to succeed. AlletraMP HVM datastores will delete but NFS datastores
-  may fail to delete. Always delete VMs and other resources using the datastore before deleting the datastore itself.
-- hpe_morpheus_instance only supports 1 network
-- hpe_morpheus_instance in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
-  the `volumes` block list
+N/A
 
-### Known Issues from previous releases
+### Known issues from previous releases
 
 - hpe_morpheus_instance has issues with using the same `datastore_id` with multiple volumes, please use
   a different `datastore_id` for each volume.
@@ -105,5 +82,13 @@ We have fixed the following issues:
   in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
 - There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
   If this happens please retry the operation.  This is being investigated.
+- hpe_morpheus_datastore when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- hpe_morpheus_datastore delete is not guaranteed to succeed.  AlletraMP HVM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- hpe_morpheus_instance only supports 1 network
+- hpe_morpheus_instance in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
 
 {{ .SchemaMarkdown | trimspace }}
