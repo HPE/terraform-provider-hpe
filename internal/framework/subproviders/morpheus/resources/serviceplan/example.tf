@@ -6,6 +6,7 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
   max_storage = 536870912
   provision_type_code = "arm"
   custom_max_storage = true
+  cores_per_socket = 1
   config_ranges = {
     min_storage = 268435456
     max_storage = 536870912

@@ -111,8 +111,7 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The min and max ranges that instances using this service plan must conform to.",
 			},
 			"cores_per_socket": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
+				Required:            true,
 				Description:         "Number of cores per CPU",
 				MarkdownDescription: "Number of cores per CPU",
 				PlanModifiers: []planmodifier.Int64{
