@@ -89,8 +89,38 @@ func getDatastoreAsState(
 	switch *refType {
 	case cloudRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCloud)
+		// For imports, we need to get the tenants and resource permissions from the cloud datastore API
+		if plan.Name.IsNull() || plan.Name.IsUnknown() {
+			tenants, resourcePermissions, pdiags := populateCloudDatastoreInformation(
+				ctx, id, *datastore.RefId, client)
+			diags = append(diags, pdiags...)
+			state.Tenants = tenants
+			state.ResourcePermissions = resourcePermissions
+
+			break
+		}
+
+		// If not importing, set from plan
+		state.ResourcePermissions = plan.ResourcePermissions
+		state.Tenants = plan.Tenants
+
 	case clusterRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCluster)
+		// For imports, we need to get the tenants and resource permissions from the cluster datastore API
+		if plan.Name.IsNull() || plan.Name.IsUnknown() {
+			tenants, resourcePermissions, pdiags := populateClusterDatastoreInformation(
+				ctx, id, *datastore.RefId, client)
+			diags = append(diags, pdiags...)
+			state.Tenants = tenants
+			state.ResourcePermissions = resourcePermissions
+
+			break
+		}
+
+		// If not importing, set from plan
+		state.ResourcePermissions = plan.ResourcePermissions
+		state.Tenants = plan.Tenants
+
 	default:
 		diags.AddError(
 			"populate datastore resource",
@@ -218,10 +248,6 @@ func getDatastoreAsState(
 		state.ConfigFromApi = configFromApi
 	}
 
-	// Set state to values from plan where the API doesn't return them
-	state.ResourcePermissions = plan.ResourcePermissions
-	state.Tenants = plan.Tenants
-
 	// Set StorageServer to that returned by the API
 	if server, ok := datastore.GetStorageServerOk(); ok && server != nil {
 		storageServer := StorageServerValue{}
@@ -319,6 +345,249 @@ func getDatastoreAsState(
 	}
 
 	return state, diags
+}
+
+// populateCloudDatastoreInformation gets the cloud datastore information for a datastore
+// and populates the Tenants and ResourcePermissions fields of the datastore resource model
+// only to be called on Import
+func populateCloudDatastoreInformation(
+	ctx context.Context,
+	id, cloudId int64,
+	client *sdk.APIClient,
+) (types.Set, ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Get cloud datastore information
+	cdResp, hresp, err := client.CloudsAPI.GetCloudDatastores(ctx, cloudId, id).Execute()
+	if err != nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d cloud datastore GET failed: %s", id, errors.ErrMsg(err, hresp)),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+
+	cloudDatastore, ok := cdResp.GetDatastoreOk()
+	if !ok || cloudDatastore == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing cloud datastore in response", id),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+
+	// Populate Tenants
+	tenants, ok := cloudDatastore.GetTenantsOk()
+	if !ok || tenants == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing tenants in response", id),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+
+	tenantsSet, tdiag := convert.ToSetType(
+		ctx,
+		tenants,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+		) TenantsValue {
+			return TenantsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+
+	diags = append(diags, tdiag...)
+
+	// Populate ResourcePermissions, we'll only do Groups for now
+	rp, ok := cloudDatastore.GetResourcePermissionOk()
+	if !ok || rp == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing resource permissions in response", id),
+		)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), diags
+	}
+
+	sites, ok := rp.GetSitesOk()
+	if !ok || sites == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing resource permission sites in response", id),
+		)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), diags
+	}
+	groupsSet, gdiag := convert.ToSetType(
+		ctx,
+		sites,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+		) GroupsValue {
+			return GroupsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+
+	diags = append(diags, gdiag...)
+
+	resourcePermissions, rdiags := populateResourcePermissionsFromApi(ctx, groupsSet)
+	diags = append(diags, rdiags...)
+
+	return tenantsSet, resourcePermissions, diags
+}
+
+// populateClusterDatastoreInformation gets the cluster datastore information for a datastore
+// and populates the Tenants and ResourcePermissions fields of the datastore resource model
+// only to be called on Import
+func populateClusterDatastoreInformation(
+	ctx context.Context,
+	id, clusterId int64,
+	client *sdk.APIClient,
+) (types.Set, ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Get cluster datastore information
+	cdResp, hresp, err := client.ClustersAPI.GetClusterDatastore(ctx, clusterId, id).Execute()
+	if err != nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d cluster datastore GET failed: %s", id, errors.ErrMsg(err, hresp)),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+	clusterDatastore, ok := cdResp.GetDatastoreOk()
+	if !ok || clusterDatastore == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing cluster datastore in response", id),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+
+	// Populate Tenants
+	tenants, ok := clusterDatastore.GetTenantsOk()
+	if !ok || tenants == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing tenants in response", id),
+		)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
+	}
+
+	tenantsSet, tdiag := convert.ToSetType(
+		ctx,
+		tenants,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+		) TenantsValue {
+			return TenantsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+
+	diags = append(diags, tdiag...)
+
+	// Populate ResourcePermissions, we'll only do Groups for now
+	rp, ok := clusterDatastore.GetResourcePermissionsOk()
+	if !ok || rp == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing resource permissions in response", id),
+		)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), diags
+	}
+	sites, ok := rp.GetSitesOk()
+	if !ok || sites == nil {
+		diags.AddWarning(
+			"populate datastore resource",
+			fmt.Sprintf("datastore %d missing resource permission sites in response", id),
+		)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), diags
+	}
+
+	groupsSet, gdiag := convert.ToSetType(
+		ctx,
+		sites,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+		) GroupsValue {
+			return GroupsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+
+	diags = append(diags, gdiag...)
+
+	resourcePermissions, rdiags := populateResourcePermissionsFromApi(ctx, groupsSet)
+	diags = append(diags, rdiags...)
+
+	return tenantsSet, resourcePermissions, diags
+}
+
+// populateResourcePermissionsFromApi populates the ResourcePermissionsValue
+// from the API returned groups set
+// we only populate Groups for now
+func populateResourcePermissionsFromApi(
+	ctx context.Context,
+	groupsSet basetypes.SetValue,
+) (ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if !groupsSet.IsNull() {
+		attrTypes := make(map[string]attr.Type)
+		attrValues := make(map[string]attr.Value)
+
+		attrTypes["all"] = types.BoolType
+		attrValues["all"] = types.BoolNull()
+
+		attrTypes["all_groups"] = types.BoolType
+		attrValues["all_groups"] = types.BoolNull()
+
+		attrTypes["all_plans"] = types.BoolType
+		attrValues["all_plans"] = types.BoolNull()
+
+		attrTypes["can_manage"] = types.BoolType
+		attrValues["can_manage"] = types.BoolNull()
+
+		attrTypes["default_store"] = types.BoolType
+		attrValues["default_store"] = types.BoolNull()
+
+		attrTypes["default_target"] = types.BoolType
+		attrValues["default_target"] = types.BoolNull()
+
+		plansNull := NewPlansValueNull()
+		plansSetNull := basetypes.NewSetNull(plansNull.Type(ctx))
+		attrTypes["plans"] = plansSetNull.Type(ctx)
+		attrValues["plans"] = plansSetNull
+
+		attrTypes["groups"] = groupsSet.Type(ctx)
+		attrValues["groups"] = groupsSet
+
+		resourcePermissions, rdiags := NewResourcePermissionsValue(attrTypes, attrValues)
+		diags = append(diags, rdiags...)
+
+		return resourcePermissions, diags
+	}
+
+	return NewResourcePermissionsValueNull(), diags
 }
 
 func createConfigFromApiDynamic(

@@ -211,8 +211,7 @@ func datastoreCreateCluster(ctx context.Context,
 	datastoreRequest := sdk.NewSaveClusterDatastoreRequestWithDefaults()
 	datastoreRequest.SetDatastore(*datastoreCreate)
 
-	// nolint:gosec
-	response, hresp, err := client.ClustersAPI.SaveClusterDatastore(ctx, int32(associatedResourceId)).
+	response, hresp, err := client.ClustersAPI.SaveClusterDatastore(ctx, associatedResourceId).
 		SaveClusterDatastoreRequest(*datastoreRequest).Execute()
 	if response == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(

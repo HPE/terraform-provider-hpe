@@ -97,10 +97,20 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 		),
 	}
 
+	// When we import we'll see the root tenant added to the list of tenants
+	importCheckRootTenant := resource.TestCheckTypeSetElemNestedAttrs(
+		"hpe_morpheus_datastore.example",
+		"tenants.*",
+		map[string]string{
+			"id": "1",
+		},
+	)
+
 	checksCombined := append(checksNotNested, checksNested...)
+	checksImport := append(checksCombined, importCheckRootTenant)
 
 	checkFnCombined := resource.ComposeAggregateTestCheckFunc(checksCombined...)
-	checkFnNotNested := resource.ComposeAggregateTestCheckFunc(checksNotNested...)
+	checkFnImport := resource.ComposeAggregateTestCheckFunc(checksImport...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -119,11 +129,11 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 			},
 			{
 				ImportState: true,
-				// Don't verify state after import as resource_permissions and tenants are not imported
+				// Don't verify state after import as tenants list will have an extra entry for root tenant
 				ImportStateVerify: false,
 				ResourceName:      "hpe_morpheus_datastore.example",
-				// resource_permissions and tenants are not imported, so we only check the non-nested attributes here
-				Check: checkFnNotNested,
+				// Check that the root tenant is added upon import
+				Check: checkFnImport,
 			},
 		},
 	})
