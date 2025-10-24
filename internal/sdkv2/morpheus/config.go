@@ -5,7 +5,7 @@ package morpheus
 import (
 	"os"
 
-	"github.com/gomorpheus/morpheus-go-sdk"
+	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
@@ -23,35 +23,33 @@ type Config struct {
 	// TenantSubdomain string
 	Insecure bool
 
-	client *morpheus.Client
+	client *sdklegacy.Client
 }
 
-func (c *Config) Client() (*morpheus.Client, diag.Diagnostics) {
+func (c *Config) Client() (*sdklegacy.Client, diag.Diagnostics) {
 	debug := logging.IsDebugOrHigher() && os.Getenv("MORPHEUS_API_HTTPTRACE") == "true"
 	diags := diag.Diagnostics{}
 
 	if c.client == nil {
-		var client *morpheus.Client
-		if c.Insecure {
-			client = morpheus.NewClient(c.Url, morpheus.WithDebug(debug), morpheus.Insecure())
+
+		var client *sdklegacy.Client
+		if !c.Insecure {
+			// default: secure
+			client = sdklegacy.NewClient(
+				c.Url,
+				sdklegacy.SkipLogin(), // required for custom auth transport
+				sdklegacy.WithDebug(debug),
+			)
 		} else {
-			client = morpheus.NewClient(c.Url, morpheus.WithDebug(debug))
+			// insecure
+			client = sdklegacy.NewClient(
+				c.Url,
+				sdklegacy.SkipLogin(), // required for custom auth transport
+				sdklegacy.WithDebug(debug),
+				sdklegacy.Insecure(),
+			)
 		}
 
-		// should validate url here too, and maybe ping it
-		// logging with access token or username and password?
-		if c.Username != "" {
-			// TODO need to decide if we want to keep tenant subdomain here
-			// if c.TenantSubdomain != "" {
-			// 	username := fmt.Sprintf(`%s\\%s`, c.TenantSubdomain, c.Username)
-			// 	client.SetUsernameAndPassword(username, c.Password)
-			// } else {
-			client.SetUsernameAndPassword(c.Username, c.Password)
-			// }
-		} else {
-			var expiresIn int64 = 86400 // lie (unused atm)
-			client.SetAccessToken(c.AccessToken, c.RefreshToken, expiresIn, "write")
-		}
 		c.client = client
 	}
 
