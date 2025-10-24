@@ -52,25 +52,22 @@ func TestLegacyClientCustomTransport(t *testing.T) {
 	defer server.Close()
 
 	testCases := []struct {
-		name      string
-		url       string
-		username  string
-		password  string
-		token     string
-		expectErr bool
+		name     string
+		url      string
+		username string
+		password string
+		token    string
 	}{
 		{
-			name:      "credentials",
-			url:       server.URL,
-			username:  "test",
-			password:  "test123",
-			expectErr: false,
+			name:     "credentials",
+			url:      server.URL,
+			username: "test",
+			password: "test123",
 		},
 		{
-			name:      "token",
-			url:       server.URL,
-			token:     "abc",
-			expectErr: false,
+			name:  "token",
+			url:   server.URL,
+			token: "abc",
 		},
 	}
 
