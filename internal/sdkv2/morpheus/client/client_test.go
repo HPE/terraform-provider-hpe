@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 
 // Tests that the legacy client we construct for the provider
 // can correctly use custom transports
-func TestLegacySDKCustomTransport(t *testing.T) {
+func TestLegacyClientCustomTransport(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	mux := http.NewServeMux()
@@ -86,7 +86,7 @@ func TestLegacySDKCustomTransport(t *testing.T) {
 
 			resp, err := morpheusClient.Whoami()
 			assert.NoError(t, err)
-			assert.Equal(t, resp.StatusCode, http.StatusOK)
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		})
 	}
