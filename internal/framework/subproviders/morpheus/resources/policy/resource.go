@@ -58,6 +58,7 @@ func getPolicyAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	plan *PolicyModel,
 ) (PolicyModel, diag.Diagnostics) {
 	var state PolicyModel
 	var diags diag.Diagnostics
@@ -96,15 +97,36 @@ func getPolicyAsState(
 		state.EachUser = convert.BoolToType(p.EachUser.Get())
 	}
 
-	// Handle RefId - it might be a string or int64 depending on the API
-	// For now, we'll skip complex parsing and handle basic cases
+	// Handle RefId - convert string to int64
+	if p.RefId.IsSet() && p.RefId.Get() != nil {
+		refIdStr := *p.RefId.Get()
+		// Try to parse as int64
+		var refIdInt int64
+		fmt.Sscanf(refIdStr, "%d", &refIdInt)
+		state.RefId = types.Int64Value(refIdInt)
+	}
+
+	// Handle RefType
+	if p.RefType.IsSet() && p.RefType.Get() != nil {
+		refTypeStr := *p.RefType.Get()
+		refTypeAttrs := map[string]attr.Value{
+			"oneof0": types.StringValue(refTypeStr),
+		}
+		refTypeValue, refTypeDiags := NewRefTypeValue(
+			RefTypeValue{}.AttributeTypes(ctx), refTypeAttrs)
+		if refTypeDiags.HasError() {
+			diags.Append(refTypeDiags...)
+			return state, diags
+		}
+		state.RefType = refTypeValue
+	}
 
 	// Set account IDs
-	if p.Accounts != nil {
-		accountIDs := make([]int64, len(p.Accounts))
-		for i, acc := range p.Accounts {
+	if p.Accounts != nil && len(p.Accounts) > 0 {
+		accountIDs := make([]int64, 0, len(p.Accounts))
+		for _, acc := range p.Accounts {
 			if acc.Id != nil {
-				accountIDs[i] = *acc.Id
+				accountIDs = append(accountIDs, *acc.Id)
 			}
 		}
 		accountSet, setDiags := types.SetValueFrom(ctx, types.Int64Type, accountIDs)
@@ -113,6 +135,9 @@ func getPolicyAsState(
 			return state, diags
 		}
 		state.Accounts = accountSet
+	} else {
+		// Set to null if no accounts
+		state.Accounts = types.SetNull(types.Int64Type)
 	}
 
 	// Set PolicyType
@@ -122,6 +147,16 @@ func getPolicyAsState(
 			policyTypeAttrs["code"] = types.StringValue(*p.PolicyType.Code)
 		} else {
 			policyTypeAttrs["code"] = types.StringNull()
+		}
+		if p.PolicyType.Id != nil {
+			policyTypeAttrs["id"] = types.Int64Value(*p.PolicyType.Id)
+		} else {
+			policyTypeAttrs["id"] = types.Int64Null()
+		}
+		if p.PolicyType.Name != nil {
+			policyTypeAttrs["name"] = types.StringValue(*p.PolicyType.Name)
+		} else {
+			policyTypeAttrs["name"] = types.StringNull()
 		}
 
 		policyTypeValue, policyTypeDiags := NewPolicyTypeValue(
@@ -133,10 +168,52 @@ func getPolicyAsState(
 		state.PolicyType = policyTypeValue
 	}
 
-	// TODO: Set complex config fields based on API response
-	// This requires mapping from API response config to the various schema config structures
-	// Each config type (approval, backup creation, budget, etc.) needs to be handled
-	// For now, leaving as null values since the exact API response structure may vary
+	// Preserve config from plan - the API doesn't always return the full config structure
+	// so we trust the plan's config since that's what was applied
+	if plan != nil && !plan.Config.IsNull() {
+		state.Config = plan.Config
+	} else {
+		// Initialize Config with null values for all configuration types if no plan available
+		configAttrs := map[string]attr.Value{
+			"approve_policy_type_configuration":                             types.ObjectNull(ApprovePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"backup_creation_policy_type_configuration":                     types.ObjectNull(BackupCreationPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"backup_targets_policy_type_configuration":                      types.ObjectNull(BackupTargetsPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"budget_policy_type_configuration":                              types.ObjectNull(BudgetPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"cluster_resource_name_policy_type_configuration":               types.ObjectNull(ClusterResourceNamePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"cypher_access_policy_type_configuration":                       types.ObjectNull(CypherAccessPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"delayed_delete_policy_type_configuration":                      types.ObjectNull(DelayedDeletePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"expiration_policy_type_configuration":                          types.ObjectNull(ExpirationPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"file_share_storage_quota_policy_type_configuration":            types.ObjectNull(FileShareStorageQuotaPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"hostname_policy_type_configuration":                            types.ObjectNull(HostnamePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"instance_name_policy_type_configuration":                       types.ObjectNull(InstanceNamePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_containers_policy_type_configuration":                      types.ObjectNull(MaxContainersPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_cores_policy_type_configuration":                           types.ObjectNull(MaxCoresPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_hosts_policy_type_configuration":                           types.ObjectNull(MaxHostsPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_load_balancer_pools_policy_type_configuration":             types.ObjectNull(MaxLoadBalancerPoolsPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_memory_policy_type_configuration":                          types.ObjectNull(MaxMemoryPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_pool_members_policy_type_configuration":                    types.ObjectNull(MaxPoolMembersPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_storageand_object_storage_quota_policy_type_configuration": types.ObjectNull(MaxStorageandObjectStorageQuotaPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_virtual_servers_policy_type_configuration":                 types.ObjectNull(MaxVirtualServersPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"max_vms_policy_type_configuration":                             types.ObjectNull(MaxVmsPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"messageofthe_day_policy_type_configuration":                    types.ObjectNull(MessageoftheDayPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"network_quota_policy_type_configuration":                       types.ObjectNull(NetworkQuotaPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"power_schedule_policy_type_configuration":                      types.ObjectNull(PowerSchedulePolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"router_quota_policy_type_configuration":                        types.ObjectNull(RouterQuotaPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"shutdown_policy_type_configuration":                            types.ObjectNull(ShutdownPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"storage_server_storage_quota_policy_type_configuration":        types.ObjectNull(StorageServerStorageQuotaPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"tags_policy_type_configuration":                                types.ObjectNull(TagsPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"user_creation_policy_type_configuration":                       types.ObjectNull(UserCreationPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"user_group_creation_policy_type_configuration":                 types.ObjectNull(UserGroupCreationPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+			"workflow_policy_type_configuration":                            types.ObjectNull(WorkflowPolicyTypeConfigurationValue{}.AttributeTypes(ctx)),
+		}
+
+		configValue, configDiags := NewConfigValue(ConfigValue{}.AttributeTypes(ctx), configAttrs)
+		if configDiags.HasError() {
+			diags.Append(configDiags...)
+			return state, diags
+		}
+		state.Config = configValue
+	}
 
 	return state, diags
 }
@@ -148,34 +225,37 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 	hasConfig := false
 
 	// ConfigApproval mapping
-	if !plan.ConfigApproval.IsNull() && !plan.ConfigApproval.IsUnknown() {
+	if !plan.Config.ApprovePolicyTypeConfiguration.IsNull() && !plan.Config.ApprovePolicyTypeConfiguration.IsUnknown() {
 		approveConfig := &sdk.ApprovePolicyTypeConfiguration{}
-		if !plan.ConfigApproval.AccountIntegrationId.IsNull() && !plan.ConfigApproval.AccountIntegrationId.IsUnknown() {
-			approveConfig.SetAccountIntegrationId(plan.ConfigApproval.AccountIntegrationId.ValueString())
+		attrs := plan.Config.ApprovePolicyTypeConfiguration.Attributes()
+		if accountIntegrationId, ok := attrs["account_integration_id"].(basetypes.StringValue); ok && !accountIntegrationId.IsNull() && !accountIntegrationId.IsUnknown() {
+			approveConfig.SetAccountIntegrationId(accountIntegrationId.ValueString())
 		}
 		config.ApprovePolicyTypeConfiguration = approveConfig
 		hasConfig = true
 	}
 
 	// ConfigBackupCreation mapping
-	if !plan.ConfigBackupCreation.IsNull() && !plan.ConfigBackupCreation.IsUnknown() {
+	if !plan.Config.BackupCreationPolicyTypeConfiguration.IsNull() && !plan.Config.BackupCreationPolicyTypeConfiguration.IsUnknown() {
 		backupConfig := &sdk.BackupCreationPolicyTypeConfiguration{}
-		if !plan.ConfigBackupCreation.CreateBackup.IsNull() && !plan.ConfigBackupCreation.CreateBackup.IsUnknown() {
-			backupConfig.SetCreateBackup(plan.ConfigBackupCreation.CreateBackup.ValueBool())
+		attrs := plan.Config.BackupCreationPolicyTypeConfiguration.Attributes()
+		if createBackup, ok := attrs["create_backup"].(basetypes.BoolValue); ok && !createBackup.IsNull() && !createBackup.IsUnknown() {
+			backupConfig.SetCreateBackup(createBackup.ValueBool())
 		}
-		if !plan.ConfigBackupCreation.CreateBackupType.IsNull() && !plan.ConfigBackupCreation.CreateBackupType.IsUnknown() {
-			backupConfig.SetCreateBackupType(plan.ConfigBackupCreation.CreateBackupType.ValueString())
+		if createBackupType, ok := attrs["create_backup_type"].(basetypes.StringValue); ok && !createBackupType.IsNull() && !createBackupType.IsUnknown() {
+			backupConfig.SetCreateBackupType(createBackupType.ValueString())
 		}
 		config.BackupCreationPolicyTypeConfiguration = backupConfig
 		hasConfig = true
 	}
 
 	// ConfigBackupTargets mapping
-	if !plan.ConfigBackupTargets.IsNull() && !plan.ConfigBackupTargets.IsUnknown() {
+	if !plan.Config.BackupTargetsPolicyTypeConfiguration.IsNull() && !plan.Config.BackupTargetsPolicyTypeConfiguration.IsUnknown() {
 		backupTargetsConfig := &sdk.BackupTargetsPolicyTypeConfiguration{}
-		if !plan.ConfigBackupTargets.BackupStorageIds.IsNull() && !plan.ConfigBackupTargets.BackupStorageIds.IsUnknown() {
+		attrs := plan.Config.BackupTargetsPolicyTypeConfiguration.Attributes()
+		if backupStorageIds, ok := attrs["backup_storage_ids"].(basetypes.SetValue); ok && !backupStorageIds.IsNull() && !backupStorageIds.IsUnknown() {
 			var storageIds []int64
-			elemDiags := plan.ConfigBackupTargets.BackupStorageIds.ElementsAs(ctx, &storageIds, false)
+			elemDiags := backupStorageIds.ElementsAs(ctx, &storageIds, false)
 			if elemDiags.HasError() {
 				diags.Append(elemDiags...)
 			} else {
@@ -187,68 +267,72 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 	}
 
 	// ConfigBudget mapping
-	if !plan.ConfigBudget.IsNull() && !plan.ConfigBudget.IsUnknown() {
+	if !plan.Config.BudgetPolicyTypeConfiguration.IsNull() && !plan.Config.BudgetPolicyTypeConfiguration.IsUnknown() {
 		budgetConfig := &sdk.BudgetPolicyTypeConfiguration{}
-		if !plan.ConfigBudget.MaxPrice.IsNull() && !plan.ConfigBudget.MaxPrice.IsUnknown() {
-			maxPrice, _ := plan.ConfigBudget.MaxPrice.ValueBigFloat().Float64()
-			budgetConfig.SetMaxPrice(float32(maxPrice))
+		attrs := plan.Config.BudgetPolicyTypeConfiguration.Attributes()
+		if maxPrice, ok := attrs["max_price"].(basetypes.NumberValue); ok && !maxPrice.IsNull() && !maxPrice.IsUnknown() {
+			maxPriceFloat, _ := maxPrice.ValueBigFloat().Float64()
+			budgetConfig.SetMaxPrice(float32(maxPriceFloat))
 		}
-		if !plan.ConfigBudget.MaxPriceCurrency.IsNull() && !plan.ConfigBudget.MaxPriceCurrency.IsUnknown() {
-			budgetConfig.SetMaxPriceCurrency(plan.ConfigBudget.MaxPriceCurrency.ValueString())
+		if maxPriceCurrency, ok := attrs["max_price_currency"].(basetypes.StringValue); ok && !maxPriceCurrency.IsNull() && !maxPriceCurrency.IsUnknown() {
+			budgetConfig.SetMaxPriceCurrency(maxPriceCurrency.ValueString())
 		}
-		if !plan.ConfigBudget.MaxPriceUnit.IsNull() && !plan.ConfigBudget.MaxPriceUnit.IsUnknown() {
-			budgetConfig.SetMaxPriceUnit(plan.ConfigBudget.MaxPriceUnit.ValueString())
+		if maxPriceUnit, ok := attrs["max_price_unit"].(basetypes.StringValue); ok && !maxPriceUnit.IsNull() && !maxPriceUnit.IsUnknown() {
+			budgetConfig.SetMaxPriceUnit(maxPriceUnit.ValueString())
 		}
 		config.BudgetPolicyTypeConfiguration = budgetConfig
 		hasConfig = true
 	}
 
 	// ConfigClusterResourceName mapping
-	if !plan.ConfigClusterResourceName.IsNull() && !plan.ConfigClusterResourceName.IsUnknown() {
+	if !plan.Config.ClusterResourceNamePolicyTypeConfiguration.IsNull() && !plan.Config.ClusterResourceNamePolicyTypeConfiguration.IsUnknown() {
 		clusterConfig := &sdk.ClusterResourceNamePolicyTypeConfiguration{}
-		if !plan.ConfigClusterResourceName.ServerNamingType.IsNull() && !plan.ConfigClusterResourceName.ServerNamingType.IsUnknown() {
-			clusterConfig.SetServerNamingType(plan.ConfigClusterResourceName.ServerNamingType.ValueString())
+		attrs := plan.Config.ClusterResourceNamePolicyTypeConfiguration.Attributes()
+		if serverNamingType, ok := attrs["server_naming_type"].(basetypes.StringValue); ok && !serverNamingType.IsNull() && !serverNamingType.IsUnknown() {
+			clusterConfig.SetServerNamingType(serverNamingType.ValueString())
 		}
-		if !plan.ConfigClusterResourceName.ServerNamingPattern.IsNull() && !plan.ConfigClusterResourceName.ServerNamingPattern.IsUnknown() {
-			clusterConfig.SetServerNamingPattern(plan.ConfigClusterResourceName.ServerNamingPattern.ValueString())
+		if serverNamingPattern, ok := attrs["server_naming_pattern"].(basetypes.StringValue); ok && !serverNamingPattern.IsNull() && !serverNamingPattern.IsUnknown() {
+			clusterConfig.SetServerNamingPattern(serverNamingPattern.ValueString())
 		}
-		if !plan.ConfigClusterResourceName.ServerNamingConflict.IsNull() && !plan.ConfigClusterResourceName.ServerNamingConflict.IsUnknown() {
-			clusterConfig.SetServerNamingConflict(plan.ConfigClusterResourceName.ServerNamingConflict.ValueBool())
+		if serverNamingConflict, ok := attrs["server_naming_conflict"].(basetypes.BoolValue); ok && !serverNamingConflict.IsNull() && !serverNamingConflict.IsUnknown() {
+			clusterConfig.SetServerNamingConflict(serverNamingConflict.ValueBool())
 		}
 		config.ClusterResourceNamePolicyTypeConfiguration = clusterConfig
 		hasConfig = true
 	}
 
 	// ConfigCypherAccess mapping
-	if !plan.ConfigCypherAccess.IsNull() && !plan.ConfigCypherAccess.IsUnknown() {
+	if !plan.Config.CypherAccessPolicyTypeConfiguration.IsNull() && !plan.Config.CypherAccessPolicyTypeConfiguration.IsUnknown() {
 		cypherConfig := &sdk.CypherAccessPolicyTypeConfiguration{}
-		if !plan.ConfigCypherAccess.KeyPattern.IsNull() && !plan.ConfigCypherAccess.KeyPattern.IsUnknown() {
-			cypherConfig.SetKeyPattern(plan.ConfigCypherAccess.KeyPattern.ValueString())
+		attrs := plan.Config.CypherAccessPolicyTypeConfiguration.Attributes()
+		if keyPattern, ok := attrs["key_pattern"].(basetypes.StringValue); ok && !keyPattern.IsNull() && !keyPattern.IsUnknown() {
+			cypherConfig.SetKeyPattern(keyPattern.ValueString())
 		}
-		if !plan.ConfigCypherAccess.Read.IsNull() && !plan.ConfigCypherAccess.Read.IsUnknown() {
-			cypherConfig.SetRead(plan.ConfigCypherAccess.Read.ValueBool())
+		if read, ok := attrs["read"].(basetypes.BoolValue); ok && !read.IsNull() && !read.IsUnknown() {
+			cypherConfig.SetRead(read.ValueBool())
 		}
-		if !plan.ConfigCypherAccess.Write.IsNull() && !plan.ConfigCypherAccess.Write.IsUnknown() {
-			cypherConfig.SetWrite(plan.ConfigCypherAccess.Write.ValueBool())
+		if write, ok := attrs["write"].(basetypes.BoolValue); ok && !write.IsNull() && !write.IsUnknown() {
+			cypherConfig.SetWrite(write.ValueBool())
 		}
-		if !plan.ConfigCypherAccess.Update.IsNull() && !plan.ConfigCypherAccess.Update.IsUnknown() {
-			cypherConfig.SetUpdate(plan.ConfigCypherAccess.Update.ValueBool())
+		if update, ok := attrs["update"].(basetypes.BoolValue); ok && !update.IsNull() && !update.IsUnknown() {
+			cypherConfig.SetUpdate(update.ValueBool())
 		}
-		if !plan.ConfigCypherAccess.Delete.IsNull() && !plan.ConfigCypherAccess.Delete.IsUnknown() {
-			cypherConfig.SetDelete(plan.ConfigCypherAccess.Delete.ValueBool())
+		if del, ok := attrs["delete"].(basetypes.BoolValue); ok && !del.IsNull() && !del.IsUnknown() {
+			cypherConfig.SetDelete(del.ValueBool())
 		}
-		if !plan.ConfigCypherAccess.List.IsNull() && !plan.ConfigCypherAccess.List.IsUnknown() {
-			cypherConfig.SetList(plan.ConfigCypherAccess.List.ValueBool())
+		if list, ok := attrs["list"].(basetypes.BoolValue); ok && !list.IsNull() && !list.IsUnknown() {
+			cypherConfig.SetList(list.ValueBool())
 		}
 		config.CypherAccessPolicyTypeConfiguration = cypherConfig
 		hasConfig = true
 	}
 
 	// ConfigDelayedDelete mapping
-	if !plan.ConfigDelayedDelete.IsNull() && !plan.ConfigDelayedDelete.IsUnknown() {
+	if !plan.Config.DelayedDeletePolicyTypeConfiguration.IsNull() && !plan.Config.DelayedDeletePolicyTypeConfiguration.IsUnknown() {
 		delayedDeleteConfig := &sdk.DelayedDeletePolicyTypeConfiguration{}
-		if !plan.ConfigDelayedDelete.RemovalAge.IsNull() && !plan.ConfigDelayedDelete.RemovalAge.IsUnknown() {
-			delayedDeleteConfig.SetRemovalAge(plan.ConfigDelayedDelete.RemovalAge.ValueString())
+		attrs := plan.Config.DelayedDeletePolicyTypeConfiguration.Attributes()
+		if removalAge, ok := attrs["removal_age"].(basetypes.StringValue); ok && !removalAge.IsNull() && !removalAge.IsUnknown() {
+			delayedDeleteConfig.SetRemovalAge(removalAge.ValueString())
 		}
 		config.DelayedDeletePolicyTypeConfiguration = delayedDeleteConfig
 		hasConfig = true
@@ -257,126 +341,142 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 	// Continue with more config mappings...
 
 	// ConfigExpiration mapping
-	if !plan.ConfigExpiration.IsNull() && !plan.ConfigExpiration.IsUnknown() {
+	if !plan.Config.ExpirationPolicyTypeConfiguration.IsNull() && !plan.Config.ExpirationPolicyTypeConfiguration.IsUnknown() {
 		expirationConfig := &sdk.ExpirationPolicyTypeConfiguration{}
-		if !plan.ConfigExpiration.LifecycleType.IsNull() && !plan.ConfigExpiration.LifecycleType.IsUnknown() {
-			expirationConfig.SetLifecycleType(plan.ConfigExpiration.LifecycleType.ValueString())
+		attrs := plan.Config.ExpirationPolicyTypeConfiguration.Attributes()
+		if lifecycle_type, ok := attrs["lifecycle_type"].(basetypes.StringValue); ok && !lifecycle_type.IsNull() && !lifecycle_type.IsUnknown() {
+			expirationConfig.SetLifecycleType(lifecycle_type.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleAge.IsNull() && !plan.ConfigExpiration.LifecycleAge.IsUnknown() {
-			expirationConfig.SetLifecycleAge(plan.ConfigExpiration.LifecycleAge.ValueString())
+		if lifecycle_age, ok := attrs["lifecycle_age"].(basetypes.StringValue); ok && !lifecycle_age.IsNull() && !lifecycle_age.IsUnknown() {
+			expirationConfig.SetLifecycleAge(lifecycle_age.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleAllowExtend.IsNull() && !plan.ConfigExpiration.LifecycleAllowExtend.IsUnknown() {
-			expirationConfig.SetLifecycleAllowExtend(plan.ConfigExpiration.LifecycleAllowExtend.ValueString())
+		if lifecycle_allow_extend, ok := attrs["lifecycle_allow_extend"].(basetypes.StringValue); ok && !lifecycle_allow_extend.IsNull() && !lifecycle_allow_extend.IsUnknown() {
+			expirationConfig.SetLifecycleAllowExtend(lifecycle_allow_extend.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleAutoRenew.IsNull() && !plan.ConfigExpiration.LifecycleAutoRenew.IsUnknown() {
-			expirationConfig.SetLifecycleAutoRenew(plan.ConfigExpiration.LifecycleAutoRenew.ValueString())
+		if lifecycle_auto_renew, ok := attrs["lifecycle_auto_renew"].(basetypes.StringValue); ok && !lifecycle_auto_renew.IsNull() && !lifecycle_auto_renew.IsUnknown() {
+			expirationConfig.SetLifecycleAutoRenew(lifecycle_auto_renew.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.IsNull() && !plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.IsUnknown() {
-			expirationConfig.SetLifecycleExtensionsBeforeApproval(plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.ValueString())
+		if lifecycle_extensions_before_approval, ok := attrs["lifecycle_extensions_before_approval"].(basetypes.StringValue); ok && !lifecycle_extensions_before_approval.IsNull() && !lifecycle_extensions_before_approval.IsUnknown() {
+			expirationConfig.SetLifecycleExtensionsBeforeApproval(lifecycle_extensions_before_approval.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleHideFixed.IsNull() && !plan.ConfigExpiration.LifecycleHideFixed.IsUnknown() {
-			expirationConfig.SetLifecycleHideFixed(plan.ConfigExpiration.LifecycleHideFixed.ValueBool())
+		if lifecycle_hide_fixed, ok := attrs["lifecycle_hide_fixed"].(basetypes.BoolValue); ok && !lifecycle_hide_fixed.IsNull() && !lifecycle_hide_fixed.IsUnknown() {
+			expirationConfig.SetLifecycleHideFixed(lifecycle_hide_fixed.ValueBool())
 		}
-		if !plan.ConfigExpiration.LifecycleMessage.IsNull() && !plan.ConfigExpiration.LifecycleMessage.IsUnknown() {
-			expirationConfig.SetLifecycleMessage(plan.ConfigExpiration.LifecycleMessage.ValueString())
+		if lifecycle_message, ok := attrs["lifecycle_message"].(basetypes.StringValue); ok && !lifecycle_message.IsNull() && !lifecycle_message.IsUnknown() {
+			expirationConfig.SetLifecycleMessage(lifecycle_message.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleNotify.IsNull() && !plan.ConfigExpiration.LifecycleNotify.IsUnknown() {
-			expirationConfig.SetLifecycleNotify(plan.ConfigExpiration.LifecycleNotify.ValueString())
+		if lifecycle_notify, ok := attrs["lifecycle_notify"].(basetypes.StringValue); ok && !lifecycle_notify.IsNull() && !lifecycle_notify.IsUnknown() {
+			expirationConfig.SetLifecycleNotify(lifecycle_notify.ValueString())
 		}
-		if !plan.ConfigExpiration.LifecycleRenewal.IsNull() && !plan.ConfigExpiration.LifecycleRenewal.IsUnknown() {
-			expirationConfig.SetLifecycleRenewal(plan.ConfigExpiration.LifecycleRenewal.ValueString())
+		if lifecycle_renewal, ok := attrs["lifecycle_renewal"].(basetypes.StringValue); ok && !lifecycle_renewal.IsNull() && !lifecycle_renewal.IsUnknown() {
+			expirationConfig.SetLifecycleRenewal(lifecycle_renewal.ValueString())
 		}
-		if !plan.ConfigExpiration.AccountIntegrationId.IsNull() && !plan.ConfigExpiration.AccountIntegrationId.IsUnknown() {
-			expirationConfig.SetAccountIntegrationId(plan.ConfigExpiration.AccountIntegrationId.ValueString())
+		if account_integration_id, ok := attrs["account_integration_id"].(basetypes.StringValue); ok && !account_integration_id.IsNull() && !account_integration_id.IsUnknown() {
+			expirationConfig.SetAccountIntegrationId(account_integration_id.ValueString())
 		}
 		config.ExpirationPolicyTypeConfiguration = expirationConfig
 		hasConfig = true
 	}
 
 	// ConfigHostname mapping
-	if !plan.ConfigHostname.IsNull() && !plan.ConfigHostname.IsUnknown() {
+	if !plan.Config.HostnamePolicyTypeConfiguration.IsNull() && !plan.Config.HostnamePolicyTypeConfiguration.IsUnknown() {
 		hostnameConfig := &sdk.HostnamePolicyTypeConfiguration{}
-		if !plan.ConfigHostname.HostNamingType.IsNull() && !plan.ConfigHostname.HostNamingType.IsUnknown() {
-			hostnameConfig.SetHostNamingType(plan.ConfigHostname.HostNamingType.ValueString())
+		attrs := plan.Config.HostnamePolicyTypeConfiguration.Attributes()
+		if host_naming_type, ok := attrs["host_naming_type"].(basetypes.StringValue); ok && !host_naming_type.IsNull() && !host_naming_type.IsUnknown() {
+			hostnameConfig.SetHostNamingType(host_naming_type.ValueString())
 		}
-		if !plan.ConfigHostname.HostNamingPattern.IsNull() && !plan.ConfigHostname.HostNamingPattern.IsUnknown() {
-			hostnameConfig.SetHostNamingPattern(plan.ConfigHostname.HostNamingPattern.ValueString())
+		if host_naming_pattern, ok := attrs["host_naming_pattern"].(basetypes.StringValue); ok && !host_naming_pattern.IsNull() && !host_naming_pattern.IsUnknown() {
+			hostnameConfig.SetHostNamingPattern(host_naming_pattern.ValueString())
 		}
 		config.HostnamePolicyTypeConfiguration = hostnameConfig
 		hasConfig = true
 	}
 
 	// ConfigInstanceName mapping
-	if !plan.ConfigInstanceName.IsNull() && !plan.ConfigInstanceName.IsUnknown() {
+	if !plan.Config.InstanceNamePolicyTypeConfiguration.IsNull() && !plan.Config.InstanceNamePolicyTypeConfiguration.IsUnknown() {
 		instanceNameConfig := &sdk.InstanceNamePolicyTypeConfiguration{}
-		if !plan.ConfigInstanceName.NamingType.IsNull() && !plan.ConfigInstanceName.NamingType.IsUnknown() {
-			instanceNameConfig.SetNamingType(plan.ConfigInstanceName.NamingType.ValueString())
+		attrs := plan.Config.InstanceNamePolicyTypeConfiguration.Attributes()
+		if naming_type, ok := attrs["naming_type"].(basetypes.StringValue); ok && !naming_type.IsNull() && !naming_type.IsUnknown() {
+			instanceNameConfig.SetNamingType(naming_type.ValueString())
 		}
-		if !plan.ConfigInstanceName.NamingPattern.IsNull() && !plan.ConfigInstanceName.NamingPattern.IsUnknown() {
-			instanceNameConfig.SetNamingPattern(plan.ConfigInstanceName.NamingPattern.ValueString())
+		if naming_pattern, ok := attrs["naming_pattern"].(basetypes.StringValue); ok && !naming_pattern.IsNull() && !naming_pattern.IsUnknown() {
+			instanceNameConfig.SetNamingPattern(naming_pattern.ValueString())
 		}
-		if !plan.ConfigInstanceName.NamingConflict.IsNull() && !plan.ConfigInstanceName.NamingConflict.IsUnknown() {
-			instanceNameConfig.SetNamingConflict(plan.ConfigInstanceName.NamingConflict.ValueBool())
+		if naming_conflict, ok := attrs["naming_conflict"].(basetypes.BoolValue); ok && !naming_conflict.IsNull() && !naming_conflict.IsUnknown() {
+			instanceNameConfig.SetNamingConflict(naming_conflict.ValueBool())
 		}
 		config.InstanceNamePolicyTypeConfiguration = instanceNameConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxContainers mapping
-	if !plan.ConfigMaxContainers.IsNull() && !plan.ConfigMaxContainers.IsUnknown() {
+	if !plan.Config.MaxContainersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxContainersPolicyTypeConfiguration.IsUnknown() {
 		maxContainersConfig := &sdk.MaxContainersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxContainers.MaxContainers.IsNull() && !plan.ConfigMaxContainers.MaxContainers.IsUnknown() {
-			maxContainersConfig.SetMaxContainers(plan.ConfigMaxContainers.MaxContainers.ValueString())
+		attrs := plan.Config.MaxContainersPolicyTypeConfiguration.Attributes()
+		if max_containers, ok := attrs["max_containers"].(basetypes.StringValue); ok && !max_containers.IsNull() && !max_containers.IsUnknown() {
+			maxContainersConfig.SetMaxContainers(max_containers.ValueString())
 		}
 		config.MaxContainersPolicyTypeConfiguration = maxContainersConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxCores mapping
-	if !plan.ConfigMaxCores.IsNull() && !plan.ConfigMaxCores.IsUnknown() {
+	if !plan.Config.MaxCoresPolicyTypeConfiguration.IsNull() && !plan.Config.MaxCoresPolicyTypeConfiguration.IsUnknown() {
 		maxCoresConfig := &sdk.MaxCoresPolicyTypeConfiguration{}
-		if !plan.ConfigMaxCores.MaxCores.IsNull() && !plan.ConfigMaxCores.MaxCores.IsUnknown() {
-			maxCoresConfig.SetMaxCores(plan.ConfigMaxCores.MaxCores.ValueString())
+		attrs := plan.Config.MaxCoresPolicyTypeConfiguration.Attributes()
+		if max_cores, ok := attrs["max_cores"].(basetypes.StringValue); ok && !max_cores.IsNull() && !max_cores.IsUnknown() {
+			maxCoresConfig.SetMaxCores(max_cores.ValueString())
 		}
-		if !plan.ConfigMaxCores.ExcludeContainers.IsNull() && !plan.ConfigMaxCores.ExcludeContainers.IsUnknown() {
-			maxCoresConfig.SetExcludeContainers(plan.ConfigMaxCores.ExcludeContainers.ValueString())
+		if exclude_containers, ok := attrs["exclude_containers"].(basetypes.BoolValue); ok && !exclude_containers.IsNull() && !exclude_containers.IsUnknown() {
+			if exclude_containers.ValueBool() {
+				maxCoresConfig.SetExcludeContainers("on")
+			} else {
+				maxCoresConfig.SetExcludeContainers("off")
+			}
 		}
 		config.MaxCoresPolicyTypeConfiguration = maxCoresConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxHosts mapping
-	if !plan.ConfigMaxHosts.IsNull() && !plan.ConfigMaxHosts.IsUnknown() {
+	if !plan.Config.MaxHostsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxHostsPolicyTypeConfiguration.IsUnknown() {
 		maxHostsConfig := &sdk.MaxHostsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxHosts.MaxHosts.IsNull() && !plan.ConfigMaxHosts.MaxHosts.IsUnknown() {
-			maxHostsConfig.SetMaxHosts(plan.ConfigMaxHosts.MaxHosts.ValueString())
+		attrs := plan.Config.MaxHostsPolicyTypeConfiguration.Attributes()
+		if max_hosts, ok := attrs["max_hosts"].(basetypes.StringValue); ok && !max_hosts.IsNull() && !max_hosts.IsUnknown() {
+			maxHostsConfig.SetMaxHosts(max_hosts.ValueString())
 		}
 		config.MaxHostsPolicyTypeConfiguration = maxHostsConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxLoadBalancerPools mapping
-	if !plan.ConfigMaxLoadBalancerPools.IsNull() && !plan.ConfigMaxLoadBalancerPools.IsUnknown() {
+	if !plan.Config.MaxLoadBalancerPoolsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxLoadBalancerPoolsPolicyTypeConfiguration.IsUnknown() {
 		maxLBPoolsConfig := &sdk.MaxLoadBalancerPoolsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxLoadBalancerPools.MaxPools.IsNull() && !plan.ConfigMaxLoadBalancerPools.MaxPools.IsUnknown() {
-			maxLBPoolsConfig.SetMaxPools(plan.ConfigMaxLoadBalancerPools.MaxPools.ValueString())
+		attrs := plan.Config.MaxLoadBalancerPoolsPolicyTypeConfiguration.Attributes()
+		if max_pools, ok := attrs["max_pools"].(basetypes.StringValue); ok && !max_pools.IsNull() && !max_pools.IsUnknown() {
+			maxLBPoolsConfig.SetMaxPools(max_pools.ValueString())
 		}
 		config.MaxLoadBalancerPoolsPolicyTypeConfiguration = maxLBPoolsConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxMemory mapping (complex nested structure)
-	if !plan.ConfigMaxMemory.IsNull() && !plan.ConfigMaxMemory.IsUnknown() {
+	if !plan.Config.MaxMemoryPolicyTypeConfiguration.IsNull() && !plan.Config.MaxMemoryPolicyTypeConfiguration.IsUnknown() {
 		maxMemoryConfig := &sdk.MaxMemoryPolicyTypeConfiguration{}
+		attrs := plan.Config.MaxMemoryPolicyTypeConfiguration.Attributes()
 		maxMemorySet := false
 
-		if !plan.ConfigMaxMemory.ExcludeContainers.IsNull() && !plan.ConfigMaxMemory.ExcludeContainers.IsUnknown() {
-			maxMemoryConfig.SetExcludeContainers(plan.ConfigMaxMemory.ExcludeContainers.ValueString())
+		if exclude_containers, ok := attrs["exclude_containers"].(basetypes.BoolValue); ok && !exclude_containers.IsNull() && !exclude_containers.IsUnknown() {
+			if exclude_containers.ValueBool() {
+				maxMemoryConfig.SetExcludeContainers("on")
+			} else {
+				maxMemoryConfig.SetExcludeContainers("off")
+			}
 		}
 
 		// Handle MaxMemory field - it's an ObjectValue with anyof0 (string) and anyof1 (int)
-		if !plan.ConfigMaxMemory.MaxMemory.IsNull() && !plan.ConfigMaxMemory.MaxMemory.IsUnknown() {
-			maxMemoryValue := plan.ConfigMaxMemory.MaxMemory
+		if maxMemory, ok := attrs["max_memory"].(basetypes.ObjectValue); ok && !maxMemory.IsNull() && !maxMemory.IsUnknown() {
+			maxMemoryValue := maxMemory
 			// Extract the MaxMemoryValue from the ObjectValue
 			if maxMemoryAttrs := maxMemoryValue.Attributes(); len(maxMemoryAttrs) > 0 {
 				var maxMemory sdk.MaxMemoryPolicyTypeConfigurationMaxMemory
@@ -413,114 +513,126 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 	}
 
 	// ConfigMaxPoolMembers mapping
-	if !plan.ConfigMaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.IsUnknown() {
+	if !plan.Config.MaxPoolMembersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxPoolMembersPolicyTypeConfiguration.IsUnknown() {
 		maxPoolMembersConfig := &sdk.MaxPoolMembersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsUnknown() {
-			maxPoolMembersConfig.SetMaxPoolMembers(plan.ConfigMaxPoolMembers.MaxPoolMembers.ValueString())
+		attrs := plan.Config.MaxPoolMembersPolicyTypeConfiguration.Attributes()
+		if max_pool_members, ok := attrs["max_pool_members"].(basetypes.StringValue); ok && !max_pool_members.IsNull() && !max_pool_members.IsUnknown() {
+			maxPoolMembersConfig.SetMaxPoolMembers(max_pool_members.ValueString())
 		}
 		config.MaxPoolMembersPolicyTypeConfiguration = maxPoolMembersConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxStorage mapping
-	if !plan.ConfigMaxStorage.IsNull() && !plan.ConfigMaxStorage.IsUnknown() {
+	if !plan.Config.MaxStorageandObjectStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.MaxStorageandObjectStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		maxStorageConfig := &sdk.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigMaxStorage.MaxStorage.IsNull() && !plan.ConfigMaxStorage.MaxStorage.IsUnknown() {
-			maxStorageConfig.SetMaxStorage(plan.ConfigMaxStorage.MaxStorage.ValueString())
+		attrs := plan.Config.MaxStorageandObjectStorageQuotaPolicyTypeConfiguration.Attributes()
+		if max_storage, ok := attrs["max_storage"].(basetypes.StringValue); ok && !max_storage.IsNull() && !max_storage.IsUnknown() {
+			maxStorageConfig.SetMaxStorage(max_storage.ValueString())
 		}
-		if !plan.ConfigMaxStorage.ExcludeContainers.IsNull() && !plan.ConfigMaxStorage.ExcludeContainers.IsUnknown() {
-			maxStorageConfig.SetExcludeContainers(plan.ConfigMaxStorage.ExcludeContainers.ValueString())
+		if exclude_containers, ok := attrs["exclude_containers"].(basetypes.BoolValue); ok && !exclude_containers.IsNull() && !exclude_containers.IsUnknown() {
+			if exclude_containers.ValueBool() {
+				maxStorageConfig.SetExcludeContainers("on")
+			} else {
+				maxStorageConfig.SetExcludeContainers("off")
+			}
 		}
 		config.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration = maxStorageConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxVirtualServers mapping
-	if !plan.ConfigMaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.IsUnknown() {
+	if !plan.Config.MaxVirtualServersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxVirtualServersPolicyTypeConfiguration.IsUnknown() {
 		maxVirtualServersConfig := &sdk.MaxVirtualServersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsUnknown() {
-			maxVirtualServersConfig.SetMaxVirtualServers(plan.ConfigMaxVirtualServers.MaxVirtualServers.ValueString())
+		attrs := plan.Config.MaxVirtualServersPolicyTypeConfiguration.Attributes()
+		if max_virtual_servers, ok := attrs["max_virtual_servers"].(basetypes.StringValue); ok && !max_virtual_servers.IsNull() && !max_virtual_servers.IsUnknown() {
+			maxVirtualServersConfig.SetMaxVirtualServers(max_virtual_servers.ValueString())
 		}
 		config.MaxVirtualServersPolicyTypeConfiguration = maxVirtualServersConfig
 		hasConfig = true
 	}
 
 	// ConfigMaxVms mapping
-	if !plan.ConfigMaxVms.IsNull() && !plan.ConfigMaxVms.IsUnknown() {
+	if !plan.Config.MaxVmsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxVmsPolicyTypeConfiguration.IsUnknown() {
 		maxVmsConfig := &sdk.MaxVMsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxVms.MaxVms.IsNull() && !plan.ConfigMaxVms.MaxVms.IsUnknown() {
-			maxVmsConfig.SetMaxVms(plan.ConfigMaxVms.MaxVms.ValueString())
+		attrs := plan.Config.MaxVmsPolicyTypeConfiguration.Attributes()
+		if max_vms, ok := attrs["max_vms"].(basetypes.StringValue); ok && !max_vms.IsNull() && !max_vms.IsUnknown() {
+			maxVmsConfig.SetMaxVms(max_vms.ValueString())
 		}
 		config.MaxVMsPolicyTypeConfiguration = maxVmsConfig
 		hasConfig = true
 	}
 
 	// ConfigMessageOfTheDay mapping
-	if !plan.ConfigMessageOfTheDay.IsNull() && !plan.ConfigMessageOfTheDay.IsUnknown() {
+	if !plan.Config.MessageoftheDayPolicyTypeConfiguration.IsNull() && !plan.Config.MessageoftheDayPolicyTypeConfiguration.IsUnknown() {
 		motdConfig := &sdk.MessageOfTheDayPolicyTypeConfiguration{}
-		if !plan.ConfigMessageOfTheDay.Motddate.IsNull() && !plan.ConfigMessageOfTheDay.Motddate.IsUnknown() {
+		attrs := plan.Config.MessageoftheDayPolicyTypeConfiguration.Attributes()
+		if motddate, ok := attrs["motddate"].(basetypes.StringValue); ok && !motddate.IsNull() && !motddate.IsUnknown() {
 			// Parse the date string - assuming RFC3339 format
-			if dateStr := plan.ConfigMessageOfTheDay.Motddate.ValueString(); dateStr != "" {
+			if dateStr := motddate.ValueString(); dateStr != "" {
 				if parsedDate, err := time.Parse(time.RFC3339, dateStr); err == nil {
 					motdConfig.SetMotdDate(parsedDate)
 				}
 				// If parsing fails, we could add to diagnostics, but for now continue without setting
 			}
 		}
-		if !plan.ConfigMessageOfTheDay.Motdmessage.IsNull() && !plan.ConfigMessageOfTheDay.Motdmessage.IsUnknown() {
-			motdConfig.SetMotdMessage(plan.ConfigMessageOfTheDay.Motdmessage.ValueString())
+		if motdmessage, ok := attrs["motdmessage"].(basetypes.StringValue); ok && !motdmessage.IsNull() && !motdmessage.IsUnknown() {
+			motdConfig.SetMotdMessage(motdmessage.ValueString())
 		}
-		if !plan.ConfigMessageOfTheDay.Motdtitle.IsNull() && !plan.ConfigMessageOfTheDay.Motdtitle.IsUnknown() {
-			motdConfig.SetMotdTitle(plan.ConfigMessageOfTheDay.Motdtitle.ValueString())
+		if motdtitle, ok := attrs["motdtitle"].(basetypes.StringValue); ok && !motdtitle.IsNull() && !motdtitle.IsUnknown() {
+			motdConfig.SetMotdTitle(motdtitle.ValueString())
 		}
-		if !plan.ConfigMessageOfTheDay.Motdtype.IsNull() && !plan.ConfigMessageOfTheDay.Motdtype.IsUnknown() {
-			motdConfig.SetMotdType(plan.ConfigMessageOfTheDay.Motdtype.ValueString())
+		if motdtype, ok := attrs["motdtype"].(basetypes.StringValue); ok && !motdtype.IsNull() && !motdtype.IsUnknown() {
+			motdConfig.SetMotdType(motdtype.ValueString())
 		}
-		if !plan.ConfigMessageOfTheDay.MotdFullPage.IsNull() && !plan.ConfigMessageOfTheDay.MotdFullPage.IsUnknown() {
-			motdConfig.SetMotdFullPage(plan.ConfigMessageOfTheDay.MotdFullPage.ValueBool())
+		if motd_full_page, ok := attrs["motd_full_page"].(basetypes.BoolValue); ok && !motd_full_page.IsNull() && !motd_full_page.IsUnknown() {
+			motdConfig.SetMotdFullPage(motd_full_page.ValueBool())
 		}
 		config.MessageOfTheDayPolicyTypeConfiguration = motdConfig
 		hasConfig = true
 	}
 
 	// ConfigNetworkQuota mapping
-	if !plan.ConfigNetworkQuota.IsNull() && !plan.ConfigNetworkQuota.IsUnknown() {
+	if !plan.Config.NetworkQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.NetworkQuotaPolicyTypeConfiguration.IsUnknown() {
 		networkQuotaConfig := &sdk.NetworkQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigNetworkQuota.MaxNetworks.IsNull() && !plan.ConfigNetworkQuota.MaxNetworks.IsUnknown() {
-			networkQuotaConfig.SetMaxNetworks(plan.ConfigNetworkQuota.MaxNetworks.ValueString())
+		attrs := plan.Config.NetworkQuotaPolicyTypeConfiguration.Attributes()
+		if max_networks, ok := attrs["max_networks"].(basetypes.StringValue); ok && !max_networks.IsNull() && !max_networks.IsUnknown() {
+			networkQuotaConfig.SetMaxNetworks(max_networks.ValueString())
 		}
 		config.NetworkQuotaPolicyTypeConfiguration = networkQuotaConfig
 		hasConfig = true
 	}
 
 	// ConfigPowerSchedule mapping
-	if !plan.ConfigPowerSchedule.IsNull() && !plan.ConfigPowerSchedule.IsUnknown() {
+	if !plan.Config.PowerSchedulePolicyTypeConfiguration.IsNull() && !plan.Config.PowerSchedulePolicyTypeConfiguration.IsUnknown() {
 		powerScheduleConfig := &sdk.PowerSchedulePolicyTypeConfiguration{}
-		if !plan.ConfigPowerSchedule.PowerSchedule.IsNull() && !plan.ConfigPowerSchedule.PowerSchedule.IsUnknown() {
-			powerScheduleConfig.SetPowerSchedule(plan.ConfigPowerSchedule.PowerSchedule.ValueString())
+		attrs := plan.Config.PowerSchedulePolicyTypeConfiguration.Attributes()
+		if powerSchedule, ok := attrs["power_schedule"].(basetypes.StringValue); ok && !powerSchedule.IsNull() && !powerSchedule.IsUnknown() {
+			powerScheduleConfig.SetPowerSchedule(powerSchedule.ValueString())
 		}
-		if !plan.ConfigPowerSchedule.PowerScheduleType.IsNull() && !plan.ConfigPowerSchedule.PowerScheduleType.IsUnknown() {
-			powerScheduleConfig.SetPowerScheduleType(plan.ConfigPowerSchedule.PowerScheduleType.ValueString())
+		if powerScheduleType, ok := attrs["power_schedule_type"].(basetypes.StringValue); ok && !powerScheduleType.IsNull() && !powerScheduleType.IsUnknown() {
+			powerScheduleConfig.SetPowerScheduleType(powerScheduleType.ValueString())
 		}
-		if !plan.ConfigPowerSchedule.PowerScheduleHideFixed.IsNull() && !plan.ConfigPowerSchedule.PowerScheduleHideFixed.IsUnknown() {
-			powerScheduleConfig.SetPowerScheduleHideFixed(plan.ConfigPowerSchedule.PowerScheduleHideFixed.ValueBool())
+		if powerScheduleHideFixed, ok := attrs["power_schedule_hide_fixed"].(basetypes.BoolValue); ok && !powerScheduleHideFixed.IsNull() && !powerScheduleHideFixed.IsUnknown() {
+			powerScheduleConfig.SetPowerScheduleHideFixed(powerScheduleHideFixed.ValueBool())
 		}
 		config.PowerSchedulePolicyTypeConfiguration = powerScheduleConfig
 		hasConfig = true
 	}
 
 	// ConfigRouterQuota mapping
-	if !plan.ConfigRouterQuota.IsNull() && !plan.ConfigRouterQuota.IsUnknown() {
+	if !plan.Config.RouterQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.RouterQuotaPolicyTypeConfiguration.IsUnknown() {
 		routerQuotaConfig := &sdk.RouterQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigRouterQuota.MaxRouters.IsNull() && !plan.ConfigRouterQuota.MaxRouters.IsUnknown() {
-			routerQuotaConfig.SetMaxRouters(plan.ConfigRouterQuota.MaxRouters.ValueString())
+		attrs := plan.Config.RouterQuotaPolicyTypeConfiguration.Attributes()
+		if max_routers, ok := attrs["max_routers"].(basetypes.StringValue); ok && !max_routers.IsNull() && !max_routers.IsUnknown() {
+			routerQuotaConfig.SetMaxRouters(max_routers.ValueString())
 		}
 		config.RouterQuotaPolicyTypeConfiguration = routerQuotaConfig
 		hasConfig = true
 	}
 
 	// ConfigShutdown mapping
-	if !plan.ConfigShutdown.IsNull() && !plan.ConfigShutdown.IsUnknown() {
+	if !plan.Config.ShutdownPolicyTypeConfiguration.IsNull() && !plan.Config.ShutdownPolicyTypeConfiguration.IsUnknown() {
 		shutdownConfig := &sdk.ShutdownPolicyTypeConfiguration{}
 		// ConfigShutdown appears to be a simple config without specific fields to map
 		config.ShutdownPolicyTypeConfiguration = shutdownConfig
@@ -528,72 +640,78 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 	}
 
 	// ConfigStorageServerStorageQuota mapping
-	if !plan.ConfigStorageServerStorageQuota.IsNull() && !plan.ConfigStorageServerStorageQuota.IsUnknown() {
+	if !plan.Config.StorageServerStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.StorageServerStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		storageServerQuotaConfig := &sdk.StorageServerStorageQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigStorageServerStorageQuota.MaxStorage.IsNull() && !plan.ConfigStorageServerStorageQuota.MaxStorage.IsUnknown() {
-			storageServerQuotaConfig.SetMaxStorage(plan.ConfigStorageServerStorageQuota.MaxStorage.ValueString())
+		attrs := plan.Config.StorageServerStorageQuotaPolicyTypeConfiguration.Attributes()
+		if max_storage, ok := attrs["max_storage"].(basetypes.StringValue); ok && !max_storage.IsNull() && !max_storage.IsUnknown() {
+			storageServerQuotaConfig.SetMaxStorage(max_storage.ValueString())
 		}
 		config.StorageServerStorageQuotaPolicyTypeConfiguration = storageServerQuotaConfig
 		hasConfig = true
 	}
 
 	// ConfigTags mapping
-	if !plan.ConfigTags.IsNull() && !plan.ConfigTags.IsUnknown() {
+	if !plan.Config.TagsPolicyTypeConfiguration.IsNull() && !plan.Config.TagsPolicyTypeConfiguration.IsUnknown() {
 		tagsConfig := &sdk.TagsPolicyTypeConfiguration{}
-		if !plan.ConfigTags.Key.IsNull() && !plan.ConfigTags.Key.IsUnknown() {
-			tagsConfig.SetKey(plan.ConfigTags.Key.ValueString())
+		attrs := plan.Config.TagsPolicyTypeConfiguration.Attributes()
+		if key, ok := attrs["key"].(basetypes.StringValue); ok && !key.IsNull() && !key.IsUnknown() {
+			tagsConfig.SetKey(key.ValueString())
 		}
-		if !plan.ConfigTags.Value.IsNull() && !plan.ConfigTags.Value.IsUnknown() {
-			tagsConfig.SetValue(plan.ConfigTags.Value.ValueString())
+		if value, ok := attrs["value"].(basetypes.StringValue); ok && !value.IsNull() && !value.IsUnknown() {
+			tagsConfig.SetValue(value.ValueString())
 		}
-		if !plan.ConfigTags.Strict.IsNull() && !plan.ConfigTags.Strict.IsUnknown() {
-			tagsConfig.SetStrict(plan.ConfigTags.Strict.ValueBool())
+		if strict, ok := attrs["strict"].(basetypes.BoolValue); ok && !strict.IsNull() && !strict.IsUnknown() {
+			tagsConfig.SetStrict(strict.ValueBool())
 		}
-		if !plan.ConfigTags.ValueListId.IsNull() && !plan.ConfigTags.ValueListId.IsUnknown() {
-			tagsConfig.SetValueListId(plan.ConfigTags.ValueListId.ValueString())
+		if valueListId, ok := attrs["value_list_id"].(basetypes.StringValue); ok && !valueListId.IsNull() && !valueListId.IsUnknown() {
+			tagsConfig.SetValueListId(valueListId.ValueString())
 		}
 		config.TagsPolicyTypeConfiguration = tagsConfig
 		hasConfig = true
 	}
 
 	// ConfigUserCreation mapping
-	if !plan.ConfigUserCreation.IsNull() && !plan.ConfigUserCreation.IsUnknown() {
+	if !plan.Config.UserCreationPolicyTypeConfiguration.IsNull() && !plan.Config.UserCreationPolicyTypeConfiguration.IsUnknown() {
 		userCreationConfig := &sdk.UserCreationPolicyTypeConfiguration{}
-		if !plan.ConfigUserCreation.CreateUser.IsNull() && !plan.ConfigUserCreation.CreateUser.IsUnknown() {
-			userCreationConfig.SetCreateUser(plan.ConfigUserCreation.CreateUser.ValueBool())
+		attrs := plan.Config.UserCreationPolicyTypeConfiguration.Attributes()
+		if create_user, ok := attrs["create_user"].(basetypes.BoolValue); ok && !create_user.IsNull() && !create_user.IsUnknown() {
+			userCreationConfig.SetCreateUser(create_user.ValueBool())
 		}
-		if !plan.ConfigUserCreation.CreateUserType.IsNull() && !plan.ConfigUserCreation.CreateUserType.IsUnknown() {
-			userCreationConfig.SetCreateUserType(plan.ConfigUserCreation.CreateUserType.ValueString())
+		if create_user_type, ok := attrs["create_user_type"].(basetypes.StringValue); ok && !create_user_type.IsNull() && !create_user_type.IsUnknown() {
+			userCreationConfig.SetCreateUserType(create_user_type.ValueString())
 		}
 		config.UserCreationPolicyTypeConfiguration = userCreationConfig
 		hasConfig = true
 	}
 
 	// ConfigUserGroupCreation mapping
-	if !plan.ConfigUserGroupCreation.IsNull() && !plan.ConfigUserGroupCreation.IsUnknown() {
+	if !plan.Config.UserGroupCreationPolicyTypeConfiguration.IsNull() && !plan.Config.UserGroupCreationPolicyTypeConfiguration.IsUnknown() {
 		userGroupCreationConfig := &sdk.UserGroupCreationPolicyTypeConfiguration{}
-		if !plan.ConfigUserGroupCreation.UserGroup.IsNull() && !plan.ConfigUserGroupCreation.UserGroup.IsUnknown() {
-			userGroupCreationConfig.SetUserGroup(plan.ConfigUserGroupCreation.UserGroup.ValueString())
+		attrs := plan.Config.UserGroupCreationPolicyTypeConfiguration.Attributes()
+		if userGroup, ok := attrs["user_group"].(basetypes.StringValue); ok && !userGroup.IsNull() && !userGroup.IsUnknown() {
+			userGroupCreationConfig.SetUserGroup(userGroup.ValueString())
 		}
 		config.UserGroupCreationPolicyTypeConfiguration = userGroupCreationConfig
 		hasConfig = true
 	}
 
 	// ConfigWorkflow mapping
-	if !plan.ConfigWorkflow.IsNull() && !plan.ConfigWorkflow.IsUnknown() {
+	if !plan.Config.WorkflowPolicyTypeConfiguration.IsNull() && !plan.Config.WorkflowPolicyTypeConfiguration.IsUnknown() {
 		workflowConfig := &sdk.WorkflowPolicyTypeConfiguration{}
-		if !plan.ConfigWorkflow.WorkflowId.IsNull() && !plan.ConfigWorkflow.WorkflowId.IsUnknown() {
-			workflowConfig.SetWorkflowId(plan.ConfigWorkflow.WorkflowId.ValueString())
+		attrs := plan.Config.WorkflowPolicyTypeConfiguration.Attributes()
+		if workflowId, ok := attrs["workflow_id"].(basetypes.StringValue); ok && !workflowId.IsNull() && !workflowId.IsUnknown() {
+			workflowConfig.SetWorkflowId(workflowId.ValueString())
 		}
 		config.WorkflowPolicyTypeConfiguration = workflowConfig
 		hasConfig = true
 	}
 
 	// ConfigFileShareStorageQuota mapping
-	if !plan.ConfigFileShareStorageQuota.IsNull() && !plan.ConfigFileShareStorageQuota.IsUnknown() {
+	if !plan.Config.FileShareStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.FileShareStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		fileShareQuotaConfig := &sdk.FileShareStorageQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigFileShareStorageQuota.MaxStorage.IsNull() && !plan.ConfigFileShareStorageQuota.MaxStorage.IsUnknown() {
-			fileShareQuotaConfig.SetMaxStorage(plan.ConfigFileShareStorageQuota.MaxStorage.ValueString())
+		attrs := plan.Config.FileShareStorageQuotaPolicyTypeConfiguration.Attributes()
+		if max_storage, ok := attrs["max_storage"].(basetypes.StringValue); ok && !max_storage.IsNull() && !max_storage.IsUnknown() {
+			fileShareQuotaConfig.SetMaxStorage(max_storage.ValueString())
 		}
 		config.FileShareStorageQuotaPolicyTypeConfiguration = fileShareQuotaConfig
 		hasConfig = true
@@ -609,94 +727,94 @@ func buildPolicyConfigForCreate(ctx context.Context, plan *PolicyModel) (*sdk.Ad
 // determinePolicyTypeFromConfig automatically determines the policy type based on which config field is provided
 func determinePolicyTypeFromConfig(plan *PolicyModel) string {
 	// Map config fields to their corresponding policy type codes
-	if !plan.ConfigApproval.IsNull() && !plan.ConfigApproval.IsUnknown() {
+	if !plan.Config.ApprovePolicyTypeConfiguration.IsNull() && !plan.Config.ApprovePolicyTypeConfiguration.IsUnknown() {
 		return "approval"
 	}
-	if !plan.ConfigBackupCreation.IsNull() && !plan.ConfigBackupCreation.IsUnknown() {
+	if !plan.Config.BackupCreationPolicyTypeConfiguration.IsNull() && !plan.Config.BackupCreationPolicyTypeConfiguration.IsUnknown() {
 		return "backupCreation"
 	}
-	if !plan.ConfigBackupTargets.IsNull() && !plan.ConfigBackupTargets.IsUnknown() {
+	if !plan.Config.BackupTargetsPolicyTypeConfiguration.IsNull() && !plan.Config.BackupTargetsPolicyTypeConfiguration.IsUnknown() {
 		return "backupTargets"
 	}
-	if !plan.ConfigBudget.IsNull() && !plan.ConfigBudget.IsUnknown() {
+	if !plan.Config.BudgetPolicyTypeConfiguration.IsNull() && !plan.Config.BudgetPolicyTypeConfiguration.IsUnknown() {
 		return "budget"
 	}
-	if !plan.ConfigClusterResourceName.IsNull() && !plan.ConfigClusterResourceName.IsUnknown() {
+	if !plan.Config.ClusterResourceNamePolicyTypeConfiguration.IsNull() && !plan.Config.ClusterResourceNamePolicyTypeConfiguration.IsUnknown() {
 		return "clusterResourceName"
 	}
-	if !plan.ConfigCypherAccess.IsNull() && !plan.ConfigCypherAccess.IsUnknown() {
+	if !plan.Config.CypherAccessPolicyTypeConfiguration.IsNull() && !plan.Config.CypherAccessPolicyTypeConfiguration.IsUnknown() {
 		return "cypherAccess"
 	}
-	if !plan.ConfigDelayedDelete.IsNull() && !plan.ConfigDelayedDelete.IsUnknown() {
+	if !plan.Config.DelayedDeletePolicyTypeConfiguration.IsNull() && !plan.Config.DelayedDeletePolicyTypeConfiguration.IsUnknown() {
 		return "delayedDelete"
 	}
-	if !plan.ConfigExpiration.IsNull() && !plan.ConfigExpiration.IsUnknown() {
+	if !plan.Config.ExpirationPolicyTypeConfiguration.IsNull() && !plan.Config.ExpirationPolicyTypeConfiguration.IsUnknown() {
 		return "expiration"
 	}
-	if !plan.ConfigFileShareStorageQuota.IsNull() && !plan.ConfigFileShareStorageQuota.IsUnknown() {
+	if !plan.Config.FileShareStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.FileShareStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		return "fileShareStorageQuota"
 	}
-	if !plan.ConfigHostname.IsNull() && !plan.ConfigHostname.IsUnknown() {
+	if !plan.Config.HostnamePolicyTypeConfiguration.IsNull() && !plan.Config.HostnamePolicyTypeConfiguration.IsUnknown() {
 		return "hostname"
 	}
-	if !plan.ConfigInstanceName.IsNull() && !plan.ConfigInstanceName.IsUnknown() {
+	if !plan.Config.InstanceNamePolicyTypeConfiguration.IsNull() && !plan.Config.InstanceNamePolicyTypeConfiguration.IsUnknown() {
 		return "instanceName"
 	}
-	if !plan.ConfigMaxContainers.IsNull() && !plan.ConfigMaxContainers.IsUnknown() {
+	if !plan.Config.MaxContainersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxContainersPolicyTypeConfiguration.IsUnknown() {
 		return "maxContainers"
 	}
-	if !plan.ConfigMaxCores.IsNull() && !plan.ConfigMaxCores.IsUnknown() {
+	if !plan.Config.MaxCoresPolicyTypeConfiguration.IsNull() && !plan.Config.MaxCoresPolicyTypeConfiguration.IsUnknown() {
 		return "maxCores"
 	}
-	if !plan.ConfigMaxHosts.IsNull() && !plan.ConfigMaxHosts.IsUnknown() {
+	if !plan.Config.MaxHostsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxHostsPolicyTypeConfiguration.IsUnknown() {
 		return "maxHosts"
 	}
-	if !plan.ConfigMaxLoadBalancerPools.IsNull() && !plan.ConfigMaxLoadBalancerPools.IsUnknown() {
+	if !plan.Config.MaxLoadBalancerPoolsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxLoadBalancerPoolsPolicyTypeConfiguration.IsUnknown() {
 		return "maxLoadBalancerPools"
 	}
-	if !plan.ConfigMaxMemory.IsNull() && !plan.ConfigMaxMemory.IsUnknown() {
+	if !plan.Config.MaxMemoryPolicyTypeConfiguration.IsNull() && !plan.Config.MaxMemoryPolicyTypeConfiguration.IsUnknown() {
 		return "maxMemory"
 	}
-	if !plan.ConfigMaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.IsUnknown() {
+	if !plan.Config.MaxPoolMembersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxPoolMembersPolicyTypeConfiguration.IsUnknown() {
 		return "maxPoolMembers"
 	}
-	if !plan.ConfigMaxStorage.IsNull() && !plan.ConfigMaxStorage.IsUnknown() {
+	if !plan.Config.MaxStorageandObjectStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.MaxStorageandObjectStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		return "maxStorage"
 	}
-	if !plan.ConfigMaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.IsUnknown() {
+	if !plan.Config.MaxVirtualServersPolicyTypeConfiguration.IsNull() && !plan.Config.MaxVirtualServersPolicyTypeConfiguration.IsUnknown() {
 		return "maxVirtualServers"
 	}
-	if !plan.ConfigMaxVms.IsNull() && !plan.ConfigMaxVms.IsUnknown() {
+	if !plan.Config.MaxVmsPolicyTypeConfiguration.IsNull() && !plan.Config.MaxVmsPolicyTypeConfiguration.IsUnknown() {
 		return "maxVms"
 	}
-	if !plan.ConfigMessageOfTheDay.IsNull() && !plan.ConfigMessageOfTheDay.IsUnknown() {
+	if !plan.Config.MessageoftheDayPolicyTypeConfiguration.IsNull() && !plan.Config.MessageoftheDayPolicyTypeConfiguration.IsUnknown() {
 		return "messageOfTheDay"
 	}
-	if !plan.ConfigNetworkQuota.IsNull() && !plan.ConfigNetworkQuota.IsUnknown() {
+	if !plan.Config.NetworkQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.NetworkQuotaPolicyTypeConfiguration.IsUnknown() {
 		return "networkQuota"
 	}
-	if !plan.ConfigPowerSchedule.IsNull() && !plan.ConfigPowerSchedule.IsUnknown() {
+	if !plan.Config.PowerSchedulePolicyTypeConfiguration.IsNull() && !plan.Config.PowerSchedulePolicyTypeConfiguration.IsUnknown() {
 		return "powerSchedule"
 	}
-	if !plan.ConfigRouterQuota.IsNull() && !plan.ConfigRouterQuota.IsUnknown() {
+	if !plan.Config.RouterQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.RouterQuotaPolicyTypeConfiguration.IsUnknown() {
 		return "routerQuota"
 	}
-	if !plan.ConfigShutdown.IsNull() && !plan.ConfigShutdown.IsUnknown() {
+	if !plan.Config.ShutdownPolicyTypeConfiguration.IsNull() && !plan.Config.ShutdownPolicyTypeConfiguration.IsUnknown() {
 		return "shutdown"
 	}
-	if !plan.ConfigStorageServerStorageQuota.IsNull() && !plan.ConfigStorageServerStorageQuota.IsUnknown() {
+	if !plan.Config.StorageServerStorageQuotaPolicyTypeConfiguration.IsNull() && !plan.Config.StorageServerStorageQuotaPolicyTypeConfiguration.IsUnknown() {
 		return "storageServerStorageQuota"
 	}
-	if !plan.ConfigTags.IsNull() && !plan.ConfigTags.IsUnknown() {
+	if !plan.Config.TagsPolicyTypeConfiguration.IsNull() && !plan.Config.TagsPolicyTypeConfiguration.IsUnknown() {
 		return "tags"
 	}
-	if !plan.ConfigUserCreation.IsNull() && !plan.ConfigUserCreation.IsUnknown() {
+	if !plan.Config.UserCreationPolicyTypeConfiguration.IsNull() && !plan.Config.UserCreationPolicyTypeConfiguration.IsUnknown() {
 		return "userCreation"
 	}
-	if !plan.ConfigUserGroupCreation.IsNull() && !plan.ConfigUserGroupCreation.IsUnknown() {
+	if !plan.Config.UserGroupCreationPolicyTypeConfiguration.IsNull() && !plan.Config.UserGroupCreationPolicyTypeConfiguration.IsUnknown() {
 		return "userGroupCreation"
 	}
-	if !plan.ConfigWorkflow.IsNull() && !plan.ConfigWorkflow.IsUnknown() {
+	if !plan.Config.WorkflowPolicyTypeConfiguration.IsNull() && !plan.Config.WorkflowPolicyTypeConfiguration.IsUnknown() {
 		return "workflow"
 	}
 
@@ -820,7 +938,7 @@ func (r *Resource) Create(
 	}
 
 	// Read the created policy to get full state
-	state, diags := getPolicyAsState(ctx, id, client)
+	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -830,471 +948,6 @@ func (r *Resource) Create(
 }
 
 // buildPolicyConfigForUpdate maps the schema config fields to the SDK config structure for update operations
-func buildPolicyConfigForUpdate(ctx context.Context, plan *PolicyModel) (*sdk.UpdatePoliciesRequestPolicyConfig, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	config := &sdk.UpdatePoliciesRequestPolicyConfig{}
-	hasConfig := false
-
-	// ConfigApproval mapping
-	if !plan.ConfigApproval.IsNull() && !plan.ConfigApproval.IsUnknown() {
-		approveConfig := &sdk.ApprovePolicyTypeConfiguration{}
-		if !plan.ConfigApproval.AccountIntegrationId.IsNull() && !plan.ConfigApproval.AccountIntegrationId.IsUnknown() {
-			approveConfig.SetAccountIntegrationId(plan.ConfigApproval.AccountIntegrationId.ValueString())
-		}
-		config.ApprovePolicyTypeConfiguration = approveConfig
-		hasConfig = true
-	}
-
-	// ConfigBackupCreation mapping
-	if !plan.ConfigBackupCreation.IsNull() && !plan.ConfigBackupCreation.IsUnknown() {
-		backupConfig := &sdk.BackupCreationPolicyTypeConfiguration{}
-		if !plan.ConfigBackupCreation.CreateBackup.IsNull() && !plan.ConfigBackupCreation.CreateBackup.IsUnknown() {
-			backupConfig.SetCreateBackup(plan.ConfigBackupCreation.CreateBackup.ValueBool())
-		}
-		if !plan.ConfigBackupCreation.CreateBackupType.IsNull() && !plan.ConfigBackupCreation.CreateBackupType.IsUnknown() {
-			backupConfig.SetCreateBackupType(plan.ConfigBackupCreation.CreateBackupType.ValueString())
-		}
-		config.BackupCreationPolicyTypeConfiguration = backupConfig
-		hasConfig = true
-	}
-
-	// ConfigBackupTargets mapping
-	if !plan.ConfigBackupTargets.IsNull() && !plan.ConfigBackupTargets.IsUnknown() {
-		backupTargetsConfig := &sdk.BackupTargetsPolicyTypeConfiguration{}
-		if !plan.ConfigBackupTargets.BackupStorageIds.IsNull() && !plan.ConfigBackupTargets.BackupStorageIds.IsUnknown() {
-			var storageIds []int64
-			elemDiags := plan.ConfigBackupTargets.BackupStorageIds.ElementsAs(ctx, &storageIds, false)
-			if elemDiags.HasError() {
-				diags.Append(elemDiags...)
-			} else {
-				backupTargetsConfig.SetBackupStorageIds(storageIds)
-			}
-		}
-		config.BackupTargetsPolicyTypeConfiguration = backupTargetsConfig
-		hasConfig = true
-	}
-
-	// ConfigBudget mapping
-	if !plan.ConfigBudget.IsNull() && !plan.ConfigBudget.IsUnknown() {
-		budgetConfig := &sdk.BudgetPolicyTypeConfiguration{}
-		if !plan.ConfigBudget.MaxPrice.IsNull() && !plan.ConfigBudget.MaxPrice.IsUnknown() {
-			maxPrice, _ := plan.ConfigBudget.MaxPrice.ValueBigFloat().Float64()
-			budgetConfig.SetMaxPrice(float32(maxPrice))
-		}
-		if !plan.ConfigBudget.MaxPriceCurrency.IsNull() && !plan.ConfigBudget.MaxPriceCurrency.IsUnknown() {
-			budgetConfig.SetMaxPriceCurrency(plan.ConfigBudget.MaxPriceCurrency.ValueString())
-		}
-		if !plan.ConfigBudget.MaxPriceUnit.IsNull() && !plan.ConfigBudget.MaxPriceUnit.IsUnknown() {
-			budgetConfig.SetMaxPriceUnit(plan.ConfigBudget.MaxPriceUnit.ValueString())
-		}
-		config.BudgetPolicyTypeConfiguration = budgetConfig
-		hasConfig = true
-	}
-
-	// ConfigClusterResourceName mapping
-	if !plan.ConfigClusterResourceName.IsNull() && !plan.ConfigClusterResourceName.IsUnknown() {
-		clusterConfig := &sdk.ClusterResourceNamePolicyTypeConfiguration{}
-		if !plan.ConfigClusterResourceName.ServerNamingType.IsNull() && !plan.ConfigClusterResourceName.ServerNamingType.IsUnknown() {
-			clusterConfig.SetServerNamingType(plan.ConfigClusterResourceName.ServerNamingType.ValueString())
-		}
-		if !plan.ConfigClusterResourceName.ServerNamingPattern.IsNull() && !plan.ConfigClusterResourceName.ServerNamingPattern.IsUnknown() {
-			clusterConfig.SetServerNamingPattern(plan.ConfigClusterResourceName.ServerNamingPattern.ValueString())
-		}
-		if !plan.ConfigClusterResourceName.ServerNamingConflict.IsNull() && !plan.ConfigClusterResourceName.ServerNamingConflict.IsUnknown() {
-			clusterConfig.SetServerNamingConflict(plan.ConfigClusterResourceName.ServerNamingConflict.ValueBool())
-		}
-		config.ClusterResourceNamePolicyTypeConfiguration = clusterConfig
-		hasConfig = true
-	}
-
-	// ConfigCypherAccess mapping
-	if !plan.ConfigCypherAccess.IsNull() && !plan.ConfigCypherAccess.IsUnknown() {
-		cypherConfig := &sdk.CypherAccessPolicyTypeConfiguration{}
-		if !plan.ConfigCypherAccess.KeyPattern.IsNull() && !plan.ConfigCypherAccess.KeyPattern.IsUnknown() {
-			cypherConfig.SetKeyPattern(plan.ConfigCypherAccess.KeyPattern.ValueString())
-		}
-		if !plan.ConfigCypherAccess.Read.IsNull() && !plan.ConfigCypherAccess.Read.IsUnknown() {
-			cypherConfig.SetRead(plan.ConfigCypherAccess.Read.ValueBool())
-		}
-		if !plan.ConfigCypherAccess.Write.IsNull() && !plan.ConfigCypherAccess.Write.IsUnknown() {
-			cypherConfig.SetWrite(plan.ConfigCypherAccess.Write.ValueBool())
-		}
-		if !plan.ConfigCypherAccess.Update.IsNull() && !plan.ConfigCypherAccess.Update.IsUnknown() {
-			cypherConfig.SetUpdate(plan.ConfigCypherAccess.Update.ValueBool())
-		}
-		if !plan.ConfigCypherAccess.Delete.IsNull() && !plan.ConfigCypherAccess.Delete.IsUnknown() {
-			cypherConfig.SetDelete(plan.ConfigCypherAccess.Delete.ValueBool())
-		}
-		if !plan.ConfigCypherAccess.List.IsNull() && !plan.ConfigCypherAccess.List.IsUnknown() {
-			cypherConfig.SetList(plan.ConfigCypherAccess.List.ValueBool())
-		}
-		config.CypherAccessPolicyTypeConfiguration = cypherConfig
-		hasConfig = true
-	}
-
-	// ConfigDelayedDelete mapping
-	if !plan.ConfigDelayedDelete.IsNull() && !plan.ConfigDelayedDelete.IsUnknown() {
-		delayedDeleteConfig := &sdk.DelayedDeletePolicyTypeConfiguration{}
-		if !plan.ConfigDelayedDelete.RemovalAge.IsNull() && !plan.ConfigDelayedDelete.RemovalAge.IsUnknown() {
-			delayedDeleteConfig.SetRemovalAge(plan.ConfigDelayedDelete.RemovalAge.ValueString())
-		}
-		config.DelayedDeletePolicyTypeConfiguration = delayedDeleteConfig
-		hasConfig = true
-	}
-
-	// Continue with more config mappings...
-
-	// ConfigExpiration mapping
-	if !plan.ConfigExpiration.IsNull() && !plan.ConfigExpiration.IsUnknown() {
-		expirationConfig := &sdk.ExpirationPolicyTypeConfiguration{}
-		if !plan.ConfigExpiration.LifecycleType.IsNull() && !plan.ConfigExpiration.LifecycleType.IsUnknown() {
-			expirationConfig.SetLifecycleType(plan.ConfigExpiration.LifecycleType.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleAge.IsNull() && !plan.ConfigExpiration.LifecycleAge.IsUnknown() {
-			expirationConfig.SetLifecycleAge(plan.ConfigExpiration.LifecycleAge.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleAllowExtend.IsNull() && !plan.ConfigExpiration.LifecycleAllowExtend.IsUnknown() {
-			expirationConfig.SetLifecycleAllowExtend(plan.ConfigExpiration.LifecycleAllowExtend.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleAutoRenew.IsNull() && !plan.ConfigExpiration.LifecycleAutoRenew.IsUnknown() {
-			expirationConfig.SetLifecycleAutoRenew(plan.ConfigExpiration.LifecycleAutoRenew.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.IsNull() && !plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.IsUnknown() {
-			expirationConfig.SetLifecycleExtensionsBeforeApproval(plan.ConfigExpiration.LifecycleExtensionsBeforeApproval.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleHideFixed.IsNull() && !plan.ConfigExpiration.LifecycleHideFixed.IsUnknown() {
-			expirationConfig.SetLifecycleHideFixed(plan.ConfigExpiration.LifecycleHideFixed.ValueBool())
-		}
-		if !plan.ConfigExpiration.LifecycleMessage.IsNull() && !plan.ConfigExpiration.LifecycleMessage.IsUnknown() {
-			expirationConfig.SetLifecycleMessage(plan.ConfigExpiration.LifecycleMessage.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleNotify.IsNull() && !plan.ConfigExpiration.LifecycleNotify.IsUnknown() {
-			expirationConfig.SetLifecycleNotify(plan.ConfigExpiration.LifecycleNotify.ValueString())
-		}
-		if !plan.ConfigExpiration.LifecycleRenewal.IsNull() && !plan.ConfigExpiration.LifecycleRenewal.IsUnknown() {
-			expirationConfig.SetLifecycleRenewal(plan.ConfigExpiration.LifecycleRenewal.ValueString())
-		}
-		if !plan.ConfigExpiration.AccountIntegrationId.IsNull() && !plan.ConfigExpiration.AccountIntegrationId.IsUnknown() {
-			expirationConfig.SetAccountIntegrationId(plan.ConfigExpiration.AccountIntegrationId.ValueString())
-		}
-		config.ExpirationPolicyTypeConfiguration = expirationConfig
-		hasConfig = true
-	}
-
-	// ConfigHostname mapping
-	if !plan.ConfigHostname.IsNull() && !plan.ConfigHostname.IsUnknown() {
-		hostnameConfig := &sdk.HostnamePolicyTypeConfiguration{}
-		if !plan.ConfigHostname.HostNamingType.IsNull() && !plan.ConfigHostname.HostNamingType.IsUnknown() {
-			hostnameConfig.SetHostNamingType(plan.ConfigHostname.HostNamingType.ValueString())
-		}
-		if !plan.ConfigHostname.HostNamingPattern.IsNull() && !plan.ConfigHostname.HostNamingPattern.IsUnknown() {
-			hostnameConfig.SetHostNamingPattern(plan.ConfigHostname.HostNamingPattern.ValueString())
-		}
-		config.HostnamePolicyTypeConfiguration = hostnameConfig
-		hasConfig = true
-	}
-
-	// ConfigInstanceName mapping
-	if !plan.ConfigInstanceName.IsNull() && !plan.ConfigInstanceName.IsUnknown() {
-		instanceNameConfig := &sdk.InstanceNamePolicyTypeConfiguration{}
-		if !plan.ConfigInstanceName.NamingType.IsNull() && !plan.ConfigInstanceName.NamingType.IsUnknown() {
-			instanceNameConfig.SetNamingType(plan.ConfigInstanceName.NamingType.ValueString())
-		}
-		if !plan.ConfigInstanceName.NamingPattern.IsNull() && !plan.ConfigInstanceName.NamingPattern.IsUnknown() {
-			instanceNameConfig.SetNamingPattern(plan.ConfigInstanceName.NamingPattern.ValueString())
-		}
-		if !plan.ConfigInstanceName.NamingConflict.IsNull() && !plan.ConfigInstanceName.NamingConflict.IsUnknown() {
-			instanceNameConfig.SetNamingConflict(plan.ConfigInstanceName.NamingConflict.ValueBool())
-		}
-		config.InstanceNamePolicyTypeConfiguration = instanceNameConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxContainers mapping
-	if !plan.ConfigMaxContainers.IsNull() && !plan.ConfigMaxContainers.IsUnknown() {
-		maxContainersConfig := &sdk.MaxContainersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxContainers.MaxContainers.IsNull() && !plan.ConfigMaxContainers.MaxContainers.IsUnknown() {
-			maxContainersConfig.SetMaxContainers(plan.ConfigMaxContainers.MaxContainers.ValueString())
-		}
-		config.MaxContainersPolicyTypeConfiguration = maxContainersConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxCores mapping
-	if !plan.ConfigMaxCores.IsNull() && !plan.ConfigMaxCores.IsUnknown() {
-		maxCoresConfig := &sdk.MaxCoresPolicyTypeConfiguration1{}
-		if !plan.ConfigMaxCores.MaxCores.IsNull() && !plan.ConfigMaxCores.MaxCores.IsUnknown() {
-			maxCoresConfig.SetMaxCores(plan.ConfigMaxCores.MaxCores.ValueString())
-		}
-		if !plan.ConfigMaxCores.ExcludeContainers.IsNull() && !plan.ConfigMaxCores.ExcludeContainers.IsUnknown() {
-			// ConfigMaxCores.ExcludeContainers in update expects bool, but schema has string - need to convert
-			excludeStr := plan.ConfigMaxCores.ExcludeContainers.ValueString()
-			excludeBool := excludeStr == "true" || excludeStr == "on" || excludeStr == "1"
-			maxCoresConfig.SetExcludeContainers(excludeBool)
-		}
-		config.MaxCoresPolicyTypeConfiguration1 = maxCoresConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxHosts mapping
-	if !plan.ConfigMaxHosts.IsNull() && !plan.ConfigMaxHosts.IsUnknown() {
-		maxHostsConfig := &sdk.MaxHostsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxHosts.MaxHosts.IsNull() && !plan.ConfigMaxHosts.MaxHosts.IsUnknown() {
-			maxHostsConfig.SetMaxHosts(plan.ConfigMaxHosts.MaxHosts.ValueString())
-		}
-		config.MaxHostsPolicyTypeConfiguration = maxHostsConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxLoadBalancerPools mapping
-	if !plan.ConfigMaxLoadBalancerPools.IsNull() && !plan.ConfigMaxLoadBalancerPools.IsUnknown() {
-		maxLBPoolsConfig := &sdk.MaxLoadBalancerPoolsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxLoadBalancerPools.MaxPools.IsNull() && !plan.ConfigMaxLoadBalancerPools.MaxPools.IsUnknown() {
-			maxLBPoolsConfig.SetMaxPools(plan.ConfigMaxLoadBalancerPools.MaxPools.ValueString())
-		}
-		config.MaxLoadBalancerPoolsPolicyTypeConfiguration = maxLBPoolsConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxMemory mapping (complex nested structure)
-	if !plan.ConfigMaxMemory.IsNull() && !plan.ConfigMaxMemory.IsUnknown() {
-		maxMemoryConfig := &sdk.MaxMemoryPolicyTypeConfiguration1{}
-		maxMemorySet := false
-
-		if !plan.ConfigMaxMemory.ExcludeContainers.IsNull() && !plan.ConfigMaxMemory.ExcludeContainers.IsUnknown() {
-			maxMemoryConfig.SetExcludeContainers(plan.ConfigMaxMemory.ExcludeContainers.ValueString())
-		}
-
-		// Handle MaxMemory field - it's an ObjectValue with anyof0 (string) and anyof1 (int)
-		if !plan.ConfigMaxMemory.MaxMemory.IsNull() && !plan.ConfigMaxMemory.MaxMemory.IsUnknown() {
-			maxMemoryValue := plan.ConfigMaxMemory.MaxMemory
-			// Extract the MaxMemoryValue from the ObjectValue
-			if maxMemoryAttrs := maxMemoryValue.Attributes(); len(maxMemoryAttrs) > 0 {
-				var maxMemory sdk.MaxMemoryPolicyTypeConfigurationMaxMemory
-				// Check anyof0 (string) first
-				if anyof0Val, ok := maxMemoryAttrs["anyof0"]; ok {
-					if stringVal, ok := anyof0Val.(basetypes.StringValue); ok && !stringVal.IsNull() && !stringVal.IsUnknown() {
-						// Use string representation (anyof0)
-						str := stringVal.ValueString()
-						maxMemory.String = &str
-						maxMemoryConfig.SetMaxMemory(maxMemory)
-						maxMemorySet = true
-					}
-				}
-				// Check anyof1 (int64) if anyof0 wasn't set
-				if !maxMemorySet {
-					if anyof1Val, ok := maxMemoryAttrs["anyof1"]; ok {
-						if intVal, ok := anyof1Val.(basetypes.Int64Value); ok && !intVal.IsNull() && !intVal.IsUnknown() {
-							// Use int representation (anyof1)
-							intValue := intVal.ValueInt64()
-							maxMemory.Int64 = &intValue
-							maxMemoryConfig.SetMaxMemory(maxMemory)
-							maxMemorySet = true
-						}
-					}
-				}
-			}
-		}
-
-		// Only add the config if MaxMemory was actually set (it's required)
-		if maxMemorySet {
-			config.MaxMemoryPolicyTypeConfiguration1 = maxMemoryConfig
-			hasConfig = true
-		}
-	}
-
-	// ConfigMaxPoolMembers mapping
-	if !plan.ConfigMaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.IsUnknown() {
-		maxPoolMembersConfig := &sdk.MaxPoolMembersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsUnknown() {
-			maxPoolMembersConfig.SetMaxPoolMembers(plan.ConfigMaxPoolMembers.MaxPoolMembers.ValueString())
-		}
-		config.MaxPoolMembersPolicyTypeConfiguration = maxPoolMembersConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxStorage mapping
-	if !plan.ConfigMaxStorage.IsNull() && !plan.ConfigMaxStorage.IsUnknown() {
-		maxStorageConfig := &sdk.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1{}
-		if !plan.ConfigMaxStorage.MaxStorage.IsNull() && !plan.ConfigMaxStorage.MaxStorage.IsUnknown() {
-			maxStorageConfig.SetMaxStorage(plan.ConfigMaxStorage.MaxStorage.ValueString())
-		}
-		if !plan.ConfigMaxStorage.ExcludeContainers.IsNull() && !plan.ConfigMaxStorage.ExcludeContainers.IsUnknown() {
-			// ConfigMaxStorage.ExcludeContainers in update expects bool, but schema has string - need to convert
-			excludeStr := plan.ConfigMaxStorage.ExcludeContainers.ValueString()
-			excludeBool := excludeStr == "true" || excludeStr == "on" || excludeStr == "1"
-			maxStorageConfig.SetExcludeContainers(excludeBool)
-		}
-		config.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1 = maxStorageConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxVirtualServers mapping
-	if !plan.ConfigMaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.IsUnknown() {
-		maxVirtualServersConfig := &sdk.MaxVirtualServersPolicyTypeConfiguration{}
-		if !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsUnknown() {
-			maxVirtualServersConfig.SetMaxVirtualServers(plan.ConfigMaxVirtualServers.MaxVirtualServers.ValueString())
-		}
-		config.MaxVirtualServersPolicyTypeConfiguration = maxVirtualServersConfig
-		hasConfig = true
-	}
-
-	// ConfigMaxVms mapping
-	if !plan.ConfigMaxVms.IsNull() && !plan.ConfigMaxVms.IsUnknown() {
-		maxVmsConfig := &sdk.MaxVMsPolicyTypeConfiguration{}
-		if !plan.ConfigMaxVms.MaxVms.IsNull() && !plan.ConfigMaxVms.MaxVms.IsUnknown() {
-			maxVmsConfig.SetMaxVms(plan.ConfigMaxVms.MaxVms.ValueString())
-		}
-		config.MaxVMsPolicyTypeConfiguration = maxVmsConfig
-		hasConfig = true
-	}
-
-	// ConfigMessageOfTheDay mapping
-	if !plan.ConfigMessageOfTheDay.IsNull() && !plan.ConfigMessageOfTheDay.IsUnknown() {
-		motdConfig := &sdk.MessageOfTheDayPolicyTypeConfiguration{}
-		if !plan.ConfigMessageOfTheDay.Motddate.IsNull() && !plan.ConfigMessageOfTheDay.Motddate.IsUnknown() {
-			// Parse the date string - assuming RFC3339 format
-			if dateStr := plan.ConfigMessageOfTheDay.Motddate.ValueString(); dateStr != "" {
-				if parsedDate, err := time.Parse(time.RFC3339, dateStr); err == nil {
-					motdConfig.SetMotdDate(parsedDate)
-				}
-				// If parsing fails, we could add to diagnostics, but for now continue without setting
-			}
-		}
-		if !plan.ConfigMessageOfTheDay.Motdmessage.IsNull() && !plan.ConfigMessageOfTheDay.Motdmessage.IsUnknown() {
-			motdConfig.SetMotdMessage(plan.ConfigMessageOfTheDay.Motdmessage.ValueString())
-		}
-		if !plan.ConfigMessageOfTheDay.Motdtitle.IsNull() && !plan.ConfigMessageOfTheDay.Motdtitle.IsUnknown() {
-			motdConfig.SetMotdTitle(plan.ConfigMessageOfTheDay.Motdtitle.ValueString())
-		}
-		if !plan.ConfigMessageOfTheDay.Motdtype.IsNull() && !plan.ConfigMessageOfTheDay.Motdtype.IsUnknown() {
-			motdConfig.SetMotdType(plan.ConfigMessageOfTheDay.Motdtype.ValueString())
-		}
-		if !plan.ConfigMessageOfTheDay.MotdFullPage.IsNull() && !plan.ConfigMessageOfTheDay.MotdFullPage.IsUnknown() {
-			motdConfig.SetMotdFullPage(plan.ConfigMessageOfTheDay.MotdFullPage.ValueBool())
-		}
-		config.MessageOfTheDayPolicyTypeConfiguration = motdConfig
-		hasConfig = true
-	}
-
-	// ConfigNetworkQuota mapping
-	if !plan.ConfigNetworkQuota.IsNull() && !plan.ConfigNetworkQuota.IsUnknown() {
-		networkQuotaConfig := &sdk.NetworkQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigNetworkQuota.MaxNetworks.IsNull() && !plan.ConfigNetworkQuota.MaxNetworks.IsUnknown() {
-			networkQuotaConfig.SetMaxNetworks(plan.ConfigNetworkQuota.MaxNetworks.ValueString())
-		}
-		config.NetworkQuotaPolicyTypeConfiguration = networkQuotaConfig
-		hasConfig = true
-	}
-
-	// ConfigPowerSchedule mapping
-	if !plan.ConfigPowerSchedule.IsNull() && !plan.ConfigPowerSchedule.IsUnknown() {
-		powerScheduleConfig := &sdk.PowerSchedulePolicyTypeConfiguration{}
-		if !plan.ConfigPowerSchedule.PowerSchedule.IsNull() && !plan.ConfigPowerSchedule.PowerSchedule.IsUnknown() {
-			powerScheduleConfig.SetPowerSchedule(plan.ConfigPowerSchedule.PowerSchedule.ValueString())
-		}
-		if !plan.ConfigPowerSchedule.PowerScheduleType.IsNull() && !plan.ConfigPowerSchedule.PowerScheduleType.IsUnknown() {
-			powerScheduleConfig.SetPowerScheduleType(plan.ConfigPowerSchedule.PowerScheduleType.ValueString())
-		}
-		if !plan.ConfigPowerSchedule.PowerScheduleHideFixed.IsNull() && !plan.ConfigPowerSchedule.PowerScheduleHideFixed.IsUnknown() {
-			powerScheduleConfig.SetPowerScheduleHideFixed(plan.ConfigPowerSchedule.PowerScheduleHideFixed.ValueBool())
-		}
-		config.PowerSchedulePolicyTypeConfiguration = powerScheduleConfig
-		hasConfig = true
-	}
-
-	// ConfigRouterQuota mapping
-	if !plan.ConfigRouterQuota.IsNull() && !plan.ConfigRouterQuota.IsUnknown() {
-		routerQuotaConfig := &sdk.RouterQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigRouterQuota.MaxRouters.IsNull() && !plan.ConfigRouterQuota.MaxRouters.IsUnknown() {
-			routerQuotaConfig.SetMaxRouters(plan.ConfigRouterQuota.MaxRouters.ValueString())
-		}
-		config.RouterQuotaPolicyTypeConfiguration = routerQuotaConfig
-		hasConfig = true
-	}
-
-	// ConfigShutdown mapping
-	if !plan.ConfigShutdown.IsNull() && !plan.ConfigShutdown.IsUnknown() {
-		shutdownConfig := &sdk.ShutdownPolicyTypeConfiguration{}
-		config.ShutdownPolicyTypeConfiguration = shutdownConfig
-		hasConfig = true
-	}
-
-	// ConfigStorageServerStorageQuota mapping
-	if !plan.ConfigStorageServerStorageQuota.IsNull() && !plan.ConfigStorageServerStorageQuota.IsUnknown() {
-		storageServerQuotaConfig := &sdk.StorageServerStorageQuotaPolicyTypeConfiguration{}
-		config.StorageServerStorageQuotaPolicyTypeConfiguration = storageServerQuotaConfig
-		hasConfig = true
-	}
-
-	// ConfigTags mapping
-	if !plan.ConfigTags.IsNull() && !plan.ConfigTags.IsUnknown() {
-		tagsConfig := &sdk.TagsPolicyTypeConfiguration{}
-		if !plan.ConfigTags.Key.IsNull() && !plan.ConfigTags.Key.IsUnknown() {
-			tagsConfig.SetKey(plan.ConfigTags.Key.ValueString())
-		}
-		if !plan.ConfigTags.Value.IsNull() && !plan.ConfigTags.Value.IsUnknown() {
-			tagsConfig.SetValue(plan.ConfigTags.Value.ValueString())
-		}
-		if !plan.ConfigTags.Strict.IsNull() && !plan.ConfigTags.Strict.IsUnknown() {
-			tagsConfig.SetStrict(plan.ConfigTags.Strict.ValueBool())
-		}
-		if !plan.ConfigTags.ValueListId.IsNull() && !plan.ConfigTags.ValueListId.IsUnknown() {
-			tagsConfig.SetValueListId(plan.ConfigTags.ValueListId.ValueString())
-		}
-		config.TagsPolicyTypeConfiguration = tagsConfig
-		hasConfig = true
-	}
-
-	// ConfigUserCreation mapping
-	if !plan.ConfigUserCreation.IsNull() && !plan.ConfigUserCreation.IsUnknown() {
-		userCreationConfig := &sdk.UserCreationPolicyTypeConfiguration{}
-		if !plan.ConfigUserCreation.CreateUser.IsNull() && !plan.ConfigUserCreation.CreateUser.IsUnknown() {
-			userCreationConfig.SetCreateUser(plan.ConfigUserCreation.CreateUser.ValueBool())
-		}
-		if !plan.ConfigUserCreation.CreateUserType.IsNull() && !plan.ConfigUserCreation.CreateUserType.IsUnknown() {
-			userCreationConfig.SetCreateUserType(plan.ConfigUserCreation.CreateUserType.ValueString())
-		}
-		config.UserCreationPolicyTypeConfiguration = userCreationConfig
-		hasConfig = true
-	}
-
-	// ConfigUserGroupCreation mapping
-	if !plan.ConfigUserGroupCreation.IsNull() && !plan.ConfigUserGroupCreation.IsUnknown() {
-		userGroupCreationConfig := &sdk.UserGroupCreationPolicyTypeConfiguration{}
-		if !plan.ConfigUserGroupCreation.UserGroup.IsNull() && !plan.ConfigUserGroupCreation.UserGroup.IsUnknown() {
-			userGroupCreationConfig.SetUserGroup(plan.ConfigUserGroupCreation.UserGroup.ValueString())
-		}
-		config.UserGroupCreationPolicyTypeConfiguration = userGroupCreationConfig
-		hasConfig = true
-	}
-
-	// ConfigWorkflow mapping
-	if !plan.ConfigWorkflow.IsNull() && !plan.ConfigWorkflow.IsUnknown() {
-		workflowConfig := &sdk.WorkflowPolicyTypeConfiguration{}
-		if !plan.ConfigWorkflow.WorkflowId.IsNull() && !plan.ConfigWorkflow.WorkflowId.IsUnknown() {
-			workflowConfig.SetWorkflowId(plan.ConfigWorkflow.WorkflowId.ValueString())
-		}
-		config.WorkflowPolicyTypeConfiguration = workflowConfig
-		hasConfig = true
-	}
-
-	// ConfigFileShareStorageQuota mapping
-	if !plan.ConfigFileShareStorageQuota.IsNull() && !plan.ConfigFileShareStorageQuota.IsUnknown() {
-		fileShareQuotaConfig := &sdk.FileShareStorageQuotaPolicyTypeConfiguration{}
-		if !plan.ConfigFileShareStorageQuota.MaxStorage.IsNull() && !plan.ConfigFileShareStorageQuota.MaxStorage.IsUnknown() {
-			fileShareQuotaConfig.SetMaxStorage(plan.ConfigFileShareStorageQuota.MaxStorage.ValueString())
-		}
-		config.FileShareStorageQuotaPolicyTypeConfiguration = fileShareQuotaConfig
-		hasConfig = true
-	}
-
-	if !hasConfig {
-		return nil, diags
-	}
-
-	return config, diags
-}
 
 func (r *Resource) Read(
 	ctx context.Context,
@@ -1318,119 +971,13 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, diags := getPolicyAsState(ctx, id, client)
+	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	var plan, state PolicyModel
-
-	// Get prior state (has the ID) before touching any Value* methods.
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	id := state.Id.ValueInt64()
-	updatePolicy := sdk.NewUpdatePoliciesRequestPolicyWithDefaults()
-
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update policy resource",
-			"failed to create client: "+err.Error(),
-		)
-		return
-	}
-
-	// Set updateable fields from plan
-	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		updatePolicy.SetName(plan.Name.ValueString())
-	}
-
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updatePolicy.SetDescription(plan.Description.ValueString())
-	}
-
-	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		updatePolicy.SetEnabled(plan.Enabled.ValueBool())
-	}
-
-	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
-		updatePolicy.SetEachUser(plan.EachUser.ValueBool())
-	}
-
-	if !plan.RefId.IsNull() && !plan.RefId.IsUnknown() {
-		updatePolicy.SetRefId(plan.RefId.ValueInt64())
-	}
-
-	// Set account IDs if provided
-	if !plan.Accounts.IsNull() && !plan.Accounts.IsUnknown() {
-		var accountIDs []int64
-		diags := plan.Accounts.ElementsAs(ctx, &accountIDs, false)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-			return
-		}
-		updatePolicy.SetAccounts(accountIDs)
-	}
-
-	// Set PolicyType if provided (not supported in update - typically policies don't change type)
-	// Commenting out for now since the SDK doesn't support PolicyType updates
-	// if !plan.PolicyType.IsNull() && !plan.PolicyType.IsUnknown() {
-	//	 updatePolicy.SetPolicyType(...)
-	// }
-
-	// Set Config based on the schema fields for update
-	config, configDiags := buildPolicyConfigForUpdate(ctx, &plan)
-	if configDiags.HasError() {
-		resp.Diagnostics.Append(configDiags...)
-		return
-	}
-	if config != nil {
-		updatePolicy.SetConfig(*config)
-	}
-
-	// Set RefType if provided
-	if !plan.RefType.IsNull() && !plan.RefType.IsUnknown() {
-		if !plan.RefType.Oneof0.IsNull() && !plan.RefType.Oneof0.IsUnknown() {
-			updatePolicy.SetRefType(plan.RefType.Oneof0.ValueString())
-		}
-	}
-
-	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
-
-	_, hresp, err := client.PoliciesAPI.UpdatePolicies(ctx, id).UpdatePoliciesRequest(*updatePolicyRequest).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"update policy resource",
-			fmt.Sprintf("policy %d UPDATE failed: %s",
-				id, errors.ErrMsg(err, hresp)),
-		)
-		return
-	}
-
-	updatedState, diags := getPolicyAsState(ctx, id, client)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		resp.Diagnostics.AddError(
-			"update policy resource",
-			fmt.Sprintf("policy %d: failed to read from api", id),
-		)
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }
 
 func (r *Resource) Delete(

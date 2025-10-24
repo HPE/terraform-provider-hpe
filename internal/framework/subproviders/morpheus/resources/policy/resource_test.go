@@ -48,15 +48,19 @@ func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_policy" "example_required" {
-  name = "` + name + `"
+  name    = "` + name + `"
+  enabled = false
+  ref_id  = 9969
   
-  # Required empty config field
-  config = {}
+  ref_type = {
+    oneof0 = "User"
+  }
   
-  # Simple max memory policy configuration
-  config_max_memory = {
-    max_memory = {
-      anyof1 = 4294967296  # 4GB in bytes
+  config = {
+    max_memory_policy_type_configuration = {
+      max_memory = {
+        anyof1 = 4294967296  # 4GB in bytes
+      }
     }
   }
 }
@@ -71,12 +75,17 @@ resource "hpe_morpheus_policy" "example_required" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_required",
 			"enabled",
-			"true",
+			"false",
 		),
-		// Check that config_max_memory is set
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_required",
+			"ref_id",
+			"9969",
+		),
+		// Check that config.max_memory_policy_type_configuration is set
 		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_policy.example_required",
-			"config_max_memory.max_memory.anyof1",
+			"config.max_memory_policy_type_configuration.max_memory.anyof1",
 		),
 	}
 
@@ -120,14 +129,18 @@ func TestAccMorpheusPolicyBackupCreationOk(t *testing.T) {
 resource "hpe_morpheus_policy" "example_backup" {
   name        = "` + name + `"
   description = "Backup creation policy for testing"
-  enabled     = true
+  enabled     = false
+  ref_id      = 9969
   
-  # Required empty config field
-  config = {}
+  ref_type = {
+    oneof0 = "User"
+  }
   
-  config_backup_creation = {
-    create_backup      = true
-    create_backup_type = "snapshot"
+  config = {
+    backup_creation_policy_type_configuration = {
+      create_backup      = true
+      create_backup_type = "snapshot"
+    }
   }
 }
 	`
@@ -146,17 +159,22 @@ resource "hpe_morpheus_policy" "example_backup" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_backup",
 			"enabled",
-			"true",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_backup",
+			"ref_id",
+			"9969",
 		),
 		// Backup creation config
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_backup",
-			"config_backup_creation.create_backup",
+			"config.backup_creation_policy_type_configuration.create_backup",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_backup",
-			"config_backup_creation.create_backup_type",
+			"config.backup_creation_policy_type_configuration.create_backup_type",
 			"snapshot",
 		),
 	}
@@ -201,15 +219,19 @@ func TestAccMorpheusPolicyBudgetOk(t *testing.T) {
 resource "hpe_morpheus_policy" "example_budget" {
   name        = "` + name + `"
   description = "Budget policy for testing"
-  enabled     = true
+  enabled     = false
+  ref_id      = 9969
   
-  # Required empty config field
-  config = {}
+  ref_type = {
+    oneof0 = "User"
+  }
   
-  config_budget = {
-    max_price          = 1000.50
-    max_price_currency = "USD"
-    max_price_unit     = "month"
+  config = {
+    budget_policy_type_configuration = {
+      max_price          = 1000.50
+      max_price_currency = "USD"
+      max_price_unit     = "month"
+    }
   }
 }
 	`
@@ -228,22 +250,27 @@ resource "hpe_morpheus_policy" "example_budget" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_budget",
 			"enabled",
-			"true",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_budget",
+			"ref_id",
+			"9969",
 		),
 		// Budget config
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_budget",
-			"config_budget.max_price",
+			"config.budget_policy_type_configuration.max_price",
 			"1000.5",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_budget",
-			"config_budget.max_price_currency",
+			"config.budget_policy_type_configuration.max_price_currency",
 			"USD",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_budget",
-			"config_budget.max_price_unit",
+			"config.budget_policy_type_configuration.max_price_unit",
 			"month",
 		),
 	}
@@ -288,14 +315,18 @@ func TestAccMorpheusPolicyInstanceNameOk(t *testing.T) {
 resource "hpe_morpheus_policy" "example_instance_name" {
   name        = "` + name + `"
   description = "Instance naming policy"
-  enabled     = true
+  enabled     = false
+  ref_id      = 9969
   
-  # Required empty config field
-  config = {}
+  ref_type = {
+    oneof0 = "User"
+  }
   
-  config_instance_name = {
-    naming_type    = "pattern"
-    naming_pattern = "vm-$${sequence}-$${cloudCode}"
+  config = {
+    instance_name_policy_type_configuration = {
+      naming_type    = "pattern"
+      naming_pattern = "vm-$${sequence}-$${cloudCode}"
+    }
   }
 }
 	`
@@ -314,17 +345,22 @@ resource "hpe_morpheus_policy" "example_instance_name" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_instance_name",
 			"enabled",
-			"true",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_instance_name",
+			"ref_id",
+			"9969",
 		),
 		// Instance name config
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_instance_name",
-			"config_instance_name.naming_type",
+			"config.instance_name_policy_type_configuration.naming_type",
 			"pattern",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_instance_name",
-			"config_instance_name.naming_pattern",
+			"config.instance_name_policy_type_configuration.naming_pattern",
 			"vm-${sequence}-${cloudCode}",
 		),
 	}
@@ -369,15 +405,19 @@ func TestAccMorpheusPolicyTagsOk(t *testing.T) {
 resource "hpe_morpheus_policy" "example_tags" {
   name        = "` + name + `"
   description = "Tags policy for testing"
-  enabled     = true
+  enabled     = false
+  ref_id      = 9969
   
-  # Required empty config field
-  config = {}
+  ref_type = {
+    oneof0 = "User"
+  }
   
-  config_tags = {
-    key    = "Environment"
-    value  = "Production,Development,Testing"
-    strict = true
+  config = {
+    tags_policy_type_configuration = {
+      key    = "Environment"
+      value  = "Production,Development,Testing"
+      strict = true
+    }
   }
 }
 	`
@@ -396,22 +436,27 @@ resource "hpe_morpheus_policy" "example_tags" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_tags",
 			"enabled",
-			"true",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_tags",
+			"ref_id",
+			"9969",
 		),
 		// Tags config
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_tags",
-			"config_tags.key",
+			"config.tags_policy_type_configuration.key",
 			"Environment",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_tags",
-			"config_tags.value",
+			"config.tags_policy_type_configuration.value",
 			"Production,Development,Testing",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_tags",
-			"config_tags.strict",
+			"config.tags_policy_type_configuration.strict",
 			"true",
 		),
 	}
