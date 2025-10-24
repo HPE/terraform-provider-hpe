@@ -3,9 +3,9 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251023150927-415f8c7cd80b
 	github.com/cenkalti/backoff/v5 v5.0.2
-	github.com/gomorpheus/morpheus-go-sdk v0.6.0
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
@@ -25,7 +25,6 @@ require (
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/go-resty/resty/v2 v2.14.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
