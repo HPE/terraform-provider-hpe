@@ -54,7 +54,7 @@ func NewLegacyClient(
 
 	c.HTTPClient = &http.Client{
 		Transport: authRoundTripper,
-		Timeout:   15 * time.Second, // increased timeout for complex API endpoints
+		Timeout:   15 * time.Second,
 	}
 
 	return c
