@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/auth"
 	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/auth"
 )
 
 // A constructor for a new "legacy" Morpheus SDK client with custom
@@ -28,6 +29,7 @@ func NewLegacyClient(
 
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
+			//nolint:gosec
 			InsecureSkipVerify: c.IsInsecure(),
 		},
 		Proxy: http.ProxyFromEnvironment,

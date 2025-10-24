@@ -10,10 +10,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/client"
 	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/client"
 )
 
 func TestMain(m *testing.M) {
@@ -87,7 +88,6 @@ func TestLegacyClientCustomTransport(t *testing.T) {
 			resp, err := morpheusClient.Whoami()
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
-
 		})
 	}
 }
