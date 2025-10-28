@@ -12,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -22,8 +23,9 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
-	_ resource.Resource                = &Resource{}
-	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.Resource                   = &Resource{}
+	_ resource.ResourceWithImportState    = &Resource{}
+	_ resource.ResourceWithValidateConfig = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -98,26 +100,15 @@ func getPolicyAsState(
 
 	// Handle RefId - convert string to int64
 	if p.RefId.IsSet() && p.RefId.Get() != nil {
-		refIdStr := *p.RefId.Get()
-		// Try to parse as int64
-		var refIdInt int64
-		fmt.Sscanf(refIdStr, "%d", &refIdInt)
-		state.RefId = types.Int64Value(refIdInt)
+		state.AssociatedResourceId = types.Int64Value(p.GetRefId())
 	}
 
 	// Handle RefType
+	// If RefType is null or not set, it means it's a Global policy
 	if p.RefType.IsSet() && p.RefType.Get() != nil {
-		refTypeStr := *p.RefType.Get()
-		refTypeAttrs := map[string]attr.Value{
-			"oneof0": types.StringValue(refTypeStr),
-		}
-		refTypeValue, refTypeDiags := NewRefTypeValue(
-			RefTypeValue{}.AttributeTypes(ctx), refTypeAttrs)
-		if refTypeDiags.HasError() {
-			diags.Append(refTypeDiags...)
-			return state, diags
-		}
-		state.RefType = refTypeValue
+		state.AssociatedResourceType = types.StringValue(*p.RefType.Get())
+	} else {
+		state.AssociatedResourceType = types.StringValue("Global")
 	}
 
 	// Set account IDs
@@ -229,8 +220,8 @@ func (r *Resource) Create(
 		addPolicy.SetEachUser(plan.EachUser.ValueBool())
 	}
 
-	if !plan.RefId.IsNull() && !plan.RefId.IsUnknown() {
-		addPolicy.SetRefId(plan.RefId.ValueInt64())
+	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
+		addPolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
 	}
 
 	// Set account IDs if provided
@@ -297,10 +288,12 @@ func (r *Resource) Create(
 		addPolicy.SetConfig(sdkConfig)
 	}
 
-	// Set RefType if provided
-	if !plan.RefType.IsNull() && !plan.RefType.IsUnknown() {
-		if !plan.RefType.Oneof0.IsNull() && !plan.RefType.Oneof0.IsUnknown() {
-			addPolicy.SetRefType(plan.RefType.Oneof0.ValueString())
+	// Set RefType if provided and not "Global"
+	// When associated_resource_type is "Global", we don't set RefType (leave it null)
+	if !plan.AssociatedResourceType.IsNull() && !plan.AssociatedResourceType.IsUnknown() {
+		refType := plan.AssociatedResourceType.ValueString()
+		if refType != "Global" {
+			addPolicy.SetRefType(refType)
 		}
 	}
 
@@ -405,5 +398,41 @@ func (r *Resource) Delete(
 			fmt.Sprintf("policy %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
 		return
+	}
+}
+
+// ValidateConfig validates that associated_resource_id is set when
+// associated_resource_type is not "Global"
+func (r *Resource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config PolicyModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If associated_resource_type is not "Global", associated_resource_id must be set
+	if !config.AssociatedResourceType.IsNull() && !config.AssociatedResourceType.IsUnknown() {
+		resourceType := config.AssociatedResourceType.ValueString()
+
+		if resourceType != "Global" {
+			// Check if associated_resource_id is set
+			if config.AssociatedResourceId.IsNull() || config.AssociatedResourceId.IsUnknown() {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("associated_resource_id"),
+					"Missing required attribute",
+					fmt.Sprintf(
+						"associated_resource_id is required when associated_resource_type is '%s'. "+
+							"Set associated_resource_id to the ID of the %s resource, or set associated_resource_type to 'Global'.",
+						resourceType, resourceType,
+					),
+				)
+			}
+		}
 	}
 }

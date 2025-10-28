@@ -48,12 +48,13 @@ func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_policy" "example_required" {
-  name    = "` + name + `"
-  enabled = false
-  ref_id  = 9969
+  name                     = "` + name + `"
+  enabled                  = false
+  associated_resource_id   = 9969
+  associated_resource_type = "User"
   
-  ref_type = {
-    oneof0 = "User"
+  policy_type = {
+    code = "maxMemory"
   }
   
   config = {
@@ -79,8 +80,13 @@ resource "hpe_morpheus_policy" "example_required" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_required",
-			"ref_id",
+			"associated_resource_id",
 			"9969",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_required",
+			"associated_resource_type",
+			"User",
 		),
 		// Check that config.max_memory_policy_type_configuration is set
 		resource.TestCheckResourceAttrSet(
@@ -127,13 +133,14 @@ func TestAccMorpheusPolicyBackupCreationOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_policy" "example_backup" {
-  name        = "` + name + `"
-  description = "Backup creation policy for testing"
-  enabled     = false
-  ref_id      = 9969
+  name                     = "` + name + `"
+  description              = "Backup creation policy for testing"
+  enabled                  = false
+  associated_resource_id   = 9969
+  associated_resource_type = "User"
   
-  ref_type = {
-    oneof0 = "User"
+  policy_type = {
+    code = "createBackup"
   }
   
   config = {
@@ -163,8 +170,13 @@ resource "hpe_morpheus_policy" "example_backup" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_backup",
-			"ref_id",
+			"associated_resource_id",
 			"9969",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_backup",
+			"associated_resource_type",
+			"User",
 		),
 		// Backup creation config
 		resource.TestCheckResourceAttr(
@@ -217,13 +229,14 @@ func TestAccMorpheusPolicyBudgetOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_policy" "example_budget" {
-  name        = "` + name + `"
-  description = "Budget policy for testing"
-  enabled     = false
-  ref_id      = 9969
+  name                     = "` + name + `"
+  description              = "Budget policy for testing"
+  enabled                  = false
+  associated_resource_id   = 9969
+  associated_resource_type = "User"
   
-  ref_type = {
-    oneof0 = "User"
+  policy_type = {
+    code = "maxPrice"
   }
   
   config = {
@@ -254,8 +267,13 @@ resource "hpe_morpheus_policy" "example_budget" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_budget",
-			"ref_id",
+			"associated_resource_id",
 			"9969",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_budget",
+			"associated_resource_type",
+			"User",
 		),
 		// Budget config
 		resource.TestCheckResourceAttr(
@@ -313,13 +331,14 @@ func TestAccMorpheusPolicyInstanceNameOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_policy" "example_instance_name" {
-  name        = "` + name + `"
-  description = "Instance naming policy"
-  enabled     = false
-  ref_id      = 9969
+  name                     = "` + name + `"
+  description              = "Instance naming policy"
+  enabled                  = false
+  associated_resource_id   = 9969
+  associated_resource_type = "User"
   
-  ref_type = {
-    oneof0 = "User"
+  policy_type = {
+    code = "naming"
   }
   
   config = {
@@ -349,8 +368,13 @@ resource "hpe_morpheus_policy" "example_instance_name" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_policy.example_instance_name",
-			"ref_id",
+			"associated_resource_id",
 			"9969",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_policy.example_instance_name",
+			"associated_resource_type",
+			"User",
 		),
 		// Instance name config
 		resource.TestCheckResourceAttr(
