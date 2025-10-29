@@ -265,6 +265,16 @@ func (r *Resource) Create(
 			return
 		}
 
+		// Check if config is empty
+		if configMapTyped, ok := configMap.(map[string]interface{}); ok && len(configMapTyped) == 0 {
+			resp.Diagnostics.AddError(
+				"create policy resource",
+				fmt.Sprintf("policy %s: config cannot be empty for policy type '%s'. "+
+					"Please provide the required configuration fields for this policy type.", name, policyTypeCode),
+			)
+			return
+		}
+
 		// Marshal to JSON then unmarshal to SDK config structure
 		// This allows the SDK's UnmarshalJSON to handle the oneOf structure
 		configJSON, err := json.Marshal(configMap)
@@ -280,7 +290,7 @@ func (r *Resource) Create(
 		if err := json.Unmarshal(configJSON, &sdkConfig); err != nil {
 			resp.Diagnostics.AddError(
 				"create policy resource",
-				"policy "+name+": failed to unmarshal config: "+err.Error(),
+				fmt.Sprintf("policy %s: invalid config for policy type '%s': %s", name, policyTypeCode, err.Error()),
 			)
 			return
 		}
@@ -335,7 +345,164 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// buildPolicyConfigForUpdate maps the schema config fields to the SDK config structure for update operations
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, state PolicyModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := state.Id.ValueInt64()
+	name := plan.Name.ValueString()
+
+	updatePolicy := sdk.NewUpdatePoliciesRequestPolicyWithDefaults()
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update policy resource",
+			fmt.Sprintf("policy %d: failed to create client: %s", id, err.Error()),
+		)
+		return
+	}
+
+	// Set required fields
+	updatePolicy.SetName(name)
+
+	// Set optional fields
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		updatePolicy.SetDescription(plan.Description.ValueString())
+	}
+
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		updatePolicy.SetEnabled(plan.Enabled.ValueBool())
+	}
+
+	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
+		updatePolicy.SetEachUser(plan.EachUser.ValueBool())
+	}
+
+	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
+		updatePolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
+	}
+
+	// Set account IDs if provided
+	if !plan.Accounts.IsNull() && !plan.Accounts.IsUnknown() {
+		var accountIDs []int64
+		diags := plan.Accounts.ElementsAs(ctx, &accountIDs, false)
+		if diags.HasError() {
+			resp.Diagnostics.Append(diags...)
+			return
+		}
+		updatePolicy.SetAccounts(accountIDs)
+	}
+
+	// Set Config - convert dynamic to SDK config structure
+	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+		configValue := plan.Config.UnderlyingValue()
+		configMap, err := convert.ValueToAny(ctx, configValue)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update policy resource",
+				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
+			)
+			return
+		}
+
+		// Check if config is empty
+		if configMapTyped, ok := configMap.(map[string]interface{}); ok && len(configMapTyped) == 0 {
+			resp.Diagnostics.AddError(
+				"update policy resource",
+				fmt.Sprintf("policy %d: config cannot be empty. "+
+					"Please provide the required configuration fields for this policy type.", id),
+			)
+			return
+		}
+
+		// Marshal to JSON then unmarshal to SDK config structure
+		// This allows the SDK's UnmarshalJSON to handle the oneOf structure
+		configJSON, err := json.Marshal(configMap)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update policy resource",
+				fmt.Sprintf("policy %d: failed to marshal config to JSON: %s", id, err.Error()),
+			)
+			return
+		}
+
+		var sdkConfig sdk.UpdatePoliciesRequestPolicyConfig
+		if err := json.Unmarshal(configJSON, &sdkConfig); err != nil {
+			resp.Diagnostics.AddError(
+				"update policy resource",
+				fmt.Sprintf("policy %d: invalid config: %s", id, err.Error()),
+			)
+			return
+		}
+
+		updatePolicy.SetConfig(sdkConfig)
+	}
+
+	// Set RefType if provided and not "Global"
+	// When associated_resource_type is "Global", we don't set RefType (leave it null)
+	if !plan.AssociatedResourceType.IsNull() && !plan.AssociatedResourceType.IsUnknown() {
+		refType := plan.AssociatedResourceType.ValueString()
+		if refType != "Global" {
+			updatePolicy.SetRefType(refType)
+		}
+	}
+
+	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
+
+	policy, hresp, err := client.PoliciesAPI.UpdatePolicies(ctx, id).
+		UpdatePoliciesRequest(*updatePolicyRequest).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update policy resource",
+			fmt.Sprintf("policy %d PUT failed: ", id)+errors.ErrMsg(err, hresp),
+		)
+		return
+	}
+
+	if policy.Policy == nil || policy.Policy.Id == nil {
+		resp.Diagnostics.AddError(
+			"update policy resource",
+			fmt.Sprintf("policy %d: id is nil", id),
+		)
+		return
+	}
+
+	newID := *policy.Policy.Id
+	if newID != id {
+		resp.Diagnostics.AddError(
+			"update policy resource",
+			fmt.Sprintf("policy %d: id mismatch %d != %d", id, id, newID),
+		)
+		return
+	}
+
+	// Read the updated policy to get full state
+	updatedState, diags := getPolicyAsState(ctx, id, client, &plan)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"update policy resource",
+			fmt.Sprintf("policy %d: failed to read from api", id),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
+}
 
 func (r *Resource) Read(
 	ctx context.Context,
