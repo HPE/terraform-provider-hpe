@@ -24,13 +24,6 @@ import (
 func PolicyResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"accounts": schema.SetAttribute{
-				ElementType:         types.Int64Type,
-				Optional:            true,
-				Computed:            true,
-				Description:         "Array of tenants to scope the policy to",
-				MarkdownDescription: "Array of tenants to scope the policy to",
-			},
 			"associated_resource_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -211,6 +204,13 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"success": schema.BoolAttribute{
 				Computed: true,
 			},
+			"tenants": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Array of tenants to scope the policy to",
+				MarkdownDescription: "Array of tenants to scope the policy to",
+			},
 			"user": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
@@ -232,7 +232,6 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type PolicyModel struct {
-	Accounts               types.Set       `tfsdk:"accounts"`
 	AssociatedResourceId   types.Int64     `tfsdk:"associated_resource_id"`
 	AssociatedResourceType types.String    `tfsdk:"associated_resource_type"`
 	Cloud                  CloudValue      `tfsdk:"cloud"`
@@ -247,6 +246,7 @@ type PolicyModel struct {
 	PolicyType             PolicyTypeValue `tfsdk:"policy_type"`
 	Role                   RoleValue       `tfsdk:"role"`
 	Success                types.Bool      `tfsdk:"success"`
+	Tenants                types.Set       `tfsdk:"tenants"`
 	User                   UserValue       `tfsdk:"user"`
 }
 

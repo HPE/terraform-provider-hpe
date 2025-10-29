@@ -111,23 +111,23 @@ func getPolicyAsState(
 		state.AssociatedResourceType = types.StringValue("Global")
 	}
 
-	// Set account IDs
+	// Set Tenant IDs
 	if len(p.Accounts) > 0 {
-		accountIDs := make([]int64, 0, len(p.Accounts))
+		tenantIDs := make([]int64, 0, len(p.Accounts))
 		for _, acc := range p.Accounts {
 			if acc.Id != nil {
-				accountIDs = append(accountIDs, *acc.Id)
+				tenantIDs = append(tenantIDs, *acc.Id)
 			}
 		}
-		accountSet, setDiags := types.SetValueFrom(ctx, types.Int64Type, accountIDs)
+		tenantsSet, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
 		if setDiags.HasError() {
 			diags.Append(setDiags...)
 			return state, diags
 		}
-		state.Accounts = accountSet
+		state.Tenants = tenantsSet
 	} else {
 		// Set to null if no accounts
-		state.Accounts = types.SetNull(types.Int64Type)
+		state.Tenants = types.SetNull(types.Int64Type)
 	}
 
 	// Set PolicyType
@@ -224,15 +224,15 @@ func (r *Resource) Create(
 		addPolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
 	}
 
-	// Set account IDs if provided
-	if !plan.Accounts.IsNull() && !plan.Accounts.IsUnknown() {
-		var accountIDs []int64
-		diags := plan.Accounts.ElementsAs(ctx, &accountIDs, false)
+	// Set tenant IDs if provided
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
+		var tenantIDs []int64
+		diags := plan.Tenants.ElementsAs(ctx, &tenantIDs, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
-		addPolicy.SetAccounts(accountIDs)
+		addPolicy.SetAccounts(tenantIDs)
 	}
 
 	// Set PolicyType - required field
@@ -396,15 +396,15 @@ func (r *Resource) Update(
 		updatePolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
 	}
 
-	// Set account IDs if provided
-	if !plan.Accounts.IsNull() && !plan.Accounts.IsUnknown() {
-		var accountIDs []int64
-		diags := plan.Accounts.ElementsAs(ctx, &accountIDs, false)
+	// Set tenant IDs if provided
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
+		var tenantIDs []int64
+		diags := plan.Tenants.ElementsAs(ctx, &tenantIDs, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
 			return
 		}
-		updatePolicy.SetAccounts(accountIDs)
+		updatePolicy.SetAccounts(tenantIDs)
 	}
 
 	// Set Config - convert dynamic to SDK config structure
