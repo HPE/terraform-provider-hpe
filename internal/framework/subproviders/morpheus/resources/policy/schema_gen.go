@@ -5,6 +5,8 @@ package policy
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -16,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -127,8 +128,7 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"policy_type": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"code": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
+						Required:            true,
 						Description:         "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
 						MarkdownDescription: "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
 						Validators: []validator.String{
