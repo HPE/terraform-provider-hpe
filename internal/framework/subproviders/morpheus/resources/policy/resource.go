@@ -234,6 +234,25 @@ func (r *Resource) Create(
 	// Set required fields
 	addPolicy.SetName(name)
 
+	policyTypeCode := plan.PolicyType.Code.ValueString()
+	policyType := sdk.NewAddPoliciesRequestPolicyPolicyTypeWithDefaults()
+	policyType.SetCode(policyTypeCode)
+	addPolicy.SetPolicyType(*policyType)
+
+	// When associated_resource_type is "Global", leave refType null (null defaults to Global)
+	associatedResourceType := plan.AssociatedResourceType.ValueString()
+	if associatedResourceType != "Global" {
+		// Convert user-facing resource type to API type
+		apiType := resourceTypeToAPIType(associatedResourceType)
+		addPolicy.SetRefType(apiType)
+	}
+
+	// Set AssociatedResourceId if provided - required when RefType is not Global
+	// This is validated in ValidateConfig
+	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
+		addPolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
+	}
+
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		addPolicy.SetDescription(plan.Description.ValueString())
@@ -247,10 +266,6 @@ func (r *Resource) Create(
 		addPolicy.SetEachUser(plan.EachUser.ValueBool())
 	}
 
-	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
-		addPolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
-	}
-
 	// Set tenant IDs if provided
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenantIDs []int64
@@ -261,13 +276,6 @@ func (r *Resource) Create(
 		}
 		addPolicy.SetAccounts(tenantIDs)
 	}
-
-	// Set PolicyType - required field
-	policyTypeCode := plan.PolicyType.Code.ValueString()
-
-	policyType := sdk.NewAddPoliciesRequestPolicyPolicyTypeWithDefaults()
-	policyType.SetCode(policyTypeCode)
-	addPolicy.SetPolicyType(*policyType)
 
 	// Set Config - convert dynamic to SDK config structure
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
@@ -312,15 +320,6 @@ func (r *Resource) Create(
 		}
 
 		addPolicy.SetConfig(sdkConfig)
-	}
-
-	// Set RefType if provided and not "Global"
-	// When associated_resource_type is "Global", we don't set RefType (leave it null)
-	refType := plan.AssociatedResourceType.ValueString()
-	if refType != "Global" {
-		// Convert user-facing resource type to API type
-		apiType := resourceTypeToAPIType(refType)
-		addPolicy.SetRefType(apiType)
 	}
 
 	addPolicyRequest := sdk.NewAddPoliciesRequest(*addPolicy)
@@ -394,6 +393,12 @@ func (r *Resource) Update(
 
 	// Set required fields
 	updatePolicy.SetName(name)
+
+	// Note: PolicyType, AssociatedResourceType, and AssociatedResourceId are not included
+	// in updates. PolicyType is not updatable via the API (not present in UpdatePoliciesRequestPolicy).
+	// AssociatedResourceType and AssociatedResourceId require replacement
+	// While updatePolicy.SetRefType and updatePolicy.SetRefId exist, they are ineffectual and
+	// neither refType nor refId can be updated via the API.
 
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
