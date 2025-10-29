@@ -131,6 +131,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
 						MarkdownDescription: "The policy type code. See `Retrieves all Policy Types` endpoint for listing.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"deleteApproval",
