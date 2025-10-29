@@ -409,10 +409,6 @@ func (r *Resource) Update(
 		updatePolicy.SetEachUser(plan.EachUser.ValueBool())
 	}
 
-	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
-		updatePolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
-	}
-
 	// Set tenant IDs if provided
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenantIDs []int64
@@ -467,15 +463,6 @@ func (r *Resource) Update(
 		}
 
 		updatePolicy.SetConfig(sdkConfig)
-	}
-
-	// Set RefType if provided and not "Global"
-	// When associated_resource_type is "Global", we don't set RefType (leave it null)
-	refType := plan.AssociatedResourceType.ValueString()
-	if refType != "Global" {
-		// Convert user-facing resource type to API type
-		apiType := resourceTypeToAPIType(refType)
-		updatePolicy.SetRefType(apiType)
 	}
 
 	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
