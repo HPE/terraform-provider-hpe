@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -33,11 +36,17 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan",
 				MarkdownDescription: "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"associated_resource_type": schema.StringAttribute{
 				Required:            true,
 				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
 				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.OneOf("Global", "Group", "Cloud", "User", "Role", "Network", "Plan"),
 				},
