@@ -96,6 +96,7 @@ func getPolicyAsState(
 			"populate policy resource",
 			fmt.Sprintf("policy %d GET failed", id)+errors.ErrMsg(err, hresp),
 		)
+
 		return state, diags
 	}
 
@@ -104,6 +105,7 @@ func getPolicyAsState(
 			"populate policy resource",
 			fmt.Sprintf("policy %d is nil", id),
 		)
+
 		return state, diags
 	}
 
@@ -150,6 +152,7 @@ func getPolicyAsState(
 		tenantsSet, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
 		if setDiags.HasError() {
 			diags.Append(setDiags...)
+
 			return state, diags
 		}
 		state.Tenants = tenantsSet
@@ -181,6 +184,7 @@ func getPolicyAsState(
 			PolicyTypeValue{}.AttributeTypes(ctx), policyTypeAttrs)
 		if policyTypeDiags.HasError() {
 			diags.Append(policyTypeDiags...)
+
 			return state, diags
 		}
 		state.PolicyType = policyTypeValue
@@ -200,6 +204,7 @@ func getPolicyAsState(
 				"populate policy resource",
 				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
 			)
+
 			return state, diags
 		}
 	}
@@ -228,6 +233,7 @@ func (r *Resource) Create(
 			"create policy resource",
 			"policy "+name+": failed to create client: "+err.Error(),
 		)
+
 		return
 	}
 
@@ -272,6 +278,7 @@ func (r *Resource) Create(
 		diags := plan.Tenants.ElementsAs(ctx, &tenantIDs, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
+
 			return
 		}
 		addPolicy.SetAccounts(tenantIDs)
@@ -286,6 +293,7 @@ func (r *Resource) Create(
 				"create policy resource",
 				"policy "+name+": failed to convert config: "+err.Error(),
 			)
+
 			return
 		}
 
@@ -296,6 +304,7 @@ func (r *Resource) Create(
 				fmt.Sprintf("policy %s: config cannot be empty for policy type '%s'. "+
 					"Please provide the required configuration fields for this policy type.", name, policyTypeCode),
 			)
+
 			return
 		}
 
@@ -307,6 +316,7 @@ func (r *Resource) Create(
 				"create policy resource",
 				"policy "+name+": failed to marshal config to JSON: "+err.Error(),
 			)
+
 			return
 		}
 
@@ -316,6 +326,7 @@ func (r *Resource) Create(
 				"create policy resource",
 				fmt.Sprintf("policy %s: invalid config for policy type '%s': %s", name, policyTypeCode, err.Error()),
 			)
+
 			return
 		}
 
@@ -330,6 +341,7 @@ func (r *Resource) Create(
 			"create policy resource",
 			"policy "+name+" POST failed: "+errors.ErrMsg(err, hresp),
 		)
+
 		return
 	}
 
@@ -338,6 +350,7 @@ func (r *Resource) Create(
 			"create policy resource",
 			"policy "+name+" id is nil",
 		)
+
 		return
 	}
 
@@ -354,6 +367,7 @@ func (r *Resource) Create(
 	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
 		return
 	}
 
@@ -388,6 +402,7 @@ func (r *Resource) Update(
 			"update policy resource",
 			fmt.Sprintf("policy %d: failed to create client: %s", id, err.Error()),
 		)
+
 		return
 	}
 
@@ -419,6 +434,7 @@ func (r *Resource) Update(
 		diags := plan.Tenants.ElementsAs(ctx, &tenantIDs, false)
 		if diags.HasError() {
 			resp.Diagnostics.Append(diags...)
+
 			return
 		}
 		updatePolicy.SetAccounts(tenantIDs)
@@ -433,6 +449,7 @@ func (r *Resource) Update(
 				"update policy resource",
 				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
 			)
+
 			return
 		}
 
@@ -443,6 +460,7 @@ func (r *Resource) Update(
 				fmt.Sprintf("policy %d: config cannot be empty. "+
 					"Please provide the required configuration fields for this policy type.", id),
 			)
+
 			return
 		}
 
@@ -454,6 +472,7 @@ func (r *Resource) Update(
 				"update policy resource",
 				fmt.Sprintf("policy %d: failed to marshal config to JSON: %s", id, err.Error()),
 			)
+
 			return
 		}
 
@@ -463,6 +482,7 @@ func (r *Resource) Update(
 				"update policy resource",
 				fmt.Sprintf("policy %d: invalid config: %s", id, err.Error()),
 			)
+
 			return
 		}
 
@@ -478,6 +498,7 @@ func (r *Resource) Update(
 			"update policy resource",
 			fmt.Sprintf("policy %d PUT failed: ", id)+errors.ErrMsg(err, hresp),
 		)
+
 		return
 	}
 
@@ -486,6 +507,7 @@ func (r *Resource) Update(
 			"update policy resource",
 			fmt.Sprintf("policy %d: id is nil", id),
 		)
+
 		return
 	}
 
@@ -495,6 +517,7 @@ func (r *Resource) Update(
 			"update policy resource",
 			fmt.Sprintf("policy %d: id mismatch %d != %d", id, id, newID),
 		)
+
 		return
 	}
 
@@ -506,6 +529,7 @@ func (r *Resource) Update(
 			"update policy resource",
 			fmt.Sprintf("policy %d: failed to read from api", id),
 		)
+
 		return
 	}
 
@@ -530,6 +554,7 @@ func (r *Resource) Read(
 			"read policy resource",
 			"new client call failed with "+err.Error(),
 		)
+
 		return
 	}
 
@@ -537,6 +562,7 @@ func (r *Resource) Read(
 	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
 		return
 	}
 
@@ -563,6 +589,7 @@ func (r *Resource) Delete(
 			"delete policy resource",
 			fmt.Sprintf("policy %d: failed to create client: %s", id, err.Error()),
 		)
+
 		return
 	}
 
@@ -572,6 +599,7 @@ func (r *Resource) Delete(
 			"delete policy resource",
 			fmt.Sprintf("policy %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
 		)
+
 		return
 	}
 }
