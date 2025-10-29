@@ -54,6 +54,32 @@ func (r *Resource) Schema(
 	resp.Schema = PolicyResourceSchema(ctx)
 }
 
+// resourceTypeToAPIType converts user-facing resource types to API types
+func resourceTypeToAPIType(resourceType string) string {
+	switch resourceType {
+	case "Cloud":
+		return "ComputeZone"
+	case "Group":
+		return "ComputeSite"
+	default:
+		// For other types (Global, User, Role, Network, Plan), pass through as-is
+		return resourceType
+	}
+}
+
+// apiTypeToResourceType converts API types back to user-facing resource types
+func apiTypeToResourceType(apiType string) string {
+	switch apiType {
+	case "ComputeZone":
+		return "Cloud"
+	case "ComputeSite":
+		return "Group"
+	default:
+		// For other types (Global, User, Role, Network, Plan), pass through as-is
+		return apiType
+	}
+}
+
 // populate policy resource model with current API values
 func getPolicyAsState(
 	ctx context.Context,
@@ -106,7 +132,9 @@ func getPolicyAsState(
 	// Handle RefType
 	// If RefType is null or not set, it means it's a Global policy
 	if p.RefType.IsSet() && p.RefType.Get() != nil {
-		state.AssociatedResourceType = types.StringValue(*p.RefType.Get())
+		apiType := *p.RefType.Get()
+		// Convert API type to user-facing resource type
+		state.AssociatedResourceType = types.StringValue(apiTypeToResourceType(apiType))
 	} else {
 		state.AssociatedResourceType = types.StringValue("Global")
 	}
@@ -291,7 +319,9 @@ func (r *Resource) Create(
 	// When associated_resource_type is "Global", we don't set RefType (leave it null)
 	refType := plan.AssociatedResourceType.ValueString()
 	if refType != "Global" {
-		addPolicy.SetRefType(refType)
+		// Convert user-facing resource type to API type
+		apiType := resourceTypeToAPIType(refType)
+		addPolicy.SetRefType(apiType)
 	}
 
 	addPolicyRequest := sdk.NewAddPoliciesRequest(*addPolicy)
@@ -443,7 +473,9 @@ func (r *Resource) Update(
 	// When associated_resource_type is "Global", we don't set RefType (leave it null)
 	refType := plan.AssociatedResourceType.ValueString()
 	if refType != "Global" {
-		updatePolicy.SetRefType(refType)
+		// Convert user-facing resource type to API type
+		apiType := resourceTypeToAPIType(refType)
+		updatePolicy.SetRefType(apiType)
 	}
 
 	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
@@ -573,7 +605,7 @@ func (r *Resource) ValidateConfig(
 
 	if resourceType != "Global" {
 		// Check if associated_resource_id is set
-		if config.AssociatedResourceId.IsNull() || config.AssociatedResourceId.IsUnknown() {
+		if config.AssociatedResourceId.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("associated_resource_id"),
 				"Missing required attribute",
