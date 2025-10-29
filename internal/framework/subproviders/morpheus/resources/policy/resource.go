@@ -62,7 +62,7 @@ func resourceTypeToAPIType(resourceType string) string {
 	case "Group":
 		return "ComputeSite"
 	default:
-		// For other types (Global, User, Role, Network, Plan), pass through as-is
+		// For other types (User, Role, Network, Plan), pass through as-is
 		return resourceType
 	}
 }
@@ -75,7 +75,7 @@ func apiTypeToResourceType(apiType string) string {
 	case "ComputeSite":
 		return "Group"
 	default:
-		// For other types (Global, User, Role, Network, Plan), pass through as-is
+		// For other types (User, Role, Network, Plan), pass through as-is
 		return apiType
 	}
 }
@@ -190,7 +190,6 @@ func getPolicyAsState(
 	state.Config = types.DynamicNull()
 
 	if plan != nil && !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		// Preserve config from plan - the API doesn't always return the full config structure
 		state.Config = plan.Config
 	} else if p.Config != nil {
 		// Convert API config to dynamic type
@@ -573,7 +572,8 @@ func (r *Resource) Delete(
 }
 
 // ValidateConfig validates that associated_resource_id is set when
-// associated_resource_type is not "Global"
+// associated_resource_type is not "Global" and that each_user is only set
+// when associated_resource_type is "Role"
 func (r *Resource) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,
@@ -600,6 +600,22 @@ func (r *Resource) ValidateConfig(
 					"associated_resource_id is required when associated_resource_type is '%s'. "+
 						"Set associated_resource_id to the ID of the %s resource, or set associated_resource_type to 'Global'.",
 					resourceType, resourceType,
+				),
+			)
+		}
+	}
+
+	// Validate each_user is only set when associated_resource_type is "Role"
+	if !config.EachUser.IsNull() {
+		if resourceType != "Role" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("each_user"),
+				"Invalid attribute combination",
+				fmt.Sprintf(
+					"each_user can only be set when associated_resource_type is 'Role'. "+
+						"Current associated_resource_type is '%s'. "+
+						"Either remove each_user or set associated_resource_type to 'Role'.",
+					resourceType,
 				),
 			)
 		}
