@@ -236,18 +236,7 @@ func (r *Resource) Create(
 	}
 
 	// Set PolicyType - required field
-	policyTypeCode := ""
-	if !plan.PolicyType.IsNull() && !plan.PolicyType.IsUnknown() && !plan.PolicyType.Code.IsNull() && !plan.PolicyType.Code.IsUnknown() {
-		policyTypeCode = plan.PolicyType.Code.ValueString()
-	}
-
-	if policyTypeCode == "" {
-		resp.Diagnostics.AddError(
-			"create policy resource",
-			"policy "+name+": policy_type.code is required",
-		)
-		return
-	}
+	policyTypeCode := plan.PolicyType.Code.ValueString()
 
 	policyType := sdk.NewAddPoliciesRequestPolicyPolicyTypeWithDefaults()
 	policyType.SetCode(policyTypeCode)
@@ -300,11 +289,9 @@ func (r *Resource) Create(
 
 	// Set RefType if provided and not "Global"
 	// When associated_resource_type is "Global", we don't set RefType (leave it null)
-	if !plan.AssociatedResourceType.IsNull() && !plan.AssociatedResourceType.IsUnknown() {
-		refType := plan.AssociatedResourceType.ValueString()
-		if refType != "Global" {
-			addPolicy.SetRefType(refType)
-		}
+	refType := plan.AssociatedResourceType.ValueString()
+	if refType != "Global" {
+		addPolicy.SetRefType(refType)
 	}
 
 	addPolicyRequest := sdk.NewAddPoliciesRequest(*addPolicy)
@@ -454,11 +441,9 @@ func (r *Resource) Update(
 
 	// Set RefType if provided and not "Global"
 	// When associated_resource_type is "Global", we don't set RefType (leave it null)
-	if !plan.AssociatedResourceType.IsNull() && !plan.AssociatedResourceType.IsUnknown() {
-		refType := plan.AssociatedResourceType.ValueString()
-		if refType != "Global" {
-			updatePolicy.SetRefType(refType)
-		}
+	refType := plan.AssociatedResourceType.ValueString()
+	if refType != "Global" {
+		updatePolicy.SetRefType(refType)
 	}
 
 	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
@@ -584,22 +569,20 @@ func (r *Resource) ValidateConfig(
 	}
 
 	// If associated_resource_type is not "Global", associated_resource_id must be set
-	if !config.AssociatedResourceType.IsNull() && !config.AssociatedResourceType.IsUnknown() {
-		resourceType := config.AssociatedResourceType.ValueString()
+	resourceType := config.AssociatedResourceType.ValueString()
 
-		if resourceType != "Global" {
-			// Check if associated_resource_id is set
-			if config.AssociatedResourceId.IsNull() || config.AssociatedResourceId.IsUnknown() {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("associated_resource_id"),
-					"Missing required attribute",
-					fmt.Sprintf(
-						"associated_resource_id is required when associated_resource_type is '%s'. "+
-							"Set associated_resource_id to the ID of the %s resource, or set associated_resource_type to 'Global'.",
-						resourceType, resourceType,
-					),
-				)
-			}
+	if resourceType != "Global" {
+		// Check if associated_resource_id is set
+		if config.AssociatedResourceId.IsNull() || config.AssociatedResourceId.IsUnknown() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("associated_resource_id"),
+				"Missing required attribute",
+				fmt.Sprintf(
+					"associated_resource_id is required when associated_resource_type is '%s'. "+
+						"Set associated_resource_id to the ID of the %s resource, or set associated_resource_type to 'Global'.",
+					resourceType, resourceType,
+				),
+			)
 		}
 	}
 }
