@@ -77,8 +77,7 @@ func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 					h.Write([]byte(new))
 					sha256Hash := hex.EncodeToString(h.Sum(nil))
 
-					//nolint:staticcheck
-					return strings.ToLower(old) == strings.ToLower(sha256Hash)
+					return strings.EqualFold(old, sha256Hash)
 				},
 			},
 			"required_group": {
@@ -329,8 +328,18 @@ func resourceActiveDirectoryIdentitySourceRead(
 	}
 
 	// store resource data
-	result := resp.Result.(*morpheus.GetIdentitySourceResult)
+	var result *morpheus.GetIdentitySourceResult
+	if resultAssert, ok := resp.Result.(*morpheus.GetIdentitySourceResult); ok {
+		result = resultAssert
+	} else {
+		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+	}
+
 	identitySource := result.IdentitySource
+	if identitySource == nil {
+		return diag.Errorf("Identity source not found in response")
+	}
+
 	d.SetId(convert.Int64ToString(identitySource.ID))
 	d.Set("name", identitySource.Name)
 	d.Set("description", identitySource.Description)
@@ -482,8 +491,18 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 
 		return diag.FromErr(err)
 	}
-	result := resp.Result.(*morpheus.UpdateIdentitySourceResult)
+
+	var result *morpheus.UpdateIdentitySourceResult
+	if resultAssert, ok := resp.Result.(*morpheus.UpdateIdentitySourceResult); ok {
+		result = resultAssert
+	} else {
+		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+	}
+
 	identitySourceResult := result.IdentitySource
+	if identitySourceResult == nil {
+		return diag.Errorf("Identity source not found in response")
+	}
 
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
