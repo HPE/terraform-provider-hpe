@@ -2,6 +2,8 @@ package convert
 
 import (
 	"strconv"
+
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
 // This file contains some helper methods for things like
@@ -10,8 +12,12 @@ import (
 // but I probably don't know what I am doing though...
 // Hey, let's convert all our IDs to strings though, for real.
 
-func ToInt64(i interface{}) int64 {
-	return StringToInt64(i.(string))
+func ToInt64(i interface{}) (int64, error) {
+	if res, ok := i.(string); ok {
+		return StringToInt64(res), nil
+	} else {
+		return -1, helpers.TypeAssertFail("i", res)
+	}
 }
 
 func StringToInt64(s string) int64 {
