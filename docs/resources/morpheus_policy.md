@@ -36,7 +36,6 @@ description: |-
 - `id` (Number) The ID of this resource.
 - `owner` (Attributes) (see [below for nested schema](#nestedatt--owner))
 - `role` (Attributes) (see [below for nested schema](#nestedatt--role))
-- `success` (Boolean)
 - `user` (Attributes) (see [below for nested schema](#nestedatt--user))
 
 <a id="nestedatt--policy_type"></a>
