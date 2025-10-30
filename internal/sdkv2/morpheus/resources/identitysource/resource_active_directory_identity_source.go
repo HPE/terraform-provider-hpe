@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"strings"
 
 	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/sdkv2err"
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -140,42 +140,105 @@ func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 }
 
 func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf("[DEBUG] ========== ENTERING CREATE FUNCTION ==========")
-	fmt.Println("CREATE FUNCTION CALLED - BREAKPOINT HERE")
-	client := meta.(*morpheus.Client)
-	fmt.Printf("Client: %+v\n", client)
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	var client *morpheus.Client
+	if clientAssert, ok := meta.(*morpheus.Client); ok {
+		client = clientAssert
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+	}
+
 	identitySource := make(map[string]interface{})
 
-	identitySource["name"] = d.Get("name").(string)
-	identitySource["description"] = d.Get("description").(string)
+	if name, ok := d.Get("name").(string); ok {
+		identitySource["name"] = name
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+	}
+
+	if description, ok := d.Get("description").(string); ok {
+		identitySource["description"] = description
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("description", d.Get("description")))
+	}
+
 	identitySource["type"] = "activeDirectory"
 
 	config := make(map[string]interface{})
-	config["url"] = d.Get("ad_server").(string)
-	config["domain"] = d.Get("domain").(string)
-	if d.Get("use_ssl").(bool) {
-		config["useSSL"] = "on"
+
+	if adServer, ok := d.Get("ad_server").(string); ok {
+		config["url"] = adServer
 	} else {
-		config["useSSL"] = "off"
+		return diag.FromErr(sdkv2err.TypeAssertFail("ad_server", d.Get("ad_server")))
 	}
-	config["bindingUsername"] = d.Get("binding_username").(string)
-	config["bindingPassword"] = d.Get("binding_password").(string)
-	config["requiredGroup"] = d.Get("required_group").(string)
-	config["searchMemberGroups"] = d.Get("search_member_groups").(bool)
-	config["allowCustomMappings"] = d.Get("enable_role_mapping_permission").(bool)
+
+	if domain, ok := d.Get("domain").(string); ok {
+		config["domain"] = domain
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("domain", d.Get("domain")))
+	}
+
+	if useSSL, ok := d.Get("use_ssl").(bool); ok {
+		if useSSL {
+			config["useSSL"] = "on"
+		} else {
+			config["useSSL"] = "off"
+		}
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+	}
+
+	if bindingUsername, ok := d.Get("binding_username").(string); ok {
+		config["bindingUsername"] = bindingUsername
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("binding_username", d.Get("binding_username")))
+	}
+
+	if bindingPassword, ok := d.Get("binding_password").(string); ok {
+		config["bindingPassword"] = bindingPassword
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("binding_password", d.Get("binding_password")))
+	}
+
+	if requiredGroup, ok := d.Get("required_group").(string); ok {
+		config["requiredGroup"] = requiredGroup
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("required_group", d.Get("required_group")))
+	}
+
+	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
+		config["searchMemberGroups"] = searchMemberGroups
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+	}
+
+	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
+		config["allowCustomMappings"] = allowCustomMappings
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+	}
 
 	identitySource["config"] = config
 
 	defaultAccountRole := make(map[string]interface{})
-	defaultAccountRole["id"] = d.Get("default_account_role_id").(int)
+
+	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
+		defaultAccountRole["id"] = defaultAccountRoleID
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+	}
+
 	identitySource["defaultAccountRole"] = defaultAccountRole
 
 	// Role Mappings
-	if d.Get("role_mapping") != "" {
-		identitySource["roleMappings"] = parseRoleMappings(d.Get("role_mapping").(*schema.Set))
+	if roleMappingValue := d.Get("role_mapping"); roleMappingValue != "" {
+		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
+			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
+		} else {
+			return diag.FromErr(sdkv2err.TypeAssertFail("role_mapping", roleMappingValue))
+		}
 	}
 
 	req := &morpheus.Request{
@@ -184,29 +247,47 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 		},
 	}
 
-	resp, err := client.CreateIdentitySource(int64(d.Get("tenant_id").(int)), req)
-	if err != nil {
-		log.Printf("test BEFORE API FAILURE")
-		log.Printf("API FAILURE: %s - %s", resp, err)
-		return diag.FromErr(err)
-	}
+	if tenantID, ok := d.Get("tenant_id").(int); ok {
+		resp, err := client.CreateIdentitySource(int64(tenantID), req)
+		if err != nil {
+			log.Printf("API FAILURE: %s - %s", resp, err)
+			return diag.FromErr(err)
+		}
 
-	result := resp.Result.(*morpheus.CreateIdentitySourceResult)
-	identitySourceResult := result.IdentitySource
-	// Successfully created resource, now set id
-	d.SetId(convert.Int64ToString(identitySourceResult.ID))
+		if result, ok := resp.Result.(*morpheus.CreateIdentitySourceResult); ok {
+			// Successfully created resource, now set id
+			d.SetId(convert.Int64ToString(result.IdentitySource.ID))
+		} else {
+			return diag.FromErr(sdkv2err.TypeAssertFail("resp.Result", resp.Result))
+		}
+
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("tenant_id", d.Get("tenant_id")))
+	}
 
 	resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
 	return diags
 }
 
 func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*morpheus.Client)
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	var client *morpheus.Client
+	if clientAssert, ok := meta.(*morpheus.Client); ok {
+		client = clientAssert
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+	}
+
 	id := d.Id()
-	name := d.Get("name").(string)
+
+	var name string
+	if nameValue, ok := d.Get("name").(string); ok {
+		name = nameValue
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+	}
 
 	// lookup by name if we do not have an id yet
 	var resp *morpheus.Response
@@ -266,40 +347,106 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 }
 
 func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*morpheus.Client)
+	var client *morpheus.Client
+	if clientAssert, ok := meta.(*morpheus.Client); ok {
+		client = clientAssert
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+	}
+
 	id := d.Id()
 
 	identitySource := make(map[string]interface{})
 
-	identitySource["name"] = d.Get("name").(string)
-	identitySource["description"] = d.Get("description").(string)
+	if name, ok := d.Get("name").(string); ok {
+		identitySource["name"] = name
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+	}
+
+	if description, ok := d.Get("description").(string); ok {
+		identitySource["description"] = description
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("description", d.Get("description")))
+	}
+
 	identitySource["type"] = "activeDirectory"
 
 	config := make(map[string]interface{})
-	config["url"] = d.Get("ad_server").(string)
-	config["domain"] = d.Get("domain").(string)
-	if d.Get("use_ssl").(bool) {
-		config["useSSL"] = "on"
+
+	if adServer, ok := d.Get("ad_server").(string); ok {
+		config["url"] = adServer
 	} else {
-		config["useSSL"] = "off"
+		return diag.FromErr(sdkv2err.TypeAssertFail("ad_server", d.Get("ad_server")))
 	}
-	config["bindingUsername"] = d.Get("binding_username").(string)
+
+	if domain, ok := d.Get("domain").(string); ok {
+		config["domain"] = domain
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("domain", d.Get("domain")))
+	}
+
+	if useSSL, ok := d.Get("use_ssl").(bool); ok {
+		if useSSL {
+			config["useSSL"] = "on"
+		} else {
+			config["useSSL"] = "off"
+		}
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+	}
+
+	if bindingUsername, ok := d.Get("binding_username").(string); ok {
+		config["bindingUsername"] = bindingUsername
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("binding_username", d.Get("binding_username")))
+	}
+
 	if d.HasChange("binding_password") {
-		config["bindingPassword"] = d.Get("binding_password").(string)
+		if bindingPassword, ok := d.Get("binding_password").(string); ok {
+			config["bindingPassword"] = bindingPassword
+		} else {
+			return diag.FromErr(sdkv2err.TypeAssertFail("binding_password", d.Get("binding_password")))
+		}
 	}
-	config["requiredGroup"] = d.Get("required_group").(string)
-	config["searchMemberGroups"] = d.Get("search_member_groups").(bool)
-	config["allowCustomMappings"] = d.Get("enable_role_mapping_permission").(bool)
+
+	if requiredGroup, ok := d.Get("required_group").(string); ok {
+		config["requiredGroup"] = requiredGroup
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("required_group", d.Get("required_group")))
+	}
+
+	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
+		config["searchMemberGroups"] = searchMemberGroups
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+	}
+
+	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
+		config["allowCustomMappings"] = allowCustomMappings
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+	}
 
 	identitySource["config"] = config
 
 	defaultAccountRole := make(map[string]interface{})
-	defaultAccountRole["id"] = d.Get("default_account_role_id").(int)
+
+	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
+		defaultAccountRole["id"] = defaultAccountRoleID
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+	}
+
 	identitySource["defaultAccountRole"] = defaultAccountRole
 
 	// Role Mappings
-	if d.Get("role_mapping") != "" {
-		identitySource["roleMappings"] = parseRoleMappings(d.Get("role_mapping").(*schema.Set))
+	if roleMappingValue := d.Get("role_mapping"); roleMappingValue != "" {
+		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
+			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
+		} else {
+			return diag.FromErr(sdkv2err.TypeAssertFail("role_mapping", roleMappingValue))
+		}
 	}
 
 	req := &morpheus.Request{
@@ -323,10 +470,15 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 }
 
 func resourceActiveDirectoryIdentitySourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*morpheus.Client)
-
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
+
+	var client *morpheus.Client
+	if clientAssert, ok := meta.(*morpheus.Client); ok {
+		client = clientAssert
+	} else {
+		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+	}
 
 	id := d.Id()
 	req := &morpheus.Request{}
@@ -354,13 +506,21 @@ func parseRoleMappings(mappings *schema.Set) []map[string]interface{} {
 		for k, v := range mappingConfig {
 			switch k {
 			case "role_id":
-				mappedRole["id"] = v.(int)
+				if id, ok := v.(int); ok {
+					mappedRole["id"] = id
+				}
 			case "role_name":
-				mappedRole["authority"] = v.(string)
+				if authority, ok := v.(string); ok {
+					mappedRole["authority"] = authority
+				}
 			case "active_directory_group_name":
-				row["sourceRoleName"] = v.(string)
+				if sourceRoleName, ok := v.(string); ok {
+					row["sourceRoleName"] = sourceRoleName
+				}
 			case "active_directory_group_fqn":
-				row["sourceRoleFqn"] = v.(string)
+				if sourceRoleFqn, ok := v.(string); ok {
+					row["sourceRoleFqn"] = sourceRoleFqn
+				}
 			}
 		}
 		row["mappedRole"] = mappedRole
