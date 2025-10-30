@@ -6,7 +6,7 @@ import (
 
 // This file contains some helper methods for things like
 // converting values to one type or another.
-// Suprisingly this is not as simple as it should be
+// Surprisingly this is not as simple as it should be
 // but I probably don't know what I am doing though...
 // Hey, let's convert all our IDs to strings though, for real.
 
@@ -16,6 +16,7 @@ func ToInt64(i interface{}) int64 {
 
 func StringToInt64(s string) int64 {
 	v, _ := strconv.ParseInt(s, 10, 64)
+
 	return v
 }
 
@@ -70,6 +71,7 @@ func BoolValue(v *bool) bool {
 	if v != nil {
 		return *v
 	}
+
 	return false
 }
 
@@ -80,6 +82,7 @@ func BoolSlice(src []bool) []*bool {
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
 	}
+
 	return dst
 }
 
@@ -92,6 +95,7 @@ func BoolValueSlice(src []*bool) []bool {
 			dst[i] = *(src[i])
 		}
 	}
+
 	return dst
 }
 
@@ -106,6 +110,7 @@ func BoolValueSlice(src []*bool) []bool {
 // 	if v != nil {
 // 		return *v
 // 	}
+
 // 	return 0
 // }
 
@@ -116,6 +121,7 @@ func BoolValueSlice(src []*bool) []bool {
 // 	for i := 0; i < len(src); i++ {
 // 		dst[i] = &(src[i])
 // 	}
+
 // 	return dst
 // }
 
@@ -128,5 +134,6 @@ func BoolValueSlice(src []*bool) []bool {
 // 			dst[i] = *(src[i])
 // 		}
 // 	}
+
 // 	return dst
 // }
