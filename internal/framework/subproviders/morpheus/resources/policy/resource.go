@@ -209,6 +209,127 @@ func getPolicyAsState(
 		}
 	}
 
+	// Computed types
+	// Set Cloud if present
+	if p.Zone != nil {
+		cloudAttrs := map[string]attr.Value{}
+		if p.Zone.Id != nil {
+			cloudAttrs["id"] = types.Int64Value(*p.Zone.Id)
+		} else {
+			cloudAttrs["id"] = types.Int64Null()
+		}
+		if p.Zone.Name != nil {
+			cloudAttrs["name"] = types.StringValue(*p.Zone.Name)
+		} else {
+			cloudAttrs["name"] = types.StringNull()
+		}
+
+		cloudValue, cloudDiags := NewCloudValue(CloudValue{}.AttributeTypes(ctx), cloudAttrs)
+		if cloudDiags.HasError() {
+			diags.Append(cloudDiags...)
+			return state, diags
+		}
+		state.Cloud = cloudValue
+	} else {
+		state.Cloud = NewCloudValueNull()
+	}
+
+	// Set Group if present
+	if p.Site != nil {
+		groupAttrs := map[string]attr.Value{}
+		if p.Site.Id != nil {
+			groupAttrs["id"] = types.Int64Value(*p.Site.Id)
+		} else {
+			groupAttrs["id"] = types.Int64Null()
+		}
+		if p.Site.Name != nil {
+			groupAttrs["name"] = types.StringValue(*p.Site.Name)
+		} else {
+			groupAttrs["name"] = types.StringNull()
+		}
+
+		groupValue, groupDiags := NewGroupValue(GroupValue{}.AttributeTypes(ctx), groupAttrs)
+		if groupDiags.HasError() {
+			diags.Append(groupDiags...)
+			return state, diags
+		}
+		state.Group = groupValue
+	} else {
+		state.Group = NewGroupValueNull()
+	}
+
+	// Set Owner if present
+	state.Owner = NewOwnerValueNull()
+	if p.Owner.IsSet() && p.Owner.Get() != nil {
+		owner := p.Owner.Get()
+		ownerAttrs := map[string]attr.Value{}
+		if owner.Id != nil {
+			ownerAttrs["id"] = types.Int64Value(*owner.Id)
+		} else {
+			ownerAttrs["id"] = types.Int64Null()
+		}
+		if owner.Name != nil {
+			ownerAttrs["name"] = types.StringValue(*owner.Name)
+		} else {
+			ownerAttrs["name"] = types.StringNull()
+		}
+
+		ownerValue, ownerDiags := NewOwnerValue(OwnerValue{}.AttributeTypes(ctx), ownerAttrs)
+		if ownerDiags.HasError() {
+			diags.Append(ownerDiags...)
+			return state, diags
+		}
+		state.Owner = ownerValue
+	}
+
+	// Set Role if present
+	if p.Role != nil {
+		roleAttrs := map[string]attr.Value{}
+		if p.Role.Id != nil {
+			roleAttrs["id"] = types.Int64Value(*p.Role.Id)
+		} else {
+			roleAttrs["id"] = types.Int64Null()
+		}
+		if p.Role.Authority != nil {
+			roleAttrs["authority"] = types.StringValue(*p.Role.Authority)
+		} else {
+			roleAttrs["authority"] = types.StringNull()
+		}
+
+		roleValue, roleDiags := NewRoleValue(RoleValue{}.AttributeTypes(ctx), roleAttrs)
+		if roleDiags.HasError() {
+			diags.Append(roleDiags...)
+			return state, diags
+		}
+		state.Role = roleValue
+	} else {
+		state.Role = NewRoleValueNull()
+	}
+
+	// Set User if present
+	if p.User != nil {
+		userAttrs := map[string]attr.Value{}
+		if p.User.Id != nil {
+			userAttrs["id"] = types.Int64Value(*p.User.Id)
+		} else {
+			userAttrs["id"] = types.Int64Null()
+		}
+		if p.User.Username != nil {
+			userAttrs["username"] = types.StringValue(*p.User.Username)
+		} else {
+			userAttrs["username"] = types.StringNull()
+		}
+
+		userValue, userDiags := NewUserValue(UserValue{}.AttributeTypes(ctx), userAttrs)
+		if userDiags.HasError() {
+			diags.Append(userDiags...)
+			return state, diags
+		}
+		state.User = userValue
+	} else {
+		state.User = NewUserValueNull()
+	}
+
 	return state, diags
 }
 

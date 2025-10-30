@@ -5,8 +5,6 @@ package policy
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -204,9 +203,6 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"success": schema.BoolAttribute{
-				Computed: true,
-			},
 			"tenants": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
@@ -248,7 +244,6 @@ type PolicyModel struct {
 	Owner                  OwnerValue      `tfsdk:"owner"`
 	PolicyType             PolicyTypeValue `tfsdk:"policy_type"`
 	Role                   RoleValue       `tfsdk:"role"`
-	Success                types.Bool      `tfsdk:"success"`
 	Tenants                types.Set       `tfsdk:"tenants"`
 	User                   UserValue       `tfsdk:"user"`
 }
