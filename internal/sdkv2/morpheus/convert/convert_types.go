@@ -13,10 +13,10 @@ import (
 // Hey, let's convert all our IDs to strings though, for real.
 
 func ToInt64(i interface{}) (int64, error) {
-	if res, ok := i.(string); ok {
-		return StringToInt64(res), nil
+	if res, ok := i.(int64); ok {
+		return res, nil
 	} else {
-		return -1, helpers.TypeAssertFail("i", res)
+		return 0, helpers.TypeAssertFail("i", res)
 	}
 }
 
