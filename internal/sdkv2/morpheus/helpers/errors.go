@@ -1,4 +1,4 @@
-package sdkv2err
+package helpers
 
 import (
 	"fmt"
