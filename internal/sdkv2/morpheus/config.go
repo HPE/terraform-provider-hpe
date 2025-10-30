@@ -3,11 +3,14 @@
 package morpheus
 
 import (
+	"context"
 	"os"
 
 	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/client"
 )
 
 // Config is the configuration structure used to instantiate the Morpheus
@@ -31,26 +34,16 @@ func (c *Config) Client() (*sdklegacy.Client, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if c.client == nil {
-
-		var client *sdklegacy.Client
-		if !c.Insecure {
-			// default: secure
-			client = sdklegacy.NewClient(
-				c.Url,
-				sdklegacy.SkipLogin(), // required for custom auth transport
-				sdklegacy.WithDebug(debug),
-			)
-		} else {
-			// insecure
-			client = sdklegacy.NewClient(
-				c.Url,
-				sdklegacy.SkipLogin(), // required for custom auth transport
-				sdklegacy.WithDebug(debug),
-				sdklegacy.Insecure(),
-			)
-		}
-
-		c.client = client
+		c.client = client.NewLegacyClient(
+			context.Background(),
+			c.Url,
+			c.Username,
+			c.Password,
+			c.AccessToken,
+			sdklegacy.SkipLogin(),
+			sdklegacy.WithDebug(debug),
+			sdklegacy.WithInsecure(c.Insecure),
+		)
 	}
 
 	return c.client, diags
