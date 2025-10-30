@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/sdkv2err"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -147,7 +147,7 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
 	}
 
 	identitySource := make(map[string]interface{})
@@ -155,13 +155,13 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "activeDirectory"
@@ -171,13 +171,13 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 	if adServer, ok := d.Get("ad_server").(string); ok {
 		config["url"] = adServer
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("ad_server", d.Get("ad_server")))
+		return diag.FromErr(helpers.TypeAssertFail("ad_server", d.Get("ad_server")))
 	}
 
 	if domain, ok := d.Get("domain").(string); ok {
 		config["domain"] = domain
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("domain", d.Get("domain")))
+		return diag.FromErr(helpers.TypeAssertFail("domain", d.Get("domain")))
 	}
 
 	if useSSL, ok := d.Get("use_ssl").(bool); ok {
@@ -187,37 +187,37 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 			config["useSSL"] = "off"
 		}
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+		return diag.FromErr(helpers.TypeAssertFail("use_ssl", d.Get("use_ssl")))
 	}
 
 	if bindingUsername, ok := d.Get("binding_username").(string); ok {
 		config["bindingUsername"] = bindingUsername
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("binding_username", d.Get("binding_username")))
+		return diag.FromErr(helpers.TypeAssertFail("binding_username", d.Get("binding_username")))
 	}
 
 	if bindingPassword, ok := d.Get("binding_password").(string); ok {
 		config["bindingPassword"] = bindingPassword
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("binding_password", d.Get("binding_password")))
+		return diag.FromErr(helpers.TypeAssertFail("binding_password", d.Get("binding_password")))
 	}
 
 	if requiredGroup, ok := d.Get("required_group").(string); ok {
 		config["requiredGroup"] = requiredGroup
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("required_group", d.Get("required_group")))
+		return diag.FromErr(helpers.TypeAssertFail("required_group", d.Get("required_group")))
 	}
 
 	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
 		config["searchMemberGroups"] = searchMemberGroups
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+		return diag.FromErr(helpers.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
 	}
 
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	identitySource["config"] = config
@@ -227,7 +227,7 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -237,7 +237,7 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(sdkv2err.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
 		}
 	}
 
@@ -258,11 +258,11 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 			// Successfully created resource, now set id
 			d.SetId(convert.Int64ToString(result.IdentitySource.ID))
 		} else {
-			return diag.FromErr(sdkv2err.TypeAssertFail("resp.Result", resp.Result))
+			return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
 		}
 
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("tenant_id", d.Get("tenant_id")))
+		return diag.FromErr(helpers.TypeAssertFail("tenant_id", d.Get("tenant_id")))
 	}
 
 	resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
@@ -277,7 +277,7 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -286,7 +286,7 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 	if nameValue, ok := d.Get("name").(string); ok {
 		name = nameValue
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -295,7 +295,7 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 	if id == "" && name != "" {
 		resp, err = client.FindIdentitySourceByName(name)
 	} else if id != "" {
-		resp, err = client.GetIdentitySource(convert.ToInt64(id), &morpheus.Request{})
+		resp, err = client.GetIdentitySource(convert.StringToInt64(id), &morpheus.Request{})
 	} else {
 		return diag.Errorf("Identity source cannot be read without name or id")
 	}
@@ -351,7 +351,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -361,13 +361,13 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "activeDirectory"
@@ -377,13 +377,13 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	if adServer, ok := d.Get("ad_server").(string); ok {
 		config["url"] = adServer
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("ad_server", d.Get("ad_server")))
+		return diag.FromErr(helpers.TypeAssertFail("ad_server", d.Get("ad_server")))
 	}
 
 	if domain, ok := d.Get("domain").(string); ok {
 		config["domain"] = domain
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("domain", d.Get("domain")))
+		return diag.FromErr(helpers.TypeAssertFail("domain", d.Get("domain")))
 	}
 
 	if useSSL, ok := d.Get("use_ssl").(bool); ok {
@@ -393,39 +393,39 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 			config["useSSL"] = "off"
 		}
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+		return diag.FromErr(helpers.TypeAssertFail("use_ssl", d.Get("use_ssl")))
 	}
 
 	if bindingUsername, ok := d.Get("binding_username").(string); ok {
 		config["bindingUsername"] = bindingUsername
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("binding_username", d.Get("binding_username")))
+		return diag.FromErr(helpers.TypeAssertFail("binding_username", d.Get("binding_username")))
 	}
 
 	if d.HasChange("binding_password") {
 		if bindingPassword, ok := d.Get("binding_password").(string); ok {
 			config["bindingPassword"] = bindingPassword
 		} else {
-			return diag.FromErr(sdkv2err.TypeAssertFail("binding_password", d.Get("binding_password")))
+			return diag.FromErr(helpers.TypeAssertFail("binding_password", d.Get("binding_password")))
 		}
 	}
 
 	if requiredGroup, ok := d.Get("required_group").(string); ok {
 		config["requiredGroup"] = requiredGroup
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("required_group", d.Get("required_group")))
+		return diag.FromErr(helpers.TypeAssertFail("required_group", d.Get("required_group")))
 	}
 
 	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
 		config["searchMemberGroups"] = searchMemberGroups
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+		return diag.FromErr(helpers.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
 	}
 
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	identitySource["config"] = config
@@ -435,7 +435,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -445,7 +445,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(sdkv2err.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
 		}
 	}
 
@@ -455,7 +455,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 		},
 	}
 
-	resp, err := client.UpdateIdentitySource(convert.ToInt64(id), req)
+	resp, err := client.UpdateIdentitySource(convert.StringToInt64(id), req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
 		return diag.FromErr(err)
@@ -477,12 +477,12 @@ func resourceActiveDirectoryIdentitySourceDelete(ctx context.Context, d *schema.
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(sdkv2err.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
 	}
 
 	id := d.Id()
 	req := &morpheus.Request{}
-	resp, err := client.DeleteIdentitySource(convert.ToInt64(id), req)
+	resp, err := client.DeleteIdentitySource(convert.StringToInt64(id), req)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
