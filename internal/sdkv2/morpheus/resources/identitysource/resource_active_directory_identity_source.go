@@ -4,9 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"strings"
-
 	"log"
+	"strings"
 
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
+//nolint:lll
 func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides an active directory identity source resource",
@@ -75,8 +75,10 @@ func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
 					h.Write([]byte(new))
-					sha256_hash := hex.EncodeToString(h.Sum(nil))
-					return strings.ToLower(old) == strings.ToLower(sha256_hash)
+					sha256Hash := hex.EncodeToString(h.Sum(nil))
+
+					//nolint:staticcheck
+					return strings.ToLower(old) == strings.ToLower(sha256Hash)
 				},
 			},
 			"required_group": {
@@ -140,7 +142,11 @@ func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 	}
 }
 
-func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceActiveDirectoryIdentitySourceCreate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -181,6 +187,7 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 		return diag.FromErr(helpers.TypeAssertFail("domain", d.Get("domain")))
 	}
 
+	//nolint:goconst
 	if useSSL, ok := d.Get("use_ssl").(bool); ok {
 		if useSSL {
 			config["useSSL"] = "on"
@@ -252,6 +259,7 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 		resp, err := client.CreateIdentitySource(int64(tenantID), req)
 		if err != nil {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 
@@ -267,10 +275,15 @@ func resourceActiveDirectoryIdentitySourceCreate(ctx context.Context, d *schema.
 	}
 
 	resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
+
 	return diags
 }
 
-func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceActiveDirectoryIdentitySourceRead(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -306,9 +319,11 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
 			d.SetId("")
+
 			return diags
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
@@ -344,10 +359,15 @@ func resourceActiveDirectoryIdentitySourceRead(ctx context.Context, d *schema.Re
 		roleMappingPayload = append(roleMappingPayload, roleOutput)
 	}
 	d.Set("role_mapping", roleMappingPayload)
+
 	return diags
 }
 
-func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceActiveDirectoryIdentitySourceUpdate(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -459,6 +479,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	resp, err := client.UpdateIdentitySource(convert.StringToInt64(id), req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
+
 		return diag.FromErr(err)
 	}
 	result := resp.Result.(*morpheus.UpdateIdentitySourceResult)
@@ -467,10 +488,15 @@ func resourceActiveDirectoryIdentitySourceUpdate(ctx context.Context, d *schema.
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(identitySourceResult.ID))
+
 	return resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
 }
 
-func resourceActiveDirectoryIdentitySourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceActiveDirectoryIdentitySourceDelete(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta interface{},
+) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -487,13 +513,16 @@ func resourceActiveDirectoryIdentitySourceDelete(ctx context.Context, d *schema.
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
 	d.SetId("")
+
 	return diags
 }
 
@@ -527,5 +556,6 @@ func parseRoleMappings(mappings *schema.Set) []map[string]interface{} {
 		row["mappedRole"] = mappedRole
 		roleMappings = append(roleMappings, row)
 	}
+
 	return roleMappings
 }
