@@ -247,41 +247,57 @@ resource "hpe_morpheus_user" "test" {
 	policyNameRole := acctest.RandomWithPrefix(t.Name() + "-role-policy")
 	policyNameUser := acctest.RandomWithPrefix(t.Name() + "-user-policy")
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example_max_memory_group.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "group_policy",
 		"Name", policyNameGroup,
+		"Description", "Example group-scoped policy",
+		"AssociatedResourceType", "Group",
+		"AssociatedResourceID", "hpe_morpheus_group.test.id",
 		"PolicyTypeCode", "maxMemory",
-		"MaxMemory", "1073741824",
-		"GroupID", "hpe_morpheus_group.test.id",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	cloudResourceConfig, err := testhelpers.RenderExample(t, "example_max_memory_cloud.tf.tmpl",
+	cloudResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "cloud_policy",
 		"Name", policyNameCloud,
+		"Description", "Example cloud-scoped policy",
+		"AssociatedResourceType", "Cloud",
+		"AssociatedResourceID", "hpe_morpheus_cloud.test.id",
 		"PolicyTypeCode", "maxMemory",
-		"MaxMemory", "1073741824",
-		"CloudID", "hpe_morpheus_cloud.test.id",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	roleResourceConfig, err := testhelpers.RenderExample(t, "example_max_memory_role.tf.tmpl",
+	roleResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "role_policy",
 		"Name", policyNameRole,
+		"Description", "Example role-scoped policy",
+		"AssociatedResourceType", "Role",
+		"AssociatedResourceID", "hpe_morpheus_role.test.id",
 		"PolicyTypeCode", "maxMemory",
-		"MaxMemory", "1073741824",
-		"RoleID", "hpe_morpheus_role.test.id",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	userResourceConfig, err := testhelpers.RenderExample(t, "example_max_memory_user.tf.tmpl",
+	userResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "user_policy",
 		"Name", policyNameUser,
+		"Description", "Example user-scoped policy",
+		"AssociatedResourceType", "User",
+		"AssociatedResourceID", "hpe_morpheus_user.test.id",
 		"PolicyTypeCode", "maxMemory",
-		"MaxMemory", "1073741824",
-		"UserID", "hpe_morpheus_user.test.id",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -314,7 +330,9 @@ resource "hpe_morpheus_user" "test" {
 	allChecks := append(checksGroup, checksCloud...)
 	allChecks = append(allChecks, checksRole...)
 	allChecks = append(allChecks, checksUser...)
-	checkFn := resource.ComposeAggregateTestCheckFunc(allChecks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		allChecks...,
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

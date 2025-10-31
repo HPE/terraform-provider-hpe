@@ -1,9 +1,9 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example_max_memory_group.tf.tmpl Name "TestMaxMemoryGroupPolicy" PolicyTypeCode "maxMemory" MaxMemory "1073741824" GroupID "1"
-//go:generate go run ../../../../../../cmd/render example_max_memory_cloud.tf.tmpl Name "TestMaxMemoryCloudPolicy" PolicyTypeCode "maxMemory" MaxMemory "1073741824" CloudID "1"
-//go:generate go run ../../../../../../cmd/render example_max_memory_user.tf.tmpl Name "TestMaxMemoryUserPolicy" PolicyTypeCode "maxMemory" MaxMemory "1073741824" UserID "1"
-//go:generate go run ../../../../../../cmd/render example_max_memory_role.tf.tmpl Name "TestMaxMemoryRolePolicy" PolicyTypeCode "maxMemory" MaxMemory "1073741824" RoleID "1"
+//go:generate go run ../../../../../../cmd/render example.tf.tmpl ResourceName "group_policy" Name "TestMaxMemoryGroupPolicy" Description "Example group-scoped policy" AssociatedResourceType "Group" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "1073741824"
+//go:generate go run ../../../../../../cmd/render example.tf.tmpl ResourceName "cloud_policy" Name "TestMaxMemoryCloudPolicy" Description "Example cloud-scoped policy" AssociatedResourceType "Cloud" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "1073741824"
+//go:generate go run ../../../../../../cmd/render example.tf.tmpl ResourceName "user_policy" Name "TestMaxMemoryUserPolicy" Description "Example user-scoped policy" AssociatedResourceType "User" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "1073741824"
+//go:generate go run ../../../../../../cmd/render example.tf.tmpl ResourceName "role_policy" Name "TestMaxMemoryRolePolicy" Description "Example role-scoped policy" AssociatedResourceType "Role" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "1073741824"
 
 package policy_test
 
