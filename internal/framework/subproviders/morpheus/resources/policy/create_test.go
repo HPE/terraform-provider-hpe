@@ -191,7 +191,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Provision approval policy"),
 				),
 			},
-			// Step 5: Approve Reconfigure
+			// Step 3: Approve Reconfigure
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -208,7 +208,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Reconfigure approval policy"),
 				),
 			},
-			// Step 6: Approve Workflow Execute
+			// Step 4: Approve Workflow Execute
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -225,7 +225,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Workflow approval policy"),
 				),
 			},
-			// Step 7: Delayed Delete
+			// Step 5: Delayed Delete
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -242,7 +242,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Delayed removal policy"),
 				),
 			},
-			// Step 8: Instance Naming
+			// Step 6: Instance Naming
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -261,8 +261,8 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Naming policy"),
 				),
 			},
-			// Step 9: TODO: Add requiredNetwork policy type to OpenAPI spec
-			// Step 10: Max Memory
+			// Step 7: TODO: Add requiredNetwork policy type to OpenAPI spec
+			// Step 8: Max Memory
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -279,7 +279,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max memory policy"),
 				),
 			},
-			// Step 11: Max Pool Members
+			// Step 9: Max Pool Members
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -420,7 +420,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create user policy"),
 				),
 			},
-			// Step 2: User Group Creation
+			// Step 17: User Group Creation
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -437,7 +437,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create user group policy"),
 				),
 			},
-			// Step 17: Workflow (uses Morpheus provider to create workflow resource)
+			// Step 18: Workflow (uses Morpheus provider to create workflow resource)
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_group" "test" {
