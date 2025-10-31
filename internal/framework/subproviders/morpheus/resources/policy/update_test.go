@@ -181,11 +181,3 @@ resource "hpe_morpheus_policy" "replace_test" {
 		},
 	})
 }
-
-// Test policy with naming policy type (different config structure) - SKIPPED
-// Naming policies have complex requirements that vary by environment
-// func TestAccMorpheusPolicyNamingTypeOk(t *testing.T) { ... }
-
-// Test policy with each_user attribute (Role scope) - SKIPPED
-// Role-scoped policies may have additional requirements
-// func TestAccMorpheusPolicyEachUserOk(t *testing.T) { ... }
