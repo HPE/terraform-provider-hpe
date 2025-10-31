@@ -118,7 +118,7 @@ func (g *Resource) Update(
 	if len(state.NetworkInterfaces.Elements()) != len(plan.NetworkInterfaces.Elements()) {
 		resizing = true
 
-		networkInterfaces, diags := convert.FromSetType(
+		networkInterfaces, diags := convert.FromListType(
 			ctx,
 			plan.NetworkInterfaces,
 			networkInterfaceMapper,
