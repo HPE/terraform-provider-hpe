@@ -41,7 +41,7 @@ resource "hpe_morpheus_policy" "update_test" {
   }
   
   config = {
-    maxMemory = 1073741824
+    maxMemory = 8
   }
   
   tenants = [1]
@@ -66,7 +66,7 @@ resource "hpe_morpheus_policy" "update_test" {
   }
   
   config = {
-    maxMemory = 2147483648
+    maxMemory = 16
   }
   
   tenants = [1]
@@ -134,7 +134,7 @@ resource "hpe_morpheus_policy" "replace_test" {
   }
   
   config = {
-    maxMemory = 1073741824
+    maxMemory = 8
   }
 }
 `
@@ -160,7 +160,7 @@ resource "hpe_morpheus_policy" "replace_test" {
   }
   
   config = {
-    maxMemory = 1073741824
+    maxMemory = 8
   }
 }
 `

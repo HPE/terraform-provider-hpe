@@ -10,6 +10,6 @@ resource "hpe_morpheus_policy" "role_policy" {
   }
   
   config = {
-    maxMemory = 1073741824
+    maxMemory = 8
   }
 }

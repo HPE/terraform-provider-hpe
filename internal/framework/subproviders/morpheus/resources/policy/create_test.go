@@ -39,7 +39,7 @@ resource "hpe_morpheus_policy" "required" {
   }
   
   config = {
-    maxMemory = 1073741824
+    maxMemory = 8
   }
 }
 `
