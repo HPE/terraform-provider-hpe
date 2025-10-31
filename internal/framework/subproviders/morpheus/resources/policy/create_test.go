@@ -89,7 +89,7 @@ resource "hpe_morpheus_policy" "required" {
 }
 
 // Test creating policies with different policy types
-func TestAccMorpheusPolicyDifferentTypesOk(t *testing.T) {
+func TestAccMorpheusPolicyPolicyTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -209,6 +209,8 @@ func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
 	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
 	roleName := acctest.RandomWithPrefix(t.Name() + "-role")
 	userName := acctest.RandomWithPrefix(t.Name() + "-user")
+	planCode := acctest.RandomWithPrefix(t.Name() + "-plan")
+	networkName := acctest.RandomWithPrefix(t.Name() + "-network")
 
 	dependencyConfig := `
 resource "hpe_morpheus_group" "test" {
@@ -240,12 +242,46 @@ resource "hpe_morpheus_user" "test" {
   role_ids = [hpe_morpheus_role.test.id]
   password_wo = "TestPassword123!"
 }
+
+resource "hpe_morpheus_service_plan" "test" {
+  name = "` + planCode + `"
+  code = "` + planCode + `"
+  sort_order = 10000
+  max_memory = 4294967296
+  max_storage = 536870912
+  provision_type_code = "arm"
+  custom_max_storage = true
+  cores_per_socket = 1
+  config_ranges = {
+    min_storage = 268435456
+    max_storage = 536870912
+  }
+}
+
+resource "hpe_morpheus_network" "test" {
+  name = "` + networkName + `"
+  description = "Test network"
+  cloud_id = hpe_morpheus_cloud.test.id
+  pool_id = 1
+  group_id = hpe_morpheus_group.test.id
+  type_id = 1
+  config = {}
+  active = true
+  dhcp_server = false
+  appliance_url_proxy_bypass = true
+  tenant_ids = [1]
+  visibility = "private"
+  cidr = "10.0.0.0/24"
+  labels = ["terraform", "test"]
+}
 `
 
 	policyNameGroup := acctest.RandomWithPrefix(t.Name() + "-group-policy")
 	policyNameCloud := acctest.RandomWithPrefix(t.Name() + "-cloud-policy")
 	policyNameRole := acctest.RandomWithPrefix(t.Name() + "-role-policy")
 	policyNameUser := acctest.RandomWithPrefix(t.Name() + "-user-policy")
+	policyNamePlan := acctest.RandomWithPrefix(t.Name() + "-plan-policy")
+	policyNameNetwork := acctest.RandomWithPrefix(t.Name() + "-network-policy")
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"ResourceName", "group_policy",
@@ -303,6 +339,34 @@ resource "hpe_morpheus_user" "test" {
 		t.Fatal(err)
 	}
 
+	planResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "plan_policy",
+		"Name", policyNamePlan,
+		"Description", "Example plan-scoped policy",
+		"AssociatedResourceType", "Plan",
+		"AssociatedResourceID", "hpe_morpheus_service_plan.test.id",
+		"PolicyTypeCode", "maxMemory",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	networkResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+		"ResourceName", "network_policy",
+		"Name", policyNameNetwork,
+		"Description", "Example network-scoped policy",
+		"AssociatedResourceType", "Network",
+		"AssociatedResourceID", "hpe_morpheus_network.test.id",
+		"PolicyTypeCode", "maxMemory",
+		"ConfigKey", "maxMemory",
+		"ConfigValue", "1073741824",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	checksGroup := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("hpe_morpheus_policy.group_policy", "name", policyNameGroup),
 		resource.TestCheckResourceAttr("hpe_morpheus_policy.group_policy", "associated_resource_type", "Group"),
@@ -327,9 +391,23 @@ resource "hpe_morpheus_user" "test" {
 		resource.TestCheckResourceAttrSet("hpe_morpheus_policy.user_policy", "associated_resource_id"),
 	}
 
+	checksPlan := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("hpe_morpheus_policy.plan_policy", "name", policyNamePlan),
+		resource.TestCheckResourceAttr("hpe_morpheus_policy.plan_policy", "associated_resource_type", "Plan"),
+		resource.TestCheckResourceAttrSet("hpe_morpheus_policy.plan_policy", "associated_resource_id"),
+	}
+
+	checksNetwork := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("hpe_morpheus_policy.network_policy", "name", policyNameNetwork),
+		resource.TestCheckResourceAttr("hpe_morpheus_policy.network_policy", "associated_resource_type", "Network"),
+		resource.TestCheckResourceAttrSet("hpe_morpheus_policy.network_policy", "associated_resource_id"),
+	}
+
 	allChecks := append(checksGroup, checksCloud...)
 	allChecks = append(allChecks, checksRole...)
 	allChecks = append(allChecks, checksUser...)
+	allChecks = append(allChecks, checksPlan...)
+	allChecks = append(allChecks, checksNetwork...)
 	checkFn := resource.ComposeAggregateTestCheckFunc(
 		allChecks...,
 	)
@@ -338,7 +416,10 @@ resource "hpe_morpheus_user" "test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig + cloudResourceConfig + roleResourceConfig + userResourceConfig,
+				Config: providerConfig + dependencyConfig + resourceConfig +
+					cloudResourceConfig + roleResourceConfig +
+					userResourceConfig + planResourceConfig +
+					networkResourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
