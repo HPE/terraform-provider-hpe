@@ -1,0 +1,15 @@
+resource "hpe_morpheus_policy" "role_policy" {
+  name = "{{.Name}}"
+  description = "Example role-scoped policy"
+  associated_resource_type = "Role"
+  associated_resource_id = {{.RoleID}}
+  enabled = true
+  
+  policy_type = {
+    code = "{{.PolicyTypeCode}}"
+  }
+  
+  config = {
+    maxMemory = {{.MaxMemory}}
+  }
+}

@@ -1,0 +1,15 @@
+resource "hpe_morpheus_policy" "cloud_policy" {
+  name = "{{.Name}}"
+  description = "Example cloud-scoped policy"
+  associated_resource_type = "Cloud"
+  associated_resource_id = {{.CloudID}}
+  enabled = true
+  
+  policy_type = {
+    code = "{{.PolicyTypeCode}}"
+  }
+  
+  config = {
+    maxMemory = {{.MaxMemory}}
+  }
+}
