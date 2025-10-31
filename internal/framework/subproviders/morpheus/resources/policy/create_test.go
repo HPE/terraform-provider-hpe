@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -89,7 +90,7 @@ resource "hpe_morpheus_policy" "required" {
 }
 
 // Test creating policies with different policy types
-func TestAccMorpheusPolicyPolicyTypesOk(t *testing.T) {
+func TestAccMorpheusPolicyAllPolicyTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -97,97 +98,743 @@ func TestAccMorpheusPolicyPolicyTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
-	nameMaxMemory := acctest.RandomWithPrefix(t.Name() + "-maxmem")
-	nameMaxCores := acctest.RandomWithPrefix(t.Name() + "-maxcores")
-	nameMaxStorage := acctest.RandomWithPrefix(t.Name() + "-maxstorage")
+	providerConfig := testhelpers.ProviderBlockMixed()
+	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
 	resourceConfig := `
+variable "policy_name" {
+  type = string
+}
+
+variable "policy_description" {
+  type = string
+}
+
+variable "policy_type_code" {
+  type = string
+}
+
+variable "policy_config" {
+  type = map(any)
+}
+
 resource "hpe_morpheus_group" "test" {
   name = "` + groupName + `"
   location = "test"
 }
 
-resource "hpe_morpheus_policy" "max_memory" {
-  name = "` + nameMaxMemory + `"
-  description = "Max memory policy"
-  associated_resource_type = "Group"
-  associated_resource_id = hpe_morpheus_group.test.id
-  enabled = true
-  
-  policy_type = {
-    code = "maxMemory"
-  }
-  
-  config = {
-    maxMemory = 1073741824
-  }
+resource "morpheus_operational_workflow" "test" {
+  name = "` + namePrefix + `-workflow"
 }
 
-resource "hpe_morpheus_policy" "max_cores" {
-  name = "` + nameMaxCores + `"
-  description = "Max cores policy"
-  associated_resource_type = "Group"
-  associated_resource_id = hpe_morpheus_group.test.id
-  enabled = true
-  
-  policy_type = {
-    code = "maxCores"
-  }
-  
-  config = {
-    maxCores = 4
-  }
+data "morpheus_workflow" "test" {
+  name = morpheus_operational_workflow.test.name
 }
 
-resource "hpe_morpheus_policy" "max_storage" {
-  name = "` + nameMaxStorage + `"
-  description = "Max storage policy"
+resource "hpe_morpheus_policy" "test" {
+  name = var.policy_name
+  description = var.policy_description
   associated_resource_type = "Group"
   associated_resource_id = hpe_morpheus_group.test.id
   enabled = true
   
   policy_type = {
-    code = "maxStorage"
+    code = var.policy_type_code
   }
   
-  config = {
-    maxStorage = 10737418240
-  }
+  config = var.policy_config
 }
 `
 
-	checksMaxMemory := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_memory", "name", nameMaxMemory),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_memory", "policy_type.code", "maxMemory"),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_memory", "description", "Max memory policy"),
-	}
-
-	checksMaxCores := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_cores", "name", nameMaxCores),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_cores", "policy_type.code", "maxCores"),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_cores", "description", "Max cores policy"),
-	}
-
-	checksMaxStorage := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_storage", "name", nameMaxStorage),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_storage", "policy_type.code", "maxStorage"),
-		resource.TestCheckResourceAttr("hpe_morpheus_policy.max_storage", "description", "Max storage policy"),
-	}
-
-	allChecks := append(checksMaxMemory, checksMaxCores...)
-	allChecks = append(allChecks, checksMaxStorage...)
-	checkFn := resource.ComposeAggregateTestCheckFunc(allChecks...)
-
 	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			// Step 1: maxMemory policy
 			{
-				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxMemory"),
+					"policy_description": config.StringVariable("Max memory policy"),
+					"policy_type_code":   config.StringVariable("maxMemory"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxMemory": config.IntegerVariable(1073741824),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxMemory"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max memory policy"),
+				),
+			},
+			// Step 2: maxCores policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxCores"),
+					"policy_description": config.StringVariable("Max cores policy"),
+					"policy_type_code":   config.StringVariable("maxCores"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxCores":          config.StringVariable("4"),
+						"excludeContainers": config.BoolVariable(false),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxCores"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxCores"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max cores policy"),
+				),
+			},
+			// Step 3: maxStorage policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxStorage"),
+					"policy_description": config.StringVariable("Max storage policy"),
+					"policy_type_code":   config.StringVariable("maxStorage"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxStorage":        config.StringVariable("10737418240"),
+						"excludeContainers": config.BoolVariable(false),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxStorage"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxStorage"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max storage policy"),
+				),
+			},
+			// Step 4: deleteApproval policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-deleteApproval"),
+					"policy_description": config.StringVariable("Delete approval policy"),
+					"policy_type_code":   config.StringVariable("deleteApproval"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"accountIntegrationId": config.StringVariable("1"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-deleteApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "deleteApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Delete approval policy"),
+				),
+			},
+			// Step 5: provisionApproval policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-provisionApproval"),
+					"policy_description": config.StringVariable("Provision approval policy"),
+					"policy_type_code":   config.StringVariable("provisionApproval"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"accountIntegrationId": config.StringVariable("1"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-provisionApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "provisionApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Provision approval policy"),
+				),
+			},
+			// Step 6: reconfigureApproval policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-reconfigureApproval"),
+					"policy_description": config.StringVariable("Reconfigure approval policy"),
+					"policy_type_code":   config.StringVariable("reconfigureApproval"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"accountIntegrationId": config.StringVariable("1"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-reconfigureApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "reconfigureApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Reconfigure approval policy"),
+				),
+			},
+			// Step 7: workflowApproval policy - Note: this is NOT in the API spec enum, may not be valid
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-workflowApproval"),
+					"policy_description": config.StringVariable("Workflow approval policy"),
+					"policy_type_code":   config.StringVariable("workflowApproval"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"accountIntegrationId": config.StringVariable("1"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-workflowApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "workflowApproval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Workflow approval policy"),
+				),
+			},
+			// Step 8: createBackup policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-createBackup"),
+					"policy_description": config.StringVariable("Create backup policy"),
+					"policy_type_code":   config.StringVariable("createBackup"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"createBackupType": config.StringVariable("fixed"),
+						"createBackup":     config.StringVariable("on"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createBackup"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createBackup"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create backup policy"),
+				),
+			},
+			// Step 9: backupStorage policy - SKIPPED due to test framework limitation with list variables in map(any)
+			// The test framework wraps list variables in an extra array layer when passed through map(any)
+			// This would need a dedicated test with inline config instead of variables
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-backupStorage"),
+						"policy_description": config.StringVariable("Backup storage policy"),
+						"policy_type_code":   config.StringVariable("backupStorage"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"backupStorageIds": config.TupleVariable(
+								config.StringVariable("1"),
+							),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-backupStorage"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "backupStorage"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Backup storage policy"),
+					),
+				},
+			*/
+			// Step 10: maxPrice policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxPrice"),
+					"policy_description": config.StringVariable("Max price policy"),
+					"policy_type_code":   config.StringVariable("maxPrice"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxPrice":         config.IntegerVariable(100),
+						"maxPriceCurrency": config.StringVariable("USD"),
+						"maxPriceUnit":     config.StringVariable("month"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPrice"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPrice"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max price policy"),
+				),
+			},
+			// Step 11: serverNaming policy - SKIPPED due to API validation issue
+			// API rejects with "server naming type must be set" even when serverNamingType is provided
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-serverNaming"),
+						"policy_description": config.StringVariable("Server naming policy"),
+						"policy_type_code":   config.StringVariable("serverNaming"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"serverNamingType":     config.StringVariable("name"),
+							"serverNamingPattern":  config.StringVariable("server-${sequence}"),
+							"serverNamingConflict": config.StringVariable("on"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-serverNaming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "serverNaming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Server naming policy"),
+					),
+				},
+			*/
+			// Step 12: cypher policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-cypher"),
+					"policy_description": config.StringVariable("Cypher policy"),
+					"policy_type_code":   config.StringVariable("cypher"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"keyPattern": config.StringVariable("secret/*"),
+						"read":       config.BoolVariable(true),
+						"write":      config.BoolVariable(false),
+						"update":     config.BoolVariable(false),
+						"delete":     config.BoolVariable(false),
+						"list":       config.BoolVariable(true),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-cypher"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "cypher"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Cypher policy"),
+				),
+			},
+			// Step 13: delayedRemoval policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-delayedRemoval"),
+					"policy_description": config.StringVariable("Delayed removal policy"),
+					"policy_type_code":   config.StringVariable("delayedRemoval"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"removalAge": config.StringVariable("7"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-delayedRemoval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "delayedRemoval"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Delayed removal policy"),
+				),
+			},
+			// Step 14: lifecycle policy - SKIPPED due to complex approval integration dependencies
+			// When lifecycleAutoRenew is off and lifecycleExtensionsBeforeApproval > 0, requires approval integration
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-lifecycle"),
+						"policy_description": config.StringVariable("Lifecycle policy"),
+						"policy_type_code":   config.StringVariable("lifecycle"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"lifecycleType":                     config.StringVariable("user"),
+							"lifecycleAge":                      config.StringVariable("30"),
+							"lifecycleRenewal":                  config.StringVariable("7"),
+							"lifecycleNotify":                   config.StringVariable("3"),
+							"lifecycleMessage":                  config.StringVariable("Instance will expire"),
+							"lifecycleAutoRenew":                config.StringVariable("off"),
+							"lifecycleAllowExtend":              config.StringVariable("on"),
+							"lifecycleExtensionsBeforeApproval": config.StringVariable("2"),
+							"lifecycleHideFixed":                config.StringVariable("off"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-lifecycle"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "lifecycle"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Lifecycle policy"),
+					),
+				},
+			*/
+			// Step 15: storageShareQuota policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-storageShareQuota"),
+					"policy_description": config.StringVariable("Storage share quota policy"),
+					"policy_type_code":   config.StringVariable("storageShareQuota"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxStorage": config.StringVariable("10737418240"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageShareQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageShareQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Storage share quota policy"),
+				),
+			},
+			// Step 16: hostNaming policy - SKIPPED due to API validation issue (similar to serverNaming)
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-hostNaming"),
+						"policy_description": config.StringVariable("Host naming policy"),
+						"policy_type_code":   config.StringVariable("hostNaming"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"hostNamingType":    config.StringVariable("name"),
+							"hostNamingPattern": config.StringVariable("host-${sequence}"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-hostNaming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "hostNaming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Host naming policy"),
+					),
+				},
+			*/
+			// Step 17: naming policy - SKIPPED due to API validation issue (similar to serverNaming)
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-naming"),
+						"policy_description": config.StringVariable("Naming policy"),
+						"policy_type_code":   config.StringVariable("naming"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"namingType":     config.StringVariable("name"),
+							"namingPattern":  config.StringVariable("instance-${sequence}"),
+							"namingConflict": config.StringVariable("on"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-naming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "naming"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Naming policy"),
+					),
+				},
+			*/
+			// Step 18: maxContainers policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxContainers"),
+					"policy_description": config.StringVariable("Max containers policy"),
+					"policy_type_code":   config.StringVariable("maxContainers"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxContainers": config.StringVariable("10"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxContainers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxContainers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max containers policy"),
+				),
+			},
+			// Step 19: maxHosts policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxHosts"),
+					"policy_description": config.StringVariable("Max hosts policy"),
+					"policy_type_code":   config.StringVariable("maxHosts"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxHosts": config.StringVariable("5"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxHosts"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxHosts"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max hosts policy"),
+				),
+			},
+			// Step 20: maxPools policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxPools"),
+					"policy_description": config.StringVariable("Max pools policy"),
+					"policy_type_code":   config.StringVariable("maxPools"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxPools": config.StringVariable("3"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPools"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPools"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max pools policy"),
+				),
+			},
+			// Step 21: maxPoolMembers policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxPoolMembers"),
+					"policy_description": config.StringVariable("Max pool members policy"),
+					"policy_type_code":   config.StringVariable("maxPoolMembers"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxPoolMembers": config.StringVariable("10"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPoolMembers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPoolMembers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max pool members policy"),
+				),
+			},
+			// Step 22: maxSnapshots
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxSnapshots"),
+					"policy_description": config.StringVariable("Max snapshots policy"),
+					"policy_type_code":   config.StringVariable("maxSnapshots"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxSnapshots": config.StringVariable("5"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxSnapshots"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxSnapshots"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max snapshots policy"),
+				),
+			},
+			// Step 23: maxVirtualServers policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxVirtualServers"),
+					"policy_description": config.StringVariable("Max virtual servers policy"),
+					"policy_type_code":   config.StringVariable("maxVirtualServers"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxVirtualServers": config.StringVariable("10"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxVirtualServers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxVirtualServers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max virtual servers policy"),
+				),
+			},
+			// Step 24: maxVms policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxVms"),
+					"policy_description": config.StringVariable("Max VMs policy"),
+					"policy_type_code":   config.StringVariable("maxVms"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxVms": config.StringVariable("20"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxVms"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxVms"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max VMs policy"),
+				),
+			},
+			// Step 25: motd policy - SKIPPED due to API date format issue
+			// API returns motd.date in format "2025-10-31 11:43:10" which SDK cannot parse as RFC3339
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-motd"),
+						"policy_description": config.StringVariable("MOTD policy"),
+						"policy_type_code":   config.StringVariable("motd"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"motd.title":     config.StringVariable("Welcome"),
+							"motd.message":   config.StringVariable("Welcome to the system"),
+							"motd.type":      config.StringVariable("info"),
+							"motd._fullPage": config.BoolVariable(false),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-motd"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "motd"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "MOTD policy"),
+					),
+				},
+			*/
+			// Step 26: maxNetworks policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxNetworks"),
+					"policy_description": config.StringVariable("Max networks policy"),
+					"policy_type_code":   config.StringVariable("maxNetworks"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxNetworks": config.StringVariable("5"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxNetworks"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxNetworks"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max networks policy"),
+				),
+			},
+			// Step 27: storageBucketQuota policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-storageBucketQuota"),
+					"policy_description": config.StringVariable("Storage bucket quota policy"),
+					"policy_type_code":   config.StringVariable("storageBucketQuota"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxStorage":        config.StringVariable("10737418240"),
+						"excludeContainers": config.BoolVariable(false),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageBucketQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageBucketQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Storage bucket quota policy"),
+				),
+			},
+			// Step 28: powerSchedule policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-powerSchedule"),
+					"policy_description": config.StringVariable("Power schedule policy"),
+					"policy_type_code":   config.StringVariable("powerSchedule"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"powerScheduleType":      config.StringVariable("fixed"),
+						"powerSchedule":          config.StringVariable("1"),
+						"powerScheduleHideFixed": config.BoolVariable(false),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-powerSchedule"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "powerSchedule"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Power schedule policy"),
+				),
+			},
+			// Step 29: maxRouters policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-maxRouters"),
+					"policy_description": config.StringVariable("Max routers policy"),
+					"policy_type_code":   config.StringVariable("maxRouters"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"maxRouters": config.StringVariable("3"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxRouters"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxRouters"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max routers policy"),
+				),
+			},
+			// Step 30: shutdown policy - SKIPPED due to complex approval integration dependencies (similar to lifecycle)
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-shutdown"),
+						"policy_description": config.StringVariable("Shutdown policy"),
+						"policy_type_code":   config.StringVariable("shutdown"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"shutdownType":                     config.StringVariable("user"),
+							"shutdownAge":                      config.StringVariable("7"),
+							"shutdownRenewal":                  config.StringVariable("3"),
+							"shutdownNotify":                   config.StringVariable("1"),
+							"shutdownMessage":                  config.StringVariable("Instance will shutdown"),
+							"shutdownAutoRenew":                config.StringVariable("on"),
+							"shutdownAllowExtend":              config.StringVariable("on"),
+							"shutdownExtensionsBeforeApproval": config.StringVariable("0"),
+							"shutdownHideFixed":                config.StringVariable("off"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-shutdown"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "shutdown"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Shutdown policy"),
+					),
+				},
+			*/
+			// Step 31: storageServerQuota policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-storageServerQuota"),
+					"policy_description": config.StringVariable("Storage server quota policy"),
+					"policy_type_code":   config.StringVariable("storageServerQuota"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"storageServerId": config.StringVariable("1"),
+						"maxStorage":      config.StringVariable("10737418240"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageServerQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageServerQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Storage server quota policy"),
+				),
+			},
+			// Step 32: tags policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-tags"),
+					"policy_description": config.StringVariable("Tags policy"),
+					"policy_type_code":   config.StringVariable("tags"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"strict": config.BoolVariable(true),
+						"key":    config.StringVariable("environment"),
+						"value":  config.StringVariable("production"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-tags"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "tags"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Tags policy"),
+				),
+			},
+			// Step 33: createUser policy
+			{
+				Config: providerConfig + resourceConfig,
+				ConfigVariables: config.Variables{
+					"policy_name":        config.StringVariable(namePrefix + "-createUser"),
+					"policy_description": config.StringVariable("Create user policy"),
+					"policy_type_code":   config.StringVariable("createUser"),
+					"policy_config": config.ObjectVariable(map[string]config.Variable{
+						"createUserType": config.StringVariable("fixed"),
+						"createUser":     config.StringVariable("on"),
+					}),
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createUser"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createUser"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create user policy"),
+				),
+			},
+			// Step 34: createUserGroup policy - SKIPPED due to API validation requiring a valid user group
+			/*
+				{
+					Config: providerConfig + resourceConfig,
+					ConfigVariables: config.Variables{
+						"policy_name":        config.StringVariable(namePrefix + "-createUserGroup"),
+						"policy_description": config.StringVariable("Create user group policy"),
+						"policy_type_code":   config.StringVariable("createUserGroup"),
+						"policy_config": config.ObjectVariable(map[string]config.Variable{
+							"userGroup": config.StringVariable("Administrators"),
+						}),
+					},
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createUserGroup"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createUserGroup"),
+						resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create user group policy"),
+					),
+				},
+			*/
+			// Step 35: workflow policy - uses workflow created in resourceConfig
+			{
+				Config: providerConfig + `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+
+resource "morpheus_operational_workflow" "test" {
+  name = "` + namePrefix + `-workflow"
+}
+
+data "morpheus_workflow" "test" {
+  name = morpheus_operational_workflow.test.name
+}
+
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-workflow"
+  description = "Workflow policy"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "workflow"
+  }
+  
+  config = {
+    workflowId = data.morpheus_workflow.test.id
+  }
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-workflow"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "workflow"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Workflow policy"),
+				),
 			},
 		},
 	})
