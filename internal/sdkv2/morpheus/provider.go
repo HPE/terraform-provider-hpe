@@ -5,6 +5,7 @@ package morpheus
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -13,7 +14,9 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: providerSchema(),
 
-		ResourcesMap:         map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"hpe_morpheus_saml_identity_source": identitysource.ResourceSAMLIdentitySource(),
+		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
 	}
