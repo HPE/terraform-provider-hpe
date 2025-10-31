@@ -116,6 +116,8 @@ func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T
 
 	t.Parallel()
 
+	const resourceName = "hpe_morpheus_policy.replace_test"
+
 	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
@@ -180,19 +182,19 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 1: Create resource with initial associated_resource_id
 				Config: providerConfig + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Group"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "associated_resource_id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxMemory"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
+					resource.TestCheckResourceAttrSet(resourceName, "associated_resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
-						resourceName := "hpe_morpheus_policy.replace_test"
 						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: %s", resourceName)
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -201,15 +203,15 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 2: Change associated_resource_id and verify resource is replaced (new ID)
 				Config: providerConfig + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Group"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "associated_resource_id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
+					resource.TestCheckResourceAttrSet(resourceName, "associated_resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxMemory"),
 					// Check that the resource has a new ID (replacement occurred)
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
-						rs, ok := s.RootModule().Resources["hpe_morpheus_policy.replace_test"]
+						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: hpe_morpheus_policy.replace_test")
 						}
@@ -218,6 +220,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 							return fmt.Errorf("Expected resource ID to change due to associated_resource_id change (RequiresReplace), "+
 								"but ID remained the same: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
@@ -234,6 +237,8 @@ func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing
 	}
 
 	t.Parallel()
+
+	const resourceName = "hpe_morpheus_policy.replace_test"
 
 	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
@@ -293,19 +298,19 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 1: Create resource with Group associated_resource_type
 				Config: providerConfig + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Group"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "associated_resource_id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxMemory"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
+					resource.TestCheckResourceAttrSet(resourceName, "associated_resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
-						resourceName := "hpe_morpheus_policy.replace_test"
 						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: %s", resourceName)
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -314,14 +319,14 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 2: Change associated_resource_type to Global and verify resource is replaced
 				Config: providerConfig + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Global"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Global"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxMemory"),
 					// Check that the resource has a new ID (replacement occurred)
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
-						rs, ok := s.RootModule().Resources["hpe_morpheus_policy.replace_test"]
+						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: hpe_morpheus_policy.replace_test")
 						}
@@ -330,6 +335,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 							return fmt.Errorf("Expected resource ID to change due to associated_resource_type change (RequiresReplace), "+
 								"but ID remained the same: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
@@ -346,6 +352,8 @@ func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
 	}
 
 	t.Parallel()
+
+	const resourceName = "hpe_morpheus_policy.replace_test"
 
 	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
@@ -406,19 +414,19 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 1: Create resource with maxMemory policy type
 				Config: providerConfig + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Group"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "associated_resource_id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxMemory"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
+					resource.TestCheckResourceAttrSet(resourceName, "associated_resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxMemory"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
-						resourceName := "hpe_morpheus_policy.replace_test"
 						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: %s", resourceName)
 						}
 						initialResourceID = rs.Primary.ID
+
 						return nil
 					},
 				),
@@ -427,15 +435,15 @@ resource "hpe_morpheus_policy" "replace_test" {
 				// Step 2: Change policy_type.code to maxStorage and verify resource is replaced
 				Config: providerConfig + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "name", policyName),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "associated_resource_type", "Group"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "associated_resource_id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.replace_test", "policy_type.code", "maxStorage"),
+					resource.TestCheckResourceAttr(resourceName, "name", policyName),
+					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
+					resource.TestCheckResourceAttrSet(resourceName, "associated_resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "policy_type.code", "maxStorage"),
 					// Check that the resource has a new ID (replacement occurred)
-					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.replace_test", "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
-						rs, ok := s.RootModule().Resources["hpe_morpheus_policy.replace_test"]
+						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
 							return fmt.Errorf("Not found: hpe_morpheus_policy.replace_test")
 						}
@@ -444,6 +452,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 							return fmt.Errorf("Expected resource ID to change due to policy_type.code change (RequiresReplace), "+
 								"but ID remained the same: %s", currentResourceID)
 						}
+
 						return nil
 					},
 				),
