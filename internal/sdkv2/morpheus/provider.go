@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 )
 
@@ -16,6 +17,7 @@ func Provider() *schema.Provider {
 		Schema: providerSchema(),
 
 		ResourcesMap: map[string]*schema.Resource{
+			"hpe_morpheus_cluster_mks_vsphere":  cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_saml_identity_source": identitysource.ResourceSAMLIdentitySource(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},

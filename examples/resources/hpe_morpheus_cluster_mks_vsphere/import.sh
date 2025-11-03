@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_cluster_mks_vsphere.tf_example_vsphere_mks_cluster 1
