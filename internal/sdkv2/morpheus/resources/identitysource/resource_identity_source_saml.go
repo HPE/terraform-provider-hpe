@@ -14,13 +14,13 @@ import (
 )
 
 //nolint:lll
-func ResourceSAMLIdentitySource() *schema.Resource {
+func ResourceIdentitySourceSAML() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a saml identity source resource",
-		CreateContext: resourceSAMLIdentitySourceCreate,
-		ReadContext:   resourceSAMLIdentitySourceRead,
-		UpdateContext: resourceSAMLIdentitySourceUpdate,
-		DeleteContext: resourceSAMLIdentitySourceDelete,
+		CreateContext: resourceIdentitySourceSAMLCreate,
+		ReadContext:   resourceIdentitySourceSAMLRead,
+		UpdateContext: resourceIdentitySourceSAMLUpdate,
+		DeleteContext: resourceIdentitySourceSAMLDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -149,7 +149,7 @@ func ResourceSAMLIdentitySource() *schema.Resource {
 	}
 }
 
-func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIdentitySourceSAMLCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -318,12 +318,12 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceSAMLIdentitySourceRead(ctx, d, meta)
+	resourceIdentitySourceSAMLRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIdentitySourceSAMLRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -420,7 +420,7 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIdentitySourceSAMLUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -593,10 +593,10 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(identitySourceResult.ID))
 
-	return resourceSAMLIdentitySourceRead(ctx, d, meta)
+	return resourceIdentitySourceSAMLRead(ctx, d, meta)
 }
 
-func resourceSAMLIdentitySourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIdentitySourceSAMLDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
