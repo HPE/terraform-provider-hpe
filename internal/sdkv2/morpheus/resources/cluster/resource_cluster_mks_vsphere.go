@@ -9,12 +9,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
