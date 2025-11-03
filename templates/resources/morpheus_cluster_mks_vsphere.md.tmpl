@@ -1,11 +1,11 @@
 ---
-page_title: "morpheus_vsphere_mks_cluster Resource - terraform-provider-morpheus"
-subcategory: ""
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
 
-# morpheus_vsphere_mks_cluster
+# {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
 
@@ -16,7 +16,7 @@ Sometimes updating the number of worker nodes may fail unexpectedly and the new 
 
 ## Example Usage
 
-{{tffile "examples/resources/morpheus_vsphere_mks_cluster/resource.tf"}}
+{{tffile "examples/resources/hpe_morpheus_cluster_mks_vsphere/resource.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -24,4 +24,4 @@ Sometimes updating the number of worker nodes may fail unexpectedly and the new 
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_vsphere_mks_cluster/import.sh" }}
+{{codefile "shell" "examples/resources/hpe_morpheus_cluster_mks_vsphere/import.sh" }}
