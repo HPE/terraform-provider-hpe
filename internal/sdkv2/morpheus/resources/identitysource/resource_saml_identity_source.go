@@ -197,7 +197,12 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 			config["doNotIncludeSAMLRequest"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"include_saml_request_parameter",
+				d.Get("include_saml_request_parameter"),
+			),
+		)
 	}
 
 	if samlRequest, ok := d.Get("saml_request").(string); ok {
@@ -233,7 +238,12 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if requiredAttributeValue, ok := d.Get("required_role_attribute_value").(string); ok {
 		config["requiredAttributeValue"] = requiredAttributeValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("required_role_attribute_value", d.Get("required_role_attribute_value")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"required_role_attribute_value",
+				d.Get("required_role_attribute_value"),
+			),
+		)
 	}
 
 	if validateAssertionSignature, ok := d.Get("validate_assertion_signature").(bool); ok {
@@ -243,7 +253,12 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 			config["doNotValidateSignature"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("validate_assertion_signature", d.Get("validate_assertion_signature")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"validate_assertion_signature",
+				d.Get("validate_assertion_signature"),
+			),
+		)
 	}
 
 	identitySource["config"] = config
@@ -270,7 +285,12 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if enableRoleMappingPermission, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		identitySource["allowCustomMappings"] = enableRoleMappingPermission
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"enable_role_mapping_permission",
+				d.Get("enable_role_mapping_permission"),
+			),
+		)
 	}
 
 	req := &morpheus.Request{
@@ -447,7 +467,12 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 			config["doNotIncludeSAMLRequest"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"include_saml_request_parameter",
+				d.Get("include_saml_request_parameter"),
+			),
+		)
 	}
 
 	if samlRequest, ok := d.Get("saml_request").(string); ok {
@@ -483,7 +508,12 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if requiredAttributeValue, ok := d.Get("required_role_attribute_value").(string); ok {
 		config["requiredAttributeValue"] = requiredAttributeValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("required_role_attribute_value", d.Get("required_role_attribute_value")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"required_role_attribute_value",
+				d.Get("required_role_attribute_value"),
+			),
+		)
 	}
 
 	if validateAssertionSignature, ok := d.Get("validate_assertion_signature").(bool); ok {
@@ -493,7 +523,12 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 			config["doNotValidateSignature"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("validate_assertion_signature", d.Get("validate_assertion_signature")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"validate_assertion_signature",
+				d.Get("validate_assertion_signature"),
+			),
+		)
 	}
 
 	identitySource["config"] = config
@@ -520,7 +555,12 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if enableRoleMappingPermission, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		identitySource["allowCustomMappings"] = enableRoleMappingPermission
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"enable_role_mapping_permission",
+				d.Get("enable_role_mapping_permission"),
+			),
+		)
 	}
 
 	req := &morpheus.Request{
