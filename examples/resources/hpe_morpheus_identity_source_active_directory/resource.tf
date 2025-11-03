@@ -1,4 +1,4 @@
-resource "hpe_morpheus_active_directory_identity_source" "addemo" {
+resource "hpe_morpheus_identity_source_active_directory" "addemo" {
   tenant_id               = 1
   name                    = "addemo"
   description             = "TF example AD identity source"

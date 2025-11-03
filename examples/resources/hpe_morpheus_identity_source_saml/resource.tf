@@ -1,4 +1,4 @@
-resource "hpe_morpheus_saml_identity_source" "samldemo" {
+resource "hpe_morpheus_identity_source_saml" "samldemo" {
   tenant_id                      = 1
   name                           = "samldemo"
   description                    = "TF example SAML identity source"
