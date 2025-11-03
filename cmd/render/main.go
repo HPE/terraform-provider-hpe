@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/HPE/terraform-provider-hpe/internal/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 func main() {

@@ -1,7 +1,9 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251007101423-40adab7a3c38 h1:maqMFoy4df3g/Glzodj/0dktZ4ulb4nW5+hofzvNGII=
-github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251007101423-40adab7a3c38/go.mod h1:GPkKVeXv0go/+jzI15RDeM0jIskuQRlMydsvQiKT6VY=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba h1:bp92Ge78ab+lf3B1icgUPWHNUNotlVl1f2TrYtMqA7s=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba/go.mod h1:euek+CMVFJjCC79mG3TfGd5bPebzytyGg5wzLx1e/2c=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251031161330-d2adfc5f117a h1:Z3rVWmS8kb9LfTOwlmemQKOlOGHvxqGrZzPSs+uZ9u8=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251031161330-d2adfc5f117a/go.mod h1:hH79EA7VE9lwShyc9M4jii794SzNC24Guh0BKITV+Lc=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.1.6 h1:ZcV+Ropw6Qn0AX9brlQLAUXfqLBc7Bl+f/DmNxpLfdw=
@@ -97,6 +99,8 @@ github.com/hashicorp/terraform-plugin-go v0.29.0 h1:1nXKl/nSpaYIUBU1IG/EsDOX0vv+
 github.com/hashicorp/terraform-plugin-go v0.29.0/go.mod h1:vYZbIyvxyy0FWSmDHChCqKvI40cFTDGSb3D8D70i9GM=
 github.com/hashicorp/terraform-plugin-log v0.9.0 h1:i7hOA+vdAItN1/7UrfBqBwvYPQ9TFvymaRGZED3FCV0=
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
+github.com/hashicorp/terraform-plugin-mux v0.21.0 h1:QsEYnzSD2c3zT8zUrUGqaFGhV/Z8zRUlU7FY3ZPJFfw=
+github.com/hashicorp/terraform-plugin-mux v0.21.0/go.mod h1:Qpt8+6AD7NmL0DS7ASkN0EXpDQ2J/FnnIgeUr1tzr5A=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0 h1:NFPMacTrY/IdcIcnUB+7hsore1ZaRWU9cnB6jFoBnIM=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0/go.mod h1:QYmYnLfsosrxjCnGY1p9c7Zj6n9thnEE+7RObeYs3fA=
 github.com/hashicorp/terraform-plugin-testing v1.13.3 h1:QLi/khB8Z0a5L54AfPrHukFpnwsGL8cwwswj4RZduCo=
