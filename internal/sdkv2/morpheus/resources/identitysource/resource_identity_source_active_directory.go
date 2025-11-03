@@ -16,13 +16,13 @@ import (
 )
 
 //nolint:lll
-func ResourceActiveDirectoryIdentitySource() *schema.Resource {
+func ResourceIdentitySourceActiveDirectory() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides an active directory identity source resource",
-		CreateContext: resourceActiveDirectoryIdentitySourceCreate,
-		ReadContext:   resourceActiveDirectoryIdentitySourceRead,
-		UpdateContext: resourceActiveDirectoryIdentitySourceUpdate,
-		DeleteContext: resourceActiveDirectoryIdentitySourceDelete,
+		CreateContext: resourceIdentitySourceActiveDirectoryCreate,
+		ReadContext:   resourceIdentitySourceActiveDirectoryRead,
+		UpdateContext: resourceIdentitySourceActiveDirectoryUpdate,
+		DeleteContext: resourceIdentitySourceActiveDirectoryDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -141,7 +141,7 @@ func ResourceActiveDirectoryIdentitySource() *schema.Resource {
 	}
 }
 
-func resourceActiveDirectoryIdentitySourceCreate(
+func resourceIdentitySourceActiveDirectoryCreate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
@@ -278,12 +278,12 @@ func resourceActiveDirectoryIdentitySourceCreate(
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
+	resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceActiveDirectoryIdentitySourceRead(
+func resourceIdentitySourceActiveDirectoryRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
@@ -377,7 +377,7 @@ func resourceActiveDirectoryIdentitySourceRead(
 	return diags
 }
 
-func resourceActiveDirectoryIdentitySourceUpdate(
+func resourceIdentitySourceActiveDirectoryUpdate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},
@@ -518,10 +518,10 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(identitySourceResult.ID))
 
-	return resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
+	return resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)
 }
 
-func resourceActiveDirectoryIdentitySourceDelete(
+func resourceIdentitySourceActiveDirectoryDelete(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta interface{},

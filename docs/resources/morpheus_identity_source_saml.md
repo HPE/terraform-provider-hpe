@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_saml_identity_source Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_identity_source_saml Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a saml identity source resource
 ---
-# hpe_morpheus_saml_identity_source (Resource)
+# hpe_morpheus_identity_source_saml (Resource)
 
 Provides a saml identity source resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_saml_identity_source" "samldemo" {
+resource "hpe_morpheus_identity_source_saml" "samldemo" {
   tenant_id                      = 1
   name                           = "samldemo"
   description                    = "TF example SAML identity source"
@@ -84,5 +84,5 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_saml_identity_source.tf_example_saml_identity_source 1
+terraform import hpe_morpheus_identity_source_saml.tf_example_identity_source_saml 1
 ```
