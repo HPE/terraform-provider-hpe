@@ -51,7 +51,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		}
 
 		// 404 status code counts as a successful delete
-		if hresp.StatusCode == http.StatusNotFound {
+		if httpResp.StatusCode == http.StatusNotFound {
 			return nil, nil
 		}
 
