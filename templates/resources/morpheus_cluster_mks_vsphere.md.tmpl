@@ -1,0 +1,27 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Notes
+
+### What to do if worker nodes fail to provision
+Sometimes updating the number of worker nodes may fail unexpectedly and the new worker nodes will fail to provision. If this happens, manually delete the new worker nodes either through the Morpheus UI or using the [Morpheus CLI] (https://clidocs.morpheusdata.com/), and retry the `terraform apply`.
+
+## Example Usage
+
+{{tffile "examples/resources/hpe_morpheus_cluster_mks_vsphere/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/hpe_morpheus_cluster_mks_vsphere/import.sh" }}
