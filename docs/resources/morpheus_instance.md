@@ -108,7 +108,7 @@ resource "hpe_morpheus_instance" "example" {
 - `instance_type_id` (Number) The type of instance by id we want to fetch.
 - `layout_id` (Number) The layout id for the instance type that you want to provision. i.e. single process or cluster
 - `name` (String) Name of the instance to be created.
-- `network_interfaces` (Attributes List) The networkInterfaces parameter is for network configuration.
+- `network_interfaces` (Attributes Set) The networkInterfaces parameter is for network configuration.
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces))
 - `plan_id` (Number) The id for the memory and storage option pre-configured within Morpheus.
