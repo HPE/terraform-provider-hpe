@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
@@ -404,6 +404,7 @@ func getClusterWorkers(client *morpheus.Client, clusterId int64) ([]morpheus.Clu
 	resp, err := client.ListClusterWorkers(clusterId, &morpheus.Request{})
 	if err != nil {
 		log.Printf("API FAILURE - Error in listing cluster worker nodes: %s - %s", resp, err)
+
 		return nil, err
 	}
 
@@ -596,13 +597,23 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if storageVolumeValue, ok := masterpool["storage_volume"].([]interface{}); ok {
 		serverPayload["volumes"] = parseStorageVolumes(storageVolumeValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("master_node_pool.storage_volume", masterpool["storage_volume"]))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"master_node_pool.storage_volume",
+				masterpool["storage_volume"],
+			),
+		)
 	}
 
 	if networkInterfaceValue, ok := masterpool["network_interface"].([]interface{}); ok {
 		serverPayload["networkInterfaces"] = parseMasterNetworkInterfaces(networkInterfaceValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("master_node_pool.network_interface", masterpool["network_interface"]))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"master_node_pool.network_interface",
+				masterpool["network_interface"],
+			),
+		)
 	}
 
 	if masterpool["tags"] != nil {
@@ -651,13 +662,23 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if workerStorageVolumeValue, ok := workerpool["storage_volume"].([]interface{}); ok {
 		workerPayload["volumes"] = parseStorageVolumes(workerStorageVolumeValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool.storage_volume", workerpool["storage_volume"]))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"worker_node_pool.storage_volume",
+				workerpool["storage_volume"],
+			),
+		)
 	}
 
 	if workerNetworkInterfaceValue, ok := workerpool["network_interface"].([]interface{}); ok {
 		workerPayload["networkInterfaces"] = parseWorkerNetworkInterfaces(workerNetworkInterfaceValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool.network_interface", workerpool["network_interface"]))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"worker_node_pool.network_interface",
+				workerpool["network_interface"],
+			),
+		)
 	}
 
 	workerPayload["config"] = map[string]interface{}{
@@ -688,6 +709,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	resp, err := client.CreateCluster(req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
+
 		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
@@ -702,9 +724,10 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	cluster := result.Cluster
 	clusterStatus := statusProvisioning
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{statusProvisioning, statusStarting, statusStopping, statusPending, statusSyncing},
-		Target:  []string{statusRunning, statusFailed, statusWarning, statusDenied, statusCancelled, statusSuspended, statusOk},
+		//nolint:lll
+		Target: []string{statusRunning, statusFailed, statusWarning, statusDenied, statusCancelled, statusSuspended, statusOk},
 		Refresh: func() (interface{}, string, error) {
 			clusterDetails, err := client.GetCluster(cluster.ID, &morpheus.Request{})
 			if err != nil {
@@ -781,6 +804,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if clusterStatus == statusFailed {
 		return diag.Errorf("error creating cluster: failed to create cluster")
 	}
+
 	return diags
 }
 
@@ -819,9 +843,11 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
 			d.SetId("")
+
 			return diags
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
@@ -906,7 +932,13 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId int64, nodeCount int, d *schema.ResourceData) error {
+func doClusterWorkerAdd(
+	ctx context.Context,
+	client *morpheus.Client,
+	clusterId int64,
+	nodeCount int,
+	d *schema.ResourceData,
+) error {
 	var workerpool map[string]interface{}
 
 	if workerPoolValue := d.Get("worker_node_pool"); workerPoolValue != nil {
@@ -1020,7 +1052,7 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 		return err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{statusProvisioning},
 		Target:  []string{statusProvisioned},
 		Refresh: func() (interface{}, string, error) {
@@ -1067,7 +1099,10 @@ func doClusterWorkerDelete(ctx context.Context, client *morpheus.Client, cluster
 
 	startIndex := len(workers) + nodeCount
 	if startIndex < 0 || startIndex > len(workers) {
-		return fmt.Errorf("workers: slice index out of range: index %d is not valid for slice length %d", startIndex, len(workers))
+		return fmt.Errorf(
+			"workers: slice index out of range: index %d is not valid for slice length %d",
+			startIndex, len(workers),
+		)
 	}
 	deleteWorkers := workers[startIndex:]
 	for _, worker := range deleteWorkers {
@@ -1079,7 +1114,7 @@ func doClusterWorkerDelete(ctx context.Context, client *morpheus.Client, cluster
 		}
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{statusDeprovisioning},
 		Target:  []string{statusDeprovisioned},
 		Refresh: func() (interface{}, string, error) {
@@ -1210,6 +1245,7 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 		resp, err := client.UpdateCluster(clusterId, req)
 		if err != nil {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 		log.Printf("API RESPONSE: %s", resp)
@@ -1236,22 +1272,25 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			"removeResources": "on",
 		},
 	}
-	if helpers.USE_FORCE {
+	if helpers.UseForce {
 		req.QueryParams["force"] = "true"
 	}
 	resp, err := client.DeleteCluster(convert.StringToInt64(id), req)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
+		//nolint:lll
 		Pending: []string{statusRemoving, statusPendingRemoval, statusStopping, statusPending, statusWarning, statusDeprovisioning},
 		Target:  []string{statusRemoved},
 		Refresh: func() (interface{}, string, error) {
@@ -1271,6 +1310,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			}
 
 			cluster := result.Cluster
+
 			return result, cluster.Status, nil
 		},
 		Timeout:      30 * time.Minute,
@@ -1286,6 +1326,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId("")
+
 	return diags
 }
 
@@ -1298,6 +1339,7 @@ func parseMasterNetworkInterfaces(variables []interface{}) []map[string]interfac
 		if variableMap, ok := variables[i].(map[string]interface{}); ok {
 			for k, v := range variableMap {
 				switch k {
+				//nolint:goconst
 				case "network_id":
 					if networkIDValue, ok := v.(int); ok {
 						networkId := make(map[string]interface{})
@@ -1309,6 +1351,7 @@ func parseMasterNetworkInterfaces(variables []interface{}) []map[string]interfac
 		}
 		networkInterfaces = append(networkInterfaces, networkInterface)
 	}
+
 	return networkInterfaces
 }
 
@@ -1332,6 +1375,7 @@ func parseWorkerNetworkInterfaces(variables []interface{}) []map[string]interfac
 		}
 		networkInterfaces = append(networkInterfaces, networkInterface)
 	}
+
 	return networkInterfaces
 }
 
@@ -1355,6 +1399,7 @@ func parseWorkerNetworkInterfacesForWorkerPayload(variables []interface{}) []map
 		}
 		networkInterfaces = append(networkInterfaces, networkInterface)
 	}
+
 	return networkInterfaces
 }
 
@@ -1368,6 +1413,7 @@ func parseTags(variables map[string]interface{}) []map[string]interface{} {
 		}
 		tags = append(tags, tag)
 	}
+
 	return tags
 }
 
@@ -1420,5 +1466,6 @@ func parseStorageVolumes(volumes []interface{}) []map[string]interface{} {
 		}
 		storageVolumes = append(storageVolumes, row)
 	}
+
 	return storageVolumes // .([]map[string]interface{})
 }

@@ -6,6 +6,4 @@ import (
 
 // global stuff here
 
-var (
-	USE_FORCE = (os.Getenv("USE_FORCE") == "true")
-)
+var UseForce = (os.Getenv("USE_FORCE") == "true")
