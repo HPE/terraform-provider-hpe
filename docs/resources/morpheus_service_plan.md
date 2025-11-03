@@ -23,6 +23,7 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
   max_storage = 536870912
   provision_type_code = "arm"
   custom_max_storage = true
+  cores_per_socket = 1
   config_ranges = {
     min_storage = 268435456
     max_storage = 536870912
@@ -36,6 +37,7 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 ### Required
 
 - `code` (String) Service plan code, must be unique
+- `cores_per_socket` (Number) Number of cores per CPU
 - `max_memory` (Number) Max memory size in bytes
 - `max_storage` (Number) Max storage size in bytes
 - `name` (String) Service plan name
@@ -45,7 +47,6 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 
 - `add_volumes` (Boolean) Can be used to enable / disable ability to add volumes
 - `config_ranges` (Attributes) The min and max ranges that instances using this service plan must conform to. (see [below for nested schema](#nestedatt--config_ranges))
-- `cores_per_socket` (Number) Number of cores per CPU
 - `custom_cores` (Boolean) Can be used to enable / disable customizable cores
 - `custom_cpu` (Boolean) Can be used to enable / disable customizable cpu
 - `custom_max_memory` (Boolean) Can be used to enable / disable customizable memory.

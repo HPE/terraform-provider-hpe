@@ -30,7 +30,7 @@ Ensure the Morpheus appliance can reach the NFS server and that the share is acc
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/resources/datastore/example_alletramp_hvm.tf" }}
+{{ tffile "internal/framework/subproviders/morpheus/resources/datastore/example_alletramp_hvm.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -43,8 +43,10 @@ For example:
 terraform import hpe_morpheus_datastore.example 123
 ```
 
-Note that when importing a datastore the `resource_permissions` and `tenants` will not be populated.  You will need to perform an update
-to the imported datastore to set these attributes.
+Note that when importing a datastore the `resource_permissions` `groups` will be populated with the current group assignments.
+For `associated_resource_type` of `Cloud` the `tenants` list will always contain at least the `tenant` associated with the
+user who created the datastore.  For `associated_resource_type` of `Cluster` the `tenants` list will be empty if no `tenants`
+other than that associated with the user who created the datastore have access to the datastore.
 
 ## Notes
 
