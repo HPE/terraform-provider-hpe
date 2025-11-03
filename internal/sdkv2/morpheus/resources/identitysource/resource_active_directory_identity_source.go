@@ -224,7 +224,12 @@ func resourceActiveDirectoryIdentitySourceCreate(
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"enable_role_mapping_permission",
+				d.Get("enable_role_mapping_permission"),
+			),
+		)
 	}
 
 	identitySource["config"] = config
@@ -455,7 +460,12 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(
+			helpers.TypeAssertFailError(
+				"enable_role_mapping_permission",
+				d.Get("enable_role_mapping_permission"),
+			),
+		)
 	}
 
 	identitySource["config"] = config
