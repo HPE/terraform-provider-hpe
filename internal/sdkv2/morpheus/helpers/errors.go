@@ -17,7 +17,7 @@ func TypeAssertFail(k string, v any) error {
 // It is useful for working with the legacy provider code as it often attempts
 // to access the 0th index of a slice without checking its length first.
 // k is the key or name of the slice being accessed.
-func EmptySlice(k string) error {
+func EmptySliceError(k string) error {
 	return fmt.Errorf("%s: Slice is empty", k)
 }
 
@@ -25,6 +25,6 @@ func EmptySlice(k string) error {
 // It is useful for working with the legacy provider code as it often
 // dereferences pointers without checking for nil first.
 // k is the key or name of the pointer being dereferenced.
-func NilPointer(k string) error {
+func NilPointerError(k string) error {
 	return fmt.Errorf("%s: Pointer is nil", k)
 }
