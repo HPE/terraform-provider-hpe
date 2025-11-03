@@ -65,6 +65,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Environment Variables, an array of objects that have name and value.",
 				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
@@ -105,7 +108,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Name of the instance to be created.",
 				MarkdownDescription: "Name of the instance to be created.",
 			},
-			"network_interfaces": schema.SetNestedAttribute{
+			"network_interfaces": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"ip_address": schema.StringAttribute{
@@ -113,6 +116,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The ip address. Not applicable when using DHCP or IP Pools.",
 							MarkdownDescription: "The ip address. Not applicable when using DHCP or IP Pools.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"ip_mode": schema.StringAttribute{
 							Optional:            true,
@@ -136,12 +142,18 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 									path.MatchRoot("network_id"),
 								}...),
 							},
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
 						},
 						"network_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "id of the network to be used.",
 							MarkdownDescription: "id of the network to be used.",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 					CustomType: NetworkInterfacesType{
@@ -153,8 +165,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
 						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
 							return
 						}
@@ -329,7 +341,7 @@ type InstanceModel struct {
 	LayoutId          types.Int64   `tfsdk:"layout_id"`
 	LayoutSize        types.Int64   `tfsdk:"layout_size"`
 	Name              types.String  `tfsdk:"name"`
-	NetworkInterfaces types.Set     `tfsdk:"network_interfaces"`
+	NetworkInterfaces types.List    `tfsdk:"network_interfaces"`
 	PlanId            types.Int64   `tfsdk:"plan_id"`
 	Ports             types.Set     `tfsdk:"ports"`
 	Tags              types.Set     `tfsdk:"tags"`
