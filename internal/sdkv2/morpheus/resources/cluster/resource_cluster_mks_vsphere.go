@@ -48,7 +48,7 @@ func validateCountDiagFunc(i interface{}, _ cty.Path) diag.Diagnostics {
 	if countAssert, ok := i.(int); ok {
 		count = countAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("count", i))
+		return diag.FromErr(helpers.TypeAssertFailError("count", i))
 	}
 
 	if count < minimumMKSWorkerNodes {
@@ -412,7 +412,7 @@ func getClusterWorkers(client *morpheus.Client, clusterId int64) ([]morpheus.Clu
 	}
 
 	if workerResp.Workers == nil {
-		return []morpheus.ClusterWorker{}, helpers.NilPointer("workerResp.Workers")
+		return []morpheus.ClusterWorker{}, helpers.NilPointerError("workerResp.Workers")
 	}
 
 	// Sort the workers by date created to avoid naming problems i.e. worker-1-1
@@ -452,7 +452,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -465,7 +465,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		name = nameValue
 		clusterPayload["name"] = name
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	clusterPayload["type"] = "kubernetes-cluster"
 	clusterPayload["autoRecoverPowerState"] = false
@@ -478,7 +478,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 			"id": cloudID,
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("cloud_id", d.Get("cloud_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("cloud_id", d.Get("cloud_id")))
 	}
 
 	// Group
@@ -489,7 +489,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 			"id": groupID,
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("group_id", d.Get("group_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("group_id", d.Get("group_id")))
 	}
 
 	// Labels - AWAITING API support
@@ -502,7 +502,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		if description, ok := d.Get("description").(string); ok {
 			clusterPayload["description"] = description
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+			return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 		}
 	}
 
@@ -514,7 +514,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 			"id": clusterLayoutID,
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("cluster_layout_id", d.Get("cluster_layout_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("cluster_layout_id", d.Get("cluster_layout_id")))
 	}
 
 	// Workflow
@@ -523,7 +523,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		workflowID = workflowIDValue
 		clusterPayload["taskSetId"] = workflowID
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("workflow_id", d.Get("workflow_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("workflow_id", d.Get("workflow_id")))
 	}
 
 	var masterpool map[string]interface{}
@@ -532,30 +532,30 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if masterPoolValue := d.Get("master_node_pool"); masterPoolValue != nil {
 		if masterPoolSlice, ok := masterPoolValue.([]interface{}); ok {
 			if len(masterPoolSlice) == 0 {
-				return diag.FromErr(helpers.EmptySlice("master_node_pool"))
+				return diag.FromErr(helpers.EmptySliceError("master_node_pool"))
 			}
 			if masterPoolMap, ok := masterPoolSlice[0].(map[string]interface{}); ok {
 				masterpool = masterPoolMap
 			} else {
-				return diag.FromErr(helpers.TypeAssertFail("master_node_pool[0]", masterPoolSlice[0]))
+				return diag.FromErr(helpers.TypeAssertFailError("master_node_pool[0]", masterPoolSlice[0]))
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("master_node_pool", masterPoolValue))
+			return diag.FromErr(helpers.TypeAssertFailError("master_node_pool", masterPoolValue))
 		}
 	}
 
 	if workerPoolValue := d.Get("worker_node_pool"); workerPoolValue != nil {
 		if workerPoolSlice, ok := workerPoolValue.([]interface{}); ok {
 			if len(workerPoolSlice) == 0 {
-				return diag.FromErr(helpers.EmptySlice("worker_node_pool"))
+				return diag.FromErr(helpers.EmptySliceError("worker_node_pool"))
 			}
 			if workerPoolMap, ok := workerPoolSlice[0].(map[string]interface{}); ok {
 				workerpool = workerPoolMap
 			} else {
-				return diag.FromErr(helpers.TypeAssertFail("worker_node_pool[0]", workerPoolSlice[0]))
+				return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool[0]", workerPoolSlice[0]))
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("worker_node_pool", workerPoolValue))
+			return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool", workerPoolValue))
 		}
 	}
 
@@ -567,19 +567,19 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if podCIDRValue, ok := d.Get("pod_cidr").(string); ok {
 		podCIDR = podCIDRValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("pod_cidr", d.Get("pod_cidr")))
+		return diag.FromErr(helpers.TypeAssertFailError("pod_cidr", d.Get("pod_cidr")))
 	}
 
 	if serviceCIDRValue, ok := d.Get("service_cidr").(string); ok {
 		serviceCIDR = serviceCIDRValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("service_cidr", d.Get("service_cidr")))
+		return diag.FromErr(helpers.TypeAssertFailError("service_cidr", d.Get("service_cidr")))
 	}
 
 	if clusterRepoAccountIDValue, ok := d.Get("cluster_repo_account_id").(int); ok {
 		clusterRepoAccountID = clusterRepoAccountIDValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("cluster_repo_account_id", d.Get("cluster_repo_account_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("cluster_repo_account_id", d.Get("cluster_repo_account_id")))
 	}
 
 	serverPayload["config"] = map[string]interface{}{
@@ -595,20 +595,20 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if storageVolumeValue, ok := masterpool["storage_volume"].([]interface{}); ok {
 		serverPayload["volumes"] = parseStorageVolumes(storageVolumeValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("master_node_pool.storage_volume", masterpool["storage_volume"]))
+		return diag.FromErr(helpers.TypeAssertFailError("master_node_pool.storage_volume", masterpool["storage_volume"]))
 	}
 
 	if networkInterfaceValue, ok := masterpool["network_interface"].([]interface{}); ok {
 		serverPayload["networkInterfaces"] = parseMasterNetworkInterfaces(networkInterfaceValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("master_node_pool.network_interface", masterpool["network_interface"]))
+		return diag.FromErr(helpers.TypeAssertFailError("master_node_pool.network_interface", masterpool["network_interface"]))
 	}
 
 	if masterpool["tags"] != nil {
 		if tagsValue, ok := masterpool["tags"].(map[string]interface{}); ok {
 			serverPayload["tags"] = parseTags(tagsValue)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("master_node_pool.tags", masterpool["tags"]))
+			return diag.FromErr(helpers.TypeAssertFailError("master_node_pool.tags", masterpool["tags"]))
 		}
 	}
 
@@ -623,7 +623,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 			"id": apiProxyID,
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("api_proxy_id", d.Get("api_proxy_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("api_proxy_id", d.Get("api_proxy_id")))
 	}
 
 	var hostnamePrefix, resourcePrefix string
@@ -632,14 +632,14 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		hostnamePrefix = hostnamePrefixValue
 		serverPayload["hostname"] = hostnamePrefix
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("hostname_prefix", d.Get("hostname_prefix")))
+		return diag.FromErr(helpers.TypeAssertFailError("hostname_prefix", d.Get("hostname_prefix")))
 	}
 
 	if resourcePrefixValue, ok := d.Get("resource_prefix").(string); ok {
 		resourcePrefix = resourcePrefixValue
 		serverPayload["name"] = resourcePrefix
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resource_prefix", d.Get("resource_prefix")))
+		return diag.FromErr(helpers.TypeAssertFailError("resource_prefix", d.Get("resource_prefix")))
 	}
 
 	workerPayload := map[string]interface{}{}
@@ -650,13 +650,13 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if workerStorageVolumeValue, ok := workerpool["storage_volume"].([]interface{}); ok {
 		workerPayload["volumes"] = parseStorageVolumes(workerStorageVolumeValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("worker_node_pool.storage_volume", workerpool["storage_volume"]))
+		return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool.storage_volume", workerpool["storage_volume"]))
 	}
 
 	if workerNetworkInterfaceValue, ok := workerpool["network_interface"].([]interface{}); ok {
 		workerPayload["networkInterfaces"] = parseWorkerNetworkInterfaces(workerNetworkInterfaceValue)
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("worker_node_pool.network_interface", workerpool["network_interface"]))
+		return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool.network_interface", workerpool["network_interface"]))
 	}
 
 	workerPayload["config"] = map[string]interface{}{
@@ -672,7 +672,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		if workerTagsValue, ok := workerpool["tags"].(map[string]interface{}); ok {
 			workerPayload["tags"] = parseTags(workerTagsValue)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("worker_node_pool.tags", workerpool["tags"]))
+			return diag.FromErr(helpers.TypeAssertFailError("worker_node_pool.tags", workerpool["tags"]))
 		}
 	}
 	workerPayload["server"] = workerServerPayload
@@ -695,7 +695,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	if resultAssert, ok := resp.Result.(*morpheus.CreateClusterResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	cluster := result.Cluster
@@ -715,7 +715,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 			if clusterResultAssert, ok := clusterDetails.Result.(*morpheus.GetClusterResult); ok {
 				clusterResult = clusterResultAssert
 			} else {
-				return "", "", helpers.TypeAssertFail("clusterDetails.Result", clusterDetails.Result)
+				return "", "", helpers.TypeAssertFailError("clusterDetails.Result", clusterDetails.Result)
 			}
 
 			cluster := clusterResult.Cluster
@@ -734,11 +734,11 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 				if hostsResultAssert, ok := hostsDetails.Result.(*morpheus.ListHostsResult); ok {
 					hostsResult = hostsResultAssert
 				} else {
-					return clusterResult, clusterStatus, helpers.TypeAssertFail("hostsDetails.Result", hostsDetails.Result)
+					return clusterResult, clusterStatus, helpers.TypeAssertFailError("hostsDetails.Result", hostsDetails.Result)
 				}
 
 				if hostsResult.Hosts == nil {
-					return clusterResult, clusterStatus, helpers.NilPointer("hostsResult.Hosts")
+					return clusterResult, clusterStatus, helpers.NilPointerError("hostsResult.Hosts")
 				}
 
 				for _, host := range *hostsResult.Hosts {
@@ -788,7 +788,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -800,7 +800,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 	if nameValue, ok := d.Get("name").(string); ok {
 		name = nameValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -830,7 +830,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 	if resultAssert, ok := resp.Result.(*morpheus.GetClusterResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	cluster := result.Cluster
@@ -855,7 +855,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 	workers = filterOutClusterWorkersByStatus(workers, statusDeprovisioning)
 
 	if len(workers) == 0 {
-		return diag.FromErr(helpers.EmptySlice("workers"))
+		return diag.FromErr(helpers.EmptySliceError("workers"))
 	}
 	worker := workers[0]
 
@@ -911,15 +911,15 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 	if workerPoolValue := d.Get("worker_node_pool"); workerPoolValue != nil {
 		if workerPoolSlice, ok := workerPoolValue.([]interface{}); ok {
 			if len(workerPoolSlice) == 0 {
-				return helpers.EmptySlice("worker_node_pool")
+				return helpers.EmptySliceError("worker_node_pool")
 			}
 			if workerPoolMap, ok := workerPoolSlice[0].(map[string]interface{}); ok {
 				workerpool = workerPoolMap
 			} else {
-				return helpers.TypeAssertFail("worker_node_pool[0]", workerPoolSlice[0])
+				return helpers.TypeAssertFailError("worker_node_pool[0]", workerPoolSlice[0])
 			}
 		} else {
-			return helpers.TypeAssertFail("worker_node_pool", workerPoolValue)
+			return helpers.TypeAssertFailError("worker_node_pool", workerPoolValue)
 		}
 	}
 
@@ -929,7 +929,7 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 	}
 
 	if len(workers) == 0 {
-		return helpers.EmptySlice("workers")
+		return helpers.EmptySliceError("workers")
 	}
 	worker := workers[0]
 	desiredWorkerCount := len(workers) + nodeCount
@@ -942,25 +942,25 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 	if podCIDRValue, ok := d.Get("pod_cidr").(string); ok {
 		podCIDR = podCIDRValue
 	} else {
-		return helpers.TypeAssertFail("pod_cidr", d.Get("pod_cidr"))
+		return helpers.TypeAssertFailError("pod_cidr", d.Get("pod_cidr"))
 	}
 
 	if serviceCIDRValue, ok := d.Get("service_cidr").(string); ok {
 		serviceCIDR = serviceCIDRValue
 	} else {
-		return helpers.TypeAssertFail("service_cidr", d.Get("service_cidr"))
+		return helpers.TypeAssertFailError("service_cidr", d.Get("service_cidr"))
 	}
 
 	if clusterRepoAccountIDValue, ok := d.Get("cluster_repo_account_id").(int); ok {
 		clusterRepoAccountID = clusterRepoAccountIDValue
 	} else {
-		return helpers.TypeAssertFail("cluster_repo_account_id", d.Get("cluster_repo_account_id"))
+		return helpers.TypeAssertFailError("cluster_repo_account_id", d.Get("cluster_repo_account_id"))
 	}
 
 	if cloudIDValue, ok := d.Get("cloud_id").(int); ok {
 		cloudID = cloudIDValue
 	} else {
-		return helpers.TypeAssertFail("cloud_id", d.Get("cloud_id"))
+		return helpers.TypeAssertFailError("cloud_id", d.Get("cloud_id"))
 	}
 
 	serverPayload["config"] = map[string]interface{}{
@@ -986,13 +986,13 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 	if storageVolumeValue, ok := workerpool["storage_volume"].([]interface{}); ok {
 		serverPayload["volumes"] = parseStorageVolumes(storageVolumeValue)
 	} else {
-		return helpers.TypeAssertFail("worker_node_pool.storage_volume", workerpool["storage_volume"])
+		return helpers.TypeAssertFailError("worker_node_pool.storage_volume", workerpool["storage_volume"])
 	}
 
 	if networkInterfaceValue, ok := workerpool["network_interface"].([]interface{}); ok {
 		serverPayload["networkInterfaces"] = parseWorkerNetworkInterfacesForWorkerPayload(networkInterfaceValue)
 	} else {
-		return helpers.TypeAssertFail("worker_node_pool.network_interface", workerpool["network_interface"])
+		return helpers.TypeAssertFailError("worker_node_pool.network_interface", workerpool["network_interface"])
 	}
 
 	serverPayload["nodeCount"] = nodeCount
@@ -1000,7 +1000,7 @@ func doClusterWorkerAdd(ctx context.Context, client *morpheus.Client, clusterId 
 	if tagsValue, ok := workerpool["tags"].(map[string]interface{}); ok {
 		serverPayload["tags"] = parseTags(tagsValue)
 	} else {
-		return helpers.TypeAssertFail("worker_node_pool.tags", workerpool["tags"])
+		return helpers.TypeAssertFailError("worker_node_pool.tags", workerpool["tags"])
 	}
 
 	// NOTE: Not needed from Morpheus 8.05 onward
@@ -1116,7 +1116,7 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	clusterId := convert.StringToInt64(d.Id())
@@ -1130,40 +1130,40 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 
 		if oldSlice, ok := o.([]interface{}); ok {
 			if len(oldSlice) == 0 {
-				return diag.FromErr(helpers.EmptySlice("old worker_node_pool"))
+				return diag.FromErr(helpers.EmptySliceError("old worker_node_pool"))
 			}
 			if oldMap, ok := oldSlice[0].(map[string]interface{}); ok {
 				oldValues = oldMap
 			} else {
-				return diag.FromErr(helpers.TypeAssertFail("old worker_node_pool[0]", oldSlice[0]))
+				return diag.FromErr(helpers.TypeAssertFailError("old worker_node_pool[0]", oldSlice[0]))
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("old worker_node_pool", o))
+			return diag.FromErr(helpers.TypeAssertFailError("old worker_node_pool", o))
 		}
 
 		if oldCountValue, ok := oldValues["count"].(int); ok {
 			oldCount = oldCountValue
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("old worker_node_pool.count", oldValues["count"]))
+			return diag.FromErr(helpers.TypeAssertFailError("old worker_node_pool.count", oldValues["count"]))
 		}
 
 		if newSlice, ok := n.([]interface{}); ok {
 			if len(newSlice) == 0 {
-				return diag.FromErr(helpers.EmptySlice("new worker_node_pool"))
+				return diag.FromErr(helpers.EmptySliceError("new worker_node_pool"))
 			}
 			if newMap, ok := newSlice[0].(map[string]interface{}); ok {
 				newValues = newMap
 			} else {
-				return diag.FromErr(helpers.TypeAssertFail("new worker_node_pool[0]", newSlice[0]))
+				return diag.FromErr(helpers.TypeAssertFailError("new worker_node_pool[0]", newSlice[0]))
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("new worker_node_pool", n))
+			return diag.FromErr(helpers.TypeAssertFailError("new worker_node_pool", n))
 		}
 
 		if newCountValue, ok := newValues["count"].(int); ok {
 			newCount = newCountValue
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("new worker_node_pool.count", newValues["count"]))
+			return diag.FromErr(helpers.TypeAssertFailError("new worker_node_pool.count", newValues["count"]))
 		}
 
 		if newCount != oldCount {
@@ -1189,7 +1189,7 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 		if nameValue, ok := d.Get("name").(string); ok {
 			clusterPayload["name"] = nameValue
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+			return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 		}
 	}
 
@@ -1197,7 +1197,7 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 		if descriptionValue, ok := d.Get("description").(string); ok {
 			clusterPayload["description"] = descriptionValue
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+			return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 		}
 	}
 
@@ -1222,7 +1222,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -1266,7 +1266,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			if resultAssert, ok := clusterDetails.Result.(*morpheus.GetClusterResult); ok {
 				result = resultAssert
 			} else {
-				return "", "", helpers.TypeAssertFail("clusterDetails.Result", clusterDetails.Result)
+				return "", "", helpers.TypeAssertFailError("clusterDetails.Result", clusterDetails.Result)
 			}
 
 			cluster := result.Cluster
