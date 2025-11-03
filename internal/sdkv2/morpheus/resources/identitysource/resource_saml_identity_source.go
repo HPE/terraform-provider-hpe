@@ -157,7 +157,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	identitySource := make(map[string]interface{})
@@ -165,13 +165,13 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "saml"
@@ -181,13 +181,13 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if loginRedirectURL, ok := d.Get("login_redirect_url").(string); ok {
 		config["url"] = loginRedirectURL
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("login_redirect_url", d.Get("login_redirect_url")))
+		return diag.FromErr(helpers.TypeAssertFailError("login_redirect_url", d.Get("login_redirect_url")))
 	}
 
 	if logoutRedirectURL, ok := d.Get("logout_redirect_url").(string); ok {
 		config["logoutUrl"] = logoutRedirectURL
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("logout_redirect_url", d.Get("logout_redirect_url")))
+		return diag.FromErr(helpers.TypeAssertFailError("logout_redirect_url", d.Get("logout_redirect_url")))
 	}
 
 	if includeSAMLRequest, ok := d.Get("include_saml_request_parameter").(bool); ok {
@@ -197,43 +197,43 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 			config["doNotIncludeSAMLRequest"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
+		return diag.FromErr(helpers.TypeAssertFailError("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
 	}
 
 	if samlRequest, ok := d.Get("saml_request").(string); ok {
 		config["SAMLSignatureMode"] = samlRequest
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("saml_request", d.Get("saml_request")))
+		return diag.FromErr(helpers.TypeAssertFailError("saml_request", d.Get("saml_request")))
 	}
 
 	if givenNameAttribute, ok := d.Get("given_name_attribute").(string); ok {
 		config["givenNameAttribute"] = givenNameAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("given_name_attribute", d.Get("given_name_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("given_name_attribute", d.Get("given_name_attribute")))
 	}
 
 	if surnameAttribute, ok := d.Get("surname_attribute").(string); ok {
 		config["surnameAttribute"] = surnameAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("surname_attribute", d.Get("surname_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("surname_attribute", d.Get("surname_attribute")))
 	}
 
 	if emailAttribute, ok := d.Get("email_attribute").(string); ok {
 		config["emailAttribute"] = emailAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("email_attribute", d.Get("email_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("email_attribute", d.Get("email_attribute")))
 	}
 
 	if roleAttributeName, ok := d.Get("role_attribute_name").(string); ok {
 		config["roleAttributeName"] = roleAttributeName
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("role_attribute_name", d.Get("role_attribute_name")))
+		return diag.FromErr(helpers.TypeAssertFailError("role_attribute_name", d.Get("role_attribute_name")))
 	}
 
 	if requiredAttributeValue, ok := d.Get("required_role_attribute_value").(string); ok {
 		config["requiredAttributeValue"] = requiredAttributeValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("required_role_attribute_value", d.Get("required_role_attribute_value")))
+		return diag.FromErr(helpers.TypeAssertFailError("required_role_attribute_value", d.Get("required_role_attribute_value")))
 	}
 
 	if validateAssertionSignature, ok := d.Get("validate_assertion_signature").(bool); ok {
@@ -243,7 +243,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 			config["doNotValidateSignature"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("validate_assertion_signature", d.Get("validate_assertion_signature")))
+		return diag.FromErr(helpers.TypeAssertFailError("validate_assertion_signature", d.Get("validate_assertion_signature")))
 	}
 
 	identitySource["config"] = config
@@ -253,7 +253,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -263,14 +263,14 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseSAMLRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFailError("role_mapping", roleMappingValue))
 		}
 	}
 
 	if enableRoleMappingPermission, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		identitySource["allowCustomMappings"] = enableRoleMappingPermission
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	req := &morpheus.Request{
@@ -292,10 +292,10 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 			// Successfully created resource, now set id
 			d.SetId(convert.Int64ToString(result.IdentitySource.ID))
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+			return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("tenant_id", d.Get("tenant_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
 	resourceSAMLIdentitySourceRead(ctx, d, meta)
@@ -311,7 +311,7 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -320,7 +320,7 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	if nameValue, ok := d.Get("name").(string); ok {
 		name = nameValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -354,7 +354,7 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	if resultAssert, ok := resp.Result.(*morpheus.GetIdentitySourceResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	identitySource := result.IdentitySource
@@ -405,7 +405,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -415,13 +415,13 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "saml"
@@ -431,13 +431,13 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if loginRedirectURL, ok := d.Get("login_redirect_url").(string); ok {
 		config["url"] = loginRedirectURL
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("login_redirect_url", d.Get("login_redirect_url")))
+		return diag.FromErr(helpers.TypeAssertFailError("login_redirect_url", d.Get("login_redirect_url")))
 	}
 
 	if logoutRedirectURL, ok := d.Get("logout_redirect_url").(string); ok {
 		config["logoutUrl"] = logoutRedirectURL
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("logout_redirect_url", d.Get("logout_redirect_url")))
+		return diag.FromErr(helpers.TypeAssertFailError("logout_redirect_url", d.Get("logout_redirect_url")))
 	}
 
 	if includeSAMLRequest, ok := d.Get("include_saml_request_parameter").(bool); ok {
@@ -447,43 +447,43 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 			config["doNotIncludeSAMLRequest"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
+		return diag.FromErr(helpers.TypeAssertFailError("include_saml_request_parameter", d.Get("include_saml_request_parameter")))
 	}
 
 	if samlRequest, ok := d.Get("saml_request").(string); ok {
 		config["SAMLSignatureMode"] = samlRequest
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("saml_request", d.Get("saml_request")))
+		return diag.FromErr(helpers.TypeAssertFailError("saml_request", d.Get("saml_request")))
 	}
 
 	if givenNameAttribute, ok := d.Get("given_name_attribute").(string); ok {
 		config["givenNameAttribute"] = givenNameAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("given_name_attribute", d.Get("given_name_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("given_name_attribute", d.Get("given_name_attribute")))
 	}
 
 	if surnameAttribute, ok := d.Get("surname_attribute").(string); ok {
 		config["surnameAttribute"] = surnameAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("surname_attribute", d.Get("surname_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("surname_attribute", d.Get("surname_attribute")))
 	}
 
 	if emailAttribute, ok := d.Get("email_attribute").(string); ok {
 		config["emailAttribute"] = emailAttribute
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("email_attribute", d.Get("email_attribute")))
+		return diag.FromErr(helpers.TypeAssertFailError("email_attribute", d.Get("email_attribute")))
 	}
 
 	if roleAttributeName, ok := d.Get("role_attribute_name").(string); ok {
 		config["roleAttributeName"] = roleAttributeName
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("role_attribute_name", d.Get("role_attribute_name")))
+		return diag.FromErr(helpers.TypeAssertFailError("role_attribute_name", d.Get("role_attribute_name")))
 	}
 
 	if requiredAttributeValue, ok := d.Get("required_role_attribute_value").(string); ok {
 		config["requiredAttributeValue"] = requiredAttributeValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("required_role_attribute_value", d.Get("required_role_attribute_value")))
+		return diag.FromErr(helpers.TypeAssertFailError("required_role_attribute_value", d.Get("required_role_attribute_value")))
 	}
 
 	if validateAssertionSignature, ok := d.Get("validate_assertion_signature").(bool); ok {
@@ -493,7 +493,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 			config["doNotValidateSignature"] = true
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("validate_assertion_signature", d.Get("validate_assertion_signature")))
+		return diag.FromErr(helpers.TypeAssertFailError("validate_assertion_signature", d.Get("validate_assertion_signature")))
 	}
 
 	identitySource["config"] = config
@@ -503,7 +503,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -513,14 +513,14 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseSAMLRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFailError("role_mapping", roleMappingValue))
 		}
 	}
 
 	if enableRoleMappingPermission, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		identitySource["allowCustomMappings"] = enableRoleMappingPermission
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	req := &morpheus.Request{
@@ -541,7 +541,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	if resultAssert, ok := resp.Result.(*morpheus.UpdateIdentitySourceResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	identitySourceResult := result.IdentitySource
@@ -564,7 +564,7 @@ func resourceSAMLIdentitySourceDelete(ctx context.Context, d *schema.ResourceDat
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
