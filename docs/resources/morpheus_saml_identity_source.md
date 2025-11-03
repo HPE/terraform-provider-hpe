@@ -1,11 +1,10 @@
 ---
 page_title: "hpe_morpheus_saml_identity_source Resource - terraform-provider-hpe"
-subcategory: ""
+subcategory: "morpheus"
 description: |-
   Provides a saml identity source resource
 ---
-
-# morpheus_saml_identity_source
+# hpe_morpheus_saml_identity_source (Resource)
 
 Provides a saml identity source resource
 

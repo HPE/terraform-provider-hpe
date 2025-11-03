@@ -1,11 +1,10 @@
 ---
-page_title: "hpe_morpheus_saml_identity_source Resource - terraform-provider-hpe"
-subcategory: ""
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
-
-# morpheus_saml_identity_source
+# {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
 
