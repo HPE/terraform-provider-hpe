@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_active_directory_identity_source Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_identity_source_active_directory Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides an active directory identity source resource
 ---
-# hpe_morpheus_active_directory_identity_source (Resource)
+# hpe_morpheus_identity_source_active_directory (Resource)
 
 Provides an active directory identity source resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_active_directory_identity_source" "addemo" {
+resource "hpe_morpheus_identity_source_active_directory" "addemo" {
   tenant_id               = 1
   name                    = "addemo"
   description             = "TF example AD identity source"
@@ -74,5 +74,5 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_active_directory_identity_source.tf_example_active_directory_identity_source 1
+terraform import hpe_morpheus_identity_source_active_directory.tf_example_identity_source_active_directory 1
 ```
