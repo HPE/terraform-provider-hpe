@@ -88,10 +88,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// 	}
 	// }
 
-	// image_type
-	if !plan.ImageType.IsNull() && !plan.ImageType.IsUnknown() {
-		reqImage.VirtualImage.SetImageType(plan.ImageType.ValueString())
-	}
+	// image_type (required)
+	reqImage.VirtualImage.SetImageType(plan.ImageType.ValueString())
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
@@ -123,10 +121,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		reqImage.VirtualImage.SetMinRam(plan.MinRam.ValueInt64() * 1024 * 1024 * 1024)
 	}
 
-	// name
-	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		reqImage.VirtualImage.SetName(plan.Name.ValueString())
-	}
+	// name (required)
+	reqImage.VirtualImage.SetName(plan.Name.ValueString())
 
 	// os_type_id
 	if !plan.OsTypeId.IsNull() && !plan.OsTypeId.IsUnknown() {
