@@ -7,13 +7,17 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 )
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: providerSchema(),
 
-		ResourcesMap:         map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"hpe_morpheus_cluster_mks_vsphere": cluster.ResourceClusterMKSVSphere(),
+		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
 	}
