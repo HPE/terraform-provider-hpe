@@ -153,7 +153,7 @@ func resourceActiveDirectoryIdentitySourceCreate(
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	identitySource := make(map[string]interface{})
@@ -161,13 +161,13 @@ func resourceActiveDirectoryIdentitySourceCreate(
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "activeDirectory"
@@ -177,13 +177,13 @@ func resourceActiveDirectoryIdentitySourceCreate(
 	if adServer, ok := d.Get("ad_server").(string); ok {
 		config["url"] = adServer
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("ad_server", d.Get("ad_server")))
+		return diag.FromErr(helpers.TypeAssertFailError("ad_server", d.Get("ad_server")))
 	}
 
 	if domain, ok := d.Get("domain").(string); ok {
 		config["domain"] = domain
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("domain", d.Get("domain")))
+		return diag.FromErr(helpers.TypeAssertFailError("domain", d.Get("domain")))
 	}
 
 	//nolint:goconst
@@ -194,37 +194,37 @@ func resourceActiveDirectoryIdentitySourceCreate(
 			config["useSSL"] = "off"
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+		return diag.FromErr(helpers.TypeAssertFailError("use_ssl", d.Get("use_ssl")))
 	}
 
 	if bindingUsername, ok := d.Get("binding_username").(string); ok {
 		config["bindingUsername"] = bindingUsername
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("binding_username", d.Get("binding_username")))
+		return diag.FromErr(helpers.TypeAssertFailError("binding_username", d.Get("binding_username")))
 	}
 
 	if bindingPassword, ok := d.Get("binding_password").(string); ok {
 		config["bindingPassword"] = bindingPassword
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("binding_password", d.Get("binding_password")))
+		return diag.FromErr(helpers.TypeAssertFailError("binding_password", d.Get("binding_password")))
 	}
 
 	if requiredGroup, ok := d.Get("required_group").(string); ok {
 		config["requiredGroup"] = requiredGroup
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("required_group", d.Get("required_group")))
+		return diag.FromErr(helpers.TypeAssertFailError("required_group", d.Get("required_group")))
 	}
 
 	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
 		config["searchMemberGroups"] = searchMemberGroups
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+		return diag.FromErr(helpers.TypeAssertFailError("search_member_groups", d.Get("search_member_groups")))
 	}
 
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	identitySource["config"] = config
@@ -234,7 +234,7 @@ func resourceActiveDirectoryIdentitySourceCreate(
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -244,7 +244,7 @@ func resourceActiveDirectoryIdentitySourceCreate(
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFailError("role_mapping", roleMappingValue))
 		}
 	}
 
@@ -266,11 +266,11 @@ func resourceActiveDirectoryIdentitySourceCreate(
 			// Successfully created resource, now set id
 			d.SetId(convert.Int64ToString(result.IdentitySource.ID))
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+			return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 		}
 
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("tenant_id", d.Get("tenant_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
 	resourceActiveDirectoryIdentitySourceRead(ctx, d, meta)
@@ -290,7 +290,7 @@ func resourceActiveDirectoryIdentitySourceRead(
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -299,7 +299,7 @@ func resourceActiveDirectoryIdentitySourceRead(
 	if nameValue, ok := d.Get("name").(string); ok {
 		name = nameValue
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -332,7 +332,7 @@ func resourceActiveDirectoryIdentitySourceRead(
 	if resultAssert, ok := resp.Result.(*morpheus.GetIdentitySourceResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	identitySource := result.IdentitySource
@@ -381,7 +381,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
@@ -391,13 +391,13 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("name", d.Get("name")))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	if description, ok := d.Get("description").(string); ok {
 		identitySource["description"] = description
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("description", d.Get("description")))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	identitySource["type"] = "activeDirectory"
@@ -407,13 +407,13 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if adServer, ok := d.Get("ad_server").(string); ok {
 		config["url"] = adServer
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("ad_server", d.Get("ad_server")))
+		return diag.FromErr(helpers.TypeAssertFailError("ad_server", d.Get("ad_server")))
 	}
 
 	if domain, ok := d.Get("domain").(string); ok {
 		config["domain"] = domain
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("domain", d.Get("domain")))
+		return diag.FromErr(helpers.TypeAssertFailError("domain", d.Get("domain")))
 	}
 
 	if useSSL, ok := d.Get("use_ssl").(bool); ok {
@@ -423,39 +423,39 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 			config["useSSL"] = "off"
 		}
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("use_ssl", d.Get("use_ssl")))
+		return diag.FromErr(helpers.TypeAssertFailError("use_ssl", d.Get("use_ssl")))
 	}
 
 	if bindingUsername, ok := d.Get("binding_username").(string); ok {
 		config["bindingUsername"] = bindingUsername
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("binding_username", d.Get("binding_username")))
+		return diag.FromErr(helpers.TypeAssertFailError("binding_username", d.Get("binding_username")))
 	}
 
 	if d.HasChange("binding_password") {
 		if bindingPassword, ok := d.Get("binding_password").(string); ok {
 			config["bindingPassword"] = bindingPassword
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("binding_password", d.Get("binding_password")))
+			return diag.FromErr(helpers.TypeAssertFailError("binding_password", d.Get("binding_password")))
 		}
 	}
 
 	if requiredGroup, ok := d.Get("required_group").(string); ok {
 		config["requiredGroup"] = requiredGroup
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("required_group", d.Get("required_group")))
+		return diag.FromErr(helpers.TypeAssertFailError("required_group", d.Get("required_group")))
 	}
 
 	if searchMemberGroups, ok := d.Get("search_member_groups").(bool); ok {
 		config["searchMemberGroups"] = searchMemberGroups
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("search_member_groups", d.Get("search_member_groups")))
+		return diag.FromErr(helpers.TypeAssertFailError("search_member_groups", d.Get("search_member_groups")))
 	}
 
 	if allowCustomMappings, ok := d.Get("enable_role_mapping_permission").(bool); ok {
 		config["allowCustomMappings"] = allowCustomMappings
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
+		return diag.FromErr(helpers.TypeAssertFailError("enable_role_mapping_permission", d.Get("enable_role_mapping_permission")))
 	}
 
 	identitySource["config"] = config
@@ -465,7 +465,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("default_account_role_id", d.Get("default_account_role_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("default_account_role_id", d.Get("default_account_role_id")))
 	}
 
 	identitySource["defaultAccountRole"] = defaultAccountRole
@@ -475,7 +475,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 		if roleMappingSet, ok := roleMappingValue.(*schema.Set); ok {
 			identitySource["roleMappings"] = parseRoleMappings(roleMappingSet)
 		} else {
-			return diag.FromErr(helpers.TypeAssertFail("role_mapping", roleMappingValue))
+			return diag.FromErr(helpers.TypeAssertFailError("role_mapping", roleMappingValue))
 		}
 	}
 
@@ -496,7 +496,7 @@ func resourceActiveDirectoryIdentitySourceUpdate(
 	if resultAssert, ok := resp.Result.(*morpheus.UpdateIdentitySourceResult); ok {
 		result = resultAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("resp.Result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
 	identitySourceResult := result.IdentitySource
@@ -523,7 +523,7 @@ func resourceActiveDirectoryIdentitySourceDelete(
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
 	} else {
-		return diag.FromErr(helpers.TypeAssertFail("client", clientAssert))
+		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
 	id := d.Id()
