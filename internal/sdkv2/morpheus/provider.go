@@ -17,9 +17,9 @@ func Provider() *schema.Provider {
 		Schema: providerSchema(),
 
 		ResourcesMap: map[string]*schema.Resource{
-			"hpe_morpheus_active_directory_identity_source": identitysource.ResourceActiveDirectoryIdentitySource(),
-			"hpe_morpheus_saml_identity_source":             identitysource.ResourceSAMLIdentitySource(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
+			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
+			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
