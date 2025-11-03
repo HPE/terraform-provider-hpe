@@ -149,7 +149,7 @@ func ResourceSAMLIdentitySource() *schema.Resource {
 	}
 }
 
-func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -160,7 +160,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("client", clientAssert))
 	}
 
-	identitySource := make(map[string]interface{})
+	identitySource := make(map[string]any)
 
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
@@ -176,7 +176,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 
 	identitySource["type"] = "saml"
 
-	config := make(map[string]interface{})
+	config := make(map[string]any)
 
 	if loginRedirectURL, ok := d.Get("login_redirect_url").(string); ok {
 		config["url"] = loginRedirectURL
@@ -263,7 +263,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 
 	identitySource["config"] = config
 
-	defaultAccountRole := make(map[string]interface{})
+	defaultAccountRole := make(map[string]any)
 
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
@@ -294,7 +294,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	req := &morpheus.Request{
-		Body: map[string]interface{}{
+		Body: map[string]any{
 			"userSource": identitySource,
 		},
 	}
@@ -323,7 +323,7 @@ func resourceSAMLIdentitySourceCreate(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -406,10 +406,10 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("required_role_attribute_value", identitySource.Config.RequiredAttributeValue)
 	d.Set("enable_role_mapping_permission", identitySource.AllowCustomMappings)
 
-	var roleMappingPayload []map[string]interface{}
+	var roleMappingPayload []map[string]any
 
 	for _, roleMapping := range identitySource.RoleMappings {
-		roleOutput := make(map[string]interface{})
+		roleOutput := make(map[string]any)
 		roleOutput["assertion_attribute"] = roleMapping.SourceRoleName
 		roleOutput["role_id"] = roleMapping.MappedRole.ID
 		roleOutput["role_name"] = roleMapping.MappedRole.Authority
@@ -420,7 +420,7 @@ func resourceSAMLIdentitySourceRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -430,7 +430,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 
 	id := d.Id()
 
-	identitySource := make(map[string]interface{})
+	identitySource := make(map[string]any)
 
 	if name, ok := d.Get("name").(string); ok {
 		identitySource["name"] = name
@@ -446,7 +446,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 
 	identitySource["type"] = "saml"
 
-	config := make(map[string]interface{})
+	config := make(map[string]any)
 
 	if loginRedirectURL, ok := d.Get("login_redirect_url").(string); ok {
 		config["url"] = loginRedirectURL
@@ -533,7 +533,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 
 	identitySource["config"] = config
 
-	defaultAccountRole := make(map[string]interface{})
+	defaultAccountRole := make(map[string]any)
 
 	if defaultAccountRoleID, ok := d.Get("default_account_role_id").(int); ok {
 		defaultAccountRole["id"] = defaultAccountRoleID
@@ -564,7 +564,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	req := &morpheus.Request{
-		Body: map[string]interface{}{
+		Body: map[string]any{
 			"userSource": identitySource,
 		},
 	}
@@ -596,7 +596,7 @@ func resourceSAMLIdentitySourceUpdate(ctx context.Context, d *schema.ResourceDat
 	return resourceSAMLIdentitySourceRead(ctx, d, meta)
 }
 
-func resourceSAMLIdentitySourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSAMLIdentitySourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -627,14 +627,14 @@ func resourceSAMLIdentitySourceDelete(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func parseSAMLRoleMappings(mappings *schema.Set) []map[string]interface{} {
-	var roleMappings []map[string]interface{}
+func parseSAMLRoleMappings(mappings *schema.Set) []map[string]any {
+	var roleMappings []map[string]any
 	// iterate over the array of roleMappings
 	for _, mapping := range mappings.List() {
-		row := make(map[string]interface{})
-		mappedRole := make(map[string]interface{})
+		row := make(map[string]any)
+		mappedRole := make(map[string]any)
 
-		if mappingConfig, ok := mapping.(map[string]interface{}); ok {
+		if mappingConfig, ok := mapping.(map[string]any); ok {
 			for k, v := range mappingConfig {
 				switch k {
 				case "role_id":
