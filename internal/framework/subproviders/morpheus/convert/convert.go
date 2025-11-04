@@ -62,14 +62,14 @@ func BoolToType(b *bool) types.Bool {
 	return types.BoolValue(*b)
 }
 
-func StringToBool(s string) types.Bool {
+func StringToBool(s string) (types.Bool, error) {
 	switch strings.ToLower(s) {
 	case "on", "true", "yes":
-		return types.BoolValue(true)
+		return types.BoolValue(true), nil
 	case "off", "false", "no":
-		return types.BoolValue(false)
+		return types.BoolValue(false), nil
 	default:
-		return types.BoolValue(false)
+		return types.BoolValue(false), fmt.Errorf("unknown value %s", s)
 	}
 }
 

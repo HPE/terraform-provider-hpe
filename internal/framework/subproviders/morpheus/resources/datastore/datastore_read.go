@@ -176,7 +176,8 @@ func getDatastoreAsState(
 			switch k {
 			case "enableransomware":
 				s := v.(string)
-				configAlletraMPHVM.EnableRansomware = convert.StringToBool(s)
+				b, _ := convert.StringToBool(s)
+				configAlletraMPHVM.EnableRansomware = b
 			case "protocolType":
 				str := v.(string)
 				configAlletraMPHVM.ProtocolType = convert.StrToType(&str)
