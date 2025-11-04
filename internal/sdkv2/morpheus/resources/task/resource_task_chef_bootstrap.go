@@ -4,10 +4,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"strconv"
 	"strings"
-
-	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
@@ -73,8 +72,9 @@ func ResourceTaskChefBootstrap() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
 					h.Write([]byte(new))
-					sha256_hash := hex.EncodeToString(h.Sum(nil))
-					return strings.EqualFold(old, sha256_hash)
+					sha256Hash := hex.EncodeToString(h.Sum(nil))
+
+					return strings.EqualFold(old, sha256Hash)
 				},
 				Optional: true,
 			},
@@ -287,6 +287,7 @@ func resourceTaskChefBootstrapCreate(ctx context.Context, d *schema.ResourceData
 	resp, err := client.CreateTask(req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
+
 		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
@@ -303,6 +304,7 @@ func resourceTaskChefBootstrapCreate(ctx context.Context, d *schema.ResourceData
 	d.SetId(convert.Int64ToString(task.ID))
 
 	resourceTaskChefBootstrapRead(ctx, d, meta)
+
 	return diags
 }
 
@@ -343,9 +345,11 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
 			d.SetId("")
+
 			return diags
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
@@ -377,6 +381,7 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("retry_delay_seconds", chefBootstrapTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", chefBootstrapTask.AllowCustomConfig)
 	d.Set("visibility", chefBootstrapTask.Visibility)
+
 	return diags
 }
 
@@ -537,6 +542,7 @@ func resourceTaskChefBootstrapUpdate(ctx context.Context, d *schema.ResourceData
 	resp, err := client.UpdateTask(convert.StringToInt64(id), req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
+
 		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
@@ -552,6 +558,7 @@ func resourceTaskChefBootstrapUpdate(ctx context.Context, d *schema.ResourceData
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(chefBootstrapTask.ID))
+
 	return resourceTaskChefBootstrapRead(ctx, d, meta)
 }
 
@@ -572,13 +579,16 @@ func resourceTaskChefBootstrapDelete(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
+
 			return nil
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
+
 			return diag.FromErr(err)
 		}
 	}
 	log.Printf("API RESPONSE: %s", resp)
 	d.SetId("")
+
 	return diags
 }
