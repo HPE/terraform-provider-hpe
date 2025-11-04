@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func StrToType(s *string) types.String {
@@ -62,14 +63,14 @@ func BoolToType(b *bool) types.Bool {
 	return types.BoolValue(*b)
 }
 
-func StringToBool(s string) (types.Bool, error) {
+func StringToBool(ctx context.Context, s string) types.Bool {
 	switch strings.ToLower(s) {
 	case "on", "true", "yes":
-		return types.BoolValue(true), nil
-	case "off", "false", "no":
-		return types.BoolValue(false), nil
+		return types.BoolValue(true)
 	default:
-		return types.BoolNull(), fmt.Errorf("unknown value %s", s)
+		tflog.Debug(ctx, fmt.Sprintf("converting string to BoolValue(false): %s", s))
+
+		return types.BoolValue(false)
 	}
 }
 
