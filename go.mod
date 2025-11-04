@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251103122051-6cb50a9b0520
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251104111812-c3cc17b63fdc
 	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
