@@ -10,6 +10,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
 
 func Provider() *schema.Provider {
@@ -20,6 +21,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
+			"hpe_morpheus_task_ansible_playbook":            task.ResourceTaskAnsiblePlaybook(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
