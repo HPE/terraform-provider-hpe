@@ -5,6 +5,7 @@ package convert
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -59,6 +60,50 @@ func BoolToType(b *bool) types.Bool {
 	}
 
 	return types.BoolValue(*b)
+}
+
+func StringToBool(s string) types.Bool {
+	switch strings.ToLower(s) {
+	case "on", "true", "yes":
+		return types.BoolValue(true)
+	case "off", "false", "no":
+		return types.BoolValue(false)
+	default:
+		return types.BoolValue(false)
+	}
+}
+
+func BoolToStringOnOff(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("on")
+	case false:
+		return types.StringValue("off")
+	default:
+		return types.StringValue("off")
+	}
+}
+
+func BoolToStringYesNo(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("yes")
+	case false:
+		return types.StringValue("no")
+	default:
+		return types.StringValue("no")
+	}
+}
+
+func BoolToStringTrueFalse(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("true")
+	case false:
+		return types.StringValue("false")
+	default:
+		return types.StringValue("false")
+	}
 }
 
 func Int64ToType(i *int64) types.Int64 {

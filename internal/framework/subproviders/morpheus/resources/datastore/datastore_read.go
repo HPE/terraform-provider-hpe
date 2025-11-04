@@ -176,8 +176,7 @@ func getDatastoreAsState(
 			switch k {
 			case "enableransomware":
 				s := v.(string)
-				b, _ := convertEnableRansomwareString(s)
-				configAlletraMPHVM.EnableRansomware = convert.BoolToType(&b)
+				configAlletraMPHVM.EnableRansomware = convert.StringToBool(s)
 			case "protocolType":
 				str := v.(string)
 				configAlletraMPHVM.ProtocolType = convert.StrToType(&str)
@@ -654,15 +653,4 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func convertEnableRansomwareString(input string) (bool, bool) {
-	enableRansomwareMap := map[string]bool{
-		"on":  true,
-		"off": false,
-	}
-
-	ret, ok := enableRansomwareMap[input]
-
-	return ret, ok
 }

@@ -206,14 +206,3 @@ func (r *Resource) Create(
 		return
 	}
 }
-
-func convertEnableRansomwareBool(input bool) (string, bool) {
-	enableRansomwareMap := map[bool]string{
-		true:  "on",
-		false: "off",
-	}
-
-	ret, ok := enableRansomwareMap[input]
-
-	return ret, ok
-}

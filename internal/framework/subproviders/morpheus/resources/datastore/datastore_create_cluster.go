@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	tenantsFuncCluster             = sdk.NewListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInnerWithDefaults
-	resourcePermissionsFuncCluster = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsSitesFuncCluster    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	datastoreTypeFuncCluster       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	nfsConfigFuncCluster           = sdk.NewNFSDatastoreConfigurationWithDefaults
-	alletrampHvmConfigFuncCluster  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
+	tenantsClusterFunc             = sdk.NewListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInnerWithDefaults
+	resourcePermissionsClusterFunc = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
+	permissionsSitesClusterFunc    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	datastoreTypeClusterFunc       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	nfsConfigClusterFunc           = sdk.NewNFSDatastoreConfigurationWithDefaults
+	alletrampHvmConfigClusterFunc  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
 )
 
 func datastoreCreateCluster(ctx context.Context,
@@ -37,7 +37,7 @@ func datastoreCreateCluster(ctx context.Context,
 	datastoreCreate.SetName(name)
 
 	// Set the type
-	datastoreTypeForRequest := datastoreTypeFuncCluster()
+	datastoreTypeForRequest := datastoreTypeClusterFunc()
 	datastoreTypeForRequest.SetId(datastoreType.Id.ValueInt64())
 	datastoreCreate.SetDatastoreType(*datastoreTypeForRequest)
 
@@ -48,7 +48,7 @@ func datastoreCreateCluster(ctx context.Context,
 	createConfig := datastoreCreate.GetConfig()
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
-		nfsConfig := nfsConfigFuncCluster()
+		nfsConfig := nfsConfigClusterFunc()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
 			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
@@ -65,11 +65,11 @@ func datastoreCreateCluster(ctx context.Context,
 		createConfig.NFSDatastoreConfiguration = nfsConfig
 
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
-		alletrampHvmConfig := alletrampHvmConfigFuncCluster()
+		alletrampHvmConfig := alletrampHvmConfigClusterFunc()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
-			enableRansomwareString, _ := convertEnableRansomwareBool(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.SetEnableransomware(enableRansomwareString)
+			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
+			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
@@ -153,7 +153,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 		var tenantPermissions []sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner
 		for _, tenantsValue := range tenantsValues {
-			tenantPermission := tenantsFuncCluster()
+			tenantPermission := tenantsClusterFunc()
 			tenantPermission.SetId(tenantsValue.Id.ValueInt64())
 			tenantPermissions = append(tenantPermissions, *tenantPermission)
 		}
@@ -161,7 +161,7 @@ func datastoreCreateCluster(ctx context.Context,
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
-		resourcePermissions := resourcePermissionsFuncCluster()
+		resourcePermissions := resourcePermissionsClusterFunc()
 		resourcePermissions.SetAllGroups(plan.ResourcePermissions.AllGroups.ValueBool())
 		resourcePermissions.SetDefaultStore(plan.ResourcePermissions.DefaultStore.ValueBool())
 		resourcePermissions.SetCanManage(plan.ResourcePermissions.CanManage.ValueBool())
@@ -176,7 +176,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 			sites := []sdk.GetAlerts200ResponseAllOfChecksInnerAccount{}
 			for _, groupsValue := range groupsValues {
-				site := permissionsSitesFuncCluster()
+				site := permissionsSitesClusterFunc()
 				site.SetId(groupsValue.Id.ValueInt64())
 				sites = append(sites, *site)
 			}

@@ -83,8 +83,8 @@ func datastoreCreateDatastore(ctx context.Context,
 		alletrampHvmConfig := alletrampHvmConfigFunc()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
-			enableRansomwareString, _ := convertEnableRansomwareBool(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.SetEnableransomware(enableRansomwareString)
+			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
+			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
