@@ -69,7 +69,7 @@ func StringToBool(s string) (types.Bool, error) {
 	case "off", "false", "no":
 		return types.BoolValue(false), nil
 	default:
-		return types.BoolValue(false), fmt.Errorf("unknown value %s", s)
+		return types.BoolNull(), fmt.Errorf("unknown value %s", s)
 	}
 }
 
