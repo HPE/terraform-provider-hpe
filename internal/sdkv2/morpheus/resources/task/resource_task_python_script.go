@@ -161,10 +161,24 @@ func resourceTaskPythonScriptCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	sourceOptions := make(map[string]any)
-	if scriptContent, ok := d.Get("script_content").(string); ok && scriptContent != "" {
+
+	var scriptContent string
+	if scriptContentValue, ok := d.Get("script_content").(string); ok {
+		scriptContent = scriptContentValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_content", d.Get("script_content")))
+	}
+	if scriptContent != "" {
 		sourceOptions["content"] = scriptContent
 	}
-	if scriptPath, ok := d.Get("script_path").(string); ok && scriptPath != "" {
+
+	var scriptPath string
+	if scriptPathValue, ok := d.Get("script_path").(string); ok {
+		scriptPath = scriptPathValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_path", d.Get("script_path")))
+	}
+	if scriptPath != "" {
 		sourceOptions["contentPath"] = scriptPath
 	}
 
