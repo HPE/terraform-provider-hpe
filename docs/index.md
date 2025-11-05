@@ -137,6 +137,8 @@ In this release (v0.3.0) we have added the following data-source functionality:
 - hpe_morpheus_datastore data-source if a datastore with the specified name cannot be found (i.e. the corresponding
   list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
   datastores.  This is an API bug which is being investigated.
+- hpe_morpheus_policy resource does not currently support the Backup Targets (`backupStorage`) policy type 
+  due to improper handling of the `backupStorageIds` attribute. This is an API bug which is being investigated.
 
 ### Known issues from previous releases
 
