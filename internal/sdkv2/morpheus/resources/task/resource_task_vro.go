@@ -247,10 +247,10 @@ func resourceTaskVroCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
-	task := result.Task
-	if task == nil {
-		return diag.FromErr(helpers.NilPointerError("task"))
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
 	}
+	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
@@ -314,10 +314,10 @@ func resourceTaskVroRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
-	workflowTask := result.Task
-	if workflowTask == nil {
-		return diag.FromErr(helpers.NilPointerError("workflowTask"))
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
 	}
+	workflowTask := result.Task
 
 	d.SetId(convert.Int64ToString(workflowTask.ID))
 	d.Set("name", workflowTask.Name)
@@ -479,10 +479,10 @@ func resourceTaskVroUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
-	vroTask := result.Task
-	if vroTask == nil {
-		return diag.FromErr(helpers.NilPointerError("vroTask"))
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
 	}
+	vroTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(vroTask.ID))
