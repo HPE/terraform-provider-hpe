@@ -102,7 +102,7 @@ apk add --no-cache bash`,
 				ImportState:       true,
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_image.example_image",
-				// ignore these fields as they are not availble from the API
+				// ignore these fields as they are not available from the API
 				ImportStateVerifyIgnore: []string{"url", "ssh_password_wo_version", "ssh_key_wo_version"},
 				Check:                   checkFn,
 			},

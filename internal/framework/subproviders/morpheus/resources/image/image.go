@@ -32,9 +32,7 @@ type Resource struct {
 	configure.ResourceWithMorpheusConfigure
 }
 
-var (
-	_ resource.Resource = &Resource{}
-)
+var _ resource.Resource = &Resource{}
 
 func NewResource() resource.Resource {
 	return &Resource{}

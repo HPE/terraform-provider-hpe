@@ -250,7 +250,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// 	return
 	// }
 
-	// _, httpResp, err := client.LibraryAPI.AddVirtualImageFile(ctx, plan.Id.ValueInt64()).Filename(plan.File.ValueString()).Body(file).Execute()
+	// _, httpResp, err := client.LibraryAPI.AddVirtualImageFile(
+	// 	ctx,
+	// 	plan.Id.ValueInt64(),
+	// ).Filename(plan.File.ValueString()).Body(file).Execute()
 	// if err != nil || httpResp.StatusCode != http.StatusOK {
 	// 	resp.Diagnostics.AddError("error uploading image file", errors.ErrMsg(err, httpResp))
 

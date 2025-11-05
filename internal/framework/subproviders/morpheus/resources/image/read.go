@@ -85,7 +85,7 @@ func getImageAsState(
 
 	// min_disk
 	if image.MinDisk.Get() != nil {
-		convertToGb := int64(*image.MinDisk.Get() / 1024 / 1024 / 1024)
+		convertToGb := *image.MinDisk.Get() / 1024 / 1024 / 1024
 		state.MinDisk = convert.Int64ToType(&convertToGb)
 	} else {
 		state.MinDisk = basetypes.NewInt64Null()
@@ -93,7 +93,7 @@ func getImageAsState(
 
 	// min_ram
 	if image.MinRam.Get() != nil {
-		convertToGb := int64(*image.MinRam.Get() / 1024 / 1024 / 1024)
+		convertToGb := *image.MinRam.Get() / 1024 / 1024 / 1024
 		state.MinRam = convert.Int64ToType(&convertToGb)
 	} else {
 		state.MinRam = basetypes.NewInt64Null()
