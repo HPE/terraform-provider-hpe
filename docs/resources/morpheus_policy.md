@@ -14,6 +14,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 -> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
 
 -> A `policy_type_code` must be set corresponding to the respective policy type.
+
 -> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below:
 
 - [Approve Delete (deleteApproval)](#approve-delete-deleteapproval)
@@ -21,7 +22,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 - [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval)
 - [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval)
 - [Backup Creation (createBackup)](#backup-creation-createbackup)
-- [Backup Targets (backupStorage)](#backup-targets-backupstorage)
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Note: backupStorage is not currently supported due to a bug in the Morpheus API.
 - [Budget (maxPrice)](#budget-maxprice)
 - [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming)
 - [Cypher Access (cypher)](#cypher-access-cypher)
