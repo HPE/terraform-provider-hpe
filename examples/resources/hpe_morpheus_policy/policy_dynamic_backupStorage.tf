@@ -1,6 +1,3 @@
-# NOTE: This policy type is currently not supported due to a bug in the Morpheus API
-# Until this is resolved in the Morpheus API, this example is commented out
-
 # # Backup Targets Policy - Restricts available backup storage targets
 # resource "hpe_morpheus_policy" "backup_targets" {
 #   name                     = "Backup Targets Policy"

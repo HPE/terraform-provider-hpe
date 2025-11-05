@@ -22,7 +22,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 - [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval)
 - [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval)
 - [Backup Creation (createBackup)](#backup-creation-createbackup)
-- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Note: backupStorage is not currently supported due to a bug in the Morpheus API.
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Not currently supported
 - [Budget (maxPrice)](#budget-maxprice)
 - [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming)
 - [Cypher Access (cypher)](#cypher-access-cypher)
@@ -163,28 +163,7 @@ resource "hpe_morpheus_policy" "backup_creation" {
 ```
 
 ### Backup Targets (backupStorage)
-
-```terraform
-# NOTE: This policy type is currently not supported due to a bug in the Morpheus API
-# Until this is resolved in the Morpheus API, this example is commented out
-
-# # Backup Targets Policy - Restricts available backup storage targets
-# resource "hpe_morpheus_policy" "backup_targets" {
-#   name                     = "Backup Targets Policy"
-#   description              = "Restrict available backup targets"
-#   associated_resource_type = "User"
-#   associated_resource_id   = 9969
-#   enabled                  = true
-#
-#   policy_type = {
-#     code = "backupStorage"
-#   }
-#
-#   config = {
-#     backupStorageIds = [5, 6] # Array of backup storage IDs
-#   }
-# }
-```
+Not currently supported
 
 ### Budget (maxPrice)
 
