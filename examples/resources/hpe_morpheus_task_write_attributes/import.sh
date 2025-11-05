@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_task_write_attributes.tfexample_task_write_attributes 1
