@@ -30,6 +30,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_library_script":              task.ResourceTaskLibraryScript(),
 			"hpe_morpheus_task_library_template":            task.ResourceTaskLibraryTemplate(),
 			"hpe_morpheus_task_nested_workflow":             task.ResourceTaskNestedWorkflow(),
+			"hpe_morpheus_task_powershell_script":           task.ResourceTaskPowerShellScript(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
