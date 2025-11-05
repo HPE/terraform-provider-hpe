@@ -299,6 +299,9 @@ func resourceTaskChefBootstrapCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
@@ -363,6 +366,9 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	chefBootstrapTask := result.Task
 	d.SetId(convert.Int64ToString(chefBootstrapTask.ID))
 	d.Set("name", chefBootstrapTask.Name)
@@ -554,6 +560,9 @@ func resourceTaskChefBootstrapUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	chefBootstrapTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
