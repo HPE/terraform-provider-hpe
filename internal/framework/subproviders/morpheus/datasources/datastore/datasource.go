@@ -377,7 +377,7 @@ func populateCloudDatastoreInformation(
 		return tenantsSet, NewResourcePermissionsValueNull(), retErr
 	}
 
-	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, groupsSet)
+	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, id, groupsSet)
 
 	return tenantsSet, resourcePermissions, err
 }
@@ -461,7 +461,7 @@ func populateClusterDatastoreInformation(
 		return tenantsSet, NewResourcePermissionsValueNull(), retErr
 	}
 
-	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, groupsSet)
+	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, id, groupsSet)
 
 	return tenantsSet, resourcePermissions, err
 }
@@ -491,6 +491,7 @@ func createConfigFromApiDynamic(
 // we only populate Groups for now
 func populateResourcePermissionsFromApi(
 	ctx context.Context,
+	id int64,
 	groupsSet basetypes.SetValue,
 ) (ResourcePermissionsValue, error) {
 	var err error
@@ -504,7 +505,7 @@ func populateResourcePermissionsFromApi(
 
 		resourcePermissions, rdiags := NewResourcePermissionsValue(attrTypes, attrValues)
 		if rdiags.HasError() {
-			err = fmt.Errorf("datastore %i error in creating resource permissions")
+			err = fmt.Errorf("datastore %d error in creating resource permissions", id)
 		}
 
 		return resourcePermissions, err
