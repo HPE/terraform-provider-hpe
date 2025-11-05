@@ -325,6 +325,9 @@ func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
@@ -389,6 +392,9 @@ func resourceTaskEmailRead(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	emailTask := result.Task
 	d.SetId(convert.Int64ToString(emailTask.ID))
 	d.Set("name", emailTask.Name)
@@ -608,6 +614,9 @@ func resourceTaskEmailUpdate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	emailTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
