@@ -11,8 +11,8 @@ resource "hpe_morpheus_policy" "cluster_naming" {
   }
 
   config = {
-    serverNamingType     = "user"                                     # Options: "user" (user can customize), "fixed" (strict pattern)
-    serverNamingPattern  = "cluster-${groupCode}-${type}-${sequence}" # Naming pattern with variables
-    serverNamingConflict = true                                       # Allow conflict resolution
+    serverNamingType     = "user"                                        # Options: "user" (user can customize), "fixed" (strict pattern)
+    serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    serverNamingConflict = true                                          # Allow conflict resolution
   }
 }

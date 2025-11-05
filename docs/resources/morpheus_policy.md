@@ -127,22 +127,25 @@ resource "hpe_morpheus_policy" "backup_creation" {
 ### Backup Targets (backupStorage)
 
 ```terraform
-# Backup Targets Policy - Restricts available backup storage targets
-resource "hpe_morpheus_policy" "backup_targets" {
-  name                     = "Backup Targets Policy"
-  description              = "Restrict available backup targets"
-  associated_resource_type = "User"
-  associated_resource_id   = 9969
-  enabled                  = true
+# NOTE: This policy type is currently not supported due to a bug in the Morpheus API
+# Until this is resolved in the Morpheus API, this example is commented out
 
-  policy_type = {
-    code = "backupStorage"
-  }
-
-  config = {
-    backupStorageIds = [5, 6] # Array of backup storage IDs
-  }
-}
+# # Backup Targets Policy - Restricts available backup storage targets
+# resource "hpe_morpheus_policy" "backup_targets" {
+#   name                     = "Backup Targets Policy"
+#   description              = "Restrict available backup targets"
+#   associated_resource_type = "User"
+#   associated_resource_id   = 9969
+#   enabled                  = true
+#
+#   policy_type = {
+#     code = "backupStorage"
+#   }
+#
+#   config = {
+#     backupStorageIds = [5, 6] # Array of backup storage IDs
+#   }
+# }
 ```
 
 ### Budget (maxPrice)
@@ -184,9 +187,9 @@ resource "hpe_morpheus_policy" "cluster_naming" {
   }
 
   config = {
-    serverNamingType     = "user"                                     # Options: "user" (user can customize), "fixed" (strict pattern)
-    serverNamingPattern  = "cluster-${groupCode}-${type}-${sequence}" # Naming pattern with variables
-    serverNamingConflict = true                                       # Allow conflict resolution
+    serverNamingType     = "user"                                        # Options: "user" (user can customize), "fixed" (strict pattern)
+    serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    serverNamingConflict = true                                          # Allow conflict resolution
   }
 }
 ```
@@ -304,8 +307,8 @@ resource "hpe_morpheus_policy" "hostname" {
   }
 
   config = {
-    hostNamingType    = "user"                                  # Options: "user" (user can customize), "fixed" (strict pattern)
-    hostNamingPattern = "host-${groupCode}-${type}-${sequence}" # Naming pattern with variables
+    hostNamingType    = "user"                                     # Options: "user" (user can customize), "fixed" (strict pattern)
+    hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
   }
 }
 ```
@@ -326,9 +329,9 @@ resource "hpe_morpheus_policy" "instance_naming" {
   }
 
   config = {
-    namingType     = "user"                                # Options: "user" (user can customize), "fixed" (strict pattern)
-    namingPattern  = "vm-${groupCode}-${type}-${sequence}" # Naming pattern with variables
-    namingConflict = true                                  # Allow conflict resolution
+    namingType     = "user"                                   # Options: "user" (user can customize), "fixed" (strict pattern)
+    namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    namingConflict = true                                     # Allow conflict resolution
   }
 }
 ```
@@ -799,6 +802,28 @@ resource "hpe_morpheus_policy" "user_group_creation" {
 
 ```terraform
 # Workflow Policy - Executes workflow on provision
+# Note: This example uses the morpheus external provider to create a workflow resource
+# because the hpe provider does not yet have a workflow resource implemented.
+# You will need to configure the morpheus provider in your terraform configuration.
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = "= 0.3.0"
+    }
+    morpheus = {
+      source  = "gomorpheus/morpheus"
+      version = "~> 0.13.2"
+    }
+  }
+}
+
+resource "morpheus_operational_workflow" "example" {
+  name        = "Example Policy Workflow"
+  description = "Example workflow for policy testing"
+}
+
 resource "hpe_morpheus_policy" "workflow" {
   name                     = "Workflow Policy"
   description              = "Execute workflow on instance provision"
@@ -811,7 +836,7 @@ resource "hpe_morpheus_policy" "workflow" {
   }
 
   config = {
-    workflowId = "1" # ID of the workflow to execute
+    workflowId = morpheus_operational_workflow.example.id # ID of the workflow to execute
   }
 }
 ```
