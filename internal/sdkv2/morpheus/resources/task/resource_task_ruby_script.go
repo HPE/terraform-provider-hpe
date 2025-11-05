@@ -68,7 +68,7 @@ func ResourceTaskRubyScript() *schema.Resource {
 
 					return oldPayload == newPayload
 				},
-				StateFunc: func(val interface{}) string {
+				StateFunc: func(val any) string {
 					return strings.TrimSuffix(val.(string), "\n")
 				},
 			},
