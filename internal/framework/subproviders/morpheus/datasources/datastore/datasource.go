@@ -505,7 +505,7 @@ func populateResourcePermissionsFromApi(
 
 		resourcePermissions, rdiags := NewResourcePermissionsValue(attrTypes, attrValues)
 		if rdiags.HasError() {
-			err = fmt.Errorf("datastore %v error in creating resource permissions", id)
+			err = fmt.Errorf("datastore %d error in creating resource permissions", id)
 		}
 
 		return resourcePermissions, err
