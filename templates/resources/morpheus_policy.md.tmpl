@@ -14,7 +14,44 @@ Policies are different rules that can be applied to various Morpheus resources.
 -> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
 
 -> A `policy_type_code` must be set corresponding to the respective policy type.
--> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below: [Approve Delete](#approve-delete-deleteapproval) | [Approve Provision](#approve-provision-provisionapproval) | [Approve Reconfigure](#approve-reconfigure-reconfigureapproval) | [Approve Workflow Execute](#approve-workflow-execute-workflowapproval) | [Backup Creation](#backup-creation-createbackup) | [Backup Targets](#backup-targets-backupstorage) | [Budget](#budget-maxprice) | [Cluster Resource Name](#cluster-resource-name-servernaming) | [Cypher Access](#cypher-access-cypher) | [Delayed Delete](#delayed-delete-delayedremoval) | [Expiration](#expiration-lifecycle) | [File Share Storage Quota](#file-share-storage-quota-storagesharequota) | [Hostname](#hostname-hostnaming) | [Instance Name](#instance-name-naming) | [Instance Networks](#instance-networks-requirednetwork) | [Max Containers](#max-containers-maxcontainers) | [Max Cores](#max-cores-maxcores) | [Max Hosts](#max-hosts-maxhosts) | [Max Load Balancer Pools](#max-load-balancer-pools-maxpools) | [Max Memory](#max-memory-maxmemory) | [Max Pool Members](#max-pool-members-maxpoolmembers) | [Max Snapshots](#max-snapshots-maxsnapshots) | [Max Storage](#max-storage-maxstorage) | [Max Virtual Servers](#max-virtual-servers-maxvirtualservers) | [Max VMs](#max-vms-maxvms) | [Message of the Day](#message-of-the-day-motd) | [Network Quota](#network-quota-maxnetworks) | [Object Storage Quota](#object-storage-quota-storagebucketquota) | [Power Scheduling](#power-scheduling-powerschedule) | [Router Quota](#router-quota-maxrouters) | [Shutdown](#shutdown-shutdown) | [Storage Server Storage Quota](#storage-server-storage-quota-storageserverquota) | [Tags](#tags-tags) | [User Creation](#user-creation-createuser) | [User Group Creation](#user-group-creation-createusergroup) | [Workflow](#workflow-workflow)
+-> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below:
+
+- [Approve Delete (deleteApproval)](#approve-delete-deleteapproval)
+- [Approve Provision (provisionApproval)](#approve-provision-provisionapproval)
+- [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval)
+- [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval)
+- [Backup Creation (createBackup)](#backup-creation-createbackup)
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage)
+- [Budget (maxPrice)](#budget-maxprice)
+- [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming)
+- [Cypher Access (cypher)](#cypher-access-cypher)
+- [Delayed Delete (delayedRemoval)](#delayed-delete-delayedremoval)
+- [Expiration (lifecycle)](#expiration-lifecycle)
+- [File Share Storage Quota (storageShareQuota)](#file-share-storage-quota-storagesharequota)
+- [Hostname (hostNaming)](#hostname-hostnaming)
+- [Instance Name (naming)](#instance-name-naming)
+- [Instance Networks (requiredNetwork)](#instance-networks-requirednetwork)
+- [Max Containers (maxContainers)](#max-containers-maxcontainers)
+- [Max Cores (maxCores)](#max-cores-maxcores)
+- [Max Hosts (maxHosts)](#max-hosts-maxhosts)
+- [Max Load Balancer Pools (maxPools)](#max-load-balancer-pools-maxpools)
+- [Max Memory (maxMemory)](#max-memory-maxmemory)
+- [Max Pool Members (maxPoolMembers)](#max-pool-members-maxpoolmembers)
+- [Max Snapshots (maxSnapshots)](#max-snapshots-maxsnapshots)
+- [Max Storage (maxStorage)](#max-storage-maxstorage)
+- [Max Virtual Servers (maxVirtualServers)](#max-virtual-servers-maxvirtualservers)
+- [Max VMs (maxVms)](#max-vms-maxvms)
+- [Message of the Day (motd)](#message-of-the-day-motd)
+- [Network Quota (maxNetworks)](#network-quota-maxnetworks)
+- [Object Storage Quota (storageBucketQuota)](#object-storage-quota-storagebucketquota)
+- [Power Scheduling (powerSchedule)](#power-scheduling-powerschedule)
+- [Router Quota (maxRouters)](#router-quota-maxrouters)
+- [Shutdown (shutdown)](#shutdown-shutdown)
+- [Storage Server Storage Quota (storageServerQuota)](#storage-server-storage-quota-storageserverquota)
+- [Tags (tags)](#tags-tags)
+- [User Creation (createUser)](#user-creation-createuser)
+- [User Group Creation (createUserGroup)](#user-group-creation-createusergroup)
+- [Workflow (workflow)](#workflow-workflow)
 
 ## Config Examples
 
