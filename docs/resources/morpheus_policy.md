@@ -14,9 +14,9 @@ Policies are different rules that can be applied to various Morpheus resources.
 -> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
 
 -> A `policy_type_code` must be set corresponding to the respective policy type.
--> A `config` block must be set corresponding to the respective policy type. Examples are included below.
+-> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below: [Approve Delete](#approve-delete-deleteapproval) | [Approve Provision](#approve-provision-provisionapproval) | [Approve Reconfigure](#approve-reconfigure-reconfigureapproval) | [Approve Workflow Execute](#approve-workflow-execute-workflowapproval) | [Backup Creation](#backup-creation-createbackup) | [Backup Targets](#backup-targets-backupstorage) | [Budget](#budget-maxprice) | [Cluster Resource Name](#cluster-resource-name-servernaming) | [Cypher Access](#cypher-access-cypher) | [Delayed Delete](#delayed-delete-delayedremoval) | [Expiration](#expiration-lifecycle) | [File Share Storage Quota](#file-share-storage-quota-storagesharequota) | [Hostname](#hostname-hostnaming) | [Instance Name](#instance-name-naming) | [Instance Networks](#instance-networks-requirednetwork) | [Max Containers](#max-containers-maxcontainers) | [Max Cores](#max-cores-maxcores) | [Max Hosts](#max-hosts-maxhosts) | [Max Load Balancer Pools](#max-load-balancer-pools-maxpools) | [Max Memory](#max-memory-maxmemory) | [Max Pool Members](#max-pool-members-maxpoolmembers) | [Max Snapshots](#max-snapshots-maxsnapshots) | [Max Storage](#max-storage-maxstorage) | [Max Virtual Servers](#max-virtual-servers-maxvirtualservers) | [Max VMs](#max-vms-maxvms) | [Message of the Day](#message-of-the-day-motd) | [Network Quota](#network-quota-maxnetworks) | [Object Storage Quota](#object-storage-quota-storagebucketquota) | [Power Scheduling](#power-scheduling-powerschedule) | [Router Quota](#router-quota-maxrouters) | [Shutdown](#shutdown-shutdown) | [Storage Server Storage Quota](#storage-server-storage-quota-storageserverquota) | [Tags](#tags-tags) | [User Creation](#user-creation-createuser) | [User Group Creation](#user-group-creation-createusergroup) | [Workflow](#workflow-workflow)
 
-## Example Usage
+## Config Examples
 
 ### Approve Delete (deleteApproval)
 
@@ -934,11 +934,6 @@ terraform import hpe_morpheus_policy.example 123
 ```
 
 ## Notes
-
-### Policy Configuration Types
-
-Different policy types require different configuration parameters. Refer to the examples above for each policy type's specific configuration requirements.
-
 ### Associated Resource Types
 
 Policies can be associated with different resource types:
@@ -951,32 +946,10 @@ Policies can be associated with different resource types:
 - `Network` - Applies to a specific network
 - `Plan` - Applies to a specific service plan
 
-### Naming Type Options
-
-For naming policies (Instance Name, Hostname, Cluster Resource Name), the following types are available:
-
-- `user` - User can customize the name within the pattern
-- `fixed` - Strict pattern enforcement, no customization allowed
-
-### Lifecycle Type Options
-
-For lifecycle and shutdown policies, the following types control user interaction:
-
-- `user` - User can extend or renew within policy limits
-- `fixed` - Strict enforcement, no user extensions allowed
-
-### Checkbox Values
-
-Some config fields use checkbox-style values:
-
-- `on` - Feature enabled
-- `off` - Feature disabled
-
 ### Resource Dependencies
 
 Before creating a policy resource, ensure that:
 
-1. The specified `associated_resource_id` exists if `associated_resource_type` is not `Global`
+1. The specified resource `associated_resource_id` refers to exists if `associated_resource_type` is not `Global`
 2. Any referenced integrations (e.g., ServiceNow for approval policies) are properly configured
 3. Any referenced resources (e.g., workflows, power schedules, networks) exist in Morpheus
-
