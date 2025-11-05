@@ -34,6 +34,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_python_script":               task.ResourceTaskPythonScript(),
 			"hpe_morpheus_task_restart":                     task.ResourceTaskRestart(),
 			"hpe_morpheus_task_ruby_script":                 task.ResourceTaskRubyScript(),
+			"hpe_morpheus_task_shell_script":                task.ResourceTaskShellScript(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
