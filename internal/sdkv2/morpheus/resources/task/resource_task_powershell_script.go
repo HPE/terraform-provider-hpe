@@ -80,7 +80,7 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 
 					return oldPayload == newPayload
 				},
-				StateFunc: func(val interface{}) string {
+				StateFunc: func(val any) string {
 					return strings.TrimSuffix(val.(string), "\n")
 				},
 			},
@@ -189,10 +189,24 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	sourceOptions := make(map[string]any)
-	if scriptContent, ok := d.Get("script_content").(string); ok && scriptContent != "" {
+
+	var scriptContent string
+	if scriptContentValue, ok := d.Get("script_content").(string); ok {
+		scriptContent = scriptContentValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_content", d.Get("script_content")))
+	}
+	if scriptContent != "" {
 		sourceOptions["content"] = scriptContent
 	}
-	if scriptPath, ok := d.Get("script_path").(string); ok && scriptPath != "" {
+
+	var scriptPath string
+	if scriptPathValue, ok := d.Get("script_path").(string); ok {
+		scriptPath = scriptPathValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_path", d.Get("script_path")))
+	}
+	if scriptPath != "" {
 		sourceOptions["contentPath"] = scriptPath
 	}
 
@@ -239,16 +253,43 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 		taskOptions["winrm.elevated"] = nil
 	}
 
-	if remoteTargetHost, ok := d.Get("remote_target_host").(string); ok && remoteTargetHost != "" {
+	var remoteTargetHost string
+	if remoteTargetHostValue, ok := d.Get("remote_target_host").(string); ok {
+		remoteTargetHost = remoteTargetHostValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("remote_target_host", d.Get("remote_target_host")))
+	}
+	if remoteTargetHost != "" {
 		taskOptions["host"] = remoteTargetHost
 	}
-	if remoteTargetPort, ok := d.Get("remote_target_port").(string); ok && remoteTargetPort != "" {
+
+	var remoteTargetPort string
+	if remoteTargetPortValue, ok := d.Get("remote_target_port").(string); ok {
+		remoteTargetPort = remoteTargetPortValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("remote_target_port", d.Get("remote_target_port")))
+	}
+	if remoteTargetPort != "" {
 		taskOptions["port"] = remoteTargetPort
 	}
-	if remoteTargetUsername, ok := d.Get("remote_target_username").(string); ok && remoteTargetUsername != "" {
+
+	var remoteTargetUsername string
+	if remoteTargetUsernameValue, ok := d.Get("remote_target_username").(string); ok {
+		remoteTargetUsername = remoteTargetUsernameValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("remote_target_username", d.Get("remote_target_username")))
+	}
+	if remoteTargetUsername != "" {
 		taskOptions["username"] = remoteTargetUsername
 	}
-	if remoteTargetPassword, ok := d.Get("remote_target_password").(string); ok && remoteTargetPassword != "" {
+
+	var remoteTargetPassword string
+	if remoteTargetPasswordValue, ok := d.Get("remote_target_password").(string); ok {
+		remoteTargetPassword = remoteTargetPasswordValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("remote_target_password", d.Get("remote_target_password")))
+	}
+	if remoteTargetPassword != "" {
 		taskOptions["password"] = remoteTargetPassword
 	}
 
@@ -467,10 +508,24 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	sourceOptions := make(map[string]any)
-	if scriptContent, ok := d.Get("script_content").(string); ok && scriptContent != "" {
+
+	var scriptContent string
+	if scriptContentValue, ok := d.Get("script_content").(string); ok {
+		scriptContent = scriptContentValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_content", d.Get("script_content")))
+	}
+	if scriptContent != "" {
 		sourceOptions["content"] = scriptContent
 	}
-	if scriptPath, ok := d.Get("script_path").(string); ok && scriptPath != "" {
+
+	var scriptPath string
+	if scriptPathValue, ok := d.Get("script_path").(string); ok {
+		scriptPath = scriptPathValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("script_path", d.Get("script_path")))
+	}
+	if scriptPath != "" {
 		sourceOptions["contentPath"] = scriptPath
 	}
 
