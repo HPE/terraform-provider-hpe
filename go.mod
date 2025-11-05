@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251104111812-c3cc17b63fdc
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251105124020-bb2e51670c70
 	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
@@ -19,6 +19,7 @@ require (
 )
 
 require (
+	github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251104111812-c3cc17b63fdc // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
