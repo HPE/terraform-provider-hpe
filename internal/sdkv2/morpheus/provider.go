@@ -24,6 +24,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_ansible_playbook":            task.ResourceTaskAnsiblePlaybook(),
 			"hpe_morpheus_task_ansible_tower":               task.ResourceTaskAnsibleTower(),
 			"hpe_morpheus_task_chef_bootstrap":              task.ResourceTaskChefBootstrap(),
+			"hpe_morpheus_task_email":                       task.ResourceTaskEmail(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
