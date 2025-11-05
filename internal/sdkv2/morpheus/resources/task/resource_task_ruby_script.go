@@ -65,6 +65,7 @@ func ResourceTaskRubyScript() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					oldPayload := strings.TrimSuffix(old, "\n")
 					newPayload := strings.TrimSuffix(new, "\n")
+
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val interface{}) string {
