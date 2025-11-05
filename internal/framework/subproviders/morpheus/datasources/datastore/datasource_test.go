@@ -6,7 +6,6 @@ package datastore_test
 //go:generate go run ../../../../../../cmd/render example-name.tf.tmpl Name "\"Example name\""
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"testing"
@@ -194,15 +193,13 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := fmt.Sprint("datastore blah list failed")
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile(expected),
+				ExpectError: regexp.MustCompile("datastore blah list failed"),
 			},
 		},
 	})
@@ -225,15 +222,13 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := fmt.Sprintf("either id or name must be specified")
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile(expected),
+				ExpectError: regexp.MustCompile("either id or name must be specified"),
 			},
 		},
 	})
@@ -258,15 +253,13 @@ func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := fmt.Sprint("Error running pre-apply plan: exit status 1")
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile(expected),
+				ExpectError: regexp.MustCompile("Error running pre-apply plan: exit status 1"),
 			},
 		},
 	})
