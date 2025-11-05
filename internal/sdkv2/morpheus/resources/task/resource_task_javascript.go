@@ -219,6 +219,9 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
@@ -284,6 +287,9 @@ func resourceTaskJavaScriptRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	javascriptTask := result.Task
 	d.SetId(convert.Int64ToString(javascriptTask.ID))
 	d.Set("name", javascriptTask.Name)
@@ -418,6 +424,9 @@ func resourceTaskJavaScriptUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	writeAttributesTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
