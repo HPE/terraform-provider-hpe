@@ -4,10 +4,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"strings"
 	"time"
-
-	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
@@ -78,6 +77,7 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					oldPayload := strings.TrimSuffix(old, "\n")
 					newPayload := strings.TrimSuffix(new, "\n")
+
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val interface{}) string {
@@ -134,9 +134,9 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
 					h.Write([]byte(new))
-					sha256_hash := hex.EncodeToString(h.Sum(nil))
-					return strings.EqualFold(old, sha256_hash)
-					//return strings.ToLower(old) == strings.ToLower(sha256_hash)
+					sha256Hash := hex.EncodeToString(h.Sum(nil))
+
+					return strings.EqualFold(old, sha256Hash)
 				},
 			},
 			"retryable": {
@@ -195,7 +195,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	if scriptPath, ok := d.Get("script_path").(string); ok && scriptPath != "" {
 		sourceOptions["contentPath"] = scriptPath
 	}
-	
+
 	var versionRef string
 	if versionRefValue, ok := d.Get("version_ref").(string); ok {
 		versionRef = versionRefValue
@@ -203,7 +203,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 	}
 	sourceOptions["contentRef"] = versionRef
-	
+
 	var repositoryId int
 	if repositoryIdValue, ok := d.Get("repository_id").(int); ok {
 		repositoryId = repositoryIdValue
@@ -213,7 +213,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	sourceOptions["repository"] = map[string]any{
 		"id": repositoryId,
 	}
-	
+
 	var sourceType string
 	if sourceTypeValue, ok := d.Get("source_type").(string); ok {
 		sourceType = sourceTypeValue
@@ -226,7 +226,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	taskType["code"] = "winrmTask"
 
 	taskOptions := make(map[string]any)
-	
+
 	var elevatedShell bool
 	if elevatedShellValue, ok := d.Get("elevated_shell").(bool); ok {
 		elevatedShell = elevatedShellValue
@@ -238,7 +238,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	} else {
 		taskOptions["winrm.elevated"] = nil
 	}
-	
+
 	if remoteTargetHost, ok := d.Get("remote_target_host").(string); ok && remoteTargetHost != "" {
 		taskOptions["host"] = remoteTargetHost
 	}
@@ -467,7 +467,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	if scriptPath, ok := d.Get("script_path").(string); ok && scriptPath != "" {
 		sourceOptions["contentPath"] = scriptPath
 	}
-	
+
 	var versionRef string
 	if versionRefValue, ok := d.Get("version_ref").(string); ok {
 		versionRef = versionRefValue
@@ -475,7 +475,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 	}
 	sourceOptions["contentRef"] = versionRef
-	
+
 	var repositoryId int
 	if repositoryIdValue, ok := d.Get("repository_id").(int); ok {
 		repositoryId = repositoryIdValue
@@ -485,7 +485,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	sourceOptions["repository"] = map[string]any{
 		"id": repositoryId,
 	}
-	
+
 	var sourceType string
 	if sourceTypeValue, ok := d.Get("source_type").(string); ok {
 		sourceType = sourceTypeValue
@@ -498,7 +498,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	taskType["code"] = "winrmTask"
 
 	taskOptions := make(map[string]any)
-	
+
 	var elevatedShell bool
 	if elevatedShellValue, ok := d.Get("elevated_shell").(bool); ok {
 		elevatedShell = elevatedShellValue
@@ -510,7 +510,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	} else {
 		taskOptions["winrm.elevated"] = nil
 	}
-	
+
 	if d.HasChange("remote_target_host") {
 		if remoteTargetHost, ok := d.Get("remote_target_host").(string); ok {
 			taskOptions["host"] = remoteTargetHost
