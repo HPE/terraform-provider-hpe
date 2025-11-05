@@ -208,6 +208,9 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
@@ -272,6 +275,9 @@ func resourceTaskNestedWorkflowRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	nestedWorkflowTask := result.Task
 	d.SetId(convert.Int64ToString(nestedWorkflowTask.ID))
 	d.Set("name", nestedWorkflowTask.Name)
@@ -406,6 +412,9 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	nestedWorkflowTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
