@@ -11,7 +11,7 @@ resource "hpe_morpheus_policy" "backup_creation" {
   }
 
   config = {
-    createBackupType = "user" # Options: "user" (user selects), "off" (no backups), "on" (required)
+    createBackupType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
     createBackup     = true   # Enforce backup creation
   }
 }

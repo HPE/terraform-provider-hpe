@@ -1,4 +1,4 @@
-# Approve Delete Policy - Requires ServiceNow integration
+# Approve Delete Policy
 resource "hpe_morpheus_policy" "approve_delete" {
   name                     = "Approve Delete Policy"
   description              = "Require approval before deleting instances"

@@ -1,4 +1,4 @@
-# Approve Reconfigure Policy - Requires ServiceNow integration
+# Approve Reconfigure Policy
 resource "hpe_morpheus_policy" "approve_reconfigure" {
   name                     = "Approve Reconfigure Policy"
   description              = "Require approval before reconfiguring instances"

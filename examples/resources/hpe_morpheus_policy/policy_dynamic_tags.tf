@@ -11,9 +11,9 @@ resource "hpe_morpheus_policy" "tags" {
   }
 
   config = {
-    strict      = true          # Enforce strict tag requirements
+    strict      = true          # Strict enforcement
     key         = "environment" # Tag key to enforce
     value       = "production"  # Tag value (optional, can be left empty for any value)
-    valueListId = ""            # ID of value list for allowed values (optional)
+    valueListId = ""            # ID of value from value list (optional)
   }
 }

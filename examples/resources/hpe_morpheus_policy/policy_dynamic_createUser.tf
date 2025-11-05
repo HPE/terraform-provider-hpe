@@ -11,7 +11,7 @@ resource "hpe_morpheus_policy" "user_creation" {
   }
 
   config = {
-    createUserType = "user" # Options: "user" (user decides), "off" (no user creation), "on" (required)
+    createUserType = "user" # Options: "user" (user configurable), "fixed"
     createUser     = true   # Enforce user creation
   }
 }

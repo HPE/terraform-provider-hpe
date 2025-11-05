@@ -11,8 +11,8 @@ resource "hpe_morpheus_policy" "instance_naming" {
   }
 
   config = {
-    namingType     = "user"                                   # Options: "user" (user can customize), "fixed" (strict pattern)
+    namingType     = "user"                                   # Options: "user" (user configurable), "fixed" (strict pattern)
     namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
-    namingConflict = true                                     # Allow conflict resolution
+    namingConflict = true                                     # Auto-resolve conflicts
   }
 }

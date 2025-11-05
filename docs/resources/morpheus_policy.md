@@ -58,7 +58,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 ### Approve Delete (deleteApproval)
 
 ```terraform
-# Approve Delete Policy - Requires ServiceNow integration
+# Approve Delete Policy
 resource "hpe_morpheus_policy" "approve_delete" {
   name                     = "Approve Delete Policy"
   description              = "Require approval before deleting instances"
@@ -79,7 +79,7 @@ resource "hpe_morpheus_policy" "approve_delete" {
 ### Approve Provision (provisionApproval)
 
 ```terraform
-# Approve Provision Policy - Requires ServiceNow integration
+# Approve Provision Policy
 resource "hpe_morpheus_policy" "approve_provision" {
   name                     = "Approve Provision Policy"
   description              = "Require approval before provisioning instances"
@@ -100,7 +100,7 @@ resource "hpe_morpheus_policy" "approve_provision" {
 ### Approve Reconfigure (reconfigureApproval)
 
 ```terraform
-# Approve Reconfigure Policy - Requires ServiceNow integration
+# Approve Reconfigure Policy
 resource "hpe_morpheus_policy" "approve_reconfigure" {
   name                     = "Approve Reconfigure Policy"
   description              = "Require approval before reconfiguring instances"
@@ -121,7 +121,7 @@ resource "hpe_morpheus_policy" "approve_reconfigure" {
 ### Approve Workflow Execute (workflowApproval)
 
 ```terraform
-# Approve Workflow Execute Policy - Requires ServiceNow integration
+# Approve Workflow Execute Policy
 resource "hpe_morpheus_policy" "approve_workflow" {
   name                     = "Approve Workflow Execute Policy"
   description              = "Require approval before executing workflows"
@@ -155,7 +155,7 @@ resource "hpe_morpheus_policy" "backup_creation" {
   }
 
   config = {
-    createBackupType = "user" # Options: "user" (user selects), "off" (no backups), "on" (required)
+    createBackupType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
     createBackup     = true   # Enforce backup creation
   }
 }
@@ -203,7 +203,7 @@ resource "hpe_morpheus_policy" "budget" {
   config = {
     maxPrice         = "1000"  # Maximum price limit
     maxPriceCurrency = "USD"   # Currency code
-    maxPriceUnit     = "month" # Options: "hour", "day", "month", "year"
+    maxPriceUnit     = "month" # Options: "hour", "month"
   }
 }
 ```
@@ -224,9 +224,9 @@ resource "hpe_morpheus_policy" "cluster_naming" {
   }
 
   config = {
-    serverNamingType     = "user"                                        # Options: "user" (user can customize), "fixed" (strict pattern)
+    serverNamingType     = "user"                                        # Options: "user" (user configurable), "fixed" (strict pattern)
     serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
-    serverNamingConflict = true                                          # Allow conflict resolution
+    serverNamingConflict = true                                          # Auto-resolve conflicts
   }
 }
 ```
@@ -294,7 +294,7 @@ resource "hpe_morpheus_policy" "expiration" {
   }
 
   config = {
-    lifecycleType                     = "user"                      # Options: "user" (user can extend), "fixed" (strict expiration)
+    lifecycleType                     = "user"                      # Options: "user" (user configurable), "fixed" (fixed expiration)
     lifecycleAge                      = "30"                        # Days until expiration
     lifecycleRenewal                  = "7"                         # Days for renewal window
     lifecycleNotify                   = "1"                         # Days before expiration to notify
@@ -344,7 +344,7 @@ resource "hpe_morpheus_policy" "hostname" {
   }
 
   config = {
-    hostNamingType    = "user"                                     # Options: "user" (user can customize), "fixed" (strict pattern)
+    hostNamingType    = "user"                                     # Options: "user" (user configurable), "fixed" (strict pattern)
     hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
   }
 }
@@ -366,9 +366,9 @@ resource "hpe_morpheus_policy" "instance_naming" {
   }
 
   config = {
-    namingType     = "user"                                   # Options: "user" (user can customize), "fixed" (strict pattern)
+    namingType     = "user"                                   # Options: "user" (user configurable), "fixed" (strict pattern)
     namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
-    namingConflict = true                                     # Allow conflict resolution
+    namingConflict = true                                     # Auto-resolve conflicts
   }
 }
 ```
@@ -495,8 +495,8 @@ resource "hpe_morpheus_policy" "max_memory" {
   }
 
   config = {
-    maxMemory         = "8192" # Maximum memory in MB
-    excludeContainers = "off"  # Options: "on", "off" - exclude containers from count
+    maxMemory         = "8"   # Maximum memory in GB
+    excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }
 ```
@@ -689,7 +689,7 @@ resource "hpe_morpheus_policy" "power_schedule" {
   }
 
   config = {
-    powerScheduleType      = "user" # Options: "user" (user can select), "fixed" (strict schedule)
+    powerScheduleType      = "user" # Options: "user" (user configurable), "fixed" (strict schedule)
     powerSchedule          = "1"    # ID of the power schedule
     powerScheduleHideFixed = false  # Hide fixed schedule from users
   }
@@ -733,15 +733,15 @@ resource "hpe_morpheus_policy" "shutdown" {
   }
 
   config = {
-    shutdownType                     = "user"                        # Options: "user" (user can extend), "fixed" (strict shutdown)
-    shutdownAge                      = "30"                          # Days of inactivity before shutdown
-    shutdownRenewal                  = "7"                           # Days for renewal window
-    shutdownNotify                   = "1"                           # Days before shutdown to notify
+    shutdownType                     = "user"                        # Options: "user" (user configurable), "fixed" (strict shutdown)
+    shutdownAge                      = "30"                          # Days instance is allowed to run before shutdown
+    shutdownRenewal                  = "7"                           # If the instance is renewed, this is the number of day increments the shutdown date is increased by.
+    shutdownNotify                   = "1"                           # Days before shutdown to notify via email
     shutdownMessage                  = "Instance will shutdown soon" # Notification message
     shutdownAutoRenew                = "on"                          # Options: "on", "off"
     shutdownAllowExtend              = "off"                         # Options: "on", "off" - allow users to extend
     shutdownExtensionsBeforeApproval = "0"                           # Number of extensions before requiring approval
-    shutdownHideFixed                = false                         # Hide fixed shutdown date from users
+    shutdownHideFixed                = false                         # Hide shutdown if fixed value
   }
 }
 ```
@@ -784,10 +784,10 @@ resource "hpe_morpheus_policy" "tags" {
   }
 
   config = {
-    strict      = true          # Enforce strict tag requirements
+    strict      = true          # Strict enforcement
     key         = "environment" # Tag key to enforce
     value       = "production"  # Tag value (optional, can be left empty for any value)
-    valueListId = ""            # ID of value list for allowed values (optional)
+    valueListId = ""            # ID of value from value list (optional)
   }
 }
 ```
@@ -808,7 +808,7 @@ resource "hpe_morpheus_policy" "user_creation" {
   }
 
   config = {
-    createUserType = "user" # Options: "user" (user decides), "off" (no user creation), "on" (required)
+    createUserType = "user" # Options: "user" (user configurable), "fixed"
     createUser     = true   # Enforce user creation
   }
 }

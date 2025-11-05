@@ -11,7 +11,7 @@ resource "hpe_morpheus_policy" "hostname" {
   }
 
   config = {
-    hostNamingType    = "user"                                     # Options: "user" (user can customize), "fixed" (strict pattern)
+    hostNamingType    = "user"                                     # Options: "user" (user configurable), "fixed" (strict pattern)
     hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
   }
 }

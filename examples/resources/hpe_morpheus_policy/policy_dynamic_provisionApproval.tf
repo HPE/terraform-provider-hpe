@@ -1,4 +1,4 @@
-# Approve Provision Policy - Requires ServiceNow integration
+# Approve Provision Policy
 resource "hpe_morpheus_policy" "approve_provision" {
   name                     = "Approve Provision Policy"
   description              = "Require approval before provisioning instances"

@@ -11,7 +11,7 @@ resource "hpe_morpheus_policy" "power_schedule" {
   }
 
   config = {
-    powerScheduleType      = "user" # Options: "user" (user can select), "fixed" (strict schedule)
+    powerScheduleType      = "user" # Options: "user" (user configurable), "fixed" (strict schedule)
     powerSchedule          = "1"    # ID of the power schedule
     powerScheduleHideFixed = false  # Hide fixed schedule from users
   }

@@ -1,4 +1,4 @@
-# Approve Workflow Execute Policy - Requires ServiceNow integration
+# Approve Workflow Execute Policy
 resource "hpe_morpheus_policy" "approve_workflow" {
   name                     = "Approve Workflow Execute Policy"
   description              = "Require approval before executing workflows"

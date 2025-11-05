@@ -11,7 +11,7 @@ resource "hpe_morpheus_policy" "max_memory" {
   }
 
   config = {
-    maxMemory         = "8192" # Maximum memory in MB
-    excludeContainers = "off"  # Options: "on", "off" - exclude containers from count
+    maxMemory         = "8"   # Maximum memory in GB
+    excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }
