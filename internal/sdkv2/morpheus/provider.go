@@ -27,6 +27,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_email":                       task.ResourceTaskEmail(),
 			"hpe_morpheus_task_groovy_script":               task.ResourceTaskGroovyScript(),
 			"hpe_morpheus_task_javascript":                  task.ResourceTaskJavaScript(),
+			"hpe_morpheus_task_library_script":              task.ResourceTaskLibraryScript(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
