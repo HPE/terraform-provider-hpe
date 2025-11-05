@@ -1,7 +1,7 @@
 # v0.3.0 Release Notes
 
 In this release (v0.3.0) we have added the following resource functionality:
-- hpe_morpheus_image resource has been added (Create, Delete, Read, Update)
+- hpe_morpheus_image resource has been added (Create, Delete, Read - no Update)
 - hpe_morpheus_policy resource has been added (Create, Delete, Read, Update)
 - hpe_morpheus_instance Update functionality has been added
 - hpe_morpheus_service_plan `cores_per_socket` is now required

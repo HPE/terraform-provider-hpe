@@ -21,6 +21,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/group"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/image"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/policy"
@@ -36,6 +37,7 @@ func (s SubProvider) GetResources(
 		cloud.NewResource,
 		datastore.NewResource,
 		group.NewResource,
+		image.NewResource,
 		network.NewResource,
 		user.NewResource,
 		role.NewResource,
