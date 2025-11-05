@@ -1,9 +1,13 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
+github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251104111812-c3cc17b63fdc h1:Jp+kyH8WO/jO/JX2m/yeN+S6EAUUkJCwwtcyKO8qb28=
+github.com/HewlettPackard/hpe-morpheus-go-sdk v0.0.0-20251104111812-c3cc17b63fdc/go.mod h1:AwZ8lpcKsr7NC87thvDFIQU2ZwNx0jw9/k7+WuoqCgQ=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba h1:bp92Ge78ab+lf3B1icgUPWHNUNotlVl1f2TrYtMqA7s=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba/go.mod h1:euek+CMVFJjCC79mG3TfGd5bPebzytyGg5wzLx1e/2c=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251104111812-c3cc17b63fdc h1:vXcrPVTHoH0U9D3OEtTCGfIulPe4zdCR2P6oFThzP7E=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251104111812-c3cc17b63fdc/go.mod h1:hH79EA7VE9lwShyc9M4jii794SzNC24Guh0BKITV+Lc=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251105124020-bb2e51670c70 h1:9h6bh2tCri6TcTeZClLNEo+EHw2xOLR/6eAj65Fujxw=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.0-20251105124020-bb2e51670c70/go.mod h1:hH79EA7VE9lwShyc9M4jii794SzNC24Guh0BKITV+Lc=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.1.6 h1:ZcV+Ropw6Qn0AX9brlQLAUXfqLBc7Bl+f/DmNxpLfdw=
