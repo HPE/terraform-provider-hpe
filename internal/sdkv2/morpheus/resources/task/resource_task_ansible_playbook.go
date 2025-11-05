@@ -273,6 +273,9 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	task := result.Task
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
@@ -337,6 +340,9 @@ func resourceTaskAnsiblePlaybookRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	ansiblePlaybookTask := result.Task
 	d.SetId(convert.Int64ToString(ansiblePlaybookTask.ID))
 	d.Set("name", ansiblePlaybookTask.Name)
@@ -515,6 +521,9 @@ func resourceTaskAnsiblePlaybookUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Task == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Task"))
+	}
 	ansiblePlaybookTask := result.Task
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
