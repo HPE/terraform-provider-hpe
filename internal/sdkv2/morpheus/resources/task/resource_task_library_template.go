@@ -262,7 +262,7 @@ func resourceTaskLibraryTemplateCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -329,7 +329,7 @@ func resourceTaskLibraryTemplateRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	libraryTemplateTask := result.Task
 	d.SetId(convert.Int64ToString(libraryTemplateTask.ID))
@@ -499,7 +499,7 @@ func resourceTaskLibraryTemplateUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	libraryTemplateTask := result.Task
 	// Successfully updated resource, now set id

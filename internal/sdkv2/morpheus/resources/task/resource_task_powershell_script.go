@@ -391,7 +391,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -459,7 +459,7 @@ func resourceTaskPowerShellScriptRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	powerShellScriptTask := result.Task
 	d.SetId(convert.Int64ToString(powerShellScriptTask.ID))
@@ -691,7 +691,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully updated resource, now set id

@@ -414,7 +414,7 @@ func getClusterWorkers(client *morpheus.Client, clusterId int64) ([]morpheus.Clu
 	}
 
 	if workerResp.Workers == nil {
-		return []morpheus.ClusterWorker{}, helpers.NilPointerError("workerResp.Workers")
+		return []morpheus.ClusterWorker{}, helpers.NotFoundInResponseError("Workers")
 	}
 
 	// Sort the workers by date created to avoid naming problems i.e. worker-1-1
@@ -722,7 +722,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Cluster == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Cluster"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Cluster"))
 	}
 	cluster := result.Cluster
 	clusterStatus := statusProvisioning
@@ -765,7 +765,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 				}
 
 				if hostsResult.Hosts == nil {
-					return clusterResult, clusterStatus, helpers.NilPointerError("hostsResult.Hosts")
+					return clusterResult, clusterStatus, helpers.NotFoundInResponseError("Hosts")
 				}
 
 				for _, host := range *hostsResult.Hosts {
@@ -865,7 +865,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 
 	cluster := result.Cluster
 	if cluster == nil {
-		return diag.Errorf("Cluster not found in response data.") // should not happen
+		return diag.FromErr(helpers.NotFoundInResponseError("Cluster")) // should not happen
 	}
 
 	d.SetId(convert.Int64ToString(cluster.ID))
@@ -1313,7 +1313,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			}
 
 			if result.Cluster == nil {
-				return result, "error", helpers.NilPointerError("result.Cluster")
+				return result, "error", helpers.NotFoundInResponseError("Cluster")
 			}
 
 			cluster := result.Cluster
