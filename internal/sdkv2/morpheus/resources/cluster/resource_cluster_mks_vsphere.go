@@ -722,7 +722,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Cluster == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Cluster"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Cluster"))
 	}
 	cluster := result.Cluster
 	clusterStatus := statusProvisioning
@@ -865,7 +865,7 @@ func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, 
 
 	cluster := result.Cluster
 	if cluster == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Cluster")) // should not happen
+		return diag.FromErr(helpers.NotFoundInResponseError("Cluster")) // should not happen
 	}
 
 	d.SetId(convert.Int64ToString(cluster.ID))
@@ -1313,7 +1313,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			}
 
 			if result.Cluster == nil {
-				return result, "error", helpers.NotFoundInResponseError("result.Cluster")
+				return result, "error", helpers.NotFoundInResponseError("Cluster")
 			}
 
 			cluster := result.Cluster

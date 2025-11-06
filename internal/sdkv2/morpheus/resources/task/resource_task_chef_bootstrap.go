@@ -300,7 +300,7 @@ func resourceTaskChefBootstrapCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -367,7 +367,7 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	chefBootstrapTask := result.Task
 	d.SetId(convert.Int64ToString(chefBootstrapTask.ID))
@@ -561,7 +561,7 @@ func resourceTaskChefBootstrapUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	chefBootstrapTask := result.Task
 	// Successfully updated resource, now set id

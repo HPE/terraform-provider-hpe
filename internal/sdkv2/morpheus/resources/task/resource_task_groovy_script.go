@@ -284,7 +284,7 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -351,7 +351,7 @@ func resourceTaskGroovyScriptRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	groovyScriptTask := result.Task
 	d.SetId(convert.Int64ToString(groovyScriptTask.ID))
@@ -530,7 +530,7 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	groovyScriptTask := result.Task
 	// Successfully updated resource, now set id
