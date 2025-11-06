@@ -4,6 +4,8 @@
 package sweep
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/policy"
@@ -14,6 +16,13 @@ func Policies() {
 		"hpe_morpheus_policy",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_policy",
-			F:    policy.SweepPolicies,
+			F: func(region string) error {
+				ctx := context.Background()
+				client, err := NewSweepClient(ctx)
+				if err != nil {
+					return err
+				}
+				return policy.SweepPolicies(client)
+			},
 		})
 }
