@@ -28,3 +28,11 @@ func EmptySliceError(k string) error {
 func NilPointerError(k string) error {
 	return fmt.Errorf("%s: Pointer is nil", k)
 }
+
+// NotFoundInResponseError builds an error for reporting that an element of
+// a response was not found. This is useful when working with the legacy SDK
+// for reporting when the pointer to a struct contained in a response from
+// the API is nil.
+func NotFoundInResponseError(k string) error {
+	return fmt.Errorf("Not found in response: %s", k)
+}
