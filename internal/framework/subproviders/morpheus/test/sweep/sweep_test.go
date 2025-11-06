@@ -13,17 +13,13 @@ import (
 )
 
 func init() {
-	// Skip sweep client creation and sweeper registration in short mode
-	if testing.Short() {
-		log.Printf("[INFO] Skipping sweeper registration in short mode")
-
-		return
-	}
-
 	ctx := context.Background()
 	client, err := NewSweepClient(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create sweep client: %v", err)
+		// Log the error but don't fail - this is expected in short mode or when env vars aren't set
+		log.Printf("[WARN] Cannot create sweep client (likely running in short mode or env vars not set): %v", err)
+
+		return
 	}
 
 	// Register sweepers that use the centralized client
