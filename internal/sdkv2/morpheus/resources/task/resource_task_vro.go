@@ -248,7 +248,7 @@ func resourceTaskVroCreate(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -315,7 +315,7 @@ func resourceTaskVroRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	workflowTask := result.Task
 
@@ -480,7 +480,7 @@ func resourceTaskVroUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	vroTask := result.Task
 	// Successfully updated resource, now set id

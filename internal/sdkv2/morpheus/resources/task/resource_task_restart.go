@@ -178,7 +178,7 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -245,7 +245,7 @@ func resourceTaskRestartRead(ctx context.Context, d *schema.ResourceData, meta a
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	restartTask := result.Task
 	d.SetId(convert.Int64ToString(restartTask.ID))
@@ -361,7 +361,7 @@ func resourceTaskRestartUpdate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	restartTask := result.Task
 	// Successfully updated resource, now set id
