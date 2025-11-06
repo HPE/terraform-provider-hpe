@@ -22,9 +22,14 @@ import (
 
 // Create implements resource.Resource.
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ImageModel
+	var plan, config ImageModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -127,14 +132,9 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		reqImage.VirtualImage.SetOsType(plan.OsTypeId.ValueInt64())
 	}
 
-	// ssh_key
-	if !plan.SshKeyWo.IsNull() && !plan.SshKeyWo.IsUnknown() {
-		reqImage.VirtualImage.SetSshKey(plan.SshKeyWo.ValueString())
-	}
-
-	// ssh_password
-	if !plan.SshPasswordWo.IsNull() && !plan.SshPasswordWo.IsUnknown() {
-		reqImage.VirtualImage.SetSshPassword(plan.SshPasswordWo.ValueString())
+	// ssh_password_wo
+	if !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
+		reqImage.VirtualImage.SetSshPassword(config.SshPasswordWo.ValueString())
 	}
 
 	// ssh_username
