@@ -328,7 +328,7 @@ func resourceTaskPythonScriptCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -389,7 +389,7 @@ func resourceTaskPythonScriptRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	pythonScriptTask := result.Task
 	d.SetId(convert.Int64ToString(pythonScriptTask.ID))
@@ -483,7 +483,7 @@ func resourceTaskPythonScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	pythonScriptTask := result.Task
 	// Successfully updated resource, now set id

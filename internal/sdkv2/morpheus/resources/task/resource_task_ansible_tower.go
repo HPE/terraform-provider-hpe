@@ -297,7 +297,7 @@ func resourceTaskAnsibleTowerCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -364,7 +364,7 @@ func resourceTaskAnsibleTowerRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	ansibleTowerTask := result.Task
 
@@ -577,7 +577,7 @@ func resourceTaskAnsibleTowerUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
 	}
 	ansibleTowerTask := result.Task
 	// Successfully updated resource, now set id
