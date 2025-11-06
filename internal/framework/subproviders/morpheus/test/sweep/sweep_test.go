@@ -16,6 +16,7 @@ func init() {
 	// Skip sweep client creation and sweeper registration in short mode
 	if testing.Short() {
 		log.Printf("[INFO] Skipping sweeper registration in short mode")
+
 		return
 	}
 
