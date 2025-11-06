@@ -5,24 +5,19 @@ package sweep
 
 import (
 	"context"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"log"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/policy"
 )
 
 func Policies() {
-	resource.AddTestSweepers(
-		"hpe_morpheus_policy",
-		&resource.Sweeper{
-			Name: "hpe_morpheus_policy",
-			F: func(region string) error {
-				ctx := context.Background()
-				client, err := NewSweepClient(ctx)
-				if err != nil {
-					return err
-				}
-				return policy.SweepPolicies(client)
-			},
-		})
+	ctx := context.Background()
+	client, err := NewSweepClient(ctx)
+	if err != nil {
+		log.Printf("[INFO] Cannot create policy sweep client, skipping policy sweeper registration: %v", err)
+
+		return
+	}
+
+	policy.NewPolicySweeper(client)
 }
