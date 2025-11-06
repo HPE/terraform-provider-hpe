@@ -24,6 +24,7 @@ func sweepPolicies() error {
 	if err != nil {
 		// If we can't create a client (e.g., env vars not set), just log and continue
 		log.Printf("[INFO] Cannot create sweep client, skipping policy sweep: %v", err)
+
 		return nil
 	}
 
@@ -33,6 +34,7 @@ func sweepPolicies() error {
 		// Handle 404 and 403 as "no matches found" rather than an error
 		if hresp != nil && (hresp.StatusCode == http.StatusNotFound || hresp.StatusCode == http.StatusForbidden) {
 			log.Printf("[INFO] No policies found matching prefix (status %d): %s", hresp.StatusCode, testPolicyPrefix)
+
 			return nil
 		}
 
@@ -54,12 +56,14 @@ func sweepPolicies() error {
 
 		if !strings.HasPrefix(*name, testPolicyPrefix) {
 			log.Printf("[INFO] Skipping policy (name): %s", *name)
+
 			continue
 		}
 
 		id, ok := policy.GetIdOk()
 		if !ok || id == nil {
 			log.Printf("[INFO] Skipping policy (id): %s", *name)
+
 			continue
 		}
 
@@ -74,6 +78,7 @@ func sweepPolicies() error {
 			)
 			log.Printf("[ERROR] %s", errMsg)
 			sweepErrors = append(sweepErrors, errMsg)
+
 			continue
 		}
 
