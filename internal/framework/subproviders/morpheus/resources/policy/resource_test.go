@@ -8,7 +8,6 @@
 package policy_test
 
 import (
-	"log"
 	"os"
 	"regexp"
 	"testing"
@@ -25,12 +24,6 @@ import (
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-
-	// Run sweep after tests complete
-	if err := sweepPolicies(); err != nil {
-		log.Printf("[ERROR] Failed to sweep policies: %v", err)
-	}
-
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }

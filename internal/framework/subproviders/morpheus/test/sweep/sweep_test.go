@@ -12,6 +12,7 @@ func init() {
 	Datastores()
 	Instances()
 	Networks()
+	Policies()
 	Users()
 }
 

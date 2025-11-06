@@ -1,26 +1,77 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package policy_test
+package policy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/clientfactory"
 	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/test/sweep"
 )
 
 // Policies whose name begins with this string will be eligible for deletion
-const testPolicyPrefix = "TestAccMorpheusPolicy"
+const TestPolicyPrefix = "TestAccMorpheusPolicy"
 
-// sweepPolicies cleans up test policies after tests complete
-func sweepPolicies() error {
+// newSweepClient creates a client for sweeping test resources
+func newSweepClient(ctx context.Context) (*sdk.APIClient, error) {
+	var username, password string
+
+	url, ok := os.LookupEnv("TF_VAR_testacc_morpheus_url")
+	if !ok {
+		return nil, errors.New("TF_VAR_testacc_morpheus_url not set")
+	}
+
+	token, ok := os.LookupEnv("TF_VAR_testacc_morpheus_access_token")
+	if !ok {
+		username, ok = os.LookupEnv("TF_VAR_testacc_morpheus_username")
+		if !ok {
+			return nil, errors.New(
+				"one of TF_VAR_testacc_morpheus_access_token or " +
+					"TF_VAR_testacc_morpheus_username must be set",
+			)
+		}
+
+		password, ok = os.LookupEnv("TF_VAR_testacc_morpheus_password")
+		if !ok {
+			return nil, errors.New(
+				"one of TF_VAR_testacc_morpheus_access_token or " +
+					"TF_VAR_testacc_morpheus_password must be set",
+			)
+		}
+	}
+
+	// If set to any value, use insecure
+	_, insecure := os.LookupEnv("TF_VAR_testacc_morpheus_insecure")
+	var opts []clientfactory.ClientOption
+	if insecure {
+		opts = append(opts, clientfactory.WithInsecureTLS())
+	}
+
+	client := clientfactory.NewAPIClient(
+		ctx,
+		url,
+		username,
+		password,
+		token,
+		opts...,
+	)
+
+	return client, nil
+}
+
+// SweepPolicies cleans up test policies - exported for use by global sweep
+func SweepPolicies(_ string) error {
 	ctx := context.Background()
 
-	client, err := sweep.NewSweepClient(ctx)
+	client, err := newSweepClient(ctx)
 	if err != nil {
 		// If we can't create a client (e.g., env vars not set), just log and continue
 		log.Printf("[INFO] Cannot create sweep client, skipping policy sweep: %v", err)
@@ -29,11 +80,11 @@ func sweepPolicies() error {
 	}
 
 	policies, hresp, err := client.PoliciesAPI.ListPolicies(ctx).
-		Phrase(testPolicyPrefix).Execute()
+		Phrase(TestPolicyPrefix).Execute()
 	if err != nil {
 		// Handle 404 and 403 as "no matches found" rather than an error
 		if hresp != nil && (hresp.StatusCode == http.StatusNotFound || hresp.StatusCode == http.StatusForbidden) {
-			log.Printf("[INFO] No policies found matching prefix (status %d): %s", hresp.StatusCode, testPolicyPrefix)
+			log.Printf("[INFO] No policies found matching prefix (status %d): %s", hresp.StatusCode, TestPolicyPrefix)
 
 			return nil
 		}
@@ -54,7 +105,7 @@ func sweepPolicies() error {
 			continue
 		}
 
-		if !strings.HasPrefix(*name, testPolicyPrefix) {
+		if !strings.HasPrefix(*name, TestPolicyPrefix) {
 			log.Printf("[INFO] Skipping policy (name): %s", *name)
 
 			continue
