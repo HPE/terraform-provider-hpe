@@ -220,7 +220,7 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -288,7 +288,7 @@ func resourceTaskJavaScriptRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	javascriptTask := result.Task
 	d.SetId(convert.Int64ToString(javascriptTask.ID))
@@ -425,7 +425,7 @@ func resourceTaskJavaScriptUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	writeAttributesTask := result.Task
 	// Successfully updated resource, now set id

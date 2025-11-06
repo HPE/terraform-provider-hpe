@@ -205,7 +205,7 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("task"))
 	}
 
 	task := result.Task
@@ -273,7 +273,7 @@ func resourceTaskWriteAttributesRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("task"))
 	}
 
 	writeAttributesTask := result.Task
@@ -403,7 +403,7 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("task"))
 	}
 
 	writeAttributesTask := result.Task

@@ -342,7 +342,7 @@ func resourceIdentitySourceActiveDirectoryRead(
 
 	identitySource := result.IdentitySource
 	if identitySource == nil {
-		return diag.Errorf("Identity source not found in response")
+		return diag.FromErr(helpers.NotFoundInResponseError("result.IdentitySource"))
 	}
 
 	d.SetId(convert.Int64ToString(identitySource.ID))
@@ -511,7 +511,7 @@ func resourceIdentitySourceActiveDirectoryUpdate(
 
 	identitySourceResult := result.IdentitySource
 	if identitySourceResult == nil {
-		return diag.Errorf("Identity source not found in response")
+		return diag.FromErr(helpers.NotFoundInResponseError("result.IdentitySource"))
 	}
 
 	// Successfully updated resource, now set id

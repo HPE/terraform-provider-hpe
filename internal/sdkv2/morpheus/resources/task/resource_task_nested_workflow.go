@@ -209,7 +209,7 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -276,7 +276,7 @@ func resourceTaskNestedWorkflowRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	nestedWorkflowTask := result.Task
 	d.SetId(convert.Int64ToString(nestedWorkflowTask.ID))
@@ -413,7 +413,7 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	nestedWorkflowTask := result.Task
 	// Successfully updated resource, now set id

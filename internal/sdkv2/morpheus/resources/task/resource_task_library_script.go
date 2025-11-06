@@ -262,7 +262,7 @@ func resourceTaskLibraryScriptCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	task := result.Task
 	// Successfully created resource, now set id
@@ -329,7 +329,7 @@ func resourceTaskLibraryScriptRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	libraryScriptTask := result.Task
 	d.SetId(convert.Int64ToString(libraryScriptTask.ID))
@@ -500,7 +500,7 @@ func resourceTaskLibraryScriptUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.Task == nil {
-		return diag.FromErr(helpers.NilPointerError("result.Task"))
+		return diag.FromErr(helpers.NotFoundInResponseError("result.Task"))
 	}
 	libraryScriptTask := result.Task
 	// Successfully updated resource, now set id
