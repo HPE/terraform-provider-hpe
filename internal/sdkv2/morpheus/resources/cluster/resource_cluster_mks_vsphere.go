@@ -414,7 +414,7 @@ func getClusterWorkers(client *morpheus.Client, clusterId int64) ([]morpheus.Clu
 	}
 
 	if workerResp.Workers == nil {
-		return []morpheus.ClusterWorker{}, helpers.NotFoundInResponseError("workerResp.Workers")
+		return []morpheus.ClusterWorker{}, helpers.NotFoundInResponseError("Workers")
 	}
 
 	// Sort the workers by date created to avoid naming problems i.e. worker-1-1
@@ -765,7 +765,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 				}
 
 				if hostsResult.Hosts == nil {
-					return clusterResult, clusterStatus, helpers.NotFoundInResponseError("hostsResult.Hosts")
+					return clusterResult, clusterStatus, helpers.NotFoundInResponseError("Hosts")
 				}
 
 				for _, host := range *hostsResult.Hosts {
