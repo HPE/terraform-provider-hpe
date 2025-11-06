@@ -47,6 +47,31 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func testCheckFns(name string) []resource.TestCheckFunc {
+	checks := testCheckFnsNoResourcePermissions(name)
+	checksResourcePermissions := []resource.TestCheckFunc{
+		resource.TestCheckTypeSetElemNestedAttrs(
+			"data.hpe_morpheus_datastore.test",
+			"resource_permissions.groups.*",
+			map[string]string{
+				"id": "17830",
+			},
+		),
+		// it seems that adding resource permissions results in the root tenant being added
+		// for our tests with TerraformTester on feature
+		resource.TestCheckTypeSetElemNestedAttrs(
+			"data.hpe_morpheus_datastore.test",
+			"tenants.*",
+			map[string]string{
+				"id": "1",
+			},
+		),
+	}
+	checks = append(checks, checksResourcePermissions...)
+
+	return checks
+}
+
+func testCheckFnsNoResourcePermissions(name string) []resource.TestCheckFunc {
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_datastore.test",
@@ -65,23 +90,9 @@ func testCheckFns(name string) []resource.TestCheckFunc {
 		),
 		resource.TestCheckTypeSetElemNestedAttrs(
 			"data.hpe_morpheus_datastore.test",
-			"resource_permissions.groups.*",
-			map[string]string{
-				"id": "17830",
-			},
-		),
-		resource.TestCheckTypeSetElemNestedAttrs(
-			"data.hpe_morpheus_datastore.test",
 			"tenants.*",
 			map[string]string{
 				"id": "466",
-			},
-		),
-		resource.TestCheckTypeSetElemNestedAttrs(
-			"data.hpe_morpheus_datastore.test",
-			"tenants.*",
-			map[string]string{
-				"id": "1",
 			},
 		),
 	}
@@ -124,6 +135,45 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 			{
 				Config: providerConfig + datastoreResouceConfig + dataSourceConfig,
 				Check:  resource.ComposeAggregateTestCheckFunc(testCheckFns(name)...),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindDatastoreNoResourcePermissionsById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm_no_resource_permissions.tf.tmpl",
+		"Name", name,
+		"AssociatedResourceID", "6032",
+		"StorageServerID", "1489",
+		"TenantID", "466",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-id.tf.tmpl", "Id", "hpe_morpheus_datastore.example.id")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + datastoreResouceConfig + dataSourceConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(testCheckFnsNoResourcePermissions(name)...),
 			},
 		},
 	})
