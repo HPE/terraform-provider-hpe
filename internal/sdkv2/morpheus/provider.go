@@ -11,6 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/wiki"
 )
 
 func Provider() *schema.Provider {
@@ -37,6 +38,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_shell_script":                task.ResourceTaskShellScript(),
 			"hpe_morpheus_task_vro":                         task.ResourceTaskVro(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
+			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
