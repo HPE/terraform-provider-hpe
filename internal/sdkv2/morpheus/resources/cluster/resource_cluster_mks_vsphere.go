@@ -721,6 +721,9 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", resp.Result))
 	}
 
+	if result.Cluster == nil {
+		return diag.FromErr(helpers.NilPointerError("result.Cluster"))
+	}
 	cluster := result.Cluster
 	clusterStatus := statusProvisioning
 
@@ -1307,6 +1310,10 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 				result = resultAssert
 			} else {
 				return "", "", helpers.TypeAssertFailError("clusterDetails.Result", clusterDetails.Result)
+			}
+
+			if result.Cluster == nil {
+				return result, "error", helpers.NilPointerError("result.Cluster")
 			}
 
 			cluster := result.Cluster
