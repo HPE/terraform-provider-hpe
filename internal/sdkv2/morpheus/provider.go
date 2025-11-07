@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/wiki"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/workflow"
 )
 
 func Provider() *schema.Provider {
@@ -41,6 +42,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_vro":                         task.ResourceTaskVro(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
+			"hpe_morpheus_workflow_catalog_item":            workflow.ResourceWorkflowCatalogItem(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hpe_morpheus_task":  taskdatasource.DataSourceMorpheusTask(),
