@@ -12,7 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Users whose name begins with this string will be eligible for deletion
@@ -60,7 +60,7 @@ func (s *userSweeper) Sweep(_ string) error {
 	users, hresp, err := s.client.UsersAPI.ListUsers(ctx).
 		Phrase(testUserPrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list users: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list users: %s", errors.ErrMsg(err, hresp))
 	}
 
 	userList := users.GetUsers()
@@ -100,7 +100,7 @@ func (s *userSweeper) Sweep(_ string) error {
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete user %s (id: %d): %s",
-				*username, *id, morpheuserrors.ErrMsg(err, hresp),
+				*username, *id, errors.ErrMsg(err, hresp),
 			)
 			log.Printf("[ERROR] %s", errMsg)
 			sweepErrors = append(sweepErrors, errMsg)

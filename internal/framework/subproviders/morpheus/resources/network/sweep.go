@@ -12,7 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Networks whose name begins with this string will be eligible for deletion
@@ -77,7 +77,7 @@ func (s *networkSweeper) Sweep(_ string) error {
 	networks, hresp, err := s.client.NetworksAPI.ListNetworks(ctx).
 		Phrase(testNetworkPrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list networks: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list networks: %s", errors.ErrMsg(err, hresp))
 	}
 
 	networkList := networks.GetNetworks()
@@ -112,7 +112,7 @@ func (s *networkSweeper) Sweep(_ string) error {
 			if err != nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf(
 					"failed to delete network %s (id: %d): %s",
-					*name, *id, morpheuserrors.ErrMsg(err, hresp),
+					*name, *id, errors.ErrMsg(err, hresp),
 				)
 				log.Printf("[ERROR] %s", errMsg)
 				sweepErrors = append(sweepErrors, errMsg)

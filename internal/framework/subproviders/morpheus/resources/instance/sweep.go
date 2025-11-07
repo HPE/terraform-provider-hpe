@@ -12,7 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Instances whose name begins with this string will be eligible for deletion
@@ -81,7 +81,7 @@ func (s *instanceSweeper) Sweep(_ string) error {
 	instances, hresp, err := s.client.InstancesAPI.ListInstances(ctx).
 		Phrase(testInstancePrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list instances: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list instances: %s", errors.ErrMsg(err, hresp))
 	}
 
 	instanceList := instances.GetInstances()
@@ -130,7 +130,7 @@ func (s *instanceSweeper) Sweep(_ string) error {
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete instance %s (id: %d): %s",
-				*name, *id, morpheuserrors.ErrMsg(err, hresp),
+				*name, *id, errors.ErrMsg(err, hresp),
 			)
 			log.Printf("[ERROR] %s", errMsg)
 			sweepErrors = append(sweepErrors, errMsg)

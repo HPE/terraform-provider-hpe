@@ -12,7 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Datastores whose name begins with this string will be eligible for deletion
@@ -60,10 +60,10 @@ func (s *datastoreSweeper) Sweep(_ string) error {
 			return nil
 		}
 
-		return fmt.Errorf("failed to list datastores: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list datastores: %s", errors.ErrMsg(err, hresp))
 	}
 	if hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list datastores: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list datastores: %s", errors.ErrMsg(err, hresp))
 	}
 
 	datastoreList := datastores.GetDatastores()
@@ -96,7 +96,7 @@ func (s *datastoreSweeper) Sweep(_ string) error {
 			if err != nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf(
 					"failed to delete datastore %s (id: %d): %s",
-					*name, *id, morpheuserrors.ErrMsg(err, hresp),
+					*name, *id, errors.ErrMsg(err, hresp),
 				)
 				log.Printf("[ERROR] %s", errMsg)
 				sweepErrors = append(sweepErrors, errMsg)
