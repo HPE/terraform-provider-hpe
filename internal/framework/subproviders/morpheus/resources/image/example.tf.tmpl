@@ -4,10 +4,10 @@ resource "hpe_morpheus_image" "example_image" {
     labels = ["terraform-image"]
     image_type = "qcow2"
     url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
-    storage_provider_id = 1
+    storage_provider_id = 196
     auto_join_domain = true
     cloud_init = true
-    os_type_id = 116
+    os_type_id = 75
     ssh_username = "alpine"
     min_ram = 1
     min_disk = 20
