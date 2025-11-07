@@ -1,7 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// Package sweep allows deletion of dangling test resources
-package sweep
+package instance
 
 import (
 	"context"
@@ -50,24 +49,36 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 	return true
 }
 
-func Instances() {
+// instanceSweeper handles cleanup of test instances
+type instanceSweeper struct {
+	client *sdk.APIClient
+}
+
+// NewInstanceSweeper creates and registers an instance sweeper
+func NewInstanceSweeper(client *sdk.APIClient) {
+	s := &instanceSweeper{
+		client: client,
+	}
+
 	resource.AddTestSweepers(
 		"hpe_morpheus_instance",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_instance",
-			F:    testSweepMorpheusInstances,
+			F:    s.Sweep,
 		})
 }
 
-func testSweepMorpheusInstances(_ string) error {
+// Sweep cleans up test instances
+func (s *instanceSweeper) Sweep(_ string) error {
 	ctx := context.Background()
 
-	client, err := NewSweepClient(ctx)
-	if err != nil {
-		return err
+	if s.client == nil {
+		log.Printf("[INFO] No client provided, skipping instance sweep")
+
+		return nil
 	}
 
-	instances, hresp, err := client.InstancesAPI.ListInstances(ctx).
+	instances, hresp, err := s.client.InstancesAPI.ListInstances(ctx).
 		Phrase(testInstancePrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to list instances: %s", errors.ErrMsg(err, hresp))
@@ -97,7 +108,7 @@ func testSweepMorpheusInstances(_ string) error {
 		}
 
 		// Get instance details to check tags
-		instanceDetail, hresp, err := client.InstancesAPI.GetInstance(ctx, *id).Execute()
+		instanceDetail, hresp, err := s.client.InstancesAPI.GetInstance(ctx, *id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			log.Printf("[INFO] Skipping instance (failed to get details): %s", *name)
 
@@ -115,7 +126,7 @@ func testSweepMorpheusInstances(_ string) error {
 		log.Printf("[INFO] Sweeping instance: %s (id: %d)", *name, *id)
 
 		// Delete the instance
-		_, hresp, err = client.InstancesAPI.DeleteInstance(ctx, *id).Execute()
+		_, hresp, err = s.client.InstancesAPI.DeleteInstance(ctx, *id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete instance %s (id: %d): %s",
