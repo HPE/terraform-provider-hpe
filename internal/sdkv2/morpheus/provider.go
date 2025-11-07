@@ -8,9 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	taskdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/task"
+	tasksdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tasks"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+	task "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
 
 func Provider() *schema.Provider {
@@ -38,7 +40,10 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_vro":                         task.ResourceTaskVro(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 		},
-		DataSourcesMap:       map[string]*schema.Resource{},
+		DataSourcesMap: map[string]*schema.Resource{
+			"hpe_morpheus_task":  taskdatasource.DataSourceMorpheusTask(),
+			"hpe_morpheus_tasks": tasksdatasource.DataSourceMorpheusTasks(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
