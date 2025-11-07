@@ -1,7 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// Package sweep allows deletion of dangling test resources
-package sweep
+package network
 
 import (
 	"context"
@@ -10,9 +9,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Networks whose name begins with this string will be eligible for deletion
@@ -45,27 +45,39 @@ func hasRequiredLabels(labels []string) bool {
 	return true
 }
 
-func Networks() {
+// networkSweeper handles cleanup of test networks
+type networkSweeper struct {
+	client *sdk.APIClient
+}
+
+// NewNetworkSweeper creates and registers a network sweeper
+func NewNetworkSweeper(client *sdk.APIClient) {
+	s := &networkSweeper{
+		client: client,
+	}
+
 	resource.AddTestSweepers(
 		"hpe_morpheus_network",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_network",
-			F:    testSweepMorpheusNetworks,
+			F:    s.Sweep,
 		})
 }
 
-func testSweepMorpheusNetworks(_ string) error {
+// Sweep cleans up test networks
+func (s *networkSweeper) Sweep(_ string) error {
 	ctx := context.Background()
 
-	client, err := NewSweepClient(ctx)
-	if err != nil {
-		return err
+	if s.client == nil {
+		log.Printf("[INFO] No client provided, skipping network sweep")
+
+		return nil
 	}
 
-	networks, hresp, err := client.NetworksAPI.ListNetworks(ctx).
+	networks, hresp, err := s.client.NetworksAPI.ListNetworks(ctx).
 		Phrase(testNetworkPrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list networks: %s", errors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list networks: %s", morpheuserrors.ErrMsg(err, hresp))
 	}
 
 	networkList := networks.GetNetworks()
@@ -96,11 +108,11 @@ func testSweepMorpheusNetworks(_ string) error {
 			log.Printf("[INFO] Sweeping network: %s (id: %d)", *name, *id)
 
 			// Delete the network
-			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
+			_, hresp, err := s.client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
 			if err != nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf(
 					"failed to delete network %s (id: %d): %s",
-					*name, *id, errors.ErrMsg(err, hresp),
+					*name, *id, morpheuserrors.ErrMsg(err, hresp),
 				)
 				log.Printf("[ERROR] %s", errMsg)
 				sweepErrors = append(sweepErrors, errMsg)
