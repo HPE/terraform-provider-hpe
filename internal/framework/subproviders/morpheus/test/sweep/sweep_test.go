@@ -9,7 +9,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/datastore"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/instance"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/policy"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/user"
 )
 
 func init() {
@@ -24,12 +28,10 @@ func init() {
 
 	// Register sweepers that use the centralized client
 	policy.NewPolicySweeper(client)
-
-	// Register sweepers that still create their own clients (to be converted later)
-	Datastores()
-	Instances()
-	Networks()
-	Users()
+	datastore.NewDatastoreSweeper(client)
+	instance.NewInstanceSweeper(client)
+	network.NewNetworkSweeper(client)
+	user.NewUserSweeper(client)
 }
 
 func TestMain(m *testing.M) {

@@ -1,7 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// Package sweep allows deletion of dangling test resources
-package sweep
+package datastore
 
 import (
 	"context"
@@ -10,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
@@ -21,24 +21,36 @@ const (
 	enableDatastoreDelete = false
 )
 
-func Datastores() {
+// datastoreSweeper handles cleanup of test datastores
+type datastoreSweeper struct {
+	client *sdk.APIClient
+}
+
+// NewDatastoreSweeper creates and registers a datastore sweeper
+func NewDatastoreSweeper(client *sdk.APIClient) {
+	s := &datastoreSweeper{
+		client: client,
+	}
+
 	resource.AddTestSweepers(
 		"hpe_morpheus_datastore",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_datastore",
-			F:    testSweepMorpheusDatastores,
+			F:    s.Sweep,
 		})
 }
 
-func testSweepMorpheusDatastores(_ string) error {
+// Sweep cleans up test datastores
+func (s *datastoreSweeper) Sweep(_ string) error {
 	ctx := context.Background()
 
-	client, err := NewSweepClient(ctx)
-	if err != nil {
-		return err
+	if s.client == nil {
+		log.Printf("[INFO] No client provided, skipping datastore sweep")
+
+		return nil
 	}
 
-	datastores, hresp, err := client.DatastoresAPI.ListDatastores(ctx).
+	datastores, hresp, err := s.client.DatastoresAPI.ListDatastores(ctx).
 		Phrase(testDatastorePrefix).Execute()
 	if err != nil {
 		// Handle 404 and 403 as "no matches found" rather than an error
@@ -80,7 +92,7 @@ func testSweepMorpheusDatastores(_ string) error {
 		// Delete the datastore
 		if enableDatastoreDelete {
 			log.Printf("[INFO] Sweeping datastore: %s (id: %d)", *name, *id)
-			_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, *id).Execute()
+			_, hresp, err := s.client.DatastoresAPI.DeleteDatastores(ctx, *id).Execute()
 			if err != nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf(
 					"failed to delete datastore %s (id: %d): %s",

@@ -12,11 +12,11 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	morpheuserrors "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 // Policies whose name begins with this string will be eligible for deletion
-const TestPolicyPrefix = "TestAccMorpheusPolicy"
+const testPolicyPrefix = "TestAccMorpheusPolicy"
 
 // policySweeper handles cleanup of test policies
 type policySweeper struct {
@@ -48,19 +48,19 @@ func (s *policySweeper) Sweep(_ string) error {
 	}
 
 	policies, hresp, err := s.client.PoliciesAPI.ListPolicies(ctx).
-		Phrase(TestPolicyPrefix).Execute()
+		Phrase(testPolicyPrefix).Execute()
 	if err != nil {
 		// Handle 404 and 403 as "no matches found" rather than an error
 		if hresp != nil && (hresp.StatusCode == http.StatusNotFound || hresp.StatusCode == http.StatusForbidden) {
-			log.Printf("[INFO] No policies found matching prefix (status %d): %s", hresp.StatusCode, TestPolicyPrefix)
+			log.Printf("[INFO] No policies found matching prefix (status %d): %s", hresp.StatusCode, testPolicyPrefix)
 
 			return nil
 		}
 
-		return fmt.Errorf("failed to list policies: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list policies: %s", errors.ErrMsg(err, hresp))
 	}
 	if hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list policies: %s", morpheuserrors.ErrMsg(err, hresp))
+		return fmt.Errorf("failed to list policies: %s", errors.ErrMsg(err, hresp))
 	}
 
 	policyList := policies.GetPolicies()
@@ -73,7 +73,7 @@ func (s *policySweeper) Sweep(_ string) error {
 			continue
 		}
 
-		if !strings.HasPrefix(*name, TestPolicyPrefix) {
+		if !strings.HasPrefix(*name, testPolicyPrefix) {
 			log.Printf("[INFO] Skipping policy (name): %s", *name)
 
 			continue
@@ -93,7 +93,7 @@ func (s *policySweeper) Sweep(_ string) error {
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete policy %s (id: %d): %s",
-				*name, *id, morpheuserrors.ErrMsg(err, hresp),
+				*name, *id, errors.ErrMsg(err, hresp),
 			)
 			log.Printf("[ERROR] %s", errMsg)
 			sweepErrors = append(sweepErrors, errMsg)
