@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package cluster
 
 import (
@@ -1275,9 +1277,7 @@ func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData
 			"removeResources": "on",
 		},
 	}
-	if helpers.UseForce {
-		req.QueryParams["force"] = "true"
-	}
+	req.QueryParams["force"] = "true"
 	resp, err := client.DeleteCluster(convert.StringToInt64(id), req)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
