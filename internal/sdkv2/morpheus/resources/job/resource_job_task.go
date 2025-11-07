@@ -76,7 +76,8 @@ func resourceJobTask() *schema.Resource {
 				Optional:    true,
 			},
 			"context_type": {
-				Type:         schema.TypeString,
+				Type: schema.TypeString,
+				//nolint:lll
 				ValidateFunc: validation.StringInSlice([]string{"appliance", "server", "instance", "instance-label", "server-label"}, false),
 				Description:  "The context that the job should run as (appliance, server, instance, instance-label, server-label)",
 				Required:     true,
@@ -119,6 +120,7 @@ func resourceJobTask() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceJobTaskCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
@@ -344,7 +346,7 @@ func resourceJobTaskRead(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	d.SetId(convert.Int64ToString(taskJob.ID))
 	d.Set("name", taskJob.Name)
-	if taskJob.Labels != nil && len(taskJob.Labels) > 0 {
+	if len(taskJob.Labels) > 0 {
 		d.Set("labels", taskJob.Labels)
 	}
 	d.Set("enabled", taskJob.Enabled)
@@ -372,32 +374,32 @@ func resourceJobTaskRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	switch taskJob.TargetType {
 	case "instance":
 		// instances
-		var instanceIds []int64
+		var instanceIDs []int64
 		if taskJob.Targets != nil {
 			// iterate over the array of targets
 			for i := 0; i < len(taskJob.Targets); i++ {
 				instance := taskJob.Targets[i]
-				instanceIds = append(instanceIds, int64(instance.RefId))
+				instanceIDs = append(instanceIDs, instance.RefId)
 			}
 		}
-		d.Set("instance_ids", instanceIds)
+		d.Set("instance_ids", instanceIDs)
 	case "server":
 		// servers
-		var serverIds []int64
+		var serverIDs []int64
 		if taskJob.Targets != nil {
 			// iterate over the array of targets
 			for i := 0; i < len(taskJob.Targets); i++ {
 				server := taskJob.Targets[i]
-				serverIds = append(serverIds, int64(server.RefId))
+				serverIDs = append(serverIDs, server.RefId)
 			}
 		}
-		d.Set("server_ids", serverIds)
+		d.Set("server_ids", serverIDs)
 	case "instance-label":
-		if taskJob.Targets != nil && len(taskJob.Targets) > 0 {
+		if len(taskJob.Targets) > 0 {
 			d.Set("instance_label", taskJob.Targets[0].Name)
 		}
 	case "server-label":
-		if taskJob.Targets != nil && len(taskJob.Targets) > 0 {
+		if len(taskJob.Targets) > 0 {
 			d.Set("server_label", taskJob.Targets[0].Name)
 		}
 	}
