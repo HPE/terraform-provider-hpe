@@ -11,6 +11,8 @@ Provides an Morpheus Kubernetes Service (MKS) cluster on VMware vSphere resource
 
 ## Notes
 
+-> To force delete set `MORPHEUS_USE_FORCE=true`
+
 ### What to do if worker nodes fail to provision
 Sometimes updating the number of worker nodes may fail unexpectedly and the new worker nodes will fail to provision. If this happens, manually delete the new worker nodes either through the Morpheus UI or using the [Morpheus CLI] (https://clidocs.morpheusdata.com/), and retry the `terraform apply`.
 

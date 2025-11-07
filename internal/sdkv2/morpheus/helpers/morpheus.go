@@ -1,3 +1,5 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
 package helpers
 
 import (
@@ -6,4 +8,4 @@ import (
 
 // global stuff here
 
-var UseForce = (os.Getenv("USE_FORCE") == "true")
+var UseForce = (os.Getenv("MORPHEUS_USE_FORCE") == "true")
