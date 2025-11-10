@@ -1,0 +1,33 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+**Manual**
+
+{{tffile "examples/resources/morpheus_job_task/resource_manual.tf"}}
+
+**Date and Time**
+
+{{tffile "examples/resources/morpheus_job_task/resource_date_and_time.tf"}}
+
+**Execution Schedule**
+
+{{tffile "examples/resources/morpheus_job_task/resource_schedule.tf"}}
+
+
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_job_task/import.sh" }}
