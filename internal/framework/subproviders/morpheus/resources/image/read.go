@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -81,7 +82,32 @@ func getImageAsState(
 	state.InstallAgent = convert.BoolToType(image.InstallAgent)
 
 	// labels
-	state.Labels = convert.StrSliceToSet(image.GetLabels())
+	respLabels := image.GetLabels()
+
+	labels, err := convert.SetToStrSlice(plan.Labels)
+	if err != nil {
+		diags.AddError(
+			"populate image resource",
+			"could not parse a slice of labels",
+		)
+
+		return state, diags
+	}
+
+	// Morpheus API may change the casing of the labels, to avoid Terraform
+	// throwing a gasket we convert the casing of labels to be as specified
+	// by the user.
+	for _, label := range labels {
+		for i, respLabel := range respLabels {
+			if strings.EqualFold(label, respLabel) {
+				if label != respLabel {
+					respLabels[i] = label
+				}
+			}
+		}
+	}
+
+	state.Labels = convert.StrSliceToSet(respLabels)
 
 	// min_disk
 	if image.MinDisk.Get() != nil {
