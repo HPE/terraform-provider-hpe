@@ -14,16 +14,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-// ResourceWorkflowJob returns the workflow job resource
+// ResourceJobWorkflow returns the workflow job resource
 //
 //nolint:lll
-func ResourceWorkflowJob() *schema.Resource {
+func ResourceJobWorkflow() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a workflow job resource",
-		CreateContext: resourceWorkflowJobCreate,
-		ReadContext:   resourceWorkflowJobRead,
-		UpdateContext: resourceWorkflowJobUpdate,
-		DeleteContext: resourceWorkflowJobDelete,
+		CreateContext: resourceJobWorkflowCreate,
+		ReadContext:   resourceJobWorkflowRead,
+		UpdateContext: resourceJobWorkflowUpdate,
+		DeleteContext: resourceJobWorkflowDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -117,7 +117,7 @@ func ResourceWorkflowJob() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceWorkflowJobCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceJobWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 
 	// Warning or errors can be collected in a slice type
@@ -287,12 +287,12 @@ func resourceWorkflowJobCreate(ctx context.Context, d *schema.ResourceData, meta
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(jobResult.ID))
 
-	resourceWorkflowJobRead(ctx, d, meta)
+	resourceJobWorkflowRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceWorkflowJobRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceJobWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -399,7 +399,7 @@ func resourceWorkflowJobRead(ctx context.Context, d *schema.ResourceData, meta a
 	return diags
 }
 
-func resourceWorkflowJobUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceJobWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 	id := d.Id()
 
@@ -568,10 +568,10 @@ func resourceWorkflowJobUpdate(ctx context.Context, d *schema.ResourceData, meta
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(jobResult.ID))
 
-	return resourceWorkflowJobRead(ctx, d, meta)
+	return resourceJobWorkflowRead(ctx, d, meta)
 }
 
-func resourceWorkflowJobDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceJobWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 
 	// Warning or errors can be collected in a slice type
