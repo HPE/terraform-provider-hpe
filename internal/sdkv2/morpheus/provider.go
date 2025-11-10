@@ -28,7 +28,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
 			"hpe_morpheus_job_task":                         job.ResourceJobTask(),
-			"hpe_morpheus_job_workflow":                     job.ResourceWorkflowJob(),
+			"hpe_morpheus_job_workflow":                     job.ResourceJobWorkflow(),
 			"hpe_morpheus_task_ansible_playbook":            task.ResourceTaskAnsiblePlaybook(),
 			"hpe_morpheus_task_ansible_tower":               task.ResourceTaskAnsibleTower(),
 			"hpe_morpheus_task_chef_bootstrap":              task.ResourceTaskChefBootstrap(),
