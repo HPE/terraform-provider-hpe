@@ -280,7 +280,7 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskAnsiblePlaybookRead(ctx, d, meta)
+	diags = append(diags, resourceTaskAnsiblePlaybookRead(ctx, d, meta)...)
 
 	return diags
 }

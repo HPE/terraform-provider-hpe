@@ -283,7 +283,7 @@ func resourceJobTaskCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// Successfully created resource, now set id
 	d.SetId(jobId)
 
-	resourceJobTaskRead(ctx, d, meta)
+	diags = append(diags, resourceJobTaskRead(ctx, d, meta)...)
 
 	return diags
 }

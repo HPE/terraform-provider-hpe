@@ -303,7 +303,7 @@ func resourceTaskAnsibleTowerCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskAnsibleTowerRead(ctx, d, meta)
+	diags = append(diags, resourceTaskAnsibleTowerRead(ctx, d, meta)...)
 
 	return diags
 }

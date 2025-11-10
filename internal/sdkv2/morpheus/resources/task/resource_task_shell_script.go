@@ -432,7 +432,7 @@ func resourceTaskShellScriptCreate(ctx context.Context, d *schema.ResourceData, 
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskShellScriptRead(ctx, d, meta)
+	diags = append(diags, resourceTaskShellScriptRead(ctx, d, meta)...)
 
 	return diags
 }

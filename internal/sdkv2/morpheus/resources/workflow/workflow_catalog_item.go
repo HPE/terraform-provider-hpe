@@ -371,7 +371,7 @@ func resourceWorkflowCatalogItemCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	resourceWorkflowCatalogItemRead(ctx, d, meta)
+	diags = append(diags, resourceWorkflowCatalogItemRead(ctx, d, meta)...)
 
 	return diags
 }
