@@ -292,6 +292,7 @@ func resourceJobWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
+//nolint:goconst
 func resourceJobWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 	// Warning or errors can be collected in a slice type
