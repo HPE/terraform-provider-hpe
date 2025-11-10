@@ -268,7 +268,7 @@ func resourceTaskLibraryTemplateCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskLibraryTemplateRead(ctx, d, meta)
+	diags = append(diags, resourceTaskLibraryTemplateRead(ctx, d, meta)...)
 
 	return diags
 }

@@ -318,7 +318,7 @@ func resourceIdentitySourceSAMLCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceIdentitySourceSAMLRead(ctx, d, meta)
+	diags = append(diags, resourceIdentitySourceSAMLRead(ctx, d, meta)...)
 
 	return diags
 }

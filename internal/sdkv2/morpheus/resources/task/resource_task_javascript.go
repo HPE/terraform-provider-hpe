@@ -227,7 +227,7 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(convert.Int64ToString(task.ID))
 	log.Printf("Task ID: %s", convert.Int64ToString(task.ID))
 
-	resourceTaskJavaScriptRead(ctx, d, meta)
+	diags = append(diags, resourceTaskJavaScriptRead(ctx, d, meta)...)
 
 	return diags
 }

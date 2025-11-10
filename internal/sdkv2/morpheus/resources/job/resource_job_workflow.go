@@ -287,7 +287,7 @@ func resourceJobWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(jobResult.ID))
 
-	resourceJobWorkflowRead(ctx, d, meta)
+	diags = append(diags, resourceJobWorkflowRead(ctx, d, meta)...)
 
 	return diags
 }

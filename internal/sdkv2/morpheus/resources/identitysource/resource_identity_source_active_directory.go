@@ -278,7 +278,7 @@ func resourceIdentitySourceActiveDirectoryCreate(
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)
+	diags = append(diags, resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)...)
 
 	return diags
 }

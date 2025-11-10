@@ -803,7 +803,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(cluster.ID))
-	resourceClusterMKSVSphereRead(ctx, d, meta)
+	diags = append(diags, resourceClusterMKSVSphereRead(ctx, d, meta)...)
 
 	// Fail the cluster deployment if the cluster status is in a failed state
 	if clusterStatus == statusFailed {

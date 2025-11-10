@@ -215,7 +215,7 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskNestedWorkflowRead(ctx, d, meta)
+	diags = append(diags, resourceTaskNestedWorkflowRead(ctx, d, meta)...)
 
 	return diags
 }
