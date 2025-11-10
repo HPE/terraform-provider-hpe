@@ -120,6 +120,9 @@ func ResourceJobWorkflow() *schema.Resource {
 func resourceJobWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*morpheus.Client)
 
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
+
 	job := make(map[string]any)
 
 	var name string
@@ -284,7 +287,9 @@ func resourceJobWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(jobResult.ID))
 
-	return resourceJobWorkflowRead(ctx, d, meta)
+	resourceJobWorkflowRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceJobWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

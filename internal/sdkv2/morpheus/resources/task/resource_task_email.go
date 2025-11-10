@@ -135,6 +135,9 @@ func ResourceTaskEmail() *schema.Resource {
 }
 
 func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -329,7 +332,9 @@ func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta a
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	return resourceTaskEmailRead(ctx, d, meta)
+	resourceTaskEmailRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceTaskEmailRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

@@ -171,6 +171,9 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 }
 
 func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -395,7 +398,9 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(convert.Int64ToString(task.ID))
 	log.Printf("Task ID: %s", convert.Int64ToString(task.ID))
 
-	return resourceTaskPowerShellScriptRead(ctx, d, meta)
+	resourceTaskPowerShellScriptRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceTaskPowerShellScriptRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

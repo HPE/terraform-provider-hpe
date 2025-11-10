@@ -112,6 +112,9 @@ func ResourceTaskLibraryTemplate() *schema.Resource {
 }
 
 func resourceTaskLibraryTemplateCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// Warning or errors can be collected in a slice type
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -265,7 +268,9 @@ func resourceTaskLibraryTemplateCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	return resourceTaskLibraryTemplateRead(ctx, d, meta)
+	resourceTaskLibraryTemplateRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceTaskLibraryTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
