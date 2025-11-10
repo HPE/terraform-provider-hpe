@@ -110,6 +110,7 @@ func ResourceBlueprintArmApp() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceBlueprintArmAppCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
