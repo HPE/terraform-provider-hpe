@@ -89,9 +89,6 @@ func ResourceTaskNestedWorkflow() *schema.Resource {
 }
 
 func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -215,9 +212,7 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskNestedWorkflowRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskNestedWorkflowRead(ctx, d, meta)
 }
 
 func resourceTaskNestedWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

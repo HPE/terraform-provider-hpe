@@ -115,9 +115,6 @@ func ResourceTaskAnsiblePlaybook() *schema.Resource {
 }
 
 func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -280,9 +277,7 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskAnsiblePlaybookRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskAnsiblePlaybookRead(ctx, d, meta)
 }
 
 func resourceTaskAnsiblePlaybookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

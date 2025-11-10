@@ -150,9 +150,6 @@ func ResourceIdentitySourceSAML() *schema.Resource {
 }
 
 func resourceIdentitySourceSAMLCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -318,9 +315,7 @@ func resourceIdentitySourceSAMLCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceIdentitySourceSAMLRead(ctx, d, meta)
-
-	return diags
+	return resourceIdentitySourceSAMLRead(ctx, d, meta)
 }
 
 func resourceIdentitySourceSAMLRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

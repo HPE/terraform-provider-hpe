@@ -68,9 +68,6 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(helpers.TypeAssertFailError("meta", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	wikiPage := make(map[string]any)
 
 	var name string
@@ -123,9 +120,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(wikiPageResult.ID))
 
-	resourceWikiPageRead(ctx, d, meta)
-
-	return diags
+	return resourceWikiPageRead(ctx, d, meta)
 }
 
 func resourceWikiPageRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

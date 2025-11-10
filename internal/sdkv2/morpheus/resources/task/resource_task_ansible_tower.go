@@ -125,9 +125,6 @@ func ResourceTaskAnsibleTower() *schema.Resource {
 }
 
 func resourceTaskAnsibleTowerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -303,9 +300,7 @@ func resourceTaskAnsibleTowerCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskAnsibleTowerRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskAnsibleTowerRead(ctx, d, meta)
 }
 
 func resourceTaskAnsibleTowerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

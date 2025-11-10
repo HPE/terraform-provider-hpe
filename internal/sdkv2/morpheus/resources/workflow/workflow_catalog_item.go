@@ -161,9 +161,6 @@ func resourceWorkflowCatalogItemCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	catalogItem := make(map[string]any)
 
 	var name string
@@ -371,9 +368,7 @@ func resourceWorkflowCatalogItemCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	resourceWorkflowCatalogItemRead(ctx, d, meta)
-
-	return diags
+	return resourceWorkflowCatalogItemRead(ctx, d, meta)
 }
 
 func resourceWorkflowCatalogItemRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

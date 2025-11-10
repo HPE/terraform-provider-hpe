@@ -129,9 +129,6 @@ func resourceJobTaskCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	job := make(map[string]any)
 
 	var name string
@@ -283,9 +280,7 @@ func resourceJobTaskCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// Successfully created resource, now set id
 	d.SetId(jobId)
 
-	resourceJobTaskRead(ctx, d, meta)
-
-	return diags
+	return resourceJobTaskRead(ctx, d, meta)
 }
 
 func resourceJobTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

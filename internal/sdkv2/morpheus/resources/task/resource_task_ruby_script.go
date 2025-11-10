@@ -119,9 +119,6 @@ func ResourceTaskRubyScript() *schema.Resource {
 }
 
 func resourceTaskRubyScriptCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -283,9 +280,7 @@ func resourceTaskRubyScriptCreate(ctx context.Context, d *schema.ResourceData, m
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskRubyScriptRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskRubyScriptRead(ctx, d, meta)
 }
 
 func resourceTaskRubyScriptRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

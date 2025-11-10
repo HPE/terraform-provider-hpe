@@ -112,9 +112,6 @@ func ResourceTaskLibraryScript() *schema.Resource {
 }
 
 func resourceTaskLibraryScriptCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -268,9 +265,7 @@ func resourceTaskLibraryScriptCreate(ctx context.Context, d *schema.ResourceData
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskLibraryScriptRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskLibraryScriptRead(ctx, d, meta)
 }
 
 func resourceTaskLibraryScriptRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

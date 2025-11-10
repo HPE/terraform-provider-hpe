@@ -146,9 +146,6 @@ func resourceIdentitySourceActiveDirectoryCreate(
 	d *schema.ResourceData,
 	meta interface{},
 ) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -278,9 +275,7 @@ func resourceIdentitySourceActiveDirectoryCreate(
 		return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
 	}
 
-	resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)
-
-	return diags
+	return resourceIdentitySourceActiveDirectoryRead(ctx, d, meta)
 }
 
 func resourceIdentitySourceActiveDirectoryRead(

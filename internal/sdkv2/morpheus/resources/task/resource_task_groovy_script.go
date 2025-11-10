@@ -126,9 +126,6 @@ func ResourceTaskGroovyScript() *schema.Resource {
 }
 
 func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -290,9 +287,7 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskGroovyScriptRead(ctx, d, meta)
-
-	return diags
+	return resourceTaskGroovyScriptRead(ctx, d, meta)
 }
 
 func resourceTaskGroovyScriptRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
