@@ -398,7 +398,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(convert.Int64ToString(task.ID))
 	log.Printf("Task ID: %s", convert.Int64ToString(task.ID))
 
-	resourceTaskPowerShellScriptRead(ctx, d, meta)
+	diags = append(diags, resourceTaskPowerShellScriptRead(ctx, d, meta)...)
 
 	return diags
 }

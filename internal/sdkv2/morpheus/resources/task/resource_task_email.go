@@ -332,7 +332,7 @@ func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta a
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskEmailRead(ctx, d, meta)
+	diags = append(diags, resourceTaskEmailRead(ctx, d, meta)...)
 
 	return diags
 }

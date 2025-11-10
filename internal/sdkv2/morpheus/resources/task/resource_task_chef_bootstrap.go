@@ -306,7 +306,7 @@ func resourceTaskChefBootstrapCreate(ctx context.Context, d *schema.ResourceData
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskChefBootstrapRead(ctx, d, meta)
+	diags = append(diags, resourceTaskChefBootstrapRead(ctx, d, meta)...)
 
 	return diags
 }
