@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_blueprint_cloud_formation_app.tf_example_cloud_formation_app_blueprint 1
