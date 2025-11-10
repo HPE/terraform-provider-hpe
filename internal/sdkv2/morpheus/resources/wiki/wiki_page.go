@@ -123,7 +123,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(wikiPageResult.ID))
 
-	resourceWikiPageRead(ctx, d, meta)
+	diags = append(diags, resourceWikiPageRead(ctx, d, meta)...)
 
 	return diags
 }

@@ -290,7 +290,7 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskGroovyScriptRead(ctx, d, meta)
+	diags = append(diags, resourceTaskGroovyScriptRead(ctx, d, meta)...)
 
 	return diags
 }

@@ -212,7 +212,7 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskWriteAttributesRead(ctx, d, meta)
+	diags = append(diags, resourceTaskWriteAttributesRead(ctx, d, meta)...)
 
 	return diags
 }

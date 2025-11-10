@@ -283,7 +283,7 @@ func resourceTaskRubyScriptCreate(ctx context.Context, d *schema.ResourceData, m
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskRubyScriptRead(ctx, d, meta)
+	diags = append(diags, resourceTaskRubyScriptRead(ctx, d, meta)...)
 
 	return diags
 }

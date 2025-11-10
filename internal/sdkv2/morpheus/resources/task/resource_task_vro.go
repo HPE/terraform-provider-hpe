@@ -254,7 +254,7 @@ func resourceTaskVroCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskVroRead(ctx, d, meta)
+	diags = append(diags, resourceTaskVroRead(ctx, d, meta)...)
 
 	return diags
 }

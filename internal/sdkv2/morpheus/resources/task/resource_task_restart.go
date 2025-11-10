@@ -184,7 +184,7 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	resourceTaskRestartRead(ctx, d, meta)
+	diags = append(diags, resourceTaskRestartRead(ctx, d, meta)...)
 
 	return diags
 }
