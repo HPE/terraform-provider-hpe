@@ -19,12 +19,14 @@ var (
 	// Converting
 	// Downloading
 	// Failed
+	// Error
 	CreateTargetStatuses = []string{
 		"Active",
 	}
 
 	CreateErrorStatuses = []string{
 		"Failed",
+		"Error",
 	}
 )
 
