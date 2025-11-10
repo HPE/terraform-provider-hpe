@@ -18,13 +18,13 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func ResourceBlueprintArmApp() *schema.Resource {
+func ResourceBlueprintARMApp() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus arm app blueprint resource",
-		CreateContext: resourceBlueprintArmAppCreate,
-		ReadContext:   resourceBlueprintArmAppRead,
-		UpdateContext: resourceBlueprintArmAppUpdate,
-		DeleteContext: resourceBlueprintArmAppDelete,
+		CreateContext: resourceBlueprintARMAppCreate,
+		ReadContext:   resourceBlueprintARMAppRead,
+		UpdateContext: resourceBlueprintARMAppUpdate,
+		DeleteContext: resourceBlueprintARMAppDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -111,7 +111,7 @@ func ResourceBlueprintArmApp() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceBlueprintArmAppCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -266,12 +266,12 @@ func resourceBlueprintArmAppCreate(ctx context.Context, d *schema.ResourceData, 
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintArmAppRead(ctx, d, meta)...)
+	diags = append(diags, resourceBlueprintARMAppRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintArmAppRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintARMAppRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -315,7 +315,7 @@ func resourceBlueprintArmAppRead(ctx context.Context, d *schema.ResourceData, me
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var armBlueprint ArmAppBlueprint
+	var armBlueprint ARMAppBlueprint
 	json.Unmarshal(resp.Body, &armBlueprint)
 	d.SetId(convert.IntToString(armBlueprint.Blueprint.ID))
 	d.Set("name", armBlueprint.Blueprint.Name)
@@ -339,7 +339,7 @@ func resourceBlueprintArmAppRead(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceBlueprintArmAppUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -493,10 +493,10 @@ func resourceBlueprintArmAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintArmAppRead(ctx, d, meta)
+	return resourceBlueprintARMAppRead(ctx, d, meta)
 }
 
-func resourceBlueprintArmAppDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintARMAppDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -526,7 +526,7 @@ func resourceBlueprintArmAppDelete(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-type ArmAppBlueprint struct {
+type ARMAppBlueprint struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`
