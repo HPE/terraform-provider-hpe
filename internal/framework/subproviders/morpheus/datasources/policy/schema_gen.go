@@ -23,17 +23,10 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"associated_resource_id": schema.Int64Attribute{
-				Optional: true,
 				Computed: true,
 			},
 			"associated_resource_type": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
-				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
-				Validators: []validator.String{
-					stringvalidator.OneOf("Global", "Group", "Cloud", "User", "Role", "Network", "Plan"),
-				},
+				Computed: true,
 			},
 			"cloud": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -701,14 +694,14 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Morpheus ID of the Object being referenced",
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
 				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name"), path.MatchRoot("associated_resource_type"), path.MatchRoot("associated_resource_id"), path.MatchRoot("policy_type.code")}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
 			"name": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id"), path.MatchRoot("associated_resource_type"), path.MatchRoot("associated_resource_id"), path.MatchRoot("policy_type.code")}...),
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
 			"owner": schema.SingleNestedAttribute{
@@ -730,7 +723,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"policy_type": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"code": schema.StringAttribute{
-						Optional: true,
 						Computed: true,
 					},
 					"id": schema.Int64Attribute{

@@ -34,6 +34,739 @@ func apiTypeToResourceType(apiType string) string {
 	}
 }
 
+// mapPolicyConfigToState maps the API config structure to the datasource schema structure
+func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig) (ConfigValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	// Initialize all config nested objects as null - required by Terraform Plugin Framework
+	configAttrs := map[string]attr.Value{
+		"approval":             types.ObjectNull(ApprovalValue{}.AttributeTypes(ctx)),
+		"backup_storage":       types.ObjectNull(BackupStorageValue{}.AttributeTypes(ctx)),
+		"create_backup":        types.ObjectNull(CreateBackupValue{}.AttributeTypes(ctx)),
+		"create_user":          types.ObjectNull(CreateUserValue{}.AttributeTypes(ctx)),
+		"create_user_group":    types.ObjectNull(CreateUserGroupValue{}.AttributeTypes(ctx)),
+		"cypher":               types.ObjectNull(CypherValue{}.AttributeTypes(ctx)),
+		"delayed_removal":      types.ObjectNull(DelayedRemovalValue{}.AttributeTypes(ctx)),
+		"host_naming":          types.ObjectNull(HostNamingValue{}.AttributeTypes(ctx)),
+		"lifecycle":            types.ObjectNull(LifecycleValue{}.AttributeTypes(ctx)),
+		"max_containers":       types.ObjectNull(MaxContainersValue{}.AttributeTypes(ctx)),
+		"max_cores":            types.ObjectNull(MaxCoresValue{}.AttributeTypes(ctx)),
+		"max_hosts":            types.ObjectNull(MaxHostsValue{}.AttributeTypes(ctx)),
+		"max_memory":           types.ObjectNull(MaxMemoryValue{}.AttributeTypes(ctx)),
+		"max_networks":         types.ObjectNull(MaxNetworksValue{}.AttributeTypes(ctx)),
+		"max_pool_members":     types.ObjectNull(MaxPoolMembersValue{}.AttributeTypes(ctx)),
+		"max_pools":            types.ObjectNull(MaxPoolsValue{}.AttributeTypes(ctx)),
+		"max_price":            types.ObjectNull(MaxPriceValue{}.AttributeTypes(ctx)),
+		"max_routers":          types.ObjectNull(MaxRoutersValue{}.AttributeTypes(ctx)),
+		"max_storage":          types.ObjectNull(MaxStorageValue{}.AttributeTypes(ctx)),
+		"max_virtual_servers":  types.ObjectNull(MaxVirtualServersValue{}.AttributeTypes(ctx)),
+		"max_vms":              types.ObjectNull(MaxVmsValue{}.AttributeTypes(ctx)),
+		"motd":                 types.ObjectNull(MotdValue{}.AttributeTypes(ctx)),
+		"naming":               types.ObjectNull(NamingValue{}.AttributeTypes(ctx)),
+		"power_schedule":       types.ObjectNull(PowerScheduleValue{}.AttributeTypes(ctx)),
+		"required_network":     types.ObjectNull(RequiredNetworkValue{}.AttributeTypes(ctx)),
+		"server_naming":        types.ObjectNull(ServerNamingValue{}.AttributeTypes(ctx)),
+		"shutdown":             types.ObjectNull(ShutdownValue{}.AttributeTypes(ctx)),
+		"storage_server_quota": types.ObjectNull(StorageServerQuotaValue{}.AttributeTypes(ctx)),
+		"tags":                 types.ObjectNull(TagsValue{}.AttributeTypes(ctx)),
+		"workflow":             types.ObjectNull(WorkflowValue{}.AttributeTypes(ctx)),
+	}
+
+	// Map each API config field to the corresponding schema field - only populate non-null configurations
+	if apiConfig.ApprovePolicyTypeConfiguration != nil {
+		approvalValue, approvalDiags := NewApprovalValue(
+			ApprovalValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"account_integration_id": convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.AccountIntegrationId),
+			},
+		)
+		if approvalDiags.HasError() {
+			diags.Append(approvalDiags...)
+		} else {
+			objectValue, objectDiags := approvalValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["approval"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.BackupTargetsPolicyTypeConfiguration != nil {
+		// Handle BackupStorageIds as a set of strings
+		var backupStorageIdsSet types.Set
+		if len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds) == 0 {
+			backupStorageIdsSet = types.SetValueMust(types.StringType, []attr.Value{})
+		} else {
+			stringValues := make([]attr.Value, len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds))
+			for i, id := range apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds {
+				stringValues[i] = types.StringValue(id)
+			}
+			var setDiags diag.Diagnostics
+			backupStorageIdsSet, setDiags = types.SetValueFrom(ctx, types.StringType, stringValues)
+			if setDiags.HasError() {
+				diags.Append(setDiags...)
+			}
+		}
+
+		backupStorageAttrs := map[string]attr.Value{
+			"backup_storage_ids": backupStorageIdsSet,
+		}
+
+		backupStorageValue, backupStorageDiags := NewBackupStorageValue(BackupStorageValue{}.AttributeTypes(ctx), backupStorageAttrs)
+		if backupStorageDiags.HasError() {
+			diags.Append(backupStorageDiags...)
+		} else {
+			objectValue, objectDiags := backupStorageValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["backup_storage"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.BackupCreationPolicyTypeConfiguration != nil {
+		createBackupValue, createBackupDiags := NewCreateBackupValue(
+			CreateBackupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"account_integration_id": convert.StrToType(apiConfig.BackupCreationPolicyTypeConfiguration.AccountIntegrationId),
+				"create_backup":          convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackup),
+				"create_backup_type":     types.StringValue(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackupType),
+			},
+		)
+		if createBackupDiags.HasError() {
+			diags.Append(createBackupDiags...)
+		} else {
+			objectValue, objectDiags := createBackupValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["create_backup"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.UserCreationPolicyTypeConfiguration != nil {
+		createUserValue, createUserDiags := NewCreateUserValue(
+			CreateUserValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration.CreateUser),
+				"create_user_type": types.StringValue(apiConfig.UserCreationPolicyTypeConfiguration.CreateUserType),
+			},
+		)
+		if createUserDiags.HasError() {
+			diags.Append(createUserDiags...)
+		} else {
+			objectValue, objectDiags := createUserValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["create_user"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.UserGroupCreationPolicyTypeConfiguration != nil {
+		createUserGroupValue, createUserGroupDiags := NewCreateUserGroupValue(
+			CreateUserGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"user_group": types.StringValue(apiConfig.UserGroupCreationPolicyTypeConfiguration.UserGroup),
+			},
+		)
+		if createUserGroupDiags.HasError() {
+			diags.Append(createUserGroupDiags...)
+		} else {
+			objectValue, objectDiags := createUserGroupValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["create_user_group"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.CypherAccessPolicyTypeConfiguration != nil {
+		cypherValue, cypherDiags := NewCypherValue(
+			CypherValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"account_integration_id": convert.StrToType(apiConfig.CypherAccessPolicyTypeConfiguration.AccountIntegrationId),
+				"delete":                 convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
+				"key_pattern":            types.StringValue(apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
+				"list":                   convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
+				"read":                   convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
+				"update":                 convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
+				"write":                  convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
+			},
+		)
+		if cypherDiags.HasError() {
+			diags.Append(cypherDiags...)
+		} else {
+			objectValue, objectDiags := cypherValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["cypher"] = objectValue
+			}
+		}
+	}
+
+	// Map remaining common config types
+	if apiConfig.BudgetPolicyTypeConfiguration != nil {
+		maxPriceAttrs := map[string]attr.Value{
+			"max_price":          types.StringNull(),
+			"max_price_currency": types.StringNull(),
+			"max_price_unit":     types.StringNull(),
+		}
+
+		if apiConfig.BudgetPolicyTypeConfiguration.MaxPrice != "" {
+			maxPriceAttrs["max_price"] = types.StringValue(apiConfig.BudgetPolicyTypeConfiguration.MaxPrice)
+		}
+		maxPriceAttrs["max_price_currency"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency)
+		maxPriceAttrs["max_price_unit"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit)
+
+		maxPriceValue, maxPriceDiags := NewMaxPriceValue(MaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
+		if maxPriceDiags.HasError() {
+			diags.Append(maxPriceDiags...)
+		} else {
+			objectValue, objectDiags := maxPriceValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_price"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.MaxMemoryPolicyTypeConfiguration != nil {
+		maxMemoryAttrs := map[string]attr.Value{
+			"max_memory":         types.StringNull(),
+			"exclude_containers": types.StringNull(),
+		}
+
+		if apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory != "" {
+			maxMemoryAttrs["max_memory"] = types.StringValue(apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory)
+		}
+		maxMemoryAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxMemoryPolicyTypeConfiguration.ExcludeContainers)
+
+		maxMemoryValue, maxMemoryDiags := NewMaxMemoryValue(MaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
+		if maxMemoryDiags.HasError() {
+			diags.Append(maxMemoryDiags...)
+		} else {
+			objectValue, objectDiags := maxMemoryValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_memory"] = objectValue
+			}
+		}
+	}
+
+	if apiConfig.MaxCoresPolicyTypeConfiguration != nil {
+		maxCoresAttrs := map[string]attr.Value{
+			"max_cores":          types.StringNull(),
+			"exclude_containers": types.StringNull(),
+		}
+
+		if apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores != "" {
+			maxCoresAttrs["max_cores"] = types.StringValue(apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores)
+		}
+		maxCoresAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxCoresPolicyTypeConfiguration.ExcludeContainers)
+
+		maxCoresValue, maxCoresDiags := NewMaxCoresValue(MaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
+		if maxCoresDiags.HasError() {
+			diags.Append(maxCoresDiags...)
+		} else {
+			objectValue, objectDiags := maxCoresValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_cores"] = objectValue
+			}
+		}
+	}
+
+	// 7. DelayedDeletePolicyTypeConfiguration -> delayed_removal
+	if apiConfig.DelayedDeletePolicyTypeConfiguration != nil {
+		delayedRemovalAttrs := map[string]attr.Value{
+			"account_integration_id": convert.StrToType(apiConfig.DelayedDeletePolicyTypeConfiguration.AccountIntegrationId),
+			"removal_age":            types.StringValue(apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
+		}
+
+		delayedRemovalValue, delayedRemovalDiags := NewDelayedRemovalValue(DelayedRemovalValue{}.AttributeTypes(ctx), delayedRemovalAttrs)
+		if delayedRemovalDiags.HasError() {
+			diags.Append(delayedRemovalDiags...)
+		} else {
+			objectValue, objectDiags := delayedRemovalValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["delayed_removal"] = objectValue
+			}
+		}
+	}
+
+	// 8. ExpirationPolicyTypeConfiguration2 -> lifecycle
+	if apiConfig.ExpirationPolicyTypeConfiguration2 != nil {
+		lifecycleAttrs := map[string]attr.Value{
+			"account_integration_id":               convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.AccountIntegrationId),
+			"lifecycle_age":                        convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAge),
+			"lifecycle_allow_extend":               convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAllowExtend),
+			"lifecycle_auto_renew":                 convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAutoRenew),
+			"lifecycle_extensions_before_approval": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleExtensionsBeforeApproval),
+			"lifecycle_hide_fixed":                 convert.BoolToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleHideFixed),
+			"lifecycle_message":                    convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleMessage),
+			"lifecycle_notify":                     convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleNotify),
+			"lifecycle_renewal":                    convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleRenewal),
+			"lifecycle_type":                       types.StringValue(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleType),
+		}
+
+		lifecycleValue, lifecycleDiags := NewLifecycleValue(LifecycleValue{}.AttributeTypes(ctx), lifecycleAttrs)
+		if lifecycleDiags.HasError() {
+			diags.Append(lifecycleDiags...)
+		} else {
+			objectValue, objectDiags := lifecycleValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["lifecycle"] = objectValue
+			}
+		}
+	}
+
+	// 9. HostnamePolicyTypeConfiguration -> host_naming
+	if apiConfig.HostnamePolicyTypeConfiguration != nil {
+		hostNamingAttrs := map[string]attr.Value{
+			"host_naming_pattern": convert.StrToType(apiConfig.HostnamePolicyTypeConfiguration.HostNamingPattern),
+			"host_naming_type":    types.StringValue(apiConfig.HostnamePolicyTypeConfiguration.HostNamingType),
+		}
+
+		hostNamingValue, hostNamingDiags := NewHostNamingValue(HostNamingValue{}.AttributeTypes(ctx), hostNamingAttrs)
+		if hostNamingDiags.HasError() {
+			diags.Append(hostNamingDiags...)
+		} else {
+			objectValue, objectDiags := hostNamingValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["host_naming"] = objectValue
+			}
+		}
+	}
+
+	// 10. InstanceNamePolicyTypeConfiguration -> naming
+	if apiConfig.InstanceNamePolicyTypeConfiguration != nil {
+		namingAttrs := map[string]attr.Value{
+			"naming_conflict": convert.BoolToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingConflict),
+			"naming_pattern":  convert.StrToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingPattern),
+			"naming_type":     types.StringValue(apiConfig.InstanceNamePolicyTypeConfiguration.NamingType),
+		}
+
+		namingValue, namingDiags := NewNamingValue(NamingValue{}.AttributeTypes(ctx), namingAttrs)
+		if namingDiags.HasError() {
+			diags.Append(namingDiags...)
+		} else {
+			objectValue, objectDiags := namingValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["naming"] = objectValue
+			}
+		}
+	}
+
+	// 11. MaxContainersPolicyTypeConfiguration -> max_containers
+	if apiConfig.MaxContainersPolicyTypeConfiguration != nil {
+		maxContainersAttrs := map[string]attr.Value{
+			"max_containers": types.StringValue(apiConfig.MaxContainersPolicyTypeConfiguration.MaxContainers),
+		}
+
+		maxContainersValue, maxContainersDiags := NewMaxContainersValue(MaxContainersValue{}.AttributeTypes(ctx), maxContainersAttrs)
+		if maxContainersDiags.HasError() {
+			diags.Append(maxContainersDiags...)
+		} else {
+			objectValue, objectDiags := maxContainersValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_containers"] = objectValue
+			}
+		}
+	}
+
+	// 12. MaxHostsPolicyTypeConfiguration -> max_hosts
+	if apiConfig.MaxHostsPolicyTypeConfiguration != nil {
+		maxHostsAttrs := map[string]attr.Value{
+			"max_hosts": types.StringValue(apiConfig.MaxHostsPolicyTypeConfiguration.MaxHosts),
+		}
+
+		maxHostsValue, maxHostsDiags := NewMaxHostsValue(MaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
+		if maxHostsDiags.HasError() {
+			diags.Append(maxHostsDiags...)
+		} else {
+			objectValue, objectDiags := maxHostsValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_hosts"] = objectValue
+			}
+		}
+	}
+
+	// 13. NetworkQuotaPolicyTypeConfiguration -> max_networks
+	if apiConfig.NetworkQuotaPolicyTypeConfiguration != nil {
+		maxNetworksAttrs := map[string]attr.Value{
+			"max_networks": types.StringValue(apiConfig.NetworkQuotaPolicyTypeConfiguration.MaxNetworks),
+		}
+
+		maxNetworksValue, maxNetworksDiags := NewMaxNetworksValue(MaxNetworksValue{}.AttributeTypes(ctx), maxNetworksAttrs)
+		if maxNetworksDiags.HasError() {
+			diags.Append(maxNetworksDiags...)
+		} else {
+			objectValue, objectDiags := maxNetworksValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_networks"] = objectValue
+			}
+		}
+	}
+
+	// 14. MaxPoolMembersPolicyTypeConfiguration -> max_pool_members
+	if apiConfig.MaxPoolMembersPolicyTypeConfiguration != nil {
+		maxPoolMembersAttrs := map[string]attr.Value{
+			"max_pool_members": types.StringValue(apiConfig.MaxPoolMembersPolicyTypeConfiguration.MaxPoolMembers),
+		}
+
+		maxPoolMembersValue, maxPoolMembersDiags := NewMaxPoolMembersValue(MaxPoolMembersValue{}.AttributeTypes(ctx), maxPoolMembersAttrs)
+		if maxPoolMembersDiags.HasError() {
+			diags.Append(maxPoolMembersDiags...)
+		} else {
+			objectValue, objectDiags := maxPoolMembersValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_pool_members"] = objectValue
+			}
+		}
+	}
+
+	// 15. MaxLoadBalancerPoolsPolicyTypeConfiguration -> max_pools
+	if apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration != nil {
+		maxPoolsAttrs := map[string]attr.Value{
+			"max_pools": types.StringValue(apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration.MaxPools),
+		}
+
+		maxPoolsValue, maxPoolsDiags := NewMaxPoolsValue(MaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
+		if maxPoolsDiags.HasError() {
+			diags.Append(maxPoolsDiags...)
+		} else {
+			objectValue, objectDiags := maxPoolsValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_pools"] = objectValue
+			}
+		}
+	}
+
+	// 16. RouterQuotaPolicyTypeConfiguration -> max_routers
+	if apiConfig.RouterQuotaPolicyTypeConfiguration != nil {
+		maxRoutersAttrs := map[string]attr.Value{
+			"max_routers": types.StringValue(apiConfig.RouterQuotaPolicyTypeConfiguration.MaxRouters),
+		}
+
+		maxRoutersValue, maxRoutersDiags := NewMaxRoutersValue(MaxRoutersValue{}.AttributeTypes(ctx), maxRoutersAttrs)
+		if maxRoutersDiags.HasError() {
+			diags.Append(maxRoutersDiags...)
+		} else {
+			objectValue, objectDiags := maxRoutersValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_routers"] = objectValue
+			}
+		}
+	}
+
+	// 17. MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration -> max_storage
+	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration != nil {
+		maxStorageAttrs := map[string]attr.Value{
+			"exclude_containers": convert.StrToType(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.ExcludeContainers),
+			"max_storage":        types.StringValue(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage),
+		}
+
+		maxStorageValue, maxStorageDiags := NewMaxStorageValue(MaxStorageValue{}.AttributeTypes(ctx), maxStorageAttrs)
+		if maxStorageDiags.HasError() {
+			diags.Append(maxStorageDiags...)
+		} else {
+			objectValue, objectDiags := maxStorageValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_storage"] = objectValue
+			}
+		}
+	}
+
+	// 18. MaxVirtualServersPolicyTypeConfiguration -> max_virtual_servers
+	if apiConfig.MaxVirtualServersPolicyTypeConfiguration != nil {
+		maxVirtualServersAttrs := map[string]attr.Value{
+			"max_virtual_servers": types.StringValue(apiConfig.MaxVirtualServersPolicyTypeConfiguration.MaxVirtualServers),
+		}
+
+		maxVirtualServersValue, maxVirtualServersDiags := NewMaxVirtualServersValue(MaxVirtualServersValue{}.AttributeTypes(ctx), maxVirtualServersAttrs)
+		if maxVirtualServersDiags.HasError() {
+			diags.Append(maxVirtualServersDiags...)
+		} else {
+			objectValue, objectDiags := maxVirtualServersValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_virtual_servers"] = objectValue
+			}
+		}
+	}
+
+	// 19. MaxVMsPolicyTypeConfiguration -> max_vms
+	if apiConfig.MaxVMsPolicyTypeConfiguration != nil {
+		maxVmsAttrs := map[string]attr.Value{
+			"max_vms": types.StringValue(apiConfig.MaxVMsPolicyTypeConfiguration.MaxVms),
+		}
+
+		maxVmsValue, maxVmsDiags := NewMaxVmsValue(MaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
+		if maxVmsDiags.HasError() {
+			diags.Append(maxVmsDiags...)
+		} else {
+			objectValue, objectDiags := maxVmsValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["max_vms"] = objectValue
+			}
+		}
+	}
+
+	// 20. MessageOfTheDayPolicyTypeConfiguration2 -> motd
+	if apiConfig.MessageOfTheDayPolicyTypeConfiguration2 != nil {
+		// Handle MotdFullPage
+		var motdFullPageValue MotdFullPageValue
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage != nil && apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String != nil {
+			motdFullPageAttrs := map[string]attr.Value{
+				"oneof0": types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String),
+			}
+			motdFullPageValue, _ = NewMotdFullPageValue(MotdFullPageValue{}.AttributeTypes(ctx), motdFullPageAttrs)
+		} else {
+			motdFullPageValue = NewMotdFullPageValueNull()
+		}
+
+		motdFullPageObjectValue, motdFullPageDiags := motdFullPageValue.ToObjectValue(ctx)
+		if motdFullPageDiags.HasError() {
+			diags.Append(motdFullPageDiags...)
+		}
+
+		motdAttrs := map[string]attr.Value{
+			"motd_full_page": motdFullPageObjectValue,
+			"motddate":       convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
+			"motdmessage":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
+			"motdtitle":      types.StringNull(), // NullableString type
+			"motdtype":       convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdType),
+		}
+		// Handle NullableString for MotdTitle
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.IsSet() {
+			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.Get())
+		}
+
+		motdValue, motdDiags := NewMotdValue(MotdValue{}.AttributeTypes(ctx), motdAttrs)
+		if motdDiags.HasError() {
+			diags.Append(motdDiags...)
+		} else {
+			objectValue, objectDiags := motdValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["motd"] = objectValue
+			}
+		}
+	}
+
+	// 21. PowerSchedulePolicyTypeConfiguration -> power_schedule
+	if apiConfig.PowerSchedulePolicyTypeConfiguration != nil {
+		powerScheduleAttrs := map[string]attr.Value{
+			"power_schedule":            convert.StrToType(apiConfig.PowerSchedulePolicyTypeConfiguration.PowerSchedule),
+			"power_schedule_hide_fixed": convert.BoolToType(apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleHideFixed),
+			"power_schedule_type":       types.StringValue(apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleType),
+		}
+
+		powerScheduleValue, powerScheduleDiags := NewPowerScheduleValue(PowerScheduleValue{}.AttributeTypes(ctx), powerScheduleAttrs)
+		if powerScheduleDiags.HasError() {
+			diags.Append(powerScheduleDiags...)
+		} else {
+			objectValue, objectDiags := powerScheduleValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["power_schedule"] = objectValue
+			}
+		}
+	}
+
+	// 22. RequiredNetworkPolicyTypeConfiguration -> required_network
+	if apiConfig.RequiredNetworkPolicyTypeConfiguration != nil {
+		// Handle RequiredNetworks as a set of integers
+		var requiredNetworksSet types.Set
+		if len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks) == 0 {
+			requiredNetworksSet = types.SetValueMust(types.Int64Type, []attr.Value{})
+		} else {
+			int64Values := make([]attr.Value, len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks))
+			for i, networkId := range apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks {
+				int64Values[i] = types.Int64Value(networkId)
+			}
+			var setDiags diag.Diagnostics
+			requiredNetworksSet, setDiags = types.SetValueFrom(ctx, types.Int64Type, int64Values)
+			if setDiags.HasError() {
+				diags.Append(setDiags...)
+			}
+		}
+
+		requiredNetworkAttrs := map[string]attr.Value{
+			"required_networks": requiredNetworksSet,
+		}
+
+		requiredNetworkValue, requiredNetworkDiags := NewRequiredNetworkValue(RequiredNetworkValue{}.AttributeTypes(ctx), requiredNetworkAttrs)
+		if requiredNetworkDiags.HasError() {
+			diags.Append(requiredNetworkDiags...)
+		} else {
+			objectValue, objectDiags := requiredNetworkValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["required_network"] = objectValue
+			}
+		}
+	}
+
+	// 23. ClusterResourceNamePolicyTypeConfiguration -> server_naming
+	if apiConfig.ClusterResourceNamePolicyTypeConfiguration != nil {
+		serverNamingAttrs := map[string]attr.Value{
+			"account_integration_id": convert.StrToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.AccountIntegrationId),
+			"server_naming_conflict": convert.BoolToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingConflict),
+			"server_naming_pattern":  convert.StrToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingPattern),
+			"server_naming_type":     types.StringValue(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType),
+		}
+
+		serverNamingValue, serverNamingDiags := NewServerNamingValue(ServerNamingValue{}.AttributeTypes(ctx), serverNamingAttrs)
+		if serverNamingDiags.HasError() {
+			diags.Append(serverNamingDiags...)
+		} else {
+			objectValue, objectDiags := serverNamingValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["server_naming"] = objectValue
+			}
+		}
+	}
+
+	// 24. ShutdownPolicyTypeConfiguration -> shutdown
+	if apiConfig.ShutdownPolicyTypeConfiguration != nil {
+		shutdownAttrs := map[string]attr.Value{
+			"account_integration_id":              convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.AccountIntegrationId),
+			"shutdown_age":                        convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAge),
+			"shutdown_allow_extend":               convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAllowExtend),
+			"shutdown_auto_renew":                 convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAutoRenew),
+			"shutdown_extensions_before_approval": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownExtensionsBeforeApproval),
+			"shutdown_hide_fixed":                 convert.BoolToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownHideFixed),
+			"shutdown_message":                    convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownMessage),
+			"shutdown_notify":                     convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownNotify),
+			"shutdown_renewal":                    convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownRenewal),
+			"shutdown_type":                       types.StringValue(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownType),
+		}
+
+		shutdownValue, shutdownDiags := NewShutdownValue(ShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
+		if shutdownDiags.HasError() {
+			diags.Append(shutdownDiags...)
+		} else {
+			objectValue, objectDiags := shutdownValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["shutdown"] = objectValue
+			}
+		}
+	}
+
+	// 25. StorageServerStorageQuotaPolicyTypeConfiguration -> storage_server_quota
+	if apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration != nil {
+		storageServerQuotaAttrs := map[string]attr.Value{
+			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.MaxStorage),
+			"storage_server_id": types.StringValue(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.StorageServerId),
+		}
+
+		storageServerQuotaValue, storageServerQuotaDiags := NewStorageServerQuotaValue(StorageServerQuotaValue{}.AttributeTypes(ctx), storageServerQuotaAttrs)
+		if storageServerQuotaDiags.HasError() {
+			diags.Append(storageServerQuotaDiags...)
+		} else {
+			objectValue, objectDiags := storageServerQuotaValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["storage_server_quota"] = objectValue
+			}
+		}
+	}
+
+	// 26. TagsPolicyTypeConfiguration -> tags
+	if apiConfig.TagsPolicyTypeConfiguration != nil {
+		tagsAttrs := map[string]attr.Value{
+			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Key),
+			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration.Strict),
+			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Value),
+			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.ValueListId),
+		}
+
+		tagsValue, tagsDiags := NewTagsValue(TagsValue{}.AttributeTypes(ctx), tagsAttrs)
+		if tagsDiags.HasError() {
+			diags.Append(tagsDiags...)
+		} else {
+			objectValue, objectDiags := tagsValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["tags"] = objectValue
+			}
+		}
+	}
+
+	// 27. WorkflowPolicyTypeConfiguration -> workflow
+	if apiConfig.WorkflowPolicyTypeConfiguration != nil {
+		workflowAttrs := map[string]attr.Value{
+			"workflow_id": types.StringValue(apiConfig.WorkflowPolicyTypeConfiguration.WorkflowId),
+		}
+
+		workflowValue, workflowDiags := NewWorkflowValue(WorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
+		if workflowDiags.HasError() {
+			diags.Append(workflowDiags...)
+		} else {
+			objectValue, objectDiags := workflowValue.ToObjectValue(ctx)
+			if objectDiags.HasError() {
+				diags.Append(objectDiags...)
+			} else {
+				configAttrs["workflow"] = objectValue
+			}
+		}
+	}
+
+	// Create the config value
+	configValue, configValueDiags := NewConfigValue(ConfigValue{}.AttributeTypes(ctx), configAttrs)
+	if configValueDiags.HasError() {
+		diags.Append(configValueDiags...)
+		return NewConfigValueNull(), diags
+	}
+
+	return configValue, diags
+}
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ datasource.DataSource = &DataSource{}
@@ -172,9 +905,17 @@ func getPolicyByID(
 		data.PolicyType = NewPolicyTypeValueNull()
 	}
 
-	// Handle Config - for now set to null since it's complex nested structure
-	// This would require a detailed mapping of all the different config types
-	data.Config = NewConfigValueNull()
+	// Handle Config - map API config to schema structure
+	if policy.Config != nil {
+		configValue, configDiags := mapPolicyConfigToState(ctx, policy.Config)
+		if configDiags.HasError() {
+			diags.Append(configDiags...)
+			return diags
+		}
+		data.Config = configValue
+	} else {
+		data.Config = NewConfigValueNull()
+	}
 
 	// Handle Cloud (Zone)
 	if policy.Zone != nil {
