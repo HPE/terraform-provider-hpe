@@ -170,7 +170,7 @@ func resourceBlueprintHelmAppCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	resourceBlueprintHelmAppRead(ctx, d, meta)
+	diags = append(diags, resourceBlueprintHelmAppRead(ctx, d, meta)...)
 
 	return diags
 }
