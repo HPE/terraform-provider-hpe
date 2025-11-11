@@ -55,6 +55,25 @@ func SetToStrSlice(set types.Set) ([]string, error) {
 	return items, nil
 }
 
+func SetToSlice[T any](ctx context.Context, set types.Set) ([]T, error) {
+	var items []T
+	for _, elem := range set.Elements() {
+		a, err := ValueToAny(ctx, elem)
+		if err != nil {
+			return nil, err
+		}
+
+		v, ok := a.(T)
+		if !ok {
+			return nil, fmt.Errorf("converting Set to %T not possible, underlying type does not match", items)
+		}
+
+		items = append(items, v)
+	}
+
+	return items, nil
+}
+
 func BoolToType(b *bool) types.Bool {
 	if b == nil {
 		return types.BoolNull()
