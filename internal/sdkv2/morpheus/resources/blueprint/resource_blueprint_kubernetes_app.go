@@ -238,7 +238,13 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	result := resp.Result.(*morpheus.CreateBlueprintResult)
+	var result *morpheus.CreateBlueprintResult
+	if v, ok := resp.Result.(*morpheus.CreateBlueprintResult); ok {
+		result = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+	}
+
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("result"))
 	}
@@ -462,7 +468,12 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
-	result := resp.Result.(*morpheus.UpdateBlueprintResult)
+	var result *morpheus.UpdateBlueprintResult
+	if v, ok := resp.Result.(*morpheus.UpdateBlueprintResult); ok {
+		result = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+	}
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("result"))
 	}
