@@ -158,7 +158,7 @@ func resourceBlueprintHelmAppCreate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.CreateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
+		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
 	}
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("CreateBlueprintResult"))
@@ -316,7 +316,7 @@ func resourceBlueprintHelmAppUpdate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.UpdateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
+		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
 	}
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("UpdateBlueprintResult"))
