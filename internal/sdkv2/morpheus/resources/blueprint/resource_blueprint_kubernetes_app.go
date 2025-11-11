@@ -127,7 +127,7 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	blueprintType := blueprintTypeKubernetes
@@ -136,14 +136,14 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -159,7 +159,7 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
 	switch sourceType {
@@ -169,7 +169,7 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 		if v, ok := d.Get("blueprint_content").(string); ok {
 			blueprintContent = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
 		kubernetesConfig[sourceTypeYaml] = blueprintContent
 
@@ -181,7 +181,7 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 			if v, ok := d.Get("spec_template_ids").([]any); ok {
 				specTemplateList = v
 			} else {
-				return diag.FromErr(helpers.TypeAssertFailError("spec_template_ids", meta))
+				return diag.FromErr(helpers.TypeAssertFailError("spec_template_ids", d.Get("spec_template_ids")))
 			}
 			if specTemplateList != nil {
 				// iterate over the array of spec templates
@@ -205,13 +205,13 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 		if v, ok := d.Get("version_ref").(string); ok {
 			versionRef = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("version_ref", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 		}
 		var workingPath string
 		if v, ok := d.Get("working_path").(string); ok {
 			workingPath = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("working_path", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 		}
 		kubernetesGitConfig["branch"] = versionRef
 		kubernetesGitConfig["path"] = workingPath
@@ -273,7 +273,7 @@ func resourceBlueprintKubernetesAppBlueprintRead(
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -355,20 +355,20 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	blueprintType := blueprintTypeKubernetes
 	var description string
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -384,7 +384,7 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
 	switch sourceType {
@@ -394,7 +394,7 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 		if v, ok := d.Get("blueprint_content").(string); ok {
 			blueprintContent = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
 		kubernetesConfig[sourceTypeYaml] = blueprintContent
 
@@ -406,7 +406,7 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 			if v, ok := d.Get("spec_template_ids").([]any); ok {
 				specTemplateList = v
 			} else {
-				return diag.FromErr(helpers.TypeAssertFailError("spec_template_ids", meta))
+				return diag.FromErr(helpers.TypeAssertFailError("spec_template_ids", d.Get("spec_template_ids")))
 			}
 			if specTemplateList != nil {
 				// iterate over the array of spec templates
@@ -430,13 +430,13 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 		if v, ok := d.Get("version_ref").(string); ok {
 			versionRef = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("version_ref", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 		}
 		var workingPath string
 		if v, ok := d.Get("working_path").(string); ok {
 			workingPath = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("working_path", meta))
+			return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 		}
 		kubernetesGitConfig["branch"] = versionRef
 		kubernetesGitConfig["path"] = workingPath
