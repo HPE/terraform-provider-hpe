@@ -125,7 +125,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	blueprintType := "arm"
@@ -134,14 +134,14 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", client))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", client))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -157,7 +157,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("os_type").(string); ok {
 		osType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("os_type", client))
+		return diag.FromErr(helpers.TypeAssertFailError("os_type", d.Get("os_type")))
 	}
 	armConfig["osType"] = osType
 
@@ -165,7 +165,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("install_agent").(bool); ok {
 		installAgent = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("install_agent", client))
+		return diag.FromErr(helpers.TypeAssertFailError("install_agent", d.Get("install_agent")))
 	}
 	armConfig["installAgent"] = installAgent
 
@@ -173,7 +173,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("cloud_init_enabled").(bool); ok {
 		cloudInitEnabled = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("cloud_init_enabled", client))
+		return diag.FromErr(helpers.TypeAssertFailError("cloud_init_enabled", d.Get("cloud_init_enabled")))
 	}
 	armConfig["cloudInitEnabled"] = cloudInitEnabled
 
@@ -181,7 +181,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", client))
+		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
 	switch sourceType {
@@ -191,7 +191,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("blueprint_content").(string); ok {
 			blueprintContent = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", client))
+			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
 		armConfig["json"] = blueprintContent
 
@@ -203,7 +203,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("integration_id").(int); ok {
 			integrationID = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("integration_id", client))
+			return diag.FromErr(helpers.TypeAssertFailError("integration_id", d.Get("integration_id")))
 		}
 		armGitConfig["integrationId"] = integrationID
 
@@ -211,7 +211,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("repository_id").(int); ok {
 			repositoryID = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("repository_id", client))
+			return diag.FromErr(helpers.TypeAssertFailError("repository_id", d.Get("repository_id")))
 		}
 		armGitConfig["repoId"] = repositoryID
 
@@ -219,7 +219,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("version_ref").(string); ok {
 			versionRef = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("version_ref", client))
+			return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 		}
 		armGitConfig["branch"] = versionRef
 
@@ -227,7 +227,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("working_path").(string); ok {
 			workingPath = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("working_path", client))
+			return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 		}
 		armGitConfig["path"] = workingPath
 		armConfig["git"] = armGitConfig
@@ -257,7 +257,7 @@ func resourceBlueprintARMAppCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := resp.Result.(*morpheus.CreateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", client))
+		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
 	}
 
 	if result.Blueprint == nil {
@@ -287,7 +287,7 @@ func resourceBlueprintARMAppRead(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	var resp *morpheus.Response
@@ -352,7 +352,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	blueprintType := "arm"
@@ -361,14 +361,14 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", client))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", client))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -384,7 +384,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("os_type").(string); ok {
 		osType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("os_type", client))
+		return diag.FromErr(helpers.TypeAssertFailError("os_type", d.Get("os_type")))
 	}
 	armConfig["osType"] = osType
 
@@ -392,7 +392,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("install_agent").(bool); ok {
 		installAgent = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("install_agent", client))
+		return diag.FromErr(helpers.TypeAssertFailError("install_agent", d.Get("install_agent")))
 	}
 	armConfig["installAgent"] = installAgent
 
@@ -400,7 +400,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("cloud_init_enabled").(bool); ok {
 		cloudInitEnabled = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("cloud_init_enabled", client))
+		return diag.FromErr(helpers.TypeAssertFailError("cloud_init_enabled", d.Get("cloud_init_enabled")))
 	}
 	armConfig["cloudInitEnabled"] = cloudInitEnabled
 
@@ -408,7 +408,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", client))
+		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
 	switch sourceType {
@@ -418,7 +418,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("blueprint_content").(string); ok {
 			blueprintContent = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", client))
+			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
 		armConfig["json"] = blueprintContent
 
@@ -430,7 +430,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("integration_id").(int); ok {
 			integrationID = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("integration_id", client))
+			return diag.FromErr(helpers.TypeAssertFailError("integration_id", d.Get("integration_id")))
 		}
 		armGitConfig["integrationId"] = integrationID
 
@@ -438,7 +438,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("repository_id").(int); ok {
 			repositoryID = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("repository_id", client))
+			return diag.FromErr(helpers.TypeAssertFailError("repository_id", d.Get("repository_id")))
 		}
 		armGitConfig["repoId"] = repositoryID
 
@@ -446,7 +446,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("version_ref").(string); ok {
 			versionRef = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("version_ref", client))
+			return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 		}
 		armGitConfig["branch"] = versionRef
 
@@ -454,7 +454,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 		if v, ok := d.Get("working_path").(string); ok {
 			workingPath = v
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("working_path", client))
+			return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 		}
 		armGitConfig["path"] = workingPath
 		armConfig["git"] = armGitConfig
@@ -484,7 +484,7 @@ func resourceBlueprintARMAppUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := resp.Result.(*morpheus.UpdateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", client))
+		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
 	}
 
 	if result.Blueprint == nil {
