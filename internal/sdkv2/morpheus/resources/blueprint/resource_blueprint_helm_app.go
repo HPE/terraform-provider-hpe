@@ -89,20 +89,20 @@ func resourceBlueprintHelmAppCreate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	blueprintType := "helm"
 	var description string
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", client))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", client))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -122,14 +122,14 @@ func resourceBlueprintHelmAppCreate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := d.Get("version_ref").(string); ok {
 		versionRef = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("version_ref", client))
+		return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 	}
 	helmGitConfig["branch"] = versionRef
 	var workingPath string
 	if v, ok := d.Get("working_path").(string); ok {
 		workingPath = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("working_path", client))
+		return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 	}
 	helmGitConfig["path"] = workingPath
 	helmConfig["git"] = helmGitConfig
@@ -158,7 +158,7 @@ func resourceBlueprintHelmAppCreate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.CreateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", client))
+		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
 	}
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("CreateBlueprintResult"))
@@ -191,7 +191,7 @@ func resourceBlueprintHelmAppRead(ctx context.Context, d *schema.ResourceData, m
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -248,20 +248,20 @@ func resourceBlueprintHelmAppUpdate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", client))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	blueprintType := "helm"
 	var description string
 	if v, ok := d.Get("description").(string); ok {
 		description = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("description", client))
+		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 	var category string
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", client))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 
 	config := make(map[string]any)
@@ -281,14 +281,14 @@ func resourceBlueprintHelmAppUpdate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := d.Get("version_ref").(string); ok {
 		versionRef = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("version_ref", client))
+		return diag.FromErr(helpers.TypeAssertFailError("version_ref", d.Get("version_ref")))
 	}
 	helmGitConfig["branch"] = versionRef
 	var workingPath string
 	if v, ok := d.Get("working_path").(string); ok {
 		workingPath = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("working_path", client))
+		return diag.FromErr(helpers.TypeAssertFailError("working_path", d.Get("working_path")))
 	}
 	helmGitConfig["path"] = workingPath
 	helmConfig["git"] = helmGitConfig
@@ -316,7 +316,7 @@ func resourceBlueprintHelmAppUpdate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.UpdateBlueprintResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", client))
+		return diag.FromErr(helpers.TypeAssertFailError("result", d.Get("result")))
 	}
 	if result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("UpdateBlueprintResult"))
