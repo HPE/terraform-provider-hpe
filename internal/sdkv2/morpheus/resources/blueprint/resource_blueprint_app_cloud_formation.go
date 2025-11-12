@@ -23,7 +23,6 @@ const (
 	sourceTypeJSON              = "json"
 	sourceTypeYAML              = "yaml"
 	sourceTypeGit               = "git"
-	sourceTypeRepository        = "repository"
 )
 
 func ResourceBlueprintAppCloudFormation() *schema.Resource {
