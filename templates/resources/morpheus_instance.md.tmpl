@@ -12,13 +12,12 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently only HVM instances are supported.
+-> Currently only HVM instances are supported. Updating is currently not 
+supported.
 
 -> Only one network interface is supported at this time.
 
 -> With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
-
--> The addition and removal of volumes is not supported during updates.
 
 ## Example Usage
 
