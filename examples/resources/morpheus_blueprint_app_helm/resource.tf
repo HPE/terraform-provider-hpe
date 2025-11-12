@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_helm_app" "tf_example_helm_app_blueprint" {
+resource "hpe_morpheus_blueprint_app_helm" "tf_example_helm_app_blueprint" {
   name           = "helmappblueprint"
   description    = "tf example helm app blueprint"
   category       = "helm"
