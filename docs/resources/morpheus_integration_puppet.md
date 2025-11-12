@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_integration_puppet Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Provides an puppet integration resource
+  Provides a puppet integration resource
 ---
 # hpe_morpheus_integration_puppet (Resource)
 
-Provides an puppet integration resource
+Provides a puppet integration resource
 
 ## Example Usage
 
