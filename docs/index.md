@@ -148,6 +148,11 @@ In this release (v0.3.0) we have added the following data-source functionality:
   due to improper handling of the `backupStorageIds` attribute. This is an API bug which is being investigated.
 - hpe_morpheus_instance requires that the `ip_mode` attribute is set to avoid a forced replace on update.
   This will be addressed in a future release.
+- hpe_morpheus_instance updates fail when removing optional fields.
+  This will be addressed in a future release.
+- hpe_morpheus_instance updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
 
 ### Known issues from previous releases
 
