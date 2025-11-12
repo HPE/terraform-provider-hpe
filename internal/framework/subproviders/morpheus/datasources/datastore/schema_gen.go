@@ -59,7 +59,7 @@ func DatastoreDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"config": schema.DynamicAttribute{
-				Computed:            true,
+				Optional:            true,
 				Description:         "Generic configuration options for the datastore, varies based on the type of datastore.",
 				MarkdownDescription: "Generic configuration options for the datastore, varies based on the type of datastore.",
 			},

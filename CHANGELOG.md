@@ -7,17 +7,7 @@ In this release (v0.3.0) we have added the following resource functionality:
 - hpe_morpheus_service_plan `cores_per_socket` is now required
 - hpe_morpheus_datastore import will now populate `resource_permissions` (`groups` only) and `tenants`
 
-In this release (v0.3.0) we have added the following data-source functionality:
-- hpe_morpheus_datastore data-source has been added
-
-## New known issues
-
-- hpe_morpheus_datastore data-source if a datastore with the specified name cannot be found (i.e. the corresponding
-  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
-  datastores.  This is an API bug which is being investigated.
-
 ## Known issues from previous releases
-
 - hpe_morpheus_instance has issues with using the same `datastore_id` with multiple volumes, please use
   a different `datastore_id` for each volume.
 - hpe_morpheus_instance depending on the layout used may require one or more `volumes` to be specified,
