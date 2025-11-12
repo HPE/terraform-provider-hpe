@@ -12,10 +12,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/constants"
@@ -318,62 +316,66 @@ func populateCloudDatastoreInformation(
 	}
 
 	// Populate Tenants
-	var tenantsSet types.Set
 	tenants, ok := cloudDatastore.GetTenantsOk()
-	if ok && tenants != nil {
+	if !ok || tenants == nil {
+		retErr := fmt.Errorf("datastore %d missing tenants in response", id)
 
-		var tdiag diag.Diagnostics
-		tenantsSet, tdiag = convert.ToSetType(
-			ctx,
-			tenants,
-			func(
-				in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
-			) TenantsValue {
-				return TenantsValue{
-					Id:    convert.Int64ToType(in.Id),
-					state: attr.ValueStateKnown,
-				}
-			},
-		)
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
+	}
 
-		if tdiag.HasError() {
-			retErr := fmt.Errorf("datastore %d error in creating tenants set", id)
+	tenantsSet, tdiag := convert.ToSetType(
+		ctx,
+		tenants,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+		) TenantsValue {
+			return TenantsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
 
-			return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
-		}
+	if tdiag.HasError() {
+		retErr := fmt.Errorf("datastore %d error in creating tenants set", id)
+
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
 	}
 
 	// Populate ResourcePermissions, we'll only do Groups for now
-	var resourcePermissions ResourcePermissionsValue
 	rp, ok := cloudDatastore.GetResourcePermissionOk()
-	if ok && rp != nil {
-		sites, ok := rp.GetSitesOk()
-		if !ok || sites == nil {
-			tflog.Debug(ctx, fmt.Sprintf("datastore %d missing resource permission sites in response", id))
+	if !ok || rp == nil {
+		retErr := fmt.Errorf("datastore %d missing resource permissions in response", id)
 
-			return tenantsSet, NewResourcePermissionsValueNull(), nil
-		}
-		groupsSet, gdiag := convert.ToSetType(
-			ctx,
-			sites,
-			func(
-				in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
-			) GroupsValue {
-				return GroupsValue{
-					Id:    convert.Int64ToType(in.Id),
-					state: attr.ValueStateKnown,
-				}
-			},
-		)
-
-		if gdiag.HasError() {
-			retErr := fmt.Errorf("datastore %d error in creating groups set", id)
-
-			return tenantsSet, NewResourcePermissionsValueNull(), retErr
-		}
-
-		resourcePermissions, err = populateResourcePermissionsFromApi(ctx, id, groupsSet)
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
 	}
+
+	sites, ok := rp.GetSitesOk()
+	if !ok || sites == nil {
+		retErr := fmt.Errorf("datastore %d missing resource permission sites in response", id)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
+	}
+	groupsSet, gdiag := convert.ToSetType(
+		ctx,
+		sites,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+		) GroupsValue {
+			return GroupsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+
+	if gdiag.HasError() {
+		retErr := fmt.Errorf("datastore %d error in creating groups set", id)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
+	}
+
+	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, id, groupsSet)
 
 	return tenantsSet, resourcePermissions, err
 }
@@ -400,62 +402,64 @@ func populateClusterDatastoreInformation(
 	}
 
 	// Populate Tenants
-	var tenantsSet types.Set
 	tenants, ok := clusterDatastore.GetTenantsOk()
-	if ok && tenants != nil {
+	if !ok || tenants == nil {
+		retErr := fmt.Errorf("datastore %d missing tenants in response", id)
 
-		var tdiag diag.Diagnostics
-		tenantsSet, tdiag = convert.ToSetType(
-			ctx,
-			tenants,
-			func(
-				in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
-			) TenantsValue {
-				return TenantsValue{
-					Id:    convert.Int64ToType(in.Id),
-					state: attr.ValueStateKnown,
-				}
-			},
-		)
-		if tdiag.HasError() {
-			retErr := fmt.Errorf("datastore %d error in creating tenants set", id)
+		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
+	}
 
-			return tenantsSet, NewResourcePermissionsValueNull(), retErr
-		}
+	tenantsSet, tdiag := convert.ToSetType(
+		ctx,
+		tenants,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+		) TenantsValue {
+			return TenantsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+	if tdiag.HasError() {
+		retErr := fmt.Errorf("datastore %d error in creating tenants set", id)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
 	}
 
 	// Populate ResourcePermissions, we'll only do Groups for now
-	var resourcePermissions ResourcePermissionsValue
 	rp, ok := clusterDatastore.GetResourcePermissionsOk()
-	if ok && rp != nil {
+	if !ok || rp == nil {
+		retErr := fmt.Errorf("datastore %d missing resource permissions in response", id)
 
-		sites, ok := rp.GetSitesOk()
-		if !ok || sites == nil {
-			tflog.Debug(ctx, fmt.Sprintf("datastore %d missing resource permission sites in response", id))
-
-			return tenantsSet, NewResourcePermissionsValueNull(), nil
-		}
-
-		groupsSet, gdiag := convert.ToSetType(
-			ctx,
-			sites,
-			func(
-				in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
-			) GroupsValue {
-				return GroupsValue{
-					Id:    convert.Int64ToType(in.Id),
-					state: attr.ValueStateKnown,
-				}
-			},
-		)
-		if gdiag.HasError() {
-			retErr := fmt.Errorf("datastore %d error in creating groups set", id)
-
-			return tenantsSet, NewResourcePermissionsValueNull(), retErr
-		}
-
-		resourcePermissions, err = populateResourcePermissionsFromApi(ctx, id, groupsSet)
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
 	}
+	sites, ok := rp.GetSitesOk()
+	if !ok || sites == nil {
+		retErr := fmt.Errorf("datastore %d missing resource permission sites in response", id)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
+	}
+
+	groupsSet, gdiag := convert.ToSetType(
+		ctx,
+		sites,
+		func(
+			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+		) GroupsValue {
+			return GroupsValue{
+				Id:    convert.Int64ToType(in.Id),
+				state: attr.ValueStateKnown,
+			}
+		},
+	)
+	if gdiag.HasError() {
+		retErr := fmt.Errorf("datastore %d error in creating groups set", id)
+
+		return tenantsSet, NewResourcePermissionsValueNull(), retErr
+	}
+
+	resourcePermissions, err := populateResourcePermissionsFromApi(ctx, id, groupsSet)
 
 	return tenantsSet, resourcePermissions, err
 }
