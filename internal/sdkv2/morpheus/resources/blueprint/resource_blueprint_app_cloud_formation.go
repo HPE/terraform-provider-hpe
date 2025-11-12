@@ -26,13 +26,13 @@ const (
 	sourceTypeRepository        = "repository"
 )
 
-func ResourceBlueprintCloudFormationApp() *schema.Resource {
+func ResourceBlueprintAppCloudFormation() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus cloud formation app blueprint resource",
-		CreateContext: resourceBlueprintCloudFormationAppCreate,
-		ReadContext:   resourceBlueprintCloudFormationAppRead,
-		UpdateContext: resourceBlueprintCloudFormationAppUpdate,
-		DeleteContext: resourceBlueprintCloudFormationAppDelete,
+		CreateContext: resourceBlueprintAppCloudFormationCreate,
+		ReadContext:   resourceBlueprintAppCloudFormationRead,
+		UpdateContext: resourceBlueprintAppCloudFormationUpdate,
+		DeleteContext: resourceBlueprintAppCloudFormationDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -127,7 +127,7 @@ func ResourceBlueprintCloudFormationApp() *schema.Resource {
 	}
 }
 
-func resourceBlueprintCloudFormationAppCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintAppCloudFormationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -294,12 +294,12 @@ func resourceBlueprintCloudFormationAppCreate(ctx context.Context, d *schema.Res
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintCloudFormationAppRead(ctx, d, meta)...)
+	diags = append(diags, resourceBlueprintAppCloudFormationRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintCloudFormationAppRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintAppCloudFormationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -343,7 +343,7 @@ func resourceBlueprintCloudFormationAppRead(ctx context.Context, d *schema.Resou
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var cloudformationBlueprint CloudFormationAppBlueprint
+	var cloudformationBlueprint BlueprintAppCloudFormation
 	json.Unmarshal(resp.Body, &cloudformationBlueprint)
 	d.SetId(convert.IntToString(cloudformationBlueprint.Blueprint.ID))
 	d.Set("name", cloudformationBlueprint.Blueprint.Name)
@@ -373,7 +373,7 @@ func resourceBlueprintCloudFormationAppRead(ctx context.Context, d *schema.Resou
 	return diags
 }
 
-func resourceBlueprintCloudFormationAppUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintAppCloudFormationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -539,10 +539,10 @@ func resourceBlueprintCloudFormationAppUpdate(ctx context.Context, d *schema.Res
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintCloudFormationAppRead(ctx, d, meta)
+	return resourceBlueprintAppCloudFormationRead(ctx, d, meta)
 }
 
-func resourceBlueprintCloudFormationAppDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceBlueprintAppCloudFormationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -572,7 +572,7 @@ func resourceBlueprintCloudFormationAppDelete(ctx context.Context, d *schema.Res
 	return diags
 }
 
-type CloudFormationAppBlueprint struct {
+type BlueprintAppCloudFormation struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`

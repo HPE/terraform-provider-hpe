@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_cloud_formation_app" "tf_example_cloud_formation_app_blueprint_yaml" {
+resource "hpe_morpheus_blueprint_app_cloud_formation" "tf_example_cloud_formation_app_blueprint_yaml" {
   name                   = "example_cloud_formation_app_blueprint_yaml"
   description            = "Example cloud formation app blueprint"
   category               = "cloudformation"

@@ -12,15 +12,15 @@ description: |-
 
 Creating the Cloud Formation app blueprint with local content in json format:
 
-{{tffile "examples/resources/morpheus_blueprint_cloud_formation_app/resource_json.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_cloud_formation/resource_json.tf"}}
 
 Creating the Cloud Formation app blueprint with local content in yaml format:
 
-{{tffile "examples/resources/morpheus_blueprint_cloud_formation_app/resource_yaml.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_cloud_formation/resource_yaml.tf"}}
 
 Creating the Cloud Formation app blueprint with the blueprint fetched via git:
 
-{{tffile "examples/resources/morpheus_blueprint_cloud_formation_app/resource_git.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_cloud_formation/resource_git.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -28,4 +28,4 @@ Creating the Cloud Formation app blueprint with the blueprint fetched via git:
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_blueprint_cloud_formation_app/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_blueprint_app_cloud_formation/import.sh" }}
