@@ -113,18 +113,11 @@ provider "hpe" {
 
 ## Release Notes
 
-->The following resources use `WriteOnly` attributes:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_image<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_user<br>
-`WriteOnly` attributes are supported by Terraform versions 1.11 and later.
+->The `hpe_morpheus_user` resource uses a `WriteOnly` password field.  `WriteOnly` attributes are supported
+by Terraform versions 1.11 and later.
 
-->The following resources use a `Dynamic` attribute for `config`:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_cloud<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_datastore<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_instance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_network<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_policy<br>
-This means that the `config` block can contain arbitrary nested attributes which
+->The `hpe_morpheus_instance`, `hpe_morpheus_network`, `hpe_morpheus_datastore` and `hpe_morpheus_cloud` resources use
+a `Dynamic` attribute for `config`.  This means that the `config` block can contain arbitrary nested attributes which
 will be evaluated at run-time.  Examples of these are shown in the documentation.
 
 ### New functionality
