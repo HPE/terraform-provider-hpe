@@ -10,6 +10,7 @@ import (
 
 	taskdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/task"
 	tasksdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tasks"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
@@ -26,6 +27,11 @@ func Provider() *schema.Provider {
 		Schema: providerSchema(),
 
 		ResourcesMap: map[string]*schema.Resource{
+			"hpe_morpheus_blueprint_app_arm":                blueprint.ResourceBlueprintAppARM(),
+			"hpe_morpheus_blueprint_app_cloud_formation":    blueprint.ResourceBlueprintAppCloudFormation(),
+			"hpe_morpheus_blueprint_app_helm":               blueprint.ResourceBlueprintAppHelm(),
+			"hpe_morpheus_blueprint_app_kubernetes":         blueprint.ResourceBlueprintAppKubernetes(),
+			"hpe_morpheus_blueprint_app_terraform":          blueprint.ResourceBlueprintAppTerraform(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
