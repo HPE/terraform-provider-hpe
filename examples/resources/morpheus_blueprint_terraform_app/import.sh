@@ -1,1 +1,0 @@
-terraform import hpe_morpheus_blueprint_terraform_app.tfexample_terraform_app_blueprint 1

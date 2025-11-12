@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_terraform_app" "tfapp_blueprint_json" {
+resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_json" {
   name              = "tfappbluedemojson"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -11,3 +11,4 @@ EOF
   tfvar_secret      = "tfvars/rdsdemo-secrets"
   visibility        = "public"
 }
+

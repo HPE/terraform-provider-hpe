@@ -12,19 +12,19 @@ description: |-
 
 Creating the terraform app blueprint with local content in hcl format:
 
-{{tffile "examples/resources/morpheus_blueprint_terraform_app/resource_hcl.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_terraform/resource_hcl.tf"}}
 
 Creating the terraform app blueprint with local content in json format:
 
-{{tffile "examples/resources/morpheus_blueprint_terraform_app/resource_json.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_terraform/resource_json.tf"}}
 
 Creating the terraform app blueprint with Terraform spec templates:
 
-{{tffile "examples/resources/morpheus_blueprint_terraform_app/resource_spec.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_terraform/resource_spec.tf"}}
 
 Creating the terraform app blueprint with the blueprint fetched via git:
 
-{{tffile "examples/resources/morpheus_blueprint_terraform_app/resource_git.tf"}}
+{{tffile "examples/resources/morpheus_blueprint_app_terraform/resource_git.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -32,4 +32,4 @@ Creating the terraform app blueprint with the blueprint fetched via git:
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_blueprint_terraform_app/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_blueprint_app_terraform/import.sh" }}

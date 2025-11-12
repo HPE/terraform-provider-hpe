@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_terraform_app" "tfapp_blueprint_specs" {
+resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_specs" {
   name              = "tfappbluedemospecs"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -8,3 +8,4 @@ resource "hpe_morpheus_blueprint_terraform_app" "tfapp_blueprint_specs" {
   terraform_options = "-var 'foo=bar'"
   tfvar_secret      = "tfvars/rdsdemo-secrets"
 }
+
