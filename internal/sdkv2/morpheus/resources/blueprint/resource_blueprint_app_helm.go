@@ -74,6 +74,7 @@ func ResourceBlueprintAppHelm() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceBlueprintAppHelmCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
