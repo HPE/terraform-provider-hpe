@@ -315,7 +315,7 @@ func resourceBlueprintAppARMRead(ctx context.Context, d *schema.ResourceData, me
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var armBlueprint AppARMBlueprint
+	var armBlueprint BlueprintAppARM
 	json.Unmarshal(resp.Body, &armBlueprint)
 	d.SetId(convert.IntToString(armBlueprint.Blueprint.ID))
 	d.Set("name", armBlueprint.Blueprint.Name)
@@ -526,7 +526,7 @@ func resourceBlueprintAppARMDelete(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-type AppARMBlueprint struct {
+type BlueprintAppARM struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`
