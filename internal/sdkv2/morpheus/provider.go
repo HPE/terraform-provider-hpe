@@ -11,6 +11,7 @@ import (
 	taskdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/task"
 	tasksdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tasks"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/blueprint"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/catalogitem"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
@@ -19,7 +20,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/usergroup"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/wiki"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/workflow"
 )
 
 func Provider() *schema.Provider {
@@ -32,6 +32,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_blueprint_app_helm":               blueprint.ResourceBlueprintAppHelm(),
 			"hpe_morpheus_blueprint_app_kubernetes":         blueprint.ResourceBlueprintAppKubernetes(),
 			"hpe_morpheus_blueprint_app_terraform":          blueprint.ResourceBlueprintAppTerraform(),
+			"hpe_morpheus_catalog_item_workflow":            catalogitem.ResourceCatalogItemWorkflow(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
@@ -65,7 +66,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 			"hpe_morpheus_user_group":                       usergroup.ResourceUserGroup(),
 			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
-			"hpe_morpheus_workflow_catalog_item":            workflow.ResourceWorkflowCatalogItem(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hpe_morpheus_task":  taskdatasource.DataSourceMorpheusTask(),
