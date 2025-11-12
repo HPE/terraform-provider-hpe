@@ -160,7 +160,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Path to example configuration files
-	examplePath := "../../../../../../examples/resources/hpe_morpheus_network/azure"
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/azure"
 
 	// Read the resource.tf file from disk
 	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
@@ -265,7 +265,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Path to example configuration files
-	examplePath := "../../../../../../examples/resources/hpe_morpheus_network/host"
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/host"
 
 	// Read the resource.tf file from disk
 	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
@@ -340,7 +340,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Path to example configuration files
-	examplePath := "../../../../../../examples/resources/hpe_morpheus_network"
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network"
 
 	// Read the resource.tf file from disk
 	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
@@ -441,7 +441,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Path to example configuration files
-	examplePath := "../../../../../../examples/resources/hpe_morpheus_network/gcp"
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/gcp"
 
 	// Read the resource.tf file from disk
 	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))
@@ -547,7 +547,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Path to example configuration files
-	examplePath := "../../../../../../examples/resources/hpe_morpheus_network/ovs_port_group"
+	examplePath := "../../../../../examples/resources/hpe_morpheus_network/ovs_port_group"
 
 	// Read the resource.tf file from disk
 	resourceContent, err := os.ReadFile(filepath.Join(examplePath, "resource.tf"))

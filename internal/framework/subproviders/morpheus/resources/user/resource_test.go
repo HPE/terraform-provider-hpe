@@ -83,7 +83,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	path := "../../../../../../examples/resources/hpe_morpheus_user/resource.tf"
+	path := "../../../../../examples/resources/hpe_morpheus_user/resource.tf"
 	exampleConfig, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Error reading example config: %v", err)
