@@ -113,46 +113,25 @@ provider "hpe" {
 
 ## Release Notes
 
-->The following resources use `WriteOnly` attributes:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_image<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_user<br>
-`WriteOnly` attributes are supported by Terraform versions 1.11 and later.
+->The `hpe_morpheus_user` resource uses a `WriteOnly` password field.  `WriteOnly` attributes are supported
+by Terraform versions 1.11 and later.
 
-->The following resources use a `Dynamic` attribute for `config`:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_cloud<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_datastore<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_instance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_network<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_policy<br>
-This means that the `config` block can contain arbitrary nested attributes which
+->The `hpe_morpheus_instance`, `hpe_morpheus_network`, `hpe_morpheus_datastore` and `hpe_morpheus_cloud` resources use
+a `Dynamic` attribute for `config`.  This means that the `config` block can contain arbitrary nested attributes which
 will be evaluated at run-time.  Examples of these are shown in the documentation.
 
 ### New functionality
 
 In this release (v0.3.0) we have added the following resource functionality:
-- hpe_morpheus_image resource has been added (Create, Delete, Read - no Update)
+- hpe_morpheus_image resource has been added (Create, Delete, Read, Update)
 - hpe_morpheus_policy resource has been added (Create, Delete, Read, Update)
-- hpe_morpheus_instance Update functionality has been added (The addition and removal of volumes is not yet supported)
+- hpe_morpheus_instance Update functionality has been added
 - hpe_morpheus_service_plan `cores_per_socket` is now required
 - hpe_morpheus_datastore import will now populate `resource_permissions` (`groups` only) and `tenants`
 
-In this release (v0.3.0) we have added the following data-source functionality:
-- hpe_morpheus_datastore data-source has been added
-
 ### New known issues
 
-- hpe_morpheus_datastore data-source if a datastore with the specified name cannot be found (i.e. the corresponding
-  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
-  datastores.  This is an API bug which is being investigated.
-- hpe_morpheus_policy resource does not currently support the Backup Targets (`backupStorage`) policy type 
-  due to improper handling of the `backupStorageIds` attribute. This is an API bug which is being investigated.
-- hpe_morpheus_instance requires that the `ip_mode` attribute is set to avoid a forced replace on update.
-  This will be addressed in a future release.
-- hpe_morpheus_instance updates fail when removing optional fields.
-  This will be addressed in a future release.
-- hpe_morpheus_instance updates fail when removing `evars`.
-  This will be addressed in a future release.
-- Long running operations can fail when using username and password.
+N/A
 
 ### Known issues from previous releases
 

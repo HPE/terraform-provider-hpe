@@ -3,35 +3,16 @@
 package sweep
 
 import (
-	"context"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/datastore"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/instance"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/network"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/policy"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/user"
 )
 
 func init() {
-	ctx := context.Background()
-	client, err := NewSweepClient(ctx)
-	if err != nil {
-		// Log the error but don't fail - this is expected in short mode or when env vars aren't set
-		log.Printf("[WARN] Cannot create sweep client (likely running in short mode or env vars not set): %v", err)
-
-		return
-	}
-
-	// Register sweepers that use the centralized client
-	policy.NewPolicySweeper(client)
-	datastore.NewDatastoreSweeper(client)
-	instance.NewInstanceSweeper(client)
-	network.NewNetworkSweeper(client)
-	user.NewUserSweeper(client)
+	Datastores()
+	Instances()
+	Networks()
+	Users()
 }
 
 func TestMain(m *testing.M) {

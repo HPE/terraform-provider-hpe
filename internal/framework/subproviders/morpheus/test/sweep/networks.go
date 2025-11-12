@@ -1,6 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package network
+// Package sweep allows deletion of dangling test resources
+package sweep
 
 import (
 	"context"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
@@ -45,36 +45,24 @@ func hasRequiredLabels(labels []string) bool {
 	return true
 }
 
-// networkSweeper handles cleanup of test networks
-type networkSweeper struct {
-	client *sdk.APIClient
-}
-
-// NewNetworkSweeper creates and registers a network sweeper
-func NewNetworkSweeper(client *sdk.APIClient) {
-	s := &networkSweeper{
-		client: client,
-	}
-
+func Networks() {
 	resource.AddTestSweepers(
 		"hpe_morpheus_network",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_network",
-			F:    s.Sweep,
+			F:    testSweepMorpheusNetworks,
 		})
 }
 
-// Sweep cleans up test networks
-func (s *networkSweeper) Sweep(_ string) error {
+func testSweepMorpheusNetworks(_ string) error {
 	ctx := context.Background()
 
-	if s.client == nil {
-		log.Printf("[INFO] No client provided, skipping network sweep")
-
-		return nil
+	client, err := NewSweepClient(ctx)
+	if err != nil {
+		return err
 	}
 
-	networks, hresp, err := s.client.NetworksAPI.ListNetworks(ctx).
+	networks, hresp, err := client.NetworksAPI.ListNetworks(ctx).
 		Phrase(testNetworkPrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to list networks: %s", errors.ErrMsg(err, hresp))
@@ -108,7 +96,7 @@ func (s *networkSweeper) Sweep(_ string) error {
 			log.Printf("[INFO] Sweeping network: %s (id: %d)", *name, *id)
 
 			// Delete the network
-			_, hresp, err := s.client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
+			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
 			if err != nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf(
 					"failed to delete network %s (id: %d): %s",
