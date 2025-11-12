@@ -12,12 +12,14 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently only HVM instances are supported. Updating is currently not 
-supported.
-
--> Only one network interface is supported at this time.
-
--> With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
+-> Currently only HVM instances are supported.
+nbsp;nbsp;nbsp;nbsp;Only one network interface is supported at this time.
+nbsp;nbsp;nbsp;nbsp;`ip_mode` must be set to avoid a forced replace on update - this will be addresses in a future release.
+nbsp;nbsp;nbsp;nbsp;With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
+nbsp;nbsp;nbsp;nbsp;The addition and removal of volumes is not supported during updates.
+nbsp;nbsp;nbsp;nbsp;Updates fail when removing optional fields.
+nbsp;nbsp;nbsp;nbsp;Updates fail when removing `evars`.
+nbsp;nbsp;nbsp;nbsp;These will be addressed in a future release.
 
 ## Example Usage
 
@@ -108,7 +110,7 @@ resource "hpe_morpheus_instance" "example" {
 - `instance_type_id` (Number) The type of instance by id we want to fetch.
 - `layout_id` (Number) The layout id for the instance type that you want to provision. i.e. single process or cluster
 - `name` (String) Name of the instance to be created.
-- `network_interfaces` (Attributes Set) The networkInterfaces parameter is for network configuration.
+- `network_interfaces` (Attributes List) The networkInterfaces parameter is for network configuration.
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces))
 - `plan_id` (Number) The id for the memory and storage option pre-configured within Morpheus.

@@ -1,0 +1,231 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Policies are different rules that can be applied to various Morpheus resources.
+
+-> An `associated_resource_type` must be set (can be one of 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan').
+-> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
+
+-> A `policy_type_code` must be set corresponding to the respective policy type.
+
+-> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below:
+
+- [Approve Delete (deleteApproval)](#approve-delete-deleteapproval)
+- [Approve Provision (provisionApproval)](#approve-provision-provisionapproval)
+- [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval)
+- [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval)
+- [Backup Creation (createBackup)](#backup-creation-createbackup)
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Not currently supported
+- [Budget (maxPrice)](#budget-maxprice)
+- [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming)
+- [Cypher Access (cypher)](#cypher-access-cypher)
+- [Delayed Delete (delayedRemoval)](#delayed-delete-delayedremoval)
+- [Expiration (lifecycle)](#expiration-lifecycle)
+- [File Share Storage Quota (storageShareQuota)](#file-share-storage-quota-storagesharequota)
+- [Hostname (hostNaming)](#hostname-hostnaming)
+- [Instance Name (naming)](#instance-name-naming)
+- [Instance Networks (requiredNetwork)](#instance-networks-requirednetwork)
+- [Max Containers (maxContainers)](#max-containers-maxcontainers)
+- [Max Cores (maxCores)](#max-cores-maxcores)
+- [Max Hosts (maxHosts)](#max-hosts-maxhosts)
+- [Max Load Balancer Pools (maxPools)](#max-load-balancer-pools-maxpools)
+- [Max Memory (maxMemory)](#max-memory-maxmemory)
+- [Max Pool Members (maxPoolMembers)](#max-pool-members-maxpoolmembers)
+- [Max Snapshots (maxSnapshots)](#max-snapshots-maxsnapshots)
+- [Max Storage (maxStorage)](#max-storage-maxstorage)
+- [Max Virtual Servers (maxVirtualServers)](#max-virtual-servers-maxvirtualservers)
+- [Max VMs (maxVms)](#max-vms-maxvms)
+- [Message of the Day (motd)](#message-of-the-day-motd)
+- [Network Quota (maxNetworks)](#network-quota-maxnetworks)
+- [Object Storage Quota (storageBucketQuota)](#object-storage-quota-storagebucketquota)
+- [Power Scheduling (powerSchedule)](#power-scheduling-powerschedule)
+- [Router Quota (maxRouters)](#router-quota-maxrouters)
+- [Shutdown (shutdown)](#shutdown-shutdown)
+- [Storage Server Storage Quota (storageServerQuota)](#storage-server-storage-quota-storageserverquota)
+- [Tags (tags)](#tags-tags)
+- [User Creation (createUser)](#user-creation-createuser)
+- [User Group Creation (createUserGroup)](#user-group-creation-createusergroup)
+- [Workflow (workflow)](#workflow-workflow)
+
+## Config Examples
+
+### Approve Delete (deleteApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_deleteApproval.tf" }}
+
+### Approve Provision (provisionApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_provisionApproval.tf" }}
+
+### Approve Reconfigure (reconfigureApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_reconfigureApproval.tf" }}
+
+### Approve Workflow Execute (workflowApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_workflowApproval.tf" }}
+
+### Backup Creation (createBackup)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createBackup.tf" }}
+
+### Backup Targets (backupStorage)
+Not currently supported
+
+### Budget (maxPrice)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPrice.tf" }}
+
+### Cluster Resource Name (serverNaming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_serverNaming.tf" }}
+
+### Cypher Access (cypher)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_cypher.tf" }}
+
+### Delayed Delete (delayedRemoval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_delayedRemoval.tf" }}
+
+### Expiration (lifecycle)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_lifecycle.tf" }}
+
+### File Share Storage Quota (storageShareQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageShareQuota.tf" }}
+
+### Hostname (hostNaming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_hostNaming.tf" }}
+
+### Instance Name (naming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_naming.tf" }}
+
+### Instance Networks (requiredNetwork)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_requiredNetwork.tf" }}
+
+### Max Containers (maxContainers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxContainers.tf" }}
+
+### Max Cores (maxCores)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxCores.tf" }}
+
+### Max Hosts (maxHosts)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxHosts.tf" }}
+
+### Max Load Balancer Pools (maxPools)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPools.tf" }}
+
+### Max Memory (maxMemory)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxMemory.tf" }}
+
+### Max Pool Members (maxPoolMembers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPoolMembers.tf" }}
+
+### Max Snapshots (maxSnapshots)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxSnapshots.tf" }}
+
+### Max Storage (maxStorage)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxStorage.tf" }}
+
+### Max Virtual Servers (maxVirtualServers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxVirtualServers.tf" }}
+
+### Max VMs (maxVms)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxVms.tf" }}
+
+### Message of the Day (motd)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_motd.tf" }}
+
+### Network Quota (maxNetworks)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxNetworks.tf" }}
+
+### Object Storage Quota (storageBucketQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageBucketQuota.tf" }}
+
+### Power Scheduling (powerSchedule)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_powerSchedule.tf" }}
+
+### Router Quota (maxRouters)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxRouters.tf" }}
+
+### Shutdown (shutdown)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_shutdown.tf" }}
+
+### Storage Server Storage Quota (storageServerQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageServerQuota.tf" }}
+
+### Tags (tags)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_tags.tf" }}
+
+### User Creation (createUser)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createUser.tf" }}
+
+### User Group Creation (createUserGroup)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createUserGroup.tf" }}
+
+### Workflow (workflow)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_workflow.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Policies can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_policy.example 123
+```
+
+## Notes
+### Associated Resource Types
+
+Policies can be associated with different resource types:
+
+- `Global` - Applies to all resources in the account
+- `Group` - Applies to a specific group
+- `Cloud` - Applies to a specific cloud
+- `User` - Applies to a specific user
+- `Role` - Applies to a specific role
+- `Network` - Applies to a specific network
+- `Plan` - Applies to a specific service plan
+
+### Resource Dependencies
+
+Before creating a policy resource, ensure that:
+
+1. The specified resource `associated_resource_id` refers to exists if `associated_resource_type` is not `Global`
+2. Any referenced integrations (e.g., ServiceNow for approval policies) are properly configured
+3. Any referenced resources (e.g., workflows, power schedules, networks) exist in Morpheus
