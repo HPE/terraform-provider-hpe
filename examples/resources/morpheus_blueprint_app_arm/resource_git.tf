@@ -1,5 +1,5 @@
-resource "hpe_morpheus_blueprint_arm_app" "tf_example_arm_app_blueprint_git" {
-  name               = "example_arm_app_blueprint_git"
+resource "hpe_morpheus_blueprint_app_arm" "tf_example_app_arm_blueprint_git" {
+  name               = "example_app_arm_blueprint_git"
   description        = "example arm app blueprint"
   category           = "armtemplates"
   source_type        = "repository"
