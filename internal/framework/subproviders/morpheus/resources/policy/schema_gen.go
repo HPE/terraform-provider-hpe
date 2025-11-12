@@ -163,7 +163,6 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 								"maxNetworks",
 								"storageBucketQuota",
 								"powerSchedule",
-								"requiredNetwork",
 								"maxRouters",
 								"shutdown",
 								"storageServerQuota",

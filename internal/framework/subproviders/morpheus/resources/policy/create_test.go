@@ -265,25 +265,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Naming policy"),
 				),
 			},
-			// Step 7: Instance Networks
-			{
-				Config: providerConfig + resourceConfig,
-				ConfigVariables: config.Variables{
-					"policy_name":        config.StringVariable(namePrefix + "-requiredNetwork"),
-					"policy_description": config.StringVariable("Required network policy"),
-					"policy_type_code":   config.StringVariable("requiredNetwork"),
-					"policy_config": config.ObjectVariable(map[string]config.Variable{
-						"requiredNetworks": config.ListVariable(
-							config.IntegerVariable(1),
-						),
-					}),
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-requiredNetwork"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "requiredNetwork"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Required network policy"),
-				),
-			},
+			// Step 7: TODO: Add requiredNetwork policy type to OpenAPI spec
 			// Step 8: Max Memory
 			{
 				Config: providerConfig + resourceConfig,
