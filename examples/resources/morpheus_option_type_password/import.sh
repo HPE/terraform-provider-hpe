@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_option_type_password.tf_example_password_option_type 1
