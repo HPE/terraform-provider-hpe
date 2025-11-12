@@ -1,0 +1,31 @@
+resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_blueprint_yaml" {
+  name              = "tf-kubernetes-app-blueprint-example-yaml"
+  description       = "tf example kubernetes app blueprint"
+  category          = "k8s"
+  source_type       = "yaml"
+  blueprint_content = <<TFEOF
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+TFEOF
+}
+
