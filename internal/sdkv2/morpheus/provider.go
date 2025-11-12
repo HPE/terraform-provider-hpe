@@ -27,11 +27,11 @@ func Provider() *schema.Provider {
 		Schema: providerSchema(),
 
 		ResourcesMap: map[string]*schema.Resource{
-			"hpe_morpheus_blueprint_arm_app":                blueprint.ResourceBlueprintARMApp(),
-			"hpe_morpheus_blueprint_cloud_formation_app":    blueprint.ResourceBlueprintCloudFormationApp(),
-			"hpe_morpheus_blueprint_helm_app":               blueprint.ResourceBlueprintHelmApp(),
-			"hpe_morpheus_blueprint_kubernetes_app":         blueprint.ResourceBlueprintKubernetesApp(),
-			"hpe_morpheus_blueprint_terraform_app":          blueprint.ResourceBlueprintTerraformApp(),
+			"hpe_morpheus_blueprint_app_arm":                blueprint.ResourceBlueprintAppARM(),
+			"hpe_morpheus_blueprint_app_cloud_formation":    blueprint.ResourceBlueprintAppCloudFormation(),
+			"hpe_morpheus_blueprint_app_helm":               blueprint.ResourceBlueprintAppHelm(),
+			"hpe_morpheus_blueprint_app_kubernetes":         blueprint.ResourceBlueprintAppKubernetes(),
+			"hpe_morpheus_blueprint_app_terraform":          blueprint.ResourceBlueprintAppTerraform(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
