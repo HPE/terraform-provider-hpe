@@ -285,16 +285,7 @@ func getInstanceAsState(
 			newIfaces = append(newIfaces, iface)
 		}
 
-		networkInterfaceObject := types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"ip_address":       types.StringType,
-				"ip_mode":          types.StringType,
-				"network_group_id": types.Int64Type,
-				"network_id":       types.Int64Type,
-			},
-		}
-
-		networkInterfacesSet, d := types.SetValueFrom(ctx, networkInterfaceObject, newIfaces)
+		networkInterfacesSet, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), newIfaces)
 		diags.Append(d...)
 
 		if diags.HasError() {
@@ -552,7 +543,7 @@ func (g *Resource) Create(
 	}
 
 	// network_interfaces
-	networkInterfaces, diags := convert.FromSetType(
+	networkInterfaces, diags := convert.FromListType(
 		ctx,
 		plan.NetworkInterfaces,
 		networkInterfaceMapper,
