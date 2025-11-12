@@ -1,5 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
+//go:build experimental
+
 package image
 
 import (
@@ -32,7 +34,9 @@ type Resource struct {
 	configure.ResourceWithMorpheusConfigure
 }
 
-var _ resource.Resource = &Resource{}
+var (
+	_ resource.Resource = &Resource{}
+)
 
 func NewResource() resource.Resource {
 	return &Resource{}
