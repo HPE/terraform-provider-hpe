@@ -70,6 +70,8 @@ resource "hpe_morpheus_image" "example_image" {
 - `min_disk` (Number) Minimal required amount of disk space for provisioning in GB
 - `min_ram` (Number) Minimal required amount of RAM for provisioning in GB
 - `os_type_id` (Number) ID of the OS Type
+- `ssh_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH key (Write Only)
+- `ssh_key_wo_version` (Number) SSH key version. Used to determine if ssh_key_wo has been updated.
 - `ssh_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
 - `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
 - `ssh_username` (String) SSH Username

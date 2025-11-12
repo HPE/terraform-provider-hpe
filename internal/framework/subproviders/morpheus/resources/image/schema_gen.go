@@ -5,10 +5,12 @@ package image
 import (
 	"context"
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/modifiers"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -21,9 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/modifiers"
 )
 
 func ImageResourceSchema(ctx context.Context) schema.Schema {
@@ -216,6 +217,24 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"ssh_key_wo": schema.StringAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "SSH key (Write Only)",
+				MarkdownDescription: "SSH key (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"ssh_key_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "SSH key version. Used to determine if ssh_key_wo has been updated.",
+				MarkdownDescription: "SSH key version. Used to determine if ssh_key_wo has been updated.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
 			"ssh_password_wo": schema.StringAttribute{
 				Optional:            true,
 				WriteOnly:           true,
@@ -402,6 +421,8 @@ type ImageModel struct {
 	OsTypeId             types.Int64      `tfsdk:"os_type_id"`
 	OwnerId              types.Int64      `tfsdk:"owner_id"`
 	RawSize              types.Int64      `tfsdk:"raw_size"`
+	SshKeyWo             types.String     `tfsdk:"ssh_key_wo"`
+	SshKeyWoVersion      types.Int64      `tfsdk:"ssh_key_wo_version"`
 	SshPasswordWo        types.String     `tfsdk:"ssh_password_wo"`
 	SshPasswordWoVersion types.Int64      `tfsdk:"ssh_password_wo_version"`
 	SshUsername          types.String     `tfsdk:"ssh_username"`

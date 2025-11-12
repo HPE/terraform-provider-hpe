@@ -114,6 +114,9 @@ func getImageAsState(
 	// ssh_username
 	state.SshUsername = convert.StrToType(image.SshUsername.Get())
 
+	// ssh_key_wo_version
+	state.SshKeyWoVersion = plan.SshKeyWoVersion
+
 	// ssh_password_wo_version
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
 
