@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	tenantsClusterFunc             = sdk.NewListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInnerWithDefaults
-	resourcePermissionsClusterFunc = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsSitesClusterFunc    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	datastoreTypeClusterFunc       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	nfsConfigClusterFunc           = sdk.NewNFSDatastoreConfigurationWithDefaults
-	alletrampHvmConfigClusterFunc  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
+	tenantsFuncCluster             = sdk.NewListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInnerWithDefaults
+	resourcePermissionsFuncCluster = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
+	permissionsSitesFuncCluster    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	datastoreTypeFuncCluster       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	nfsConfigFuncCluster           = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults
+	alletrampHvmConfigFuncCluster  = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults
 )
 
 func datastoreCreateCluster(ctx context.Context,
@@ -37,7 +37,7 @@ func datastoreCreateCluster(ctx context.Context,
 	datastoreCreate.SetName(name)
 
 	// Set the type
-	datastoreTypeForRequest := datastoreTypeClusterFunc()
+	datastoreTypeForRequest := datastoreTypeFuncCluster()
 	datastoreTypeForRequest.SetId(datastoreType.Id.ValueInt64())
 	datastoreCreate.SetDatastoreType(*datastoreTypeForRequest)
 
@@ -48,7 +48,7 @@ func datastoreCreateCluster(ctx context.Context,
 	createConfig := datastoreCreate.GetConfig()
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
-		nfsConfig := nfsConfigClusterFunc()
+		nfsConfig := nfsConfigFuncCluster()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
 			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
@@ -62,21 +62,20 @@ func datastoreCreateCluster(ctx context.Context,
 			nfsConfig.SetSourceVersion(plan.ConfigNfs.SourceVersion.ValueString())
 		}
 
-		createConfig.NFSDatastoreConfiguration = nfsConfig
+		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf = nfsConfig
 
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
-		alletrampHvmConfig := alletrampHvmConfigClusterFunc()
+		alletrampHvmConfig := alletrampHvmConfigFuncCluster()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
-			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
+			alletrampHvmConfig.SetEnableRansomware(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
 			alletrampHvmConfig.SetProtocolType(plan.ConfigAlletrampHvm.ProtocolType.ValueString())
 		}
 
-		createConfig.AlletraMPHVMDatastoreConfiguration = alletrampHvmConfig
+		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf2 = alletrampHvmConfig
 
 		// removing for now
 		/*
@@ -153,7 +152,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 		var tenantPermissions []sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner
 		for _, tenantsValue := range tenantsValues {
-			tenantPermission := tenantsClusterFunc()
+			tenantPermission := tenantsFuncCluster()
 			tenantPermission.SetId(tenantsValue.Id.ValueInt64())
 			tenantPermissions = append(tenantPermissions, *tenantPermission)
 		}
@@ -161,7 +160,7 @@ func datastoreCreateCluster(ctx context.Context,
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
-		resourcePermissions := resourcePermissionsClusterFunc()
+		resourcePermissions := resourcePermissionsFuncCluster()
 		resourcePermissions.SetAllGroups(plan.ResourcePermissions.AllGroups.ValueBool())
 		resourcePermissions.SetDefaultStore(plan.ResourcePermissions.DefaultStore.ValueBool())
 		resourcePermissions.SetCanManage(plan.ResourcePermissions.CanManage.ValueBool())
@@ -176,7 +175,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 			sites := []sdk.GetAlerts200ResponseAllOfChecksInnerAccount{}
 			for _, groupsValue := range groupsValues {
-				site := permissionsSitesClusterFunc()
+				site := permissionsSitesFuncCluster()
 				site.SetId(groupsValue.Id.ValueInt64())
 				sites = append(sites, *site)
 			}

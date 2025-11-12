@@ -164,7 +164,7 @@ func getDatastoreAsState(
 	case alletraMPHVMCode:
 		// Check returned config against plan
 		keysMap := map[string]string{
-			"enable_ransomware": "enableransomware",
+			"enable_ransomware": "enableRansomware",
 			"protocol_type":     "protocolType",
 		}
 		keysFromMap, pdiags := utils.CheckPlanAttributeAgainstAPIAttribute(
@@ -174,9 +174,9 @@ func getDatastoreAsState(
 		var configAlletraMPHVM ConfigAlletrampHvmValue
 		for k, v := range datastore.Config {
 			switch k {
-			case "enableransomware":
-				s := v.(string)
-				configAlletraMPHVM.EnableRansomware = convert.StringToBool(ctx, s)
+			case "enableRansomware":
+				b := v.(bool)
+				configAlletraMPHVM.EnableRansomware = convert.BoolToType(&b)
 			case "protocolType":
 				str := v.(string)
 				configAlletraMPHVM.ProtocolType = convert.StrToType(&str)
