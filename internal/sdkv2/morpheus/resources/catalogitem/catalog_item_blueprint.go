@@ -12,9 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
 func ResourceCatalogItemBlueprint() *schema.Resource {
