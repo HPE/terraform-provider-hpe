@@ -22,7 +22,6 @@ const (
 	blueprintTypeKubernetes = "kubernetes"
 	sourceTypeYaml          = "yaml"
 	sourceTypeSpec          = "spec"
-	sourceTypeRepository    = "repository"
 	configTypeGit           = "git"
 )
 
