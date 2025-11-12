@@ -26,13 +26,13 @@ const (
 	configTypeGit           = "git"
 )
 
-func ResourceBlueprintKubernetesAppBlueprint() *schema.Resource {
+func ResourceBlueprintAppKubernetes() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus kubernetes app blueprint resource",
-		CreateContext: resourceBlueprintKubernetesAppBlueprintCreate,
-		ReadContext:   resourceBlueprintKubernetesAppBlueprintRead,
-		UpdateContext: resourceBlueprintKubernetesAppBlueprintUpdate,
-		DeleteContext: resourceBlueprintKubernetesAppBlueprintDelete,
+		CreateContext: resourceBlueprintAppKubernetesCreate,
+		ReadContext:   resourceBlueprintAppKubernetesRead,
+		UpdateContext: resourceBlueprintAppKubernetesUpdate,
+		DeleteContext: resourceBlueprintAppKubernetesDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -109,7 +109,7 @@ func ResourceBlueprintKubernetesAppBlueprint() *schema.Resource {
 	}
 }
 
-func resourceBlueprintKubernetesAppBlueprintCreate(
+func resourceBlueprintAppKubernetesCreate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -255,12 +255,12 @@ func resourceBlueprintKubernetesAppBlueprintCreate(
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintKubernetesAppBlueprintRead(ctx, d, meta)...)
+	diags = append(diags, resourceBlueprintAppKubernetesRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintKubernetesAppBlueprintRead(
+func resourceBlueprintAppKubernetesRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -310,7 +310,7 @@ func resourceBlueprintKubernetesAppBlueprintRead(
 	log.Printf("API RESPONSE: %s", resp)
 
 	// store resource data
-	var kubernetesBlueprint KubernetesAppBlueprint
+	var kubernetesBlueprint BlueprintAppKubernetes
 	json.Unmarshal(resp.Body, &kubernetesBlueprint)
 	d.SetId(convert.IntToString(kubernetesBlueprint.Blueprint.ID))
 	d.Set("name", kubernetesBlueprint.Blueprint.Name)
@@ -344,7 +344,7 @@ func resourceBlueprintKubernetesAppBlueprintRead(
 	return diags
 }
 
-func resourceBlueprintKubernetesAppBlueprintUpdate(
+func resourceBlueprintAppKubernetesUpdate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -485,10 +485,10 @@ func resourceBlueprintKubernetesAppBlueprintUpdate(
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintKubernetesAppBlueprintRead(ctx, d, meta)
+	return resourceBlueprintAppKubernetesRead(ctx, d, meta)
 }
 
-func resourceBlueprintKubernetesAppBlueprintDelete(
+func resourceBlueprintAppKubernetesDelete(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -522,7 +522,7 @@ func resourceBlueprintKubernetesAppBlueprintDelete(
 	return diags
 }
 
-type KubernetesAppBlueprint struct {
+type BlueprintAppKubernetes struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`
