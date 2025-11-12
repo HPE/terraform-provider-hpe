@@ -1,0 +1,15 @@
+resource "hpe_morpheus_policy" "{{.ResourceName}}" {
+  name = "{{.Name}}"
+  description = "{{.Description}}"
+  associated_resource_type = "{{.AssociatedResourceType}}"
+  associated_resource_id = {{.AssociatedResourceID}}
+  enabled = true
+  
+  policy_type = {
+    code = "{{.PolicyTypeCode}}"
+  }
+  
+  config = {
+    {{.ConfigKey}} = {{.ConfigValue}}
+  }
+}

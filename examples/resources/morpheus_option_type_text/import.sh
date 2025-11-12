@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_option_type_text.tf_example_text_option_type 1
