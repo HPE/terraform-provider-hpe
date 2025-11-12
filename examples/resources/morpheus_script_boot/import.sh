@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_script_boot.tf_example_boot_script 1
