@@ -16,8 +16,6 @@ monitoring, and eventual decommissioning.
 
 -> Only one network interface is supported at this time.
 
--> `ip_mode` must be set to avoid a forced replace on update - this will be addresses in a future release.
-
 -> With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.
 
 -> The addition and removal of volumes is not supported during updates.
