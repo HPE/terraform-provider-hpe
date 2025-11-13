@@ -21,13 +21,13 @@ import (
 )
 
 //nolint:lll
-func ResourceBlueprintInstanceLayout() *schema.Resource {
+func ResourceInstanceLayout() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus instance layout resource",
-		CreateContext: resourceBlueprintInstanceLayoutCreate,
-		ReadContext:   resourceBlueprintInstanceLayoutRead,
-		UpdateContext: resourceBlueprintInstanceLayoutUpdate,
-		DeleteContext: resourceBlueprintInstanceLayoutDelete,
+		CreateContext: resourceInstanceLayoutCreate,
+		ReadContext:   resourceInstanceLayoutRead,
+		UpdateContext: resourceInstanceLayoutUpdate,
+		DeleteContext: resourceInstanceLayoutDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -191,7 +191,7 @@ func ResourceBlueprintInstanceLayout() *schema.Resource {
 	}
 }
 
-func resourceBlueprintInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -363,12 +363,12 @@ func resourceBlueprintInstanceLayoutCreate(ctx context.Context, d *schema.Resour
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
-	diags = append(diags, resourceBlueprintInstanceLayoutRead(ctx, d, meta)...)
+	diags = append(diags, resourceInstanceLayoutRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -544,7 +544,7 @@ func resourceBlueprintInstanceLayoutRead(ctx context.Context, d *schema.Resource
 	return diags
 }
 
-func resourceBlueprintInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -710,10 +710,10 @@ func resourceBlueprintInstanceLayoutUpdate(ctx context.Context, d *schema.Resour
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
-	return resourceBlueprintInstanceLayoutRead(ctx, d, meta)
+	return resourceInstanceLayoutRead(ctx, d, meta)
 }
 
-func resourceBlueprintInstanceLayoutDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceLayoutDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
