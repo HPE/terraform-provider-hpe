@@ -191,6 +191,7 @@ func ResourceInstanceLayout() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -278,6 +279,7 @@ func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	instanceLayout["environmentVariables"] = parseInstanceLayoutEnvironmentVariables(evarRaw, d)
 
+	//nolint:lll
 	switch technology {
 	case "alibaba", "amazon", "azure", "maas", "docker", "esxi", "fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix", "opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "upcloud", "vcd.vapp", "vcd", "vmware", "xen":
 		instanceLayout["containerTypes"] = d.Get("node_type_ids")
@@ -368,6 +370,7 @@ func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
+//nolint:staticcheck
 func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -544,6 +547,7 @@ func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
+//nolint:goconst
 func resourceInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
@@ -631,6 +635,7 @@ func resourceInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 	instanceLayout["environmentVariables"] = parseInstanceLayoutEnvironmentVariables(evarRaw, d)
 
+	//nolint:lll
 	switch technology {
 	case "alibaba", "amazon", "azure", "maas", "docker", "esxi", "fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix", "opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "upcloud", "vcd.vapp", "vcd", "vmware", "xen":
 		instanceLayout["containerTypes"] = d.Get("node_type_ids")
