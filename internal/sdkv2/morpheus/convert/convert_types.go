@@ -13,6 +13,12 @@ func StringToInt64(s string) int64 {
 	return v
 }
 
+func StringToInt(s string) (int, error) {
+	v, err := strconv.Atoi(s)
+
+	return v, err
+}
+
 func IntToString(n int) string {
 	return strconv.FormatInt(int64(n), 10)
 }
