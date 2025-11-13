@@ -792,30 +792,6 @@ func parseInstanceTypeEnvironmentVariables(variables []any, d *schema.ResourceDa
 	return evars
 }
 
-func matchTemplatesWithSchema(templates []int64, declaredTemplates []any) []int64 {
-	if declaredTemplates == nil {
-		return templates
-	}
-
-	result := make([]int64, len(declaredTemplates))
-
-	rMap := make(map[int64]int64, len(templates))
-	for _, template := range templates {
-		rMap[template] = template
-	}
-
-	for i, definedTemplate := range declaredTemplates {
-		definedTemplate := int64(definedTemplate.(int))
-
-		if v, ok := rMap[definedTemplate]; ok {
-			result[i] = v
-			delete(rMap, v)
-		}
-	}
-
-	return result
-}
-
 type InstanceTypePayload struct {
 	morpheus.InstanceType `json:"instanceType"`
 }
