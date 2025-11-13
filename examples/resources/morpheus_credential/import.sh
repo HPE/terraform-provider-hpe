@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_credential.tf_example_credential 1
