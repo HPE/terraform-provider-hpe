@@ -35,47 +35,45 @@ func apiTypeToResourceType(apiType string) string {
 }
 
 // mapPolicyConfigToState maps the API config structure to the datasource schema structure
-func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig) (ConfigValue, diag.Diagnostics) {
+func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// Initialize all config nested objects as null - required by Terraform Plugin Framework
-	configAttrs := map[string]attr.Value{
-		"approval":             types.ObjectNull(ApprovalValue{}.AttributeTypes(ctx)),
-		"backup_storage":       types.ObjectNull(BackupStorageValue{}.AttributeTypes(ctx)),
-		"create_backup":        types.ObjectNull(CreateBackupValue{}.AttributeTypes(ctx)),
-		"create_user":          types.ObjectNull(CreateUserValue{}.AttributeTypes(ctx)),
-		"create_user_group":    types.ObjectNull(CreateUserGroupValue{}.AttributeTypes(ctx)),
-		"cypher":               types.ObjectNull(CypherValue{}.AttributeTypes(ctx)),
-		"delayed_removal":      types.ObjectNull(DelayedRemovalValue{}.AttributeTypes(ctx)),
-		"host_naming":          types.ObjectNull(HostNamingValue{}.AttributeTypes(ctx)),
-		"lifecycle":            types.ObjectNull(LifecycleValue{}.AttributeTypes(ctx)),
-		"max_containers":       types.ObjectNull(MaxContainersValue{}.AttributeTypes(ctx)),
-		"max_cores":            types.ObjectNull(MaxCoresValue{}.AttributeTypes(ctx)),
-		"max_hosts":            types.ObjectNull(MaxHostsValue{}.AttributeTypes(ctx)),
-		"max_memory":           types.ObjectNull(MaxMemoryValue{}.AttributeTypes(ctx)),
-		"max_networks":         types.ObjectNull(MaxNetworksValue{}.AttributeTypes(ctx)),
-		"max_pool_members":     types.ObjectNull(MaxPoolMembersValue{}.AttributeTypes(ctx)),
-		"max_pools":            types.ObjectNull(MaxPoolsValue{}.AttributeTypes(ctx)),
-		"max_price":            types.ObjectNull(MaxPriceValue{}.AttributeTypes(ctx)),
-		"max_routers":          types.ObjectNull(MaxRoutersValue{}.AttributeTypes(ctx)),
-		"max_storage":          types.ObjectNull(MaxStorageValue{}.AttributeTypes(ctx)),
-		"max_virtual_servers":  types.ObjectNull(MaxVirtualServersValue{}.AttributeTypes(ctx)),
-		"max_vms":              types.ObjectNull(MaxVmsValue{}.AttributeTypes(ctx)),
-		"motd":                 types.ObjectNull(MotdValue{}.AttributeTypes(ctx)),
-		"naming":               types.ObjectNull(NamingValue{}.AttributeTypes(ctx)),
-		"power_schedule":       types.ObjectNull(PowerScheduleValue{}.AttributeTypes(ctx)),
-		"required_network":     types.ObjectNull(RequiredNetworkValue{}.AttributeTypes(ctx)),
-		"server_naming":        types.ObjectNull(ServerNamingValue{}.AttributeTypes(ctx)),
-		"shutdown":             types.ObjectNull(ShutdownValue{}.AttributeTypes(ctx)),
-		"storage_server_quota": types.ObjectNull(StorageServerQuotaValue{}.AttributeTypes(ctx)),
-		"tags":                 types.ObjectNull(TagsValue{}.AttributeTypes(ctx)),
-		"workflow":             types.ObjectNull(WorkflowValue{}.AttributeTypes(ctx)),
-	}
+	// Initialize all config fields as null - required by Terraform Plugin Framework
+	data.ConfigApproval = NewConfigApprovalValueNull()
+	data.ConfigBackupStorage = NewConfigBackupStorageValueNull()
+	data.ConfigCreateBackup = NewConfigCreateBackupValueNull()
+	data.ConfigCreateUser = NewConfigCreateUserValueNull()
+	data.ConfigCreateUserGroup = NewConfigCreateUserGroupValueNull()
+	data.ConfigCypher = NewConfigCypherValueNull()
+	data.ConfigDelayedRemoval = NewConfigDelayedRemovalValueNull()
+	data.ConfigHostNaming = NewConfigHostNamingValueNull()
+	data.ConfigLifecycle = NewConfigLifecycleValueNull()
+	data.ConfigMaxContainers = NewConfigMaxContainersValueNull()
+	data.ConfigMaxCores = NewConfigMaxCoresValueNull()
+	data.ConfigMaxHosts = NewConfigMaxHostsValueNull()
+	data.ConfigMaxMemory = NewConfigMaxMemoryValueNull()
+	data.ConfigMaxNetworks = NewConfigMaxNetworksValueNull()
+	data.ConfigMaxPoolMembers = NewConfigMaxPoolMembersValueNull()
+	data.ConfigMaxPools = NewConfigMaxPoolsValueNull()
+	data.ConfigMaxPrice = NewConfigMaxPriceValueNull()
+	data.ConfigMaxRouters = NewConfigMaxRoutersValueNull()
+	data.ConfigMaxStorage = NewConfigMaxStorageValueNull()
+	data.ConfigMaxVirtualServers = NewConfigMaxVirtualServersValueNull()
+	data.ConfigMaxVms = NewConfigMaxVmsValueNull()
+	data.ConfigMotd = NewConfigMotdValueNull()
+	data.ConfigNaming = NewConfigNamingValueNull()
+	data.ConfigPowerSchedule = NewConfigPowerScheduleValueNull()
+	data.ConfigRequiredNetwork = NewConfigRequiredNetworkValueNull()
+	data.ConfigServerNaming = NewConfigServerNamingValueNull()
+	data.ConfigShutdown = NewConfigShutdownValueNull()
+	data.ConfigStorageServerQuota = NewConfigStorageServerQuotaValueNull()
+	data.ConfigTags = NewConfigTagsValueNull()
+	data.ConfigWorkflow = NewConfigWorkflowValueNull()
 
 	// Map each API config field to the corresponding schema field - only populate non-null configurations
 	if apiConfig.ApprovePolicyTypeConfiguration != nil {
-		approvalValue, approvalDiags := NewApprovalValue(
-			ApprovalValue{}.AttributeTypes(ctx),
+		approvalValue, approvalDiags := NewConfigApprovalValue(
+			ConfigApprovalValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"account_integration_id": convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.AccountIntegrationId),
 			},
@@ -83,12 +81,7 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		if approvalDiags.HasError() {
 			diags.Append(approvalDiags...)
 		} else {
-			objectValue, objectDiags := approvalValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["approval"] = objectValue
-			}
+			data.ConfigApproval = approvalValue
 		}
 	}
 
@@ -113,22 +106,17 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"backup_storage_ids": backupStorageIdsSet,
 		}
 
-		backupStorageValue, backupStorageDiags := NewBackupStorageValue(BackupStorageValue{}.AttributeTypes(ctx), backupStorageAttrs)
+		backupStorageValue, backupStorageDiags := NewConfigBackupStorageValue(ConfigBackupStorageValue{}.AttributeTypes(ctx), backupStorageAttrs)
 		if backupStorageDiags.HasError() {
 			diags.Append(backupStorageDiags...)
 		} else {
-			objectValue, objectDiags := backupStorageValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["backup_storage"] = objectValue
-			}
+			data.ConfigBackupStorage = backupStorageValue
 		}
 	}
 
 	if apiConfig.BackupCreationPolicyTypeConfiguration != nil {
-		createBackupValue, createBackupDiags := NewCreateBackupValue(
-			CreateBackupValue{}.AttributeTypes(ctx),
+		createBackupValue, createBackupDiags := NewConfigCreateBackupValue(
+			ConfigCreateBackupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"account_integration_id": convert.StrToType(apiConfig.BackupCreationPolicyTypeConfiguration.AccountIntegrationId),
 				"create_backup":          convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackup),
@@ -138,18 +126,13 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		if createBackupDiags.HasError() {
 			diags.Append(createBackupDiags...)
 		} else {
-			objectValue, objectDiags := createBackupValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["create_backup"] = objectValue
-			}
+			data.ConfigCreateBackup = createBackupValue
 		}
 	}
 
 	if apiConfig.UserCreationPolicyTypeConfiguration != nil {
-		createUserValue, createUserDiags := NewCreateUserValue(
-			CreateUserValue{}.AttributeTypes(ctx),
+		createUserValue, createUserDiags := NewConfigCreateUserValue(
+			ConfigCreateUserValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration.CreateUser),
 				"create_user_type": types.StringValue(apiConfig.UserCreationPolicyTypeConfiguration.CreateUserType),
@@ -158,18 +141,13 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		if createUserDiags.HasError() {
 			diags.Append(createUserDiags...)
 		} else {
-			objectValue, objectDiags := createUserValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["create_user"] = objectValue
-			}
+			data.ConfigCreateUser = createUserValue
 		}
 	}
 
 	if apiConfig.UserGroupCreationPolicyTypeConfiguration != nil {
-		createUserGroupValue, createUserGroupDiags := NewCreateUserGroupValue(
-			CreateUserGroupValue{}.AttributeTypes(ctx),
+		createUserGroupValue, createUserGroupDiags := NewConfigCreateUserGroupValue(
+			ConfigCreateUserGroupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"user_group": types.StringValue(apiConfig.UserGroupCreationPolicyTypeConfiguration.UserGroup),
 			},
@@ -177,18 +155,13 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		if createUserGroupDiags.HasError() {
 			diags.Append(createUserGroupDiags...)
 		} else {
-			objectValue, objectDiags := createUserGroupValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["create_user_group"] = objectValue
-			}
+			data.ConfigCreateUserGroup = createUserGroupValue
 		}
 	}
 
 	if apiConfig.CypherAccessPolicyTypeConfiguration != nil {
-		cypherValue, cypherDiags := NewCypherValue(
-			CypherValue{}.AttributeTypes(ctx),
+		cypherValue, cypherDiags := NewConfigCypherValue(
+			ConfigCypherValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"account_integration_id": convert.StrToType(apiConfig.CypherAccessPolicyTypeConfiguration.AccountIntegrationId),
 				"delete":                 convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
@@ -202,12 +175,7 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		if cypherDiags.HasError() {
 			diags.Append(cypherDiags...)
 		} else {
-			objectValue, objectDiags := cypherValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["cypher"] = objectValue
-			}
+			data.ConfigCypher = cypherValue
 		}
 	}
 
@@ -225,16 +193,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		maxPriceAttrs["max_price_currency"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency)
 		maxPriceAttrs["max_price_unit"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit)
 
-		maxPriceValue, maxPriceDiags := NewMaxPriceValue(MaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
+		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
 		if maxPriceDiags.HasError() {
 			diags.Append(maxPriceDiags...)
 		} else {
-			objectValue, objectDiags := maxPriceValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_price"] = objectValue
-			}
+			data.ConfigMaxPrice = maxPriceValue
 		}
 	}
 
@@ -249,16 +212,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		}
 		maxMemoryAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxMemoryPolicyTypeConfiguration.ExcludeContainers)
 
-		maxMemoryValue, maxMemoryDiags := NewMaxMemoryValue(MaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
+		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
 		if maxMemoryDiags.HasError() {
 			diags.Append(maxMemoryDiags...)
 		} else {
-			objectValue, objectDiags := maxMemoryValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_memory"] = objectValue
-			}
+			data.ConfigMaxMemory = maxMemoryValue
 		}
 	}
 
@@ -273,16 +231,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 		}
 		maxCoresAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxCoresPolicyTypeConfiguration.ExcludeContainers)
 
-		maxCoresValue, maxCoresDiags := NewMaxCoresValue(MaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
+		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
 		if maxCoresDiags.HasError() {
 			diags.Append(maxCoresDiags...)
 		} else {
-			objectValue, objectDiags := maxCoresValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_cores"] = objectValue
-			}
+			data.ConfigMaxCores = maxCoresValue
 		}
 	}
 
@@ -293,16 +246,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"removal_age":            types.StringValue(apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
 		}
 
-		delayedRemovalValue, delayedRemovalDiags := NewDelayedRemovalValue(DelayedRemovalValue{}.AttributeTypes(ctx), delayedRemovalAttrs)
+		delayedRemovalValue, delayedRemovalDiags := NewConfigDelayedRemovalValue(ConfigDelayedRemovalValue{}.AttributeTypes(ctx), delayedRemovalAttrs)
 		if delayedRemovalDiags.HasError() {
 			diags.Append(delayedRemovalDiags...)
 		} else {
-			objectValue, objectDiags := delayedRemovalValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["delayed_removal"] = objectValue
-			}
+			data.ConfigDelayedRemoval = delayedRemovalValue
 		}
 	}
 
@@ -321,16 +269,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"lifecycle_type":                       types.StringValue(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleType),
 		}
 
-		lifecycleValue, lifecycleDiags := NewLifecycleValue(LifecycleValue{}.AttributeTypes(ctx), lifecycleAttrs)
+		lifecycleValue, lifecycleDiags := NewConfigLifecycleValue(ConfigLifecycleValue{}.AttributeTypes(ctx), lifecycleAttrs)
 		if lifecycleDiags.HasError() {
 			diags.Append(lifecycleDiags...)
 		} else {
-			objectValue, objectDiags := lifecycleValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["lifecycle"] = objectValue
-			}
+			data.ConfigLifecycle = lifecycleValue
 		}
 	}
 
@@ -341,16 +284,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"host_naming_type":    types.StringValue(apiConfig.HostnamePolicyTypeConfiguration.HostNamingType),
 		}
 
-		hostNamingValue, hostNamingDiags := NewHostNamingValue(HostNamingValue{}.AttributeTypes(ctx), hostNamingAttrs)
+		hostNamingValue, hostNamingDiags := NewConfigHostNamingValue(ConfigHostNamingValue{}.AttributeTypes(ctx), hostNamingAttrs)
 		if hostNamingDiags.HasError() {
 			diags.Append(hostNamingDiags...)
 		} else {
-			objectValue, objectDiags := hostNamingValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["host_naming"] = objectValue
-			}
+			data.ConfigHostNaming = hostNamingValue
 		}
 	}
 
@@ -362,16 +300,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"naming_type":     types.StringValue(apiConfig.InstanceNamePolicyTypeConfiguration.NamingType),
 		}
 
-		namingValue, namingDiags := NewNamingValue(NamingValue{}.AttributeTypes(ctx), namingAttrs)
+		namingValue, namingDiags := NewConfigNamingValue(ConfigNamingValue{}.AttributeTypes(ctx), namingAttrs)
 		if namingDiags.HasError() {
 			diags.Append(namingDiags...)
 		} else {
-			objectValue, objectDiags := namingValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["naming"] = objectValue
-			}
+			data.ConfigNaming = namingValue
 		}
 	}
 
@@ -381,16 +314,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_containers": types.StringValue(apiConfig.MaxContainersPolicyTypeConfiguration.MaxContainers),
 		}
 
-		maxContainersValue, maxContainersDiags := NewMaxContainersValue(MaxContainersValue{}.AttributeTypes(ctx), maxContainersAttrs)
+		maxContainersValue, maxContainersDiags := NewConfigMaxContainersValue(ConfigMaxContainersValue{}.AttributeTypes(ctx), maxContainersAttrs)
 		if maxContainersDiags.HasError() {
 			diags.Append(maxContainersDiags...)
 		} else {
-			objectValue, objectDiags := maxContainersValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_containers"] = objectValue
-			}
+			data.ConfigMaxContainers = maxContainersValue
 		}
 	}
 
@@ -400,16 +328,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_hosts": types.StringValue(apiConfig.MaxHostsPolicyTypeConfiguration.MaxHosts),
 		}
 
-		maxHostsValue, maxHostsDiags := NewMaxHostsValue(MaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
+		maxHostsValue, maxHostsDiags := NewConfigMaxHostsValue(ConfigMaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
 		if maxHostsDiags.HasError() {
 			diags.Append(maxHostsDiags...)
 		} else {
-			objectValue, objectDiags := maxHostsValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_hosts"] = objectValue
-			}
+			data.ConfigMaxHosts = maxHostsValue
 		}
 	}
 
@@ -419,16 +342,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_networks": types.StringValue(apiConfig.NetworkQuotaPolicyTypeConfiguration.MaxNetworks),
 		}
 
-		maxNetworksValue, maxNetworksDiags := NewMaxNetworksValue(MaxNetworksValue{}.AttributeTypes(ctx), maxNetworksAttrs)
+		maxNetworksValue, maxNetworksDiags := NewConfigMaxNetworksValue(ConfigMaxNetworksValue{}.AttributeTypes(ctx), maxNetworksAttrs)
 		if maxNetworksDiags.HasError() {
 			diags.Append(maxNetworksDiags...)
 		} else {
-			objectValue, objectDiags := maxNetworksValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_networks"] = objectValue
-			}
+			data.ConfigMaxNetworks = maxNetworksValue
 		}
 	}
 
@@ -438,16 +356,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_pool_members": types.StringValue(apiConfig.MaxPoolMembersPolicyTypeConfiguration.MaxPoolMembers),
 		}
 
-		maxPoolMembersValue, maxPoolMembersDiags := NewMaxPoolMembersValue(MaxPoolMembersValue{}.AttributeTypes(ctx), maxPoolMembersAttrs)
+		maxPoolMembersValue, maxPoolMembersDiags := NewConfigMaxPoolMembersValue(ConfigMaxPoolMembersValue{}.AttributeTypes(ctx), maxPoolMembersAttrs)
 		if maxPoolMembersDiags.HasError() {
 			diags.Append(maxPoolMembersDiags...)
 		} else {
-			objectValue, objectDiags := maxPoolMembersValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_pool_members"] = objectValue
-			}
+			data.ConfigMaxPoolMembers = maxPoolMembersValue
 		}
 	}
 
@@ -457,16 +370,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_pools": types.StringValue(apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration.MaxPools),
 		}
 
-		maxPoolsValue, maxPoolsDiags := NewMaxPoolsValue(MaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
+		maxPoolsValue, maxPoolsDiags := NewConfigMaxPoolsValue(ConfigMaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
 		if maxPoolsDiags.HasError() {
 			diags.Append(maxPoolsDiags...)
 		} else {
-			objectValue, objectDiags := maxPoolsValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_pools"] = objectValue
-			}
+			data.ConfigMaxPools = maxPoolsValue
 		}
 	}
 
@@ -476,16 +384,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_routers": types.StringValue(apiConfig.RouterQuotaPolicyTypeConfiguration.MaxRouters),
 		}
 
-		maxRoutersValue, maxRoutersDiags := NewMaxRoutersValue(MaxRoutersValue{}.AttributeTypes(ctx), maxRoutersAttrs)
+		maxRoutersValue, maxRoutersDiags := NewConfigMaxRoutersValue(ConfigMaxRoutersValue{}.AttributeTypes(ctx), maxRoutersAttrs)
 		if maxRoutersDiags.HasError() {
 			diags.Append(maxRoutersDiags...)
 		} else {
-			objectValue, objectDiags := maxRoutersValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_routers"] = objectValue
-			}
+			data.ConfigMaxRouters = maxRoutersValue
 		}
 	}
 
@@ -496,16 +399,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_storage":        types.StringValue(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage),
 		}
 
-		maxStorageValue, maxStorageDiags := NewMaxStorageValue(MaxStorageValue{}.AttributeTypes(ctx), maxStorageAttrs)
+		maxStorageValue, maxStorageDiags := NewConfigMaxStorageValue(ConfigMaxStorageValue{}.AttributeTypes(ctx), maxStorageAttrs)
 		if maxStorageDiags.HasError() {
 			diags.Append(maxStorageDiags...)
 		} else {
-			objectValue, objectDiags := maxStorageValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_storage"] = objectValue
-			}
+			data.ConfigMaxStorage = maxStorageValue
 		}
 	}
 
@@ -515,16 +413,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_virtual_servers": types.StringValue(apiConfig.MaxVirtualServersPolicyTypeConfiguration.MaxVirtualServers),
 		}
 
-		maxVirtualServersValue, maxVirtualServersDiags := NewMaxVirtualServersValue(MaxVirtualServersValue{}.AttributeTypes(ctx), maxVirtualServersAttrs)
+		maxVirtualServersValue, maxVirtualServersDiags := NewConfigMaxVirtualServersValue(ConfigMaxVirtualServersValue{}.AttributeTypes(ctx), maxVirtualServersAttrs)
 		if maxVirtualServersDiags.HasError() {
 			diags.Append(maxVirtualServersDiags...)
 		} else {
-			objectValue, objectDiags := maxVirtualServersValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_virtual_servers"] = objectValue
-			}
+			data.ConfigMaxVirtualServers = maxVirtualServersValue
 		}
 	}
 
@@ -534,39 +427,18 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"max_vms": types.StringValue(apiConfig.MaxVMsPolicyTypeConfiguration.MaxVms),
 		}
 
-		maxVmsValue, maxVmsDiags := NewMaxVmsValue(MaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
+		maxVmsValue, maxVmsDiags := NewConfigMaxVmsValue(ConfigMaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
 		if maxVmsDiags.HasError() {
 			diags.Append(maxVmsDiags...)
 		} else {
-			objectValue, objectDiags := maxVmsValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["max_vms"] = objectValue
-			}
+			data.ConfigMaxVms = maxVmsValue
 		}
 	}
 
 	// 20. MessageOfTheDayPolicyTypeConfiguration2 -> motd
 	if apiConfig.MessageOfTheDayPolicyTypeConfiguration2 != nil {
-		// Handle MotdFullPage
-		var motdFullPageValue MotdFullPageValue
-		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage != nil && apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String != nil {
-			motdFullPageAttrs := map[string]attr.Value{
-				"oneof0": types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String),
-			}
-			motdFullPageValue, _ = NewMotdFullPageValue(MotdFullPageValue{}.AttributeTypes(ctx), motdFullPageAttrs)
-		} else {
-			motdFullPageValue = NewMotdFullPageValueNull()
-		}
-
-		motdFullPageObjectValue, motdFullPageDiags := motdFullPageValue.ToObjectValue(ctx)
-		if motdFullPageDiags.HasError() {
-			diags.Append(motdFullPageDiags...)
-		}
-
 		motdAttrs := map[string]attr.Value{
-			"motd_full_page": motdFullPageObjectValue,
+			"motd_full_page": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String),
 			"motddate":       convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
 			"motdmessage":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
 			"motdtitle":      types.StringNull(), // NullableString type
@@ -577,16 +449,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.Get())
 		}
 
-		motdValue, motdDiags := NewMotdValue(MotdValue{}.AttributeTypes(ctx), motdAttrs)
+		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
 		if motdDiags.HasError() {
 			diags.Append(motdDiags...)
 		} else {
-			objectValue, objectDiags := motdValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["motd"] = objectValue
-			}
+			data.ConfigMotd = motdValue
 		}
 	}
 
@@ -598,16 +465,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"power_schedule_type":       types.StringValue(apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleType),
 		}
 
-		powerScheduleValue, powerScheduleDiags := NewPowerScheduleValue(PowerScheduleValue{}.AttributeTypes(ctx), powerScheduleAttrs)
+		powerScheduleValue, powerScheduleDiags := NewConfigPowerScheduleValue(ConfigPowerScheduleValue{}.AttributeTypes(ctx), powerScheduleAttrs)
 		if powerScheduleDiags.HasError() {
 			diags.Append(powerScheduleDiags...)
 		} else {
-			objectValue, objectDiags := powerScheduleValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["power_schedule"] = objectValue
-			}
+			data.ConfigPowerSchedule = powerScheduleValue
 		}
 	}
 
@@ -633,16 +495,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"required_networks": requiredNetworksSet,
 		}
 
-		requiredNetworkValue, requiredNetworkDiags := NewRequiredNetworkValue(RequiredNetworkValue{}.AttributeTypes(ctx), requiredNetworkAttrs)
+		requiredNetworkValue, requiredNetworkDiags := NewConfigRequiredNetworkValue(ConfigRequiredNetworkValue{}.AttributeTypes(ctx), requiredNetworkAttrs)
 		if requiredNetworkDiags.HasError() {
 			diags.Append(requiredNetworkDiags...)
 		} else {
-			objectValue, objectDiags := requiredNetworkValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["required_network"] = objectValue
-			}
+			data.ConfigRequiredNetwork = requiredNetworkValue
 		}
 	}
 
@@ -655,16 +512,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"server_naming_type":     types.StringValue(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType),
 		}
 
-		serverNamingValue, serverNamingDiags := NewServerNamingValue(ServerNamingValue{}.AttributeTypes(ctx), serverNamingAttrs)
+		serverNamingValue, serverNamingDiags := NewConfigServerNamingValue(ConfigServerNamingValue{}.AttributeTypes(ctx), serverNamingAttrs)
 		if serverNamingDiags.HasError() {
 			diags.Append(serverNamingDiags...)
 		} else {
-			objectValue, objectDiags := serverNamingValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["server_naming"] = objectValue
-			}
+			data.ConfigServerNaming = serverNamingValue
 		}
 	}
 
@@ -683,16 +535,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"shutdown_type":                       types.StringValue(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownType),
 		}
 
-		shutdownValue, shutdownDiags := NewShutdownValue(ShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
+		shutdownValue, shutdownDiags := NewConfigShutdownValue(ConfigShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
 		if shutdownDiags.HasError() {
 			diags.Append(shutdownDiags...)
 		} else {
-			objectValue, objectDiags := shutdownValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["shutdown"] = objectValue
-			}
+			data.ConfigShutdown = shutdownValue
 		}
 	}
 
@@ -703,16 +550,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"storage_server_id": types.StringValue(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.StorageServerId),
 		}
 
-		storageServerQuotaValue, storageServerQuotaDiags := NewStorageServerQuotaValue(StorageServerQuotaValue{}.AttributeTypes(ctx), storageServerQuotaAttrs)
+		storageServerQuotaValue, storageServerQuotaDiags := NewConfigStorageServerQuotaValue(ConfigStorageServerQuotaValue{}.AttributeTypes(ctx), storageServerQuotaAttrs)
 		if storageServerQuotaDiags.HasError() {
 			diags.Append(storageServerQuotaDiags...)
 		} else {
-			objectValue, objectDiags := storageServerQuotaValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["storage_server_quota"] = objectValue
-			}
+			data.ConfigStorageServerQuota = storageServerQuotaValue
 		}
 	}
 
@@ -725,16 +567,11 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.ValueListId),
 		}
 
-		tagsValue, tagsDiags := NewTagsValue(TagsValue{}.AttributeTypes(ctx), tagsAttrs)
+		tagsValue, tagsDiags := NewConfigTagsValue(ConfigTagsValue{}.AttributeTypes(ctx), tagsAttrs)
 		if tagsDiags.HasError() {
 			diags.Append(tagsDiags...)
 		} else {
-			objectValue, objectDiags := tagsValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["tags"] = objectValue
-			}
+			data.ConfigTags = tagsValue
 		}
 	}
 
@@ -744,27 +581,15 @@ func mapPolicyConfigToState(ctx context.Context, apiConfig *sdk.AddPolicies200Re
 			"workflow_id": types.StringValue(apiConfig.WorkflowPolicyTypeConfiguration.WorkflowId),
 		}
 
-		workflowValue, workflowDiags := NewWorkflowValue(WorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
+		workflowValue, workflowDiags := NewConfigWorkflowValue(ConfigWorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
 		if workflowDiags.HasError() {
 			diags.Append(workflowDiags...)
 		} else {
-			objectValue, objectDiags := workflowValue.ToObjectValue(ctx)
-			if objectDiags.HasError() {
-				diags.Append(objectDiags...)
-			} else {
-				configAttrs["workflow"] = objectValue
-			}
+			data.ConfigWorkflow = workflowValue
 		}
 	}
 
-	// Create the config value
-	configValue, configValueDiags := NewConfigValue(ConfigValue{}.AttributeTypes(ctx), configAttrs)
-	if configValueDiags.HasError() {
-		diags.Append(configValueDiags...)
-		return NewConfigValueNull(), diags
-	}
-
-	return configValue, diags
+	return diags
 }
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -907,14 +732,11 @@ func getPolicyByID(
 
 	// Handle Config - map API config to schema structure
 	if policy.Config != nil {
-		configValue, configDiags := mapPolicyConfigToState(ctx, policy.Config)
+		configDiags := mapPolicyConfigToState(ctx, data, policy.Config)
 		if configDiags.HasError() {
 			diags.Append(configDiags...)
 			return diags
 		}
-		data.Config = configValue
-	} else {
-		data.Config = NewConfigValueNull()
 	}
 
 	// Handle Cloud (Zone)
