@@ -7,9 +7,10 @@ import (
 	"log"
 	"strings"
 
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
@@ -46,9 +47,10 @@ func ResourceWikiPage() *schema.Resource {
 				Optional:    true,
 				StateFunc: func(v any) string {
 					var payload string
-					if s, ok := v.(string); ok {
-						payload = strings.TrimSuffix(s, "\n")
+					if strVal, ok := v.(string); ok {
+						payload = strVal
 					}
+					payload = strings.TrimSuffix(payload, "\n")
 
 					return payload
 				},
@@ -65,7 +67,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("meta", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -77,7 +79,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	wikiPage["name"] = name
 
@@ -85,7 +87,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 	wikiPage["category"] = category
 
@@ -93,7 +95,7 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("content").(string); ok {
 		content = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("content", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("content", d.Get("content")))
 	}
 	wikiPage["content"] = content
 
@@ -110,15 +112,21 @@ func resourceWikiPageCreate(ctx context.Context, d *schema.ResourceData, meta an
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
 	var result *morpheus.CreateWikiResult
 	if v, ok := resp.Result.(*morpheus.CreateWikiResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
+
 	if result.Wiki == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("Wiki"))
 	}
+
 	wikiPageResult := result.Wiki
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(wikiPageResult.ID))
@@ -133,17 +141,19 @@ func resourceWikiPageRead(ctx context.Context, d *schema.ResourceData, meta any)
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("meta", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	id := d.Id()
+
 	var name string
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
 	// lookup by name if we do not have an id yet
@@ -164,23 +174,30 @@ func resourceWikiPageRead(ctx context.Context, d *schema.ResourceData, meta any)
 			d.SetId("")
 
 			return diags
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
 		}
+
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
+
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
 	// store resource data
 	var result *morpheus.GetWikiResult
 	if v, ok := resp.Result.(*morpheus.GetWikiResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
+
 	if result.Wiki == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("Wiki"))
 	}
+
 	wikiPage := result.Wiki
 
 	d.SetId(convert.IntToString(int(wikiPage.ID)))
@@ -196,8 +213,9 @@ func resourceWikiPageUpdate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("meta", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
 	id := d.Id()
 
 	wikiPage := make(map[string]any)
@@ -206,7 +224,7 @@ func resourceWikiPageUpdate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("name").(string); ok {
 		name = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("name", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 	wikiPage["name"] = name
 
@@ -214,7 +232,7 @@ func resourceWikiPageUpdate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("category").(string); ok {
 		category = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("category", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
 	}
 	wikiPage["category"] = category
 
@@ -222,7 +240,7 @@ func resourceWikiPageUpdate(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := d.Get("content").(string); ok {
 		content = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("content", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("content", d.Get("content")))
 	}
 	wikiPage["content"] = content
 
@@ -238,15 +256,22 @@ func resourceWikiPageUpdate(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
+
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
 	var result *morpheus.UpdateWikiResult
 	if v, ok := resp.Result.(*morpheus.UpdateWikiResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("resp.Result", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
+
 	if result.Wiki == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("Wiki"))
 	}
+
 	wikiPageResult := result.Wiki
 
 	// Successfully updated resource, now set id
@@ -261,7 +286,7 @@ func resourceWikiPageDelete(ctx context.Context, d *schema.ResourceData, meta an
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("meta", meta))
+		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -275,11 +300,11 @@ func resourceWikiPageDelete(ctx context.Context, d *schema.ResourceData, meta an
 			log.Printf("API 404: %s - %s", resp, err)
 
 			return diag.FromErr(err)
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
 		}
+
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 	d.SetId("")
