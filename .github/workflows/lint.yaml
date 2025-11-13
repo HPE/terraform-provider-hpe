@@ -2,22 +2,25 @@
 
 name: Lint
 
+permissions:
+  contents: read
+  pull-requests: read
+
 on:
   push:
     branches:
       - main
   pull_request:
 jobs:
-  lint:
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        go: [ '1.24.1' ]
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go }}
-      - run: go version
-      - run: make linter
-      - run: make lint
+          go-version-file: go.mod
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1
