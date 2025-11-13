@@ -2,6 +2,8 @@ package blueprint
 
 // This cannot currently be handled efficiently by a DiffSuppressFunc.
 // See: https://github.com/hashicorp/terraform-plugin-sdk/issues/477
+//
+//nolint:unused
 func matchTemplatesWithSchema(templates []int64, declaredTemplates []interface{}) []int64 {
 	result := make([]int64, len(declaredTemplates))
 
@@ -23,5 +25,6 @@ func matchTemplatesWithSchema(templates []int64, declaredTemplates []interface{}
 	for _, rcpt := range rMap {
 		result = append(result, rcpt)
 	}
+
 	return result
 }
