@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package workflow
+package catalogitem
 
 import (
 	"context"
@@ -19,17 +19,17 @@ import (
 )
 
 // ResourceWorkflowCatalogItem returns the workflow catalog item resource
-func ResourceWorkflowCatalogItem() *schema.Resource {
-	return resourceWorkflowCatalogItem()
+func ResourceCatalogItemWorkflow() *schema.Resource {
+	return resourceCatalogItemWorkflow()
 }
 
-func resourceWorkflowCatalogItem() *schema.Resource {
+func resourceCatalogItemWorkflow() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus workflow catalog item resource",
-		CreateContext: resourceWorkflowCatalogItemCreate,
-		ReadContext:   resourceWorkflowCatalogItemRead,
-		UpdateContext: resourceWorkflowCatalogItemUpdate,
-		DeleteContext: resourceWorkflowCatalogItemDelete,
+		CreateContext: resourceCatalogItemWorkflowCreate,
+		ReadContext:   resourceCatalogItemWorkflowRead,
+		UpdateContext: resourceCatalogItemWorkflowUpdate,
+		DeleteContext: resourceCatalogItemWorkflowDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -153,7 +153,7 @@ func resourceWorkflowCatalogItem() *schema.Resource {
 	}
 }
 
-func resourceWorkflowCatalogItemCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -371,12 +371,12 @@ func resourceWorkflowCatalogItemCreate(ctx context.Context, d *schema.ResourceDa
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	diags = append(diags, resourceWorkflowCatalogItemRead(ctx, d, meta)...)
+	diags = append(diags, resourceCatalogItemWorkflowRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceWorkflowCatalogItemRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -504,7 +504,7 @@ func resourceWorkflowCatalogItemRead(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceWorkflowCatalogItemUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -719,10 +719,10 @@ func resourceWorkflowCatalogItemUpdate(ctx context.Context, d *schema.ResourceDa
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	return resourceWorkflowCatalogItemRead(ctx, d, meta)
+	return resourceCatalogItemWorkflowRead(ctx, d, meta)
 }
 
-func resourceWorkflowCatalogItemDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert

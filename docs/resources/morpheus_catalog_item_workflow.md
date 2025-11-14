@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_workflow_catalog_item Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_catalog_item_workflow Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus workflow catalog item resource
 ---
-# hpe_morpheus_workflow_catalog_item (Resource)
+# hpe_morpheus_catalog_item_workflow (Resource)
 
 Provides a Morpheus workflow catalog item resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_workflow_catalog_item" "tfexample_workflow_catalog_item" {
+resource "hpe_morpheus_catalog_item_workflow" "tfexample_workflow_catalog_item" {
   name                 = "tfexample_workflow_catalog_item"
   description          = "Example Terraform workflow catalog item"
   logo_image_path      = "wordpress.png"
@@ -63,5 +63,5 @@ resource "hpe_morpheus_workflow_catalog_item" "tfexample_workflow_catalog_item" 
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_workflow_catalog_item.tf_example_workflow_catalog_item 1
+terraform import hpe_morpheus_catalog_item_workflow.tf_example_workflow_catalog_item 1
 ```
