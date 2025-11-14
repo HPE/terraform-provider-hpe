@@ -1,1 +1,0 @@
-terraform import hpe_morpheus_template_spec_cloud_formation.tf_example_cloud_formation_spec_template 1
