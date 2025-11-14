@@ -352,7 +352,7 @@ func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceDa
 	log.Printf("API RESPONSE: %s", resp)
 
 	// store resource data
-	var terraformBlueprint BlueprintAppTerraform
+	var terraformBlueprint AppBlueprintTerraform
 	json.Unmarshal(resp.Body, &terraformBlueprint)
 	d.SetId(convert.IntToString(terraformBlueprint.Blueprint.ID))
 	d.Set("name", terraformBlueprint.Blueprint.Name)
@@ -608,7 +608,7 @@ func resourceAppBlueprintTerraformDelete(ctx context.Context, d *schema.Resource
 	return diags
 }
 
-type BlueprintAppTerraform struct {
+type AppBlueprintTerraform struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`

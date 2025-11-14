@@ -309,7 +309,7 @@ func resourceAppBlueprintKubernetesRead(
 	log.Printf("API RESPONSE: %s", resp)
 
 	// store resource data
-	var kubernetesBlueprint BlueprintAppKubernetes
+	var kubernetesBlueprint AppBlueprintKubernetes
 	json.Unmarshal(resp.Body, &kubernetesBlueprint)
 	d.SetId(convert.IntToString(kubernetesBlueprint.Blueprint.ID))
 	d.Set("name", kubernetesBlueprint.Blueprint.Name)
@@ -521,7 +521,7 @@ func resourceAppBlueprintKubernetesDelete(
 	return diags
 }
 
-type BlueprintAppKubernetes struct {
+type AppBlueprintKubernetes struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`

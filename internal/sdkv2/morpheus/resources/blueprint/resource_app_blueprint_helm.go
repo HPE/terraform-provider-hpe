@@ -223,7 +223,7 @@ func resourceAppBlueprintHelmRead(ctx context.Context, d *schema.ResourceData, m
 	log.Printf("API RESPONSE: %s", resp)
 
 	// store resource data
-	var helmBlueprint BlueprintAppHelm
+	var helmBlueprint AppBlueprintHelm
 	json.Unmarshal(resp.Body, &helmBlueprint)
 	d.SetId(convert.IntToString(helmBlueprint.Blueprint.ID))
 	d.Set("name", helmBlueprint.Blueprint.Name)
@@ -364,7 +364,7 @@ func resourceAppBlueprintHelmDelete(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-type BlueprintAppHelm struct {
+type AppBlueprintHelm struct {
 	Blueprint struct {
 		ID          int    `json:"id"`
 		Name        string `json:"name"`
