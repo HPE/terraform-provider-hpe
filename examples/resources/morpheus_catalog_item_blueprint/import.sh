@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_catalog_item_blueprint.tf_example_app_blueprint_catalog_item 1

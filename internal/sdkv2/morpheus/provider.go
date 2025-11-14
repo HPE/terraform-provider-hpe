@@ -11,15 +11,18 @@ import (
 	taskdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/task"
 	tasksdatasource "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tasks"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/blueprint"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/catalogitem"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/job"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optionlist"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optiontype"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/script"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/usergroup"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/wiki"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/workflow"
 )
 
 func Provider() *schema.Provider {
@@ -27,11 +30,12 @@ func Provider() *schema.Provider {
 		Schema: providerSchema(),
 
 		ResourcesMap: map[string]*schema.Resource{
-			"hpe_morpheus_blueprint_app_arm":                blueprint.ResourceBlueprintAppARM(),
-			"hpe_morpheus_blueprint_app_cloud_formation":    blueprint.ResourceBlueprintAppCloudFormation(),
-			"hpe_morpheus_blueprint_app_helm":               blueprint.ResourceBlueprintAppHelm(),
-			"hpe_morpheus_blueprint_app_kubernetes":         blueprint.ResourceBlueprintAppKubernetes(),
-			"hpe_morpheus_blueprint_app_terraform":          blueprint.ResourceBlueprintAppTerraform(),
+			"hpe_morpheus_app_blueprint_arm":                blueprint.ResourceAppBlueprintARM(),
+			"hpe_morpheus_app_blueprint_cloud_formation":    blueprint.ResourceAppBlueprintCloudFormation(),
+			"hpe_morpheus_app_blueprint_helm":               blueprint.ResourceAppBlueprintHelm(),
+			"hpe_morpheus_app_blueprint_kubernetes":         blueprint.ResourceAppBlueprintKubernetes(),
+			"hpe_morpheus_app_blueprint_terraform":          blueprint.ResourceAppBlueprintTerraform(),
+			"hpe_morpheus_catalog_item_workflow":            catalogitem.ResourceCatalogItemWorkflow(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
@@ -47,6 +51,22 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_option_list_api":                  optionlist.ResourceOptionListAPI(),
 			"hpe_morpheus_option_list_manual":               optionlist.ResourceOptionListManual(),
 			"hpe_morpheus_option_list_rest":                 optionlist.ResourceOptionListREST(),
+			"hpe_morpheus_option_type_checkbox":             optiontype.ResourceOptionTypeCheckbox(),
+			"hpe_morpheus_option_type_hidden":               optiontype.ResourceOptionTypeHidden(),
+			"hpe_morpheus_option_type_number":               optiontype.ResourceOptionTypeNumber(),
+			"hpe_morpheus_option_type_password":             optiontype.ResourceOptionTypePassword(),
+			"hpe_morpheus_option_type_radio_list":           optiontype.ResourceOptionTypeRadioList(),
+			"hpe_morpheus_option_type_select_list":          optiontype.ResourceOptionTypeSelectList(),
+			"hpe_morpheus_option_type_text":                 optiontype.ResourceOptionTypeText(),
+			"hpe_morpheus_option_type_textarea":             optiontype.ResourceOptionTypeTextarea(),
+			"hpe_morpheus_option_type_typeahead":            optiontype.ResourceOptionTypeTypeahead(),
+			"hpe_morpheus_boot_script":                      script.ResourceBootScript(),
+			"hpe_morpheus_preseed_script":                   script.ResourcePreseedScript(),
+			"hpe_morpheus_setting_appliance":                setting.ResourceSettingAppliance(),
+			"hpe_morpheus_setting_backup":                   setting.ResourceSettingBackup(),
+			"hpe_morpheus_setting_guidance":                 setting.ResourceSettingGuidance(),
+			"hpe_morpheus_setting_monitoring":               setting.ResourceSettingMonitoring(),
+			"hpe_morpheus_setting_provisioning":             setting.ResourceSettingProvisioning(),
 			"hpe_morpheus_task_ansible_playbook":            task.ResourceTaskAnsiblePlaybook(),
 			"hpe_morpheus_task_ansible_tower":               task.ResourceTaskAnsibleTower(),
 			"hpe_morpheus_task_chef_bootstrap":              task.ResourceTaskChefBootstrap(),
@@ -65,7 +85,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 			"hpe_morpheus_user_group":                       usergroup.ResourceUserGroup(),
 			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
-			"hpe_morpheus_workflow_catalog_item":            workflow.ResourceWorkflowCatalogItem(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hpe_morpheus_task":  taskdatasource.DataSourceMorpheusTask(),
