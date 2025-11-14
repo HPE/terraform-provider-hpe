@@ -7,7 +7,7 @@ require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.0.2
 	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/google/go-cmp v0.7.0
-	github.com/hashicorp/terraform-plugin-framework v1.16.0
+	github.com/hashicorp/terraform-plugin-framework v1.16.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.29.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
