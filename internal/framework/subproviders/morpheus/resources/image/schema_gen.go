@@ -10,11 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -34,20 +31,14 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Auto Join Domain?",
 				MarkdownDescription: "Auto Join Domain?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"cloud_init": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Cloud Init Enabled?",
 				MarkdownDescription: "Cloud Init Enabled?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"config_azure": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -93,9 +84,6 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Azure Reference Virtual Image Parameters",
 				MarkdownDescription: "Azure Reference Virtual Image Parameters",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.RequiresReplace(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -108,34 +96,22 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"external_id": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"fips_enabled": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "FIPS enabled?",
 				MarkdownDescription: "FIPS enabled?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
 			},
 			"force_customization": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Force Guest Customization?",
 				MarkdownDescription: "Force Guest Customization?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"image_type": schema.StringAttribute{
 				Required:            true,
@@ -150,10 +126,7 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Install Agent?",
 				MarkdownDescription: "Install Agent?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"labels": schema.SetAttribute{
 				ElementType:         types.StringType,
@@ -161,60 +134,39 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Array of label strings, can be used for filtering.",
 				MarkdownDescription: "Array of label strings, can be used for filtering.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"min_disk": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Minimal required amount of disk space for provisioning in GB",
 				MarkdownDescription: "Minimal required amount of disk space for provisioning in GB",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"min_ram": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Minimal required amount of RAM for provisioning in GB",
 				MarkdownDescription: "Minimal required amount of RAM for provisioning in GB",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "A name for the virtual image",
 				MarkdownDescription: "A name for the virtual image",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"os_type_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "ID of the OS Type",
 				MarkdownDescription: "ID of the OS Type",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"owner_id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "ID of the user which created this image",
 				MarkdownDescription: "ID of the user which created this image",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"raw_size": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "Size of image in bytes",
 				MarkdownDescription: "Size of image in bytes",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"ssh_password_wo": schema.StringAttribute{
 				Optional:            true,
@@ -223,25 +175,18 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "SSH password (Write Only)",
 				PlanModifiers: []planmodifier.String{
 					modifiers.NullableStringUpdateModifier{},
-					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"ssh_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
 				Description:         "SSH password version. Used to determine if ssh_password_wo has been updated.",
 				MarkdownDescription: "SSH password version. Used to determine if ssh_password_wo has been updated.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"ssh_username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "SSH Username",
 				MarkdownDescription: "SSH Username",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"storage_provider_id": schema.Int64Attribute{
 				Optional:            true,
@@ -257,31 +202,19 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Sysprep Enabled?",
 				MarkdownDescription: "Sysprep Enabled?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"system_image": schema.BoolAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
 			},
 			"tags": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 						"value": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
 						},
 					},
 					CustomType: TagsType{
@@ -294,9 +227,6 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Metadata tags, Array of objects having a name and value",
 				MarkdownDescription: "Metadata tags, Array of objects having a name and value",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
@@ -304,28 +234,19 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "List of tenant IDs",
 				MarkdownDescription: "List of tenant IDs",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
-				},
 			},
 			"trial_version": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Trial Version",
 				MarkdownDescription: "Trial Version",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(false),
+				Default:             booldefault.StaticBool(false),
 			},
 			"uefi": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "UEFI enabled?",
 				MarkdownDescription: "UEFI enabled?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
 			},
 			"url": schema.StringAttribute{
 				Optional:            true,
@@ -340,28 +261,19 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Cloud-Init User Data, a bash script",
 				MarkdownDescription: "Cloud-Init User Data, a bash script",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"virtio_supported": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "VirtIO Drivers Loaded?",
 				MarkdownDescription: "VirtIO Drivers Loaded?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(true),
+				Default:             booldefault.StaticBool(true),
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "private or public",
 				MarkdownDescription: "private or public",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"private",
@@ -375,10 +287,7 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "VM Tools Installed?",
 				MarkdownDescription: "VM Tools Installed?",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
-				Default: booldefault.StaticBool(true),
+				Default:             booldefault.StaticBool(true),
 			},
 		},
 	}
