@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_template_spec_kubernetes.tf_example_kubernetes_spec_template 1
