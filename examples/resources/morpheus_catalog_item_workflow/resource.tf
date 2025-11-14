@@ -1,4 +1,4 @@
-resource "hpe_morpheus_workflow_catalog_item" "tfexample_workflow_catalog_item" {
+resource "hpe_morpheus_catalog_item_workflow" "tfexample_workflow_catalog_item" {
   name                 = "tfexample_workflow_catalog_item"
   description          = "Example Terraform workflow catalog item"
   logo_image_path      = "wordpress.png"
@@ -14,3 +14,4 @@ resource "hpe_morpheus_workflow_catalog_item" "tfexample_workflow_catalog_item" 
   content              = file("${path.module}/catalog-data.md")
   visibility           = "public"
 }
+
