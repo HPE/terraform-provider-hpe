@@ -19,35 +19,36 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func ResourceTemplateSpecHelm() *schema.Resource {
+func ResourceTemplateSpecTerraform() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Provides a Morpheus helm spec template resource",
-		CreateContext: resourceTemplateSpecHelmCreate,
-		ReadContext:   resourceTemplateSpecHelmRead,
-		UpdateContext: resourceTemplateSpecHelmUpdate,
-		DeleteContext: resourceTemplateSpecHelmDelete,
+		Description:   "Provides a Morpheus terraform spec template resource",
+		CreateContext: resourceTemplateSpecTerraformCreate,
+		ReadContext:   resourceTemplateSpecTerraformRead,
+		UpdateContext: resourceTemplateSpecTerraformUpdate,
+		DeleteContext: resourceTemplateSpecTerraformDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "The ID of the helm spec template",
+				Description: "The ID of the terraform spec template",
 				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the helm spec template",
+				Description: "The name of the terraform spec template",
 				Required:    true,
 			},
 			"source_type": {
 				Type:         schema.TypeString,
-				Description:  "The source of the helm spec template (local, url or repository)",
-				ValidateFunc: validation.StringInSlice([]string{sourceTypeLocal, sourceTypeURL, sourceTypeRepository}, false),
+				Description:  "The source of the terraform spec template (local, url or repository)",
+				ValidateFunc: validation.StringInSlice([]string{"local", "url", "repository"}, false),
 				Required:     true,
 			},
 			"spec_content": {
 				Type:        schema.TypeString,
-				Description: "The content of the helm spec template. Used when the local source type is specified",
+				Description: "The content of the terraform spec template. Used when the local source type is specified",
 				Optional:    true,
+				Computed:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
 						return strings.TrimSuffix(v, "\n")
@@ -58,18 +59,21 @@ func ResourceTemplateSpecHelm() *schema.Resource {
 			},
 			"spec_path": {
 				Type:        schema.TypeString,
-				Description: "The path of the helm spec template, either the url or the path in the repository",
+				Description: "The path of the terraform spec template, either the url or the path in the repository",
 				Optional:    true,
+				Computed:    true,
 			},
 			"repository_id": {
 				Type:        schema.TypeInt,
 				Description: "The ID of the git repository integration",
 				Optional:    true,
+				Computed:    true,
 			},
 			"version_ref": {
 				Type:        schema.TypeString,
 				Description: "The git reference of the repository to pull (main, master, etc.)",
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -78,7 +82,7 @@ func ResourceTemplateSpecHelm() *schema.Resource {
 	}
 }
 
-func resourceTemplateSpecHelmCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecTerraformCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -88,6 +92,7 @@ func resourceTemplateSpecHelmCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
+	// Warning or errors can be collected in a slice type
 	var name string
 	if v, ok := d.Get("name").(string); ok {
 		name = v
@@ -95,33 +100,21 @@ func resourceTemplateSpecHelmCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	var sourceType string
-	if v, ok := d.Get("source_type").(string); ok {
-		sourceType = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
-	}
-
 	sourceOptions := make(map[string]any)
-	sourceOptions["sourceType"] = sourceType
-
-	switch sourceType {
-	case sourceTypeLocal:
+	if d.Get("spec_content") != "" {
 		sourceOptions["content"] = d.Get("spec_content")
-		sourceOptions["contentPath"] = d.Get("spec_path")
-	case sourceTypeURL:
-		sourceOptions["content"] = d.Get("spec_content")
-		sourceOptions["contentPath"] = d.Get("spec_path")
-	case sourceTypeRepository:
-		sourceOptions["contentPath"] = d.Get("spec_path")
-		sourceOptions["contentRef"] = d.Get("version_ref")
-		sourceOptions["repository"] = map[string]any{
-			"id": d.Get("repository_id"),
-		}
 	}
+	if d.Get("spec_path") != "" {
+		sourceOptions["contentPath"] = d.Get("spec_path")
+	}
+	sourceOptions["contentRef"] = d.Get("version_ref")
+	sourceOptions["repository"] = map[string]any{
+		"id": d.Get("repository_id"),
+	}
+	sourceOptions["sourceType"] = d.Get("source_type")
 
 	specTemplateType := make(map[string]any)
-	specTemplateType["code"] = "helm"
+	specTemplateType["code"] = "terraform"
 
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -144,22 +137,22 @@ func resourceTemplateSpecHelmCreate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.CreateSpecTemplateResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("CreateSpecTemplateResult", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
 	if result.SpecTemplate == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("SpecTemplate"))
 	}
-
 	specTemplate := result.SpecTemplate
+	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(specTemplate.ID))
 
-	diags = append(diags, resourceTemplateSpecHelmRead(ctx, d, meta)...)
+	diags = append(diags, resourceTemplateSpecTerraformRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecTerraformRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -169,8 +162,8 @@ func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
+	// Warning or errors can be collected in a slice type
 	id := d.Id()
-
 	var name string
 	if v, ok := d.Get("name").(string); ok {
 		name = v
@@ -178,6 +171,7 @@ func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
+	// lookup by name if we do not have an id yet
 	var resp *morpheus.Response
 	var err error
 	if id == "" && name != "" {
@@ -189,6 +183,7 @@ func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if err != nil {
+		// 404 is ok?
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
@@ -202,33 +197,31 @@ func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var helmSpecTemplate HelmSpecTemplate
-	if err := json.Unmarshal(resp.Body, &helmSpecTemplate); err != nil {
-		return diag.FromErr(err)
-	}
+	// store resource data
+	var terraformSpecTemplate SpecTerraformTemplate
+	json.Unmarshal(resp.Body, &terraformSpecTemplate)
+	d.SetId(convert.IntToString(terraformSpecTemplate.Spectemplate.ID))
+	d.Set("name", terraformSpecTemplate.Spectemplate.Name)
+	d.Set("source_type", terraformSpecTemplate.Spectemplate.File.Sourcetype)
 
-	d.SetId(convert.IntToString(helmSpecTemplate.Spectemplate.ID))
-	d.Set("name", helmSpecTemplate.Spectemplate.Name)
-	d.Set("source_type", helmSpecTemplate.Spectemplate.File.Sourcetype)
-
-	switch helmSpecTemplate.Spectemplate.File.Sourcetype {
-	case sourceTypeLocal:
-		d.Set("source_type", sourceTypeLocal)
-		d.Set("spec_content", helmSpecTemplate.Spectemplate.File.Content)
-	case sourceTypeURL:
-		d.Set("source_type", sourceTypeURL)
-		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
+	switch terraformSpecTemplate.Spectemplate.File.Sourcetype {
+	case "local":
+		d.Set("source_type", "local")
+		d.Set("spec_content", terraformSpecTemplate.Spectemplate.File.Content)
+	case "url":
+		d.Set("source_type", "url")
+		d.Set("spec_path", terraformSpecTemplate.Spectemplate.File.Contentpath)
 	case sourceTypeGit:
-		d.Set("source_type", sourceTypeRepository)
-		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
-		d.Set("repository_id", helmSpecTemplate.Spectemplate.File.Repository.ID)
-		d.Set("version_ref", helmSpecTemplate.Spectemplate.File.Contentref)
+		d.Set("source_type", "repository")
+		d.Set("spec_path", terraformSpecTemplate.Spectemplate.File.Contentpath)
+		d.Set("repository_id", terraformSpecTemplate.Spectemplate.File.Repository.ID)
+		d.Set("version_ref", terraformSpecTemplate.Spectemplate.File.Contentref)
 	}
 
 	return diags
 }
 
-func resourceTemplateSpecHelmUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecTerraformUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -237,7 +230,6 @@ func resourceTemplateSpecHelmUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	id := d.Id()
-
 	var name string
 	if v, ok := d.Get("name").(string); ok {
 		name = v
@@ -245,33 +237,21 @@ func resourceTemplateSpecHelmUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	var sourceType string
-	if v, ok := d.Get("source_type").(string); ok {
-		sourceType = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
-	}
-
 	sourceOptions := make(map[string]any)
-	sourceOptions["sourceType"] = sourceType
-
-	switch sourceType {
-	case sourceTypeLocal:
+	if d.Get("spec_content") != "" {
 		sourceOptions["content"] = d.Get("spec_content")
-		sourceOptions["contentPath"] = d.Get("spec_path")
-	case sourceTypeURL:
-		sourceOptions["content"] = d.Get("spec_content")
-		sourceOptions["contentPath"] = d.Get("spec_path")
-	case sourceTypeRepository:
-		sourceOptions["contentPath"] = d.Get("spec_path")
-		sourceOptions["contentRef"] = d.Get("version_ref")
-		sourceOptions["repository"] = map[string]any{
-			"id": d.Get("repository_id"),
-		}
 	}
+	if d.Get("spec_path") != "" {
+		sourceOptions["contentPath"] = d.Get("spec_path")
+	}
+	sourceOptions["contentRef"] = d.Get("version_ref")
+	sourceOptions["repository"] = map[string]any{
+		"id": d.Get("repository_id"),
+	}
+	sourceOptions["sourceType"] = d.Get("source_type")
 
 	specTemplateType := make(map[string]any)
-	specTemplateType["code"] = "helm"
+	specTemplateType["code"] = "terraform"
 
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -294,20 +274,21 @@ func resourceTemplateSpecHelmUpdate(ctx context.Context, d *schema.ResourceData,
 	if v, ok := resp.Result.(*morpheus.UpdateSpecTemplateResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("UpdateSpecTemplateResult", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
 	if result.SpecTemplate == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("SpecTemplate"))
 	}
-
 	specTemplate := result.SpecTemplate
+	// Successfully updated resource, now set id
+	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(specTemplate.ID))
 
-	return resourceTemplateSpecHelmRead(ctx, d, meta)
+	return resourceTemplateSpecTerraformRead(ctx, d, meta)
 }
 
-func resourceTemplateSpecHelmDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecTerraformDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -317,6 +298,7 @@ func resourceTemplateSpecHelmDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
+	// Warning or errors can be collected in a slice type
 	id := d.Id()
 	req := &morpheus.Request{}
 	resp, err := client.DeleteSpecTemplate(convert.StringToInt64(id), req)
@@ -336,7 +318,7 @@ func resourceTemplateSpecHelmDelete(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-type HelmSpecTemplate struct {
+type SpecTerraformTemplate struct {
 	Spectemplate struct {
 		ID      int `json:"id"`
 		Account struct {

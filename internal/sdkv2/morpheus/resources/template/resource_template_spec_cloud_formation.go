@@ -306,7 +306,7 @@ func resourceTemplateSpecCloudFormationRead(ctx context.Context, d *schema.Resou
 	case sourceTypeURL:
 		d.Set("source_type", sourceTypeURL)
 		d.Set("spec_path", cloudFormationSpecTemplate.Spectemplate.File.Contentpath)
-	case "git":
+	case sourceTypeGit:
 		d.Set("source_type", sourceTypeRepository)
 		d.Set("spec_path", cloudFormationSpecTemplate.Spectemplate.File.Contentpath)
 		d.Set("repository_id", cloudFormationSpecTemplate.Spectemplate.File.Repository.ID)
