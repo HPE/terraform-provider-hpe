@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_setting_guidance.tf_example_guidance_config 1
