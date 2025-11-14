@@ -1,10 +1,10 @@
 ---
-page_title: "hpe_morpheus_blueprint_app_helm Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_app_blueprint_helm Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus helm app blueprint resource
 ---
-# hpe_morpheus_blueprint_app_helm (Resource)
+# hpe_morpheus_app_blueprint_helm (Resource)
 
 Provides a Morpheus helm app blueprint resource
 
@@ -13,7 +13,7 @@ Provides a Morpheus helm app blueprint resource
 Creating the Helm app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_helm" "tf_example_helm_app_blueprint" {
+resource "hpe_morpheus_app_blueprint_helm" "tf_example_helm_app_blueprint" {
   name           = "helmappblueprint"
   description    = "tf example helm app blueprint"
   category       = "helm"
@@ -49,5 +49,5 @@ resource "hpe_morpheus_blueprint_app_helm" "tf_example_helm_app_blueprint" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_blueprint_app_helm.tf_example_helm_app_blueprint 1
+terraform import hpe_morpheus_app_blueprint_helm.tf_example_helm_app_blueprint 1
 ```

@@ -1,10 +1,10 @@
 ---
-page_title: "hpe_morpheus_blueprint_app_kubernetes Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_app_blueprint_kubernetes Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus kubernetes app blueprint resource
 ---
-# hpe_morpheus_blueprint_app_kubernetes (Resource)
+# hpe_morpheus_app_blueprint_kubernetes (Resource)
 
 Provides a Morpheus kubernetes app blueprint resource
 
@@ -13,7 +13,7 @@ Provides a Morpheus kubernetes app blueprint resource
 Creating the Kubernetes app blueprint with local content in yaml format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_blueprint_yaml" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_yaml" {
   name              = "tf-kubernetes-app-blueprint-example-yaml"
   description       = "tf example kubernetes app blueprint"
   category          = "k8s"
@@ -48,7 +48,7 @@ TFEOF
 Creating the Kubernetes app blueprint with Kubernetes spec templates:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_blueprint_spec" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_spec" {
   name              = "tf-kubernetes-app-blueprint-example-spec"
   description       = "tf example kubernetes app blueprint"
   category          = "k8s"
@@ -60,7 +60,7 @@ resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_bluep
 Creating the Kubernetes app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_git" {
   name           = "tf-kubernetes-app-blueprint-example-git"
   description    = "tf example kubernetes app blueprint"
   category       = "k8s"
@@ -100,5 +100,5 @@ resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_bluep
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_blueprint_app_kubernetes.tf_example_kubernetes_app_blueprint 1
+terraform import hpe_morpheus_app_blueprint_kubernetes.tf_example_kubernetes_app_blueprint 1
 ```

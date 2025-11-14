@@ -25,13 +25,13 @@ const (
 	configTypeGit           = "git"
 )
 
-func ResourceBlueprintAppKubernetes() *schema.Resource {
+func ResourceAppBlueprintKubernetes() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus kubernetes app blueprint resource",
-		CreateContext: resourceBlueprintAppKubernetesCreate,
-		ReadContext:   resourceBlueprintAppKubernetesRead,
-		UpdateContext: resourceBlueprintAppKubernetesUpdate,
-		DeleteContext: resourceBlueprintAppKubernetesDelete,
+		CreateContext: resourceAppBlueprintKubernetesCreate,
+		ReadContext:   resourceAppBlueprintKubernetesRead,
+		UpdateContext: resourceAppBlueprintKubernetesUpdate,
+		DeleteContext: resourceAppBlueprintKubernetesDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -108,7 +108,7 @@ func ResourceBlueprintAppKubernetes() *schema.Resource {
 	}
 }
 
-func resourceBlueprintAppKubernetesCreate(
+func resourceAppBlueprintKubernetesCreate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -254,12 +254,12 @@ func resourceBlueprintAppKubernetesCreate(
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintAppKubernetesRead(ctx, d, meta)...)
+	diags = append(diags, resourceAppBlueprintKubernetesRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintAppKubernetesRead(
+func resourceAppBlueprintKubernetesRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -343,7 +343,7 @@ func resourceBlueprintAppKubernetesRead(
 	return diags
 }
 
-func resourceBlueprintAppKubernetesUpdate(
+func resourceAppBlueprintKubernetesUpdate(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,
@@ -484,10 +484,10 @@ func resourceBlueprintAppKubernetesUpdate(
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintAppKubernetesRead(ctx, d, meta)
+	return resourceAppBlueprintKubernetesRead(ctx, d, meta)
 }
 
-func resourceBlueprintAppKubernetesDelete(
+func resourceAppBlueprintKubernetesDelete(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_app_kubernetes" "tfexample_kubernetes_app_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_git" {
   name           = "tf-kubernetes-app-blueprint-example-git"
   description    = "tf example kubernetes app blueprint"
   category       = "k8s"

@@ -1,4 +1,4 @@
-resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint" {
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint" {
   name              = "tfappbluedemo"
   description       = "testing terraform"
   category          = "terraformdemo"

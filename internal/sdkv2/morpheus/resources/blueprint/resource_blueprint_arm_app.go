@@ -18,13 +18,13 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func ResourceBlueprintAppARM() *schema.Resource {
+func ResourceAppBlueprintARM() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus arm app blueprint resource",
-		CreateContext: resourceBlueprintAppARMCreate,
-		ReadContext:   resourceBlueprintAppARMRead,
-		UpdateContext: resourceBlueprintAppARMUpdate,
-		DeleteContext: resourceBlueprintAppARMDelete,
+		CreateContext: resourceAppBlueprintARMCreate,
+		ReadContext:   resourceAppBlueprintARMRead,
+		UpdateContext: resourceAppBlueprintARMUpdate,
+		DeleteContext: resourceAppBlueprintARMDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -111,7 +111,7 @@ func ResourceBlueprintAppARM() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceBlueprintAppARMCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintARMCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -266,12 +266,12 @@ func resourceBlueprintAppARMCreate(ctx context.Context, d *schema.ResourceData, 
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintAppARMRead(ctx, d, meta)...)
+	diags = append(diags, resourceAppBlueprintARMRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintAppARMRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintARMRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -339,7 +339,7 @@ func resourceBlueprintAppARMRead(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceBlueprintAppARMUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintARMUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -493,10 +493,10 @@ func resourceBlueprintAppARMUpdate(ctx context.Context, d *schema.ResourceData, 
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintAppARMRead(ctx, d, meta)
+	return resourceAppBlueprintARMRead(ctx, d, meta)
 }
 
-func resourceBlueprintAppARMDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintARMDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client

@@ -1,10 +1,10 @@
 ---
-page_title: "hpe_morpheus_blueprint_app_arm Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_app_blueprint_arm Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus arm app blueprint resource
 ---
-# hpe_morpheus_blueprint_app_arm (Resource)
+# hpe_morpheus_app_blueprint_arm (Resource)
 
 Provides a Morpheus arm app blueprint resource
 
@@ -13,7 +13,7 @@ Provides a Morpheus arm app blueprint resource
 Creating the ARM app blueprint with local content in json format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_arm" "tf_example_app_arm_blueprint_json" {
+resource "hpe_morpheus_app_blueprint_arm" "tf_example_app_arm_blueprint_json" {
   name               = "example_app_arm_blueprint_json"
   description        = "example arm app blueprint"
   category           = "armtemplates"
@@ -108,7 +108,7 @@ EOF
 Creating the ARM app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_arm" "tf_example_app_arm_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_arm" "tf_example_app_arm_blueprint_git" {
   name               = "example_app_arm_blueprint_git"
   description        = "example arm app blueprint"
   category           = "armtemplates"
@@ -153,5 +153,5 @@ resource "hpe_morpheus_blueprint_app_arm" "tf_example_app_arm_blueprint_git" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_blueprint_app_arm.tf_example_app_arm_blueprint 1
+terraform import hpe_morpheus_app_blueprint_arm.tf_example_app_arm_blueprint 1
 ```

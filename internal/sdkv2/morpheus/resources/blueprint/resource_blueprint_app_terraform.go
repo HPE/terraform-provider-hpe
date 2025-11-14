@@ -16,13 +16,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func ResourceBlueprintAppTerraform() *schema.Resource {
+func ResourceAppBlueprintTerraform() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus terraform app blueprint resource",
-		CreateContext: resourceBlueprintAppTerraformCreate,
-		ReadContext:   resourceBlueprintAppTerraformRead,
-		UpdateContext: resourceBlueprintAppTerraformUpdate,
-		DeleteContext: resourceBlueprintAppTerraformDelete,
+		CreateContext: resourceAppBlueprintTerraformCreate,
+		ReadContext:   resourceAppBlueprintTerraformRead,
+		UpdateContext: resourceAppBlueprintTerraformUpdate,
+		DeleteContext: resourceAppBlueprintTerraformDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -117,7 +117,7 @@ func ResourceBlueprintAppTerraform() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceBlueprintAppTerraformCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintTerraformCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -299,12 +299,12 @@ func resourceBlueprintAppTerraformCreate(ctx context.Context, d *schema.Resource
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	diags = append(diags, resourceBlueprintAppTerraformRead(ctx, d, meta)...)
+	diags = append(diags, resourceAppBlueprintTerraformRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceBlueprintAppTerraformRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -392,7 +392,7 @@ func resourceBlueprintAppTerraformRead(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
-func resourceBlueprintAppTerraformUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintTerraformUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -574,10 +574,10 @@ func resourceBlueprintAppTerraformUpdate(ctx context.Context, d *schema.Resource
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	return resourceBlueprintAppTerraformRead(ctx, d, meta)
+	return resourceAppBlueprintTerraformRead(ctx, d, meta)
 }
 
-func resourceBlueprintAppTerraformDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceAppBlueprintTerraformDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

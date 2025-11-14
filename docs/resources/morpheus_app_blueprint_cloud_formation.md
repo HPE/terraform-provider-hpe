@@ -1,10 +1,10 @@
 ---
-page_title: "hpe_morpheus_blueprint_app_cloud_formation Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_app_blueprint_cloud_formation Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus cloud formation app blueprint resource
 ---
-# hpe_morpheus_blueprint_app_cloud_formation (Resource)
+# hpe_morpheus_app_blueprint_cloud_formation (Resource)
 
 Provides a Morpheus cloud formation app blueprint resource
 
@@ -13,7 +13,7 @@ Provides a Morpheus cloud formation app blueprint resource
 Creating the Cloud Formation app blueprint with local content in json format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_cloud_formation" "tf_example_cloud_formation_app_blueprint_json" {
+resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formation_app_blueprint_json" {
   name                   = "example_cloud_formation_app_blueprint_json"
   description            = "Example cloud formation app blueprint"
   category               = "cloudformation"
@@ -61,7 +61,7 @@ TFEOF
 Creating the Cloud Formation app blueprint with local content in yaml format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_cloud_formation" "tf_example_cloud_formation_app_blueprint_yaml" {
+resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formation_app_blueprint_yaml" {
   name                   = "example_cloud_formation_app_blueprint_yaml"
   description            = "Example cloud formation app blueprint"
   category               = "cloudformation"
@@ -111,7 +111,7 @@ TFEOF
 Creating the Cloud Formation app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_cloud_formation" "tf_example_cloud_formation_app_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formation_app_blueprint_git" {
   name                   = "example_cloud_formation_app_blueprint_git"
   description            = "Example cloud formation app blueprint"
   category               = "cloudformation"
@@ -160,5 +160,5 @@ resource "hpe_morpheus_blueprint_app_cloud_formation" "tf_example_cloud_formatio
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_blueprint_app_cloud_formation.tf_example_cloud_formation_app_blueprint 1
+terraform import hpe_morpheus_app_blueprint_cloud_formation.tf_example_cloud_formation_app_blueprint 1
 ```

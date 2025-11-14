@@ -1,10 +1,10 @@
 ---
-page_title: "hpe_morpheus_blueprint_app_terraform Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_app_blueprint_terraform Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus terraform app blueprint resource
 ---
-# hpe_morpheus_blueprint_app_terraform (Resource)
+# hpe_morpheus_app_blueprint_terraform (Resource)
 
 Provides a Morpheus terraform app blueprint resource
 
@@ -13,7 +13,7 @@ Provides a Morpheus terraform app blueprint resource
 Creating the terraform app blueprint with local content in hcl format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint" {
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint" {
   name              = "tfappbluedemo"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -50,7 +50,7 @@ EOF
 Creating the terraform app blueprint with local content in json format:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_json" {
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_json" {
   name              = "tfappbluedemojson"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -68,7 +68,7 @@ EOF
 Creating the terraform app blueprint with Terraform spec templates:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_specs" {
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_specs" {
   name              = "tfappbluedemospecs"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -83,7 +83,7 @@ resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_specs" {
 Creating the terraform app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_git" {
   name              = "tfappbluedemogit"
   description       = "testing terraform"
   category          = "terraformdemo"
@@ -129,5 +129,5 @@ resource "hpe_morpheus_blueprint_app_terraform" "tfapp_blueprint_git" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_blueprint_app_terraform.tfexample_terraform_app_blueprint 1
+terraform import hpe_morpheus_app_blueprint_terraform.tfexample_terraform_app_blueprint 1
 ```
