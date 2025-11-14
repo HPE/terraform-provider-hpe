@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_script_preseed Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_preseed_script Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus preseed script resource
 ---
-# hpe_morpheus_script_preseed (Resource)
+# hpe_morpheus_preseed_script (Resource)
 
 Provides a Morpheus preseed script resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_script_preseed" "tf_example_preseed_script" {
+resource "hpe_morpheus_preseed_script" "tf_example_preseed_script" {
   name    = "TF Example Preseed Script"
   content = "ls"
 }
@@ -37,5 +37,5 @@ resource "hpe_morpheus_script_preseed" "tf_example_preseed_script" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_script_preseed.tf_example_preseed_script 1
+terraform import hpe_morpheus_preseed_script.tf_example_preseed_script 1
 ```

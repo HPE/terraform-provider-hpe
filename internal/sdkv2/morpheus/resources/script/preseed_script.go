@@ -7,40 +7,43 @@ import (
 	"log"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceScriptBoot() *schema.Resource {
+func ResourcePreseedScript() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Provides a Morpheus boot script resource",
-		CreateContext: resourceScriptBootCreate,
-		ReadContext:   resourceScriptBootRead,
-		UpdateContext: resourceScriptBootUpdate,
-		DeleteContext: resourceScriptBootDelete,
+		Description:   "Provides a Morpheus preseed script resource",
+		CreateContext: resourcePreseedScriptCreate,
+		ReadContext:   resourcePreseedScriptRead,
+		UpdateContext: resourcePreseedScriptUpdate,
+		DeleteContext: resourcePreseedScriptDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "The ID of the boot script",
+				Description: "The ID of the preseed script",
 				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the boot script",
+				Description: "The name of the preseed script",
 				Required:    true,
 			},
 			"content": {
 				Type:        schema.TypeString,
-				Description: "The content of the boot script",
+				Description: "The content of the preseed script",
 				Optional:    true,
 				StateFunc: func(v any) string {
-					payload := strings.TrimSuffix(v.(string), "\n")
+					var payload string
+					if vStr, ok := v.(string); ok {
+						payload = strings.TrimSuffix(vStr, "\n")
+					}
 
 					return payload
 				},
@@ -53,16 +56,15 @@ func ResourceScriptBoot() *schema.Resource {
 	}
 }
 
-func resourceScriptBootCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourcePreseedScriptCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
-
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
 
 	var name string
 	if v, ok := d.Get("name").(string); ok {
@@ -80,14 +82,14 @@ func resourceScriptBootCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"bootScript": map[string]any{
+			"preseedScript": map[string]any{
 				"fileName": name,
 				"content":  content,
 			},
 		},
 	}
 
-	resp, err := client.CreateBootScript(req)
+	resp, err := client.CreatePreseedScript(req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
 
@@ -99,30 +101,28 @@ func resourceScriptBootCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.CreateBootScriptResult
-	if v, ok := resp.Result.(*morpheus.CreateBootScriptResult); ok {
+	var result *morpheus.CreatePreseedScriptResult
+	if v, ok := resp.Result.(*morpheus.CreatePreseedScriptResult); ok {
 		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
+	if result.PreseedScript == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("PreseedScript"))
 	}
 
-	bootScript := result.BootScript
-	if bootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
-	}
-	// Successfully created resource, now set id
-	d.SetId(convert.Int64ToString(bootScript.ID))
+	preseedScript := result.PreseedScript
+	d.SetId(convert.Int64ToString(preseedScript.ID))
 
-	diags = append(diags, resourceScriptBootRead(ctx, d, meta)...)
+	diags = append(diags, resourcePreseedScriptRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceScriptBootRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourcePreseedScriptRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -130,10 +130,8 @@ func resourceScriptBootRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	id := d.Id()
+
 	var name string
 	if v, ok := d.Get("name").(string); ok {
 		name = v
@@ -141,30 +139,28 @@ func resourceScriptBootRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	// lookup by name if we do not have an id yet
 	var resp *morpheus.Response
 	var err error
 	if id == "" && name != "" {
-		resp, err = client.FindBootScriptByName(name)
+		resp, err = client.FindPreseedScriptByName(name)
 	} else if id != "" {
-		resp, err = client.GetBootScript(convert.StringToInt64(id), &morpheus.Request{})
+		resp, err = client.GetPreseedScript(convert.StringToInt64(id), &morpheus.Request{})
 	} else {
-		return diag.Errorf("File template cannot be read without name or id")
+		return diag.Errorf("Preseed script cannot be read without name or id")
 	}
 
 	if err != nil {
-		// 404 is ok?
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
 			d.SetId("")
 
 			return diags
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
 		}
+
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
@@ -172,35 +168,33 @@ func resourceScriptBootRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.GetBootScriptResult
-	if v, ok := resp.Result.(*morpheus.GetBootScriptResult); ok {
+	var result *morpheus.GetPreseedScriptResult
+	if v, ok := resp.Result.(*morpheus.GetPreseedScriptResult); ok {
 		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
+	if result.PreseedScript == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("PreseedScript"))
 	}
 
-	bootScript := result.BootScript
-	if bootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
-	}
-	d.SetId(convert.Int64ToString(bootScript.ID))
-	d.Set("name", bootScript.FileName)
-	d.Set("content", bootScript.Content)
+	preseedScript := result.PreseedScript
+	d.SetId(convert.Int64ToString(preseedScript.ID))
+	d.Set("name", preseedScript.FileName)
+	d.Set("content", preseedScript.Content)
 
 	return diags
 }
 
-func resourceScriptBootUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourcePreseedScriptUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
 	id := d.Id()
 
 	var name string
@@ -219,14 +213,14 @@ func resourceScriptBootUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"bootScript": map[string]any{
+			"preseedScript": map[string]any{
 				"fileName": name,
 				"content":  content,
 			},
 		},
 	}
 
-	resp, err := client.UpdateBootScript(convert.StringToInt64(id), req)
+	resp, err := client.UpdatePreseedScript(convert.StringToInt64(id), req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
 
@@ -238,29 +232,26 @@ func resourceScriptBootUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateBootScriptResult
-	if v, ok := resp.Result.(*morpheus.UpdateBootScriptResult); ok {
+	var result *morpheus.UpdatePreseedScriptResult
+	if v, ok := resp.Result.(*morpheus.UpdatePreseedScriptResult); ok {
 		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
+	if result.PreseedScript == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("PreseedScript"))
 	}
 
-	bootScript := result.BootScript
-	if bootScript == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BootScript"))
-	}
-	// Successfully updated resource, now set id
-	// err, it should not have changed though..
-	d.SetId(convert.Int64ToString(bootScript.ID))
+	preseedScript := result.PreseedScript
+	d.SetId(convert.Int64ToString(preseedScript.ID))
 
-	return resourceScriptBootRead(ctx, d, meta)
+	return resourcePreseedScriptRead(ctx, d, meta)
 }
 
-func resourceScriptBootDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourcePreseedScriptDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -268,22 +259,19 @@ func resourceScriptBootDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
 	id := d.Id()
 	req := &morpheus.Request{}
-	resp, err := client.DeleteBootScript(convert.StringToInt64(id), req)
+	resp, err := client.DeletePreseedScript(convert.StringToInt64(id), req)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
 
-			return nil
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
 			return diag.FromErr(err)
 		}
+
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 	d.SetId("")
