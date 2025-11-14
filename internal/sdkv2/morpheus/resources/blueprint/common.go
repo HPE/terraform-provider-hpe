@@ -15,12 +15,13 @@ func matchTemplatesWithSchema(templates []int64, declaredTemplates []any) []int6
 	}
 
 	for i, definedTemplate := range declaredTemplates {
-		definedTemplate := int64(definedTemplate.(int))
-
-		if v, ok := rMap[definedTemplate]; ok {
-			// matched node type declared by ID
-			result[i] = v
-			delete(rMap, v)
+		// skip if type assertion failed
+		if definedTemplateInt64, ok := definedTemplate.(int64); ok {
+			if v, ok := rMap[definedTemplateInt64]; ok {
+				// matched node type declared by ID
+				result[i] = v
+				delete(rMap, v)
+			}
 		}
 	}
 	// append unmatched node type to the result
