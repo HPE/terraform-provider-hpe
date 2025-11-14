@@ -38,39 +38,6 @@ func apiTypeToResourceType(apiType string) string {
 func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	// Initialize all config fields as null - required by Terraform Plugin Framework
-	data.ConfigApproval = NewConfigApprovalValueNull()                     // 1
-	data.ConfigBackupStorage = NewConfigBackupStorageValueNull()           // 2
-	data.ConfigCreateBackup = NewConfigCreateBackupValueNull()             // 3
-	data.ConfigCreateUser = NewConfigCreateUserValueNull()                 // 4
-	data.ConfigCreateUserGroup = NewConfigCreateUserGroupValueNull()       // 5
-	data.ConfigCypher = NewConfigCypherValueNull()                         // 6
-	data.ConfigDelayedRemoval = NewConfigDelayedRemovalValueNull()         // 7
-	data.ConfigHostNaming = NewConfigHostNamingValueNull()                 // 8
-	data.ConfigLifecycle = NewConfigLifecycleValueNull()                   // 9
-	data.ConfigMaxContainers = NewConfigMaxContainersValueNull()           // 10
-	data.ConfigMaxCores = NewConfigMaxCoresValueNull()                     // 11
-	data.ConfigMaxHosts = NewConfigMaxHostsValueNull()                     // 12
-	data.ConfigMaxMemory = NewConfigMaxMemoryValueNull()                   // 13
-	data.ConfigMaxNetworks = NewConfigMaxNetworksValueNull()               // 14
-	data.ConfigMaxPoolMembers = NewConfigMaxPoolMembersValueNull()         // 15
-	data.ConfigMaxPools = NewConfigMaxPoolsValueNull()                     // 16
-	data.ConfigMaxPrice = NewConfigMaxPriceValueNull()                     // 17
-	data.ConfigMaxRouters = NewConfigMaxRoutersValueNull()                 // 18
-	data.ConfigMaxStorage = NewConfigMaxStorageValueNull()                 // 19
-	data.ConfigMaxSnapshots = NewConfigMaxSnapshotsValueNull()             // 20
-	data.ConfigMaxVirtualServers = NewConfigMaxVirtualServersValueNull()   // 21
-	data.ConfigMaxVms = NewConfigMaxVmsValueNull()                         // 22
-	data.ConfigMotd = NewConfigMotdValueNull()                             // 23
-	data.ConfigNaming = NewConfigNamingValueNull()                         // 24
-	data.ConfigPowerSchedule = NewConfigPowerScheduleValueNull()           // 25
-	data.ConfigRequiredNetwork = NewConfigRequiredNetworkValueNull()       // 26
-	data.ConfigServerNaming = NewConfigServerNamingValueNull()             // 27
-	data.ConfigShutdown = NewConfigShutdownValueNull()                     // 28
-	data.ConfigStorageServerQuota = NewConfigStorageServerQuotaValueNull() // 29
-	data.ConfigTags = NewConfigTagsValueNull()                             // 30
-	data.ConfigWorkflow = NewConfigWorkflowValueNull()                     // 31
-
 	// Map each API config field to the corresponding schema field - only populate non-null configurations
 	// 1. ApprovePolicyTypeConfiguration -> approval
 	if apiConfig.ApprovePolicyTypeConfiguration != nil {
@@ -461,11 +428,16 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 24. MessageOfTheDayPolicyTypeConfiguration2 -> motd
 	if apiConfig.MessageOfTheDayPolicyTypeConfiguration2 != nil {
 		motdAttrs := map[string]attr.Value{
-			"motd_full_page": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String),
-			"motddate":       convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
-			"motdmessage":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
-			"motdtitle":      types.StringNull(), // NullableString type
-			"motdtype":       convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdType),
+			"motd_fullpage": types.StringNull(),
+			"motddate":      convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
+			"motdmessage":   convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
+			"motdtitle":     types.StringNull(), // NullableString type
+			"motdtype":      convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdType),
+		}
+
+		// Handle NullableString for MotdFullPage - check if field exists and is not nil
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage != nil {
+			motdAttrs["motd_fullpage"] = convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String)
 		}
 		// Handle NullableString for MotdTitle
 		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.IsSet() {
