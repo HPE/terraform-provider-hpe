@@ -5,13 +5,18 @@ package image_test
 import (
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-var storageProvider = "196"
+var (
+	storageProvider = "196"
+	// nolint: lll
+	url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
+)
 
 func TestAccMorpheusImageUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
@@ -39,14 +44,20 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 
 	checkReplace := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction("hpe_morpheus_image.example", plancheck.ResourceActionReplace),
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_image.example",
+				plancheck.ResourceActionReplace,
+			),
 		},
 	}
 
 	// this check verifies that the resource is going to be updated in place
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction("hpe_morpheus_image.example", plancheck.ResourceActionUpdate),
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_image.example",
+				plancheck.ResourceActionUpdate,
+			),
 		},
 	}
 
@@ -62,7 +73,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 						description = "this is a test image"
 						labels = ["terraform-image"]
 						image_type = "qcow2"
-						url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
+						url = "` + url + `"
 						storage_provider_id = ` + storageProvider + `
 						install_agent = false
 						cloud_init = false
@@ -97,7 +108,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 						description = "this is a test image" # requires replace
 						labels = ["terraform-image", "terraform-test"]
 						image_type = "qcow2" # requires replace
-						url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2" # requires replace
+						url = "` + url + `" # requires replace
 						storage_provider_id = ` + storageProvider + ` # requires replace
 						install_agent = true
 						cloud_init = true
@@ -136,7 +147,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 						name = "` + name + `2"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2" # requires replace
+						url = "` + url + `" # requires replace
 						storage_provider_id = ` + storageProvider + ` # requires replace
 					}`,
 				Check:              checkFn,
@@ -150,7 +161,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 						name = "` + name + `2"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2" # requires replace
+						url = "` + url + `" # requires replace
 						storage_provider_id = ` + storageProvider + ` # requires replace
 						ssh_password_wo = "this-is-a-test-password2"
 						ssh_password_wo_version = 1
@@ -168,7 +179,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 						description = "this is a test image2" # requires replace
 						labels = ["terraform-image", "terraform-test"]
 						image_type = "qcow2" # requires replace
-						url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2" # requires replace
+						url = "` + url + `" # requires replace
 						storage_provider_id = ` + storageProvider + ` # requires replace
 						install_agent = true
 						cloud_init = true
@@ -231,14 +242,20 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 	// no changes in plan
 	checkNoOp := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction("hpe_morpheus_image.example", plancheck.ResourceActionNoop),
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_image.example",
+				plancheck.ResourceActionNoop,
+			),
 		},
 	}
 
 	// this check verifies that the resource is going to be updated in place
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction("hpe_morpheus_image.example", plancheck.ResourceActionUpdate),
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_image.example",
+				plancheck.ResourceActionUpdate,
+			),
 		},
 	}
 

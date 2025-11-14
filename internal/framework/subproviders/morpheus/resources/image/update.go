@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
 func (r *Resource) Update(
@@ -104,7 +106,6 @@ func (r *Resource) Update(
 	// min_disk
 	if !plan.MinDisk.IsNull() {
 		updateImage.SetMinDisk(plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024)
-
 	}
 
 	// min_ram
