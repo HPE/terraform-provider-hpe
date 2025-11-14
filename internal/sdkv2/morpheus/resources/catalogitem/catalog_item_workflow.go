@@ -153,6 +153,7 @@ func resourceCatalogItemWorkflow() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceCatalogItemWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
