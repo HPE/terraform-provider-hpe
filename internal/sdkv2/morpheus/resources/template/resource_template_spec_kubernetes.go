@@ -215,7 +215,7 @@ func resourceTemplateSpecKubernetesRead(ctx context.Context, d *schema.ResourceD
 	case sourceTypeURL:
 		d.Set("source_type", sourceTypeURL)
 		d.Set("spec_path", kubernetesSpecTemplate.Spectemplate.File.Contentpath)
-	case "git":
+	case sourceTypeGit:
 		d.Set("source_type", sourceTypeRepository)
 		d.Set("spec_path", kubernetesSpecTemplate.Spectemplate.File.Contentpath)
 		d.Set("repository_id", kubernetesSpecTemplate.Spectemplate.File.Repository.ID)
