@@ -16,8 +16,13 @@ Terraform function
 [`trimspace`](https://developer.hashicorp.com/terraform/language/functions/trimspace)
 to remove all leading and trailing whitespace.
 
--> Update is currently not supported, images will be automatically replaced if
-there are any changes.
+-> Images will be replaced if there are any changes to the following atributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `url`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `config_azure`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `description`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `image_type`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `storage_provider_id`
+
 
 ## Example Usage
 
