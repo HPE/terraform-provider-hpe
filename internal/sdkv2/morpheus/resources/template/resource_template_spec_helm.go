@@ -13,40 +13,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
-
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func ResourceTemplateSpecARM() *schema.Resource {
+func ResourceTemplateSpecHelm() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Provides a Morpheus ARM spec template resource",
-		CreateContext: resourceTemplateSpecARMCreate,
-		ReadContext:   resourceTemplateSpecARMRead,
-		UpdateContext: resourceTemplateSpecARMUpdate,
-		DeleteContext: resourceTemplateSpecARMDelete,
+		Description:   "Provides a Morpheus helm spec template resource",
+		CreateContext: resourceTemplateSpecHelmCreate,
+		ReadContext:   resourceTemplateSpecHelmRead,
+		UpdateContext: resourceTemplateSpecHelmUpdate,
+		DeleteContext: resourceTemplateSpecHelmDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "The ID of the arm spec template",
+				Description: "The ID of the helm spec template",
 				Computed:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "The name of the arm spec template",
+				Description: "The name of the helm spec template",
 				Required:    true,
 			},
 			"source_type": {
 				Type:         schema.TypeString,
-				Description:  "The source of the arm spec template (local, url or repository)",
+				Description:  "The source of the helm spec template (local, url or repository)",
 				ValidateFunc: validation.StringInSlice([]string{sourceTypeLocal, sourceTypeURL, sourceTypeRepository}, false),
 				Required:     true,
 			},
 			"spec_content": {
 				Type:        schema.TypeString,
-				Description: "The content of the arm spec template. Used when the local source type is specified",
+				Description: "The content of the helm spec template. Used when the local source type is specified",
 				Optional:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
@@ -58,7 +58,7 @@ func ResourceTemplateSpecARM() *schema.Resource {
 			},
 			"spec_path": {
 				Type:        schema.TypeString,
-				Description: "The path of the arm spec template, either the url or the path in the repository",
+				Description: "The path of the helm spec template, either the url or the path in the repository",
 				Optional:    true,
 			},
 			"repository_id": {
@@ -78,7 +78,7 @@ func ResourceTemplateSpecARM() *schema.Resource {
 	}
 }
 
-func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecHelmCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -95,12 +95,6 @@ func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	sourceOptions := make(map[string]any)
-	sourceOptions["sourceType"] = d.Get("source_type")
-
-	specTemplateType := make(map[string]any)
-	specTemplateType["code"] = "arm"
-
 	var sourceType string
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
@@ -108,10 +102,15 @@ func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
+	sourceOptions := make(map[string]any)
+	sourceOptions["sourceType"] = sourceType
+
 	switch sourceType {
 	case sourceTypeLocal:
 		sourceOptions["content"] = d.Get("spec_content")
+		sourceOptions["contentPath"] = d.Get("spec_path")
 	case sourceTypeURL:
+		sourceOptions["content"] = d.Get("spec_content")
 		sourceOptions["contentPath"] = d.Get("spec_path")
 	case sourceTypeRepository:
 		sourceOptions["contentPath"] = d.Get("spec_path")
@@ -120,6 +119,9 @@ func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, 
 			"id": d.Get("repository_id"),
 		}
 	}
+
+	specTemplateType := make(map[string]any)
+	specTemplateType["code"] = "helm"
 
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -142,7 +144,7 @@ func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := resp.Result.(*morpheus.CreateSpecTemplateResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("CreateSpecTemplateResult", resp.Result))
 	}
 
 	if result.SpecTemplate == nil {
@@ -152,12 +154,12 @@ func resourceTemplateSpecARMCreate(ctx context.Context, d *schema.ResourceData, 
 	specTemplate := result.SpecTemplate
 	d.SetId(convert.Int64ToString(specTemplate.ID))
 
-	diags = append(diags, resourceTemplateSpecARMRead(ctx, d, meta)...)
+	diags = append(diags, resourceTemplateSpecHelmRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceTemplateSpecARMRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -176,7 +178,6 @@ func resourceTemplateSpecARMRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	// lookup by name if we do not have an id yet
 	var resp *morpheus.Response
 	var err error
 	if id == "" && name != "" {
@@ -188,49 +189,46 @@ func resourceTemplateSpecARMRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if err != nil {
-		// 404 is ok?
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
 			log.Printf("Forcing recreation of resource")
 			d.SetId("")
 
 			return diags
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
 		}
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	// store resource data
-	var armSpecTemplate ARMSpecTemplate
-	if err := json.Unmarshal(resp.Body, &armSpecTemplate); err != nil {
+	var helmSpecTemplate HelmSpecTemplate
+	if err := json.Unmarshal(resp.Body, &helmSpecTemplate); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(convert.IntToString(armSpecTemplate.Spectemplate.ID))
-	d.Set("name", armSpecTemplate.Spectemplate.Name)
-	d.Set("source_type", armSpecTemplate.Spectemplate.File.Sourcetype)
+	d.SetId(convert.IntToString(helmSpecTemplate.Spectemplate.ID))
+	d.Set("name", helmSpecTemplate.Spectemplate.Name)
+	d.Set("source_type", helmSpecTemplate.Spectemplate.File.Sourcetype)
 
-	switch armSpecTemplate.Spectemplate.File.Sourcetype {
+	switch helmSpecTemplate.Spectemplate.File.Sourcetype {
 	case sourceTypeLocal:
 		d.Set("source_type", sourceTypeLocal)
-		d.Set("spec_content", armSpecTemplate.Spectemplate.File.Content)
+		d.Set("spec_content", helmSpecTemplate.Spectemplate.File.Content)
 	case sourceTypeURL:
 		d.Set("source_type", sourceTypeURL)
-		d.Set("spec_path", armSpecTemplate.Spectemplate.File.Contentpath)
-	case sourceTypeGit:
+		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
+	case "git":
 		d.Set("source_type", sourceTypeRepository)
-		d.Set("spec_path", armSpecTemplate.Spectemplate.File.Contentpath)
-		d.Set("repository_id", armSpecTemplate.Spectemplate.File.Repository.ID)
-		d.Set("version_ref", armSpecTemplate.Spectemplate.File.Contentref)
+		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
+		d.Set("repository_id", helmSpecTemplate.Spectemplate.File.Repository.ID)
+		d.Set("version_ref", helmSpecTemplate.Spectemplate.File.Contentref)
 	}
 
 	return diags
 }
 
-func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecHelmUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -247,12 +245,6 @@ func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	sourceOptions := make(map[string]any)
-	sourceOptions["sourceType"] = d.Get("source_type")
-
-	specTemplateType := make(map[string]any)
-	specTemplateType["code"] = "arm"
-
 	var sourceType string
 	if v, ok := d.Get("source_type").(string); ok {
 		sourceType = v
@@ -260,10 +252,15 @@ func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.TypeAssertFailError("source_type", d.Get("source_type")))
 	}
 
+	sourceOptions := make(map[string]any)
+	sourceOptions["sourceType"] = sourceType
+
 	switch sourceType {
 	case sourceTypeLocal:
 		sourceOptions["content"] = d.Get("spec_content")
+		sourceOptions["contentPath"] = d.Get("spec_path")
 	case sourceTypeURL:
+		sourceOptions["content"] = d.Get("spec_content")
 		sourceOptions["contentPath"] = d.Get("spec_path")
 	case sourceTypeRepository:
 		sourceOptions["contentPath"] = d.Get("spec_path")
@@ -272,6 +269,9 @@ func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, 
 			"id": d.Get("repository_id"),
 		}
 	}
+
+	specTemplateType := make(map[string]any)
+	specTemplateType["code"] = "helm"
 
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -294,7 +294,7 @@ func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := resp.Result.(*morpheus.UpdateSpecTemplateResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("UpdateSpecTemplateResult", resp.Result))
 	}
 
 	if result.SpecTemplate == nil {
@@ -304,10 +304,10 @@ func resourceTemplateSpecARMUpdate(ctx context.Context, d *schema.ResourceData, 
 	specTemplate := result.SpecTemplate
 	d.SetId(convert.Int64ToString(specTemplate.ID))
 
-	return resourceTemplateSpecARMRead(ctx, d, meta)
+	return resourceTemplateSpecHelmRead(ctx, d, meta)
 }
 
-func resourceTemplateSpecARMDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTemplateSpecHelmDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -325,11 +325,10 @@ func resourceTemplateSpecARMDelete(ctx context.Context, d *schema.ResourceData, 
 			log.Printf("API 404: %s - %s", resp, err)
 
 			return nil
-		} else {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
 		}
+		log.Printf("API FAILURE: %s - %s", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 	d.SetId("")
@@ -337,7 +336,7 @@ func resourceTemplateSpecARMDelete(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-type ARMSpecTemplate struct {
+type HelmSpecTemplate struct {
 	Spectemplate struct {
 		ID      int `json:"id"`
 		Account struct {
