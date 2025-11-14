@@ -19,12 +19,6 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-const (
-	sourceTypeLocal      = "local"
-	sourceTypeURL        = "url"
-	sourceTypeRepository = "repository"
-)
-
 func ResourceTemplateSpecKubernetes() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus kubernetes spec template resource",
