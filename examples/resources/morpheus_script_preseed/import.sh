@@ -1,1 +1,0 @@
-terraform import hpe_morpheus_script_preseed.tf_example_preseed_script 1
