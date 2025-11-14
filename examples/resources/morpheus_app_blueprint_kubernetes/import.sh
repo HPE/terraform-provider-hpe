@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_app_blueprint_kubernetes.tf_example_kubernetes_app_blueprint 1
