@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_spec_template_arm.tf_example_arm_spec_template 1
