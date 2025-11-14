@@ -1,3 +1,12 @@
+# v0.4.0 Release Notes
+
+In this release (v0.4.0) we have added the following resource functionality:
+
+- hpe_morpheus_image Update functionality has been added
+
+## New known issues
+
+
 # v0.3.0 Release Notes
 
 In this release (v0.3.0) we have added the following resource functionality:
