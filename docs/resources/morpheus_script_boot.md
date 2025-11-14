@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_script_boot Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_boot_script Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
   Provides a Morpheus boot script resource
 ---
-# hpe_morpheus_script_boot (Resource)
+# hpe_morpheus_boot_script (Resource)
 
 Provides a Morpheus boot script resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_script_boot" "tf_example_boot_script" {
+resource "hpe_morpheus_boot_script" "tf_example_boot_script" {
   name    = "TF Example Boot Script"
   content = "ls"
 }
@@ -37,5 +37,5 @@ resource "hpe_morpheus_script_boot" "tf_example_boot_script" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_script_boot.tf_example_boot_script 1
+terraform import hpe_morpheus_boot_script.tf_example_boot_script 1
 ```
