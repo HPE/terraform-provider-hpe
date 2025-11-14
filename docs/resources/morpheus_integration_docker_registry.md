@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_integration_docker_registry Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Provides a doker registry integration resource
+  Provides a Docker registry integration resource
 ---
 # hpe_morpheus_integration_docker_registry (Resource)
 
-Provides a doker registry integration resource
+Provides a Docker registry integration resource
 
 ## Example Usage
 
