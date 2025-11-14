@@ -21,13 +21,13 @@ import (
 )
 
 //nolint:lll
-func ResourceInstanceLayout() *schema.Resource {
+func ResourceInstanceTypeLayout() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus instance layout resource",
-		CreateContext: resourceInstanceLayoutCreate,
-		ReadContext:   resourceInstanceLayoutRead,
-		UpdateContext: resourceInstanceLayoutUpdate,
-		DeleteContext: resourceInstanceLayoutDelete,
+		CreateContext: resourceInstanceTypeLayoutCreate,
+		ReadContext:   resourceInstanceTypeLayoutRead,
+		UpdateContext: resourceInstanceTypeLayoutUpdate,
+		DeleteContext: resourceInstanceTypeLayoutDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -192,7 +192,7 @@ func ResourceInstanceLayout() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceTypeLayoutCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -365,13 +365,13 @@ func resourceInstanceLayoutCreate(ctx context.Context, d *schema.ResourceData, m
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
-	diags = append(diags, resourceInstanceLayoutRead(ctx, d, meta)...)
+	diags = append(diags, resourceInstanceTypeLayoutRead(ctx, d, meta)...)
 
 	return diags
 }
 
 //nolint:staticcheck
-func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceTypeLayoutRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -417,7 +417,7 @@ func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, met
 	// log.Printf("API RESPONSE: %s", resp)
 
 	// store resource data
-	var instanceLayout InstanceLayoutPayload
+	var instanceLayout InstanceTypeLayoutPayload
 	json.Unmarshal(resp.Body, &instanceLayout)
 
 	d.SetId(convert.Int64ToString(instanceLayout.InstanceLayout.ID))
@@ -548,7 +548,7 @@ func resourceInstanceLayoutRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 //nolint:goconst
-func resourceInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceTypeLayoutUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -715,10 +715,10 @@ func resourceInstanceLayoutUpdate(ctx context.Context, d *schema.ResourceData, m
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
-	return resourceInstanceLayoutRead(ctx, d, meta)
+	return resourceInstanceTypeLayoutRead(ctx, d, meta)
 }
 
-func resourceInstanceLayoutDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceInstanceTypeLayoutDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var client *morpheus.Client
@@ -783,6 +783,6 @@ func parseInstanceLayoutEnvironmentVariables(variables []any, d *schema.Resource
 	return evars
 }
 
-type InstanceLayoutPayload struct {
+type InstanceTypeLayoutPayload struct {
 	morpheus.InstanceLayout `json:"instanceTypeLayout"`
 }
