@@ -56,8 +56,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy types:<br> - Approve Delete (deleteApproval)<br> - Approve Provision (provisionApproval)<br> - Approve Reconfigure (reconfigureApproval)<br> - Approve Workflow Execute (workflowApproval)",
-				MarkdownDescription: "Configuration for the following policy types:<br> - Approve Delete (deleteApproval)<br> - Approve Provision (provisionApproval)<br> - Approve Reconfigure (reconfigureApproval)<br> - Approve Workflow Execute (workflowApproval)",
+				Description:         "Configuration for the following policy types:\n\t- Approve Delete (deleteApproval)\n\t- Approve Provision (provisionApproval)\n\t- Approve Reconfigure (reconfigureApproval)\n\t- Approve Workflow Execute (workflowApproval)\n",
+				MarkdownDescription: "Configuration for the following policy types:\n\t- Approve Delete (deleteApproval)\n\t- Approve Provision (provisionApproval)\n\t- Approve Reconfigure (reconfigureApproval)\n\t- Approve Workflow Execute (workflowApproval)\n",
 			},
 			"config_backup_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -72,8 +72,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Backup Targets (backupStorage)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Backup Targets (backupStorage)",
+				Description:         "Configuration for the following policy type:\n\t- Backup Targets (backupStorage)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Backup Targets (backupStorage)\n",
 			},
 			"config_create_backup": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -93,8 +93,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Backup Creation (createBackup)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Backup Creation (createBackup)",
+				Description:         "Configuration for the following policy type:\n\t- Backup Creation (createBackup)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Backup Creation (createBackup)\n",
 			},
 			"config_create_user": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -111,8 +111,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - User Creation (createUser)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - User Creation (createUser)",
+				Description:         "Configuration for the following policy type:\n\t- User Creation (createUser)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- User Creation (createUser)\n",
 			},
 			"config_create_user_group": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -126,8 +126,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - User Group Creation (createUserGroup)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - User Group Creation (createUserGroup)",
+				Description:         "Configuration for the following policy type:\n\t- User Group Creation (createUserGroup)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- User Group Creation (createUserGroup)\n",
 			},
 			"config_cypher": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -159,8 +159,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Cypher Access (cypher)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Cypher Access (cypher)",
+				Description:         "Configuration for the following policy type:\n\t- Cypher Access (cypher)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Cypher Access (cypher)\n",
 			},
 			"config_delayed_removal": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -177,8 +177,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Delayed Delete (delayedRemoval)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Delayed Delete (delayedRemoval)",
+				Description:         "Configuration for the following policy type:\n\t- Delayed Delete (delayedRemoval)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Delayed Delete (delayedRemoval)\n",
 			},
 			"config_host_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -195,8 +195,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Hostname (hostNaming)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Hostname (hostNaming)",
+				Description:         "Configuration for the following policy type:\n\t- Hostname (hostNaming)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Hostname (hostNaming)\n",
 			},
 			"config_lifecycle": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -237,8 +237,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Expiration (lifecycle)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Expiration (lifecycle)",
+				Description:         "Configuration for the following policy type:\n\t- Expiration (lifecycle)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Expiration (lifecycle)\n",
 			},
 			"config_max_containers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -252,8 +252,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Containers (maxContainers)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Containers (maxContainers)",
+				Description:         "Configuration for the following policy type:\n\t- Max Containers (maxContainers)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Containers (maxContainers)\n",
 			},
 			"config_max_cores": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -270,8 +270,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Cores (maxCores)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Cores (maxCores)",
+				Description:         "Configuration for the following policy type:\n\t- Max Cores (maxCores)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Cores (maxCores)\n",
 			},
 			"config_max_hosts": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -285,8 +285,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Hosts (maxHosts)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Hosts (maxHosts)",
+				Description:         "Configuration for the following policy type:\n\t- Max Hosts (maxHosts)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Hosts (maxHosts)\n",
 			},
 			"config_max_memory": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -303,8 +303,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Memory (maxMemory)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Memory (maxMemory)",
+				Description:         "Configuration for the following policy type:\n\t- Max Memory (maxMemory)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Memory (maxMemory)\n",
 			},
 			"config_max_networks": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -318,8 +318,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Network Quota (maxNetworks)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Network Quota (maxNetworks)",
+				Description:         "Configuration for the following policy type:\n\t- Network Quota (maxNetworks)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Network Quota (maxNetworks)\n",
 			},
 			"config_max_pool_members": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -333,8 +333,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Pool Members (maxPoolMembers)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Pool Members (maxPoolMembers)",
+				Description:         "Configuration for the following policy type:\n\t- Max Pool Members (maxPoolMembers)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Pool Members (maxPoolMembers)\n",
 			},
 			"config_max_pools": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -348,8 +348,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Load Balancer Pools (maxPools)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Load Balancer Pools (maxPools)",
+				Description:         "Configuration for the following policy type:\n\t- Max Load Balancer Pools (maxPools)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Load Balancer Pools (maxPools)\n",
 			},
 			"config_max_price": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -369,8 +369,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Budget (maxPrice)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Budget (maxPrice)",
+				Description:         "Configuration for the following policy type:\n\t- Budget (maxPrice)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Budget (maxPrice)\n",
 			},
 			"config_max_routers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -384,8 +384,23 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Router Quota (maxRouters)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Router Quota (maxRouters)",
+				Description:         "Configuration for the following policy type:\n\t- Router Quota (maxRouters)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Router Quota (maxRouters)\n",
+			},
+			"config_max_snapshots": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"max_snapshots": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: ConfigMaxSnapshotsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigMaxSnapshotsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "Configuration for the following policy type:\n\t- Max Snapshots (maxSnapshots)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Snapshots (maxSnapshots)\n",
 			},
 			"config_max_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -402,8 +417,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy types:<br> - Max Storage (maxStorage)<br> - Object Storage Quota (storageBucketQuota)<br> - File Share Storage Quota (storageShareQuota)",
-				MarkdownDescription: "Configuration for the following policy types:<br> - Max Storage (maxStorage)<br> - Object Storage Quota (storageBucketQuota)<br> - File Share Storage Quota (storageShareQuota)",
+				Description:         "Configuration for the following policy types:\n\t- Max Storage (maxStorage)\n\t- Object Storage Quota (storageBucketQuota)\n\t- File Share Storage Quota (storageShareQuota)\n",
+				MarkdownDescription: "Configuration for the following policy types:\n\t- Max Storage (maxStorage)\n\t- Object Storage Quota (storageBucketQuota)\n\t- File Share Storage Quota (storageShareQuota)\n",
 			},
 			"config_max_virtual_servers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -417,8 +432,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max Virtual Servers (maxVirtualServers)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max Virtual Servers (maxVirtualServers)",
+				Description:         "Configuration for the following policy type:\n\t- Max Virtual Servers (maxVirtualServers)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Virtual Servers (maxVirtualServers)\n",
 			},
 			"config_max_vms": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -432,8 +447,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Max VMs (maxVms)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Max VMs (maxVms)",
+				Description:         "Configuration for the following policy type:\n\t- Max VMs (maxVms)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Max VMs (maxVms)\n",
 			},
 			"config_motd": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -459,8 +474,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Message of the Day (motd)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Message of the Day (motd)",
+				Description:         "Configuration for the following policy type:\n\t- Message of the Day (motd)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Message of the Day (motd)\n",
 			},
 			"config_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -480,8 +495,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Instance Name (naming)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Instance Name (naming)",
+				Description:         "Configuration for the following policy type:\n\t- Instance Name (naming)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Instance Name (naming)\n",
 			},
 			"config_power_schedule": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -501,8 +516,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Power Scheduling (powerSchedule)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Power Scheduling (powerSchedule)",
+				Description:         "Configuration for the following policy type:\n\t- Power Scheduling (powerSchedule)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Power Scheduling (powerSchedule)\n",
 			},
 			"config_required_network": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -517,8 +532,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Instance Networks (requiredNetwork)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Instance Networks (requiredNetwork)",
+				Description:         "Configuration for the following policy type:\n\t- Instance Networks (requiredNetwork)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Instance Networks (requiredNetwork)\n",
 			},
 			"config_server_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -541,8 +556,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Cluster Resource Name (serverNaming)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Cluster Resource Name (serverNaming)",
+				Description:         "Configuration for the following policy type:\n\t- Cluster Resource Name (serverNaming)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Cluster Resource Name (serverNaming)\n",
 			},
 			"config_shutdown": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -583,8 +598,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Shutdown (shutdown)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Shutdown (shutdown)",
+				Description:         "Configuration for the following policy type:\n\t- Shutdown (shutdown)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Shutdown (shutdown)\n",
 			},
 			"config_storage_server_quota": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -601,8 +616,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Storage Server Storage Quota (storageServerQuota)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Storage Server Storage Quota (storageServerQuota)",
+				Description:         "Configuration for the following policy type:\n\t- Storage Server Storage Quota (storageServerQuota)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Storage Server Storage Quota (storageServerQuota)\n",
 			},
 			"config_tags": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -625,8 +640,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Tags (tags)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Tags (tags)",
+				Description:         "Configuration for the following policy type:\n\t- Tags (tags)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Tags (tags)\n",
 			},
 			"config_workflow": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -640,8 +655,8 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "Configuration for the following policy type:<br> - Workflow (workflow)",
-				MarkdownDescription: "Configuration for the following policy type:<br> - Workflow (workflow)",
+				Description:         "Configuration for the following policy type:\n\t- Workflow (workflow)\n",
+				MarkdownDescription: "Configuration for the following policy type:\n\t- Workflow (workflow)\n",
 			},
 			"description": schema.StringAttribute{
 				Computed: true,
@@ -795,6 +810,7 @@ type PolicyModel struct {
 	ConfigMaxPools           ConfigMaxPoolsValue           `tfsdk:"config_max_pools"`
 	ConfigMaxPrice           ConfigMaxPriceValue           `tfsdk:"config_max_price"`
 	ConfigMaxRouters         ConfigMaxRoutersValue         `tfsdk:"config_max_routers"`
+	ConfigMaxSnapshots       ConfigMaxSnapshotsValue       `tfsdk:"config_max_snapshots"`
 	ConfigMaxStorage         ConfigMaxStorageValue         `tfsdk:"config_max_storage"`
 	ConfigMaxVirtualServers  ConfigMaxVirtualServersValue  `tfsdk:"config_max_virtual_servers"`
 	ConfigMaxVms             ConfigMaxVmsValue             `tfsdk:"config_max_vms"`
@@ -8526,6 +8542,338 @@ func (v ConfigMaxRoutersValue) Type(ctx context.Context) attr.Type {
 func (v ConfigMaxRoutersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"max_routers": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigMaxSnapshotsType{}
+
+type ConfigMaxSnapshotsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigMaxSnapshotsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigMaxSnapshotsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigMaxSnapshotsType) String() string {
+	return "ConfigMaxSnapshotsType"
+}
+
+func (t ConfigMaxSnapshotsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigMaxSnapshotsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxSnapshotsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	maxSnapshotsAttribute, ok := attributes["max_snapshots"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_snapshots is missing from object`)
+
+		return nil, diags
+	}
+
+	maxSnapshotsVal, ok := maxSnapshotsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_snapshots expected to be basetypes.StringValue, was: %T`, maxSnapshotsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigMaxSnapshotsValue{
+		MaxSnapshots: maxSnapshotsVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxSnapshotsValueNull() ConfigMaxSnapshotsValue {
+	return ConfigMaxSnapshotsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigMaxSnapshotsValueUnknown() ConfigMaxSnapshotsValue {
+	return ConfigMaxSnapshotsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigMaxSnapshotsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigMaxSnapshotsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigMaxSnapshotsValue Attribute Value",
+				"While creating a ConfigMaxSnapshotsValue value, a missing attribute value was detected. "+
+					"A ConfigMaxSnapshotsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxSnapshotsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigMaxSnapshotsValue Attribute Type",
+				"While creating a ConfigMaxSnapshotsValue value, an invalid attribute value was detected. "+
+					"A ConfigMaxSnapshotsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigMaxSnapshotsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigMaxSnapshotsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigMaxSnapshotsValue Attribute Value",
+				"While creating a ConfigMaxSnapshotsValue value, an extra attribute value was detected. "+
+					"A ConfigMaxSnapshotsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigMaxSnapshotsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxSnapshotsValueUnknown(), diags
+	}
+
+	maxSnapshotsAttribute, ok := attributes["max_snapshots"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_snapshots is missing from object`)
+
+		return NewConfigMaxSnapshotsValueUnknown(), diags
+	}
+
+	maxSnapshotsVal, ok := maxSnapshotsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_snapshots expected to be basetypes.StringValue, was: %T`, maxSnapshotsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigMaxSnapshotsValueUnknown(), diags
+	}
+
+	return ConfigMaxSnapshotsValue{
+		MaxSnapshots: maxSnapshotsVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigMaxSnapshotsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigMaxSnapshotsValue {
+	object, diags := NewConfigMaxSnapshotsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigMaxSnapshotsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigMaxSnapshotsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigMaxSnapshotsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigMaxSnapshotsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigMaxSnapshotsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigMaxSnapshotsValueMust(ConfigMaxSnapshotsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigMaxSnapshotsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigMaxSnapshotsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigMaxSnapshotsValue{}
+
+type ConfigMaxSnapshotsValue struct {
+	MaxSnapshots basetypes.StringValue `tfsdk:"max_snapshots"`
+	state        attr.ValueState
+}
+
+func (v ConfigMaxSnapshotsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["max_snapshots"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.MaxSnapshots.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_snapshots"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigMaxSnapshotsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigMaxSnapshotsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigMaxSnapshotsValue) String() string {
+	return "ConfigMaxSnapshotsValue"
+}
+
+func (v ConfigMaxSnapshotsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"max_snapshots": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"max_snapshots": v.MaxSnapshots,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigMaxSnapshotsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigMaxSnapshotsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.MaxSnapshots.Equal(other.MaxSnapshots) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigMaxSnapshotsValue) Type(ctx context.Context) attr.Type {
+	return ConfigMaxSnapshotsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigMaxSnapshotsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"max_snapshots": basetypes.StringType{},
 	}
 }
 
