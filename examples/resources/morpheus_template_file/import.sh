@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_template_file.tf_example_file_template 1
