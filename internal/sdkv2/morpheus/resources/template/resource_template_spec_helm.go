@@ -218,7 +218,7 @@ func resourceTemplateSpecHelmRead(ctx context.Context, d *schema.ResourceData, m
 	case sourceTypeURL:
 		d.Set("source_type", sourceTypeURL)
 		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
-	case "git":
+	case sourceTypeGit:
 		d.Set("source_type", sourceTypeRepository)
 		d.Set("spec_path", helmSpecTemplate.Spectemplate.File.Contentpath)
 		d.Set("repository_id", helmSpecTemplate.Spectemplate.File.Repository.ID)

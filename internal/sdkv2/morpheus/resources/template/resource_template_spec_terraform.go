@@ -211,7 +211,7 @@ func resourceTemplateSpecTerraformRead(ctx context.Context, d *schema.ResourceDa
 	case "url":
 		d.Set("source_type", "url")
 		d.Set("spec_path", terraformSpecTemplate.Spectemplate.File.Contentpath)
-	case "git":
+	case sourceTypeGit:
 		d.Set("source_type", "repository")
 		d.Set("spec_path", terraformSpecTemplate.Spectemplate.File.Contentpath)
 		d.Set("repository_id", terraformSpecTemplate.Spectemplate.File.Repository.ID)
