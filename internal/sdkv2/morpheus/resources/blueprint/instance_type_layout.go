@@ -747,6 +747,7 @@ func resourceInstanceTypeLayoutDelete(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
+//nolint:goconst
 func parseInstanceLayoutEnvironmentVariables(variables []any, d *schema.ResourceData) []map[string]any {
 	var evars []map[string]any
 	if variables == nil {
