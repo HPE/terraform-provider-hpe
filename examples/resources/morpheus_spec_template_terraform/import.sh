@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_spec_template_terraform.tfexample_terraform_spec_terraform 1
