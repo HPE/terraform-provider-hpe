@@ -19,13 +19,6 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-const (
-	sourceTypeLocal      = "local"
-	sourceTypeURL        = "url"
-	sourceTypeRepository = "repository"
-	sourceTypeGit        = "git"
-)
-
 func ResourceTemplateSpecARM() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus ARM spec template resource",

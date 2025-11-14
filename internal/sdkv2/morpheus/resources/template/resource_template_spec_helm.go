@@ -19,12 +19,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-const (
-	sourceTypeLocal      = "local"
-	sourceTypeURL        = "url"
-	sourceTypeRepository = "repository"
-)
-
 func ResourceTemplateSpecHelm() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus helm spec template resource",
