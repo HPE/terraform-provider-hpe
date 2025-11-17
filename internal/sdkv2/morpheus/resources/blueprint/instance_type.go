@@ -756,6 +756,7 @@ func resourceInstanceTypeDelete(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
+//nolint:goconst
 func parseInstanceTypeEnvironmentVariables(variables []any, d *schema.ResourceData) []map[string]any {
 	var evars []map[string]any
 	if variables == nil {
