@@ -39,6 +39,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindEnvironmentById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -89,6 +90,7 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 }
 
 func TestAccMorpheusFindIdbyName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -140,6 +142,7 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -174,6 +177,7 @@ func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_environment" "test" {
       }`
@@ -202,6 +206,7 @@ func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_environment" "test" {
         id = 1
