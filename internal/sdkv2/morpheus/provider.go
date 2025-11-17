@@ -15,9 +15,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/catalogitem"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/compute"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/contact"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cypher"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/environment"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/form"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/job"
@@ -54,12 +56,14 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_cluster_layout":                   blueprint.ResourceClusterLayout(),
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_cluster_package":                  template.ResourceClusterPackage(),
+			"hpe_morpheus_contact":                          contact.ResourceContact(),
 			"hpe_morpheus_credential":                       credential.ResourceContactCredential(),
 			"hpe_morpheus_cypher_secret":                    cypher.ResourceCypherSecret(),
 			"hpe_morpheus_cypher_tfvars":                    cypher.ResourceCypherTFVars(),
 			"hpe_morpheus_environment":                      environment.ResourceEnvironment(),
 			"hpe_morpheus_execute_schedule":                 automation.ResourceExecuteSchedule(),
 			"hpe_morpheus_file_template":                    template.ResourceFileTemplate(),
+			"hpe_morpheus_form":                             form.ResourceForm(),
 			"hpe_morpheus_identity_source_active_directory": identitysource.ResourceIdentitySourceActiveDirectory(),
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
 			"hpe_morpheus_instance_type":                    blueprint.ResourceInstanceType(),
@@ -128,8 +132,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
 			"hpe_morpheus_workflow_operational":             workflow.ResourceWorkflowOperational(),
 			"hpe_morpheus_workflow_provisioning":            workflow.ResourceWorkflowProvisioning(),
-			// "hpe_morpheus_contact": //todo
-			// "hpe_morpheus_form": //todo
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hpe_morpheus_task":  taskdatasource.DataSourceMorpheusTask(),
