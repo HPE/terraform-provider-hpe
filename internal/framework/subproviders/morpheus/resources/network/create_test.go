@@ -242,13 +242,13 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkResourceCreateResourcePermissionsAllFalse(_ *testing.T) {
-	// TODO: Write test when PCCP-3372 is fixed
-}
+// func TestAccMorpheusNetworkResourceCreateResourcePermissionsAllFalse(_ *testing.T) {
+// 	// TODO: Write test when PCCP-3372 is fixed
+// }
 
-func TestAccMorpheusNetworkResourceCreateResourcePermissionsWithGroupIds(_ *testing.T) {
-	// TODO: Write test when PCCP-4209 is fixed
-}
+// func TestAccMorpheusNetworkResourceCreateResourcePermissionsWithGroupIds(_ *testing.T) {
+// 	// TODO: Write test when PCCP-4209 is fixed
+// }
 
 // TestAccMorpheusNetworkHostConfig tests creating a host network resource
 // with host-specific configuration and empty config object

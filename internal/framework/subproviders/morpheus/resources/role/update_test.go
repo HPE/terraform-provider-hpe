@@ -19,6 +19,7 @@ import (
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleUserUpdateAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -801,6 +802,7 @@ resource "hpe_morpheus_role" "update_test" {
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleTenantUpdateAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

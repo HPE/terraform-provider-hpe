@@ -200,6 +200,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 // We may update this test once we can create a second tenant using
 // the provider.
 func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -363,6 +364,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1057,6 +1059,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
