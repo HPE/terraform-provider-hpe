@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_contact.tf_example_contact 1
