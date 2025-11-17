@@ -44,6 +44,11 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
+			"config": schema.DynamicAttribute{
+				Optional:            true,
+				Description:         "Generic Policy Configuration",
+				MarkdownDescription: "Generic Policy Configuration",
+			},
 			"config_approval": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"account_integration_id": schema.StringAttribute{
@@ -792,6 +797,7 @@ type PolicyModel struct {
 	AssociatedResourceId     types.Int64                   `tfsdk:"associated_resource_id"`
 	AssociatedResourceType   types.String                  `tfsdk:"associated_resource_type"`
 	Cloud                    CloudValue                    `tfsdk:"cloud"`
+	Config                   types.Dynamic                 `tfsdk:"config"`
 	ConfigApproval           ConfigApprovalValue           `tfsdk:"config_approval"`
 	ConfigBackupStorage      ConfigBackupStorageValue      `tfsdk:"config_backup_storage"`
 	ConfigCreateBackup       ConfigCreateBackupValue       `tfsdk:"config_create_backup"`

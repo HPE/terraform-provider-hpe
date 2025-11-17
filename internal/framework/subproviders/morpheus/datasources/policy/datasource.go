@@ -725,11 +725,24 @@ func getPolicyByID(
 		data.PolicyType = NewPolicyTypeValueNull()
 	}
 
-	// Handle Config - map API config to schema structure
+	// Handle Config - both structured schema and dynamic field
+	data.Config = types.DynamicNull()
 	if policy.Config != nil {
+		// Map API config to structured schema fields
 		configDiags := mapPolicyConfigToState(ctx, data, policy.Config)
 		if configDiags.HasError() {
 			diags.Append(configDiags...)
+			return diags
+		}
+
+		// Also convert API config to dynamic type
+		var err error
+		data.Config, err = convert.StructToDynamic(ctx, policy.Config)
+		if err != nil {
+			diags.AddError(
+				summary,
+				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
+			)
 			return diags
 		}
 	}
