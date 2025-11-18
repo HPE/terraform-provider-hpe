@@ -3,6 +3,7 @@
 In this release (v0.4.0) we have added the following resource functionality:
 
 - hpe_morpheus_image Update functionality has been added
+- hpe_morpheus_instance supports multiple networks and child virtual networks
 
 ## New known issues
 

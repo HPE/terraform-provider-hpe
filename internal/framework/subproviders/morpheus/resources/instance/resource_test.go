@@ -126,7 +126,6 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id
@@ -188,7 +187,6 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id
@@ -269,7 +267,6 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id
@@ -331,7 +328,6 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id
@@ -412,7 +408,6 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id
@@ -474,7 +469,6 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 						cloud_id           = data.hpe_morpheus_cloud.vme_cloud.id
 						layout_id          = 5385
 						instance_type_id   = 9
-						layout_size        = 1
 
 						group_id           = 1
 						plan_id            = data.hpe_morpheus_service_plan.vme_512mb.id

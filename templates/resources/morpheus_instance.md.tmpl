@@ -13,13 +13,23 @@ Morpheus oversees its entire lifecycle, from initial provisioning to scaling,
 monitoring, and eventual decommissioning.
 
 -> Currently only HVM instances are supported.<br>
-Only one network interface is supported at this time.<br>
 `ip_mode` must be set to avoid a forced replace on update - this will be addresses in a future release.<br>
 With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 The addition and removal of volumes is not supported during updates.<br>
 Updates fail when removing optional fields.<br>
 Updates fail when removing `evars`.<br>
 These will be addressed in a future release.
+
+-> When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
+`network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
+will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
+`terraform apply` will report that no changes have been made but will update the state-file to include
+the missing IP addresses.
+
+-> We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
+the creation of one VM per instance.  When executing terraform an error will be raised stating that
+`layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
+to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
 ## Example Usage
 

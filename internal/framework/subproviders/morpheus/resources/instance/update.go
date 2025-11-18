@@ -121,7 +121,7 @@ func (g *Resource) Update(
 		networkInterfaces, diags := convert.FromListType(
 			ctx,
 			plan.NetworkInterfaces,
-			networkInterfaceMapper,
+			networkInterfaceMapper(ctx),
 		)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert network interfaces")

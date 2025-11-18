@@ -13,13 +13,23 @@ Morpheus oversees its entire lifecycle, from initial provisioning to scaling,
 monitoring, and eventual decommissioning.
 
 -> Currently only HVM instances are supported.<br>
-Only one network interface is supported at this time.<br>
 `ip_mode` must be set to avoid a forced replace on update - this will be addresses in a future release.<br>
 With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 The addition and removal of volumes is not supported during updates.<br>
 Updates fail when removing optional fields.<br>
 Updates fail when removing `evars`.<br>
 These will be addressed in a future release.
+
+-> When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
+`network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
+will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
+`terraform apply` will report that no changes have been made but will update the state-file to include
+the missing IP addresses.
+
+-> We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
+the creation of one VM per instance.  When executing terraform an error will be raised stating that
+`layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
+to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
 ## Example Usage
 
@@ -38,7 +48,6 @@ resource "hpe_morpheus_instance" "example" {
   cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
   layout_id        = 5385                                 # Single KVM VM
   instance_type_id = 9                  # (HVM) mvm-cluster
-  layout_size      = 1
 
   group_id = 1
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
@@ -121,7 +130,6 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
-- `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
@@ -138,10 +146,38 @@ The layout may have default ports, which are defined in node types, that are alw
 
 Optional:
 
+- `child_virtual_networks` (Attributes List) The child_virtual_networks parameter is for network configuration of child virtual networks
+
+The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
 - `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
-- `network_group_id` (Number) id of the network group to be used.
-- `network_id` (Number) id of the network to be used.
+- `ip_pool` (Number) id of the ip pool to be used with this network
+- `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
+- `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
+- `network_type_id` (Number) The id of the type of network interface
+
+Read-Only:
+
+- `name` (String) The name of the interface, e.g. 'eth0', 'eth1'
+- `primary_interface` (Boolean) Is this interface the 'primary interface'?
+
+<a id="nestedatt--network_interfaces--child_virtual_networks"></a>
+### Nested Schema for `network_interfaces.child_virtual_networks`
+
+Optional:
+
+- `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
+- `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
+- `ip_pool` (Number) id of the ip pool to be used with this network
+- `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
+- `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
+- `network_type_id` (Number) The id of the type of network interface
+
+Read-Only:
+
+- `name` (String) The name of the interface, e.g. 'eth0', 'eth1'
+- `primary_interface` (Boolean) Is this interface the 'primary interface'?
+
 
 
 <a id="nestedatt--evars"></a>

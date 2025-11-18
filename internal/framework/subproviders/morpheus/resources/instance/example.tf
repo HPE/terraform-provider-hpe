@@ -12,7 +12,6 @@ resource "hpe_morpheus_instance" "example" {
   cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
   layout_id        = 5385                                 # Single KVM VM
   instance_type_id = 9                  # (HVM) mvm-cluster
-  layout_size      = 1
 
   group_id = 1
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512

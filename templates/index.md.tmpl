@@ -25,7 +25,7 @@ Morpheus API SSL cert checking is enabled by default in this provider.
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v0.3.0).
+release notes for the current version (v0.4.0).
 
 ### Authentication
 
@@ -73,6 +73,7 @@ will be evaluated at run-time.  Examples of these are shown in the documentation
 In this release (v0.4.0) we have added the following resource functionality:
 
 - hpe_morpheus_image Update functionality has been added
+- hpe_morpheus_instance supports multiple networks and child virtual networks
 
 ### New known issues
 
@@ -90,7 +91,6 @@ In this release (v0.4.0) we have added the following resource functionality:
   and that the share is accessible before creating.
 - hpe_morpheus_datastore delete is not guaranteed to succeed.  AlletraMP HVM datastores will delete but NFS datastores
   may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
-- hpe_morpheus_instance only supports 1 network
 - hpe_morpheus_instance in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
 - hpe_morpheus_datastore data-source if a datastore with the specified name cannot be found (i.e. the corresponding
