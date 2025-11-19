@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Of the default Morpheus Cloud types available, only VMWare Clouds support Cloud Folders.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_cloud_folder/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
