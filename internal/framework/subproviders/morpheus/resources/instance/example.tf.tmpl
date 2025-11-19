@@ -20,7 +20,6 @@ resource "hpe_morpheus_instance" "example" {
   network_interfaces = [
     {
       network_id = 103481
-      ip_mode    = "dhcp"
     }
   ]
 
