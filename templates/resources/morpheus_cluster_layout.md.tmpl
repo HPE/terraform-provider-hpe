@@ -10,13 +10,7 @@ description: |-
 
 ## Example Usage
 
-Creating the ARM app blueprint with local content in json format:
-
-{{tffile "examples/resources/morpheus_app_blueprint_arm/resource_json.tf"}}
-
-Creating the ARM app blueprint with the blueprint fetched via git:
-
-{{tffile "examples/resources/morpheus_app_blueprint_arm/resource_git.tf"}}
+{{tffile "examples/resources/morpheus_cluster_layout/resource.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -24,4 +18,4 @@ Creating the ARM app blueprint with the blueprint fetched via git:
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_app_blueprint_arm/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_cluster_layout/import.sh" }}
