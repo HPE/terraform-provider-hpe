@@ -8,11 +8,12 @@ description: |-
 
 {{ .Description | trimspace }}
 
+!> **Note:** Existing inputs or option types are not supported 
+and all inputs or option types must be defined in the form.
+
 ## Example Usage
 
-Creating the Helm app blueprint with the blueprint fetched via git:
-
-{{tffile "examples/resources/morpheus_app_blueprint_helm/resource.tf"}}
+{{tffile "examples/resources/morpheus_form/resource.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -20,4 +21,4 @@ Creating the Helm app blueprint with the blueprint fetched via git:
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_app_blueprint_helm/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_form/import.sh" }}
