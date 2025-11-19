@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{tffile "examples/data-sources/morpheus_integration_git/data-source.tf" }}
+
+The name of the repository is used as the key to access the ID from the `repository_ids` map. The name can be found in the UI in the `code` section under `provisioning`.
+
+{{ .SchemaMarkdown | trimspace }}
