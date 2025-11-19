@@ -1,6 +1,6 @@
 module github.com/hpe/terraform-provider-hpe/tools
 
-go 1.24.2
+go 1.24.1
 
 require github.com/hashicorp/terraform-plugin-docs v0.21.0
 
