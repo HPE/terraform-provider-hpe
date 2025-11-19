@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -122,6 +123,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Validators: []validator.String{
 											stringvalidator.OneOf("static", "dhcp"),
 										},
+										Default: stringdefault.StaticString("dhcp"),
 									},
 									"ip_pool": schema.Int64Attribute{
 										Optional:            true,
@@ -204,6 +206,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Validators: []validator.String{
 								stringvalidator.OneOf("static", "dhcp"),
 							},
+							Default: stringdefault.StaticString("dhcp"),
 						},
 						"ip_pool": schema.Int64Attribute{
 							Optional:            true,

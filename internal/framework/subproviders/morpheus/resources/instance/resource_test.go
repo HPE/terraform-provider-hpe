@@ -134,7 +134,6 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
@@ -195,7 +194,6 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
@@ -275,7 +273,6 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
@@ -336,7 +333,6 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
@@ -416,7 +412,6 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
@@ -477,7 +472,6 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 						network_interfaces = [
 							{
 								network_id = 103481
-								ip_mode    = "dhcp"
 							}
 						]
 
