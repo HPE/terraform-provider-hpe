@@ -220,6 +220,7 @@ func ResourceBlueprintNodeType() *schema.Resource {
 	}
 }
 
+//nolint:goconst
 func resourceBlueprintNodeTypeCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
@@ -372,6 +373,7 @@ func resourceBlueprintNodeTypeCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
+//nolint:goconst
 func resourceBlueprintNodeTypeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
