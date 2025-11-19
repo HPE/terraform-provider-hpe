@@ -222,80 +222,55 @@ func getInstanceAsState(
 	// layout_id
 	state.LayoutId = convert.Int64ToType(instance.Layout.Id)
 
-	// layout_size
-	state.LayoutSize = convert.Int64ToType(instance.Config.LayoutSize)
-
 	// name
 	state.Name = convert.StrToType(instance.Name)
 
 	// network_interfaces
-	// interfaces, d := convert.ToSetType(
-	// 	ctx,
-	// 	resp.GetInstance().Interfaces,
-	// 	func(
-	// 		in sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
-	// 	) NetworkInterfacesValue {
-	// 		v := NetworkInterfacesValue{}
-	// 		v.IpAddress = convert.StrToType(in.IpAddress)
-	// 		v.IpMode = convert.StrToType(in.IpMode)
-	//
-	// 		if in.Network.Group != nil {
-	// 			groupID := int64(in.Network.GetGroup())
-	// 			v.NetworkGroupId = types.Int64Value(groupID)
-	// 		}
-	//
-	// 		v.NetworkId = convert.Int64ToType(in.Network.Id)
-	//
-	// 		v.state = attr.ValueStateKnown
-	//
-	// 		return v
-	// 	},
-	// )
-	// diags.Append(d...)
-	// state.NetworkInterfaces = interfaces
+	// We are going to read network interface information from containerDetails.server.interfaces
+	// Note that, at present, all network IP addresses will not be available to us when we reach
+	// this stage on instance creation, we will have enough in the state-file that a plan will
+	// be a no-op, and that when all IP addresses are available (this can be seen in the UI) an
+	// apply will update the state-file with the IP addresses etc.
+	subIntfMap, isSubIntf, serverIntfsMap, serverInterfaces := getAllServerInterfaces(instance)
 
-	// TODO: find a way to make sure each slice matches up correctly
-	if len(resp.GetInstance().Interfaces) == len(resp.GetInstance().ConnectionInfo) {
-		var ifaces []NetworkInterfacesValue
+	var ifaces []NetworkInterfacesValue
 
-		for _, iface := range resp.GetInstance().Interfaces {
-			ifaceVal := NetworkInterfacesValue{}
-
-			ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
-			ifaceVal.IpMode = convert.StrToType(iface.IpMode)
-
-			if iface.Network.Group != nil {
-				groupID := int64(iface.Network.GetGroup())
-				ifaceVal.NetworkGroupId = types.Int64Value(groupID)
-			}
-
-			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
-
-			ifaceVal.state = attr.ValueStateKnown
-
-			ifaces = append(ifaces, ifaceVal)
+	for _, iface := range serverInterfaces {
+		// Skip sub-interfaces
+		if _, ok := isSubIntf[*iface.Id]; ok {
+			continue
 		}
+		ifaceVal := NetworkInterfacesValue{}
 
-		var newIfaces []NetworkInterfacesValue
-
-		for i, conn := range resp.GetInstance().ConnectionInfo {
-			iface := ifaces[i]
-			iface.IpAddress = convert.StrToType(conn.Ip)
-
-			newIfaces = append(newIfaces, iface)
+		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
+		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
+		ifaceVal.NetworkGroupId = types.Int64Null()
+		if group, ok := iface.GetNetworkGroupOk(); ok {
+			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
 		}
+		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		ifaceVal.Name = convert.StrToType(iface.Name)
+		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 
-		networkInterfacesSet, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), newIfaces)
-		diags.Append(d...)
+		childInterfaces, childD := getChildNetworks(ctx, iface.Id, subIntfMap, serverIntfsMap)
+		diags.Append(childD...)
+		ifaceVal.ChildVirtualNetworks = childInterfaces
 
-		if diags.HasError() {
-			tflog.Error(ctx, "cannot convert network interfaces")
+		ifaceVal.state = attr.ValueStateKnown
 
-			return state, diags
-		}
-
-		state.NetworkInterfaces = networkInterfacesSet
+		ifaces = append(ifaces, ifaceVal)
 	}
+
+	networkInterfacesSet, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), ifaces)
+	diags.Append(d...)
+
+	if diags.HasError() {
+		tflog.Error(ctx, "cannot convert network interfaces")
+
+		return state, diags
+	}
+
+	state.NetworkInterfaces = networkInterfacesSet
 
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
@@ -378,6 +353,123 @@ func getInstanceAsState(
 	state.Volumes = volumes
 
 	return state, diags
+}
+
+// Process the set of interfaces in an instance
+// This function takes an "instance" input and returns the following:
+//   - a map of interface-ids with a list of the ids of any sub-interfaces
+//   - a map of interface-ids with a boolean saying if they are sub-interfaces
+//   - a map of interface-ids with the corresponding interface information
+//   - a list of the interfaces, which should (hopefully) be in the same order as those specified
+//     in network_interfaces
+func getAllServerInterfaces(
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+) (map[int64][]int64, map[int64]bool,
+	map[int64]sdk.InstanceContainerServerInterfacesInner1, []sdk.InstanceContainerServerInterfacesInner1,
+) {
+	subIntfsMap := make(map[int64][]int64)
+	isSubIntf := make(map[int64]bool)
+	serverIntfsMap := make(map[int64]sdk.InstanceContainerServerInterfacesInner1)
+	serverIntfsList := make([]sdk.InstanceContainerServerInterfacesInner1, 0)
+
+	// First clean-up the server interface list
+	// The list of interfaces is malleable, and changes after the instance has been created and returned
+	// to us for reading.  In early stages the interface "name" (eth0, eth1 etc) will have repeated
+	// entries.
+	// Key here is the "UniqueId".  If an interface doesn't have a value for that or for Network then all
+	// it has is an IP address that will be assigned to the interface with the same name (eth0, eth1, etc)
+	for _, container := range instance.ContainerDetails {
+		server, _ := container.GetServerOk()
+		serverIntfList, _ := server.GetInterfacesOk()
+		serverIntfsNameMap := make(map[string][]sdk.InstanceContainerServerInterfacesInner1)
+		for _, serverIntf := range serverIntfList {
+			serverIntfsNameMap[*serverIntf.Name] = append(serverIntfsNameMap[*serverIntf.Name], serverIntf)
+		}
+
+		for _, v := range serverIntfsNameMap {
+			if len(v) == 1 {
+				serverIntfsList = append(serverIntfsList, v[0])
+
+				continue
+			}
+
+			// Hopefully there will only be two entries in the other lists
+			// What we are going to do here is use the entry that has Network information
+			// as the base of the cumulative interface, and then hunt through the rest for
+			// an ip-address
+			var cumulativeIntf sdk.InstanceContainerServerInterfacesInner1
+			var ipAddress *string
+			for _, serverIntf := range v {
+				if _, ok := serverIntf.GetNetworkOk(); ok {
+					cumulativeIntf = serverIntf
+
+					break
+				}
+			}
+			for _, serverIntf := range v {
+				if ip, ok := serverIntf.GetIpAddressOk(); ok {
+					ipAddress = ip
+
+					break
+				}
+			}
+
+			cumulativeIntf.IpAddress = ipAddress
+			serverIntfsList = append(serverIntfsList, cumulativeIntf)
+		}
+	}
+
+	// Build the maps that we're going to return
+	for _, serverInterface := range serverIntfsList {
+		serverIntfsMap[serverInterface.GetId()] = serverInterface
+		if subIntfs, ok := serverInterface.GetInterfacesOk(); ok {
+			intfList := make([]int64, 0)
+			for _, subIntf := range subIntfs {
+				intfList = append(intfList, subIntf.GetId())
+				isSubIntf[subIntf.GetId()] = true
+			}
+			if len(intfList) > 0 {
+				subIntfsMap[serverInterface.GetId()] = intfList
+			}
+		}
+	}
+
+	return subIntfsMap, isSubIntf, serverIntfsMap, serverIntfsList
+}
+
+// Get the child virtual network interface values
+func getChildNetworks(
+	ctx context.Context,
+	id *int64,
+	subIntfMap map[int64][]int64,
+	serverIntfsMap map[int64]sdk.InstanceContainerServerInterfacesInner1,
+) (basetypes.ListValue, diag.Diagnostics) {
+	if id == nil {
+		return basetypes.NewListNull(ChildVirtualNetworksType{}), nil
+	}
+
+	if len(subIntfMap[*id]) == 0 {
+		return basetypes.NewListNull(ChildVirtualNetworksType{}), nil
+	}
+
+	children := make([]ChildVirtualNetworksValue, 0)
+	for _, subIntf := range subIntfMap[*id] {
+		ifaceVal := ChildVirtualNetworksValue{}
+		iface := serverIntfsMap[subIntf]
+		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
+		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
+		ifaceVal.NetworkGroupId = types.Int64Null()
+		if group, ok := iface.GetNetworkGroupOk(); ok {
+			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
+		}
+		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		ifaceVal.Name = convert.StrToType(iface.Name)
+		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
+		ifaceVal.state = attr.ValueStateKnown
+		children = append(children, ifaceVal)
+	}
+
+	return types.ListValueFrom(ctx, ChildVirtualNetworksValue{}.Type(ctx), children)
 }
 
 func getInstanceTypeCode(
@@ -532,11 +624,6 @@ func (g *Resource) Create(
 		)
 	}
 
-	// layout_size
-	if !plan.LayoutSize.IsNull() {
-		reqInstance.SetLayoutSize(plan.LayoutSize.ValueInt64())
-	}
-
 	// name
 	if !plan.Name.IsNull() {
 		reqInstance.Instance.SetName(plan.Name.ValueString())
@@ -546,7 +633,7 @@ func (g *Resource) Create(
 	networkInterfaces, diags := convert.FromListType(
 		ctx,
 		plan.NetworkInterfaces,
-		networkInterfaceMapper,
+		networkInterfaceMapper(ctx),
 	)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert network interfaces")
