@@ -12,15 +12,15 @@ description: |-
 
 Creating the Kubernetes app blueprint with local content in yaml format:
 
-{{tffile "examples/resources/morpheus_blueprint_app_kubernetes/resource_yaml.tf"}}
+{{tffile "examples/resources/morpheus_app_blueprint_kubernetes/resource_yaml.tf"}}
 
 Creating the Kubernetes app blueprint with Kubernetes spec templates:
 
-{{tffile "examples/resources/morpheus_blueprint_app_kubernetes/resource_spec.tf"}}
+{{tffile "examples/resources/morpheus_app_blueprint_kubernetes/resource_spec.tf"}}
 
 Creating the Kubernetes app blueprint with the blueprint fetched via git:
 
-{{tffile "examples/resources/morpheus_blueprint_app_kubernetes/resource_git.tf"}}
+{{tffile "examples/resources/morpheus_app_blueprint_kubernetes/resource_git.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -28,4 +28,4 @@ Creating the Kubernetes app blueprint with the blueprint fetched via git:
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_blueprint_app_kubernetes/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_app_blueprint_kubernetes/import.sh" }}
