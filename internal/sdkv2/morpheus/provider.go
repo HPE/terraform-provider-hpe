@@ -98,6 +98,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_identity_source_saml":             identitysource.ResourceIdentitySourceSAML(),
 			"hpe_morpheus_instance_type":                    blueprint.ResourceInstanceType(),
 			"hpe_morpheus_instance_type_layout":             blueprint.ResourceInstanceTypeLayout(),
+			"hpe_morpheus_integration_ansible":              integration.ResourceIntegrationAnsible(),
 			"hpe_morpheus_integration_ansible_tower":        integration.ResourceIntegrationAnsibleTower(),
 			"hpe_morpheus_integration_chef":                 integration.ResourceIntegrationChef(),
 			"hpe_morpheus_integration_docker_registry":      integration.ResourceIntegrationDockerRegistry(),
