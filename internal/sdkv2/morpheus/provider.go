@@ -197,7 +197,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_price_set":                  plands.DataSourcePriceSet(),
 			"hpe_morpheus_provision_type":             provisiontype.DataSourceProvisionType(),
 			"hpe_morpheus_resource_pool":              computeds.DataSourceResourcePool(),
-			"hpe_morpheus_script_template":            templateds.DataSourceTemplateScript(),
+			"hpe_morpheus_script_template":            templateds.DataSourceScriptTemplate(),
 			"hpe_morpheus_security_package":           templateds.DataSourceSecurityPackage(),
 			"hpe_morpheus_servicenow_workflow":        integrationds.DataSourceServiceNowWorkFlow(),
 			"hpe_morpheus_spec_template":              templateds.DataSourceSpecTemplate(),
