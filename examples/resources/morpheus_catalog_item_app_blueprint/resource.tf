@@ -1,4 +1,4 @@
-resource "hpe_morpheus_catalog_item_blueprint" "tf_example_app_blueprint_catalog_item" {
+resource "hpe_morpheus_catalog_item_app_blueprint" "tf_example_app_blueprint_catalog_item" {
   name                 = "tfexample_app_blueprint_catalog"
   description          = "terraform example app blueprint catalog item"
   logo_image_path      = "tfexample.png"

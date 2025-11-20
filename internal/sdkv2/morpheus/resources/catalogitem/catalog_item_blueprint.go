@@ -18,13 +18,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func ResourceCatalogItemBlueprint() *schema.Resource {
+func ResourceCatalogItemAppBlueprint() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Provides a Morpheus Blueprint catalog item resource",
-		CreateContext: resourceCatalogItemBlueprintCreate,
-		ReadContext:   resourceCatalogItemBlueprintRead,
-		UpdateContext: resourceCatalogItemBlueprintUpdate,
-		DeleteContext: resourceCatalogItemBlueprintDelete,
+		Description:   "Provides a Morpheus App Blueprint catalog item resource",
+		CreateContext: resourceCatalogItemAppBlueprintCreate,
+		ReadContext:   resourceCatalogItemAppBlueprintRead,
+		UpdateContext: resourceCatalogItemAppBlueprintUpdate,
+		DeleteContext: resourceCatalogItemAppBlueprintDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -143,7 +143,7 @@ func ResourceCatalogItemBlueprint() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceCatalogItemBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemAppBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -356,12 +356,12 @@ func resourceCatalogItemBlueprintCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	diags = append(diags, resourceCatalogItemBlueprintRead(ctx, d, meta)...)
+	diags = append(diags, resourceCatalogItemAppBlueprintRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceCatalogItemBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemAppBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -476,7 +476,7 @@ func resourceCatalogItemBlueprintRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceCatalogItemBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemAppBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -689,10 +689,10 @@ func resourceCatalogItemBlueprintUpdate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	return resourceCatalogItemBlueprintRead(ctx, d, meta)
+	return resourceCatalogItemAppBlueprintRead(ctx, d, meta)
 }
 
-func resourceCatalogItemBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCatalogItemAppBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

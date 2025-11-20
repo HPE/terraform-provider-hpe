@@ -80,7 +80,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_app_blueprint_kubernetes":         blueprint.ResourceAppBlueprintKubernetes(),
 			"hpe_morpheus_app_blueprint_terraform":          blueprint.ResourceAppBlueprintTerraform(),
 			"hpe_morpheus_boot_script":                      script.ResourceBootScript(),
-			"hpe_morpheus_catalog_item_blueprint":           catalogitem.ResourceCatalogItemBlueprint(),
+			"hpe_morpheus_catalog_item_app_blueprint":       catalogitem.ResourceCatalogItemAppBlueprint(),
 			"hpe_morpheus_catalog_item_instance":            catalogitem.ResourceCatalogItemInstance(),
 			"hpe_morpheus_catalog_item_workflow":            catalogitem.ResourceCatalogItemWorkflow(),
 			"hpe_morpheus_cluster_layout":                   blueprint.ResourceClusterLayout(),

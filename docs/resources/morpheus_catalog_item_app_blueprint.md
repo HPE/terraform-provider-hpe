@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_catalog_item_blueprint Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_catalog_item_app_blueprint Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Provides a Morpheus Blueprint catalog item resource
+  Provides a Morpheus App Blueprint catalog item resource
 ---
-# hpe_morpheus_catalog_item_blueprint (Resource)
+# hpe_morpheus_catalog_item_app_blueprint (Resource)
 
-Provides a Morpheus Blueprint catalog item resource
+Provides a Morpheus App Blueprint catalog item resource
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_catalog_item_blueprint" "tf_example_app_blueprint_catalog_item" {
+resource "hpe_morpheus_catalog_item_app_blueprint" "tf_example_app_blueprint_catalog_item" {
   name                 = "tfexample_app_blueprint_catalog"
   description          = "terraform example app blueprint catalog item"
   logo_image_path      = "tfexample.png"
@@ -63,5 +63,5 @@ resource "hpe_morpheus_catalog_item_blueprint" "tf_example_app_blueprint_catalog
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_catalog_item_blueprint.tf_example_app_blueprint_catalog_item 1
+terraform import hpe_morpheus_catalog_item_app_blueprint.tf_example_app_blueprint_catalog_item 1
 ```
