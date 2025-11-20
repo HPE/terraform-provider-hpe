@@ -14,10 +14,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceTrustKeyPair() *schema.Resource {
+func DataSourceKeyPair() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus key pair data source.",
-		ReadContext: dataSourceTrustKeyPairRead,
+		ReadContext: dataSourceKeyPairRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -41,7 +41,7 @@ func DataSourceTrustKeyPair() *schema.Resource {
 	}
 }
 
-func dataSourceTrustKeyPairRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceKeyPairRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

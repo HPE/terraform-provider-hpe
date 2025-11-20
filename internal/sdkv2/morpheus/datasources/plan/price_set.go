@@ -9,16 +9,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
-
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
+
+	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func DataSourceServicePlanPrice() *schema.Resource {
+func DataSourcePriceSet() *schema.Resource {
 	return &schema.Resource{
-		Description: "The Price data source allows details of a Price to be retrieved by its name.",
-		ReadContext: dataSourceServicePlanPriceRead,
+		Description: "The Price Set data source allows details of a Price Set to be retrieved by its name.",
+		ReadContext: dataSourcePriceSetRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -28,20 +28,24 @@ func DataSourceServicePlanPrice() *schema.Resource {
 			},
 			"name": {
 				Type:          schema.TypeString,
-				Description:   "The name of the Morpheus price",
+				Description:   "The name of the Morpheus price set.",
 				Optional:      true,
 				ConflictsWith: []string{"id"},
 			},
 			"code": {
 				Type:        schema.TypeString,
-				Description: "The code of the Morpheus price",
+				Description: "The code of the Morpheus price set",
 				Computed:    true,
 			},
 		},
 	}
 }
 
-func dataSourceServicePlanPriceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourcePriceSetRead(
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta any,
+) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -68,12 +72,13 @@ func dataSourceServicePlanPriceRead(ctx context.Context, d *schema.ResourceData,
 	var resp *morpheus.Response
 	var err error
 	if id == 0 && name != "" {
-		resp, err = client.FindPriceByName(name)
+		resp, err = client.FindPriceSetByName(name)
 	} else if id != 0 {
-		resp, err = client.GetPrice(int64(id), &morpheus.Request{})
+		resp, err = client.GetPriceSet(int64(id), &morpheus.Request{})
 	} else {
-		return diag.Errorf("Price cannot be read without name or id")
+		return diag.Errorf("Price set cannot be read without name or id")
 	}
+
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
@@ -91,21 +96,21 @@ func dataSourceServicePlanPriceRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.GetPriceResult
-	if v, ok := resp.Result.(*morpheus.GetPriceResult); ok {
+	var result *morpheus.GetPriceSetResult
+	if v, ok := resp.Result.(*morpheus.GetPriceSetResult); ok {
 		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.Price == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("Price"))
+	if result.PriceSet == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("PriceSet"))
 	}
 
-	price := result.Price
-	d.SetId(convert.Int64ToString(price.ID))
-	d.Set("name", price.Name)
-	d.Set("code", price.Code)
+	priceSet := result.PriceSet
+	d.SetId(convert.Int64ToString(priceSet.ID))
+	d.Set("name", priceSet.Name)
+	d.Set("code", priceSet.Code)
 
 	return diags
 }

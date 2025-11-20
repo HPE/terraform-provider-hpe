@@ -17,10 +17,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceImageVirtualImages() *schema.Resource {
+func DataSourceImages() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus virtual images data source.",
-		ReadContext: dataSourceImageVirtualImagesRead,
+		ReadContext: dataSourceImagesRead,
 		Schema: map[string]*schema.Schema{
 			"ids": {
 				Type:     schema.TypeList,
@@ -72,7 +72,7 @@ func DataSourceImageVirtualImages() *schema.Resource {
 	}
 }
 
-func dataSourceImageVirtualImagesRead(
+func dataSourceImagesRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

@@ -17,10 +17,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourcePolicyPolicies() *schema.Resource {
+func DataSourcePolicies() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus policies data source.",
-		ReadContext: dataSourcePolicyPoliciesRead,
+		ReadContext: dataSourcePoliciesRead,
 		Schema: map[string]*schema.Schema{
 			"ids": {
 				Type:     schema.TypeList,
@@ -63,7 +63,7 @@ func DataSourcePolicyPolicies() *schema.Resource {
 	}
 }
 
-func dataSourcePolicyPoliciesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourcePoliciesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

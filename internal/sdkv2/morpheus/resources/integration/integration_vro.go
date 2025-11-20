@@ -19,13 +19,13 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func ResourceIntegrationVro() *schema.Resource {
+func ResourceIntegrationVRO() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a vRealize Orchestrator integration resource",
-		CreateContext: resourceIntegrationVroCreate,
-		ReadContext:   resourceIntegrationVroRead,
-		UpdateContext: resourceIntegrationVroUpdate,
-		DeleteContext: resourceIntegrationVroDelete,
+		CreateContext: resourceIntegrationVROCreate,
+		ReadContext:   resourceIntegrationVRORead,
+		UpdateContext: resourceIntegrationVROUpdate,
+		DeleteContext: resourceIntegrationVRODelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -93,7 +93,7 @@ func ResourceIntegrationVro() *schema.Resource {
 	}
 }
 
-func resourceIntegrationVroCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIntegrationVROCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -191,10 +191,10 @@ func resourceIntegrationVroCreate(ctx context.Context, d *schema.ResourceData, m
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(integrationResult.ID))
 
-	return resourceIntegrationVroRead(ctx, d, meta)
+	return resourceIntegrationVRORead(ctx, d, meta)
 }
 
-func resourceIntegrationVroRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIntegrationVRORead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -263,7 +263,7 @@ func resourceIntegrationVroRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceIntegrationVroUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIntegrationVROUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -362,10 +362,10 @@ func resourceIntegrationVroUpdate(ctx context.Context, d *schema.ResourceData, m
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(integrationResult.ID))
 
-	return resourceIntegrationVroRead(ctx, d, meta)
+	return resourceIntegrationVRORead(ctx, d, meta)
 }
 
-func resourceIntegrationVroDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIntegrationVRODelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

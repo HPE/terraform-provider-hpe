@@ -15,10 +15,10 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func DataSourceAutomationPowerSchedule() *schema.Resource {
+func DataSourcePowerSchedule() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus power schedule data source.",
-		ReadContext: dataSourceAutomationPowerScheduleRead,
+		ReadContext: dataSourcePowerScheduleRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -37,7 +37,7 @@ func DataSourceAutomationPowerSchedule() *schema.Resource {
 	}
 }
 
-func dataSourceAutomationPowerScheduleRead(
+func dataSourcePowerScheduleRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

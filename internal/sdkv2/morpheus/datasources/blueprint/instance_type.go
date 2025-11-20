@@ -15,10 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceBlueprintInstanceType() *schema.Resource {
+func DataSourceInstanceType() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus instance type data source.",
-		ReadContext: dataSourceBlueprintInstanceTypeRead,
+		ReadContext: dataSourceInstanceTypeRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -56,7 +56,7 @@ func DataSourceBlueprintInstanceType() *schema.Resource {
 	}
 }
 
-func dataSourceBlueprintInstanceTypeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceInstanceTypeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

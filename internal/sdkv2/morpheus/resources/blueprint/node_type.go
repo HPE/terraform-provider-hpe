@@ -25,13 +25,13 @@ const (
 
 var shortNameCharacters, _ = regexp.Compile("^[^ _]*$")
 
-func ResourceBlueprintNodeType() *schema.Resource {
+func ResourceNodeType() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus node type resource",
-		CreateContext: resourceBlueprintNodeTypeCreate,
-		ReadContext:   resourceBlueprintNodeTypeRead,
-		UpdateContext: resourceBlueprintNodeTypeUpdate,
-		DeleteContext: resourceBlueprintNodeTypeDelete,
+		CreateContext: resourceNodeTypeCreate,
+		ReadContext:   resourceNodeTypeRead,
+		UpdateContext: resourceNodeTypeUpdate,
+		DeleteContext: resourceNodeTypeDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -221,7 +221,7 @@ func ResourceBlueprintNodeType() *schema.Resource {
 }
 
 //nolint:goconst
-func resourceBlueprintNodeTypeCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceNodeTypeCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -368,13 +368,13 @@ func resourceBlueprintNodeTypeCreate(ctx context.Context, d *schema.ResourceData
 	nodeType := result.NodeType
 	d.SetId(convert.Int64ToString(nodeType.ID))
 
-	diags = append(diags, resourceBlueprintNodeTypeRead(ctx, d, meta)...)
+	diags = append(diags, resourceNodeTypeRead(ctx, d, meta)...)
 
 	return diags
 }
 
 //nolint:goconst
-func resourceBlueprintNodeTypeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceNodeTypeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -499,7 +499,7 @@ func resourceBlueprintNodeTypeRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceBlueprintNodeTypeUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceNodeTypeUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -632,10 +632,10 @@ func resourceBlueprintNodeTypeUpdate(ctx context.Context, d *schema.ResourceData
 	nodeType := result.NodeType
 	d.SetId(convert.Int64ToString(nodeType.ID))
 
-	return resourceBlueprintNodeTypeRead(ctx, d, meta)
+	return resourceNodeTypeRead(ctx, d, meta)
 }
 
-func resourceBlueprintNodeTypeDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceNodeTypeDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
