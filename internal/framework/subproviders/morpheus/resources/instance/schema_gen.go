@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -186,8 +187,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 							Optional:            true,
-							Description:         "The child_virtual_networks parameter is for network configuration of child virtual networks\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-							MarkdownDescription: "The child_virtual_networks parameter is for network configuration of child virtual networks\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							Description:         "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							MarkdownDescription: "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							Validators: []validator.List{
+								listvalidator.SizeAtLeast(1),
+							},
 						},
 						"ip_address": schema.StringAttribute{
 							Optional:            true,

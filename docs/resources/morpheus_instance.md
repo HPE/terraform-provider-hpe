@@ -30,6 +30,11 @@ the creation of one VM per instance.  When executing terraform an error will be 
 `layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
 to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
+-> Beware when importing an instance where DHCP has been enabled: if the experimental `plan` functionality
+to generate HCL (flag `-generate-config-out`) is being used the resulting HCL will contain IP addresses for
+each of the interfaces. Remove these IP addresses from the generated HCL *before* executing `terraform apply`
+to import the instance. Otherwise the import will result in the instance being destroyed.
+
 ## Example Usage
 
 ```terraform
@@ -144,7 +149,8 @@ The layout may have default ports, which are defined in node types, that are alw
 
 Optional:
 
-- `child_virtual_networks` (Attributes List) The child_virtual_networks parameter is for network configuration of child virtual networks
+- `child_virtual_networks` (Attributes List) The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list
+cannot be empty, it can either not be specified in HCL or if specified must contain at least one element
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.

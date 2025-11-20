@@ -445,11 +445,11 @@ func getChildNetworks(
 	serverIntfsMap map[int64]sdk.InstanceContainerServerInterfacesInner1,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	if id == nil {
-		return basetypes.NewListNull(ChildVirtualNetworksType{}), nil
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx)), nil
 	}
 
 	if len(subIntfMap[*id]) == 0 {
-		return basetypes.NewListNull(ChildVirtualNetworksType{}), nil
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx)), nil
 	}
 
 	children := make([]ChildVirtualNetworksValue, 0)
@@ -774,7 +774,7 @@ func (g *Resource) Delete(
 		return
 	}
 
-	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64())
+	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("on")
 	_, hresp, err := deleteReq.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
