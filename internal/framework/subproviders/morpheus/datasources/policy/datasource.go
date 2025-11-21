@@ -156,16 +156,10 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 7. BudgetPolicyTypeConfiguration -> max_price
 	if apiConfig.BudgetPolicyTypeConfiguration != nil {
 		maxPriceAttrs := map[string]attr.Value{
-			"max_price":          types.StringNull(),
-			"max_price_currency": types.StringNull(),
-			"max_price_unit":     types.StringNull(),
+			"max_price":          types.StringValue(apiConfig.BudgetPolicyTypeConfiguration.MaxPrice),
+			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency),
+			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit),
 		}
-
-		if apiConfig.BudgetPolicyTypeConfiguration.MaxPrice != "" {
-			maxPriceAttrs["max_price"] = types.StringValue(apiConfig.BudgetPolicyTypeConfiguration.MaxPrice)
-		}
-		maxPriceAttrs["max_price_currency"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency)
-		maxPriceAttrs["max_price_unit"] = convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit)
 
 		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
 		if maxPriceDiags.HasError() {
@@ -178,14 +172,9 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 8. MaxMemoryPolicyTypeConfiguration -> max_memory
 	if apiConfig.MaxMemoryPolicyTypeConfiguration != nil {
 		maxMemoryAttrs := map[string]attr.Value{
-			"max_memory":         types.StringNull(),
-			"exclude_containers": types.StringNull(),
+			"max_memory":         types.StringValue(apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration.GetExcludeContainers()),
 		}
-
-		if apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory != "" {
-			maxMemoryAttrs["max_memory"] = types.StringValue(apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory)
-		}
-		maxMemoryAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxMemoryPolicyTypeConfiguration.ExcludeContainers)
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
 		if maxMemoryDiags.HasError() {
@@ -198,14 +187,9 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 9. MaxCoresPolicyTypeConfiguration -> max_cores
 	if apiConfig.MaxCoresPolicyTypeConfiguration != nil {
 		maxCoresAttrs := map[string]attr.Value{
-			"max_cores":          types.StringNull(),
-			"exclude_containers": types.StringNull(),
+			"max_cores":          types.StringValue(apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration.GetExcludeContainers()),
 		}
-
-		if apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores != "" {
-			maxCoresAttrs["max_cores"] = types.StringValue(apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores)
-		}
-		maxCoresAttrs["exclude_containers"] = convert.StrToType(apiConfig.MaxCoresPolicyTypeConfiguration.ExcludeContainers)
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
 		if maxCoresDiags.HasError() {
@@ -235,8 +219,8 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 		lifecycleAttrs := map[string]attr.Value{
 			"account_integration_id":               convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.AccountIntegrationId),
 			"lifecycle_age":                        convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAge),
-			"lifecycle_allow_extend":               convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAllowExtend),
-			"lifecycle_auto_renew":                 convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAutoRenew),
+			"lifecycle_allow_extend":               convert.StringToBool(ctx, apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAllowExtend()),
+			"lifecycle_auto_renew":                 convert.StringToBool(ctx, apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAutoRenew()),
 			"lifecycle_extensions_before_approval": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleExtensionsBeforeApproval),
 			"lifecycle_hide_fixed":                 convert.BoolToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleHideFixed),
 			"lifecycle_message":                    convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleMessage),
@@ -385,7 +369,7 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 21. MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration -> max_storage
 	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration != nil {
 		maxStorageAttrs := map[string]attr.Value{
-			"exclude_containers": convert.StrToType(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.ExcludeContainers),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.GetExcludeContainers()),
 			"max_storage":        types.StringValue(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage),
 		}
 
@@ -520,8 +504,8 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 		shutdownAttrs := map[string]attr.Value{
 			"account_integration_id":              convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.AccountIntegrationId),
 			"shutdown_age":                        convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAge),
-			"shutdown_allow_extend":               convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAllowExtend),
-			"shutdown_auto_renew":                 convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAutoRenew),
+			"shutdown_allow_extend":               convert.StringToBool(ctx, apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAllowExtend()),
+			"shutdown_auto_renew":                 convert.StringToBool(ctx, apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAutoRenew()),
 			"shutdown_extensions_before_approval": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownExtensionsBeforeApproval),
 			"shutdown_hide_fixed":                 convert.BoolToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownHideFixed),
 			"shutdown_message":                    convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownMessage),
@@ -725,8 +709,8 @@ func getPolicyByID(
 		data.PolicyType = NewPolicyTypeValueNull()
 	}
 
-	// Handle Config - both structured schema and dynamic field
-	data.Config = types.DynamicNull()
+	// Handle Config - map to structured schema fields
+	// data.Config = types.DynamicNull()
 	if policy.Config != nil {
 		// Map API config to structured schema fields
 		configDiags := mapPolicyConfigToState(ctx, data, policy.Config)
@@ -841,17 +825,18 @@ func getPolicyByID(
 	// Handle Tenants (Accounts)
 	if len(policy.Accounts) > 0 {
 		tenantValues := []attr.Value{}
+		tenantObjectType := types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"id":   types.Int64Type,
+				"name": types.StringType,
+			},
+		}
 		for _, account := range policy.Accounts {
-			tenantValue, tenantDiags := types.ObjectValueFrom(ctx,
-				map[string]attr.Type{
-					"id":   types.Int64Type,
-					"name": types.StringType,
-				},
-				map[string]attr.Value{
-					"id":   convert.Int64ToType(account.Id),
-					"name": convert.StrToType(account.Name),
-				},
-			)
+			tenantAttrs := map[string]attr.Value{
+				"id":   convert.Int64ToType(account.Id),
+				"name": convert.StrToType(account.Name),
+			}
+			tenantValue, tenantDiags := types.ObjectValue(tenantObjectType.AttrTypes, tenantAttrs)
 			if tenantDiags.HasError() {
 				diags.Append(tenantDiags...)
 				return diags
@@ -859,15 +844,7 @@ func getPolicyByID(
 			tenantValues = append(tenantValues, tenantValue)
 		}
 
-		tenantsSet, setDiags := types.SetValueFrom(ctx,
-			types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"id":   types.Int64Type,
-					"name": types.StringType,
-				},
-			},
-			tenantValues,
-		)
+		tenantsSet, setDiags := types.SetValue(tenantObjectType, tenantValues)
 		if setDiags.HasError() {
 			diags.Append(setDiags...)
 			return diags

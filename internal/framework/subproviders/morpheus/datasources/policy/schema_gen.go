@@ -211,10 +211,10 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					"lifecycle_age": schema.StringAttribute{
 						Computed: true,
 					},
-					"lifecycle_allow_extend": schema.StringAttribute{
+					"lifecycle_allow_extend": schema.BoolAttribute{
 						Computed: true,
 					},
-					"lifecycle_auto_renew": schema.StringAttribute{
+					"lifecycle_auto_renew": schema.BoolAttribute{
 						Computed: true,
 					},
 					"lifecycle_extensions_before_approval": schema.StringAttribute{
@@ -262,7 +262,7 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_max_cores": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"exclude_containers": schema.StringAttribute{
+					"exclude_containers": schema.BoolAttribute{
 						Computed: true,
 					},
 					"max_cores": schema.StringAttribute{
@@ -295,7 +295,7 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_max_memory": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"exclude_containers": schema.StringAttribute{
+					"exclude_containers": schema.BoolAttribute{
 						Computed: true,
 					},
 					"max_memory": schema.StringAttribute{
@@ -409,7 +409,7 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_max_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"exclude_containers": schema.StringAttribute{
+					"exclude_containers": schema.BoolAttribute{
 						Computed: true,
 					},
 					"max_storage": schema.StringAttribute{
@@ -572,10 +572,10 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					"shutdown_age": schema.StringAttribute{
 						Computed: true,
 					},
-					"shutdown_allow_extend": schema.StringAttribute{
+					"shutdown_allow_extend": schema.BoolAttribute{
 						Computed: true,
 					},
-					"shutdown_auto_renew": schema.StringAttribute{
+					"shutdown_auto_renew": schema.BoolAttribute{
 						Computed: true,
 					},
 					"shutdown_extensions_before_approval": schema.StringAttribute{
@@ -670,6 +670,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"enabled": schema.BoolAttribute{
+				Computed: true,
+			},
+			"exclude_containers": schema.BoolAttribute{
 				Computed: true,
 			},
 			"group": schema.SingleNestedAttribute{
@@ -832,6 +835,7 @@ type PolicyModel struct {
 	Description              types.String                  `tfsdk:"description"`
 	EachUser                 types.Bool                    `tfsdk:"each_user"`
 	Enabled                  types.Bool                    `tfsdk:"enabled"`
+	ExcludeContainers        types.Bool                    `tfsdk:"exclude_containers"`
 	Group                    GroupValue                    `tfsdk:"group"`
 	Id                       types.Int64                   `tfsdk:"id"`
 	Name                     types.String                  `tfsdk:"name"`
@@ -4595,12 +4599,12 @@ func (t ConfigLifecycleType) ValueFromObject(ctx context.Context, in basetypes.O
 		return nil, diags
 	}
 
-	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.StringValue)
+	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.StringValue, was: %T`, lifecycleAllowExtendAttribute))
+			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.BoolValue, was: %T`, lifecycleAllowExtendAttribute))
 	}
 
 	lifecycleAutoRenewAttribute, ok := attributes["lifecycle_auto_renew"]
@@ -4613,12 +4617,12 @@ func (t ConfigLifecycleType) ValueFromObject(ctx context.Context, in basetypes.O
 		return nil, diags
 	}
 
-	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.StringValue)
+	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.StringValue, was: %T`, lifecycleAutoRenewAttribute))
+			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.BoolValue, was: %T`, lifecycleAutoRenewAttribute))
 	}
 
 	lifecycleExtensionsBeforeApprovalAttribute, ok := attributes["lifecycle_extensions_before_approval"]
@@ -4857,12 +4861,12 @@ func NewConfigLifecycleValue(attributeTypes map[string]attr.Type, attributes map
 		return NewConfigLifecycleValueUnknown(), diags
 	}
 
-	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.StringValue)
+	lifecycleAllowExtendVal, ok := lifecycleAllowExtendAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.StringValue, was: %T`, lifecycleAllowExtendAttribute))
+			fmt.Sprintf(`lifecycle_allow_extend expected to be basetypes.BoolValue, was: %T`, lifecycleAllowExtendAttribute))
 	}
 
 	lifecycleAutoRenewAttribute, ok := attributes["lifecycle_auto_renew"]
@@ -4875,12 +4879,12 @@ func NewConfigLifecycleValue(attributeTypes map[string]attr.Type, attributes map
 		return NewConfigLifecycleValueUnknown(), diags
 	}
 
-	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.StringValue)
+	lifecycleAutoRenewVal, ok := lifecycleAutoRenewAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.StringValue, was: %T`, lifecycleAutoRenewAttribute))
+			fmt.Sprintf(`lifecycle_auto_renew expected to be basetypes.BoolValue, was: %T`, lifecycleAutoRenewAttribute))
 	}
 
 	lifecycleExtensionsBeforeApprovalAttribute, ok := attributes["lifecycle_extensions_before_approval"]
@@ -5080,8 +5084,8 @@ var _ basetypes.ObjectValuable = ConfigLifecycleValue{}
 type ConfigLifecycleValue struct {
 	AccountIntegrationId              basetypes.StringValue `tfsdk:"account_integration_id"`
 	LifecycleAge                      basetypes.StringValue `tfsdk:"lifecycle_age"`
-	LifecycleAllowExtend              basetypes.StringValue `tfsdk:"lifecycle_allow_extend"`
-	LifecycleAutoRenew                basetypes.StringValue `tfsdk:"lifecycle_auto_renew"`
+	LifecycleAllowExtend              basetypes.BoolValue   `tfsdk:"lifecycle_allow_extend"`
+	LifecycleAutoRenew                basetypes.BoolValue   `tfsdk:"lifecycle_auto_renew"`
 	LifecycleExtensionsBeforeApproval basetypes.StringValue `tfsdk:"lifecycle_extensions_before_approval"`
 	LifecycleHideFixed                basetypes.BoolValue   `tfsdk:"lifecycle_hide_fixed"`
 	LifecycleMessage                  basetypes.StringValue `tfsdk:"lifecycle_message"`
@@ -5099,8 +5103,8 @@ func (v ConfigLifecycleValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 
 	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_age"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["lifecycle_allow_extend"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["lifecycle_auto_renew"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_allow_extend"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["lifecycle_auto_renew"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["lifecycle_extensions_before_approval"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_hide_fixed"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["lifecycle_message"] = basetypes.StringType{}.TerraformType(ctx)
@@ -5226,8 +5230,8 @@ func (v ConfigLifecycleValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 	attributeTypes := map[string]attr.Type{
 		"account_integration_id":               basetypes.StringType{},
 		"lifecycle_age":                        basetypes.StringType{},
-		"lifecycle_allow_extend":               basetypes.StringType{},
-		"lifecycle_auto_renew":                 basetypes.StringType{},
+		"lifecycle_allow_extend":               basetypes.BoolType{},
+		"lifecycle_auto_renew":                 basetypes.BoolType{},
 		"lifecycle_extensions_before_approval": basetypes.StringType{},
 		"lifecycle_hide_fixed":                 basetypes.BoolType{},
 		"lifecycle_message":                    basetypes.StringType{},
@@ -5332,8 +5336,8 @@ func (v ConfigLifecycleValue) AttributeTypes(ctx context.Context) map[string]att
 	return map[string]attr.Type{
 		"account_integration_id":               basetypes.StringType{},
 		"lifecycle_age":                        basetypes.StringType{},
-		"lifecycle_allow_extend":               basetypes.StringType{},
-		"lifecycle_auto_renew":                 basetypes.StringType{},
+		"lifecycle_allow_extend":               basetypes.BoolType{},
+		"lifecycle_auto_renew":                 basetypes.BoolType{},
 		"lifecycle_extensions_before_approval": basetypes.StringType{},
 		"lifecycle_hide_fixed":                 basetypes.BoolType{},
 		"lifecycle_message":                    basetypes.StringType{},
@@ -5718,12 +5722,12 @@ func (t ConfigMaxCoresType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		return nil, diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxCoresAttribute, ok := attributes["max_cores"]
@@ -5828,12 +5832,12 @@ func NewConfigMaxCoresValue(attributeTypes map[string]attr.Type, attributes map[
 		return NewConfigMaxCoresValueUnknown(), diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxCoresAttribute, ok := attributes["max_cores"]
@@ -5933,7 +5937,7 @@ func (t ConfigMaxCoresType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigMaxCoresValue{}
 
 type ConfigMaxCoresValue struct {
-	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	ExcludeContainers basetypes.BoolValue   `tfsdk:"exclude_containers"`
 	MaxCores          basetypes.StringValue `tfsdk:"max_cores"`
 	state             attr.ValueState
 }
@@ -5944,7 +5948,7 @@ func (v ConfigMaxCoresValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 	var val tftypes.Value
 	var err error
 
-	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["exclude_containers"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["max_cores"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -5999,7 +6003,7 @@ func (v ConfigMaxCoresValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_cores":          basetypes.StringType{},
 	}
 
@@ -6057,7 +6061,7 @@ func (v ConfigMaxCoresValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigMaxCoresValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_cores":          basetypes.StringType{},
 	}
 }
@@ -6437,12 +6441,12 @@ func (t ConfigMaxMemoryType) ValueFromObject(ctx context.Context, in basetypes.O
 		return nil, diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -6547,12 +6551,12 @@ func NewConfigMaxMemoryValue(attributeTypes map[string]attr.Type, attributes map
 		return NewConfigMaxMemoryValueUnknown(), diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -6652,7 +6656,7 @@ func (t ConfigMaxMemoryType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigMaxMemoryValue{}
 
 type ConfigMaxMemoryValue struct {
-	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	ExcludeContainers basetypes.BoolValue   `tfsdk:"exclude_containers"`
 	MaxMemory         basetypes.StringValue `tfsdk:"max_memory"`
 	state             attr.ValueState
 }
@@ -6663,7 +6667,7 @@ func (v ConfigMaxMemoryValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 	var val tftypes.Value
 	var err error
 
-	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["exclude_containers"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["max_memory"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -6718,7 +6722,7 @@ func (v ConfigMaxMemoryValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_memory":         basetypes.StringType{},
 	}
 
@@ -6776,7 +6780,7 @@ func (v ConfigMaxMemoryValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigMaxMemoryValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_memory":         basetypes.StringType{},
 	}
 }
@@ -8926,12 +8930,12 @@ func (t ConfigMaxStorageType) ValueFromObject(ctx context.Context, in basetypes.
 		return nil, diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -9036,12 +9040,12 @@ func NewConfigMaxStorageValue(attributeTypes map[string]attr.Type, attributes ma
 		return NewConfigMaxStorageValueUnknown(), diags
 	}
 
-	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.StringValue)
+	excludeContainersVal, ok := excludeContainersAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`exclude_containers expected to be basetypes.StringValue, was: %T`, excludeContainersAttribute))
+			fmt.Sprintf(`exclude_containers expected to be basetypes.BoolValue, was: %T`, excludeContainersAttribute))
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -9141,7 +9145,7 @@ func (t ConfigMaxStorageType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigMaxStorageValue{}
 
 type ConfigMaxStorageValue struct {
-	ExcludeContainers basetypes.StringValue `tfsdk:"exclude_containers"`
+	ExcludeContainers basetypes.BoolValue   `tfsdk:"exclude_containers"`
 	MaxStorage        basetypes.StringValue `tfsdk:"max_storage"`
 	state             attr.ValueState
 }
@@ -9152,7 +9156,7 @@ func (v ConfigMaxStorageValue) ToTerraformValue(ctx context.Context) (tftypes.Va
 	var val tftypes.Value
 	var err error
 
-	attrTypes["exclude_containers"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["exclude_containers"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["max_storage"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -9207,7 +9211,7 @@ func (v ConfigMaxStorageValue) ToObjectValue(ctx context.Context) (basetypes.Obj
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_storage":        basetypes.StringType{},
 	}
 
@@ -9265,7 +9269,7 @@ func (v ConfigMaxStorageValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigMaxStorageValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"exclude_containers": basetypes.StringType{},
+		"exclude_containers": basetypes.BoolType{},
 		"max_storage":        basetypes.StringType{},
 	}
 }
@@ -12304,12 +12308,12 @@ func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		return nil, diags
 	}
 
-	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.StringValue)
+	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.StringValue, was: %T`, shutdownAllowExtendAttribute))
+			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.BoolValue, was: %T`, shutdownAllowExtendAttribute))
 	}
 
 	shutdownAutoRenewAttribute, ok := attributes["shutdown_auto_renew"]
@@ -12322,12 +12326,12 @@ func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		return nil, diags
 	}
 
-	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.StringValue)
+	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.StringValue, was: %T`, shutdownAutoRenewAttribute))
+			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.BoolValue, was: %T`, shutdownAutoRenewAttribute))
 	}
 
 	shutdownExtensionsBeforeApprovalAttribute, ok := attributes["shutdown_extensions_before_approval"]
@@ -12566,12 +12570,12 @@ func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[
 		return NewConfigShutdownValueUnknown(), diags
 	}
 
-	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.StringValue)
+	shutdownAllowExtendVal, ok := shutdownAllowExtendAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.StringValue, was: %T`, shutdownAllowExtendAttribute))
+			fmt.Sprintf(`shutdown_allow_extend expected to be basetypes.BoolValue, was: %T`, shutdownAllowExtendAttribute))
 	}
 
 	shutdownAutoRenewAttribute, ok := attributes["shutdown_auto_renew"]
@@ -12584,12 +12588,12 @@ func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[
 		return NewConfigShutdownValueUnknown(), diags
 	}
 
-	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.StringValue)
+	shutdownAutoRenewVal, ok := shutdownAutoRenewAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.StringValue, was: %T`, shutdownAutoRenewAttribute))
+			fmt.Sprintf(`shutdown_auto_renew expected to be basetypes.BoolValue, was: %T`, shutdownAutoRenewAttribute))
 	}
 
 	shutdownExtensionsBeforeApprovalAttribute, ok := attributes["shutdown_extensions_before_approval"]
@@ -12789,8 +12793,8 @@ var _ basetypes.ObjectValuable = ConfigShutdownValue{}
 type ConfigShutdownValue struct {
 	AccountIntegrationId             basetypes.StringValue `tfsdk:"account_integration_id"`
 	ShutdownAge                      basetypes.StringValue `tfsdk:"shutdown_age"`
-	ShutdownAllowExtend              basetypes.StringValue `tfsdk:"shutdown_allow_extend"`
-	ShutdownAutoRenew                basetypes.StringValue `tfsdk:"shutdown_auto_renew"`
+	ShutdownAllowExtend              basetypes.BoolValue   `tfsdk:"shutdown_allow_extend"`
+	ShutdownAutoRenew                basetypes.BoolValue   `tfsdk:"shutdown_auto_renew"`
 	ShutdownExtensionsBeforeApproval basetypes.StringValue `tfsdk:"shutdown_extensions_before_approval"`
 	ShutdownHideFixed                basetypes.BoolValue   `tfsdk:"shutdown_hide_fixed"`
 	ShutdownMessage                  basetypes.StringValue `tfsdk:"shutdown_message"`
@@ -12808,8 +12812,8 @@ func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_age"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["shutdown_allow_extend"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["shutdown_auto_renew"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_allow_extend"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["shutdown_auto_renew"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["shutdown_extensions_before_approval"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_hide_fixed"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["shutdown_message"] = basetypes.StringType{}.TerraformType(ctx)
@@ -12935,8 +12939,8 @@ func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 	attributeTypes := map[string]attr.Type{
 		"account_integration_id":              basetypes.StringType{},
 		"shutdown_age":                        basetypes.StringType{},
-		"shutdown_allow_extend":               basetypes.StringType{},
-		"shutdown_auto_renew":                 basetypes.StringType{},
+		"shutdown_allow_extend":               basetypes.BoolType{},
+		"shutdown_auto_renew":                 basetypes.BoolType{},
 		"shutdown_extensions_before_approval": basetypes.StringType{},
 		"shutdown_hide_fixed":                 basetypes.BoolType{},
 		"shutdown_message":                    basetypes.StringType{},
@@ -13041,8 +13045,8 @@ func (v ConfigShutdownValue) AttributeTypes(ctx context.Context) map[string]attr
 	return map[string]attr.Type{
 		"account_integration_id":              basetypes.StringType{},
 		"shutdown_age":                        basetypes.StringType{},
-		"shutdown_allow_extend":               basetypes.StringType{},
-		"shutdown_auto_renew":                 basetypes.StringType{},
+		"shutdown_allow_extend":               basetypes.BoolType{},
+		"shutdown_auto_renew":                 basetypes.BoolType{},
 		"shutdown_extensions_before_approval": basetypes.StringType{},
 		"shutdown_hide_fixed":                 basetypes.BoolType{},
 		"shutdown_message":                    basetypes.StringType{},
