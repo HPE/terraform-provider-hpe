@@ -15,10 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceTemplateSecurityPackage() *schema.Resource {
+func DataSourceSecurityPackage() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus security package data source.",
-		ReadContext: dataSourceTemplateSecurityPackageRead,
+		ReadContext: dataSourceSecurityPackageRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -36,7 +36,7 @@ func DataSourceTemplateSecurityPackage() *schema.Resource {
 	}
 }
 
-func dataSourceTemplateSecurityPackageRead(
+func dataSourceSecurityPackageRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

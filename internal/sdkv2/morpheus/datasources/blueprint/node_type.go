@@ -15,10 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceBlueprintNodeType() *schema.Resource {
+func DataSourceNodeType() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus node type data source.",
-		ReadContext: dataSourceBlueprintNodeTypeRead,
+		ReadContext: dataSourceNodeTypeRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -37,7 +37,7 @@ func DataSourceBlueprintNodeType() *schema.Resource {
 	}
 }
 
-func dataSourceBlueprintNodeTypeRead(
+func dataSourceNodeTypeRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

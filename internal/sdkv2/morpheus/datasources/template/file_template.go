@@ -15,10 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceTemplateFile() *schema.Resource {
+func DataSourceFileTemplate() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus file template data source.",
-		ReadContext: dataSourceTemplateFileRead,
+		ReadContext: dataSourceFileTemplateRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -36,7 +36,7 @@ func DataSourceTemplateFile() *schema.Resource {
 	}
 }
 
-func dataSourceTemplateFileRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceFileTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

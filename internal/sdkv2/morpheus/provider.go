@@ -25,8 +25,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optiontype"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/plan"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/script"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
@@ -53,14 +53,11 @@ import (
 	jobds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/job"
 	networkds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/network"
 	optionds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/option"
-	optiontypeds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/optiontype"
+	plands "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/plan"
 	policyds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/provisiontype"
-	servicenowds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/servicenow"
-	serviceplands "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/serviceplan"
 	storageds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/storage"
 	taskds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/task"
-	tasksds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tasks"
 	templateds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/template"
 	tenantds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/tenant"
 	trustds "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/trust"
@@ -87,7 +84,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_cluster_mks_vsphere":              cluster.ResourceClusterMKSVSphere(),
 			"hpe_morpheus_cluster_package":                  template.ResourceClusterPackage(),
 			"hpe_morpheus_contact":                          contact.ResourceContact(),
-			"hpe_morpheus_credential":                       credential.ResourceContactCredential(),
+			"hpe_morpheus_credential":                       credential.ResourceCredential(),
 			"hpe_morpheus_cypher_secret":                    cypher.ResourceCypherSecret(),
 			"hpe_morpheus_cypher_tfvars":                    cypher.ResourceCypherTFVars(),
 			"hpe_morpheus_environment":                      environment.ResourceEnvironment(),
@@ -105,14 +102,14 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_integration_git":                  integration.ResourceIntegrationGit(),
 			"hpe_morpheus_integration_puppet":               integration.ResourceIntegrationPuppet(),
 			"hpe_morpheus_integration_servicenow":           integration.ResourceIntegrationServiceNow(),
-			"hpe_morpheus_integration_vro":                  integration.ResourceIntegrationVro(),
+			"hpe_morpheus_integration_vro":                  integration.ResourceIntegrationVRO(),
 			"hpe_morpheus_ip_pool_ipv4":                     network.ResourceIPPoolIPv4(),
 			"hpe_morpheus_job_task":                         job.ResourceJobTask(),
 			"hpe_morpheus_job_workflow":                     job.ResourceJobWorkflow(),
 			"hpe_morpheus_key_pair":                         trust.ResourceKeyPair(),
 			"hpe_morpheus_license":                          license.ResourceLicense(),
 			"hpe_morpheus_network_domain":                   network.ResourceNetworkDomain(),
-			"hpe_morpheus_node_type":                        blueprint.ResourceBlueprintNodeType(),
+			"hpe_morpheus_node_type":                        blueprint.ResourceNodeType(),
 			"hpe_morpheus_option_list_api":                  optionlist.ResourceOptionListAPI(),
 			"hpe_morpheus_option_list_manual":               optionlist.ResourceOptionListManual(),
 			"hpe_morpheus_option_list_rest":                 optionlist.ResourceOptionListREST(),
@@ -126,8 +123,8 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_option_type_textarea":             optiontype.ResourceOptionTypeTextarea(),
 			"hpe_morpheus_option_type_typeahead":            optiontype.ResourceOptionTypeTypeahead(),
 			"hpe_morpheus_preseed_script":                   script.ResourcePreseedScript(),
-			"hpe_morpheus_price":                            serviceplan.ResourcePrice(),
-			"hpe_morpheus_price_set":                        serviceplan.ResourcePriceSet(),
+			"hpe_morpheus_price":                            plan.ResourcePrice(),
+			"hpe_morpheus_price_set":                        plan.ResourcePriceSet(),
 			"hpe_morpheus_resource_pool_group":              compute.ResourceResourcePoolGroup(),
 			"hpe_morpheus_scale_threshold":                  automation.ResourceScaleThreshold(),
 			"hpe_morpheus_script_template":                  template.ResourceScriptTemplate(),
@@ -156,7 +153,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_restart":                     task.ResourceTaskRestart(),
 			"hpe_morpheus_task_ruby_script":                 task.ResourceTaskRubyScript(),
 			"hpe_morpheus_task_shell_script":                task.ResourceTaskShellScript(),
-			"hpe_morpheus_task_vro":                         task.ResourceTaskVro(),
+			"hpe_morpheus_task_vro":                         task.ResourceTaskVRO(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
 			"hpe_morpheus_tenant":                           tenant.ResourceTenant(),
 			"hpe_morpheus_user_group":                       usergroup.ResourceUserGroup(),
@@ -165,56 +162,56 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_workflow_provisioning":            workflow.ResourceWorkflowProvisioning(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"hpe_morpheus_ansible_tower_inventory":    integrationds.DataSourceIntegrationAnsibleTowerInventory(),
+			"hpe_morpheus_ansible_tower_inventory":    integrationds.DataSourceAnsibleTowerInventory(),
 			"hpe_morpheus_ansible_tower_job_template": integrationds.DataSourceAnsibleTowerJobTemplate(),
 			"hpe_morpheus_blueprint":                  blueprintds.DataSourceBlueprint(),
 			"hpe_morpheus_budget":                     costingds.DataSourceBudget(),
 			"hpe_morpheus_catalog_item_type":          catalogds.DataSourceCatalogItemType(),
 			"hpe_morpheus_cloud_folder":               cloudds.DataSourceCloudFolder(),
 			"hpe_morpheus_cloud_type":                 cloudds.DataSourceCloudType(),
-			"hpe_morpheus_clouds":                     cloudds.DataSourceCloudClouds(),
+			"hpe_morpheus_clouds":                     cloudds.DataSourceClouds(),
 			"hpe_morpheus_cluster_type":               clusterds.DataSourceClusterType(),
 			"hpe_morpheus_contact":                    contactds.DataSourceContact(),
 			"hpe_morpheus_credential":                 credentialds.DataSourceCredential(),
 			"hpe_morpheus_cypher_secret":              cypherds.DataSourceCypherSecret(),
 			"hpe_morpheus_environments":               environmentds.DataSourceEnvironments(),
-			"hpe_morpheus_execute_schedule":           automationds.DataSourceExecuteScheduleRead(),
-			"hpe_morpheus_file_template":              templateds.DataSourceTemplateFile(),
+			"hpe_morpheus_execute_schedule":           automationds.DataSourceExecuteSchedule(),
+			"hpe_morpheus_file_template":              templateds.DataSourceFileTemplate(),
 			"hpe_morpheus_groups":                     groupds.DataSourceGroups(),
-			"hpe_morpheus_images":                     imageds.DataSourceImageVirtualImages(),
-			"hpe_morpheus_instance_type":              blueprintds.DataSourceBlueprintInstanceType(),
+			"hpe_morpheus_images":                     imageds.DataSourceImages(),
+			"hpe_morpheus_instance_type":              blueprintds.DataSourceInstanceType(),
 			"hpe_morpheus_integration":                integrationds.DataSourceIntegration(),
 			"hpe_morpheus_integration_git":            integrationds.DataSourceIntegrationGit(),
 			"hpe_morpheus_job":                        jobds.DataSourceJob(),
-			"hpe_morpheus_key_pair":                   trustds.DataSourceTrustKeyPair(),
+			"hpe_morpheus_key_pair":                   trustds.DataSourceKeyPair(),
 			"hpe_morpheus_network_domain":             networkds.DataSourceNetworkDomain(),
 			"hpe_morpheus_network_group":              networkds.DataSourceNetworkGroup(),
 			"hpe_morpheus_network_subnet":             networkds.DataSourceNetworkSubnet(),
 			"hpe_morpheus_networks":                   networkds.DataSourceNetworks(),
-			"hpe_morpheus_node_type":                  blueprintds.DataSourceBlueprintNodeType(),
+			"hpe_morpheus_node_type":                  blueprintds.DataSourceNodeType(),
 			"hpe_morpheus_option_list":                optionds.DataSourceOptionList(),
-			"hpe_morpheus_option_type":                optiontypeds.DataSourceOptionType(),
-			"hpe_morpheus_policies":                   policyds.DataSourcePolicyPolicies(),
-			"hpe_morpheus_power_schedule":             automationds.DataSourceAutomationPowerSchedule(),
-			"hpe_morpheus_price":                      serviceplands.DataSourceServicePlanPrice(),
-			"hpe_morpheus_price_set":                  serviceplands.DataSourceServicePlanPriceSet(),
+			"hpe_morpheus_option_type":                optionds.DataSourceOptionType(),
+			"hpe_morpheus_policies":                   policyds.DataSourcePolicies(),
+			"hpe_morpheus_power_schedule":             automationds.DataSourcePowerSchedule(),
+			"hpe_morpheus_price":                      plands.DataSourcePrice(),
+			"hpe_morpheus_price_set":                  plands.DataSourcePriceSet(),
 			"hpe_morpheus_provision_type":             provisiontype.DataSourceProvisionType(),
 			"hpe_morpheus_resource_pool":              computeds.DataSourceResourcePool(),
-			"hpe_morpheus_script_template":            templateds.DataSourceTemplateScriptRead(),
-			"hpe_morpheus_security_package":           templateds.DataSourceTemplateSecurityPackage(),
-			"hpe_morpheus_servicenow_workflow":        servicenowds.DataSourceWorkflowServiceNow(),
+			"hpe_morpheus_script_template":            templateds.DataSourceScriptTemplate(),
+			"hpe_morpheus_security_package":           templateds.DataSourceSecurityPackage(),
+			"hpe_morpheus_servicenow_workflow":        integrationds.DataSourceServiceNowWorkFlow(),
 			"hpe_morpheus_spec_template":              templateds.DataSourceSpecTemplate(),
 			"hpe_morpheus_storage_bucket":             storageds.DataSourceStorageBucket(),
 			"hpe_morpheus_storage_volume":             storageds.DataSourceStorageVolume(),
 			"hpe_morpheus_storage_volume_type":        storageds.DataSourceStorageVolumeType(),
-			"hpe_morpheus_task":                       taskds.DataSourceMorpheusTask(),
-			"hpe_morpheus_tasks":                      tasksds.DataSourceMorpheusTasks(),
+			"hpe_morpheus_task":                       taskds.DataSourceTask(),
+			"hpe_morpheus_tasks":                      taskds.DataSourceTasks(),
 			"hpe_morpheus_tenant":                     tenantds.DataSourceTenant(),
 			"hpe_morpheus_tenants":                    tenantds.DataSourceTenants(),
 			"hpe_morpheus_user_group":                 usergroupds.DataSourceUserGroup(),
 			"hpe_morpheus_user_groups":                usergroupds.DataSourceUserGroups(),
 			"hpe_morpheus_vdi_pool":                   vdids.DataSourceVDIPool(),
-			"hpe_morpheus_vro_workflow":               integrationds.DataSourceVroWorkflowRead(),
+			"hpe_morpheus_vro_workflow":               integrationds.DataSourceVROWorkflow(),
 			"hpe_morpheus_workflow":                   workflowds.DataSourceWorkflow(),
 		},
 		ConfigureContextFunc: providerConfigure,

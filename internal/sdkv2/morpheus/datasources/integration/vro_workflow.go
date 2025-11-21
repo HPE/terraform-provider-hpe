@@ -16,10 +16,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceVroWorkflowRead() *schema.Resource {
+func DataSourceVROWorkflow() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus vRO workflow data source.",
-		ReadContext: dataSourceVroWorkflowRead,
+		ReadContext: dataSourceVROWorkflowRead,
 		Schema: map[string]*schema.Schema{
 			"value": {
 				Type:          schema.TypeInt,
@@ -37,7 +37,7 @@ func DataSourceVroWorkflowRead() *schema.Resource {
 	}
 }
 
-func dataSourceVroWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceVROWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package servicenow
+package integration
 
 import (
 	"context"
@@ -25,10 +25,10 @@ type codeRepositories struct {
 	} `json:"data"`
 }
 
-func DataSourceWorkflowServiceNow() *schema.Resource {
+func DataSourceServiceNowWorkFlow() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus ServiceNow workflow data source.",
-		ReadContext: dataSourceWorkflowServiceNowRead,
+		ReadContext: dataSourceServiceNowWorkFlowRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -52,7 +52,7 @@ func DataSourceWorkflowServiceNow() *schema.Resource {
 	}
 }
 
-func dataSourceWorkflowServiceNowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceServiceNowWorkFlowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

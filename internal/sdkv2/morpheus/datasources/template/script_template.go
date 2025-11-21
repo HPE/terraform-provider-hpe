@@ -15,10 +15,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceTemplateScriptRead() *schema.Resource {
+func DataSourceScriptTemplate() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus script template data source.",
-		ReadContext: dataSourceTemplateScriptRead,
+		ReadContext: dataSourceScriptTemplateRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -36,7 +36,7 @@ func DataSourceTemplateScriptRead() *schema.Resource {
 	}
 }
 
-func dataSourceTemplateScriptRead(
+func dataSourceScriptTemplateRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

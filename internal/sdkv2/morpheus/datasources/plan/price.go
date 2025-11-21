@@ -1,21 +1,24 @@
-package task
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+package serviceplan
 
 import (
 	"context"
 	"log"
 
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceMorpheusTask() *schema.Resource {
+func DataSourcePrice() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides a Morpheus task data source.",
-		ReadContext: dataSourceMorpheusTaskRead,
+		Description: "The Price data source allows details of a Price to be retrieved by its name.",
+		ReadContext: dataSourcePriceRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -25,15 +28,20 @@ func DataSourceMorpheusTask() *schema.Resource {
 			},
 			"name": {
 				Type:          schema.TypeString,
-				Description:   "The name of the task",
+				Description:   "The name of the Morpheus price",
 				Optional:      true,
 				ConflictsWith: []string{"id"},
+			},
+			"code": {
+				Type:        schema.TypeString,
+				Description: "The code of the Morpheus price",
+				Computed:    true,
 			},
 		},
 	}
 }
 
-func dataSourceMorpheusTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourcePriceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -41,7 +49,6 @@ func dataSourceMorpheusTaskRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
 
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	var name string
@@ -58,46 +65,47 @@ func dataSourceMorpheusTaskRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(helpers.TypeAssertFailError("id", d.Get("id")))
 	}
 
-	// lookup by name if we do not have an id yet
 	var resp *morpheus.Response
 	var err error
 	if id == 0 && name != "" {
-		resp, err = client.FindTaskByName(name)
+		resp, err = client.FindPriceByName(name)
 	} else if id != 0 {
-		resp, err = client.GetTask(int64(id), &morpheus.Request{})
+		resp, err = client.GetPrice(int64(id), &morpheus.Request{})
 	} else {
-		return diag.Errorf("Task cannot be read without name or id")
+		return diag.Errorf("Price cannot be read without name or id")
 	}
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
 			return nil
-		} else {
-			log.Printf("API FAILURE: %s - %v", resp, err)
-
-			return diag.FromErr(err)
 		}
+
+		log.Printf("API FAILURE: %s - %v", resp, err)
+
+		return diag.FromErr(err)
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	// store resource data
-	var result *morpheus.GetTaskResult
-	if v, ok := resp.Result.(*morpheus.GetTaskResult); ok {
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
+	var result *morpheus.GetPriceResult
+	if v, ok := resp.Result.(*morpheus.GetPriceResult); ok {
 		result = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
-	if result.Task == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("Task"))
+
+	if result.Price == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Price"))
 	}
-	task := result.Task
-	if task != nil {
-		d.SetId(convert.Int64ToString(task.ID))
-		d.Set("name", task.Name)
-	} else {
-		return diag.Errorf("Task not found in response data.") // should not happen
-	}
+
+	price := result.Price
+	d.SetId(convert.Int64ToString(price.ID))
+	d.Set("name", price.Name)
+	d.Set("code", price.Code)
 
 	return diags
 }

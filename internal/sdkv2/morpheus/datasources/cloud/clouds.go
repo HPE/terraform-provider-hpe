@@ -16,10 +16,10 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
-func DataSourceCloudClouds() *schema.Resource {
+func DataSourceClouds() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus clouds data source.",
-		ReadContext: dataSourceCloudCloudsRead,
+		ReadContext: dataSourceCloudsRead,
 		Schema: map[string]*schema.Schema{
 			"ids": {
 				Type:     schema.TypeList,
@@ -64,7 +64,7 @@ func DataSourceCloudClouds() *schema.Resource {
 	}
 }
 
-func dataSourceCloudCloudsRead(
+func dataSourceCloudsRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

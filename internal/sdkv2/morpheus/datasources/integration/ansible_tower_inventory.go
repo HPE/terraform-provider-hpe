@@ -16,10 +16,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceIntegrationAnsibleTowerInventory() *schema.Resource {
+func DataSourceAnsibleTowerInventory() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus ansible tower inventory data source.",
-		ReadContext: dataSourceIntegrationAnsibleTowerInventoryRead,
+		ReadContext: dataSourceAnsibleTowerInventoryRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
@@ -37,7 +37,7 @@ func DataSourceIntegrationAnsibleTowerInventory() *schema.Resource {
 	}
 }
 
-func dataSourceIntegrationAnsibleTowerInventoryRead(
+func dataSourceAnsibleTowerInventoryRead(
 	ctx context.Context,
 	d *schema.ResourceData,
 	meta any,

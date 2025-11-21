@@ -1,4 +1,4 @@
-package tasks
+package task
 
 import (
 	"context"
@@ -14,10 +14,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
-func DataSourceMorpheusTasks() *schema.Resource {
+func DataSourceTasks() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides a Morpheus tasks data source.",
-		ReadContext: dataSourceMorpheusTasksRead,
+		ReadContext: dataSourceTasksRead,
 		Schema: map[string]*schema.Schema{
 			"ids": {
 				Type:     schema.TypeList,
@@ -58,7 +58,7 @@ func DataSourceMorpheusTasks() *schema.Resource {
 	}
 }
 
-func dataSourceMorpheusTasksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func dataSourceTasksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v

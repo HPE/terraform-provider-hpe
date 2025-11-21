@@ -14,13 +14,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func ResourceTaskVro() *schema.Resource {
+func ResourceTaskVRO() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus vRealize Orchestrator (vRO) task resource",
-		CreateContext: resourceTaskVroCreate,
-		ReadContext:   resourceTaskVroRead,
-		UpdateContext: resourceTaskVroUpdate,
-		DeleteContext: resourceTaskVroDelete,
+		CreateContext: resourceTaskVROCreate,
+		ReadContext:   resourceTaskVRORead,
+		UpdateContext: resourceTaskVROUpdate,
+		DeleteContext: resourceTaskVRODelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -104,7 +104,7 @@ func ResourceTaskVro() *schema.Resource {
 	}
 }
 
-func resourceTaskVroCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTaskVROCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -254,12 +254,12 @@ func resourceTaskVroCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(task.ID))
 
-	diags = append(diags, resourceTaskVroRead(ctx, d, meta)...)
+	diags = append(diags, resourceTaskVRORead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceTaskVroRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTaskVRORead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
@@ -336,7 +336,7 @@ func resourceTaskVroRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	return diags
 }
 
-func resourceTaskVroUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTaskVROUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -487,10 +487,10 @@ func resourceTaskVroUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(vroTask.ID))
 
-	return resourceTaskVroRead(ctx, d, meta)
+	return resourceTaskVRORead(ctx, d, meta)
 }
 
-func resourceTaskVroDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceTaskVRODelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 

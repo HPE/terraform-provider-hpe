@@ -31,13 +31,13 @@ const (
 	credentialTypeUsernamePasswordKeypair = "username-password-keypair"
 )
 
-func ResourceContactCredential() *schema.Resource {
+func ResourceCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus credential resource.",
-		CreateContext: resourceContactCredentialCreate,
-		ReadContext:   resourceContactCredentialRead,
-		UpdateContext: resourceContactCredentialUpdate,
-		DeleteContext: resourceContactCredentialDelete,
+		CreateContext: resourceCredentialCreate,
+		ReadContext:   resourceCredentialRead,
+		UpdateContext: resourceCredentialUpdate,
+		DeleteContext: resourceCredentialDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -173,7 +173,7 @@ func ResourceContactCredential() *schema.Resource {
 	}
 }
 
-func resourceContactCredentialCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCredentialCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -447,12 +447,12 @@ func resourceContactCredentialCreate(ctx context.Context, d *schema.ResourceData
 	contact := result.Credential
 	d.SetId(convert.Int64ToString(contact.ID))
 
-	diags = append(diags, resourceContactCredentialRead(ctx, d, meta)...)
+	diags = append(diags, resourceCredentialRead(ctx, d, meta)...)
 
 	return diags
 }
 
-func resourceContactCredentialRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCredentialRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -555,7 +555,7 @@ func resourceContactCredentialRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceContactCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
@@ -814,10 +814,10 @@ func resourceContactCredentialUpdate(ctx context.Context, d *schema.ResourceData
 	contact := result.Credential
 	d.SetId(convert.Int64ToString(contact.ID))
 
-	return resourceContactCredentialRead(ctx, d, meta)
+	return resourceCredentialRead(ctx, d, meta)
 }
 
-func resourceContactCredentialDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceCredentialDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var client *morpheus.Client
 	if v, ok := meta.(*morpheus.Client); ok {
 		client = v
