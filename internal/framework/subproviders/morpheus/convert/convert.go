@@ -86,10 +86,12 @@ func StringToBool(ctx context.Context, s string) types.Bool {
 	switch strings.ToLower(s) {
 	case "on", "true", "yes":
 		return types.BoolValue(true)
-	default:
-		tflog.Debug(ctx, fmt.Sprintf("converting string to BoolValue(false): %s", s))
-
+	case "off", "false", "no":
 		return types.BoolValue(false)
+	default:
+		tflog.Debug(ctx, fmt.Sprintf("converting string to BoolNull: %s", s))
+
+		return types.BoolNull()
 	}
 }
 
@@ -100,7 +102,7 @@ func BoolToStringOnOff(b bool) types.String {
 	case false:
 		return types.StringValue("off")
 	default:
-		return types.StringValue("off")
+		return types.StringNull()
 	}
 }
 
@@ -111,7 +113,7 @@ func BoolToStringYesNo(b bool) types.String {
 	case false:
 		return types.StringValue("no")
 	default:
-		return types.StringValue("no")
+		return types.StringNull()
 	}
 }
 
@@ -122,7 +124,7 @@ func BoolToStringTrueFalse(b bool) types.String {
 	case false:
 		return types.StringValue("false")
 	default:
-		return types.StringValue("false")
+		return types.StringNull()
 	}
 }
 
