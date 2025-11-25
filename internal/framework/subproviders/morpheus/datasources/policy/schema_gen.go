@@ -142,9 +142,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_cypher": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"account_integration_id": schema.StringAttribute{
-						Computed: true,
-					},
 					"delete": schema.BoolAttribute{
 						Computed: true,
 					},
@@ -175,9 +172,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_delayed_removal": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"account_integration_id": schema.StringAttribute{
-						Computed: true,
-					},
 					"removal_age": schema.StringAttribute{
 						Computed: true,
 					},
@@ -557,9 +551,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_server_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"account_integration_id": schema.StringAttribute{
-						Computed: true,
-					},
 					"server_naming_conflict": schema.BoolAttribute{
 						Computed: true,
 					},
@@ -3247,24 +3238,6 @@ func (t ConfigCypherType) ValueFromObject(ctx context.Context, in basetypes.Obje
 
 	attributes := in.Attributes()
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return nil, diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	deleteAttribute, ok := attributes["delete"]
 
 	if !ok {
@@ -3378,14 +3351,13 @@ func (t ConfigCypherType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	}
 
 	return ConfigCypherValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		Delete:               deleteVal,
-		KeyPattern:           keyPatternVal,
-		List:                 listVal,
-		Read:                 readVal,
-		Update:               updateVal,
-		Write:                writeVal,
-		state:                attr.ValueStateKnown,
+		Delete:     deleteVal,
+		KeyPattern: keyPatternVal,
+		List:       listVal,
+		Read:       readVal,
+		Update:     updateVal,
+		Write:      writeVal,
+		state:      attr.ValueStateKnown,
 	}, diags
 }
 
@@ -3452,24 +3424,6 @@ func NewConfigCypherValue(attributeTypes map[string]attr.Type, attributes map[st
 		return NewConfigCypherValueUnknown(), diags
 	}
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return NewConfigCypherValueUnknown(), diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	deleteAttribute, ok := attributes["delete"]
 
 	if !ok {
@@ -3583,14 +3537,13 @@ func NewConfigCypherValue(attributeTypes map[string]attr.Type, attributes map[st
 	}
 
 	return ConfigCypherValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		Delete:               deleteVal,
-		KeyPattern:           keyPatternVal,
-		List:                 listVal,
-		Read:                 readVal,
-		Update:               updateVal,
-		Write:                writeVal,
-		state:                attr.ValueStateKnown,
+		Delete:     deleteVal,
+		KeyPattern: keyPatternVal,
+		List:       listVal,
+		Read:       readVal,
+		Update:     updateVal,
+		Write:      writeVal,
+		state:      attr.ValueStateKnown,
 	}, diags
 }
 
@@ -3662,23 +3615,21 @@ func (t ConfigCypherType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigCypherValue{}
 
 type ConfigCypherValue struct {
-	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
-	Delete               basetypes.BoolValue   `tfsdk:"delete"`
-	KeyPattern           basetypes.StringValue `tfsdk:"key_pattern"`
-	List                 basetypes.BoolValue   `tfsdk:"list"`
-	Read                 basetypes.BoolValue   `tfsdk:"read"`
-	Update               basetypes.BoolValue   `tfsdk:"update"`
-	Write                basetypes.BoolValue   `tfsdk:"write"`
-	state                attr.ValueState
+	Delete     basetypes.BoolValue   `tfsdk:"delete"`
+	KeyPattern basetypes.StringValue `tfsdk:"key_pattern"`
+	List       basetypes.BoolValue   `tfsdk:"list"`
+	Read       basetypes.BoolValue   `tfsdk:"read"`
+	Update     basetypes.BoolValue   `tfsdk:"update"`
+	Write      basetypes.BoolValue   `tfsdk:"write"`
+	state      attr.ValueState
 }
 
 func (v ConfigCypherValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 7)
+	attrTypes := make(map[string]tftypes.Type, 6)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["delete"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["key_pattern"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["list"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -3690,15 +3641,7 @@ func (v ConfigCypherValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 7)
-
-		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["account_integration_id"] = val
+		vals := make(map[string]tftypes.Value, 6)
 
 		val, err = v.Delete.ToTerraformValue(ctx)
 
@@ -3778,13 +3721,12 @@ func (v ConfigCypherValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"delete":                 basetypes.BoolType{},
-		"key_pattern":            basetypes.StringType{},
-		"list":                   basetypes.BoolType{},
-		"read":                   basetypes.BoolType{},
-		"update":                 basetypes.BoolType{},
-		"write":                  basetypes.BoolType{},
+		"delete":      basetypes.BoolType{},
+		"key_pattern": basetypes.StringType{},
+		"list":        basetypes.BoolType{},
+		"read":        basetypes.BoolType{},
+		"update":      basetypes.BoolType{},
+		"write":       basetypes.BoolType{},
 	}
 
 	if v.IsNull() {
@@ -3798,13 +3740,12 @@ func (v ConfigCypherValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"account_integration_id": v.AccountIntegrationId,
-			"delete":                 v.Delete,
-			"key_pattern":            v.KeyPattern,
-			"list":                   v.List,
-			"read":                   v.Read,
-			"update":                 v.Update,
-			"write":                  v.Write,
+			"delete":      v.Delete,
+			"key_pattern": v.KeyPattern,
+			"list":        v.List,
+			"read":        v.Read,
+			"update":      v.Update,
+			"write":       v.Write,
 		})
 
 	return objVal, diags
@@ -3823,10 +3764,6 @@ func (v ConfigCypherValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
-	}
-
-	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
-		return false
 	}
 
 	if !v.Delete.Equal(other.Delete) {
@@ -3866,13 +3803,12 @@ func (v ConfigCypherValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigCypherValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"delete":                 basetypes.BoolType{},
-		"key_pattern":            basetypes.StringType{},
-		"list":                   basetypes.BoolType{},
-		"read":                   basetypes.BoolType{},
-		"update":                 basetypes.BoolType{},
-		"write":                  basetypes.BoolType{},
+		"delete":      basetypes.BoolType{},
+		"key_pattern": basetypes.StringType{},
+		"list":        basetypes.BoolType{},
+		"read":        basetypes.BoolType{},
+		"update":      basetypes.BoolType{},
+		"write":       basetypes.BoolType{},
 	}
 }
 
@@ -3909,24 +3845,6 @@ func (t ConfigDelayedRemovalType) ValueFromObject(ctx context.Context, in basety
 
 	attributes := in.Attributes()
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return nil, diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	removalAgeAttribute, ok := attributes["removal_age"]
 
 	if !ok {
@@ -3950,9 +3868,8 @@ func (t ConfigDelayedRemovalType) ValueFromObject(ctx context.Context, in basety
 	}
 
 	return ConfigDelayedRemovalValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		RemovalAge:           removalAgeVal,
-		state:                attr.ValueStateKnown,
+		RemovalAge: removalAgeVal,
+		state:      attr.ValueStateKnown,
 	}, diags
 }
 
@@ -4019,24 +3936,6 @@ func NewConfigDelayedRemovalValue(attributeTypes map[string]attr.Type, attribute
 		return NewConfigDelayedRemovalValueUnknown(), diags
 	}
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return NewConfigDelayedRemovalValueUnknown(), diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	removalAgeAttribute, ok := attributes["removal_age"]
 
 	if !ok {
@@ -4060,9 +3959,8 @@ func NewConfigDelayedRemovalValue(attributeTypes map[string]attr.Type, attribute
 	}
 
 	return ConfigDelayedRemovalValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		RemovalAge:           removalAgeVal,
-		state:                attr.ValueStateKnown,
+		RemovalAge: removalAgeVal,
+		state:      attr.ValueStateKnown,
 	}, diags
 }
 
@@ -4134,33 +4032,23 @@ func (t ConfigDelayedRemovalType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigDelayedRemovalValue{}
 
 type ConfigDelayedRemovalValue struct {
-	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
-	RemovalAge           basetypes.StringValue `tfsdk:"removal_age"`
-	state                attr.ValueState
+	RemovalAge basetypes.StringValue `tfsdk:"removal_age"`
+	state      attr.ValueState
 }
 
 func (v ConfigDelayedRemovalValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 1)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["removal_age"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
-
-		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["account_integration_id"] = val
+		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.RemovalAge.ToTerraformValue(ctx)
 
@@ -4200,8 +4088,7 @@ func (v ConfigDelayedRemovalValue) ToObjectValue(ctx context.Context) (basetypes
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"removal_age":            basetypes.StringType{},
+		"removal_age": basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -4215,8 +4102,7 @@ func (v ConfigDelayedRemovalValue) ToObjectValue(ctx context.Context) (basetypes
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"account_integration_id": v.AccountIntegrationId,
-			"removal_age":            v.RemovalAge,
+			"removal_age": v.RemovalAge,
 		})
 
 	return objVal, diags
@@ -4237,10 +4123,6 @@ func (v ConfigDelayedRemovalValue) Equal(o attr.Value) bool {
 		return true
 	}
 
-	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
-		return false
-	}
-
 	if !v.RemovalAge.Equal(other.RemovalAge) {
 		return false
 	}
@@ -4258,8 +4140,7 @@ func (v ConfigDelayedRemovalValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigDelayedRemovalValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"removal_age":            basetypes.StringType{},
+		"removal_age": basetypes.StringType{},
 	}
 }
 
@@ -12060,24 +11941,6 @@ func (t ConfigServerNamingType) ValueFromObject(ctx context.Context, in basetype
 
 	attributes := in.Attributes()
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return nil, diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	serverNamingConflictAttribute, ok := attributes["server_naming_conflict"]
 
 	if !ok {
@@ -12137,7 +12000,6 @@ func (t ConfigServerNamingType) ValueFromObject(ctx context.Context, in basetype
 	}
 
 	return ConfigServerNamingValue{
-		AccountIntegrationId: accountIntegrationIdVal,
 		ServerNamingConflict: serverNamingConflictVal,
 		ServerNamingPattern:  serverNamingPatternVal,
 		ServerNamingType:     serverNamingTypeVal,
@@ -12208,24 +12070,6 @@ func NewConfigServerNamingValue(attributeTypes map[string]attr.Type, attributes 
 		return NewConfigServerNamingValueUnknown(), diags
 	}
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return NewConfigServerNamingValueUnknown(), diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	serverNamingConflictAttribute, ok := attributes["server_naming_conflict"]
 
 	if !ok {
@@ -12285,7 +12129,6 @@ func NewConfigServerNamingValue(attributeTypes map[string]attr.Type, attributes 
 	}
 
 	return ConfigServerNamingValue{
-		AccountIntegrationId: accountIntegrationIdVal,
 		ServerNamingConflict: serverNamingConflictVal,
 		ServerNamingPattern:  serverNamingPatternVal,
 		ServerNamingType:     serverNamingTypeVal,
@@ -12361,7 +12204,6 @@ func (t ConfigServerNamingType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigServerNamingValue{}
 
 type ConfigServerNamingValue struct {
-	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
 	ServerNamingConflict basetypes.BoolValue   `tfsdk:"server_naming_conflict"`
 	ServerNamingPattern  basetypes.StringValue `tfsdk:"server_naming_pattern"`
 	ServerNamingType     basetypes.StringValue `tfsdk:"server_naming_type"`
@@ -12369,12 +12211,11 @@ type ConfigServerNamingValue struct {
 }
 
 func (v ConfigServerNamingValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 3)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["server_naming_conflict"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["server_naming_pattern"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["server_naming_type"] = basetypes.StringType{}.TerraformType(ctx)
@@ -12383,15 +12224,7 @@ func (v ConfigServerNamingValue) ToTerraformValue(ctx context.Context) (tftypes.
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
-
-		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["account_integration_id"] = val
+		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.ServerNamingConflict.ToTerraformValue(ctx)
 
@@ -12447,7 +12280,6 @@ func (v ConfigServerNamingValue) ToObjectValue(ctx context.Context) (basetypes.O
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
 		"server_naming_conflict": basetypes.BoolType{},
 		"server_naming_pattern":  basetypes.StringType{},
 		"server_naming_type":     basetypes.StringType{},
@@ -12464,7 +12296,6 @@ func (v ConfigServerNamingValue) ToObjectValue(ctx context.Context) (basetypes.O
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"account_integration_id": v.AccountIntegrationId,
 			"server_naming_conflict": v.ServerNamingConflict,
 			"server_naming_pattern":  v.ServerNamingPattern,
 			"server_naming_type":     v.ServerNamingType,
@@ -12486,10 +12317,6 @@ func (v ConfigServerNamingValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
-	}
-
-	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
-		return false
 	}
 
 	if !v.ServerNamingConflict.Equal(other.ServerNamingConflict) {
@@ -12517,7 +12344,6 @@ func (v ConfigServerNamingValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigServerNamingValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
 		"server_naming_conflict": basetypes.BoolType{},
 		"server_naming_pattern":  basetypes.StringType{},
 		"server_naming_type":     basetypes.StringType{},
