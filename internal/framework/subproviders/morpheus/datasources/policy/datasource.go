@@ -139,13 +139,12 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 		cypherValue, cypherDiags := NewConfigCypherValue(
 			ConfigCypherValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"account_integration_id": convert.StrToType(apiConfig.CypherAccessPolicyTypeConfiguration.AccountIntegrationId),
-				"delete":                 convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
-				"key_pattern":            convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
-				"list":                   convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
-				"read":                   convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
-				"update":                 convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
-				"write":                  convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
+				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
+				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
+				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
+				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
+				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
+				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
 			},
 		)
 		if cypherDiags.HasError() {
@@ -204,8 +203,7 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 10. DelayedDeletePolicyTypeConfiguration -> delayed_removal
 	if apiConfig.DelayedDeletePolicyTypeConfiguration != nil {
 		delayedRemovalAttrs := map[string]attr.Value{
-			"account_integration_id": convert.StrToType(apiConfig.DelayedDeletePolicyTypeConfiguration.AccountIntegrationId),
-			"removal_age":            convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
+			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
 		}
 
 		delayedRemovalValue, delayedRemovalDiags := NewConfigDelayedRemovalValue(ConfigDelayedRemovalValue{}.AttributeTypes(ctx), delayedRemovalAttrs)
@@ -490,7 +488,6 @@ func mapPolicyConfigToState(ctx context.Context, data *PolicyModel, apiConfig *s
 	// 27. ClusterResourceNamePolicyTypeConfiguration -> server_naming
 	if apiConfig.ClusterResourceNamePolicyTypeConfiguration != nil {
 		serverNamingAttrs := map[string]attr.Value{
-			"account_integration_id": convert.StrToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.AccountIntegrationId),
 			"server_naming_conflict": convert.BoolToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingConflict),
 			"server_naming_pattern":  convert.StrToType(apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingPattern),
 			"server_naming_type":     convert.StrToType(&apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType),
