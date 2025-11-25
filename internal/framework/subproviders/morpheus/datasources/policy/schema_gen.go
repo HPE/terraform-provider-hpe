@@ -54,6 +54,15 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					"account_integration_id": schema.StringAttribute{
 						Computed: true,
 					},
+					"flow_id": schema.StringAttribute{
+						Computed: true,
+					},
+					"workflow_id": schema.StringAttribute{
+						Computed: true,
+					},
+					"workflow_type": schema.StringAttribute{
+						Computed: true,
+					},
 				},
 				CustomType: ConfigApprovalType{
 					ObjectType: types.ObjectType{
@@ -82,9 +91,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_create_backup": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"account_integration_id": schema.StringAttribute{
-						Computed: true,
-					},
 					"create_backup": schema.BoolAttribute{
 						Computed: true,
 					},
@@ -208,6 +214,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					"account_integration_id": schema.StringAttribute{
 						Computed: true,
 					},
+					"flow_id": schema.StringAttribute{
+						Computed: true,
+					},
 					"lifecycle_age": schema.StringAttribute{
 						Computed: true,
 					},
@@ -233,6 +242,12 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"lifecycle_type": schema.StringAttribute{
+						Computed: true,
+					},
+					"lifecycle_workflow_id": schema.StringAttribute{
+						Computed: true,
+					},
+					"workflow_type": schema.StringAttribute{
 						Computed: true,
 					},
 				},
@@ -569,6 +584,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 					"account_integration_id": schema.StringAttribute{
 						Computed: true,
 					},
+					"flow_id": schema.StringAttribute{
+						Computed: true,
+					},
 					"shutdown_age": schema.StringAttribute{
 						Computed: true,
 					},
@@ -594,6 +612,12 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"shutdown_type": schema.StringAttribute{
+						Computed: true,
+					},
+					"shutdown_workflow_id": schema.StringAttribute{
+						Computed: true,
+					},
+					"workflow_type": schema.StringAttribute{
 						Computed: true,
 					},
 				},
@@ -670,9 +694,6 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"enabled": schema.BoolAttribute{
-				Computed: true,
-			},
-			"exclude_containers": schema.BoolAttribute{
 				Computed: true,
 			},
 			"group": schema.SingleNestedAttribute{
@@ -835,7 +856,6 @@ type PolicyModel struct {
 	Description              types.String                  `tfsdk:"description"`
 	EachUser                 types.Bool                    `tfsdk:"each_user"`
 	Enabled                  types.Bool                    `tfsdk:"enabled"`
-	ExcludeContainers        types.Bool                    `tfsdk:"exclude_containers"`
 	Group                    GroupValue                    `tfsdk:"group"`
 	Id                       types.Int64                   `tfsdk:"id"`
 	Name                     types.String                  `tfsdk:"name"`
@@ -1284,12 +1304,69 @@ func (t ConfigApprovalType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
+	workflowIdAttribute, ok := attributes["workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowIdVal, ok := workflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_id expected to be basetypes.StringValue, was: %T`, workflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ConfigApprovalValue{
 		AccountIntegrationId: accountIntegrationIdVal,
+		FlowId:               flowIdVal,
+		WorkflowId:           workflowIdVal,
+		WorkflowType:         workflowTypeVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -1375,12 +1452,69 @@ func NewConfigApprovalValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
+	workflowIdAttribute, ok := attributes["workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_id is missing from object`)
+
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	workflowIdVal, ok := workflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_id expected to be basetypes.StringValue, was: %T`, workflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return NewConfigApprovalValueUnknown(), diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigApprovalValueUnknown(), diags
 	}
 
 	return ConfigApprovalValue{
 		AccountIntegrationId: accountIntegrationIdVal,
+		FlowId:               flowIdVal,
+		WorkflowId:           workflowIdVal,
+		WorkflowType:         workflowTypeVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -1454,22 +1588,28 @@ var _ basetypes.ObjectValuable = ConfigApprovalValue{}
 
 type ConfigApprovalValue struct {
 	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
+	FlowId               basetypes.StringValue `tfsdk:"flow_id"`
+	WorkflowId           basetypes.StringValue `tfsdk:"workflow_id"`
+	WorkflowType         basetypes.StringValue `tfsdk:"workflow_type"`
 	state                attr.ValueState
 }
 
 func (v ConfigApprovalValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 1)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["flow_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["workflow_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["workflow_type"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 1)
+		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
 
@@ -1478,6 +1618,30 @@ func (v ConfigApprovalValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 		}
 
 		vals["account_integration_id"] = val
+
+		val, err = v.FlowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["flow_id"] = val
+
+		val, err = v.WorkflowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_id"] = val
+
+		val, err = v.WorkflowType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_type"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -1510,6 +1674,9 @@ func (v ConfigApprovalValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 
 	attributeTypes := map[string]attr.Type{
 		"account_integration_id": basetypes.StringType{},
+		"flow_id":                basetypes.StringType{},
+		"workflow_id":            basetypes.StringType{},
+		"workflow_type":          basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -1524,6 +1691,9 @@ func (v ConfigApprovalValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		attributeTypes,
 		map[string]attr.Value{
 			"account_integration_id": v.AccountIntegrationId,
+			"flow_id":                v.FlowId,
+			"workflow_id":            v.WorkflowId,
+			"workflow_type":          v.WorkflowType,
 		})
 
 	return objVal, diags
@@ -1548,6 +1718,18 @@ func (v ConfigApprovalValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.FlowId.Equal(other.FlowId) {
+		return false
+	}
+
+	if !v.WorkflowId.Equal(other.WorkflowId) {
+		return false
+	}
+
+	if !v.WorkflowType.Equal(other.WorkflowType) {
+		return false
+	}
+
 	return true
 }
 
@@ -1562,6 +1744,9 @@ func (v ConfigApprovalValue) Type(ctx context.Context) attr.Type {
 func (v ConfigApprovalValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"account_integration_id": basetypes.StringType{},
+		"flow_id":                basetypes.StringType{},
+		"workflow_id":            basetypes.StringType{},
+		"workflow_type":          basetypes.StringType{},
 	}
 }
 
@@ -1956,24 +2141,6 @@ func (t ConfigCreateBackupType) ValueFromObject(ctx context.Context, in basetype
 
 	attributes := in.Attributes()
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return nil, diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	createBackupAttribute, ok := attributes["create_backup"]
 
 	if !ok {
@@ -2015,10 +2182,9 @@ func (t ConfigCreateBackupType) ValueFromObject(ctx context.Context, in basetype
 	}
 
 	return ConfigCreateBackupValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		CreateBackup:         createBackupVal,
-		CreateBackupType:     createBackupTypeVal,
-		state:                attr.ValueStateKnown,
+		CreateBackup:     createBackupVal,
+		CreateBackupType: createBackupTypeVal,
+		state:            attr.ValueStateKnown,
 	}, diags
 }
 
@@ -2085,24 +2251,6 @@ func NewConfigCreateBackupValue(attributeTypes map[string]attr.Type, attributes 
 		return NewConfigCreateBackupValueUnknown(), diags
 	}
 
-	accountIntegrationIdAttribute, ok := attributes["account_integration_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`account_integration_id is missing from object`)
-
-		return NewConfigCreateBackupValueUnknown(), diags
-	}
-
-	accountIntegrationIdVal, ok := accountIntegrationIdAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
-	}
-
 	createBackupAttribute, ok := attributes["create_backup"]
 
 	if !ok {
@@ -2144,10 +2292,9 @@ func NewConfigCreateBackupValue(attributeTypes map[string]attr.Type, attributes 
 	}
 
 	return ConfigCreateBackupValue{
-		AccountIntegrationId: accountIntegrationIdVal,
-		CreateBackup:         createBackupVal,
-		CreateBackupType:     createBackupTypeVal,
-		state:                attr.ValueStateKnown,
+		CreateBackup:     createBackupVal,
+		CreateBackupType: createBackupTypeVal,
+		state:            attr.ValueStateKnown,
 	}, diags
 }
 
@@ -2219,19 +2366,17 @@ func (t ConfigCreateBackupType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigCreateBackupValue{}
 
 type ConfigCreateBackupValue struct {
-	AccountIntegrationId basetypes.StringValue `tfsdk:"account_integration_id"`
-	CreateBackup         basetypes.BoolValue   `tfsdk:"create_backup"`
-	CreateBackupType     basetypes.StringValue `tfsdk:"create_backup_type"`
-	state                attr.ValueState
+	CreateBackup     basetypes.BoolValue   `tfsdk:"create_backup"`
+	CreateBackupType basetypes.StringValue `tfsdk:"create_backup_type"`
+	state            attr.ValueState
 }
 
 func (v ConfigCreateBackupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["create_backup"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["create_backup_type"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -2239,15 +2384,7 @@ func (v ConfigCreateBackupValue) ToTerraformValue(ctx context.Context) (tftypes.
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
-
-		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["account_integration_id"] = val
+		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CreateBackup.ToTerraformValue(ctx)
 
@@ -2295,9 +2432,8 @@ func (v ConfigCreateBackupValue) ToObjectValue(ctx context.Context) (basetypes.O
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"create_backup":          basetypes.BoolType{},
-		"create_backup_type":     basetypes.StringType{},
+		"create_backup":      basetypes.BoolType{},
+		"create_backup_type": basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -2311,9 +2447,8 @@ func (v ConfigCreateBackupValue) ToObjectValue(ctx context.Context) (basetypes.O
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"account_integration_id": v.AccountIntegrationId,
-			"create_backup":          v.CreateBackup,
-			"create_backup_type":     v.CreateBackupType,
+			"create_backup":      v.CreateBackup,
+			"create_backup_type": v.CreateBackupType,
 		})
 
 	return objVal, diags
@@ -2332,10 +2467,6 @@ func (v ConfigCreateBackupValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
-	}
-
-	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
-		return false
 	}
 
 	if !v.CreateBackup.Equal(other.CreateBackup) {
@@ -2359,9 +2490,8 @@ func (v ConfigCreateBackupValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigCreateBackupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"account_integration_id": basetypes.StringType{},
-		"create_backup":          basetypes.BoolType{},
-		"create_backup_type":     basetypes.StringType{},
+		"create_backup":      basetypes.BoolType{},
+		"create_backup_type": basetypes.StringType{},
 	}
 }
 
@@ -4571,6 +4701,24 @@ func (t ConfigLifecycleType) ValueFromObject(ctx context.Context, in basetypes.O
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
 	lifecycleAgeAttribute, ok := attributes["lifecycle_age"]
 
 	if !ok {
@@ -4733,12 +4881,49 @@ func (t ConfigLifecycleType) ValueFromObject(ctx context.Context, in basetypes.O
 			fmt.Sprintf(`lifecycle_type expected to be basetypes.StringValue, was: %T`, lifecycleTypeAttribute))
 	}
 
+	lifecycleWorkflowIdAttribute, ok := attributes["lifecycle_workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_workflow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	lifecycleWorkflowIdVal, ok := lifecycleWorkflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_workflow_id expected to be basetypes.StringValue, was: %T`, lifecycleWorkflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ConfigLifecycleValue{
 		AccountIntegrationId:              accountIntegrationIdVal,
+		FlowId:                            flowIdVal,
 		LifecycleAge:                      lifecycleAgeVal,
 		LifecycleAllowExtend:              lifecycleAllowExtendVal,
 		LifecycleAutoRenew:                lifecycleAutoRenewVal,
@@ -4748,6 +4933,8 @@ func (t ConfigLifecycleType) ValueFromObject(ctx context.Context, in basetypes.O
 		LifecycleNotify:                   lifecycleNotifyVal,
 		LifecycleRenewal:                  lifecycleRenewalVal,
 		LifecycleType:                     lifecycleTypeVal,
+		LifecycleWorkflowId:               lifecycleWorkflowIdVal,
+		WorkflowType:                      workflowTypeVal,
 		state:                             attr.ValueStateKnown,
 	}, diags
 }
@@ -4833,6 +5020,24 @@ func NewConfigLifecycleValue(attributeTypes map[string]attr.Type, attributes map
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return NewConfigLifecycleValueUnknown(), diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
 	lifecycleAgeAttribute, ok := attributes["lifecycle_age"]
 
 	if !ok {
@@ -4995,12 +5200,49 @@ func NewConfigLifecycleValue(attributeTypes map[string]attr.Type, attributes map
 			fmt.Sprintf(`lifecycle_type expected to be basetypes.StringValue, was: %T`, lifecycleTypeAttribute))
 	}
 
+	lifecycleWorkflowIdAttribute, ok := attributes["lifecycle_workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`lifecycle_workflow_id is missing from object`)
+
+		return NewConfigLifecycleValueUnknown(), diags
+	}
+
+	lifecycleWorkflowIdVal, ok := lifecycleWorkflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`lifecycle_workflow_id expected to be basetypes.StringValue, was: %T`, lifecycleWorkflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return NewConfigLifecycleValueUnknown(), diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigLifecycleValueUnknown(), diags
 	}
 
 	return ConfigLifecycleValue{
 		AccountIntegrationId:              accountIntegrationIdVal,
+		FlowId:                            flowIdVal,
 		LifecycleAge:                      lifecycleAgeVal,
 		LifecycleAllowExtend:              lifecycleAllowExtendVal,
 		LifecycleAutoRenew:                lifecycleAutoRenewVal,
@@ -5010,6 +5252,8 @@ func NewConfigLifecycleValue(attributeTypes map[string]attr.Type, attributes map
 		LifecycleNotify:                   lifecycleNotifyVal,
 		LifecycleRenewal:                  lifecycleRenewalVal,
 		LifecycleType:                     lifecycleTypeVal,
+		LifecycleWorkflowId:               lifecycleWorkflowIdVal,
+		WorkflowType:                      workflowTypeVal,
 		state:                             attr.ValueStateKnown,
 	}, diags
 }
@@ -5083,6 +5327,7 @@ var _ basetypes.ObjectValuable = ConfigLifecycleValue{}
 
 type ConfigLifecycleValue struct {
 	AccountIntegrationId              basetypes.StringValue `tfsdk:"account_integration_id"`
+	FlowId                            basetypes.StringValue `tfsdk:"flow_id"`
 	LifecycleAge                      basetypes.StringValue `tfsdk:"lifecycle_age"`
 	LifecycleAllowExtend              basetypes.BoolValue   `tfsdk:"lifecycle_allow_extend"`
 	LifecycleAutoRenew                basetypes.BoolValue   `tfsdk:"lifecycle_auto_renew"`
@@ -5092,16 +5337,19 @@ type ConfigLifecycleValue struct {
 	LifecycleNotify                   basetypes.StringValue `tfsdk:"lifecycle_notify"`
 	LifecycleRenewal                  basetypes.StringValue `tfsdk:"lifecycle_renewal"`
 	LifecycleType                     basetypes.StringValue `tfsdk:"lifecycle_type"`
+	LifecycleWorkflowId               basetypes.StringValue `tfsdk:"lifecycle_workflow_id"`
+	WorkflowType                      basetypes.StringValue `tfsdk:"workflow_type"`
 	state                             attr.ValueState
 }
 
 func (v ConfigLifecycleValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 13)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["flow_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_age"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_allow_extend"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["lifecycle_auto_renew"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -5111,12 +5359,14 @@ func (v ConfigLifecycleValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 	attrTypes["lifecycle_notify"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_renewal"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["lifecycle_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["lifecycle_workflow_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["workflow_type"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 13)
 
 		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
 
@@ -5125,6 +5375,14 @@ func (v ConfigLifecycleValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 		}
 
 		vals["account_integration_id"] = val
+
+		val, err = v.FlowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["flow_id"] = val
 
 		val, err = v.LifecycleAge.ToTerraformValue(ctx)
 
@@ -5198,6 +5456,22 @@ func (v ConfigLifecycleValue) ToTerraformValue(ctx context.Context) (tftypes.Val
 
 		vals["lifecycle_type"] = val
 
+		val, err = v.LifecycleWorkflowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["lifecycle_workflow_id"] = val
+
+		val, err = v.WorkflowType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_type"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5229,6 +5503,7 @@ func (v ConfigLifecycleValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 
 	attributeTypes := map[string]attr.Type{
 		"account_integration_id":               basetypes.StringType{},
+		"flow_id":                              basetypes.StringType{},
 		"lifecycle_age":                        basetypes.StringType{},
 		"lifecycle_allow_extend":               basetypes.BoolType{},
 		"lifecycle_auto_renew":                 basetypes.BoolType{},
@@ -5238,6 +5513,8 @@ func (v ConfigLifecycleValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 		"lifecycle_notify":                     basetypes.StringType{},
 		"lifecycle_renewal":                    basetypes.StringType{},
 		"lifecycle_type":                       basetypes.StringType{},
+		"lifecycle_workflow_id":                basetypes.StringType{},
+		"workflow_type":                        basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -5252,6 +5529,7 @@ func (v ConfigLifecycleValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 		attributeTypes,
 		map[string]attr.Value{
 			"account_integration_id":               v.AccountIntegrationId,
+			"flow_id":                              v.FlowId,
 			"lifecycle_age":                        v.LifecycleAge,
 			"lifecycle_allow_extend":               v.LifecycleAllowExtend,
 			"lifecycle_auto_renew":                 v.LifecycleAutoRenew,
@@ -5261,6 +5539,8 @@ func (v ConfigLifecycleValue) ToObjectValue(ctx context.Context) (basetypes.Obje
 			"lifecycle_notify":                     v.LifecycleNotify,
 			"lifecycle_renewal":                    v.LifecycleRenewal,
 			"lifecycle_type":                       v.LifecycleType,
+			"lifecycle_workflow_id":                v.LifecycleWorkflowId,
+			"workflow_type":                        v.WorkflowType,
 		})
 
 	return objVal, diags
@@ -5282,6 +5562,10 @@ func (v ConfigLifecycleValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
+		return false
+	}
+
+	if !v.FlowId.Equal(other.FlowId) {
 		return false
 	}
 
@@ -5321,6 +5605,14 @@ func (v ConfigLifecycleValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.LifecycleWorkflowId.Equal(other.LifecycleWorkflowId) {
+		return false
+	}
+
+	if !v.WorkflowType.Equal(other.WorkflowType) {
+		return false
+	}
+
 	return true
 }
 
@@ -5335,6 +5627,7 @@ func (v ConfigLifecycleValue) Type(ctx context.Context) attr.Type {
 func (v ConfigLifecycleValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"account_integration_id":               basetypes.StringType{},
+		"flow_id":                              basetypes.StringType{},
 		"lifecycle_age":                        basetypes.StringType{},
 		"lifecycle_allow_extend":               basetypes.BoolType{},
 		"lifecycle_auto_renew":                 basetypes.BoolType{},
@@ -5344,6 +5637,8 @@ func (v ConfigLifecycleValue) AttributeTypes(ctx context.Context) map[string]att
 		"lifecycle_notify":                     basetypes.StringType{},
 		"lifecycle_renewal":                    basetypes.StringType{},
 		"lifecycle_type":                       basetypes.StringType{},
+		"lifecycle_workflow_id":                basetypes.StringType{},
+		"workflow_type":                        basetypes.StringType{},
 	}
 }
 
@@ -12280,6 +12575,24 @@ func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
 	shutdownAgeAttribute, ok := attributes["shutdown_age"]
 
 	if !ok {
@@ -12442,12 +12755,49 @@ func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`shutdown_type expected to be basetypes.StringValue, was: %T`, shutdownTypeAttribute))
 	}
 
+	shutdownWorkflowIdAttribute, ok := attributes["shutdown_workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_workflow_id is missing from object`)
+
+		return nil, diags
+	}
+
+	shutdownWorkflowIdVal, ok := shutdownWorkflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_workflow_id expected to be basetypes.StringValue, was: %T`, shutdownWorkflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return nil, diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ConfigShutdownValue{
 		AccountIntegrationId:             accountIntegrationIdVal,
+		FlowId:                           flowIdVal,
 		ShutdownAge:                      shutdownAgeVal,
 		ShutdownAllowExtend:              shutdownAllowExtendVal,
 		ShutdownAutoRenew:                shutdownAutoRenewVal,
@@ -12457,6 +12807,8 @@ func (t ConfigShutdownType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		ShutdownNotify:                   shutdownNotifyVal,
 		ShutdownRenewal:                  shutdownRenewalVal,
 		ShutdownType:                     shutdownTypeVal,
+		ShutdownWorkflowId:               shutdownWorkflowIdVal,
+		WorkflowType:                     workflowTypeVal,
 		state:                            attr.ValueStateKnown,
 	}, diags
 }
@@ -12542,6 +12894,24 @@ func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`account_integration_id expected to be basetypes.StringValue, was: %T`, accountIntegrationIdAttribute))
 	}
 
+	flowIdAttribute, ok := attributes["flow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`flow_id is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	flowIdVal, ok := flowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`flow_id expected to be basetypes.StringValue, was: %T`, flowIdAttribute))
+	}
+
 	shutdownAgeAttribute, ok := attributes["shutdown_age"]
 
 	if !ok {
@@ -12704,12 +13074,49 @@ func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`shutdown_type expected to be basetypes.StringValue, was: %T`, shutdownTypeAttribute))
 	}
 
+	shutdownWorkflowIdAttribute, ok := attributes["shutdown_workflow_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shutdown_workflow_id is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	shutdownWorkflowIdVal, ok := shutdownWorkflowIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shutdown_workflow_id expected to be basetypes.StringValue, was: %T`, shutdownWorkflowIdAttribute))
+	}
+
+	workflowTypeAttribute, ok := attributes["workflow_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`workflow_type is missing from object`)
+
+		return NewConfigShutdownValueUnknown(), diags
+	}
+
+	workflowTypeVal, ok := workflowTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`workflow_type expected to be basetypes.StringValue, was: %T`, workflowTypeAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigShutdownValueUnknown(), diags
 	}
 
 	return ConfigShutdownValue{
 		AccountIntegrationId:             accountIntegrationIdVal,
+		FlowId:                           flowIdVal,
 		ShutdownAge:                      shutdownAgeVal,
 		ShutdownAllowExtend:              shutdownAllowExtendVal,
 		ShutdownAutoRenew:                shutdownAutoRenewVal,
@@ -12719,6 +13126,8 @@ func NewConfigShutdownValue(attributeTypes map[string]attr.Type, attributes map[
 		ShutdownNotify:                   shutdownNotifyVal,
 		ShutdownRenewal:                  shutdownRenewalVal,
 		ShutdownType:                     shutdownTypeVal,
+		ShutdownWorkflowId:               shutdownWorkflowIdVal,
+		WorkflowType:                     workflowTypeVal,
 		state:                            attr.ValueStateKnown,
 	}, diags
 }
@@ -12792,6 +13201,7 @@ var _ basetypes.ObjectValuable = ConfigShutdownValue{}
 
 type ConfigShutdownValue struct {
 	AccountIntegrationId             basetypes.StringValue `tfsdk:"account_integration_id"`
+	FlowId                           basetypes.StringValue `tfsdk:"flow_id"`
 	ShutdownAge                      basetypes.StringValue `tfsdk:"shutdown_age"`
 	ShutdownAllowExtend              basetypes.BoolValue   `tfsdk:"shutdown_allow_extend"`
 	ShutdownAutoRenew                basetypes.BoolValue   `tfsdk:"shutdown_auto_renew"`
@@ -12801,16 +13211,19 @@ type ConfigShutdownValue struct {
 	ShutdownNotify                   basetypes.StringValue `tfsdk:"shutdown_notify"`
 	ShutdownRenewal                  basetypes.StringValue `tfsdk:"shutdown_renewal"`
 	ShutdownType                     basetypes.StringValue `tfsdk:"shutdown_type"`
+	ShutdownWorkflowId               basetypes.StringValue `tfsdk:"shutdown_workflow_id"`
+	WorkflowType                     basetypes.StringValue `tfsdk:"workflow_type"`
 	state                            attr.ValueState
 }
 
 func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 13)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["account_integration_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["flow_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_age"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_allow_extend"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["shutdown_auto_renew"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -12820,12 +13233,14 @@ func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 	attrTypes["shutdown_notify"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_renewal"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["shutdown_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shutdown_workflow_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["workflow_type"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 13)
 
 		val, err = v.AccountIntegrationId.ToTerraformValue(ctx)
 
@@ -12834,6 +13249,14 @@ func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 		}
 
 		vals["account_integration_id"] = val
+
+		val, err = v.FlowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["flow_id"] = val
 
 		val, err = v.ShutdownAge.ToTerraformValue(ctx)
 
@@ -12907,6 +13330,22 @@ func (v ConfigShutdownValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 		vals["shutdown_type"] = val
 
+		val, err = v.ShutdownWorkflowId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shutdown_workflow_id"] = val
+
+		val, err = v.WorkflowType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["workflow_type"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -12938,6 +13377,7 @@ func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 
 	attributeTypes := map[string]attr.Type{
 		"account_integration_id":              basetypes.StringType{},
+		"flow_id":                             basetypes.StringType{},
 		"shutdown_age":                        basetypes.StringType{},
 		"shutdown_allow_extend":               basetypes.BoolType{},
 		"shutdown_auto_renew":                 basetypes.BoolType{},
@@ -12947,6 +13387,8 @@ func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		"shutdown_notify":                     basetypes.StringType{},
 		"shutdown_renewal":                    basetypes.StringType{},
 		"shutdown_type":                       basetypes.StringType{},
+		"shutdown_workflow_id":                basetypes.StringType{},
+		"workflow_type":                       basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -12961,6 +13403,7 @@ func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		attributeTypes,
 		map[string]attr.Value{
 			"account_integration_id":              v.AccountIntegrationId,
+			"flow_id":                             v.FlowId,
 			"shutdown_age":                        v.ShutdownAge,
 			"shutdown_allow_extend":               v.ShutdownAllowExtend,
 			"shutdown_auto_renew":                 v.ShutdownAutoRenew,
@@ -12970,6 +13413,8 @@ func (v ConfigShutdownValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 			"shutdown_notify":                     v.ShutdownNotify,
 			"shutdown_renewal":                    v.ShutdownRenewal,
 			"shutdown_type":                       v.ShutdownType,
+			"shutdown_workflow_id":                v.ShutdownWorkflowId,
+			"workflow_type":                       v.WorkflowType,
 		})
 
 	return objVal, diags
@@ -12991,6 +13436,10 @@ func (v ConfigShutdownValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.AccountIntegrationId.Equal(other.AccountIntegrationId) {
+		return false
+	}
+
+	if !v.FlowId.Equal(other.FlowId) {
 		return false
 	}
 
@@ -13030,6 +13479,14 @@ func (v ConfigShutdownValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.ShutdownWorkflowId.Equal(other.ShutdownWorkflowId) {
+		return false
+	}
+
+	if !v.WorkflowType.Equal(other.WorkflowType) {
+		return false
+	}
+
 	return true
 }
 
@@ -13044,6 +13501,7 @@ func (v ConfigShutdownValue) Type(ctx context.Context) attr.Type {
 func (v ConfigShutdownValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"account_integration_id":              basetypes.StringType{},
+		"flow_id":                             basetypes.StringType{},
 		"shutdown_age":                        basetypes.StringType{},
 		"shutdown_allow_extend":               basetypes.BoolType{},
 		"shutdown_auto_renew":                 basetypes.BoolType{},
@@ -13053,6 +13511,8 @@ func (v ConfigShutdownValue) AttributeTypes(ctx context.Context) map[string]attr
 		"shutdown_notify":                     basetypes.StringType{},
 		"shutdown_renewal":                    basetypes.StringType{},
 		"shutdown_type":                       basetypes.StringType{},
+		"shutdown_workflow_id":                basetypes.StringType{},
+		"workflow_type":                       basetypes.StringType{},
 	}
 }
 
