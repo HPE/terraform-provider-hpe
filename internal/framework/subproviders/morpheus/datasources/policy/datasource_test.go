@@ -335,6 +335,9 @@ resource "hpe_morpheus_policy" "test_all_attrs" {
   config = {
     # 1. Approval fields (deleteApproval, provisionApproval, reconfigureApproval, workflowApproval policies)
     accountIntegrationId = "1"
+    flowId               = "1"
+    workflowId           = "1"
+    workflowType         = "flow"
     
     # 2. Backup Storage fields (backupStorage policy)
     backupStorageIds = [1, 2]
@@ -383,6 +386,10 @@ resource "hpe_morpheus_policy" "test_all_attrs" {
     lifecycleAllowExtend              = "on"
     lifecycleExtensionsBeforeApproval = "2"
     lifecycleHideFixed                = false
+    # flowId                            = "1"  # Set in approval section
+    lifecycleWorkflowId               = "1"
+    # workflowType                      = "flow"  # Set in approval section
+    # accountIntegrationId              = "1"  # Set in approval section
     
     # 12. Hostname fields (hostNaming policy)
     hostNamingType    = "fixed"
@@ -427,7 +434,8 @@ resource "hpe_morpheus_policy" "test_all_attrs" {
     "motd.title"     = "Welcome"
     "motd.message"   = "Welcome to the platform"
     "motd.type"      = "info"
-    "motd._fullPage" = "off"
+    "motd.fullPage" = "off"
+    "motd.date"      = "2025-10-31 14:53:07"
     
     # 25. Power Schedule fields (powerSchedule policy)
     powerScheduleType      = "fixed"
@@ -452,9 +460,14 @@ resource "hpe_morpheus_policy" "test_all_attrs" {
     shutdownAllowExtend              = "on"
     shutdownExtensionsBeforeApproval = "2"
     shutdownHideFixed                = false
+    # accountIntegrationId             = "1"  # Set in approval section
+    # flowId                           = "1"  # Set in approval section
+    shutdownWorkflowId               = "1"
+    # workflowType                     = "flow"  # Set in approval section
     
     # 29. Storage Server Quota fields (storageServerQuota policy)
     storageServerId = "1"
+    # maxStorage      = "500"  # Set in Max Storage section
     
     # 30. Tags fields (tags policy)
     strict      = true
@@ -474,7 +487,7 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 }
 `
 
-	// Validation checks for all 31 policy type configurations
+	// Validation checks for all 31 policy type configurations using static config fields
 	checks := []resource.TestCheckFunc{
 		// Basic policy attributes
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "name", policyName),
@@ -484,149 +497,160 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "policy_type.code", "maxMemory"),
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "id"),
 
-		// 1. Approval config fields (deleteApproval, provisionApproval, reconfigureApproval, workflowApproval)
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.accountIntegrationId", "1"),
+		// 1. Approval config fields (all attributes: account_integration_id, flow_id, workflow_id, workflow_type)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_approval.account_integration_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_approval.flow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_approval.workflow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_approval.workflow_type", "flow"),
 
-		// 2. Backup Storage config fields (array)
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.backupStorageIds.#", "2"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.backupStorageIds.0", "1"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.backupStorageIds.1", "2"),
+		// 2. Backup Storage config fields (all attributes: backup_storage_ids)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_backup_storage.backup_storage_ids.#", "2"),
 
-		// 3. Backup Creation config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.createBackupType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.createBackup", "true"),
+		// 3. Backup Creation config fields (all attributes: create_backup, create_backup_type)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_create_backup.create_backup_type", "fixed"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_create_backup.create_backup", "true"),
 
-		// 4. User Creation config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.createUserType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.createUser", "true"),
+		// 4. User Creation config fields (all attributes: create_user, create_user_type)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_create_user.create_user_type", "fixed"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_create_user.create_user", "true"),
 
-		// 5. User Group Creation config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.userGroup", "1"),
+		// 5. User Group Creation config fields (all attributes: user_group)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_create_user_group.user_group", "1"),
 
-		// 6. Cypher Access config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.keyPattern", "secret/*"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.read", "true"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.write", "true"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.update", "true"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.delete", "false"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.list", "true"),
+		// 6. Cypher Access config fields (all attributes: key_pattern, read, write, update, delete, list)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.key_pattern", "secret/*"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.read", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.write", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.update", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.delete", "false"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_cypher.list", "true"),
 
-		// 7. Budget config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxPrice", "1000"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxPriceCurrency", "USD"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxPriceUnit", "month"),
+		// 7. Budget config fields (all attributes: max_price, max_price_currency, max_price_unit)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_price.max_price", "1000"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_price.max_price_currency", "USD"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_price.max_price_unit", "month"),
 
-		// 8. Max Memory config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxMemory", "16"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.excludeContainers", "on"),
+		// 8. Max Memory config fields (all attributes: max_memory, exclude_containers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_memory.max_memory", "16"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_memory.exclude_containers", "true"),
 
-		// 9. Max Cores config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxCores", "16"),
+		// 9. Max Cores config fields (all attributes: max_cores, exclude_containers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_cores.max_cores", "16"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_max_cores.exclude_containers"),
 
-		// 10. Delayed Removal config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.removalAge", "30"),
+		// 10. Delayed Removal config fields (all attributes: removal_age)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_delayed_removal.removal_age", "30"),
 
-		// 11. Lifecycle config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAge", "30"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleRenewal", "7"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleNotify", "3"),
+		// 11. Lifecycle config fields (all attributes)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_type", "fixed"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_age", "30"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_renewal", "7"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_notify", "3"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleMessage", "Instance will expire soon"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAutoRenew", "on"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAllowExtend", "on"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_message", "Instance will expire soon"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_auto_renew", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_allow_extend", "true"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleExtensionsBeforeApproval", "2"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleHideFixed", "false"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_extensions_before_approval", "2"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_hide_fixed", "false"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.account_integration_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.flow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.lifecycle_workflow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_lifecycle.workflow_type", "flow"),
 
-		// 12. Hostname config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.hostNamingType", "fixed"),
+		// 12. Hostname config fields (all attributes: host_naming_type, host_naming_pattern)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_host_naming.host_naming_type", "fixed"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.hostNamingPattern", "host-${groupCode}-${type}-${sequence}"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_host_naming.host_naming_pattern", "host-${groupCode}-${type}-${sequence}"),
 
-		// 13. Naming config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.namingType", "fixed"),
+		// 13. Naming config fields (all attributes: naming_type, naming_pattern, naming_conflict)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_naming.naming_type", "fixed"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.namingPattern", "vm-${groupCode}-${type}-${sequence}"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.namingConflict", "true"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_naming.naming_pattern", "vm-${groupCode}-${type}-${sequence}"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_naming.naming_conflict", "true"),
 
-		// 14. Max Containers config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxContainers", "50"),
+		// 14. Max Containers config fields (all attributes: max_containers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_containers.max_containers", "50"),
 
-		// 15. Max Hosts config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxHosts", "10"),
+		// 15. Max Hosts config fields (all attributes: max_hosts)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_hosts.max_hosts", "10"),
 
-		// 16. Max Networks config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxNetworks", "15"),
+		// 16. Max Networks config fields (all attributes: max_networks)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_networks.max_networks", "15"),
 
-		// 17. Max Pool Members config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxPoolMembers", "12"),
+		// 17. Max Pool Members config fields (all attributes: max_pool_members)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_pool_members.max_pool_members", "12"),
 
-		// 18. Max Pools config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxPools", "8"),
+		// 18. Max Pools config fields (all attributes: max_pools)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_pools.max_pools", "8"),
 
-		// 19. Max Routers config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxRouters", "5"),
+		// 19. Max Routers config fields (all attributes: max_routers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_routers.max_routers", "5"),
 
-		// 20. Max Snapshots config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxSnapshots", "5"),
+		// 20. Max Snapshots config fields (all attributes: max_snapshots)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_snapshots.max_snapshots", "5"),
 
-		// 21. Max Storage config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxStorage", "500"),
+		// 21. Max Storage config fields (all attributes: max_storage, exclude_containers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_storage.max_storage", "500"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_max_storage.exclude_containers"),
 
-		// 22. Max Virtual Servers config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxVirtualServers", "25"),
+		// 22. Max Virtual Servers config fields (all attributes: max_virtual_servers)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_virtual_servers.max_virtual_servers", "25"),
 
-		// 23. Max VMs config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.maxVms", "20"),
+		// 23. Max VMs config fields (all attributes: max_vms)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_max_vms.max_vms", "20"),
 
-		// 24. MOTD config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd.title", "Welcome"),
+		// 24. MOTD config fields (all attributes: motdtitle, motdmessage, motdtype, motd_fullpage, motddate)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_motd.motdtitle", "Welcome"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.motd.message", "Welcome to the platform"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd.type", "info"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd._fullPage", "off"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_motd.motdmessage", "Welcome to the platform"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_motd.motdtype", "info"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_motd.motd_fullpage"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_motd.motddate", "2025-10-31 14:53:07"),
 
-		// 25. Power Schedule config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.powerScheduleType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.powerSchedule", "1"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.powerScheduleHideFixed", "false"),
+		// 25. Power Schedule config fields (all attributes: power_schedule_type, power_schedule, power_schedule_hide_fixed)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_power_schedule.power_schedule_type", "fixed"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_power_schedule.power_schedule", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_power_schedule.power_schedule_hide_fixed", "false"),
 
-		// 26. Required Network config fields (array)
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.requiredNetworks.#", "2"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.requiredNetworks.0", "100"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.requiredNetworks.1", "200"),
+		// 26. Required Network config fields (all attributes: required_networks)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_required_network.required_networks.#", "2"),
 
-		// 27. Server naming config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingType", "fixed"),
+		// 27. Server naming config fields (all attributes: server_naming_type, server_naming_pattern, server_naming_conflict)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_server_naming.server_naming_type", "fixed"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingPattern", "server-${groupCode}-${type}-${sequence}"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingConflict", "true"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_server_naming.server_naming_pattern", "server-${groupCode}-${type}-${sequence}"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_server_naming.server_naming_conflict", "true"),
 
-		// 28. Shutdown config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAge", "30"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownRenewal", "7"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownNotify", "3"),
+		// 28. Shutdown config fields (all attributes)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_type", "fixed"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_age", "30"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_renewal", "7"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_notify", "3"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.shutdownMessage", "Instance will shutdown soon"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAutoRenew", "on"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAllowExtend", "on"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_message", "Instance will shutdown soon"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_auto_renew", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_allow_extend", "true"),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policy.test_all_attrs", "config.shutdownExtensionsBeforeApproval", "2"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownHideFixed", "false"),
+			"data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_extensions_before_approval", "2"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_hide_fixed", "false"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.account_integration_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.flow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.shutdown_workflow_id", "1"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_shutdown.workflow_type", "flow"),
 
-		// 29. Storage Server Quota config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.storageServerId", "1"),
+		// 29. Storage Server Quota config fields (all attributes: storage_server_id, max_storage)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_storage_server_quota.storage_server_id", "1"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.test_all_attrs", "config_storage_server_quota.max_storage"),
 
-		// 30. Tags config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.strict", "true"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.key", "environment"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.value", "production"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.valueListId", ""),
+		// 30. Tags config fields (all attributes: key, value, strict, value_list_id)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_tags.strict", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_tags.key", "environment"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_tags.value", "production"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_tags.value_list_id", ""),
 
-		// 31. Workflow config fields
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.workflowId", "1"),
+		// 31. Workflow config fields (all attributes: workflow_id)
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config_workflow.workflow_id", "1"),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
