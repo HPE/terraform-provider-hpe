@@ -2,6 +2,9 @@
 
 package policy_test
 
+//go:generate go run ../../../../../../cmd/render example-id.tf.tmpl Id 99
+//go:generate go run ../../../../../../cmd/render example-name.tf.tmpl Name "Example name"
+
 import (
 	"os"
 	"regexp"
@@ -80,11 +83,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 `
 
-	dataSourceConfig := `
-data "hpe_morpheus_policy" "test" {
-  name = "` + policyName + `"
-}
-`
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl",
+		"Name", policyName)
+	if err != nil {
+		t.Fatalf("Failed to render example: %v", err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -151,11 +154,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 `
 
-	dataSourceConfig := `
-data "hpe_morpheus_policy" "test" {
-  id = hpe_morpheus_policy.test.id
-}
-`
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t, "example-id.tf.tmpl", "Id", "hpe_morpheus_policy.test.id")
+	if err != nil {
+		t.Fatalf("Failed to render example: %v", err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -295,9 +298,6 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	})
 }
 
-// Test to verify that all of the attributes from a created policy can be read
-// This test creates a single policy with ALL possible config fields to test datasource reading
-// Note: This is not a valid real-world policy, but it tests that the datasource can read all config attributes
 func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
