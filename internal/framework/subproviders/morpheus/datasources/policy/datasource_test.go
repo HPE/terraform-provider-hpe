@@ -495,24 +495,29 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAge", "30"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleRenewal", "7"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleNotify", "3"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleMessage", "Instance will expire soon"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleMessage", "Instance will expire soon"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAutoRenew", "on"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleAllowExtend", "on"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleExtensionsBeforeApproval", "2"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleExtensionsBeforeApproval", "2"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.lifecycleHideFixed", "false"),
 
 		// 2. Naming config fields
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.namingType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.namingPattern", "vm-${groupCode}-${type}-${sequence}"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.namingPattern", "vm-${groupCode}-${type}-${sequence}"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.namingConflict", "true"),
 
 		// 3. Hostname config fields
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.hostNamingType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.hostNamingPattern", "host-${groupCode}-${type}-${sequence}"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.hostNamingPattern", "host-${groupCode}-${type}-${sequence}"),
 
 		// 4. Server naming config fields
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingType", "fixed"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingPattern", "server-${groupCode}-${type}-${sequence}"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingPattern", "server-${groupCode}-${type}-${sequence}"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.serverNamingConflict", "true"),
 
 		// 5. Max Memory config fields
@@ -535,10 +540,12 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAge", "30"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownRenewal", "7"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownNotify", "3"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownMessage", "Instance will shutdown soon"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.shutdownMessage", "Instance will shutdown soon"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAutoRenew", "on"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownAllowExtend", "on"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownExtensionsBeforeApproval", "2"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.shutdownExtensionsBeforeApproval", "2"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.shutdownHideFixed", "false"),
 
 		// 10. Backup Creation config fields
@@ -600,7 +607,8 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 
 		// 25. MOTD config fields
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd.title", "Welcome"),
-		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd.message", "Welcome to the platform"),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_policy.test_all_attrs", "config.motd.message", "Welcome to the platform"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd.type", "info"),
 		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.test_all_attrs", "config.motd._fullPage", "off"),
 
