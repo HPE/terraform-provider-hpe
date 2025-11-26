@@ -269,3 +269,34 @@ data "hpe_morpheus_image" "test" {
 		},
 	})
 }
+
+// this should fail due to a conflict between id and name/image_type
+func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig := `
+data "hpe_morpheus_image" "test" {
+  image_type = "qcow2"
+  name = "Example Image"
+  id = 5
+}
+`
+
+	errMatch := regexp.MustCompile("Attribute \"(.*)\" cannot be specified when \"id\" is specified")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + dataSourceConfig,
+				ExpectError: errMatch,
+			},
+		},
+	})
+}
