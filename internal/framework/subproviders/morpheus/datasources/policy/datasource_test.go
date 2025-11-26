@@ -704,3 +704,230 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 		},
 	})
 }
+
+// Test datasource can find policies scoped to different resource types (Group, Cloud, User, Role)
+func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// Create dependency resources
+	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
+	roleName := acctest.RandomWithPrefix(t.Name() + "-role")
+	userName := acctest.RandomWithPrefix(t.Name() + "-user")
+
+	dependencyConfig := `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+
+resource "hpe_morpheus_cloud" "test" {
+  name = "` + cloudName + `"
+  tenant_id = 1
+  group_id = hpe_morpheus_group.test.id
+  code = "` + cloudName + `"
+  cloud_type_code = "standard"
+  
+  config = {
+    certificateProvider = "internal"
+    enableNetworkTypeSelection = false
+  }
+}
+
+resource "hpe_morpheus_role" "test" {
+  name = "` + roleName + `"
+  role_type = "user"
+}
+
+resource "hpe_morpheus_user" "test" {
+  username = "` + userName + `"
+  email = "` + userName + `@test.com"
+  role_ids = [hpe_morpheus_role.test.id]
+  password_wo = "TestPassword123!"
+}
+`
+
+	policyNameGroup := acctest.RandomWithPrefix(t.Name() + "-group-policy")
+	policyNameCloud := acctest.RandomWithPrefix(t.Name() + "-cloud-policy")
+	policyNameRole := acctest.RandomWithPrefix(t.Name() + "-role-policy")
+	policyNameUser := acctest.RandomWithPrefix(t.Name() + "-user-policy")
+
+	// Create policies for each resource type
+	resourceConfig := `
+resource "hpe_morpheus_policy" "group_policy" {
+  name = "` + policyNameGroup + `"
+  description = "Group-scoped policy"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxMemory"
+  }
+  
+  config = {
+    maxMemory = "1073741824"
+  }
+}
+
+resource "hpe_morpheus_policy" "cloud_policy" {
+  name = "` + policyNameCloud + `"
+  description = "Cloud-scoped policy"
+  associated_resource_type = "Cloud"
+  associated_resource_id = hpe_morpheus_cloud.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxMemory"
+  }
+  
+  config = {
+    maxMemory = "10"
+  }
+}
+
+resource "hpe_morpheus_policy" "role_policy" {
+  name = "` + policyNameRole + `"
+  description = "Role-scoped policy"
+  associated_resource_type = "Role"
+  associated_resource_id = hpe_morpheus_role.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxMemory"
+  }
+  
+  config = {
+    maxMemory = "10"
+  }
+}
+
+resource "hpe_morpheus_policy" "user_policy" {
+  name = "` + policyNameUser + `"
+  description = "User-scoped policy"
+  associated_resource_type = "User"
+  associated_resource_id = hpe_morpheus_user.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxMemory"
+  }
+  
+  config = {
+    maxMemory = "10"
+  }
+}
+`
+
+	// Data sources to find each policy
+	dataSourceConfig := `
+data "hpe_morpheus_policy" "group_policy" {
+  name = hpe_morpheus_policy.group_policy.name
+}
+
+data "hpe_morpheus_policy" "cloud_policy" {
+  name = hpe_morpheus_policy.cloud_policy.name
+}
+
+data "hpe_morpheus_policy" "role_policy" {
+  name = hpe_morpheus_policy.role_policy.name
+}
+
+data "hpe_morpheus_policy" "user_policy" {
+  name = hpe_morpheus_policy.user_policy.name
+}
+`
+
+	checksGroup := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "name", policyNameGroup),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "description", "Group-scoped policy"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "associated_resource_type", "Group"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.group_policy", "associated_resource_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "enabled", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "policy_type.code", "maxMemory"),
+		// Check group-specific attributes
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.group_policy", "group.id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.group_policy", "group.name", groupName),
+		// Verify other resource type attributes are not set
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.group_policy", "cloud.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.group_policy", "user.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.group_policy", "role.id"),
+	}
+
+	checksCloud := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "name", policyNameCloud),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "description", "Cloud-scoped policy"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "associated_resource_type", "Cloud"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.cloud_policy", "associated_resource_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "enabled", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "policy_type.code", "maxMemory"),
+		// Check cloud-specific attributes
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.cloud_policy", "cloud.id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.cloud_policy", "cloud.name", cloudName),
+		// Verify other resource type attributes are not set
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.cloud_policy", "group.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.cloud_policy", "user.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.cloud_policy", "role.id"),
+	}
+
+	checksRole := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "name", policyNameRole),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "description", "Role-scoped policy"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "associated_resource_type", "Role"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.role_policy", "associated_resource_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "enabled", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "policy_type.code", "maxMemory"),
+		// Check role-specific attributes
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.role_policy", "role.id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.role_policy", "role.authority", roleName),
+		// Verify other resource type attributes are not set
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.role_policy", "group.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.role_policy", "cloud.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.role_policy", "user.id"),
+	}
+
+	checksUser := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "name", policyNameUser),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "description", "User-scoped policy"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "associated_resource_type", "User"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.user_policy", "associated_resource_id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "enabled", "true"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "policy_type.code", "maxMemory"),
+		// Check user-specific attributes
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_policy.user_policy", "user.id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_policy.user_policy", "user.username", userName),
+		// Verify other resource type attributes are not set
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.user_policy", "group.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.user_policy", "cloud.id"),
+		resource.TestCheckNoResourceAttr("data.hpe_morpheus_policy.user_policy", "role.id"),
+	}
+
+	allChecks := append(checksGroup, checksCloud...)
+	allChecks = append(allChecks, checksRole...)
+	allChecks = append(allChecks, checksUser...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		allChecks...,
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + dependencyConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config:             providerConfig + dependencyConfig + resourceConfig + dataSourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
