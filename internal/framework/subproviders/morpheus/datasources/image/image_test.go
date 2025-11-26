@@ -39,7 +39,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusFindImageById(t *testing.T) {
+func TestAccMorpheusImageDatasourceImageDatasourceById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -90,7 +90,7 @@ resource "hpe_morpheus_image" "test_image" {
 	})
 }
 
-func TestAccMorpheusFindImageByIdExisting(t *testing.T) {
+func TestAccMorpheusImageDatasourceByIdExisting(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -136,7 +136,7 @@ func TestAccMorpheusFindImageByIdExisting(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindImageByName(t *testing.T) {
+func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -187,7 +187,7 @@ resource "hpe_morpheus_image" "test_image" {
 	})
 }
 
-func TestAccMorpheusFindImageByNameAndImageType(t *testing.T) {
+func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -242,7 +242,7 @@ resource "hpe_morpheus_image" "test_image" {
 }
 
 // verify that we get an error if `image_type` is specified without `name`
-func TestAccMorpheusFindImageByImageTypeOnly(t *testing.T) {
+func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
