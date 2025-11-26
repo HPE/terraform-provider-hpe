@@ -5,6 +5,7 @@ package image
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -87,6 +88,9 @@ func ImageDataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.Int64Attribute{
 				Optional: true,
 				Computed: true,
+				Validators: []validator.Int64{
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name"), path.MatchRoot("image_type")}...),
+				},
 			},
 			"image_type": schema.StringAttribute{
 				Optional:            true,
@@ -145,13 +149,17 @@ func ImageDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "SSH Key",
 			},
 			"ssh_username": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "SSH Username",
+				MarkdownDescription: "SSH Username",
 			},
 			"status": schema.StringAttribute{
 				Computed: true,
 			},
 			"storage_provider_id": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "ID of the storage provider where the image will be uploaded",
+				MarkdownDescription: "ID of the storage provider where the image will be uploaded",
 			},
 			"sysprep": schema.BoolAttribute{
 				Computed:            true,
