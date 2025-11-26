@@ -45,7 +45,7 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"config": schema.DynamicAttribute{
-				Optional:            true,
+				Computed:            true,
 				Description:         "Generic Policy Configuration",
 				MarkdownDescription: "Generic Policy Configuration",
 			},
