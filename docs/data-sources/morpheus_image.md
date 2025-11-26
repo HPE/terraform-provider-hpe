@@ -63,9 +63,9 @@ data "hpe_morpheus_image" "test" {
 - `owner_id` (Number) Owner of the image
 - `raw_size` (Number) Size of image in bytes
 - `ssh_key` (String) SSH Key
-- `ssh_username` (String)
+- `ssh_username` (String) SSH Username
 - `status` (String)
-- `storage_provider_id` (Number)
+- `storage_provider_id` (Number) ID of the storage provider where the image will be uploaded
 - `sysprep` (Boolean) Sysprep Enabled?
 - `system_image` (Boolean) Is created by system?
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value (see [below for nested schema](#nestedatt--tags))
