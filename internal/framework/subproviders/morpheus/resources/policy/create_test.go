@@ -733,3 +733,962 @@ resource "hpe_morpheus_network" "test" {
 		},
 	})
 }
+
+// Test creating policies using static schema fields (config_* attributes)
+func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+	namePrefix := acctest.RandomWithPrefix(t.Name())
+	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+
+	dependencyConfig := `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+
+resource "morpheus_operational_workflow" "test" {
+  name = "` + namePrefix + `-workflow"
+}
+
+data "morpheus_workflow" "test" {
+  name = morpheus_operational_workflow.test.name
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{ /*
+							// Step 1: Approve Delete (using config_approval)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-deleteApproval"
+				  description = "Delete approval policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "deleteApproval"
+				  }
+
+				  config_approval = {
+				    account_integration_id = "1"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-deleteApproval"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "deleteApproval"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_approval.account_integration_id", "1"),
+								),
+								ExpectNonEmptyPlan: false,
+							},
+							// Step 2: Backup Creation (using config_create_backup)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-createBackup"
+				  description = "Create backup policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "createBackup"
+				  }
+
+				  config_create_backup = {
+				    create_backup = true
+				    create_backup_type = "user"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createBackup"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createBackup"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_create_backup.create_backup", "true"),
+								),
+								ExpectNonEmptyPlan: false,
+							},
+							// Step 3: Cypher Access (using config_cypher)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-cypher"
+				  description = "Cypher access policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "cypher"
+				  }
+
+				  config_cypher = {
+				    read = true
+				    write = true
+				    update = false
+				    delete = false
+				    list = true
+				    key_pattern = "secret/*"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-cypher"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "cypher"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_cypher.read", "true"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_cypher.write", "true"),
+								),
+								ExpectNonEmptyPlan: false,
+							},
+							// Step 4: Delayed Delete (using config_delayed_removal)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-delayedRemoval"
+				  description = "Delayed removal policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "delayedRemoval"
+				  }
+
+				  config_delayed_removal = {
+				    removal_age = "7"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-delayedRemoval"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "delayedRemoval"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_delayed_removal.removal_age", "7"),
+								),
+								ExpectNonEmptyPlan: false,
+							},
+							// Step 5: Hostname (using config_host_naming)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-hostNaming"
+				  description = "Host naming policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "hostNaming"
+				  }
+
+				  config_host_naming = {
+				    host_naming_type = "user"
+				    host_naming_pattern = "host-$$$${sequence}"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-hostNaming"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "hostNaming"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_host_naming.host_naming_type", "user"),
+								),
+							},
+							// Step 6: Expiration (using config_lifecycle) - TEMPORARILY SKIPPED
+							/*
+											{
+												Config: providerConfig + dependencyConfig + `
+								resource "hpe_morpheus_policy" "test" {
+								  name = "` + namePrefix + `-lifecycle"
+								  description = "Lifecycle policy using static schema"
+								  associated_resource_type = "Group"
+								  associated_resource_id = hpe_morpheus_group.test.id
+								  enabled = true
+
+								  policy_type = {
+								    code = "lifecycle"
+								  }
+
+								  config_lifecycle = {
+								    lifecycle_type = "fixed"
+								    lifecycle_age = "30"
+								  }
+								}`,
+												Check: resource.ComposeAggregateTestCheckFunc(
+													resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-lifecycle"),
+													resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "lifecycle"),
+													resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_lifecycle.lifecycle_age", "30"),
+												),
+											},
+			*/ /*
+							// Step 7: Max Containers (using config_max_containers)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxContainers"
+				  description = "Max containers policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxContainers"
+				  }
+
+				  config_max_containers = {
+				    max_containers = "10"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxContainers"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxContainers"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_containers.max_containers", "10"),
+								),
+							},
+							// Step 8: Max Cores (using config_max_cores)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxCores"
+				  description = "Max cores policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxCores"
+				  }
+
+				  config_max_cores = {
+				    max_cores = "16"
+				    exclude_containers = false
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxCores"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxCores"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_cores.max_cores", "16"),
+								),
+							},
+							// Step 9: Max Hosts (using config_max_hosts)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxHosts"
+				  description = "Max hosts policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxHosts"
+				  }
+
+				  config_max_hosts = {
+				    max_hosts = "50"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxHosts"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxHosts"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_hosts.max_hosts", "50"),
+								),
+							},
+							// Step 10: Max Memory (using config_max_memory)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxMemory"
+				  description = "Max memory policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxMemory"
+				  }
+
+				  config_max_memory = {
+				    max_memory = "1073741824"
+				    exclude_containers = true
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxMemory"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxMemory"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_memory.max_memory", "1073741824"),
+								),
+							},
+							// Step 11: Network Quota (using config_max_networks)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxNetworks"
+				  description = "Max networks policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxNetworks"
+				  }
+
+				  config_max_networks = {
+				    max_networks = "5"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxNetworks"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxNetworks"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_networks.max_networks", "5"),
+								),
+							},
+							// Step 12: Max Pool Members (using config_max_pool_members)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxPoolMembers"
+				  description = "Max pool members policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxPoolMembers"
+				  }
+
+				  config_max_pool_members = {
+				    max_pool_members = "10"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPoolMembers"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPoolMembers"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_pool_members.max_pool_members", "10"),
+								),
+							},
+							// Step 13: Max Load Balancer Pools (using config_max_pools)
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-maxPools"
+				  description = "Max pools policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "maxPools"
+				  }
+
+				  config_max_pools = {
+				    max_pools = "8"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPools"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPools"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_pools.max_pools", "8"),
+								),
+							},
+			*/
+			// Step 14: Budget (using config_max_price)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxPrice"
+  description = "Max price policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxPrice"
+  }
+  
+  config_max_price = {
+    max_price = 1000.50
+    max_price_currency = "USD"
+    max_price_unit = "month"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxPrice"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxPrice"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_price.max_price_currency", "USD"),
+				),
+			},
+			// Step 15: Router Quota (using config_max_routers)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxRouters"
+  description = "Max routers policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxRouters"
+  }
+  
+  config_max_routers = {
+    max_routers = "3"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxRouters"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxRouters"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_routers.max_routers", "3"),
+				),
+			},
+			// Step 16: Max Snapshots (using config_max_snapshots)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxSnapshots"
+  description = "Max snapshots policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxSnapshots"
+  }
+  
+  config_max_snapshots = {
+    max_snapshots = "5"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxSnapshots"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxSnapshots"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_snapshots.max_snapshots", "5"),
+				),
+			},
+			// Step 17: Max Storage (using config_max_storage)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxStorage"
+  description = "Max storage policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxStorage"
+  }
+  
+  config_max_storage = {
+    max_storage = "10737418240"
+    exclude_containers = false
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxStorage"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxStorage"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_storage.max_storage", "10737418240"),
+				),
+			},
+			// Step 18: Max Virtual Servers (using config_max_virtual_servers)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxVirtualServers"
+  description = "Max virtual servers policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxVirtualServers"
+  }
+  
+  config_max_virtual_servers = {
+    max_virtual_servers = "15"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxVirtualServers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxVirtualServers"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_virtual_servers.max_virtual_servers", "15"),
+				),
+			},
+			// Step 19: Max VMs (using config_max_vms)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-maxVms"
+  description = "Max VMs policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "maxVms"
+  }
+  
+  config_max_vms = {
+    max_vms = "20"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-maxVms"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "maxVms"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_max_vms.max_vms", "20"),
+				),
+			},
+			// Step 20: Message of the Day (using config_motd) - TEMPORARILY SKIPPED
+			/*
+							{
+								Config: providerConfig + dependencyConfig + `
+				resource "hpe_morpheus_policy" "test" {
+				  name = "` + namePrefix + `-motd"
+				  description = "MOTD policy using static schema"
+				  associated_resource_type = "Group"
+				  associated_resource_id = hpe_morpheus_group.test.id
+				  enabled = true
+
+				  policy_type = {
+				    code = "motd"
+				  }
+
+				  config_motd = {
+				    motdtitle = "Welcome"
+				    motdmessage = "Welcome to the system"
+				    motdtype = "text"
+				    motddate = "2024-01-01"
+				  }
+				}`,
+								Check: resource.ComposeAggregateTestCheckFunc(
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-motd"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "motd"),
+									resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_motd.motdtitle", "Welcome"),
+								),
+							},
+			*/
+			// Step 21: Instance Name (using config_naming)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-naming"
+  description = "Naming policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "naming"
+  }
+  
+  config_naming = {
+    naming_type = "user"
+    naming_pattern = "instance-$$$${sequence}"
+    naming_conflict = true
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-naming"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "naming"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_naming.naming_type", "user"),
+				),
+			},
+			// Step 22: Power Scheduling (using config_power_schedule)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-powerSchedule"
+  description = "Power schedule policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "powerSchedule"
+  }
+  
+  config_power_schedule = {
+    power_schedule = "1"
+    power_schedule_type = "user"
+    power_schedule_hide_fixed = false
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-powerSchedule"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "powerSchedule"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_power_schedule.power_schedule", "1"),
+				),
+			},
+			// Step 23: Instance Networks (using config_required_network)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-requiredNetwork"
+  description = "Required network policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "requiredNetwork"
+  }
+  
+  config_required_network = {
+    required_networks = [1, 2]
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-requiredNetwork"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "requiredNetwork"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_required_network.required_networks.#", "2"),
+				),
+			},
+			// Step 24: Cluster Resource Name (using config_server_naming)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-serverNaming"
+  description = "Server naming policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "serverNaming"
+  }
+  
+  config_server_naming = {
+    server_naming_type = "user"
+    server_naming_pattern = "server-$$$${sequence}"
+    server_naming_conflict = true
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-serverNaming"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "serverNaming"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_server_naming.server_naming_type", "user"),
+				),
+			},
+			// Step 25: Shutdown (using config_shutdown)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-shutdown"
+  description = "Shutdown policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "shutdown"
+  }
+  
+  config_shutdown = {
+    shutdown_type = "fixed"
+    shutdown_age = "30"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-shutdown"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "shutdown"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_shutdown.shutdown_age", "30"),
+				),
+			},
+			// Step 26: Storage Server Storage Quota (using config_storage_server_quota)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-storageServerQuota"
+  description = "Storage server quota policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "storageServerQuota"
+  }
+  
+  config_storage_server_quota = {
+    storage_server_id = "1"
+    max_storage = "10737418240"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageServerQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageServerQuota"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_storage_server_quota.storage_server_id", "1"),
+				),
+			},
+			// Step 27: Tags (using config_tags)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-tags"
+  description = "Tags policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "tags"
+  }
+  
+  config_tags = {
+    strict = true
+    key = "environment"
+    value = "production"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-tags"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "tags"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_tags.key", "environment"),
+				),
+			},
+			// Step 28: User Creation (using config_create_user)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-createUser"
+  description = "Create user policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "createUser"
+  }
+  
+  config_create_user = {
+    create_user_type = "fixed"
+    create_user = true
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createUser"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createUser"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_create_user.create_user", "true"),
+				),
+			},
+			// Step 29: User Group Creation (using config_create_user_group)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-createUserGroup"
+  description = "Create user group policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "createUserGroup"
+  }
+  
+  config_create_user_group = {
+    user_group = "1"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-createUserGroup"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "createUserGroup"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_create_user_group.user_group", "1"),
+				),
+			},
+			// Step 30: Workflow (using config_workflow)
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-workflow"
+  description = "Workflow policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "workflow"
+  }
+  
+  config_workflow = {
+    workflow_id = data.morpheus_workflow.test.id
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-workflow"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "workflow"),
+					resource.TestCheckResourceAttrSet("hpe_morpheus_policy.test", "config_workflow.workflow_id"),
+				),
+			},
+		},
+	})
+}
+
+// Test lifecycle policy using static schema
+func TestAccMorpheusPolicyLifecycleStaticSchemaOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+	namePrefix := acctest.RandomWithPrefix(t.Name())
+	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+
+	dependencyConfig := `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-lifecycle"
+  description = "Lifecycle policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "lifecycle"
+  }
+  
+  config_lifecycle = {
+    lifecycle_type = "fixed"
+    lifecycle_age = "30"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-lifecycle"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "lifecycle"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_lifecycle.lifecycle_age", "30"),
+				),
+			},
+		},
+	})
+}
+
+// Test MOTD policy using static schema
+func TestAccMorpheusPolicyMotdStaticSchemaOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+	namePrefix := acctest.RandomWithPrefix(t.Name())
+	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+
+	dependencyConfig := `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-motd"
+  description = "MOTD policy using static schema"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "motd"
+  }
+  
+  config_motd = {
+    motdtitle = "Welcome"
+    motdmessage = "Welcome to the system"
+    motdtype = "text"
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-motd"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "motd"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_motd.motdtitle", "Welcome"),
+				),
+			},
+		},
+	})
+}
+
+// Test shutdown policy using static schema with full config
+func TestAccMorpheusPolicyShutdownStaticSchemaOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlockMixed()
+	namePrefix := acctest.RandomWithPrefix(t.Name())
+	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+
+	dependencyConfig := `
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dependencyConfig + `
+resource "hpe_morpheus_policy" "test" {
+  name = "` + namePrefix + `-shutdown"
+  description = "Shutdown policy using static schema with full config"
+  associated_resource_type = "Group"
+  associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = "shutdown"
+  }
+  
+  config_shutdown = {
+    shutdown_type = "user"
+    shutdown_age = "30"
+    shutdown_renewal = "5"
+    shutdown_notify = "7"
+    shutdown_message = "Instance will shutdown"
+    shutdown_allow_extend = true
+    shutdown_auto_renew = false
+  }
+}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-shutdown"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "shutdown"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_shutdown.shutdown_age", "30"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_shutdown.shutdown_allow_extend", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_shutdown.shutdown_auto_renew", "false"),
+				),
+			},
+		},
+	})
+}
