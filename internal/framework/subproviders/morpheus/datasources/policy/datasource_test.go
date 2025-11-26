@@ -249,6 +249,7 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -288,6 +289,7 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
