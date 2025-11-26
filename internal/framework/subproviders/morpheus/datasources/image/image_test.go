@@ -246,10 +246,6 @@ func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig := `
@@ -261,6 +257,7 @@ data "hpe_morpheus_image" "test" {
 	errMatch := regexp.MustCompile("Attribute \"name\" must be specified when \"image_type\" is specified")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + dataSourceConfig,
@@ -275,10 +272,6 @@ func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig := `
@@ -291,6 +284,7 @@ data "hpe_morpheus_image" "test" {
 
 	errMatch := regexp.MustCompile("Attribute \"(.*)\" cannot be specified when \"id\" is specified")
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
