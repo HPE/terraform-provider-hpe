@@ -4,14 +4,12 @@ package policy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
@@ -81,53 +79,14 @@ func (r *Resource) Update(
 		updatePolicy.SetAccounts(tenantIDs)
 	}
 
-	// Set Config - convert dynamic to SDK config structure
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configValue := plan.Config.UnderlyingValue()
-		configMap, err := convert.ValueToAny(ctx, configValue)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update policy resource",
-				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
-			)
-
-			return
-		}
-
-		// Check if config is empty
-		if configMapTyped, ok := configMap.(map[string]interface{}); ok && len(configMapTyped) == 0 {
-			resp.Diagnostics.AddError(
-				"update policy resource",
-				fmt.Sprintf("policy %d: config cannot be empty. "+
-					"Please provide the required configuration fields for this policy type.", id),
-			)
-
-			return
-		}
-
-		// Marshal to JSON then unmarshal to SDK config structure
-		// This allows the SDK's UnmarshalJSON to handle the oneOf structure
-		configJSON, err := json.Marshal(configMap)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update policy resource",
-				fmt.Sprintf("policy %d: failed to marshal config to JSON: %s", id, err.Error()),
-			)
-
-			return
-		}
-
-		var sdkConfig sdk.UpdatePoliciesRequestPolicyConfig
-		if err := json.Unmarshal(configJSON, &sdkConfig); err != nil {
-			resp.Diagnostics.AddError(
-				"update policy resource",
-				fmt.Sprintf("policy %d: invalid config: %s", id, err.Error()),
-			)
-
-			return
-		}
-
-		updatePolicy.SetConfig(sdkConfig)
+	// Set Config - convert state config fields to SDK config structure
+	sdkConfig, configDiags := mapStateToUpdatePolicyConfig(ctx, &plan)
+	if configDiags.HasError() {
+		resp.Diagnostics.Append(configDiags...)
+		return
+	}
+	if sdkConfig != nil {
+		updatePolicy.SetConfig(*sdkConfig)
 	}
 
 	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)

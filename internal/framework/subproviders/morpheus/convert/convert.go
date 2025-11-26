@@ -5,6 +5,7 @@ package convert
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -134,6 +135,23 @@ func Int64ToType(i *int64) types.Int64 {
 	}
 
 	return types.Int64Value(*i)
+}
+
+// StrToNumber converts a string pointer to a types.Number.
+// Returns null if the pointer is nil or the string cannot be parsed.
+func StrToNumber(s *string) types.Number {
+	if s == nil {
+		return types.NumberNull()
+	}
+
+	// Parse string to big.Float
+	bf := new(big.Float)
+	_, ok := bf.SetString(*s)
+	if !ok {
+		return types.NumberNull()
+	}
+
+	return types.NumberValue(bf)
 }
 
 func Int64SliceToSet(items []int64) types.Set {
