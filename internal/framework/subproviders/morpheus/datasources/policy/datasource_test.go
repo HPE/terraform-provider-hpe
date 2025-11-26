@@ -264,10 +264,6 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
