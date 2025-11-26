@@ -39,7 +39,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusImageDatasourceImageDatasourceById(t *testing.T) {
+func TestAccMorpheusImageDatasourceById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
