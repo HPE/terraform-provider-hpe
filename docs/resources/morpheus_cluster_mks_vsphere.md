@@ -48,8 +48,8 @@ resource "hpe_morpheus_cluster_mks_vsphere" "tf_example_vsphere_instance" {
   resource_prefix         = "vmpre"
   hostname_prefix         = "ospre"
   description             = "Terraform MKS cluster example"
-  cloud_id                = data.morpheus_cloud.morpheus_vsphere.id
-  group_id                = data.morpheus_group.morpheus_lab.id
+  cloud_id                = data.hpe_morpheus_cloud.morpheus_vsphere.id
+  group_id                = data.hpe_morpheus_group.morpheus_lab.id
   cluster_layout_id       = 244
   pod_cidr                = "172.20.0.0/16"
   service_cidr            = "172.30.0.0/16"
@@ -58,11 +58,11 @@ resource "hpe_morpheus_cluster_mks_vsphere" "tf_example_vsphere_instance" {
   cluster_repo_account_id = 1
 
   master_node_pool {
-    plan_id          = data.morpheus_plan.master_nodes
+    plan_id          = data.hpe_morpheus_service_plan.master_nodes.id
     resource_pool_id = 20
 
     network_interface {
-      network_id = data.morpheus_network.vm_network.id
+      network_id = data.hpe_morpheus_network.vm_network.id
     }
 
     storage_volume {
@@ -80,15 +80,15 @@ resource "hpe_morpheus_cluster_mks_vsphere" "tf_example_vsphere_instance" {
 
   worker_node_pool {
     count            = 3
-    plan_id          = data.morpheus_plan.worker_nodes
+    plan_id          = data.hpe_morpheus_service_plan.worker_nodes.id
     resource_pool_id = 20
 
     network_interface {
-      network_id = data.morpheus_network.vm_network.id
+      network_id = data.hpe_morpheus_network.vm_network.id
     }
 
     network_interface {
-      network_id = data.morpheus_network.internal_network.id
+      network_id = data.hpe_morpheus_network.internal_network.id
     }
 
     storage_volume {
