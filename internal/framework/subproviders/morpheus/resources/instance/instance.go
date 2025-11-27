@@ -248,6 +248,9 @@ func getInstanceAsState(
 		if group, ok := iface.GetNetworkGroupOk(); ok {
 			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
 		}
+		if pool, ok := iface.GetNetworkPoolOk(); ok {
+			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+		}
 		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
@@ -461,6 +464,9 @@ func getChildNetworks(
 		ifaceVal.NetworkGroupId = types.Int64Null()
 		if group, ok := iface.GetNetworkGroupOk(); ok {
 			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
+		}
+		if pool, ok := iface.GetNetworkPoolOk(); ok {
+			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
 		}
 		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
 		ifaceVal.Name = convert.StrToType(iface.Name)
