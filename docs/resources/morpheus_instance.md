@@ -12,40 +12,40 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM and VMware instances are supported.<br>
-With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
-The addition and removal of volumes is not supported during updates.<br>
-Updates fail when removing optional fields.<br>
-Updates fail when removing `evars`.<br>
+-> Currently HVM, VMware and BMaaS instances are supported. Some general issues<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br><br>
 These will be addressed in a future release.
 
--> When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
+-> Some general notes:<br><br>
+When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
 `network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
 will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
 `terraform apply` will report that no changes have been made but will update the state-file to include
-the missing IP addresses.
-
--> We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
+the missing IP addresses.<br><br>
+We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
 the creation of one VM per instance.  When executing terraform an error will be raised stating that
 `layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
-to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
-
--> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.<br><br>
+We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
-`read` and `update` is 45 minutes
-
--> We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
-can be accessed
-
--> When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
+`read` and `update` is 45 minutes.<br><br>
+We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
+can be accessed<br><br>
+When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
 
-## Example Usage
+-> The following examples all have the following settings in their `config` blocks:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `noAgent` is set to `false`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `createUser` is set to `true`<br><br>
+These settings can be changed as required.
 
-### HVM instance
+## HVM Instance
 
 ```terraform
 data "hpe_morpheus_cloud" "vme_cloud" {
@@ -117,13 +117,13 @@ resource "hpe_morpheus_instance" "example" {
     resourcePoolId       = "pool-62299"
     poolProviderType     = "mvm"
     nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
+    noAgent              = false
+    createUser           = true
   }
 }
 ```
 
-### HVM Instance with two networks
+## HVM Instance with two networks
 
 One of these networks has a `child_virtual_networks` entry.  Note that only some network types support `child_virtual_networks`.
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
@@ -212,13 +212,13 @@ resource "hpe_morpheus_instance" "example" {
     resourcePoolId       = "pool-62299"
     poolProviderType     = "mvm"
     nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
+    noAgent              = false
+    createUser           = true
   }
 }
 ```
 
-### HVM Instance with timeouts
+## HVM Instance with timeouts
 
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
@@ -296,8 +296,8 @@ resource "hpe_morpheus_instance" "example" {
     resourcePoolId       = "pool-62299"
     poolProviderType     = "mvm"
     nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
+    noAgent              = false
+    createUser           = true
   }
 
   timeouts = {
@@ -309,7 +309,7 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
-### VMware VM Instance
+## VMware VM Instance
 
 ```terraform
 data "hpe_morpheus_cloud" "vmware_cloud" {
@@ -395,6 +395,124 @@ resource "hpe_morpheus_instance" "example" {
     delete = "20m"
     update = "20m"
     read   = "10m"
+  }
+}
+```
+
+## BMaaS Instance
+
+-> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
+
+For the `root` volume, to get the appropriate `storage_type_id` use the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html).<br>
+```bash
+$ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
+$ morpheus storage-volume-types list hpeilo-raid1
+```
+Put that `id` in the `storage_type_id` field for the `root` volume below.  Leave the other fields unchanged.
+
+```terraform
+data "hpe_morpheus_cloud" "test" {
+  name = "aCloud"
+}
+
+data "hpe_morpheus_environment" "test" {
+  name = "anEnvironment"
+}
+
+data "hpe_morpheus_group" "test" {
+  name = "aGroup"
+}
+
+data "hpe_morpheus_instance_type_layout" "test" {
+  name = "Single ILO Server"
+}
+
+data "hpe_morpheus_role" "test" {
+  name = "aRole"
+}
+
+data "hpe_morpheus_service_plan" "tp" {
+    name                = "G3i"
+    provision_type_code = "hpe-baremetal-plugin.provision"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.test.id # BM Cloud
+  layout_id        = data.hpe_morpheus_instance_type_layout.test.id
+  instance_type_id = 56 # BM Instance
+
+  group_id = data.hpe_morpheus_group.test.id
+  plan_id  = data.hpe_morpheus_service_plan.tp.id
+
+  instance_context = "dev"
+
+  network_interfaces = [
+    {
+      network_id      = 21
+      ipMode          = ""
+      network_type_id = 18
+    },
+    {
+      network_id      = 21
+      ipMode          = ""
+      network_type_id = 18
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume     = true
+      name            = "root"
+      size            = 0
+      storage_type_id = 76
+      datastore_id    = null
+    },
+    {
+      root_volume     = false
+      name            = "data"
+      size            = 16 # GB
+      storage_type_id = 84
+      datastore_id    = 11
+    }
+  ]
+
+  tags = [
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "mytag"
+      value = "true"
+    },
+    {
+      name  = "jesskey"
+      value = "terraform"
+    }
+  ]
+
+  config = {
+    imageId         = 231
+    resourcePoolId  = "pool-1"
+    layoutSize      = 1
+    isEC2           = false
+    isVpcSelectable = true
+    serverId        = 155
+    noAgent         = false
+    createUser      = true
+  }
+
+  timeouts = {
+    create = "2h"
   }
 }
 ```
