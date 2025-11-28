@@ -3,14 +3,49 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"os"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func main() {
-	name := os.Args[1]
-	args := os.Args[2:len(os.Args)]
+const usage = `
+Usage: 
+go run render <type/name> <example_path> [args...]
 
-	testhelpers.WriteExample(name, args...)
+Examples:
+
+Render to the same directory as the template:
+
+go run render group.tf.tmpl Name 'Test'
+
+Render to examples/resources/hpe_morpheus_group/group.tf:
+
+go run render -out resources/hpe_morpheus_group group.tf.tmpl Name 'Test'
+  `
+
+func main() {
+	out := flag.String("out", "", "Location in examples directory")
+	flag.Parse()
+
+	osArgs := flag.Args()
+
+	if len(osArgs) < 1 {
+		fmt.Println(usage)
+		os.Exit(1)
+	}
+
+	fn := osArgs[0]
+
+	var args []string
+	if len(osArgs) > 1 {
+		args = osArgs[1:]
+	}
+
+	if out != nil && *out != "" {
+		testhelpers.WriteExampleToDir(*out, fn, args...)
+	} else {
+		testhelpers.WriteExample(fn, args...)
+	}
 }
