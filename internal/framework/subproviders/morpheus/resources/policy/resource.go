@@ -49,9 +49,9 @@ func (r *Resource) Schema(
 // resourceTypeToAPIType converts user-facing resource types to API types
 func resourceTypeToAPIType(resourceType string) string {
 	switch resourceType {
-	case "Cloud":
+	case AssociatedResourceTypeCloud:
 		return "ComputeZone"
-	case "Group":
+	case AssociatedResourceTypeGroup:
 		return "ComputeSite"
 	default:
 		// For other types (User, Role, Network, Plan), pass through as-is
@@ -63,9 +63,9 @@ func resourceTypeToAPIType(resourceType string) string {
 func apiTypeToResourceType(apiType string) string {
 	switch apiType {
 	case "ComputeZone":
-		return "Cloud"
+		return AssociatedResourceTypeCloud
 	case "ComputeSite":
-		return "Group"
+		return AssociatedResourceTypeGroup
 	default:
 		// For other types (User, Role, Network, Plan), pass through as-is
 		return apiType
@@ -91,7 +91,7 @@ func (r *Resource) ValidateConfig(
 	// If associated_resource_type is not "Global", associated_resource_id must be set
 	resourceType := config.AssociatedResourceType.ValueString()
 
-	if resourceType != "Global" {
+	if resourceType != AssociatedResourceTypeGlobal {
 		// Check if associated_resource_id is set
 		if config.AssociatedResourceId.IsNull() {
 			resp.Diagnostics.AddAttributeError(
@@ -108,7 +108,7 @@ func (r *Resource) ValidateConfig(
 
 	// Validate each_user is only set when associated_resource_type is "Role"
 	if !config.EachUser.IsNull() {
-		if resourceType != "Role" {
+		if resourceType != AssociatedResourceTypeRole {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("each_user"),
 				"Invalid attribute combination",
@@ -167,6 +167,7 @@ func (r *Resource) ModifyPlan(
 		for _, pt := range policyTypesResp.Data {
 			if code, ok := pt["code"].(string); ok && code == policyTypeCode {
 				matchingPolicyType = pt
+
 				break
 			}
 		}
@@ -178,27 +179,28 @@ func (r *Resource) ModifyPlan(
 			"Invalid policy type",
 			fmt.Sprintf("Policy type with code '%s' not found", policyTypeCode),
 		)
+
 		return
 	}
 
 	// Map resource type to the corresponding "allowOn" field
 	var allowFieldName string
 	switch resourceType {
-	case "Global":
+	case AssociatedResourceTypeGlobal:
 		allowFieldName = "allowOnGlobal"
-	case "Group":
+	case AssociatedResourceTypeGroup:
 		allowFieldName = "allowOnSite"
-	case "Cloud":
+	case AssociatedResourceTypeCloud:
 		allowFieldName = "allowOnZone"
-	case "User":
+	case AssociatedResourceTypeUser:
 		allowFieldName = "allowOnUser"
-	case "Role":
+	case AssociatedResourceTypeRole:
 		allowFieldName = "allowOnRole"
-	case "Network":
+	case AssociatedResourceTypeNetwork:
 		allowFieldName = "allowOnNetwork"
-	case "Plan":
+	case AssociatedResourceTypePlan:
 		allowFieldName = "allowOnPlan"
-	case "Label":
+	case AssociatedResourceTypeLabel:
 		allowFieldName = "allowOnLabel"
 	default:
 		// Unknown resource type - should not happen due to schema validation
@@ -207,13 +209,14 @@ func (r *Resource) ModifyPlan(
 			"Unknown resource type",
 			fmt.Sprintf("Resource type '%s' is not recognized", resourceType),
 		)
+
 		return
 	}
 
 	// Check if the policy type allows this resource type
 	// Treat Global as always allowed (API may return nil for allowOnGlobal)
 	allowed := false
-	if resourceType == "Global" {
+	if resourceType == AssociatedResourceTypeGlobal {
 		allowed = true
 	} else if allowValue, ok := matchingPolicyType[allowFieldName]; ok {
 		if allowBool, ok := allowValue.(bool); ok {
@@ -257,19 +260,19 @@ func (r *Resource) ModifyPlan(
 		// Build a list of allowed scopes for this policy type
 		var allowedScopes []string
 		scopeMapping := map[string]string{
-			"allowOnGlobal":  "Global",
-			"allowOnSite":    "Group",
-			"allowOnZone":    "Cloud",
-			"allowOnUser":    "User",
-			"allowOnRole":    "Role",
-			"allowOnNetwork": "Network",
-			"allowOnPlan":    "Plan",
-			"allowOnLabel":   "Label",
+			"allowOnGlobal":  AssociatedResourceTypeGlobal,
+			"allowOnSite":    AssociatedResourceTypeGroup,
+			"allowOnZone":    AssociatedResourceTypeCloud,
+			"allowOnUser":    AssociatedResourceTypeUser,
+			"allowOnRole":    AssociatedResourceTypeRole,
+			"allowOnNetwork": AssociatedResourceTypeNetwork,
+			"allowOnPlan":    AssociatedResourceTypePlan,
+			"allowOnLabel":   AssociatedResourceTypeLabel,
 		}
 
 		for field, scope := range scopeMapping {
 			// Always treat Global as allowed (API may return nil for allowOnGlobal)
-			if scope == "Global" {
+			if scope == AssociatedResourceTypeGlobal {
 				if !contains(allowedScopes, scope) {
 					allowedScopes = append(allowedScopes, scope)
 				}
@@ -304,5 +307,6 @@ func contains(slice []string, item string) bool {
 			return true
 		}
 	}
+
 	return false
 }

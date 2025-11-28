@@ -51,7 +51,7 @@ func (r *Resource) Create(
 
 	// When associated_resource_type is "Global", leave refType null (null defaults to Global)
 	associatedResourceType := plan.AssociatedResourceType.ValueString()
-	if associatedResourceType != "Global" {
+	if associatedResourceType != AssociatedResourceTypeGlobal {
 		// Convert user-facing resource type to API type
 		apiType := resourceTypeToAPIType(associatedResourceType)
 		addPolicy.SetRefType(apiType)
