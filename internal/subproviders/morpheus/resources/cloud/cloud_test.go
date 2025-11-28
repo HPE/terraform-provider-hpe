@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../cmd/render resources/hpe_morpheus_cloud example.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
+//go:generate go run ../../../../../cmd/render -out resources/hpe_morpheus_cloud example.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
 
 package cloud_test
 

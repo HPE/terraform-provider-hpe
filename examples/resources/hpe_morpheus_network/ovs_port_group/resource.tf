@@ -1,25 +1,25 @@
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "terraform-aws-test"
+  default     = "Terraform OVS Port Group"
 }
 
 variable "description" {
   description = "Network description"
   type        = string
-  default     = "AWS subnet"
+  default     = "OVS Port Group network"
 }
 
 variable "cloud_id" {
   description = "Cloud (zone) id"
   type        = number
-  default     = 207
+  default     = 7714
 }
 
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 3251
 }
 
 variable "group_id" {
@@ -29,33 +29,33 @@ variable "group_id" {
 }
 
 variable "type_id" {
-  description = "Network type id"
+  description = "Network type id (OVS Port Group)"
   type        = number
-  default     = 36
+  default     = 63
 }
 
 variable "cidr" {
   description = "CIDR Network"
   type        = string
-  default     = "10.200.99.0/24"
+  default     = "10.32.148.0/22"
 }
 
 variable "zone_pool_id" {
   description = "Zone pool id"
   type        = number
-  default     = 12329
+  default     = 62299
 }
 
-variable "config_assign_public_ip" {
-  description = "Assign public IP setting for network config"
-  type        = bool
-  default     = true
+variable "vlan_id" {
+  description = "VLAN ID"
+  type        = number
+  default     = 43
 }
 
-variable "config_availability_zone" {
-  description = "Availability zone setting for network config"
+variable "switch_id" {
+  description = "Switch ID for OVS network"
   type        = string
-  default     = "us-west-1a"
+  default     = "Compute"
 }
 
 variable "active" {
@@ -67,7 +67,7 @@ variable "active" {
 variable "dhcp_server" {
   description = "Whether DHCP server is enabled"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "appliance_url_proxy_bypass" {
@@ -79,20 +79,18 @@ variable "appliance_url_proxy_bypass" {
 variable "visibility" {
   description = "Network visibility"
   type        = string
-  default     = "private"
+  default     = "public"
 }
 
-resource "hpe_morpheus_network" "aws" {
-  name        = var.name
-  description = var.description
-  cloud_id    = var.cloud_id
-  pool_id     = var.pool_id
-  group_id    = var.group_id
-  type_id     = var.type_id
-  config = {
-    assignPublicIp   = var.config_assign_public_ip
-    availabilityZone = var.config_availability_zone
-  }
+resource "hpe_morpheus_network" "ovs_port_group" {
+  name                       = var.name
+  description                = var.description
+  cloud_id                   = var.cloud_id
+  pool_id                    = var.pool_id
+  group_id                   = var.group_id
+  type_id                    = var.type_id
+  switch_id                  = var.switch_id
+  config                     = {}
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
@@ -100,6 +98,7 @@ resource "hpe_morpheus_network" "aws" {
   visibility                 = var.visibility
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
+  vlan_id                    = var.vlan_id
   labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   lifecycle {

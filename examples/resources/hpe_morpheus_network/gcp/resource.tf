@@ -1,19 +1,19 @@
 variable "name" {
   description = "Network name"
   type        = string
-  default     = "terraform-aws-test"
+  default     = "TestAccMorpheusNetworkResourceCreateGcp"
 }
 
 variable "description" {
   description = "Network description"
   type        = string
-  default     = "AWS subnet"
+  default     = "GCP network"
 }
 
 variable "cloud_id" {
   description = "Cloud (zone) id"
   type        = number
-  default     = 207
+  default     = 6
 }
 
 variable "pool_id" {
@@ -25,37 +25,37 @@ variable "pool_id" {
 variable "group_id" {
   description = "Group (site) id"
   type        = number
-  default     = 1
+  default     = 8
 }
 
 variable "type_id" {
   description = "Network type id"
   type        = number
-  default     = 36
+  default     = 38
 }
 
 variable "cidr" {
   description = "CIDR Network"
   type        = string
-  default     = "10.200.99.0/24"
+  default     = "10.0.0.0/8"
 }
 
 variable "zone_pool_id" {
   description = "Zone pool id"
   type        = number
-  default     = 12329
+  default     = 85990
 }
 
-variable "config_assign_public_ip" {
-  description = "Assign public IP setting for network config"
+variable "config_mtu" {
+  description = "MTU setting for network config"
+  type        = string
+  default     = "1460"
+}
+
+variable "config_auto_create" {
+  description = "Auto create setting for network config"
   type        = bool
   default     = true
-}
-
-variable "config_availability_zone" {
-  description = "Availability zone setting for network config"
-  type        = string
-  default     = "us-west-1a"
 }
 
 variable "active" {
@@ -67,7 +67,7 @@ variable "active" {
 variable "dhcp_server" {
   description = "Whether DHCP server is enabled"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "appliance_url_proxy_bypass" {
@@ -82,7 +82,7 @@ variable "visibility" {
   default     = "private"
 }
 
-resource "hpe_morpheus_network" "aws" {
+resource "hpe_morpheus_network" "gcp" {
   name        = var.name
   description = var.description
   cloud_id    = var.cloud_id
@@ -90,8 +90,8 @@ resource "hpe_morpheus_network" "aws" {
   group_id    = var.group_id
   type_id     = var.type_id
   config = {
-    assignPublicIp   = var.config_assign_public_ip
-    availabilityZone = var.config_availability_zone
+    mtu        = var.config_mtu
+    autoCreate = var.config_auto_create
   }
   active                     = var.active
   dhcp_server                = var.dhcp_server
@@ -101,8 +101,4 @@ resource "hpe_morpheus_network" "aws" {
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
   labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
-
-  lifecycle {
-    ignore_changes = [name, display_name, description]
-  }
 }

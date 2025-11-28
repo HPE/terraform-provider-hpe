@@ -39,7 +39,21 @@ func RenderExample(t *testing.T, name string, args ...string) (string, error) {
 	return example, nil
 }
 
-func WriteExample(dest, fn string, args ...string) {
+func WriteExample(name string, args ...string) {
+	text, err := renderExample(name, args...)
+	if err != nil {
+		panic(err)
+	}
+
+	name = strings.TrimSuffix(name, ".tmpl")
+
+	err = os.WriteFile(name, []byte(text), 0o600)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func WriteExampleToDir(dest, fn string, args ...string) {
 	text, err := renderExample(fn, args...)
 	if err != nil {
 		panic(err)
