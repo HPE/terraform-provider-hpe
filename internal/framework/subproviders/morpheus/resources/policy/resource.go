@@ -211,8 +211,11 @@ func (r *Resource) ModifyPlan(
 	}
 
 	// Check if the policy type allows this resource type
+	// Treat Global as always allowed (API may return nil for allowOnGlobal)
 	allowed := false
-	if allowValue, ok := matchingPolicyType[allowFieldName]; ok {
+	if resourceType == "Global" {
+		allowed = true
+	} else if allowValue, ok := matchingPolicyType[allowFieldName]; ok {
 		if allowBool, ok := allowValue.(bool); ok {
 			allowed = allowBool
 		}
@@ -265,7 +268,12 @@ func (r *Resource) ModifyPlan(
 		}
 
 		for field, scope := range scopeMapping {
-			if val, ok := matchingPolicyType[field].(bool); ok && val {
+			// Always treat Global as allowed (API may return nil for allowOnGlobal)
+			if scope == "Global" {
+				if !contains(allowedScopes, scope) {
+					allowedScopes = append(allowedScopes, scope)
+				}
+			} else if val, ok := matchingPolicyType[field].(bool); ok && val {
 				if !contains(allowedScopes, scope) {
 					allowedScopes = append(allowedScopes, scope)
 				}
