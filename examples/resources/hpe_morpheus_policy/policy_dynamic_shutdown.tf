@@ -1,4 +1,6 @@
 # Shutdown Policy - Auto-shutdown idle instances
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "shutdown" {
   name                     = "Shutdown Policy"
   description              = "Auto-shutdown idle instances"

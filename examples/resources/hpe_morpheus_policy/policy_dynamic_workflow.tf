@@ -1,4 +1,6 @@
 # Workflow Policy - Executes workflow on provision
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 # Note: This example uses the morpheus external provider to create a workflow resource
 # because the hpe provider does not yet have a workflow resource implemented.
 # You will need to configure the morpheus provider in your terraform configuration.

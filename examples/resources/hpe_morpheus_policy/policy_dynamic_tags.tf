@@ -1,4 +1,6 @@
 # Tags Policy - Enforces instance tagging
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "tags" {
   name                     = "Tags Policy"
   description              = "Enforce instance tagging requirements"

@@ -1,4 +1,6 @@
 # Approve Workflow Execute Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_workflow" {
   name                     = "Approve Workflow Execute Policy"
   description              = "Require approval before executing workflows"

@@ -1,4 +1,6 @@
 # Approve Reconfigure Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_reconfigure" {
   name                     = "Approve Reconfigure Policy"
   description              = "Require approval before reconfiguring instances"

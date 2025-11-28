@@ -1,4 +1,6 @@
 # Max Containers Policy - Limits container count
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_containers" {
   name                     = "Max Containers Policy"
   description              = "Limit maximum container count"

@@ -1,4 +1,6 @@
 # # Backup Targets Policy - Restricts available backup storage targets
+# Allowed associated_resource_types: Group, Cloud, User, Global, Role
+# Tenant specification: NOT allowed (cannot specify tenants array)
 # resource "hpe_morpheus_policy" "backup_targets" {
 #   name                     = "Backup Targets Policy"
 #   description              = "Restrict available backup targets"

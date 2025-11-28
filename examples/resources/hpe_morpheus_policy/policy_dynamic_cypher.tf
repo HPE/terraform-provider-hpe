@@ -1,4 +1,6 @@
 # Cypher Access Policy - Controls access to Cypher secrets
+# Allowed associated_resource_types: User, Global, Role
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "cypher_access" {
   name                     = "Cypher Access Policy"
   description              = "Control Cypher key access permissions"

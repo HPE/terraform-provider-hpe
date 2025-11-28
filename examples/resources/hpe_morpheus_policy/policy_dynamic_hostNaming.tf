@@ -1,4 +1,6 @@
 # Hostname Policy - Enforces hostname naming conventions
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "hostname" {
   name                     = "Hostname Policy"
   description              = "Enforce hostname naming conventions"

@@ -1,4 +1,6 @@
 # Max Memory Policy - Limits memory allocation
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_memory" {
   name                     = "Max Memory Policy"
   description              = "Limit maximum memory allocation"

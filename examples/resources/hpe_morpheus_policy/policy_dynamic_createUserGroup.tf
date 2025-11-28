@@ -1,4 +1,6 @@
 # User Group Creation Policy - Assigns default user group
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "user_group_creation" {
   name                     = "User Group Creation Policy"
   description              = "Assign default user group for created users"
