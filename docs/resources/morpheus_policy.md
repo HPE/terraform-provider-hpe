@@ -60,6 +60,8 @@ Policies are different rules that can be applied to various Morpheus resources.
 
 ```terraform
 # Approve Delete Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_delete" {
   name                     = "Approve Delete Policy"
   description              = "Require approval before deleting instances"
@@ -81,6 +83,8 @@ resource "hpe_morpheus_policy" "approve_delete" {
 
 ```terraform
 # Approve Provision Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_provision" {
   name                     = "Approve Provision Policy"
   description              = "Require approval before provisioning instances"
@@ -102,6 +106,8 @@ resource "hpe_morpheus_policy" "approve_provision" {
 
 ```terraform
 # Approve Reconfigure Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_reconfigure" {
   name                     = "Approve Reconfigure Policy"
   description              = "Require approval before reconfiguring instances"
@@ -123,6 +129,8 @@ resource "hpe_morpheus_policy" "approve_reconfigure" {
 
 ```terraform
 # Approve Workflow Execute Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global, Label
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "approve_workflow" {
   name                     = "Approve Workflow Execute Policy"
   description              = "Require approval before executing workflows"
@@ -144,6 +152,8 @@ resource "hpe_morpheus_policy" "approve_workflow" {
 
 ```terraform
 # Backup Creation Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "backup_creation" {
   name                     = "Backup Creation Policy"
   description              = "Enforce backup creation for instances"
@@ -169,6 +179,8 @@ Not currently supported
 
 ```terraform
 # Budget Policy - Limits instance costs
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "budget" {
   name                     = "Budget Policy"
   description              = "Limit maximum instance costs"
@@ -192,6 +204,8 @@ resource "hpe_morpheus_policy" "budget" {
 
 ```terraform
 # Cluster Resource Name Policy - Enforces naming conventions for cluster resources
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "cluster_naming" {
   name                     = "Cluster Resource Naming Policy"
   description              = "Enforce naming for cluster resources"
@@ -215,6 +229,8 @@ resource "hpe_morpheus_policy" "cluster_naming" {
 
 ```terraform
 # Cypher Access Policy - Controls access to Cypher secrets
+# Allowed associated_resource_types: User, Global, Role
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "cypher_access" {
   name                     = "Cypher Access Policy"
   description              = "Control Cypher key access permissions"
@@ -241,6 +257,8 @@ resource "hpe_morpheus_policy" "cypher_access" {
 
 ```terraform
 # Delayed Delete Policy - Delays instance deletion
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "delayed_delete" {
   name                     = "Delayed Delete Policy"
   description              = "Delay instance deletion by specified days"
@@ -262,6 +280,8 @@ resource "hpe_morpheus_policy" "delayed_delete" {
 
 ```terraform
 # Expiration Policy - Sets instance expiration and renewal options
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "expiration" {
   name                     = "Expiration Policy"
   description              = "Set instance expiration and renewal policies"
@@ -291,6 +311,8 @@ resource "hpe_morpheus_policy" "expiration" {
 
 ```terraform
 # File Share Storage Quota Policy - Limits file share storage
+# Allowed associated_resource_types: User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "file_share_quota" {
   name                     = "File Share Storage Quota Policy"
   description              = "Limit file share storage usage"
@@ -312,6 +334,8 @@ resource "hpe_morpheus_policy" "file_share_quota" {
 
 ```terraform
 # Hostname Policy - Enforces hostname naming conventions
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "hostname" {
   name                     = "Hostname Policy"
   description              = "Enforce hostname naming conventions"
@@ -334,6 +358,8 @@ resource "hpe_morpheus_policy" "hostname" {
 
 ```terraform
 # Instance Name Policy - Enforces instance naming conventions
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "instance_naming" {
   name                     = "Instance Name Policy"
   description              = "Enforce instance naming conventions"
@@ -357,10 +383,12 @@ resource "hpe_morpheus_policy" "instance_naming" {
 
 ```terraform
 # Instance Networks Policy - Requires specific networks for instances
+# Allowed associated_resource_types: Group, Cloud
+# Tenant specification: NOT allowed (allowOnTenant = false)
 resource "hpe_morpheus_policy" "required_networks" {
   name                     = "Instance Networks Policy"
   description              = "Require specific networks for instances"
-  associated_resource_type = "User"
+  associated_resource_type = "Cloud"
   associated_resource_id   = 9969
   enabled                  = true
 
@@ -378,6 +406,8 @@ resource "hpe_morpheus_policy" "required_networks" {
 
 ```terraform
 # Max Containers Policy - Limits container count
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_containers" {
   name                     = "Max Containers Policy"
   description              = "Limit maximum container count"
@@ -399,6 +429,8 @@ resource "hpe_morpheus_policy" "max_containers" {
 
 ```terraform
 # Max Cores Policy - Limits CPU cores
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_cores" {
   name                     = "Max Cores Policy"
   description              = "Limit maximum CPU cores"
@@ -421,6 +453,8 @@ resource "hpe_morpheus_policy" "max_cores" {
 
 ```terraform
 # Max Hosts Policy - Limits host count
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_hosts" {
   name                     = "Max Hosts Policy"
   description              = "Limit maximum host count"
@@ -442,6 +476,8 @@ resource "hpe_morpheus_policy" "max_hosts" {
 
 ```terraform
 # Max Load Balancer Pools Policy - Limits load balancer pools
+# Allowed associated_resource_types: Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_pools" {
   name                     = "Max Load Balancer Pools Policy"
   description              = "Limit maximum load balancer pools"
@@ -463,6 +499,8 @@ resource "hpe_morpheus_policy" "max_pools" {
 
 ```terraform
 # Max Memory Policy - Limits memory allocation
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_memory" {
   name                     = "Max Memory Policy"
   description              = "Limit maximum memory allocation"
@@ -485,10 +523,12 @@ resource "hpe_morpheus_policy" "max_memory" {
 
 ```terraform
 # Max Pool Members Policy - Limits pool members
+# Allowed associated_resource_types: Cloud, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_pool_members" {
   name                     = "Max Pool Members Policy"
   description              = "Limit maximum pool members"
-  associated_resource_type = "User"
+  associated_resource_type = "Cloud"
   associated_resource_id   = 9969
   enabled                  = true
 
@@ -506,6 +546,8 @@ resource "hpe_morpheus_policy" "max_pool_members" {
 
 ```terraform
 # Max Snapshots Policy - Limits snapshots per VM
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_snapshots" {
   name                     = "Max Snapshots Policy"
   description              = "Limit maximum snapshots per VM"
@@ -527,6 +569,8 @@ resource "hpe_morpheus_policy" "max_snapshots" {
 
 ```terraform
 # Max Storage Policy - Limits storage allocation
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_storage" {
   name                     = "Max Storage Policy"
   description              = "Limit maximum storage allocation"
@@ -549,10 +593,12 @@ resource "hpe_morpheus_policy" "max_storage" {
 
 ```terraform
 # Max Virtual Servers Policy - Limits virtual server count
+# Allowed associated_resource_types: Cloud, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_virtual_servers" {
   name                     = "Max Virtual Servers Policy"
   description              = "Limit maximum virtual server count"
-  associated_resource_type = "User"
+  associated_resource_type = "Cloud"
   associated_resource_id   = 9969
   enabled                  = true
 
@@ -570,6 +616,8 @@ resource "hpe_morpheus_policy" "max_virtual_servers" {
 
 ```terraform
 # Max VMs Policy - Limits VM count
+# Allowed associated_resource_types: Group, Cloud, User, Global, Network, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_vms" {
   name                     = "Max VMs Policy"
   description              = "Limit maximum VM count"
@@ -591,11 +639,12 @@ resource "hpe_morpheus_policy" "max_vms" {
 
 ```terraform
 # Message of the Day (MOTD) Policy - Displays login messages
+# Allowed associated_resource_types: Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "motd" {
   name                     = "MOTD Policy"
   description              = "Display message of the day on login"
-  associated_resource_type = "User"
-  associated_resource_id   = 9969
+  associated_resource_type = "Global"
   enabled                  = true
 
   policy_type = {
@@ -615,6 +664,8 @@ resource "hpe_morpheus_policy" "motd" {
 
 ```terraform
 # Network Quota Policy - Limits network count
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "network_quota" {
   name                     = "Network Quota Policy"
   description              = "Limit maximum network count"
@@ -636,6 +687,8 @@ resource "hpe_morpheus_policy" "network_quota" {
 
 ```terraform
 # Object Storage Quota Policy - Limits object storage
+# Allowed associated_resource_types: User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "object_storage_quota" {
   name                     = "Object Storage Quota Policy"
   description              = "Limit object storage usage"
@@ -657,6 +710,8 @@ resource "hpe_morpheus_policy" "object_storage_quota" {
 
 ```terraform
 # Power Scheduling Policy - Enforces power schedules
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "power_schedule" {
   name                     = "Power Scheduling Policy"
   description              = "Enforce power schedules for instances"
@@ -680,6 +735,8 @@ resource "hpe_morpheus_policy" "power_schedule" {
 
 ```terraform
 # Router Quota Policy - Limits router count
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "router_quota" {
   name                     = "Router Quota Policy"
   description              = "Limit maximum router count"
@@ -701,6 +758,8 @@ resource "hpe_morpheus_policy" "router_quota" {
 
 ```terraform
 # Shutdown Policy - Auto-shutdown idle instances
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "shutdown" {
   name                     = "Shutdown Policy"
   description              = "Auto-shutdown idle instances"
@@ -730,10 +789,12 @@ resource "hpe_morpheus_policy" "shutdown" {
 
 ```terraform
 # Storage Server Storage Quota Policy - Limits storage on specific storage server
+# Allowed associated_resource_types: Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "storage_server_quota" {
   name                     = "Storage Server Storage Quota Policy"
   description              = "Limit storage usage on specific storage server"
-  associated_resource_type = "User"
+  associated_resource_type = "Global"
   associated_resource_id   = 9969
   enabled                  = true
 
@@ -752,6 +813,8 @@ resource "hpe_morpheus_policy" "storage_server_quota" {
 
 ```terraform
 # Tags Policy - Enforces instance tagging
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "tags" {
   name                     = "Tags Policy"
   description              = "Enforce instance tagging requirements"
@@ -776,6 +839,8 @@ resource "hpe_morpheus_policy" "tags" {
 
 ```terraform
 # User Creation Policy - Controls user creation on instances
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "user_creation" {
   name                     = "User Creation Policy"
   description              = "Control user creation on provisioned instances"
@@ -798,6 +863,8 @@ resource "hpe_morpheus_policy" "user_creation" {
 
 ```terraform
 # User Group Creation Policy - Assigns default user group
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "user_group_creation" {
   name                     = "User Group Creation Policy"
   description              = "Assign default user group for created users"
@@ -819,6 +886,8 @@ resource "hpe_morpheus_policy" "user_group_creation" {
 
 ```terraform
 # Workflow Policy - Executes workflow on provision
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 # Note: This example uses the morpheus external provider to create a workflow resource
 # because the hpe provider does not yet have a workflow resource implemented.
 # You will need to configure the morpheus provider in your terraform configuration.
