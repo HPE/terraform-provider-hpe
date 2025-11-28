@@ -863,13 +863,13 @@ resource "hpe_morpheus_policy" "workflow" {
 
 ### Required
 
-- `associated_resource_type` (String) Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'
+- `associated_resource_type` (String) Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'
 - `name` (String) A name for the policy
 - `policy_type` (Attributes) (see [below for nested schema](#nestedatt--policy_type))
 
 ### Optional
 
-- `associated_resource_id` (Number) The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan
+- `associated_resource_id` (Number) The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label
 - `config` (Dynamic) Generic Policy Configuration
 - `description` (String) A description for the policy
 - `each_user` (Boolean) Apply individually to each user in role.  Only when `refType` equals `Role`
