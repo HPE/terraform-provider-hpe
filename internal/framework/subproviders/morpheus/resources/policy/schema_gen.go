@@ -27,21 +27,21 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"associated_resource_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan",
-				MarkdownDescription: "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan",
+				Description:         "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
+				MarkdownDescription: "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"associated_resource_type": schema.StringAttribute{
 				Required:            true,
-				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
-				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'",
+				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'",
+				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.OneOf("Global", "Group", "Cloud", "User", "Role", "Network", "Plan"),
+					stringvalidator.OneOf("Global", "Group", "Cloud", "User", "Role", "Network", "Plan", "Label"),
 				},
 			},
 			"cloud": schema.SingleNestedAttribute{

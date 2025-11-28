@@ -17,6 +17,7 @@ var (
 	_ resource.Resource                   = &Resource{}
 	_ resource.ResourceWithImportState    = &Resource{}
 	_ resource.ResourceWithValidateConfig = &Resource{}
+	_ resource.ResourceWithModifyPlan     = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -120,4 +121,180 @@ func (r *Resource) ValidateConfig(
 			)
 		}
 	}
+}
+
+// ModifyPlan validates policy type compatibility during the plan phase when the provider is configured
+func (r *Resource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	// Only run validation if we have a plan (not during destroy)
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan PolicyModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Validate policy type is compatible with the associated resource type
+	if plan.PolicyType.IsNull() || plan.PolicyType.IsUnknown() {
+		return
+	}
+
+	policyTypeCode := plan.PolicyType.Code.ValueString()
+	resourceType := plan.AssociatedResourceType.ValueString()
+
+	// Get API client - provider is configured at this point
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		// If we can't get a client, skip validation - will be caught during apply
+		return
+	}
+
+	// Fetch policy types from the API
+	policyTypesResp, httpResp, err := client.OptionsAPI.GetOptionSourceData(ctx, "policyTypes").Execute()
+	if err != nil || httpResp == nil || httpResp.StatusCode != 200 {
+		return
+	}
+
+	// Find the matching policy type
+	var matchingPolicyType map[string]interface{}
+	if policyTypesResp != nil && policyTypesResp.Data != nil {
+		for _, pt := range policyTypesResp.Data {
+			if code, ok := pt["code"].(string); ok && code == policyTypeCode {
+				matchingPolicyType = pt
+				break
+			}
+		}
+	}
+
+	if matchingPolicyType == nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("policy_type").AtName("code"),
+			"Invalid policy type",
+			fmt.Sprintf("Policy type with code '%s' not found", policyTypeCode),
+		)
+		return
+	}
+
+	// Map resource type to the corresponding "allowOn" field
+	var allowFieldName string
+	switch resourceType {
+	case "Global":
+		allowFieldName = "allowOnGlobal"
+	case "Group":
+		allowFieldName = "allowOnSite"
+	case "Cloud":
+		allowFieldName = "allowOnZone"
+	case "User":
+		allowFieldName = "allowOnUser"
+	case "Role":
+		allowFieldName = "allowOnRole"
+	case "Network":
+		allowFieldName = "allowOnNetwork"
+	case "Plan":
+		allowFieldName = "allowOnPlan"
+	case "Label":
+		allowFieldName = "allowOnLabel"
+	default:
+		// Unknown resource type - should not happen due to schema validation
+		resp.Diagnostics.AddAttributeError(
+			path.Root("associated_resource_type"),
+			"Unknown resource type",
+			fmt.Sprintf("Resource type '%s' is not recognized", resourceType),
+		)
+		return
+	}
+
+	// Check if the policy type allows this resource type
+	allowed := false
+	if allowValue, ok := matchingPolicyType[allowFieldName]; ok {
+		if allowBool, ok := allowValue.(bool); ok {
+			allowed = allowBool
+		}
+	}
+
+	// Validate tenants field is only set when allowOnTenant is true
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
+		allowOnTenant := false
+		if allowValue, ok := matchingPolicyType["allowOnTenant"]; ok {
+			if allowBool, ok := allowValue.(bool); ok {
+				allowOnTenant = allowBool
+			}
+		}
+
+		if !allowOnTenant {
+			policyTypeName := ""
+			if name, ok := matchingPolicyType["name"].(string); ok {
+				policyTypeName = name
+			}
+
+			resp.Diagnostics.AddAttributeError(
+				path.Root("tenants"),
+				"Tenants not supported for this policy type",
+				fmt.Sprintf(
+					"Policy type '%s' (%s) does not support specifying tenants. "+
+						"Remove the tenants attribute or choose a different policy type.",
+					policyTypeName, policyTypeCode,
+				),
+			)
+		}
+	}
+
+	if !allowed {
+		policyTypeName := ""
+		if name, ok := matchingPolicyType["name"].(string); ok {
+			policyTypeName = name
+		}
+
+		// Build a list of allowed scopes for this policy type
+		var allowedScopes []string
+		scopeMapping := map[string]string{
+			"allowOnGlobal":  "Global",
+			"allowOnSite":    "Group",
+			"allowOnZone":    "Cloud",
+			"allowOnUser":    "User",
+			"allowOnRole":    "Role",
+			"allowOnNetwork": "Network",
+			"allowOnPlan":    "Plan",
+			"allowOnLabel":   "Label",
+		}
+
+		for field, scope := range scopeMapping {
+			if val, ok := matchingPolicyType[field].(bool); ok && val {
+				if !contains(allowedScopes, scope) {
+					allowedScopes = append(allowedScopes, scope)
+				}
+			}
+		}
+
+		availableMsg := ""
+		if len(allowedScopes) > 0 {
+			availableMsg = fmt.Sprintf("\n\nThis policy type can be applied to the following resource types: %v", allowedScopes)
+		}
+
+		resp.Diagnostics.AddAttributeError(
+			path.Root("associated_resource_type"),
+			"Incompatible policy type and resource type",
+			fmt.Sprintf(
+				"Policy type '%s' (%s) cannot be applied to resource type '%s'. "+
+					"This policy type does not support the selected scope.%s",
+				policyTypeName, policyTypeCode, resourceType, availableMsg,
+			),
+		)
+	}
+}
+
+// contains checks if a string slice contains a specific string
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
