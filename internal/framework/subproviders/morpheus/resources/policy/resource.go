@@ -186,18 +186,18 @@ func (r *Resource) ModifyPlan(
 	// Log the policy type data for debugging
 	tflog.Debug(ctx, "Policy type validation",
 		map[string]interface{}{
-			"policyTypeCode":    policyTypeCode,
-			"policyTypeName":    matchingPolicyType["name"],
-			"allowOnGlobal":     matchingPolicyType["allowOnGlobal"],
-			"allowOnSite":       matchingPolicyType["allowOnSite"],
-			"allowOnZone":       matchingPolicyType["allowOnZone"],
-			"allowOnUser":       matchingPolicyType["allowOnUser"],
-			"allowOnRole":       matchingPolicyType["allowOnRole"],
-			"allowOnNetwork":    matchingPolicyType["allowOnNetwork"],
-			"allowOnPlan":       matchingPolicyType["allowOnPlan"],
-			"allowOnLabel":      matchingPolicyType["allowOnLabel"],
-			"allowOnTenant":     matchingPolicyType["allowOnTenant"],
-			"resourceType":      resourceType,
+			"policyTypeCode": policyTypeCode,
+			"policyTypeName": matchingPolicyType["name"],
+			"allowOnGlobal":  matchingPolicyType["allowOnGlobal"],
+			"allowOnSite":    matchingPolicyType["allowOnSite"],
+			"allowOnZone":    matchingPolicyType["allowOnZone"],
+			"allowOnUser":    matchingPolicyType["allowOnUser"],
+			"allowOnRole":    matchingPolicyType["allowOnRole"],
+			"allowOnNetwork": matchingPolicyType["allowOnNetwork"],
+			"allowOnPlan":    matchingPolicyType["allowOnPlan"],
+			"allowOnLabel":   matchingPolicyType["allowOnLabel"],
+			"allowOnTenant":  matchingPolicyType["allowOnTenant"],
+			"resourceType":   resourceType,
 		})
 
 	// Map resource type to the corresponding "allowOn" field
