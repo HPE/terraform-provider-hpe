@@ -43,7 +43,7 @@ func main() {
 		args = osArgs[1:]
 	}
 
-	if out != nil && *out != "" {
+	if *out != "" {
 		testhelpers.WriteExampleToDir(*out, fn, args...)
 	} else {
 		testhelpers.WriteExample(fn, args...)
