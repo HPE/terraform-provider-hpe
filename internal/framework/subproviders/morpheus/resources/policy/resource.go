@@ -141,11 +141,11 @@ func (r *Resource) ModifyPlan(
 	}
 
 	// Validate policy type is compatible with the associated resource type
-	if plan.PolicyType.IsNull() || plan.PolicyType.IsUnknown() {
+	policyTypeCode := plan.PolicyType.Code.ValueString()
+	if plan.PolicyType.Code.IsUnknown() {
 		return
 	}
 
-	policyTypeCode := plan.PolicyType.Code.ValueString()
 	resourceType := plan.AssociatedResourceType.ValueString()
 
 	// Get API client - provider is configured at this point
@@ -202,15 +202,6 @@ func (r *Resource) ModifyPlan(
 		allowFieldName = "allowOnPlan"
 	case AssociatedResourceTypeLabel:
 		allowFieldName = "allowOnLabel"
-	default:
-		// Unknown resource type - should not happen due to schema validation
-		resp.Diagnostics.AddAttributeError(
-			path.Root("associated_resource_type"),
-			"Unknown resource type",
-			fmt.Sprintf("Resource type '%s' is not recognized", resourceType),
-		)
-
-		return
 	}
 
 	// Check if the policy type allows this resource type
