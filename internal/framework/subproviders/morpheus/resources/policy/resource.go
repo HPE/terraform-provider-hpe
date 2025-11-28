@@ -216,7 +216,16 @@ func (r *Resource) ModifyPlan(
 	}
 
 	// Validate tenants field is only set when allowOnTenant is true
-	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
+	// Only validate if tenants is explicitly set in the config (not null and not unknown)
+	// Get the config value to check if it was actually set by the user
+	var config PolicyModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Only validate if tenants was explicitly set in the user's config
+	if !config.Tenants.IsNull() && !config.Tenants.IsUnknown() {
 		allowOnTenant := false
 		if allowValue, ok := matchingPolicyType["allowOnTenant"]; ok {
 			if allowBool, ok := allowValue.(bool); ok {
