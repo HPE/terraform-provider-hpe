@@ -83,6 +83,7 @@ func (r *Resource) Update(
 	sdkConfig, configDiags := mapStateToUpdatePolicyConfig(ctx, &plan)
 	if configDiags.HasError() {
 		resp.Diagnostics.Append(configDiags...)
+
 		return
 	}
 	if sdkConfig != nil {

@@ -29,6 +29,7 @@ func mapStateToAddPolicyConfig(
 				"map state to API config",
 				"failed to convert dynamic config: "+err.Error(),
 			)
+
 			return nil, diags
 		}
 		var ok bool
@@ -38,6 +39,7 @@ func mapStateToAddPolicyConfig(
 				"map state to API config",
 				"config must be a map",
 			)
+
 			return nil, diags
 		}
 
@@ -47,6 +49,7 @@ func mapStateToAddPolicyConfig(
 				"map state to API config",
 				"config cannot be empty. Please provide the required configuration fields for this policy type.",
 			)
+
 			return nil, diags
 		}
 	} else {
@@ -79,9 +82,10 @@ func mapStateToAddPolicyConfig(
 			backupStorage := make(map[string]interface{})
 			if !plan.ConfigBackupStorage.BackupStorageIds.IsNull() {
 				var backupStorageIDs []int64
-				diagsSet := plan.ConfigBackupStorage.BackupStorageIds.ElementsAs(ctx, &backupStorageIDs, false)
-				if diagsSet.HasError() {
-					diags.Append(diagsSet...)
+				diagSet := plan.ConfigBackupStorage.BackupStorageIds.ElementsAs(ctx, &backupStorageIDs, false)
+				if diagSet.HasError() {
+					diags.Append(diagSet...)
+
 					return nil, diags
 				}
 				backupStorage["backupStorageIds"] = backupStorageIDs
@@ -194,13 +198,18 @@ func mapStateToAddPolicyConfig(
 				lifecycle["lifecycleAge"] = plan.ConfigLifecycle.LifecycleAge.ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleAllowExtend.IsNull() {
-				lifecycle["lifecycleAllowExtend"] = convert.BoolToStringOnOff(plan.ConfigLifecycle.LifecycleAllowExtend.ValueBool()).ValueString()
+				lifecycle["lifecycleAllowExtend"] = convert.BoolToStringOnOff(
+					plan.ConfigLifecycle.LifecycleAllowExtend.ValueBool(),
+				).ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleAutoRenew.IsNull() {
-				lifecycle["lifecycleAutoRenew"] = convert.BoolToStringOnOff(plan.ConfigLifecycle.LifecycleAutoRenew.ValueBool()).ValueString()
+				lifecycle["lifecycleAutoRenew"] = convert.BoolToStringOnOff(
+					plan.ConfigLifecycle.LifecycleAutoRenew.ValueBool(),
+				).ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleExtensionsBeforeApproval.IsNull() {
-				lifecycle["lifecycleExtensionsBeforeApproval"] = plan.ConfigLifecycle.LifecycleExtensionsBeforeApproval.ValueString()
+				lifecycle["lifecycleExtensionsBeforeApproval"] = plan.ConfigLifecycle.
+					LifecycleExtensionsBeforeApproval.ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleHideFixed.IsNull() {
 				lifecycle["lifecycleHideFixed"] = plan.ConfigLifecycle.LifecycleHideFixed.ValueBool()
@@ -246,7 +255,9 @@ func mapStateToAddPolicyConfig(
 				maxCores["maxCores"] = plan.ConfigMaxCores.MaxCores.ValueString()
 			}
 			if !plan.ConfigMaxCores.ExcludeContainers.IsNull() {
-				maxCores["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxCores.ExcludeContainers.ValueBool()).ValueString()
+				maxCores["excludeContainers"] = convert.BoolToStringOnOff(
+					plan.ConfigMaxCores.ExcludeContainers.ValueBool(),
+				).ValueString()
 			}
 			if len(maxCores) > 0 {
 				configMap = maxCores
@@ -271,7 +282,9 @@ func mapStateToAddPolicyConfig(
 				maxMemory["maxMemory"] = plan.ConfigMaxMemory.MaxMemory.ValueString()
 			}
 			if !plan.ConfigMaxMemory.ExcludeContainers.IsNull() {
-				maxMemory["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxMemory.ExcludeContainers.ValueBool()).ValueString()
+				maxMemory["excludeContainers"] = convert.BoolToStringOnOff(
+					plan.ConfigMaxMemory.ExcludeContainers.ValueBool(),
+				).ValueString()
 			}
 			if len(maxMemory) > 0 {
 				configMap = maxMemory
@@ -359,7 +372,9 @@ func mapStateToAddPolicyConfig(
 				maxStorage["maxStorage"] = plan.ConfigMaxStorage.MaxStorage.ValueString()
 			}
 			if !plan.ConfigMaxStorage.ExcludeContainers.IsNull() {
-				maxStorage["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxStorage.ExcludeContainers.ValueBool()).ValueString()
+				maxStorage["excludeContainers"] = convert.BoolToStringOnOff(
+					plan.ConfigMaxStorage.ExcludeContainers.ValueBool(),
+				).ValueString()
 			}
 			if len(maxStorage) > 0 {
 				configMap = maxStorage
@@ -447,9 +462,10 @@ func mapStateToAddPolicyConfig(
 			requiredNetwork := make(map[string]interface{})
 			if !plan.ConfigRequiredNetwork.RequiredNetworks.IsNull() {
 				var requiredNetworks []int64
-				diagsSet := plan.ConfigRequiredNetwork.RequiredNetworks.ElementsAs(ctx, &requiredNetworks, false)
-				if diagsSet.HasError() {
-					diags.Append(diagsSet...)
+				diagSet := plan.ConfigRequiredNetwork.RequiredNetworks.ElementsAs(ctx, &requiredNetworks, false)
+				if diagSet.HasError() {
+					diags.Append(diagSet...)
+
 					return nil, diags
 				}
 				requiredNetwork["requiredNetworks"] = requiredNetworks
@@ -489,10 +505,14 @@ func mapStateToAddPolicyConfig(
 				shutdown["shutdownAge"] = plan.ConfigShutdown.ShutdownAge.ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownAllowExtend.IsNull() {
-				shutdown["shutdownAllowExtend"] = convert.BoolToStringOnOff(plan.ConfigShutdown.ShutdownAllowExtend.ValueBool()).ValueString()
+				shutdown["shutdownAllowExtend"] = convert.BoolToStringOnOff(
+					plan.ConfigShutdown.ShutdownAllowExtend.ValueBool(),
+				).ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownAutoRenew.IsNull() {
-				shutdown["shutdownAutoRenew"] = convert.BoolToStringOnOff(plan.ConfigShutdown.ShutdownAutoRenew.ValueBool()).ValueString()
+				shutdown["shutdownAutoRenew"] = convert.BoolToStringOnOff(
+					plan.ConfigShutdown.ShutdownAutoRenew.ValueBool(),
+				).ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownExtensionsBeforeApproval.IsNull() {
 				shutdown["shutdownExtensionsBeforeApproval"] = plan.ConfigShutdown.ShutdownExtensionsBeforeApproval.ValueString()
@@ -574,6 +594,7 @@ func mapStateToAddPolicyConfig(
 				"map state to API config",
 				"No configuration provided. Please provide at least one config_* field for this policy type.",
 			)
+
 			return nil, diags
 		}
 	}
@@ -585,6 +606,7 @@ func mapStateToAddPolicyConfig(
 			"map state to API config",
 			"failed to marshal config to JSON: "+err.Error(),
 		)
+
 		return nil, diags
 	}
 
@@ -594,6 +616,7 @@ func mapStateToAddPolicyConfig(
 			"map state to API config",
 			"invalid config: "+err.Error(),
 		)
+
 		return nil, diags
 	}
 
@@ -617,6 +640,7 @@ func mapStateToUpdatePolicyConfig(
 			"map state to update API config",
 			"failed to marshal config to JSON: "+err.Error(),
 		)
+
 		return nil, diags
 	}
 
@@ -626,6 +650,7 @@ func mapStateToUpdatePolicyConfig(
 			"map state to update API config",
 			"invalid config: "+err.Error(),
 		)
+
 		return nil, diags
 	}
 

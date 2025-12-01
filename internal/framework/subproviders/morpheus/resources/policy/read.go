@@ -53,7 +53,11 @@ func mapPolicyConfigToState(
 			backupStorageIDsSet = types.SetValueMust(types.Int64Type, []attr.Value{})
 		} else {
 			// BackupStorageIds come from API as []string, convert to []int64
-			backupStorageIDsSet, setDiags = types.SetValueFrom(ctx, types.Int64Type, apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds)
+			backupStorageIDsSet, setDiags = types.SetValueFrom(
+				ctx,
+				types.Int64Type,
+				apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds,
+			)
 			if setDiags.HasError() {
 				diags.Append(setDiags...)
 			}
