@@ -940,6 +940,73 @@ resource "hpe_morpheus_policy" "workflow" {
 
 - `associated_resource_id` (Number) The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label
 - `config` (Dynamic) Generic Policy Configuration
+- `config_approval` (Attributes) Configuration for the following policy types:
+	- Approve Delete (deleteApproval)
+	- Approve Provision (provisionApproval)
+	- Approve Reconfigure (reconfigureApproval)
+	- Approve Workflow Execute (workflowApproval) (see [below for nested schema](#nestedatt--config_approval))
+- `config_backup_storage` (Attributes) Configuration for the following policy type:
+	- Backup Targets (backupStorage) (see [below for nested schema](#nestedatt--config_backup_storage))
+- `config_create_backup` (Attributes) Configuration for the following policy type:
+	- Backup Creation (createBackup) (see [below for nested schema](#nestedatt--config_create_backup))
+- `config_create_user` (Attributes) Configuration for the following policy type:
+	- User Creation (createUser) (see [below for nested schema](#nestedatt--config_create_user))
+- `config_create_user_group` (Attributes) Configuration for the following policy type:
+	- User Group Creation (createUserGroup) (see [below for nested schema](#nestedatt--config_create_user_group))
+- `config_cypher` (Attributes) Configuration for the following policy type:
+	- Cypher Access (cypher) (see [below for nested schema](#nestedatt--config_cypher))
+- `config_delayed_removal` (Attributes) Configuration for the following policy type:
+	- Delayed Delete (delayedRemoval) (see [below for nested schema](#nestedatt--config_delayed_removal))
+- `config_host_naming` (Attributes) Configuration for the following policy type:
+	- Hostname (hostNaming) (see [below for nested schema](#nestedatt--config_host_naming))
+- `config_lifecycle` (Attributes) Configuration for the following policy type:
+	- Expiration (lifecycle) (see [below for nested schema](#nestedatt--config_lifecycle))
+- `config_max_containers` (Attributes) Configuration for the following policy type:
+	- Max Containers (maxContainers) (see [below for nested schema](#nestedatt--config_max_containers))
+- `config_max_cores` (Attributes) Configuration for the following policy type:
+	- Max Cores (maxCores) (see [below for nested schema](#nestedatt--config_max_cores))
+- `config_max_hosts` (Attributes) Configuration for the following policy type:
+	- Max Hosts (maxHosts) (see [below for nested schema](#nestedatt--config_max_hosts))
+- `config_max_memory` (Attributes) Configuration for the following policy type:
+	- Max Memory (maxMemory) (see [below for nested schema](#nestedatt--config_max_memory))
+- `config_max_networks` (Attributes) Configuration for the following policy type:
+	- Network Quota (maxNetworks) (see [below for nested schema](#nestedatt--config_max_networks))
+- `config_max_pool_members` (Attributes) Configuration for the following policy type:
+	- Max Pool Members (maxPoolMembers) (see [below for nested schema](#nestedatt--config_max_pool_members))
+- `config_max_pools` (Attributes) Configuration for the following policy type:
+	- Max Load Balancer Pools (maxPools) (see [below for nested schema](#nestedatt--config_max_pools))
+- `config_max_price` (Attributes) Configuration for the following policy type:
+	- Budget (maxPrice) (see [below for nested schema](#nestedatt--config_max_price))
+- `config_max_routers` (Attributes) Configuration for the following policy type:
+	- Router Quota (maxRouters) (see [below for nested schema](#nestedatt--config_max_routers))
+- `config_max_snapshots` (Attributes) Configuration for the following policy type:
+	- Max Snapshots (maxSnapshots) (see [below for nested schema](#nestedatt--config_max_snapshots))
+- `config_max_storage` (Attributes) Configuration for the following policy types:
+	- Max Storage (maxStorage)
+	- Object Storage Quota (storageBucketQuota)
+	- File Share Storage Quota (storageShareQuota) (see [below for nested schema](#nestedatt--config_max_storage))
+- `config_max_virtual_servers` (Attributes) Configuration for the following policy type:
+	- Max Virtual Servers (maxVirtualServers) (see [below for nested schema](#nestedatt--config_max_virtual_servers))
+- `config_max_vms` (Attributes) Configuration for the following policy type:
+	- Max VMs (maxVms) (see [below for nested schema](#nestedatt--config_max_vms))
+- `config_motd` (Attributes) Configuration for the following policy type:
+	- Message of the Day (motd) (see [below for nested schema](#nestedatt--config_motd))
+- `config_naming` (Attributes) Configuration for the following policy type:
+	- Instance Name (naming) (see [below for nested schema](#nestedatt--config_naming))
+- `config_power_schedule` (Attributes) Configuration for the following policy type:
+	- Power Scheduling (powerSchedule) (see [below for nested schema](#nestedatt--config_power_schedule))
+- `config_required_network` (Attributes) Configuration for the following policy type:
+	- Instance Networks (requiredNetwork) (see [below for nested schema](#nestedatt--config_required_network))
+- `config_server_naming` (Attributes) Configuration for the following policy type:
+	- Cluster Resource Name (serverNaming) (see [below for nested schema](#nestedatt--config_server_naming))
+- `config_shutdown` (Attributes) Configuration for the following policy type:
+	- Shutdown (shutdown) (see [below for nested schema](#nestedatt--config_shutdown))
+- `config_storage_server_quota` (Attributes) Configuration for the following policy type:
+	- Storage Server Storage Quota (storageServerQuota) (see [below for nested schema](#nestedatt--config_storage_server_quota))
+- `config_tags` (Attributes) Configuration for the following policy type:
+	- Tags (tags) (see [below for nested schema](#nestedatt--config_tags))
+- `config_workflow` (Attributes) Configuration for the following policy type:
+	- Workflow (workflow) (see [below for nested schema](#nestedatt--config_workflow))
 - `description` (String) A description for the policy
 - `each_user` (Boolean) Apply individually to each user in role.  Only when `refType` equals `Role`
 - `enabled` (Boolean) Set to false to disable
@@ -965,6 +1032,307 @@ Read-Only:
 
 - `id` (Number)
 - `name` (String)
+
+
+<a id="nestedatt--config_approval"></a>
+### Nested Schema for `config_approval`
+
+Optional:
+
+- `account_integration_id` (String)
+- `flow_id` (String)
+- `workflow_id` (String)
+- `workflow_type` (String)
+
+
+<a id="nestedatt--config_backup_storage"></a>
+### Nested Schema for `config_backup_storage`
+
+Optional:
+
+- `backup_storage_ids` (Set of Number)
+
+
+<a id="nestedatt--config_create_backup"></a>
+### Nested Schema for `config_create_backup`
+
+Optional:
+
+- `create_backup` (Boolean)
+- `create_backup_type` (String)
+
+
+<a id="nestedatt--config_create_user"></a>
+### Nested Schema for `config_create_user`
+
+Optional:
+
+- `create_user` (Boolean)
+- `create_user_type` (String)
+
+
+<a id="nestedatt--config_create_user_group"></a>
+### Nested Schema for `config_create_user_group`
+
+Optional:
+
+- `user_group` (String)
+
+
+<a id="nestedatt--config_cypher"></a>
+### Nested Schema for `config_cypher`
+
+Optional:
+
+- `delete` (Boolean)
+- `key_pattern` (String)
+- `list` (Boolean)
+- `read` (Boolean)
+- `update` (Boolean)
+- `write` (Boolean)
+
+
+<a id="nestedatt--config_delayed_removal"></a>
+### Nested Schema for `config_delayed_removal`
+
+Optional:
+
+- `removal_age` (String)
+
+
+<a id="nestedatt--config_host_naming"></a>
+### Nested Schema for `config_host_naming`
+
+Optional:
+
+- `host_naming_pattern` (String)
+- `host_naming_type` (String)
+
+
+<a id="nestedatt--config_lifecycle"></a>
+### Nested Schema for `config_lifecycle`
+
+Optional:
+
+- `account_integration_id` (String)
+- `flow_id` (String)
+- `lifecycle_age` (String)
+- `lifecycle_allow_extend` (Boolean)
+- `lifecycle_auto_renew` (Boolean)
+- `lifecycle_extensions_before_approval` (String)
+- `lifecycle_hide_fixed` (Boolean)
+- `lifecycle_message` (String)
+- `lifecycle_notify` (String)
+- `lifecycle_renewal` (String)
+- `lifecycle_type` (String)
+- `lifecycle_workflow_id` (String)
+- `workflow_type` (String)
+
+
+<a id="nestedatt--config_max_containers"></a>
+### Nested Schema for `config_max_containers`
+
+Optional:
+
+- `max_containers` (String)
+
+
+<a id="nestedatt--config_max_cores"></a>
+### Nested Schema for `config_max_cores`
+
+Optional:
+
+- `exclude_containers` (Boolean)
+- `max_cores` (String)
+
+
+<a id="nestedatt--config_max_hosts"></a>
+### Nested Schema for `config_max_hosts`
+
+Optional:
+
+- `max_hosts` (String)
+
+
+<a id="nestedatt--config_max_memory"></a>
+### Nested Schema for `config_max_memory`
+
+Optional:
+
+- `exclude_containers` (Boolean)
+- `max_memory` (String)
+
+
+<a id="nestedatt--config_max_networks"></a>
+### Nested Schema for `config_max_networks`
+
+Optional:
+
+- `max_networks` (String)
+
+
+<a id="nestedatt--config_max_pool_members"></a>
+### Nested Schema for `config_max_pool_members`
+
+Optional:
+
+- `max_pool_members` (String)
+
+
+<a id="nestedatt--config_max_pools"></a>
+### Nested Schema for `config_max_pools`
+
+Optional:
+
+- `max_pools` (String)
+
+
+<a id="nestedatt--config_max_price"></a>
+### Nested Schema for `config_max_price`
+
+Optional:
+
+- `max_price` (Number)
+- `max_price_currency` (String)
+- `max_price_unit` (String)
+
+
+<a id="nestedatt--config_max_routers"></a>
+### Nested Schema for `config_max_routers`
+
+Optional:
+
+- `max_routers` (String)
+
+
+<a id="nestedatt--config_max_snapshots"></a>
+### Nested Schema for `config_max_snapshots`
+
+Optional:
+
+- `max_snapshots` (String)
+
+
+<a id="nestedatt--config_max_storage"></a>
+### Nested Schema for `config_max_storage`
+
+Optional:
+
+- `exclude_containers` (Boolean)
+- `max_storage` (String)
+
+
+<a id="nestedatt--config_max_virtual_servers"></a>
+### Nested Schema for `config_max_virtual_servers`
+
+Optional:
+
+- `max_virtual_servers` (String)
+
+
+<a id="nestedatt--config_max_vms"></a>
+### Nested Schema for `config_max_vms`
+
+Optional:
+
+- `max_vms` (String)
+
+
+<a id="nestedatt--config_motd"></a>
+### Nested Schema for `config_motd`
+
+Optional:
+
+- `motddate` (String)
+- `motdmessage` (String)
+- `motdtitle` (String)
+- `motdtype` (String)
+
+
+<a id="nestedatt--config_naming"></a>
+### Nested Schema for `config_naming`
+
+Optional:
+
+- `naming_conflict` (Boolean)
+- `naming_pattern` (String)
+- `naming_type` (String)
+
+
+<a id="nestedatt--config_power_schedule"></a>
+### Nested Schema for `config_power_schedule`
+
+Optional:
+
+- `power_schedule` (String)
+- `power_schedule_hide_fixed` (Boolean)
+- `power_schedule_type` (String)
+
+
+<a id="nestedatt--config_required_network"></a>
+### Nested Schema for `config_required_network`
+
+Optional:
+
+- `required_networks` (Set of Number) Array of network IDs that are required
+
+
+<a id="nestedatt--config_server_naming"></a>
+### Nested Schema for `config_server_naming`
+
+Optional:
+
+- `server_naming_conflict` (Boolean)
+- `server_naming_pattern` (String)
+- `server_naming_type` (String)
+
+
+<a id="nestedatt--config_shutdown"></a>
+### Nested Schema for `config_shutdown`
+
+Optional:
+
+- `account_integration_id` (String)
+- `flow_id` (String)
+- `shutdown_age` (String)
+- `shutdown_allow_extend` (Boolean)
+- `shutdown_auto_renew` (Boolean)
+- `shutdown_extensions_before_approval` (String)
+- `shutdown_hide_fixed` (Boolean)
+- `shutdown_message` (String)
+- `shutdown_notify` (String)
+- `shutdown_renewal` (String)
+- `shutdown_type` (String)
+- `shutdown_workflow_id` (String)
+- `workflow_type` (String)
+
+
+<a id="nestedatt--config_storage_server_quota"></a>
+### Nested Schema for `config_storage_server_quota`
+
+Optional:
+
+- `max_storage` (String)
+- `storage_server_id` (String)
+
+
+<a id="nestedatt--config_tags"></a>
+### Nested Schema for `config_tags`
+
+Optional:
+
+- `key` (String)
+- `strict` (Boolean)
+- `value` (String)
+- `value_list_id` (String)
+
+
+<a id="nestedatt--config_workflow"></a>
+### Nested Schema for `config_workflow`
+
+Optional:
+
+- `workflow_id` (String)
 
 
 <a id="nestedatt--cloud"></a>
