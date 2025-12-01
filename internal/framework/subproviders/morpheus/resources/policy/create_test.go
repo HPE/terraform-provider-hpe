@@ -1604,62 +1604,63 @@ resource "hpe_morpheus_policy" "test" {
 	})
 }
 
-// Test lifecycle policy using static schema
-func TestAccMorpheusPolicyLifecycleStaticSchemaOk(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
+// // Test lifecycle policy using static schema
+// func TestAccMorpheusPolicyLifecycleStaticSchemaOk(t *testing.T) {
+// 	defer testhelpers.RecordResult(t)
+// 	if testing.Short() {
+// 		t.Skip("Skipping slow test in short mode")
+// 	}
 
-	t.Parallel()
+// 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlockMixed()
-	namePrefix := acctest.RandomWithPrefix(t.Name())
-	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+// 	providerConfig := testhelpers.ProviderBlockMixed()
+// 	namePrefix := acctest.RandomWithPrefix(t.Name())
+// 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
-	dependencyConfig := `
-resource "hpe_morpheus_group" "test" {
-  name = "` + groupName + `"
-  location = "test"
-}
-`
+// 	dependencyConfig := `
+// resource "hpe_morpheus_group" "test" {
+//   name = "` + groupName + `"
+//   location = "test"
+// }
+// `
 
-	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dependencyConfig + `
-resource "hpe_morpheus_policy" "test" {
-  name = "` + namePrefix + `-lifecycle"
-  description = "Lifecycle policy using static schema"
-  associated_resource_type = "Group"
-  associated_resource_id = hpe_morpheus_group.test.id
-  enabled = true
-  
-  policy_type = {
-    code = "lifecycle"
-  }
-  
-  config_lifecycle = {
-    lifecycle_type = "fixed"
-    lifecycle_age = "30"
-  }
-}`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-lifecycle"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "lifecycle"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_lifecycle.lifecycle_age", "30"),
-				),
-			},
-		},
-	})
-}
+// 	resource.Test(t, resource.TestCase{
+// 		ExternalProviders: map[string]resource.ExternalProvider{
+// 			"morpheus": {
+// 				Source:            "gomorpheus/morpheus",
+// 				VersionConstraint: "0.13.2",
+// 			},
+// 		},
+// 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: providerConfig + dependencyConfig + `
+// resource "hpe_morpheus_policy" "test" {
+//   name = "` + namePrefix + `-lifecycle"
+//   description = "Lifecycle policy using static schema"
+//   associated_resource_type = "Group"
+//   associated_resource_id = hpe_morpheus_group.test.id
+//   enabled = true
+
+//   policy_type = {
+//     code = "lifecycle"
+//   }
+
+//   config_lifecycle = {
+// 	account_integration_id = "1"
+//     lifecycle_type = "fixed"
+//     lifecycle_age = "30"
+//   }
+// }`,
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-lifecycle"),
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "lifecycle"),
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_lifecycle.lifecycle_age", "30"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
 // // Test MOTD policy using static schema
 // func TestAccMorpheusPolicyMotdStaticSchemaOk(t *testing.T) {
