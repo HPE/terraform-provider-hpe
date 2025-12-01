@@ -1529,8 +1529,8 @@ data "morpheus_workflow" "test" {
 				),
 			},
 			// Step 27: Storage Server Storage Quota (using config_storage_server_quota) - skipped, uses Global
-			// 			{
-			// 				Config: providerConfig + dependencyConfig + `
+			// {
+			// 	Config: providerConfig + dependencyConfig + `
 			// resource "hpe_morpheus_policy" "test" {
 			//   name = "` + namePrefix + `-storageServerQuota"
 			//   description = "Storage server quota policy using static schema"
@@ -1547,12 +1547,13 @@ data "morpheus_workflow" "test" {
 			//     max_storage = "10737418240"
 			//   }
 			// }`,
-			// 				Check: resource.ComposeAggregateTestCheckFunc(
-			// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageServerQuota"),
-			// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageServerQuota"),
-			// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_storage_server_quota.storage_server_id", "1"),
-			// 				),
-			// 			},
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-storageServerQuota"),
+			// 		resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "storageServerQuota"),
+			// 		resource.TestCheckResourceAttr("hpe_morpheus_policy.test",
+			// 			"config_storage_server_quota.storage_server_id", "1"),
+			// 	),
+			// },
 			// Step 28: Tags (using config_tags)
 			{
 				Config: providerConfig + dependencyConfig + `
