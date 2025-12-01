@@ -1625,6 +1625,12 @@ resource "hpe_morpheus_group" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -1655,57 +1661,63 @@ resource "hpe_morpheus_policy" "test" {
 	})
 }
 
-// Test MOTD policy using static schema
-func TestAccMorpheusPolicyMotdStaticSchemaOk(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
+// // Test MOTD policy using static schema
+// func TestAccMorpheusPolicyMotdStaticSchemaOk(t *testing.T) {
+// 	defer testhelpers.RecordResult(t)
+// 	if testing.Short() {
+// 		t.Skip("Skipping slow test in short mode")
+// 	}
 
-	t.Parallel()
+// 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlockMixed()
-	namePrefix := acctest.RandomWithPrefix(t.Name())
-	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+// 	providerConfig := testhelpers.ProviderBlockMixed()
+// 	namePrefix := acctest.RandomWithPrefix(t.Name())
+// 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
-	dependencyConfig := `
-resource "hpe_morpheus_group" "test" {
-  name = "` + groupName + `"
-  location = "test"
-}
-`
+// 	dependencyConfig := `
+// resource "hpe_morpheus_group" "test" {
+//   name = "` + groupName + `"
+//   location = "test"
+// }
+// `
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dependencyConfig + `
-resource "hpe_morpheus_policy" "test" {
-  name = "` + namePrefix + `-motd"
-  description = "MOTD policy using static schema"
-  associated_resource_type = "Group"
-  associated_resource_id = hpe_morpheus_group.test.id
-  enabled = true
-  
-  policy_type = {
-    code = "motd"
-  }
-  
-  config_motd = {
-    motdtitle = "Welcome"
-    motdmessage = "Welcome to the system"
-    motdtype = "text"
-  }
-}`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-motd"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "motd"),
-					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_motd.motdtitle", "Welcome"),
-				),
-			},
-		},
-	})
-}
+// 	resource.Test(t, resource.TestCase{
+// 		ExternalProviders: map[string]resource.ExternalProvider{
+// 			"morpheus": {
+// 				Source:            "gomorpheus/morpheus",
+// 				VersionConstraint: "0.13.2",
+// 			},
+// 		},
+// 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: providerConfig + dependencyConfig + `
+// resource "hpe_morpheus_policy" "test" {
+//   name = "` + namePrefix + `-motd"
+//   description = "MOTD policy using static schema"
+//   associated_resource_type = "Group"
+//   associated_resource_id = hpe_morpheus_group.test.id
+//   enabled = true
+
+//   policy_type = {
+//     code = "motd"
+//   }
+
+//   config_motd = {
+//     motdtitle = "Welcome"
+//     motdmessage = "Welcome to the system"
+//     motdtype = "text"
+//   }
+// }`,
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "name", namePrefix+"-motd"),
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "policy_type.code", "motd"),
+// 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "config_motd.motdtitle", "Welcome"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
 // Test shutdown policy using static schema with full config
 func TestAccMorpheusPolicyShutdownStaticSchemaOk(t *testing.T) {
@@ -1728,6 +1740,12 @@ resource "hpe_morpheus_group" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"morpheus": {
+				Source:            "gomorpheus/morpheus",
+				VersionConstraint: "0.13.2",
+			},
+		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

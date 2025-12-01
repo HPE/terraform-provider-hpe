@@ -392,17 +392,17 @@ func mapStateToAddPolicyConfig(
 		// 23. config_motd -> MessageOfTheDayPolicyTypeConfiguration2
 		if !plan.ConfigMotd.IsNull() {
 			motd := make(map[string]interface{})
-			if !plan.ConfigMotd.Motddate.IsNull() {
-				motd["motdDate"] = plan.ConfigMotd.Motddate.ValueString()
+			if !plan.ConfigMotd.Motdtitle.IsNull() {
+				motd["motd.title"] = plan.ConfigMotd.Motdtitle.ValueString()
 			}
 			if !plan.ConfigMotd.Motdmessage.IsNull() {
-				motd["motdMessage"] = plan.ConfigMotd.Motdmessage.ValueString()
-			}
-			if !plan.ConfigMotd.Motdtitle.IsNull() {
-				motd["motdTitle"] = plan.ConfigMotd.Motdtitle.ValueString()
+				motd["motd.message"] = plan.ConfigMotd.Motdmessage.ValueString()
 			}
 			if !plan.ConfigMotd.Motdtype.IsNull() {
-				motd["motdType"] = plan.ConfigMotd.Motdtype.ValueString()
+				motd["motd.type"] = plan.ConfigMotd.Motdtype.ValueString()
+			}
+			if !plan.ConfigMotd.Motddate.IsNull() {
+				motd["motd.date"] = plan.ConfigMotd.Motddate.ValueString()
 			}
 			if len(motd) > 0 {
 				configMap = motd
