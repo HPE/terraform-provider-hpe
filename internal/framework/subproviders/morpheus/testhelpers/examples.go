@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -48,6 +49,37 @@ func WriteExample(name string, args ...string) {
 
 	err = os.WriteFile(name, []byte(text), 0o600)
 	if err != nil {
+		panic(err)
+	}
+}
+
+func WriteExampleToDir(dest, fn string, args ...string) {
+	text, err := renderExample(fn, args...)
+	if err != nil {
+		panic(err)
+	}
+
+	absPath, err := filepath.Abs(fn)
+	if err != nil {
+		panic(err)
+	}
+	absPath = filepath.Dir(absPath)
+
+	for {
+		if _, err := os.Stat(filepath.Join(absPath, ".git")); err == nil {
+			break
+		}
+		absPath = filepath.Dir(absPath)
+	}
+
+	fn = strings.TrimSuffix(fn, ".tmpl")
+	dest = filepath.Join(absPath, "examples", dest, fn)
+
+	if err := os.MkdirAll(filepath.Dir(dest), 0o700); err != nil {
+		panic(err)
+	}
+
+	if err = os.WriteFile(dest, []byte(text), 0o600); err != nil {
 		panic(err)
 	}
 }
