@@ -76,8 +76,8 @@ func apiTypeToResourceType(apiType string) string {
 // 1. associated_resource_id is set when associated_resource_type is not "Global"
 // 2. each_user is only set when associated_resource_type is "Role"
 // 3. For config_approval, config_lifecycle, and config_shutdown:
-//   - flow_id is set when workflow_type is "flow"
-//   - workflow_id/lifecycle_workflow_id/shutdown_workflow_id is set when workflow_type is "workflow"
+//   - flow_id is set when workflow_type is WorkflowTypeFlow
+//   - workflow_id/lifecycle_workflow_id/shutdown_workflow_id is set when workflow_type is WorkflowTypeWorkflow
 func (r *Resource) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,
@@ -131,7 +131,7 @@ func (r *Resource) ValidateConfig(
 		flowId := config.ConfigApproval.FlowId.ValueString()
 		workflowId := config.ConfigApproval.WorkflowId.ValueString()
 
-		if workflowType == "flow" && flowId == "" {
+		if workflowType == WorkflowTypeFlow && flowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_approval").AtName("flow_id"),
 				"Missing required attribute",
@@ -139,7 +139,7 @@ func (r *Resource) ValidateConfig(
 			)
 		}
 
-		if workflowType == "workflow" && workflowId == "" {
+		if workflowType == WorkflowTypeWorkflow && workflowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_approval").AtName("workflow_id"),
 				"Missing required attribute",
@@ -154,7 +154,7 @@ func (r *Resource) ValidateConfig(
 		flowId := config.ConfigLifecycle.FlowId.ValueString()
 		lifecycleWorkflowId := config.ConfigLifecycle.LifecycleWorkflowId.ValueString()
 
-		if workflowType == "flow" && flowId == "" {
+		if workflowType == WorkflowTypeFlow && flowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_lifecycle").AtName("flow_id"),
 				"Missing required attribute",
@@ -162,7 +162,7 @@ func (r *Resource) ValidateConfig(
 			)
 		}
 
-		if workflowType == "workflow" && lifecycleWorkflowId == "" {
+		if workflowType == WorkflowTypeWorkflow && lifecycleWorkflowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_lifecycle").AtName("lifecycle_workflow_id"),
 				"Missing required attribute",
@@ -177,7 +177,7 @@ func (r *Resource) ValidateConfig(
 		flowId := config.ConfigShutdown.FlowId.ValueString()
 		shutdownWorkflowId := config.ConfigShutdown.ShutdownWorkflowId.ValueString()
 
-		if workflowType == "flow" && flowId == "" {
+		if workflowType == WorkflowTypeFlow && flowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_shutdown").AtName("flow_id"),
 				"Missing required attribute",
@@ -185,7 +185,7 @@ func (r *Resource) ValidateConfig(
 			)
 		}
 
-		if workflowType == "workflow" && shutdownWorkflowId == "" {
+		if workflowType == WorkflowTypeWorkflow && shutdownWorkflowId == "" {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("config_shutdown").AtName("shutdown_workflow_id"),
 				"Missing required attribute",
