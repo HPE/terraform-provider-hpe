@@ -5,11 +5,11 @@ package policy
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -36,8 +37,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"associated_resource_type": schema.StringAttribute{
 				Required:            true,
-				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'",
-				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'",
+				Description:         "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan', or 'Label'",
+				MarkdownDescription: "Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan', or 'Label'",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -76,10 +77,16 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"flow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval.workflow_id")}...),
+						},
 					},
 					"workflow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval.flow_id")}...),
+						},
 					},
 					"workflow_type": schema.StringAttribute{
 						Optional: true,
@@ -95,6 +102,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy types:\n\t- Approve Delete (deleteApproval)\n\t- Approve Provision (provisionApproval)\n\t- Approve Reconfigure (reconfigureApproval)\n\t- Approve Workflow Execute (workflowApproval)\n",
 				MarkdownDescription: "Configuration for the following policy types:\n\t- Approve Delete (deleteApproval)\n\t- Approve Provision (provisionApproval)\n\t- Approve Reconfigure (reconfigureApproval)\n\t- Approve Workflow Execute (workflowApproval)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_backup_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -113,6 +123,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Backup Targets (backupStorage)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Backup Targets (backupStorage)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_create_backup": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -134,6 +147,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Backup Creation (createBackup)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Backup Creation (createBackup)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_create_user": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -155,6 +171,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- User Creation (createUser)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- User Creation (createUser)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_create_user_group": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -172,6 +191,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- User Group Creation (createUserGroup)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- User Group Creation (createUserGroup)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_cypher": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -209,6 +231,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Cypher Access (cypher)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Cypher Access (cypher)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_delayed_removal": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -226,6 +251,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Delayed Delete (delayedRemoval)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Delayed Delete (delayedRemoval)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_host_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -247,6 +275,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Hostname (hostNaming)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Hostname (hostNaming)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_lifecycle": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -257,6 +288,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"flow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_lifecycle.lifecycle_workflow_id")}...),
+						},
 					},
 					"lifecycle_age": schema.StringAttribute{
 						Optional: true,
@@ -297,6 +331,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"lifecycle_workflow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_lifecycle.flow_id")}...),
+						},
 					},
 					"workflow_type": schema.StringAttribute{
 						Optional: true,
@@ -312,6 +349,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Expiration (lifecycle)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Expiration (lifecycle)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_containers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -329,6 +369,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Containers (maxContainers)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Containers (maxContainers)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_cores": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -350,6 +393,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Cores (maxCores)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Cores (maxCores)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_hosts": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -367,6 +413,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Hosts (maxHosts)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Hosts (maxHosts)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_memory": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -388,6 +437,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Memory (maxMemory)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Memory (maxMemory)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_networks": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -405,6 +457,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Network Quota (maxNetworks)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Network Quota (maxNetworks)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_pool_members": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -422,6 +477,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Pool Members (maxPoolMembers)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Pool Members (maxPoolMembers)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_pools": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -439,6 +497,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Load Balancer Pools (maxPools)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Load Balancer Pools (maxPools)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_price": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -464,6 +525,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Budget (maxPrice)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Budget (maxPrice)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_routers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -481,6 +545,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Router Quota (maxRouters)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Router Quota (maxRouters)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_snapshots": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -498,6 +565,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Snapshots (maxSnapshots)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Snapshots (maxSnapshots)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -519,6 +589,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy types:\n\t- Max Storage (maxStorage)\n\t- Object Storage Quota (storageBucketQuota)\n\t- File Share Storage Quota (storageShareQuota)\n",
 				MarkdownDescription: "Configuration for the following policy types:\n\t- Max Storage (maxStorage)\n\t- Object Storage Quota (storageBucketQuota)\n\t- File Share Storage Quota (storageShareQuota)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_virtual_servers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -536,6 +609,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max Virtual Servers (maxVirtualServers)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max Virtual Servers (maxVirtualServers)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_max_vms": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -553,6 +629,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Max VMs (maxVms)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Max VMs (maxVms)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_motd": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -582,6 +661,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Message of the Day (motd)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Message of the Day (motd)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -607,6 +689,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Instance Name (naming)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Instance Name (naming)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_power_schedule": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -632,6 +717,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Power Scheduling (powerSchedule)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Power Scheduling (powerSchedule)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_required_network": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -652,6 +740,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Instance Networks (requiredNetwork)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Instance Networks (requiredNetwork)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_server_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -677,6 +768,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Cluster Resource Name (serverNaming)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Cluster Resource Name (serverNaming)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_shutdown": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -687,6 +781,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"flow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_shutdown.shutdown_workflow_id")}...),
+						},
 					},
 					"shutdown_age": schema.StringAttribute{
 						Optional: true,
@@ -727,6 +824,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"shutdown_workflow_id": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_shutdown.flow_id")}...),
+						},
 					},
 					"workflow_type": schema.StringAttribute{
 						Optional: true,
@@ -742,6 +842,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Shutdown (shutdown)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Shutdown (shutdown)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_storage_server_quota": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -763,6 +866,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Storage Server Storage Quota (storageServerQuota)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Storage Server Storage Quota (storageServerQuota)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_tags": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -792,6 +898,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Tags (tags)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Tags (tags)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group"), path.MatchRoot("config_workflow")}...),
+				},
 			},
 			"config_workflow": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -809,6 +918,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for the following policy type:\n\t- Workflow (workflow)\n",
 				MarkdownDescription: "Configuration for the following policy type:\n\t- Workflow (workflow)\n",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_approval"), path.MatchRoot("config_create_backup"), path.MatchRoot("config_backup_storage"), path.MatchRoot("config_max_price"), path.MatchRoot("config_server_naming"), path.MatchRoot("config_cypher"), path.MatchRoot("config_delayed_removal"), path.MatchRoot("config_lifecycle"), path.MatchRoot("config_host_naming"), path.MatchRoot("config_naming"), path.MatchRoot("config_max_containers"), path.MatchRoot("config_max_cores"), path.MatchRoot("config_max_hosts"), path.MatchRoot("config_max_pools"), path.MatchRoot("config_max_memory"), path.MatchRoot("config_max_pool_members"), path.MatchRoot("config_max_snapshots"), path.MatchRoot("config_max_storage"), path.MatchRoot("config_max_virtual_servers"), path.MatchRoot("config_max_vms"), path.MatchRoot("config_motd"), path.MatchRoot("config_max_networks"), path.MatchRoot("config_power_schedule"), path.MatchRoot("config_required_network"), path.MatchRoot("config_max_routers"), path.MatchRoot("config_shutdown"), path.MatchRoot("config_storage_server_quota"), path.MatchRoot("config_tags"), path.MatchRoot("config_create_user"), path.MatchRoot("config_create_user_group")}...),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
