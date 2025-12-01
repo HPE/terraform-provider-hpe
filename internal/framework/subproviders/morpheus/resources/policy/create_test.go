@@ -104,6 +104,7 @@ func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlockMixed()
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
+	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
 
 	resourceConfig := `
 variable "policy_name" {
@@ -127,6 +128,19 @@ resource "hpe_morpheus_group" "test" {
   location = "test"
 }
 
+resource "hpe_morpheus_cloud" "test" {
+  name = "` + cloudName + `"
+  tenant_id = 1
+  group_id = hpe_morpheus_group.test.id
+  code = "` + cloudName + `"
+  cloud_type_code = "standard"
+  
+  config = {
+    certificateProvider = "internal"
+    enableNetworkTypeSelection = false
+  }
+}
+
 resource "morpheus_operational_workflow" "test" {
   name = "` + namePrefix + `-workflow"
 }
@@ -140,6 +154,64 @@ resource "hpe_morpheus_policy" "test" {
   description = var.policy_description
   associated_resource_type = "Group"
   associated_resource_id = hpe_morpheus_group.test.id
+  enabled = true
+  
+  policy_type = {
+    code = var.policy_type_code
+  }
+  
+  config = var.policy_config
+}
+`
+
+	resourceConfigCloud := `
+variable "policy_name" {
+  type = string
+}
+
+variable "policy_description" {
+  type = string
+}
+
+variable "policy_type_code" {
+  type = string
+}
+
+variable "policy_config" {
+  type = map(any)
+}
+
+resource "hpe_morpheus_group" "test" {
+  name = "` + groupName + `"
+  location = "test"
+}
+
+resource "hpe_morpheus_cloud" "test" {
+  name = "` + cloudName + `"
+  tenant_id = 1
+  group_id = hpe_morpheus_group.test.id
+  code = "` + cloudName + `"
+  cloud_type_code = "standard"
+  
+  config = {
+    certificateProvider = "internal"
+    enableNetworkTypeSelection = false
+  }
+}
+
+resource "morpheus_operational_workflow" "test" {
+  name = "` + namePrefix + `-workflow"
+}
+
+data "morpheus_workflow" "test" {
+  name = morpheus_operational_workflow.test.name
+}
+
+resource "hpe_morpheus_policy" "test" {
+  name = var.policy_name
+  description = var.policy_description
+  associated_resource_type = "Cloud"
+  associated_resource_id = hpe_morpheus_cloud.test.id
   enabled = true
   
   policy_type = {
@@ -265,7 +337,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 7: Instance Networks
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + resourceConfigCloud,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-requiredNetwork"),
 					"policy_description": config.StringVariable("Required network policy"),
@@ -301,7 +373,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 9: Max Pool Members
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + resourceConfigCloud,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxPoolMembers"),
 					"policy_description": config.StringVariable("Max pool members policy"),
@@ -385,7 +457,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Max networks policy"),
 				),
 			},
-			// Step 14: Storage Server Quota
+			/* // Step 14: Storage Server Quota - Commented out, requires Global scope which impacts other users
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -403,7 +475,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Storage server quota policy"),
 				),
 			},
-			// Step 15: Tags
+			*/ // Step 15: Tags
 			{
 				Config: providerConfig + resourceConfig,
 				ConfigVariables: config.Variables{
@@ -665,9 +737,9 @@ resource "hpe_morpheus_network" "test" {
 		"Description", "Example network-scoped policy",
 		"AssociatedResourceType", "Network",
 		"AssociatedResourceID", "hpe_morpheus_network.test.id",
-		"PolicyTypeCode", "maxMemory",
-		"ConfigKey", "maxMemory",
-		"ConfigValue", "1073741824",
+		"PolicyTypeCode", "maxVms",
+		"ConfigKey", "maxVms",
+		"ConfigValue", "20",
 	)
 	if err != nil {
 		t.Fatal(err)

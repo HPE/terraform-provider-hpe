@@ -1,4 +1,6 @@
 # Backup Creation Policy
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "backup_creation" {
   name                     = "Backup Creation Policy"
   description              = "Enforce backup creation for instances"

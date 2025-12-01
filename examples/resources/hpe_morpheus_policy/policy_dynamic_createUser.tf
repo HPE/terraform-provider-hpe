@@ -1,4 +1,6 @@
 # User Creation Policy - Controls user creation on instances
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "user_creation" {
   name                     = "User Creation Policy"
   description              = "Control user creation on provisioned instances"

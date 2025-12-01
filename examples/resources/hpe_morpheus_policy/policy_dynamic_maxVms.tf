@@ -1,4 +1,6 @@
 # Max VMs Policy - Limits VM count
+# Allowed associated_resource_types: Group, Cloud, User, Global, Network, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_vms" {
   name                     = "Max VMs Policy"
   description              = "Limit maximum VM count"

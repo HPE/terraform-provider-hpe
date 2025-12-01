@@ -1,4 +1,6 @@
 # Expiration Policy - Sets instance expiration and renewal options
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "expiration" {
   name                     = "Expiration Policy"
   description              = "Set instance expiration and renewal policies"

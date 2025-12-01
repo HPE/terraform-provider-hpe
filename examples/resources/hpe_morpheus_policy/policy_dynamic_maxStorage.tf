@@ -1,4 +1,6 @@
 # Max Storage Policy - Limits storage allocation
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_storage" {
   name                     = "Max Storage Policy"
   description              = "Limit maximum storage allocation"

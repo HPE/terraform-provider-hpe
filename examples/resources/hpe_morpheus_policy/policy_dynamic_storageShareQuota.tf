@@ -1,4 +1,6 @@
 # File Share Storage Quota Policy - Limits file share storage
+# Allowed associated_resource_types: User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "file_share_quota" {
   name                     = "File Share Storage Quota Policy"
   description              = "Limit file share storage usage"

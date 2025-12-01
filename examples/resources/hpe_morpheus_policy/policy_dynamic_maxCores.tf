@@ -1,4 +1,6 @@
 # Max Cores Policy - Limits CPU cores
+# Allowed associated_resource_types: Group, Cloud, User, Global, Plan
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_cores" {
   name                     = "Max Cores Policy"
   description              = "Limit maximum CPU cores"

@@ -1,8 +1,10 @@
 # Max Virtual Servers Policy - Limits virtual server count
+# Allowed associated_resource_types: Cloud, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_virtual_servers" {
   name                     = "Max Virtual Servers Policy"
   description              = "Limit maximum virtual server count"
-  associated_resource_type = "User"
+  associated_resource_type = "Cloud"
   associated_resource_id   = 9969
   enabled                  = true
 

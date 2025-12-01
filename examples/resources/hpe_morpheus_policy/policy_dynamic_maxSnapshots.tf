@@ -1,4 +1,6 @@
 # Max Snapshots Policy - Limits snapshots per VM
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "max_snapshots" {
   name                     = "Max Snapshots Policy"
   description              = "Limit maximum snapshots per VM"

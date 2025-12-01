@@ -1,4 +1,6 @@
 # Delayed Delete Policy - Delays instance deletion
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "delayed_delete" {
   name                     = "Delayed Delete Policy"
   description              = "Delay instance deletion by specified days"

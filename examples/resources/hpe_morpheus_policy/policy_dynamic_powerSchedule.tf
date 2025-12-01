@@ -1,4 +1,6 @@
 # Power Scheduling Policy - Enforces power schedules
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "power_schedule" {
   name                     = "Power Scheduling Policy"
   description              = "Enforce power schedules for instances"

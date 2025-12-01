@@ -1,9 +1,10 @@
 # Message of the Day (MOTD) Policy - Displays login messages
+# Allowed associated_resource_types: Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "motd" {
   name                     = "MOTD Policy"
   description              = "Display message of the day on login"
-  associated_resource_type = "User"
-  associated_resource_id   = 9969
+  associated_resource_type = "Global"
   enabled                  = true
 
   policy_type = {

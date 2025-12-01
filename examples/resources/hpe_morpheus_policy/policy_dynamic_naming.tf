@@ -1,4 +1,6 @@
 # Instance Name Policy - Enforces instance naming conventions
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "instance_naming" {
   name                     = "Instance Name Policy"
   description              = "Enforce instance naming conventions"

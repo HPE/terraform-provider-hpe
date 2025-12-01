@@ -75,7 +75,7 @@ func getPolicyAsState(
 		// Convert API type to user-facing resource type
 		state.AssociatedResourceType = types.StringValue(apiTypeToResourceType(apiType))
 	} else {
-		state.AssociatedResourceType = types.StringValue("Global")
+		state.AssociatedResourceType = types.StringValue(AssociatedResourceTypeGlobal)
 	}
 
 	// Set Tenant IDs

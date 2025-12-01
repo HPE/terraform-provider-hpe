@@ -1,4 +1,6 @@
 # Cluster Resource Name Policy - Enforces naming conventions for cluster resources
+# Allowed associated_resource_types: Group, Cloud, User, Global
+# Tenant specification: allowed (can specify tenants array)
 resource "hpe_morpheus_policy" "cluster_naming" {
   name                     = "Cluster Resource Naming Policy"
   description              = "Enforce naming for cluster resources"
