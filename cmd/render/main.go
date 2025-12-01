@@ -26,7 +26,7 @@ go run render -out resources/hpe_morpheus_group group.tf.tmpl Name 'Test'
   `
 
 func main() {
-	out := flag.String("out", "", "Location in examples directory")
+	out := flag.String("out", "", "Destination relative to .git directory")
 	flag.Parse()
 
 	osArgs := flag.Args()
