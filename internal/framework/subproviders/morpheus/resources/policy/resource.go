@@ -72,9 +72,12 @@ func apiTypeToResourceType(apiType string) string {
 	}
 }
 
-// ValidateConfig validates that associated_resource_id is set when
-// associated_resource_type is not "Global" and that each_user is only set
-// when associated_resource_type is "Role"
+// ValidateConfig validates:
+// 1. associated_resource_id is set when associated_resource_type is not "Global"
+// 2. each_user is only set when associated_resource_type is "Role"
+// 3. For config_approval, config_lifecycle, and config_shutdown:
+//   - flow_id is set when workflow_type is "flow"
+//   - workflow_id/lifecycle_workflow_id/shutdown_workflow_id is set when workflow_type is "workflow"
 func (r *Resource) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,
@@ -118,6 +121,75 @@ func (r *Resource) ValidateConfig(
 						"Either remove each_user or set associated_resource_type to 'Role'.",
 					resourceType,
 				),
+			)
+		}
+	}
+
+	// Validate workflow_type/flow_id/workflow_id combinations for config_approval
+	if !config.ConfigApproval.IsNull() {
+		workflowType := config.ConfigApproval.WorkflowType.ValueString()
+		flowId := config.ConfigApproval.FlowId.ValueString()
+		workflowId := config.ConfigApproval.WorkflowId.ValueString()
+
+		if workflowType == "flow" && flowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_approval").AtName("flow_id"),
+				"Missing required attribute",
+				"flow_id is required when workflow_type is 'flow'.",
+			)
+		}
+
+		if workflowType == "workflow" && workflowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_approval").AtName("workflow_id"),
+				"Missing required attribute",
+				"workflow_id is required when workflow_type is 'workflow'.",
+			)
+		}
+	}
+
+	// Validate workflow_type/flow_id/lifecycle_workflow_id combinations for config_lifecycle
+	if !config.ConfigLifecycle.IsNull() {
+		workflowType := config.ConfigLifecycle.WorkflowType.ValueString()
+		flowId := config.ConfigLifecycle.FlowId.ValueString()
+		lifecycleWorkflowId := config.ConfigLifecycle.LifecycleWorkflowId.ValueString()
+
+		if workflowType == "flow" && flowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_lifecycle").AtName("flow_id"),
+				"Missing required attribute",
+				"flow_id is required when workflow_type is 'flow'.",
+			)
+		}
+
+		if workflowType == "workflow" && lifecycleWorkflowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_lifecycle").AtName("lifecycle_workflow_id"),
+				"Missing required attribute",
+				"lifecycle_workflow_id is required when workflow_type is 'workflow'.",
+			)
+		}
+	}
+
+	// Validate workflow_type/flow_id/shutdown_workflow_id combinations for config_shutdown
+	if !config.ConfigShutdown.IsNull() {
+		workflowType := config.ConfigShutdown.WorkflowType.ValueString()
+		flowId := config.ConfigShutdown.FlowId.ValueString()
+		shutdownWorkflowId := config.ConfigShutdown.ShutdownWorkflowId.ValueString()
+
+		if workflowType == "flow" && flowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_shutdown").AtName("flow_id"),
+				"Missing required attribute",
+				"flow_id is required when workflow_type is 'flow'.",
+			)
+		}
+
+		if workflowType == "workflow" && shutdownWorkflowId == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("config_shutdown").AtName("shutdown_workflow_id"),
+				"Missing required attribute",
+				"shutdown_workflow_id is required when workflow_type is 'workflow'.",
 			)
 		}
 	}
