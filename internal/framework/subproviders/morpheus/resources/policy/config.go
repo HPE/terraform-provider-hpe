@@ -5,7 +5,6 @@ package policy
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -195,10 +194,10 @@ func mapStateToAddPolicyConfig(
 				lifecycle["lifecycleAge"] = plan.ConfigLifecycle.LifecycleAge.ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleAllowExtend.IsNull() {
-				lifecycle["lifecycleAllowExtend"] = plan.ConfigLifecycle.LifecycleAllowExtend.ValueBool()
+				lifecycle["lifecycleAllowExtend"] = convert.BoolToStringOnOff(plan.ConfigLifecycle.LifecycleAllowExtend.ValueBool()).ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleAutoRenew.IsNull() {
-				lifecycle["lifecycleAutoRenew"] = plan.ConfigLifecycle.LifecycleAutoRenew.ValueBool()
+				lifecycle["lifecycleAutoRenew"] = convert.BoolToStringOnOff(plan.ConfigLifecycle.LifecycleAutoRenew.ValueBool()).ValueString()
 			}
 			if !plan.ConfigLifecycle.LifecycleExtensionsBeforeApproval.IsNull() {
 				lifecycle["lifecycleExtensionsBeforeApproval"] = plan.ConfigLifecycle.LifecycleExtensionsBeforeApproval.ValueString()
@@ -247,7 +246,7 @@ func mapStateToAddPolicyConfig(
 				maxCores["maxCores"] = plan.ConfigMaxCores.MaxCores.ValueString()
 			}
 			if !plan.ConfigMaxCores.ExcludeContainers.IsNull() {
-				maxCores["excludeContainers"] = fmt.Sprintf("%t", plan.ConfigMaxCores.ExcludeContainers.ValueBool())
+				maxCores["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxCores.ExcludeContainers.ValueBool()).ValueString()
 			}
 			if len(maxCores) > 0 {
 				configMap = maxCores
@@ -272,7 +271,7 @@ func mapStateToAddPolicyConfig(
 				maxMemory["maxMemory"] = plan.ConfigMaxMemory.MaxMemory.ValueString()
 			}
 			if !plan.ConfigMaxMemory.ExcludeContainers.IsNull() {
-				maxMemory["excludeContainers"] = fmt.Sprintf("%t", plan.ConfigMaxMemory.ExcludeContainers.ValueBool())
+				maxMemory["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxMemory.ExcludeContainers.ValueBool()).ValueString()
 			}
 			if len(maxMemory) > 0 {
 				configMap = maxMemory
@@ -360,7 +359,7 @@ func mapStateToAddPolicyConfig(
 				maxStorage["maxStorage"] = plan.ConfigMaxStorage.MaxStorage.ValueString()
 			}
 			if !plan.ConfigMaxStorage.ExcludeContainers.IsNull() {
-				maxStorage["excludeContainers"] = fmt.Sprintf("%t", plan.ConfigMaxStorage.ExcludeContainers.ValueBool())
+				maxStorage["excludeContainers"] = convert.BoolToStringOnOff(plan.ConfigMaxStorage.ExcludeContainers.ValueBool()).ValueString()
 			}
 			if len(maxStorage) > 0 {
 				configMap = maxStorage
