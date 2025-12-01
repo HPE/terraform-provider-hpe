@@ -72,8 +72,7 @@ func WriteExampleToDir(dest, fn string, args ...string) {
 		absPath = filepath.Dir(absPath)
 	}
 
-	fn = strings.TrimSuffix(fn, ".tmpl")
-	dest = filepath.Join(absPath, "examples", dest, fn)
+	dest = filepath.Join(absPath, dest)
 
 	if err := os.MkdirAll(filepath.Dir(dest), 0o700); err != nil {
 		panic(err)
