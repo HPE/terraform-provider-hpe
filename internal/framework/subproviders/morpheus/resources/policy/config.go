@@ -490,10 +490,10 @@ func mapStateToAddPolicyConfig(
 				shutdown["shutdownAge"] = plan.ConfigShutdown.ShutdownAge.ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownAllowExtend.IsNull() {
-				shutdown["shutdownAllowExtend"] = plan.ConfigShutdown.ShutdownAllowExtend.ValueBool()
+				shutdown["shutdownAllowExtend"] = convert.BoolToStringOnOff(plan.ConfigShutdown.ShutdownAllowExtend.ValueBool()).ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownAutoRenew.IsNull() {
-				shutdown["shutdownAutoRenew"] = plan.ConfigShutdown.ShutdownAutoRenew.ValueBool()
+				shutdown["shutdownAutoRenew"] = convert.BoolToStringOnOff(plan.ConfigShutdown.ShutdownAutoRenew.ValueBool()).ValueString()
 			}
 			if !plan.ConfigShutdown.ShutdownExtensionsBeforeApproval.IsNull() {
 				shutdown["shutdownExtensionsBeforeApproval"] = plan.ConfigShutdown.ShutdownExtensionsBeforeApproval.ValueString()
