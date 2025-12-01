@@ -55,6 +55,7 @@ func mapStateToAddPolicyConfig(
 		configMap = make(map[string]interface{})
 
 		// Map each static config field to the API structure
+		// 1. config_approval -> ApprovePolicyTypeConfiguration
 		if !plan.ConfigApproval.IsNull() && !plan.ConfigApproval.IsUnknown() {
 			approval := make(map[string]interface{})
 			if !plan.ConfigApproval.AccountIntegrationId.IsNull() {
@@ -74,6 +75,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 2. config_backup_storage -> BackupTargetsPolicyTypeConfiguration
 		if !plan.ConfigBackupStorage.IsNull() {
 			backupStorage := make(map[string]interface{})
 			if !plan.ConfigBackupStorage.BackupStorageIds.IsNull() {
@@ -90,6 +92,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 3. config_create_backup -> BackupCreationPolicyTypeConfiguration
 		if !plan.ConfigCreateBackup.IsNull() {
 			createBackup := make(map[string]interface{})
 			if !plan.ConfigCreateBackup.CreateBackup.IsNull() {
@@ -103,6 +106,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 4. config_create_user -> UserCreationPolicyTypeConfiguration
 		if !plan.ConfigCreateUser.IsNull() {
 			createUser := make(map[string]interface{})
 			if !plan.ConfigCreateUser.CreateUser.IsNull() {
@@ -116,6 +120,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 5. config_create_user_group -> UserGroupCreationPolicyTypeConfiguration
 		if !plan.ConfigCreateUserGroup.IsNull() {
 			createUserGroup := make(map[string]interface{})
 			if !plan.ConfigCreateUserGroup.UserGroup.IsNull() {
@@ -126,6 +131,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 6. config_cypher -> CypherAccessPolicyTypeConfiguration
 		if !plan.ConfigCypher.IsNull() {
 			cypher := make(map[string]interface{})
 			if !plan.ConfigCypher.Delete.IsNull() {
@@ -151,6 +157,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 7. config_delayed_removal -> DelayedDeletePolicyTypeConfiguration
 		if !plan.ConfigDelayedRemoval.IsNull() {
 			delayedRemoval := make(map[string]interface{})
 			if !plan.ConfigDelayedRemoval.RemovalAge.IsNull() {
@@ -161,6 +168,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 8. config_host_naming -> HostnamePolicyTypeConfiguration
 		if !plan.ConfigHostNaming.IsNull() {
 			hostNaming := make(map[string]interface{})
 			if !plan.ConfigHostNaming.HostNamingPattern.IsNull() {
@@ -174,6 +182,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 9. config_lifecycle -> ExpirationPolicyTypeConfiguration2
 		if !plan.ConfigLifecycle.IsNull() {
 			lifecycle := make(map[string]interface{})
 			if !plan.ConfigLifecycle.AccountIntegrationId.IsNull() {
@@ -220,6 +229,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 10. config_max_containers -> MaxContainersPolicyTypeConfiguration
 		if !plan.ConfigMaxContainers.IsNull() {
 			maxContainers := make(map[string]interface{})
 			if !plan.ConfigMaxContainers.MaxContainers.IsNull() {
@@ -230,6 +240,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 11. config_max_cores -> MaxCoresPolicyTypeConfiguration
 		if !plan.ConfigMaxCores.IsNull() {
 			maxCores := make(map[string]interface{})
 			if !plan.ConfigMaxCores.MaxCores.IsNull() {
@@ -243,6 +254,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 12. config_max_hosts -> MaxHostsPolicyTypeConfiguration
 		if !plan.ConfigMaxHosts.IsNull() {
 			maxHosts := make(map[string]interface{})
 			if !plan.ConfigMaxHosts.MaxHosts.IsNull() {
@@ -253,6 +265,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 13. config_max_memory -> MaxMemoryPolicyTypeConfiguration
 		if !plan.ConfigMaxMemory.IsNull() {
 			maxMemory := make(map[string]interface{})
 			if !plan.ConfigMaxMemory.MaxMemory.IsNull() {
@@ -266,6 +279,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 14. config_max_networks -> NetworkQuotaPolicyTypeConfiguration
 		if !plan.ConfigMaxNetworks.IsNull() {
 			maxNetworks := make(map[string]interface{})
 			if !plan.ConfigMaxNetworks.MaxNetworks.IsNull() {
@@ -276,6 +290,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 15. config_max_pool_members -> MaxPoolMembersPolicyTypeConfiguration
 		if !plan.ConfigMaxPoolMembers.IsNull() {
 			maxPoolMembers := make(map[string]interface{})
 			if !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsNull() {
@@ -286,6 +301,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 16. config_max_pools -> MaxLoadBalancerPoolsPolicyTypeConfiguration
 		if !plan.ConfigMaxPools.IsNull() {
 			maxPools := make(map[string]interface{})
 			if !plan.ConfigMaxPools.MaxPools.IsNull() {
@@ -296,6 +312,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 17. config_max_price -> BudgetPolicyTypeConfiguration
 		if !plan.ConfigMaxPrice.IsNull() {
 			maxPrice := make(map[string]interface{})
 			if !plan.ConfigMaxPrice.MaxPrice.IsNull() {
@@ -314,6 +331,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 18. config_max_routers -> RouterQuotaPolicyTypeConfiguration
 		if !plan.ConfigMaxRouters.IsNull() {
 			maxRouters := make(map[string]interface{})
 			if !plan.ConfigMaxRouters.MaxRouters.IsNull() {
@@ -324,6 +342,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 19. config_max_snapshots -> MaxSnapshotsPolicyTypeConfiguration
 		if !plan.ConfigMaxSnapshots.IsNull() {
 			maxSnapshots := make(map[string]interface{})
 			if !plan.ConfigMaxSnapshots.MaxSnapshots.IsNull() {
@@ -334,6 +353,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 20. config_max_storage -> MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration
 		if !plan.ConfigMaxStorage.IsNull() {
 			maxStorage := make(map[string]interface{})
 			if !plan.ConfigMaxStorage.MaxStorage.IsNull() {
@@ -347,6 +367,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 21. config_max_virtual_servers -> MaxVirtualServersPolicyTypeConfiguration
 		if !plan.ConfigMaxVirtualServers.IsNull() {
 			maxVirtualServers := make(map[string]interface{})
 			if !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsNull() {
@@ -357,6 +378,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 22. config_max_vms -> MaxVMsPolicyTypeConfiguration
 		if !plan.ConfigMaxVms.IsNull() {
 			maxVms := make(map[string]interface{})
 			if !plan.ConfigMaxVms.MaxVms.IsNull() {
@@ -367,6 +389,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 23. config_motd -> MessageOfTheDayPolicyTypeConfiguration2
 		if !plan.ConfigMotd.IsNull() {
 			motd := make(map[string]interface{})
 			if !plan.ConfigMotd.Motddate.IsNull() {
@@ -386,6 +409,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 24. config_naming -> InstanceNamePolicyTypeConfiguration
 		if !plan.ConfigNaming.IsNull() {
 			naming := make(map[string]interface{})
 			if !plan.ConfigNaming.NamingConflict.IsNull() {
@@ -402,6 +426,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 25. config_power_schedule -> PowerSchedulePolicyTypeConfiguration
 		if !plan.ConfigPowerSchedule.IsNull() {
 			powerSchedule := make(map[string]interface{})
 			if !plan.ConfigPowerSchedule.PowerSchedule.IsNull() {
@@ -418,6 +443,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 26. config_required_network -> RequiredNetworkPolicyTypeConfiguration
 		if !plan.ConfigRequiredNetwork.IsNull() {
 			requiredNetwork := make(map[string]interface{})
 			if !plan.ConfigRequiredNetwork.RequiredNetworks.IsNull() {
@@ -434,6 +460,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 27. config_server_naming -> ClusterResourceNamePolicyTypeConfiguration
 		if !plan.ConfigServerNaming.IsNull() {
 			serverNaming := make(map[string]interface{})
 			if !plan.ConfigServerNaming.ServerNamingConflict.IsNull() {
@@ -450,6 +477,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 28. config_shutdown -> ShutdownPolicyTypeConfiguration
 		if !plan.ConfigShutdown.IsNull() {
 			shutdown := make(map[string]interface{})
 			if !plan.ConfigShutdown.AccountIntegrationId.IsNull() {
@@ -496,6 +524,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 29. config_storage_server_quota -> StorageServerStorageQuotaPolicyTypeConfiguration
 		if !plan.ConfigStorageServerQuota.IsNull() {
 			storageServerQuota := make(map[string]interface{})
 			if !plan.ConfigStorageServerQuota.MaxStorage.IsNull() {
@@ -509,6 +538,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 30. config_tags -> TagsPolicyTypeConfiguration
 		if !plan.ConfigTags.IsNull() {
 			tags := make(map[string]interface{})
 			if !plan.ConfigTags.Key.IsNull() {
@@ -528,6 +558,7 @@ func mapStateToAddPolicyConfig(
 			}
 		}
 
+		// 31. config_workflow -> WorkflowPolicyTypeConfiguration
 		if !plan.ConfigWorkflow.IsNull() {
 			workflow := make(map[string]interface{})
 			if !plan.ConfigWorkflow.WorkflowId.IsNull() {
