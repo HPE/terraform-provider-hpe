@@ -5,6 +5,7 @@ package convert
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -134,6 +135,14 @@ func Int64ToType(i *int64) types.Int64 {
 	}
 
 	return types.Int64Value(*i)
+}
+
+func Float32ToType(f float32) types.Number {
+	if f == 0 {
+		return types.NumberNull()
+	}
+
+	return types.NumberValue(big.NewFloat(float64(f)))
 }
 
 func Int64SliceToSet(items []int64) types.Set {

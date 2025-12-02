@@ -163,13 +163,8 @@ func mapPolicyConfigToState(
 
 	// 7. BudgetPolicyTypeConfiguration2 -> max_price
 	if apiConfig.BudgetPolicyTypeConfiguration2 != nil {
-		var maxPriceStr *string
-		if apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice != 0 {
-			strVal := fmt.Sprintf("%f", apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice)
-			maxPriceStr = &strVal
-		}
 		maxPriceAttrs := map[string]attr.Value{
-			"max_price":          convert.StrToType(maxPriceStr),
+			"max_price":          convert.Float32ToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice),
 			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceCurrency),
 			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceUnit),
 		}
