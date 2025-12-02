@@ -43,15 +43,15 @@ func mapPolicyConfigToState(
 	diags := diag.Diagnostics{}
 
 	// Map each API config field to the corresponding schema field - only populate non-null configurations
-	// 1. ApprovePolicyTypeConfiguration -> approval
-	if apiConfig.ApprovePolicyTypeConfiguration != nil {
+	// 1. ApprovePolicyTypeConfiguration2 -> approval
+	if apiConfig.ApprovePolicyTypeConfiguration2 != nil {
 		approvalValue, approvalDiags := NewConfigApprovalValue(
 			ConfigApprovalValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration.AccountIntegrationId),
-				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.FlowId),
-				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowId),
-				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowType),
+				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration2.AccountIntegrationId),
+				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.FlowId),
+				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowId),
+				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowType),
 			},
 		)
 		if approvalDiags.HasError() {
@@ -61,15 +61,15 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 2. BackupTargetsPolicyTypeConfiguration -> backup_storage
-	if apiConfig.BackupTargetsPolicyTypeConfiguration != nil {
+	// 2. BackupTargetsPolicyTypeConfiguration2 -> backup_storage
+	if apiConfig.BackupTargetsPolicyTypeConfiguration2 != nil {
 		// Handle BackupStorageIds as a set of strings
 		var backupStorageIDsSet types.Set
-		if len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds) == 0 {
+		if len(apiConfig.BackupTargetsPolicyTypeConfiguration2.BackupStorageIds) == 0 {
 			backupStorageIDsSet = types.SetValueMust(types.StringType, []attr.Value{})
 		} else {
-			stringValues := make([]attr.Value, len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds))
-			for i, id := range apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds {
+			stringValues := make([]attr.Value, len(apiConfig.BackupTargetsPolicyTypeConfiguration2.BackupStorageIds))
+			for i, id := range apiConfig.BackupTargetsPolicyTypeConfiguration2.BackupStorageIds {
 				stringValues[i] = types.StringValue(id)
 			}
 			var setDiags diag.Diagnostics
@@ -94,13 +94,13 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 3. BackupCreationPolicyTypeConfiguration -> create_backup
-	if apiConfig.BackupCreationPolicyTypeConfiguration != nil {
+	// 3. BackupCreationPolicyTypeConfiguration2 -> create_backup
+	if apiConfig.BackupCreationPolicyTypeConfiguration2 != nil {
 		createBackupValue, createBackupDiags := NewConfigCreateBackupValue(
 			ConfigCreateBackupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackup),
-				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackupType),
+				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackup),
+				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackupType),
 			},
 		)
 		if createBackupDiags.HasError() {
@@ -110,13 +110,13 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 4. UserCreationPolicyTypeConfiguration -> create_user
-	if apiConfig.UserCreationPolicyTypeConfiguration != nil {
+	// 4. UserCreationPolicyTypeConfiguration2 -> create_user
+	if apiConfig.UserCreationPolicyTypeConfiguration2 != nil {
 		createUserValue, createUserDiags := NewConfigCreateUserValue(
 			ConfigCreateUserValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration.CreateUser),
-				"create_user_type": convert.StrToType(&apiConfig.UserCreationPolicyTypeConfiguration.CreateUserType),
+				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration2.CreateUser),
+				"create_user_type": convert.StrToType(&apiConfig.UserCreationPolicyTypeConfiguration2.CreateUserType),
 			},
 		)
 		if createUserDiags.HasError() {
@@ -126,12 +126,12 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 5. UserGroupCreationPolicyTypeConfiguration -> create_user_group
-	if apiConfig.UserGroupCreationPolicyTypeConfiguration != nil {
+	// 5. UserGroupCreationPolicyTypeConfiguration2 -> create_user_group
+	if apiConfig.UserGroupCreationPolicyTypeConfiguration2 != nil {
 		createUserGroupValue, createUserGroupDiags := NewConfigCreateUserGroupValue(
 			ConfigCreateUserGroupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"user_group": convert.StrToType(&apiConfig.UserGroupCreationPolicyTypeConfiguration.UserGroup),
+				"user_group": convert.StrToType(&apiConfig.UserGroupCreationPolicyTypeConfiguration2.UserGroup),
 			},
 		)
 		if createUserGroupDiags.HasError() {
@@ -141,17 +141,17 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 6. CypherAccessPolicyTypeConfiguration -> cypher
-	if apiConfig.CypherAccessPolicyTypeConfiguration != nil {
+	// 6. CypherAccessPolicyTypeConfiguration2 -> cypher
+	if apiConfig.CypherAccessPolicyTypeConfiguration2 != nil {
 		cypherValue, cypherDiags := NewConfigCypherValue(
 			ConfigCypherValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
-				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
-				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
-				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
-				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
-				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
+				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration2.Delete),
+				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration2.KeyPattern),
+				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration2.List),
+				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration2.Read),
+				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration2.Update),
+				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration2.Write),
 			},
 		)
 		if cypherDiags.HasError() {
@@ -161,12 +161,17 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 7. BudgetPolicyTypeConfiguration -> max_price
-	if apiConfig.BudgetPolicyTypeConfiguration != nil {
+	// 7. BudgetPolicyTypeConfiguration2 -> max_price
+	if apiConfig.BudgetPolicyTypeConfiguration2 != nil {
+		var maxPriceStr *string
+		if apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice != 0 {
+			strVal := fmt.Sprintf("%f", apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice)
+			maxPriceStr = &strVal
+		}
 		maxPriceAttrs := map[string]attr.Value{
-			"max_price":          convert.StrToType(&apiConfig.BudgetPolicyTypeConfiguration.MaxPrice),
-			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency),
-			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit),
+			"max_price":          convert.StrToType(maxPriceStr),
+			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceCurrency),
+			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceUnit),
 		}
 
 		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
@@ -177,11 +182,11 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 8. MaxMemoryPolicyTypeConfiguration -> max_memory
-	if apiConfig.MaxMemoryPolicyTypeConfiguration != nil {
+	// 8. MaxMemoryPolicyTypeConfiguration2 -> max_memory
+	if apiConfig.MaxMemoryPolicyTypeConfiguration2 != nil {
 		maxMemoryAttrs := map[string]attr.Value{
-			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration.GetExcludeContainers()),
+			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration2.MaxMemory),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration2.GetExcludeContainers()),
 		}
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
@@ -192,11 +197,11 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 9. MaxCoresPolicyTypeConfiguration -> max_cores
-	if apiConfig.MaxCoresPolicyTypeConfiguration != nil {
+	// 9. MaxCoresPolicyTypeConfiguration2 -> max_cores
+	if apiConfig.MaxCoresPolicyTypeConfiguration2 != nil {
 		maxCoresAttrs := map[string]attr.Value{
-			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration.GetExcludeContainers()),
+			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration2.MaxCores),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration2.GetExcludeContainers()),
 		}
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
@@ -207,10 +212,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 10. DelayedDeletePolicyTypeConfiguration -> delayed_removal
-	if apiConfig.DelayedDeletePolicyTypeConfiguration != nil {
+	// 10. DelayedDeletePolicyTypeConfiguration2 -> delayed_removal
+	if apiConfig.DelayedDeletePolicyTypeConfiguration2 != nil {
 		delayedRemovalAttrs := map[string]attr.Value{
-			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
+			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration2.RemovalAge),
 		}
 
 		delayedRemovalValue, delayedRemovalDiags := NewConfigDelayedRemovalValue(
@@ -272,7 +277,7 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 12. HostnamePolicyTypeConfiguration -> host_naming
+	// 12. HostnamePolicyTypeConfiguration2 -> host_naming
 	if apiConfig.HostnamePolicyTypeConfiguration != nil {
 		hostNamingAttrs := map[string]attr.Value{
 			"host_naming_pattern": convert.StrToType(apiConfig.HostnamePolicyTypeConfiguration.HostNamingPattern),
@@ -290,7 +295,7 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 13. InstanceNamePolicyTypeConfiguration -> naming
+	// 13. InstanceNamePolicyTypeConfiguration2 -> naming
 	if apiConfig.InstanceNamePolicyTypeConfiguration != nil {
 		namingAttrs := map[string]attr.Value{
 			"naming_conflict": convert.BoolToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingConflict),
@@ -306,10 +311,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 14. MaxContainersPolicyTypeConfiguration -> max_containers
-	if apiConfig.MaxContainersPolicyTypeConfiguration != nil {
+	// 14. MaxContainersPolicyTypeConfiguration2 -> max_containers
+	if apiConfig.MaxContainersPolicyTypeConfiguration2 != nil {
 		maxContainersAttrs := map[string]attr.Value{
-			"max_containers": convert.StrToType(&apiConfig.MaxContainersPolicyTypeConfiguration.MaxContainers),
+			"max_containers": convert.StrToType(&apiConfig.MaxContainersPolicyTypeConfiguration2.MaxContainers),
 		}
 
 		maxContainersValue, maxContainersDiags := NewConfigMaxContainersValue(
@@ -323,10 +328,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 15. MaxHostsPolicyTypeConfiguration -> max_hosts
-	if apiConfig.MaxHostsPolicyTypeConfiguration != nil {
+	// 15. MaxHostsPolicyTypeConfiguration2 -> max_hosts
+	if apiConfig.MaxHostsPolicyTypeConfiguration2 != nil {
 		maxHostsAttrs := map[string]attr.Value{
-			"max_hosts": convert.StrToType(&apiConfig.MaxHostsPolicyTypeConfiguration.MaxHosts),
+			"max_hosts": convert.StrToType(&apiConfig.MaxHostsPolicyTypeConfiguration2.MaxHosts),
 		}
 
 		maxHostsValue, maxHostsDiags := NewConfigMaxHostsValue(ConfigMaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
@@ -337,10 +342,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 16. NetworkQuotaPolicyTypeConfiguration -> max_networks
-	if apiConfig.NetworkQuotaPolicyTypeConfiguration != nil {
+	// 16. NetworkQuotaPolicyTypeConfiguration2 -> max_networks
+	if apiConfig.NetworkQuotaPolicyTypeConfiguration2 != nil {
 		maxNetworksAttrs := map[string]attr.Value{
-			"max_networks": convert.StrToType(&apiConfig.NetworkQuotaPolicyTypeConfiguration.MaxNetworks),
+			"max_networks": convert.StrToType(&apiConfig.NetworkQuotaPolicyTypeConfiguration2.MaxNetworks),
 		}
 
 		maxNetworksValue, maxNetworksDiags := NewConfigMaxNetworksValue(
@@ -354,10 +359,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 17. MaxPoolMembersPolicyTypeConfiguration -> max_pool_members
-	if apiConfig.MaxPoolMembersPolicyTypeConfiguration != nil {
+	// 17. MaxPoolMembersPolicyTypeConfiguration2 -> max_pool_members
+	if apiConfig.MaxPoolMembersPolicyTypeConfiguration2 != nil {
 		maxPoolMembersAttrs := map[string]attr.Value{
-			"max_pool_members": convert.StrToType(&apiConfig.MaxPoolMembersPolicyTypeConfiguration.MaxPoolMembers),
+			"max_pool_members": convert.StrToType(&apiConfig.MaxPoolMembersPolicyTypeConfiguration2.MaxPoolMembers),
 		}
 
 		maxPoolMembersValue, maxPoolMembersDiags := NewConfigMaxPoolMembersValue(
@@ -371,10 +376,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 18. MaxLoadBalancerPoolsPolicyTypeConfiguration -> max_pools
-	if apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration != nil {
+	// 18. MaxLoadBalancerPoolsPolicyTypeConfiguration2 -> max_pools
+	if apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration2 != nil {
 		maxPoolsAttrs := map[string]attr.Value{
-			"max_pools": convert.StrToType(&apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration.MaxPools),
+			"max_pools": convert.StrToType(&apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration2.MaxPools),
 		}
 
 		maxPoolsValue, maxPoolsDiags := NewConfigMaxPoolsValue(ConfigMaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
@@ -385,10 +390,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 19. RouterQuotaPolicyTypeConfiguration -> max_routers
-	if apiConfig.RouterQuotaPolicyTypeConfiguration != nil {
+	// 19. RouterQuotaPolicyTypeConfiguration2 -> max_routers
+	if apiConfig.RouterQuotaPolicyTypeConfiguration2 != nil {
 		maxRoutersAttrs := map[string]attr.Value{
-			"max_routers": convert.StrToType(&apiConfig.RouterQuotaPolicyTypeConfiguration.MaxRouters),
+			"max_routers": convert.StrToType(&apiConfig.RouterQuotaPolicyTypeConfiguration2.MaxRouters),
 		}
 
 		maxRoutersValue, maxRoutersDiags := NewConfigMaxRoutersValue(
@@ -402,10 +407,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 20. MaxSnapshotsPolicyTypeConfiguration -> max_snapshots
-	if apiConfig.MaxSnapshotsPolicyTypeConfiguration != nil {
+	// 20. MaxSnapshotsPolicyTypeConfiguration2 -> max_snapshots
+	if apiConfig.MaxSnapshotsPolicyTypeConfiguration2 != nil {
 		maxSnapshotsAttrs := map[string]attr.Value{
-			"max_snapshots": convert.StrToType(&apiConfig.MaxSnapshotsPolicyTypeConfiguration.MaxSnapshots),
+			"max_snapshots": convert.StrToType(&apiConfig.MaxSnapshotsPolicyTypeConfiguration2.MaxSnapshots),
 		}
 
 		maxSnapshotsValue, maxSnapshotsDiags := NewConfigMaxSnapshotsValue(
@@ -419,15 +424,15 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 21. MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration -> max_storage
-	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration != nil {
+	// 21. MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration2 -> max_storage
+	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration2 != nil {
 		maxStorageAttrs := map[string]attr.Value{
 			"exclude_containers": convert.StringToBool(
 				ctx,
-				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.GetExcludeContainers(),
+				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration2.GetExcludeContainers(),
 			),
 			"max_storage": convert.StrToType(
-				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage,
+				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration2.MaxStorage,
 			),
 		}
 
@@ -442,10 +447,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 22. MaxVirtualServersPolicyTypeConfiguration -> max_virtual_servers
-	if apiConfig.MaxVirtualServersPolicyTypeConfiguration != nil {
+	// 22. MaxVirtualServersPolicyTypeConfiguration2 -> max_virtual_servers
+	if apiConfig.MaxVirtualServersPolicyTypeConfiguration2 != nil {
 		maxVirtualServersAttrs := map[string]attr.Value{
-			"max_virtual_servers": convert.StrToType(&apiConfig.MaxVirtualServersPolicyTypeConfiguration.MaxVirtualServers),
+			"max_virtual_servers": convert.StrToType(&apiConfig.MaxVirtualServersPolicyTypeConfiguration2.MaxVirtualServers),
 		}
 
 		maxVirtualServersValue, maxVirtualServersDiags := NewConfigMaxVirtualServersValue(
@@ -459,10 +464,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 23. MaxVMsPolicyTypeConfiguration -> max_vms
-	if apiConfig.MaxVMsPolicyTypeConfiguration != nil {
+	// 23. MaxVMsPolicyTypeConfiguration2 -> max_vms
+	if apiConfig.MaxVMsPolicyTypeConfiguration2 != nil {
 		maxVmsAttrs := map[string]attr.Value{
-			"max_vms": convert.StrToType(&apiConfig.MaxVMsPolicyTypeConfiguration.MaxVms),
+			"max_vms": convert.StrToType(&apiConfig.MaxVMsPolicyTypeConfiguration2.MaxVms),
 		}
 
 		maxVmsValue, maxVmsDiags := NewConfigMaxVmsValue(ConfigMaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
@@ -488,8 +493,9 @@ func mapPolicyConfigToState(
 			motdAttrs["motd_fullpage"] = convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdFullPage.String)
 		}
 		// Handle NullableString for MotdTitle
-		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.IsSet() {
-			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.Get())
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.IsSetMotdTitle() {
+			motdTitle := apiConfig.MessageOfTheDayPolicyTypeConfiguration2.GetMotdTitle()
+			motdAttrs["motdtitle"] = convert.StrToType(&motdTitle)
 		}
 
 		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
@@ -500,17 +506,17 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 25. PowerSchedulePolicyTypeConfiguration -> power_schedule
-	if apiConfig.PowerSchedulePolicyTypeConfiguration != nil {
+	// 25. PowerSchedulePolicyTypeConfiguration2 -> power_schedule
+	if apiConfig.PowerSchedulePolicyTypeConfiguration2 != nil {
 		powerScheduleAttrs := map[string]attr.Value{
 			"power_schedule": convert.StrToType(
-				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerSchedule,
+				apiConfig.PowerSchedulePolicyTypeConfiguration2.PowerSchedule,
 			),
 			"power_schedule_hide_fixed": convert.BoolToType(
-				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleHideFixed,
+				apiConfig.PowerSchedulePolicyTypeConfiguration2.PowerScheduleHideFixed,
 			),
 			"power_schedule_type": convert.StrToType(
-				&apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleType,
+				&apiConfig.PowerSchedulePolicyTypeConfiguration2.PowerScheduleType,
 			),
 		}
 
@@ -525,7 +531,7 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 26. RequiredNetworkPolicyTypeConfiguration -> required_network
+	// 26. RequiredNetworkPolicyTypeConfiguration2 -> required_network
 	if apiConfig.RequiredNetworkPolicyTypeConfiguration != nil {
 		// Handle RequiredNetworks as a set of integers
 		var requiredNetworksSet types.Set
@@ -558,17 +564,17 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 27. ClusterResourceNamePolicyTypeConfiguration -> server_naming
-	if apiConfig.ClusterResourceNamePolicyTypeConfiguration != nil {
+	// 27. ClusterResourceNamePolicyTypeConfiguration2 -> server_naming
+	if apiConfig.ClusterResourceNamePolicyTypeConfiguration2 != nil {
 		serverNamingAttrs := map[string]attr.Value{
 			"server_naming_conflict": convert.BoolToType(
-				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingConflict,
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration2.ServerNamingConflict,
 			),
 			"server_naming_pattern": convert.StrToType(
-				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingPattern,
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration2.ServerNamingPattern,
 			),
 			"server_naming_type": convert.StrToType(
-				&apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType,
+				&apiConfig.ClusterResourceNamePolicyTypeConfiguration2.ServerNamingType,
 			),
 		}
 
@@ -583,44 +589,44 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 28. ShutdownPolicyTypeConfiguration -> shutdown
-	if apiConfig.ShutdownPolicyTypeConfiguration != nil {
+	// 28. ShutdownPolicyTypeConfiguration2 -> shutdown
+	if apiConfig.ShutdownPolicyTypeConfiguration2 != nil {
 		shutdownAttrs := map[string]attr.Value{
 			"account_integration_id": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.AccountIntegrationId,
+				apiConfig.ShutdownPolicyTypeConfiguration2.AccountIntegrationId,
 			),
-			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.FlowId),
-			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAge),
+			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration2.FlowId),
+			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownAge),
 			"shutdown_allow_extend": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAllowExtend(),
+				apiConfig.ShutdownPolicyTypeConfiguration2.GetShutdownAllowExtend(),
 			),
 			"shutdown_auto_renew": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAutoRenew(),
+				apiConfig.ShutdownPolicyTypeConfiguration2.GetShutdownAutoRenew(),
 			),
 			"shutdown_extensions_before_approval": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownExtensionsBeforeApproval,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownExtensionsBeforeApproval,
 			),
 			"shutdown_hide_fixed": convert.BoolToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownHideFixed,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownHideFixed,
 			),
 			"shutdown_message": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownMessage,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownMessage,
 			),
 			"shutdown_notify": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownNotify,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownNotify,
 			),
 			"shutdown_renewal": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownRenewal,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownRenewal,
 			),
 			"shutdown_type": convert.StrToType(
-				&apiConfig.ShutdownPolicyTypeConfiguration.ShutdownType,
+				&apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownType,
 			),
 			"shutdown_workflow_id": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownWorkflowId,
+				apiConfig.ShutdownPolicyTypeConfiguration2.ShutdownWorkflowId,
 			),
-			"workflow_type": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.WorkflowType),
+			"workflow_type": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration2.WorkflowType),
 		}
 
 		shutdownValue, shutdownDiags := NewConfigShutdownValue(ConfigShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
@@ -631,11 +637,11 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 29. StorageServerStorageQuotaPolicyTypeConfiguration -> storage_server_quota
-	if apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration != nil {
+	// 29. StorageServerStorageQuotaPolicyTypeConfiguration2 -> storage_server_quota
+	if apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration2 != nil {
 		storageServerQuotaAttrs := map[string]attr.Value{
-			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.MaxStorage),
-			"storage_server_id": convert.StrToType(&apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.StorageServerId),
+			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration2.MaxStorage),
+			"storage_server_id": convert.StrToType(&apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration2.StorageServerId),
 		}
 
 		storageServerQuotaValue, storageServerQuotaDiags := NewConfigStorageServerQuotaValue(
@@ -649,13 +655,13 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 30. TagsPolicyTypeConfiguration -> tags
-	if apiConfig.TagsPolicyTypeConfiguration != nil {
+	// 30. TagsPolicyTypeConfiguration2 -> tags
+	if apiConfig.TagsPolicyTypeConfiguration2 != nil {
 		tagsAttrs := map[string]attr.Value{
-			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Key),
-			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration.Strict),
-			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Value),
-			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.ValueListId),
+			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration2.Key),
+			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration2.Strict),
+			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration2.Value),
+			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration2.ValueListId),
 		}
 
 		tagsValue, tagsDiags := NewConfigTagsValue(ConfigTagsValue{}.AttributeTypes(ctx), tagsAttrs)
@@ -666,10 +672,10 @@ func mapPolicyConfigToState(
 		}
 	}
 
-	// 31. WorkflowPolicyTypeConfiguration -> workflow
-	if apiConfig.WorkflowPolicyTypeConfiguration != nil {
+	// 31. WorkflowPolicyTypeConfiguration2 -> workflow
+	if apiConfig.WorkflowPolicyTypeConfiguration2 != nil {
 		workflowAttrs := map[string]attr.Value{
-			"workflow_id": convert.StrToType(&apiConfig.WorkflowPolicyTypeConfiguration.WorkflowId),
+			"workflow_id": convert.StrToType(&apiConfig.WorkflowPolicyTypeConfiguration2.WorkflowId),
 		}
 
 		workflowValue, workflowDiags := NewConfigWorkflowValue(ConfigWorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
