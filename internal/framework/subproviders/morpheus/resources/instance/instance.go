@@ -389,6 +389,11 @@ func getAllServerInterfaces(
 		serverIntfsNameListMap := make(map[string]struct{})
 		serverIntfsMergedNameMap := make(map[string]sdk.InstanceContainerServerInterfacesInner1)
 		for _, serverIntf := range serverIntfList {
+			// Skip this list entry if it doesn't have a name
+			if _, ok := serverIntf.GetNameOk(); !ok {
+				continue
+			}
+
 			serverIntfsNameMap[*serverIntf.Name] = append(serverIntfsNameMap[*serverIntf.Name], serverIntf)
 			// Keep a record of the order of the interface name ("eth0" etc) in the input list
 			// We allow for duplicate name entries, so we're looking for the first entry
@@ -794,7 +799,7 @@ func (g *Resource) Delete(
 		return
 	}
 
-	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("on")
+	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("true")
 	_, hresp, err := deleteReq.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
