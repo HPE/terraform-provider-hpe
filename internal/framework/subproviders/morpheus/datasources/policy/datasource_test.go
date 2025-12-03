@@ -360,7 +360,7 @@ resource "hpe_morpheus_policy" "test_all_attrs" {
     list       = true
     
     # 7. Budget fields (maxPrice policy)
-    maxPrice         = "1000"
+    maxPrice         = 1000
     maxPriceCurrency = "USD"
     maxPriceUnit     = "month"
     
