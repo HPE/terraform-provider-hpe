@@ -37,6 +37,15 @@ to import the instance. Otherwise the import will result in the instance being d
 
 ## Example Usage
 
+### HVM instance
+
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example.tf" }}
+
+### HVM Instance with two networks
+
+One of these networks has a `child_virtual_networks` entry.  Note that only some network types support `child_virtual_networks`.
+The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
+
+{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_twonetworks.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

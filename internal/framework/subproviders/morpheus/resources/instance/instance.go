@@ -385,13 +385,22 @@ func getAllServerInterfaces(
 		server, _ := container.GetServerOk()
 		serverIntfList, _ := server.GetInterfacesOk()
 		serverIntfsNameMap := make(map[string][]sdk.InstanceContainerServerInterfacesInner1)
+		serverIntfsNameListPosition := make([]string, 0)
+		serverIntfsNameListMap := make(map[string]struct{})
+		serverIntfsMergedNameMap := make(map[string]sdk.InstanceContainerServerInterfacesInner1)
 		for _, serverIntf := range serverIntfList {
 			serverIntfsNameMap[*serverIntf.Name] = append(serverIntfsNameMap[*serverIntf.Name], serverIntf)
+			// Keep a record of the order of the interface name ("eth0" etc) in the input list
+			// We allow for duplicate name entries, so we're looking for the first entry
+			if _, ok := serverIntfsNameListMap[*serverIntf.Name]; !ok {
+				serverIntfsNameListPosition = append(serverIntfsNameListPosition, *serverIntf.Name)
+				serverIntfsNameListMap[*serverIntf.Name] = struct{}{}
+			}
 		}
 
-		for _, v := range serverIntfsNameMap {
+		for intfName, v := range serverIntfsNameMap {
 			if len(v) == 1 {
-				serverIntfsList = append(serverIntfsList, v[0])
+				serverIntfsMergedNameMap[intfName] = v[0]
 
 				continue
 			}
@@ -418,7 +427,12 @@ func getAllServerInterfaces(
 			}
 
 			cumulativeIntf.IpAddress = ipAddress
-			serverIntfsList = append(serverIntfsList, cumulativeIntf)
+			serverIntfsMergedNameMap[intfName] = cumulativeIntf
+		}
+
+		// Order serverIntfsList by order that the entries appeared in the original list
+		for _, intfName := range serverIntfsNameListPosition {
+			serverIntfsList = append(serverIntfsList, serverIntfsMergedNameMap[intfName])
 		}
 	}
 
