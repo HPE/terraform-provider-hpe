@@ -1050,7 +1050,7 @@ Optional:
 
 Optional:
 
-- `backup_storage_ids` (Set of Number) Array of backup storage IDs to restrict available backup targets
+- `backup_storage_ids` (Set of Number)
 
 
 <a id="nestedatt--config_create_backup"></a>
@@ -1097,7 +1097,7 @@ Optional:
 
 Optional:
 
-- `removal_age` (String) Removal Age (days)
+- `removal_age` (String) Number of days to delay deletion
 
 
 <a id="nestedatt--config_host_naming"></a>
@@ -1105,7 +1105,7 @@ Optional:
 
 Optional:
 
-- `host_naming_pattern` (String) Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `host_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
 - `host_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
@@ -1116,14 +1116,14 @@ Optional:
 
 - `account_integration_id` (String) ID of your ServiceNow or approval integration
 - `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
-- `lifecycle_age` (String) Lifecycle Age (days)
+- `lifecycle_age` (String) Days until expiration
 - `lifecycle_allow_extend` (Boolean)
 - `lifecycle_auto_renew` (Boolean)
-- `lifecycle_extensions_before_approval` (String) Extensions Before Approval
+- `lifecycle_extensions_before_approval` (String) Number of extensions before requiring approval
 - `lifecycle_hide_fixed` (Boolean) Hide fixed expiration from users
 - `lifecycle_message` (String) Notification message
-- `lifecycle_notify` (String) Notification Days
-- `lifecycle_renewal` (String) Renewal Days
+- `lifecycle_notify` (String) Days before expiration to notify
+- `lifecycle_renewal` (String) Days for renewal window
 - `lifecycle_type` (String) Options: "user" (user configurable), "fixed" (fixed expiration)
 - `lifecycle_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
 - `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
@@ -1160,7 +1160,7 @@ Optional:
 Optional:
 
 - `exclude_containers` (Boolean)
-- `max_memory` (String)
+- `max_memory` (String) Max Memory (GB)
 
 
 <a id="nestedatt--config_max_networks"></a>
@@ -1192,7 +1192,7 @@ Optional:
 
 Optional:
 
-- `max_price` (Number) Maximum price limit
+- `max_price` (Number)
 - `max_price_currency` (String) Currency code (e.g., USD)
 - `max_price_unit` (String) Options: "hour", "month"
 
@@ -1255,7 +1255,7 @@ Optional:
 Optional:
 
 - `naming_conflict` (Boolean) Auto-resolve conflicts
-- `naming_pattern` (String) Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
 - `naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
@@ -1283,7 +1283,7 @@ Optional:
 Optional:
 
 - `server_naming_conflict` (Boolean) Auto-resolve conflicts
-- `server_naming_pattern` (String) Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `server_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
 - `server_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
@@ -1294,14 +1294,14 @@ Optional:
 
 - `account_integration_id` (String) ID of your ServiceNow or approval integration
 - `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
-- `shutdown_age` (String) Shutdown Age (days)
+- `shutdown_age` (String) Days instance is allowed to run before shutdown
 - `shutdown_allow_extend` (Boolean)
 - `shutdown_auto_renew` (Boolean)
-- `shutdown_extensions_before_approval` (String) Extensions Before Approval
+- `shutdown_extensions_before_approval` (String) Number of extensions before requiring approval
 - `shutdown_hide_fixed` (Boolean) Hide fixed shutdown from users
 - `shutdown_message` (String) Notification message
-- `shutdown_notify` (String) Notification Days
-- `shutdown_renewal` (String) Renewal Days
+- `shutdown_notify` (String) Days before shutdown to notify via email
+- `shutdown_renewal` (String) If the instance is renewed, this is the number of day increments the shutdown date is increased by
 - `shutdown_type` (String) Options: "user" (user configurable), "fixed" (strict shutdown)
 - `shutdown_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
 - `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)

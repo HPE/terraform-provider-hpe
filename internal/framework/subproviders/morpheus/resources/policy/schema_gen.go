@@ -117,11 +117,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"config_backup_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"backup_storage_ids": schema.SetAttribute{
-						ElementType:         types.Int64Type,
-						Optional:            true,
-						Computed:            true,
-						Description:         "Array of backup storage IDs to restrict available backup targets",
-						MarkdownDescription: "Array of backup storage IDs to restrict available backup targets",
+						ElementType: types.Int64Type,
+						Optional:    true,
+						Computed:    true,
 					},
 				},
 				CustomType: ConfigBackupStorageType{
@@ -272,8 +270,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"removal_age": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Removal Age (days)",
-						MarkdownDescription: "Removal Age (days)",
+						Description:         "Number of days to delay deletion",
+						MarkdownDescription: "Number of days to delay deletion",
 					},
 				},
 				CustomType: ConfigDelayedRemovalType{
@@ -294,8 +292,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"host_naming_pattern": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
-						MarkdownDescription: "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"host_naming_type": schema.StringAttribute{
 						Optional:            true,
@@ -337,8 +335,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"lifecycle_age": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Lifecycle Age (days)",
-						MarkdownDescription: "Lifecycle Age (days)",
+						Description:         "Days until expiration",
+						MarkdownDescription: "Days until expiration",
 					},
 					"lifecycle_allow_extend": schema.BoolAttribute{
 						Optional: true,
@@ -351,8 +349,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"lifecycle_extensions_before_approval": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Extensions Before Approval",
-						MarkdownDescription: "Extensions Before Approval",
+						Description:         "Number of extensions before requiring approval",
+						MarkdownDescription: "Number of extensions before requiring approval",
 					},
 					"lifecycle_hide_fixed": schema.BoolAttribute{
 						Optional:            true,
@@ -369,14 +367,14 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"lifecycle_notify": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Notification Days",
-						MarkdownDescription: "Notification Days",
+						Description:         "Days before expiration to notify",
+						MarkdownDescription: "Days before expiration to notify",
 					},
 					"lifecycle_renewal": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Renewal Days",
-						MarkdownDescription: "Renewal Days",
+						Description:         "Days for renewal window",
+						MarkdownDescription: "Days for renewal window",
 					},
 					"lifecycle_type": schema.StringAttribute{
 						Optional:            true,
@@ -490,8 +488,10 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"max_memory": schema.StringAttribute{
-						Optional: true,
-						Computed: true,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Max Memory (GB)",
+						MarkdownDescription: "Max Memory (GB)",
 					},
 				},
 				CustomType: ConfigMaxMemoryType{
@@ -576,10 +576,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"config_max_price": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_price": schema.NumberAttribute{
-						Optional:            true,
-						Computed:            true,
-						Description:         "Maximum price limit",
-						MarkdownDescription: "Maximum price limit",
+						Optional: true,
+						Computed: true,
 					},
 					"max_price_currency": schema.StringAttribute{
 						Optional:            true,
@@ -772,8 +770,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"naming_pattern": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
-						MarkdownDescription: "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"naming_type": schema.StringAttribute{
 						Optional:            true,
@@ -863,8 +861,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"server_naming_pattern": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
-						MarkdownDescription: "Name pattern uses ${variable} string interpolation. Available variables are: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"server_naming_type": schema.StringAttribute{
 						Optional:            true,
@@ -906,8 +904,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"shutdown_age": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Shutdown Age (days)",
-						MarkdownDescription: "Shutdown Age (days)",
+						Description:         "Days instance is allowed to run before shutdown",
+						MarkdownDescription: "Days instance is allowed to run before shutdown",
 					},
 					"shutdown_allow_extend": schema.BoolAttribute{
 						Optional: true,
@@ -920,8 +918,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"shutdown_extensions_before_approval": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Extensions Before Approval",
-						MarkdownDescription: "Extensions Before Approval",
+						Description:         "Number of extensions before requiring approval",
+						MarkdownDescription: "Number of extensions before requiring approval",
 					},
 					"shutdown_hide_fixed": schema.BoolAttribute{
 						Optional:            true,
@@ -938,14 +936,14 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 					"shutdown_notify": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Notification Days",
-						MarkdownDescription: "Notification Days",
+						Description:         "Days before shutdown to notify via email",
+						MarkdownDescription: "Days before shutdown to notify via email",
 					},
 					"shutdown_renewal": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Renewal Days",
-						MarkdownDescription: "Renewal Days",
+						Description:         "If the instance is renewed, this is the number of day increments the shutdown date is increased by",
+						MarkdownDescription: "If the instance is renewed, this is the number of day increments the shutdown date is increased by",
 					},
 					"shutdown_type": schema.StringAttribute{
 						Optional:            true,
