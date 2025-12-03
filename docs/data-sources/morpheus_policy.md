@@ -134,10 +134,10 @@ Read-Only:
 
 Read-Only:
 
-- `account_integration_id` (String)
-- `flow_id` (String)
-- `workflow_id` (String)
-- `workflow_type` (String)
+- `account_integration_id` (String) ID of your ServiceNow or approval integration
+- `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
+- `workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+- `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
 
 
 <a id="nestedatt--config_backup_storage"></a>
@@ -153,8 +153,8 @@ Read-Only:
 
 Read-Only:
 
-- `create_backup` (Boolean)
-- `create_backup_type` (String)
+- `create_backup` (Boolean) Enforce backup creation
+- `create_backup_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_create_user"></a>
@@ -162,8 +162,8 @@ Read-Only:
 
 Read-Only:
 
-- `create_user` (Boolean)
-- `create_user_type` (String)
+- `create_user` (Boolean) Enforce user creation
+- `create_user_type` (String) Options: "user" (user configurable), "fixed"
 
 
 <a id="nestedatt--config_create_user_group"></a>
@@ -171,7 +171,7 @@ Read-Only:
 
 Read-Only:
 
-- `user_group` (String)
+- `user_group` (String) ID of the user group to assign
 
 
 <a id="nestedatt--config_cypher"></a>
@@ -179,12 +179,12 @@ Read-Only:
 
 Read-Only:
 
-- `delete` (Boolean)
-- `key_pattern` (String)
-- `list` (Boolean)
-- `read` (Boolean)
-- `update` (Boolean)
-- `write` (Boolean)
+- `delete` (Boolean) Allow delete access
+- `key_pattern` (String) Pattern to match Cypher keys (e.g., "secret/*", "password/*")
+- `list` (Boolean) Allow list access
+- `read` (Boolean) Allow read access
+- `update` (Boolean) Allow update access
+- `write` (Boolean) Allow write access
 
 
 <a id="nestedatt--config_delayed_removal"></a>
@@ -192,7 +192,7 @@ Read-Only:
 
 Read-Only:
 
-- `removal_age` (String)
+- `removal_age` (String) Number of days to delay deletion
 
 
 <a id="nestedatt--config_host_naming"></a>
@@ -200,8 +200,8 @@ Read-Only:
 
 Read-Only:
 
-- `host_naming_pattern` (String)
-- `host_naming_type` (String)
+- `host_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `host_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_lifecycle"></a>
@@ -209,19 +209,19 @@ Read-Only:
 
 Read-Only:
 
-- `account_integration_id` (String)
-- `flow_id` (String)
-- `lifecycle_age` (String)
+- `account_integration_id` (String) ID of your ServiceNow or approval integration
+- `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
+- `lifecycle_age` (String) Days until expiration
 - `lifecycle_allow_extend` (Boolean)
 - `lifecycle_auto_renew` (Boolean)
-- `lifecycle_extensions_before_approval` (String)
-- `lifecycle_hide_fixed` (Boolean)
-- `lifecycle_message` (String)
-- `lifecycle_notify` (String)
-- `lifecycle_renewal` (String)
-- `lifecycle_type` (String)
-- `lifecycle_workflow_id` (String)
-- `workflow_type` (String)
+- `lifecycle_extensions_before_approval` (String) Number of extensions before requiring approval
+- `lifecycle_hide_fixed` (Boolean) Hide fixed expiration from users
+- `lifecycle_message` (String) Notification message
+- `lifecycle_notify` (String) Days before expiration to notify
+- `lifecycle_renewal` (String) Days for renewal window
+- `lifecycle_type` (String) Options: "user" (user configurable), "fixed" (fixed expiration)
+- `lifecycle_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+- `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
 
 
 <a id="nestedatt--config_max_containers"></a>
@@ -229,7 +229,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_containers` (String)
+- `max_containers` (String) Max Containers
 
 
 <a id="nestedatt--config_max_cores"></a>
@@ -238,7 +238,7 @@ Read-Only:
 Read-Only:
 
 - `exclude_containers` (Boolean)
-- `max_cores` (String)
+- `max_cores` (String) Max Cores
 
 
 <a id="nestedatt--config_max_hosts"></a>
@@ -246,7 +246,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_hosts` (String)
+- `max_hosts` (String) Max Hosts
 
 
 <a id="nestedatt--config_max_memory"></a>
@@ -255,7 +255,7 @@ Read-Only:
 Read-Only:
 
 - `exclude_containers` (Boolean)
-- `max_memory` (String)
+- `max_memory` (String) Max Memory (GB)
 
 
 <a id="nestedatt--config_max_networks"></a>
@@ -263,7 +263,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_networks` (String)
+- `max_networks` (String) Max Networks
 
 
 <a id="nestedatt--config_max_pool_members"></a>
@@ -271,7 +271,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_pool_members` (String)
+- `max_pool_members` (String) Max Pool Members
 
 
 <a id="nestedatt--config_max_pools"></a>
@@ -279,7 +279,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_pools` (String)
+- `max_pools` (String) Max Pools
 
 
 <a id="nestedatt--config_max_price"></a>
@@ -287,9 +287,9 @@ Read-Only:
 
 Read-Only:
 
-- `max_price` (String)
-- `max_price_currency` (String)
-- `max_price_unit` (String)
+- `max_price` (Number)
+- `max_price_currency` (String) Currency code (e.g., USD)
+- `max_price_unit` (String) Options: "hour", "month"
 
 
 <a id="nestedatt--config_max_routers"></a>
@@ -297,7 +297,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_routers` (String)
+- `max_routers` (String) Max Routers
 
 
 <a id="nestedatt--config_max_snapshots"></a>
@@ -305,7 +305,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_snapshots` (String)
+- `max_snapshots` (String) Max Snapshots
 
 
 <a id="nestedatt--config_max_storage"></a>
@@ -314,7 +314,7 @@ Read-Only:
 Read-Only:
 
 - `exclude_containers` (Boolean)
-- `max_storage` (String)
+- `max_storage` (String) Max Storage (GB)
 
 
 <a id="nestedatt--config_max_virtual_servers"></a>
@@ -322,7 +322,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_virtual_servers` (String)
+- `max_virtual_servers` (String) Max Virtual Servers
 
 
 <a id="nestedatt--config_max_vms"></a>
@@ -330,7 +330,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_vms` (String)
+- `max_vms` (String) Max VMs
 
 
 <a id="nestedatt--config_motd"></a>
@@ -339,10 +339,10 @@ Read-Only:
 Read-Only:
 
 - `motd_fullpage` (String)
-- `motddate` (String)
-- `motdmessage` (String)
-- `motdtitle` (String)
-- `motdtype` (String)
+- `motddate` (String) Display date for message
+- `motdmessage` (String) Message content
+- `motdtitle` (String) Message title
+- `motdtype` (String) Options: "info", "warning", "critical"
 
 
 <a id="nestedatt--config_naming"></a>
@@ -350,9 +350,9 @@ Read-Only:
 
 Read-Only:
 
-- `naming_conflict` (Boolean)
-- `naming_pattern` (String)
-- `naming_type` (String)
+- `naming_conflict` (Boolean) Auto-resolve conflicts
+- `naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_power_schedule"></a>
@@ -360,9 +360,9 @@ Read-Only:
 
 Read-Only:
 
-- `power_schedule` (String)
-- `power_schedule_hide_fixed` (Boolean)
-- `power_schedule_type` (String)
+- `power_schedule` (String) ID of the power schedule
+- `power_schedule_hide_fixed` (Boolean) Hide fixed schedule from users
+- `power_schedule_type` (String) Options: "user" (user configurable), "fixed" (strict schedule)
 
 
 <a id="nestedatt--config_required_network"></a>
@@ -378,9 +378,9 @@ Read-Only:
 
 Read-Only:
 
-- `server_naming_conflict` (Boolean)
-- `server_naming_pattern` (String)
-- `server_naming_type` (String)
+- `server_naming_conflict` (Boolean) Auto-resolve conflicts
+- `server_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+- `server_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_shutdown"></a>
@@ -388,19 +388,19 @@ Read-Only:
 
 Read-Only:
 
-- `account_integration_id` (String)
-- `flow_id` (String)
-- `shutdown_age` (String)
+- `account_integration_id` (String) ID of your ServiceNow or approval integration
+- `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
+- `shutdown_age` (String) Days instance is allowed to run before shutdown
 - `shutdown_allow_extend` (Boolean)
 - `shutdown_auto_renew` (Boolean)
-- `shutdown_extensions_before_approval` (String)
-- `shutdown_hide_fixed` (Boolean)
-- `shutdown_message` (String)
-- `shutdown_notify` (String)
-- `shutdown_renewal` (String)
-- `shutdown_type` (String)
-- `shutdown_workflow_id` (String)
-- `workflow_type` (String)
+- `shutdown_extensions_before_approval` (String) Number of extensions before requiring approval
+- `shutdown_hide_fixed` (Boolean) Hide fixed shutdown from users
+- `shutdown_message` (String) Notification message
+- `shutdown_notify` (String) Days before shutdown to notify via email
+- `shutdown_renewal` (String) If the instance is renewed, this is the number of day increments the shutdown date is increased by
+- `shutdown_type` (String) Options: "user" (user configurable), "fixed" (strict shutdown)
+- `shutdown_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+- `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
 
 
 <a id="nestedatt--config_storage_server_quota"></a>
@@ -408,8 +408,8 @@ Read-Only:
 
 Read-Only:
 
-- `max_storage` (String)
-- `storage_server_id` (String)
+- `max_storage` (String) Max Storage (GB)
+- `storage_server_id` (String) ID of the storage server
 
 
 <a id="nestedatt--config_tags"></a>
@@ -417,10 +417,10 @@ Read-Only:
 
 Read-Only:
 
-- `key` (String)
-- `strict` (Boolean)
-- `value` (String)
-- `value_list_id` (String)
+- `key` (String) Tag key to enforce
+- `strict` (Boolean) Strict enforcement
+- `value` (String) Tag value (optional, can be left empty for any value)
+- `value_list_id` (String) ID of value from value list (optional)
 
 
 <a id="nestedatt--config_workflow"></a>
@@ -428,7 +428,7 @@ Read-Only:
 
 Read-Only:
 
-- `workflow_id` (String)
+- `workflow_id` (String) ID of the workflow to execute
 
 
 <a id="nestedatt--group"></a>
