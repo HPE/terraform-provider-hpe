@@ -128,8 +128,11 @@ Required:
 
 Required:
 
-- `enable_ransomware` (Boolean) Enable ransomware protection for this datastore.
 - `protocol_type` (String) Storage protocol type, either iSCSI or FC (Fibre Channel)
+
+Optional:
+
+- `enable_ransomware` (Boolean) Enable ransomware protection for this datastore.
 
 
 <a id="nestedatt--config_nfs"></a>
