@@ -772,39 +772,6 @@ func getPolicyAsState(
 		state.PolicyType = policyTypeValue
 	}
 
-	// Initialize all config_* fields to null by default
-	state.ConfigApproval = NewConfigApprovalValueNull()
-	state.ConfigBackupStorage = NewConfigBackupStorageValueNull()
-	state.ConfigCreateBackup = NewConfigCreateBackupValueNull()
-	state.ConfigCreateUser = NewConfigCreateUserValueNull()
-	state.ConfigCreateUserGroup = NewConfigCreateUserGroupValueNull()
-	state.ConfigCypher = NewConfigCypherValueNull()
-	state.ConfigDelayedRemoval = NewConfigDelayedRemovalValueNull()
-	state.ConfigHostNaming = NewConfigHostNamingValueNull()
-	state.ConfigLifecycle = NewConfigLifecycleValueNull()
-	state.ConfigMaxContainers = NewConfigMaxContainersValueNull()
-	state.ConfigMaxCores = NewConfigMaxCoresValueNull()
-	state.ConfigMaxHosts = NewConfigMaxHostsValueNull()
-	state.ConfigMaxMemory = NewConfigMaxMemoryValueNull()
-	state.ConfigMaxNetworks = NewConfigMaxNetworksValueNull()
-	state.ConfigMaxPoolMembers = NewConfigMaxPoolMembersValueNull()
-	state.ConfigMaxPools = NewConfigMaxPoolsValueNull()
-	state.ConfigMaxPrice = NewConfigMaxPriceValueNull()
-	state.ConfigMaxRouters = NewConfigMaxRoutersValueNull()
-	state.ConfigMaxSnapshots = NewConfigMaxSnapshotsValueNull()
-	state.ConfigMaxStorage = NewConfigMaxStorageValueNull()
-	state.ConfigMaxVirtualServers = NewConfigMaxVirtualServersValueNull()
-	state.ConfigMaxVms = NewConfigMaxVmsValueNull()
-	state.ConfigMotd = NewConfigMotdValueNull()
-	state.ConfigNaming = NewConfigNamingValueNull()
-	state.ConfigPowerSchedule = NewConfigPowerScheduleValueNull()
-	state.ConfigRequiredNetwork = NewConfigRequiredNetworkValueNull()
-	state.ConfigServerNaming = NewConfigServerNamingValueNull()
-	state.ConfigShutdown = NewConfigShutdownValueNull()
-	state.ConfigStorageServerQuota = NewConfigStorageServerQuotaValueNull()
-	state.ConfigTags = NewConfigTagsValueNull()
-	state.ConfigWorkflow = NewConfigWorkflowValueNull()
-
 	// Handle Config - use static schema fields when available, fallback to dynamic
 	if p.Config != nil {
 		// Map API config to static schema fields
