@@ -50,7 +50,6 @@ func TestAccMorpheusBootScriptExampleOk(t *testing.T) {
 		"Name", name,
 		"Content", "ls",
 	)
-
 	if err != nil {
 		t.Fatal(err)
 	}
