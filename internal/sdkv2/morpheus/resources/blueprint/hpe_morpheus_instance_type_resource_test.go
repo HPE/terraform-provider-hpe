@@ -34,7 +34,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusHpeMorpheusInstanceTypeExampleOk(t *testing.T) {
+func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
