@@ -24,6 +24,7 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	//nolint:lll
 	specContent := `{
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "AWS CloudFormation Sample Template S3_Website_Bucket_With_Retain_On_Delete: Sample template showing how to create a publicly accessible S3 bucket configured for website access with a deletion policy of retain on delete. **WARNING** This template creates an S3 bucket that will NOT be deleted when the stack is deleted. You will be billed for the AWS resources used if you create a stack from this template.",
@@ -53,7 +54,9 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
   }
 }`
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_spec_template_cloud_formation_resource_local.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"hpe_morpheus_spec_template_cloud_formation_resource_local.tf.tmpl",
 		"Name", name,
 		"SourceType", "local",
 		"SpecContent", specContent,
