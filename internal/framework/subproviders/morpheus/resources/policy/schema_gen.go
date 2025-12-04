@@ -121,9 +121,11 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"config_backup_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"backup_storage_ids": schema.SetAttribute{
-						ElementType: types.Int64Type,
-						Optional:    true,
-						Computed:    true,
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Array of backup storage IDs to restrict available backup targets",
+						MarkdownDescription: "Array of backup storage IDs to restrict available backup targets",
 					},
 				},
 				CustomType: ConfigBackupStorageType{
@@ -580,8 +582,10 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 			"config_max_price": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_price": schema.NumberAttribute{
-						Optional: true,
-						Computed: true,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Maximum price limit",
+						MarkdownDescription: "Maximum price limit",
 					},
 					"max_price_currency": schema.StringAttribute{
 						Optional:            true,
@@ -837,8 +841,8 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
-						Description:         "Array of network IDs that are required",
-						MarkdownDescription: "Array of network IDs that are required",
+						Description:         "Array of required network IDs",
+						MarkdownDescription: "Array of required network IDs",
 					},
 				},
 				CustomType: ConfigRequiredNetworkType{

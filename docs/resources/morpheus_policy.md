@@ -1050,7 +1050,7 @@ Optional:
 
 Optional:
 
-- `backup_storage_ids` (Set of Number)
+- `backup_storage_ids` (Set of Number) Array of backup storage IDs to restrict available backup targets
 
 
 <a id="nestedatt--config_create_backup"></a>
@@ -1192,7 +1192,7 @@ Optional:
 
 Optional:
 
-- `max_price` (Number)
+- `max_price` (Number) Maximum price limit
 - `max_price_currency` (String) Currency code (e.g., USD)
 - `max_price_unit` (String) Options: "hour", "month"
 
@@ -1274,7 +1274,7 @@ Optional:
 
 Optional:
 
-- `required_networks` (Set of Number) Array of network IDs that are required
+- `required_networks` (Set of Number) Array of required network IDs
 
 
 <a id="nestedatt--config_server_naming"></a>
