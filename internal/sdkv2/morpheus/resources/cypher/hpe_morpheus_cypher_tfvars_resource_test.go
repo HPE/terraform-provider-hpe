@@ -45,10 +45,10 @@ func TestAccMorpheusHpeMorpheusCypherTfvarsExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	_ = acctest.RandomWithPrefix(t.Name())
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_cypher_tfvars_resource.tf.tmpl",
-		"Key", "securetfvars",
+		"Key", name,
 		"Ttl", "86400",
 		"Value", "account=12345\npassword=supersecure",
 	)
@@ -60,7 +60,7 @@ func TestAccMorpheusHpeMorpheusCypherTfvarsExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
 			"key",
-			"securetfvars",
+			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
