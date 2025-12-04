@@ -86,7 +86,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_approval.workflow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("workflow_id"),
+							}...),
 						},
 					},
 					"workflow_id": schema.StringAttribute{
@@ -95,7 +97,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_approval.flow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("flow_id"),
+							}...),
 						},
 					},
 					"workflow_type": schema.StringAttribute{
@@ -335,7 +339,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_lifecycle.lifecycle_workflow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("lifecycle_workflow_id"),
+							}...),
 						},
 					},
 					"lifecycle_age": schema.StringAttribute{
@@ -394,7 +400,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_lifecycle.flow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("flow_id"),
+							}...),
 						},
 					},
 					"workflow_type": schema.StringAttribute{
@@ -906,7 +914,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_shutdown.shutdown_workflow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("shutdown_workflow_id"),
+							}...),
 						},
 					},
 					"shutdown_age": schema.StringAttribute{
@@ -965,7 +975,9 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 						Validators: []validator.String{
-							stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_shutdown.flow_id")}...),
+							stringvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("flow_id"),
+							}...),
 						},
 					},
 					"workflow_type": schema.StringAttribute{
