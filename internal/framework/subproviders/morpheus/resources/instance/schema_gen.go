@@ -5,7 +5,10 @@ package instance
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -22,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -363,6 +365,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -457,21 +460,22 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceModel struct {
-	CloudId           types.Int64   `tfsdk:"cloud_id"`
-	Config            types.Dynamic `tfsdk:"config"`
-	Evars             types.Set     `tfsdk:"evars"`
-	GroupId           types.Int64   `tfsdk:"group_id"`
-	Id                types.Int64   `tfsdk:"id"`
-	InstanceContext   types.String  `tfsdk:"instance_context"`
-	InstanceTypeId    types.Int64   `tfsdk:"instance_type_id"`
-	LayoutId          types.Int64   `tfsdk:"layout_id"`
-	Name              types.String  `tfsdk:"name"`
-	NetworkInterfaces types.List    `tfsdk:"network_interfaces"`
-	PlanId            types.Int64   `tfsdk:"plan_id"`
-	Ports             types.Set     `tfsdk:"ports"`
-	Tags              types.Set     `tfsdk:"tags"`
-	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
-	Volumes           types.List    `tfsdk:"volumes"`
+	CloudId           types.Int64    `tfsdk:"cloud_id"`
+	Config            types.Dynamic  `tfsdk:"config"`
+	Evars             types.Set      `tfsdk:"evars"`
+	GroupId           types.Int64    `tfsdk:"group_id"`
+	Id                types.Int64    `tfsdk:"id"`
+	InstanceContext   types.String   `tfsdk:"instance_context"`
+	InstanceTypeId    types.Int64    `tfsdk:"instance_type_id"`
+	LayoutId          types.Int64    `tfsdk:"layout_id"`
+	Name              types.String   `tfsdk:"name"`
+	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
+	PlanId            types.Int64    `tfsdk:"plan_id"`
+	Ports             types.Set      `tfsdk:"ports"`
+	Tags              types.Set      `tfsdk:"tags"`
+	TaskSetId         types.Int64    `tfsdk:"task_set_id"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Volumes           types.List     `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}

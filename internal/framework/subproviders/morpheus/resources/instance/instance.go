@@ -286,6 +286,9 @@ func getInstanceAsState(
 	// This should probably be replaced by a plan modifier.
 	state.Ports = plan.Ports
 
+	// timeouts
+	state.Timeouts = plan.Timeouts
+
 	// tags
 	tags, d := convert.ToSetType(
 		ctx,
@@ -559,6 +562,16 @@ func (g *Resource) Create(
 		return
 	}
 
+	// Get timeout from HCL if set, the default is 45 minutes
+	createTimeout, diags := plan.Timeouts.Create(ctx, 45*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
+
 	client, err := g.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -755,7 +768,6 @@ func (g *Resource) Create(
 		ctx,
 		waitForReady,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
-		backoff.WithMaxElapsedTime(45*time.Minute),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"create instance resource",
@@ -790,6 +802,16 @@ func (g *Resource) Delete(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Get timeout from HCL if set, the default is 45 minutes
+	deleteTimeout, diags := data.Timeouts.Delete(ctx, 45*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
+	defer cancel()
 
 	id := data.Id
 	client, err := g.NewClient(ctx)
@@ -834,7 +856,6 @@ func (g *Resource) Delete(
 		ctx,
 		waitForDeleted,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
-		backoff.WithMaxElapsedTime(45*time.Minute),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"delete instance resource",
