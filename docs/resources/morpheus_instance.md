@@ -247,7 +247,7 @@ The layout may have default ports, which are defined in node types, that are alw
 Optional:
 
 - `child_virtual_networks` (Attributes List) The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list
-cannot be empty, it can either not be specified in HCL or if specified must contain at least one element
+cannot be empty, it can either not be specified in HCL or if specified must contain at least one element.
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
