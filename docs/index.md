@@ -139,8 +139,8 @@ In this release (v0.4.0) we have added the following resource functionality:
 
 In this release (v0.4.0) we have added the following data-source functionality:
 
-- hpe_morpheus_image data-source has been added
-- hpe_morpheus_policy data-source has been added
+- hpe_morpheus_image
+- hpe_morpheus_policy
 
 ### New known issues
 
