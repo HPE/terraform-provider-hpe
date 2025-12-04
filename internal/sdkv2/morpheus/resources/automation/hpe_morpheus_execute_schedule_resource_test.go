@@ -34,7 +34,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusHpeMorpheusExecuteScheduleExampleOk(t *testing.T) {
+func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
