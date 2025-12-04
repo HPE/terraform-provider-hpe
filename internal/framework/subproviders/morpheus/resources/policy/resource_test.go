@@ -284,6 +284,46 @@ resource "hpe_morpheus_policy" "validation_test" {
 	})
 }
 
+// Test validation: config_approval flow_id and workflow_id conflict
+func TestAccMorpheusPolicyValidationApprovalWorkflowConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Global"
+  
+  policy_type = {
+    code = "approval"
+  }
+  
+  config_approval = {
+    workflow_type = "flow"
+    flow_id = "1"
+    workflow_id = "1"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("Attribute \"config_approval.workflow_id\" cannot be specified when"),
+			},
+		},
+	})
+}
+
 // Test validation: config_approval flow_id required when workflow_type is flow
 func TestAccMorpheusPolicyValidationApprovalFlowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
