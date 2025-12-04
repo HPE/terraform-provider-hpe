@@ -1,0 +1,19 @@
+resource "hpe_morpheus_task_chef_bootstrap" "cheftask" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = {{.Labels}}
+  chef_server_id      = {{.ChefServerId}}
+  environment         = "{{.Environment}}"
+  run_list            = "{{.RunList}}"
+  data_bag_key        = "{{.DataBagKey}}"
+  data_bag_key_path   = "{{.DataBagKeyPath}}"
+  node_name           = "{{.NodeName}}"
+  node_attributes     = <<EOF
+{{.NodeAttributes}}
+EOF
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+  visibility          = "{{.Visibility}}"
+}
