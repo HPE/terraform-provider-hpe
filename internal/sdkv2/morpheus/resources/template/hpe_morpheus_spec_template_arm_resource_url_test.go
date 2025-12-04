@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func TestAccMorpheusHpeMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
