@@ -53,6 +53,9 @@ func (g *Resource) Update(
 
 	if isAPIUpdateNeeded(plan, state) {
 		makeUpdateAPIcalls(ctx, client, plan, state, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
