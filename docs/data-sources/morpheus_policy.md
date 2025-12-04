@@ -145,7 +145,7 @@ Read-Only:
 
 Read-Only:
 
-- `backup_storage_ids` (Set of String)
+- `backup_storage_ids` (Set of String) Array of backup storage IDs to restrict available backup targets
 
 
 <a id="nestedatt--config_create_backup"></a>
@@ -287,7 +287,7 @@ Read-Only:
 
 Read-Only:
 
-- `max_price` (Number)
+- `max_price` (Number) Maximum price limit
 - `max_price_currency` (String) Currency code (e.g., USD)
 - `max_price_unit` (String) Options: "hour", "month"
 
@@ -370,7 +370,7 @@ Read-Only:
 
 Read-Only:
 
-- `required_networks` (Set of Number)
+- `required_networks` (Set of Number) Array of required network IDs
 
 
 <a id="nestedatt--config_server_naming"></a>
