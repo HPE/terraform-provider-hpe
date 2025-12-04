@@ -33,7 +33,8 @@ to infrastructure after removal and on the next `apply` the attribute will be re
 -> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
-the new settings but no `Morpheus` `Update` API calls will be made.
+the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
+`read` and `update` is 45 minutes
 
 -> Beware when importing an instance where DHCP has been enabled: if the experimental `plan` functionality
 to generate HCL (flag `-generate-config-out`) is being used the resulting HCL will contain IP addresses for
@@ -59,7 +60,7 @@ We support `timeouts` using the Hashicorp Framework [timeouts package](https://d
 The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
 If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
 detected is for `timeouts` then the State will be updated with the new settings but no `Morpheus` `Update` API calls
-will be made.
+will be made.  The default timeout for `create`, `delete`, `read` and `update` is 45 minutes
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_timeouts.tf" }}
 
