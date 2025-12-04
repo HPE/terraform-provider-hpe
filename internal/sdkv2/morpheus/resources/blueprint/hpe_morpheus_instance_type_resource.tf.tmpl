@@ -1,0 +1,28 @@
+resource "hpe_morpheus_instance_type" "tf_example_instance_type" {
+  name               = "{{.Name}}"
+  code               = "{{.Code}}"
+  description        = "{{.Description}}"
+  labels             = {{.Labels}}
+  category           = "{{.Category}}"
+  visibility         = "{{.Visibility}}"
+  image_path         = "{{.ImagePath}}"
+  image_name         = "{{.ImageName}}"
+  featured           = {{.Featured}}
+  enable_deployments = {{.EnableDeployments}}
+  enable_scaling     = {{.EnableScaling}}
+  enable_settings    = {{.EnableSettings}}
+  environment_prefix = "{{.EnvironmentPrefix}}"
+  option_type_ids    = {{.OptionTypeIds}}
+
+  evar {
+    name   = "{{.Evar1Name}}"
+    value  = "{{.Evar1Value}}"
+    export = {{.Evar1Export}}
+  }
+
+  evar {
+    name         = "{{.Evar2Name}}"
+    masked_value = "{{.Evar2MaskedValue}}"
+    export       = {{.Evar2Export}}
+  }
+}
