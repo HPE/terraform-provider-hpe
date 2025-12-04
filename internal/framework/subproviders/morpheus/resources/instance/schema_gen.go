@@ -149,6 +149,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										MarkdownDescription: "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
 										PlanModifiers: []planmodifier.Int64{
 											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
 										},
 										Validators: []validator.Int64{
 											int64validator.ConflictsWith(path.Expressions{
@@ -163,6 +164,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
 										PlanModifiers: []planmodifier.Int64{
 											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
 										},
 									},
 									"network_type_id": schema.Int64Attribute{
@@ -172,6 +174,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										MarkdownDescription: "The id of the type of network interface",
 										PlanModifiers: []planmodifier.Int64{
 											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
 										},
 									},
 									"primary_interface": schema.BoolAttribute{
@@ -187,8 +190,18 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 							Optional:            true,
-							Description:         "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-							MarkdownDescription: "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							Description:         "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							MarkdownDescription: "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							PlanModifiers: []planmodifier.List{
+								listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
+									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+										return
+									}
+									if len(req.StateValue.Elements()) != len(req.ConfigValue.Elements()) {
+										resp.RequiresReplace = true
+									}
+								}, "require replace if number of entries in list has changed", "require replace if number of entries in list has changed"),
+							},
 							Validators: []validator.List{
 								listvalidator.SizeAtLeast(1),
 							},
@@ -235,6 +248,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							MarkdownDescription: "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
 							PlanModifiers: []planmodifier.Int64{
 								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
 							},
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
@@ -249,6 +263,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
 							PlanModifiers: []planmodifier.Int64{
 								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
 							},
 						},
 						"network_type_id": schema.Int64Attribute{
@@ -258,6 +273,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							MarkdownDescription: "The id of the type of network interface",
 							PlanModifiers: []planmodifier.Int64{
 								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
 							},
 						},
 						"primary_interface": schema.BoolAttribute{
@@ -280,10 +296,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
 							return
 						}
-						if !req.StateValue.Equal(req.ConfigValue) {
+						if len(req.StateValue.Elements()) != len(req.ConfigValue.Elements()) {
 							resp.RequiresReplace = true
 						}
-					}, "require replace if network interface layout has changed", "require replace if network interface layout has changed"),
+					}, "require replace if number of entries in list has changed", "require replace if number of entries in list has changed"),
 				},
 			},
 			"plan_id": schema.Int64Attribute{
