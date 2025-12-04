@@ -30,6 +30,11 @@ the creation of one VM per instance.  When executing terraform an error will be 
 `layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
 to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
+-> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+Note that we don't use the `timeouts` settings for `read`.  If the `timeouts` settings are changed in HCL an
+`Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
+the new settings but no `Morpheus` `Update` API calls will be made.
+
 -> Beware when importing an instance where DHCP has been enabled: if the experimental `plan` functionality
 to generate HCL (flag `-generate-config-out`) is being used the resulting HCL will contain IP addresses for
 each of the interfaces. Remove these IP addresses from the generated HCL *before* executing `terraform apply`
