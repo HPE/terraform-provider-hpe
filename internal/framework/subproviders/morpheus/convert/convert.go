@@ -137,19 +137,13 @@ func Int64ToType(i *int64) types.Int64 {
 	return types.Int64Value(*i)
 }
 
-// StrToNumber converts a string pointer to a types.Number.
-// Returns null if the pointer is nil or the string cannot be parsed.
-func StrToNumber(s *string) types.Number {
-	if s == nil {
+func NumToType(f *float32) types.Number {
+	if f == nil {
 		return types.NumberNull()
 	}
 
-	// Parse string to big.Float
-	bf := new(big.Float)
-	_, ok := bf.SetString(*s)
-	if !ok {
-		return types.NumberNull()
-	}
+	// Convert float32 to big.Float
+	bf := big.NewFloat(float64(*f))
 
 	return types.NumberValue(bf)
 }
