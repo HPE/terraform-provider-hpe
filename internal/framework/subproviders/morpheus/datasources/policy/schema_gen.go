@@ -52,16 +52,24 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_approval": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"account_integration_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of your ServiceNow or approval integration",
+						MarkdownDescription: "ID of your ServiceNow or approval integration",
 					},
 					"flow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
+						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 					},
 					"workflow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
+						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 					},
 					"workflow_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 					},
 				},
 				CustomType: ConfigApprovalType{
@@ -76,8 +84,10 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_backup_storage": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"backup_storage_ids": schema.SetAttribute{
-						ElementType: types.StringType,
-						Computed:    true,
+						ElementType:         types.StringType,
+						Computed:            true,
+						Description:         "Array of backup storage IDs to restrict available backup targets",
+						MarkdownDescription: "Array of backup storage IDs to restrict available backup targets",
 					},
 				},
 				CustomType: ConfigBackupStorageType{
@@ -92,10 +102,14 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_create_backup": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"create_backup": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Enforce backup creation",
+						MarkdownDescription: "Enforce backup creation",
 					},
 					"create_backup_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 					},
 				},
 				CustomType: ConfigCreateBackupType{
@@ -110,10 +124,14 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_create_user": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"create_user": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Enforce user creation",
+						MarkdownDescription: "Enforce user creation",
 					},
 					"create_user_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\"",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\"",
 					},
 				},
 				CustomType: ConfigCreateUserType{
@@ -128,7 +146,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_create_user_group": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"user_group": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of the user group to assign",
+						MarkdownDescription: "ID of the user group to assign",
 					},
 				},
 				CustomType: ConfigCreateUserGroupType{
@@ -143,22 +163,34 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_cypher": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"delete": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Allow delete access",
+						MarkdownDescription: "Allow delete access",
 					},
 					"key_pattern": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Pattern to match Cypher keys (e.g., \"secret/*\", \"password/*\")",
+						MarkdownDescription: "Pattern to match Cypher keys (e.g., \"secret/*\", \"password/*\")",
 					},
 					"list": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Allow list access",
+						MarkdownDescription: "Allow list access",
 					},
 					"read": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Allow read access",
+						MarkdownDescription: "Allow read access",
 					},
 					"update": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Allow update access",
+						MarkdownDescription: "Allow update access",
 					},
 					"write": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Allow write access",
+						MarkdownDescription: "Allow write access",
 					},
 				},
 				CustomType: ConfigCypherType{
@@ -173,7 +205,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_delayed_removal": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"removal_age": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Number of days to delay deletion",
+						MarkdownDescription: "Number of days to delay deletion",
 					},
 				},
 				CustomType: ConfigDelayedRemovalType{
@@ -188,10 +222,14 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_host_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"host_naming_pattern": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"host_naming_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 					},
 				},
 				CustomType: ConfigHostNamingType{
@@ -206,13 +244,19 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_lifecycle": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"account_integration_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of your ServiceNow or approval integration",
+						MarkdownDescription: "ID of your ServiceNow or approval integration",
 					},
 					"flow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
+						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 					},
 					"lifecycle_age": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Days until expiration",
+						MarkdownDescription: "Days until expiration",
 					},
 					"lifecycle_allow_extend": schema.BoolAttribute{
 						Computed: true,
@@ -221,28 +265,44 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"lifecycle_extensions_before_approval": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Number of extensions before requiring approval",
+						MarkdownDescription: "Number of extensions before requiring approval",
 					},
 					"lifecycle_hide_fixed": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Hide fixed expiration from users",
+						MarkdownDescription: "Hide fixed expiration from users",
 					},
 					"lifecycle_message": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Notification message",
+						MarkdownDescription: "Notification message",
 					},
 					"lifecycle_notify": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Days before expiration to notify",
+						MarkdownDescription: "Days before expiration to notify",
 					},
 					"lifecycle_renewal": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Days for renewal window",
+						MarkdownDescription: "Days for renewal window",
 					},
 					"lifecycle_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)",
 					},
 					"lifecycle_workflow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
+						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 					},
 					"workflow_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 					},
 				},
 				CustomType: ConfigLifecycleType{
@@ -257,7 +317,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_containers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_containers": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Containers",
+						MarkdownDescription: "Max Containers",
 					},
 				},
 				CustomType: ConfigMaxContainersType{
@@ -275,7 +337,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"max_cores": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Cores",
+						MarkdownDescription: "Max Cores",
 					},
 				},
 				CustomType: ConfigMaxCoresType{
@@ -290,7 +354,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_hosts": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_hosts": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Hosts",
+						MarkdownDescription: "Max Hosts",
 					},
 				},
 				CustomType: ConfigMaxHostsType{
@@ -308,7 +374,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"max_memory": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Memory (GB)",
+						MarkdownDescription: "Max Memory (GB)",
 					},
 				},
 				CustomType: ConfigMaxMemoryType{
@@ -323,7 +391,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_networks": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_networks": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Networks",
+						MarkdownDescription: "Max Networks",
 					},
 				},
 				CustomType: ConfigMaxNetworksType{
@@ -338,7 +408,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_pool_members": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_pool_members": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Pool Members",
+						MarkdownDescription: "Max Pool Members",
 					},
 				},
 				CustomType: ConfigMaxPoolMembersType{
@@ -353,7 +425,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_pools": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_pools": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Pools",
+						MarkdownDescription: "Max Pools",
 					},
 				},
 				CustomType: ConfigMaxPoolsType{
@@ -367,14 +441,20 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_max_price": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"max_price": schema.StringAttribute{
-						Computed: true,
+					"max_price": schema.NumberAttribute{
+						Computed:            true,
+						Description:         "Maximum price limit",
+						MarkdownDescription: "Maximum price limit",
 					},
 					"max_price_currency": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Currency code (e.g., USD)",
+						MarkdownDescription: "Currency code (e.g., USD)",
 					},
 					"max_price_unit": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"hour\", \"month\"",
+						MarkdownDescription: "Options: \"hour\", \"month\"",
 					},
 				},
 				CustomType: ConfigMaxPriceType{
@@ -389,7 +469,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_routers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_routers": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Routers",
+						MarkdownDescription: "Max Routers",
 					},
 				},
 				CustomType: ConfigMaxRoutersType{
@@ -404,7 +486,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_snapshots": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_snapshots": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Snapshots",
+						MarkdownDescription: "Max Snapshots",
 					},
 				},
 				CustomType: ConfigMaxSnapshotsType{
@@ -422,7 +506,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"max_storage": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Storage (GB)",
+						MarkdownDescription: "Max Storage (GB)",
 					},
 				},
 				CustomType: ConfigMaxStorageType{
@@ -437,7 +523,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_virtual_servers": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_virtual_servers": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Virtual Servers",
+						MarkdownDescription: "Max Virtual Servers",
 					},
 				},
 				CustomType: ConfigMaxVirtualServersType{
@@ -452,7 +540,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_max_vms": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_vms": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max VMs",
+						MarkdownDescription: "Max VMs",
 					},
 				},
 				CustomType: ConfigMaxVmsType{
@@ -470,16 +560,24 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"motddate": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Display date for message",
+						MarkdownDescription: "Display date for message",
 					},
 					"motdmessage": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Message content",
+						MarkdownDescription: "Message content",
 					},
 					"motdtitle": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Message title",
+						MarkdownDescription: "Message title",
 					},
 					"motdtype": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"info\", \"warning\", \"critical\"",
+						MarkdownDescription: "Options: \"info\", \"warning\", \"critical\"",
 					},
 				},
 				CustomType: ConfigMotdType{
@@ -494,13 +592,19 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"naming_conflict": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Auto-resolve conflicts",
+						MarkdownDescription: "Auto-resolve conflicts",
 					},
 					"naming_pattern": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"naming_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 					},
 				},
 				CustomType: ConfigNamingType{
@@ -515,13 +619,19 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_power_schedule": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"power_schedule": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of the power schedule",
+						MarkdownDescription: "ID of the power schedule",
 					},
 					"power_schedule_hide_fixed": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Hide fixed schedule from users",
+						MarkdownDescription: "Hide fixed schedule from users",
 					},
 					"power_schedule_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict schedule)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict schedule)",
 					},
 				},
 				CustomType: ConfigPowerScheduleType{
@@ -536,8 +646,10 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_required_network": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"required_networks": schema.SetAttribute{
-						ElementType: types.Int64Type,
-						Computed:    true,
+						ElementType:         types.Int64Type,
+						Computed:            true,
+						Description:         "Array of required network IDs",
+						MarkdownDescription: "Array of required network IDs",
 					},
 				},
 				CustomType: ConfigRequiredNetworkType{
@@ -552,13 +664,19 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_server_naming": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"server_naming_conflict": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Auto-resolve conflicts",
+						MarkdownDescription: "Auto-resolve conflicts",
 					},
 					"server_naming_pattern": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
+						MarkdownDescription: "Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType",
 					},
 					"server_naming_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 					},
 				},
 				CustomType: ConfigServerNamingType{
@@ -573,13 +691,19 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_shutdown": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"account_integration_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of your ServiceNow or approval integration",
+						MarkdownDescription: "ID of your ServiceNow or approval integration",
 					},
 					"flow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of ServiceNow Flow (set if workflowType is 'flow')",
+						MarkdownDescription: "ID of ServiceNow Flow (set if workflowType is 'flow')",
 					},
 					"shutdown_age": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Days instance is allowed to run before shutdown",
+						MarkdownDescription: "Days instance is allowed to run before shutdown",
 					},
 					"shutdown_allow_extend": schema.BoolAttribute{
 						Computed: true,
@@ -588,28 +712,44 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"shutdown_extensions_before_approval": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Number of extensions before requiring approval",
+						MarkdownDescription: "Number of extensions before requiring approval",
 					},
 					"shutdown_hide_fixed": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Hide fixed shutdown from users",
+						MarkdownDescription: "Hide fixed shutdown from users",
 					},
 					"shutdown_message": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Notification message",
+						MarkdownDescription: "Notification message",
 					},
 					"shutdown_notify": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Days before shutdown to notify via email",
+						MarkdownDescription: "Days before shutdown to notify via email",
 					},
 					"shutdown_renewal": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "If the instance is renewed, this is the number of day increments the shutdown date is increased by",
+						MarkdownDescription: "If the instance is renewed, this is the number of day increments the shutdown date is increased by",
 					},
 					"shutdown_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)",
+						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)",
 					},
 					"shutdown_workflow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
+						MarkdownDescription: "ID of legacy ServiceNow workflow (set if workflowType is 'workflow')",
 					},
 					"workflow_type": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 					},
 				},
 				CustomType: ConfigShutdownType{
@@ -624,10 +764,14 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_storage_server_quota": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"max_storage": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Max Storage (GB)",
+						MarkdownDescription: "Max Storage (GB)",
 					},
 					"storage_server_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of the storage server",
+						MarkdownDescription: "ID of the storage server",
 					},
 				},
 				CustomType: ConfigStorageServerQuotaType{
@@ -642,16 +786,24 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_tags": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"key": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Tag key to enforce",
+						MarkdownDescription: "Tag key to enforce",
 					},
 					"strict": schema.BoolAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Strict enforcement",
+						MarkdownDescription: "Strict enforcement",
 					},
 					"value": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "Tag value (optional, can be left empty for any value)",
+						MarkdownDescription: "Tag value (optional, can be left empty for any value)",
 					},
 					"value_list_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of value from value list (optional)",
+						MarkdownDescription: "ID of value from value list (optional)",
 					},
 				},
 				CustomType: ConfigTagsType{
@@ -666,7 +818,9 @@ func PolicyDataSourceSchema(ctx context.Context) schema.Schema {
 			"config_workflow": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"workflow_id": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "ID of the workflow to execute",
+						MarkdownDescription: "ID of the workflow to execute",
 					},
 				},
 				CustomType: ConfigWorkflowType{
@@ -8000,12 +8154,12 @@ func (t ConfigMaxPriceType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		return nil, diags
 	}
 
-	maxPriceVal, ok := maxPriceAttribute.(basetypes.StringValue)
+	maxPriceVal, ok := maxPriceAttribute.(basetypes.NumberValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_price expected to be basetypes.StringValue, was: %T`, maxPriceAttribute))
+			fmt.Sprintf(`max_price expected to be basetypes.NumberValue, was: %T`, maxPriceAttribute))
 	}
 
 	maxPriceCurrencyAttribute, ok := attributes["max_price_currency"]
@@ -8129,12 +8283,12 @@ func NewConfigMaxPriceValue(attributeTypes map[string]attr.Type, attributes map[
 		return NewConfigMaxPriceValueUnknown(), diags
 	}
 
-	maxPriceVal, ok := maxPriceAttribute.(basetypes.StringValue)
+	maxPriceVal, ok := maxPriceAttribute.(basetypes.NumberValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_price expected to be basetypes.StringValue, was: %T`, maxPriceAttribute))
+			fmt.Sprintf(`max_price expected to be basetypes.NumberValue, was: %T`, maxPriceAttribute))
 	}
 
 	maxPriceCurrencyAttribute, ok := attributes["max_price_currency"]
@@ -8253,7 +8407,7 @@ func (t ConfigMaxPriceType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigMaxPriceValue{}
 
 type ConfigMaxPriceValue struct {
-	MaxPrice         basetypes.StringValue `tfsdk:"max_price"`
+	MaxPrice         basetypes.NumberValue `tfsdk:"max_price"`
 	MaxPriceCurrency basetypes.StringValue `tfsdk:"max_price_currency"`
 	MaxPriceUnit     basetypes.StringValue `tfsdk:"max_price_unit"`
 	state            attr.ValueState
@@ -8265,7 +8419,7 @@ func (v ConfigMaxPriceValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 	var val tftypes.Value
 	var err error
 
-	attrTypes["max_price"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_price"] = basetypes.NumberType{}.TerraformType(ctx)
 	attrTypes["max_price_currency"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["max_price_unit"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -8329,7 +8483,7 @@ func (v ConfigMaxPriceValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"max_price":          basetypes.StringType{},
+		"max_price":          basetypes.NumberType{},
 		"max_price_currency": basetypes.StringType{},
 		"max_price_unit":     basetypes.StringType{},
 	}
@@ -8393,7 +8547,7 @@ func (v ConfigMaxPriceValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigMaxPriceValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"max_price":          basetypes.StringType{},
+		"max_price":          basetypes.NumberType{},
 		"max_price_currency": basetypes.StringType{},
 		"max_price_unit":     basetypes.StringType{},
 	}

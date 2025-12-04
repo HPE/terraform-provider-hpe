@@ -93,7 +93,8 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 			"config_alletramp_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"enable_ransomware": schema.BoolAttribute{
-						Required:            true,
+						Computed:            true,
+						Optional:            true,
 						Description:         "Enable ransomware protection for this datastore.",
 						MarkdownDescription: "Enable ransomware protection for this datastore.",
 					},
