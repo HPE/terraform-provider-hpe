@@ -264,7 +264,6 @@ func resourceOptionListManualRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("labels", optionList.Labels)
 	}
 
-	d.Set("type", optionList.Type)
 	d.Set("visibility", optionList.Visibility)
 	d.Set("dataset", optionList.InitialDataset)
 	d.Set("real_time", optionList.RealTime)
