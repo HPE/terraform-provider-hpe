@@ -770,6 +770,7 @@ func (g *Resource) Create(
 		ctx,
 		waitForReady,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+		backoff.WithMaxElapsedTime(createTimeout),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"create instance resource",
@@ -858,6 +859,7 @@ func (g *Resource) Delete(
 		ctx,
 		waitForDeleted,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+		backoff.WithMaxElapsedTime(deleteTimeout),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"delete instance resource",

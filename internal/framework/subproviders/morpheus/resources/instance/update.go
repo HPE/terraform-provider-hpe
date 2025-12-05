@@ -52,7 +52,7 @@ func (g *Resource) Update(
 	defer cancel()
 
 	if isAPIUpdateNeeded(plan, state) {
-		makeUpdateAPIcalls(ctx, client, plan, state, resp)
+		makeUpdateAPIcalls(ctx, client, plan, state, updateTimeout, resp)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -77,6 +77,7 @@ func makeUpdateAPIcalls(
 	ctx context.Context,
 	client *sdk.APIClient,
 	plan, state InstanceModel,
+	updateTimeout time.Duration,
 	resp *resource.UpdateResponse,
 ) {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
@@ -206,6 +207,7 @@ func makeUpdateAPIcalls(
 			ctx,
 			waitForReady,
 			backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+			backoff.WithMaxElapsedTime(updateTimeout),
 		); err != nil {
 			resp.Diagnostics.AddError(
 				"resize instance resource",
