@@ -650,7 +650,7 @@ resource "hpe_morpheus_network" "test" {
   tenant_ids = [1]
   visibility = "private"
   cidr = "10.0.0.0/24"
-  labels = ["terraform", "test"]
+  labels = ["terraform"]
 }
 `
 
