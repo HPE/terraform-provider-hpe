@@ -252,8 +252,11 @@ func isAPIUpdateNeeded(plan, state InstanceModel) bool {
 		return true
 	}
 
-	// TODO when resizing of network_interfaces is allowed be careful because it looks as if plan and state will
-	// TODO always be different
+	// network-interfaces
+	// TODO check this carefully when resizing of networks is allowed
+	if !plan.NetworkInterfaces.Equal(state.NetworkInterfaces) {
+		return true
+	}
 
 	// timeouts - this should be the last comparison
 	if !plan.Timeouts.Equal(state.Timeouts) {
