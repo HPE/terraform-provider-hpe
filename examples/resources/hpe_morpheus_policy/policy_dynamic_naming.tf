@@ -13,8 +13,11 @@ resource "hpe_morpheus_policy" "instance_naming" {
   }
 
   config = {
-    namingType     = "user"                                   # Options: "user" (user configurable), "fixed" (strict pattern)
-    namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    # Required
+    namingType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
+
+    # Optional
+    namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
     namingConflict = true                                     # Auto-resolve conflicts
   }
 }

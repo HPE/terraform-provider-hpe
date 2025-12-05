@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "object_storage_quota" {
   }
 
   config = {
+    # Required
     maxStorage = "1000" # Maximum storage in GB
   }
 }

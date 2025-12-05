@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "router_quota" {
   }
 
   config = {
+    # Required
     maxRouters = "5" # Maximum number of routers
   }
 }

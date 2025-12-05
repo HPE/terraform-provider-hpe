@@ -13,6 +13,12 @@ resource "hpe_morpheus_policy" "approve_delete" {
   }
 
   config = {
+    # Required
     accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+
+    # Optional
+    # workflowType = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"      # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"          # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }

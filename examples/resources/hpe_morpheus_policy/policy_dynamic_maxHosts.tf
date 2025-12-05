@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_hosts" {
   }
 
   config = {
+    # Required
     maxHosts = "10" # Maximum number of hosts
   }
 }
