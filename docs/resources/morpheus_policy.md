@@ -10,10 +10,11 @@ description: |-
 
 Policies are different rules that can be applied to various Morpheus resources.
 
--> An `associated_resource_type` must be set (can be one of 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan').
+-> An `associated_resource_type` must be set (can be one of 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', or 'Plan'). The choice of `policy_type` impacts what `associated_resource_type` values are valid and if you can set `tenants`.
+
 -> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
 
--> A `policy_type_code` must be set corresponding to the respective policy type.
+-> A `policy_type.code` must be set corresponding to the respective policy type.
 
 -> A `config` block must be set corresponding to the respective policy type. Example configs for respective policy types are included below:
 
