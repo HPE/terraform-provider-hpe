@@ -31,7 +31,7 @@ the creation of one VM per instance.  When executing terraform an error will be 
 to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
 -> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
-Note that we don't use the `timeouts` settings for `read`.  If the `timeouts` settings are changed in HCL an
+If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.
 
@@ -218,8 +218,8 @@ resource "hpe_morpheus_instance" "example" {
 ### HVM Instance with timeouts
 
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
-The following example specifies `timeouts` for `create`, `delete` and `update`.  Note that we don't use the `timeouts`
-settings for `read`.  If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
+The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
+If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
 detected is for `timeouts` then the State will be updated with the new settings but no `Morpheus` `Update` API calls
 will be made.
 
@@ -301,6 +301,7 @@ resource "hpe_morpheus_instance" "example" {
     create = "1h"
     delete = "20m"
     update = "20m"
+    read   = "10m"
   }
 }
 ```
