@@ -251,7 +251,9 @@ func getInstanceAsState(
 		if pool, ok := iface.GetNetworkPoolOk(); ok {
 			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
 		}
-		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		if net, ok := iface.GetNetworkOk(); ok {
+			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
+		}
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 
@@ -876,6 +878,16 @@ func (g *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Get timeout from HCL if set, the default is 45 minutes
+	createTimeout, diags := data.Timeouts.Read(ctx, 45*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, createTimeout)
+	defer cancel()
 
 	client, err := g.NewClient(ctx)
 	if err != nil {
