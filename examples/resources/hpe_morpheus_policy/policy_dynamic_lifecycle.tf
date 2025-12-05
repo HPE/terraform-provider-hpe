@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "expiration" {
   }
 
   config = {
-    lifecycleType                     = "user"                      # Options: "user" (user configurable), "fixed" (fixed expiration)
+    # Required
+    lifecycleType = "user" # Options: "user" (user configurable), "fixed" (fixed expiration)
+
+    # Optional
     lifecycleAge                      = "30"                        # Days until expiration
     lifecycleRenewal                  = "7"                         # Days for renewal window
     lifecycleNotify                   = "1"                         # Days before expiration to notify

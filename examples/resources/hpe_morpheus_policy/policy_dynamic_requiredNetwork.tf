@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "required_networks" {
   }
 
   config = {
+    # Required
     requiredNetworks = [100, 200] # Array of required network IDs
   }
 }

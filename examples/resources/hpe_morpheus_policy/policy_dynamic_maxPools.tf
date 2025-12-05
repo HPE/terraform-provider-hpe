@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_pools" {
   }
 
   config = {
+    # Required
     maxPools = "5" # Maximum number of load balancer pools
   }
 }

@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_containers" {
   }
 
   config = {
+    # Required
     maxContainers = "50" # Maximum number of containers
   }
 }

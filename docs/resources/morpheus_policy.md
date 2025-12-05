@@ -74,10 +74,13 @@ resource "hpe_morpheus_policy" "approve_delete" {
   }
 
   config = {
-    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
-    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
-    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
-    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
+    # Required
+    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+
+    # Optional
+    # workflowType = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"      # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"          # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -100,10 +103,13 @@ resource "hpe_morpheus_policy" "approve_provision" {
   }
 
   config = {
-    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
-    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
-    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
-    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
+    # Required
+    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+
+    # Optional
+    workflowType = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"      # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"          # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -126,10 +132,13 @@ resource "hpe_morpheus_policy" "approve_reconfigure" {
   }
 
   config = {
-    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
-    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
-    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
-    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
+    # Required
+    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+
+    # Optional
+    workflowType = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"      # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"          # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -152,10 +161,13 @@ resource "hpe_morpheus_policy" "approve_workflow" {
   }
 
   config = {
-    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
-    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
-    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
-    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
+    # Required
+    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+
+    # Optional
+    # workflowType = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"      # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"          # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -178,8 +190,11 @@ resource "hpe_morpheus_policy" "backup_creation" {
   }
 
   config = {
+    # Required
     createBackupType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
-    createBackup     = true   # Enforce backup creation
+
+    # Optional
+    createBackup = true # Enforce backup creation
   }
 }
 ```
@@ -205,7 +220,10 @@ resource "hpe_morpheus_policy" "budget" {
   }
 
   config = {
-    maxPrice         = "1000"  # Maximum price limit
+    # Required
+    maxPrice = "1000" # Maximum price limit
+
+    # Optional
     maxPriceCurrency = "USD"   # Currency code
     maxPriceUnit     = "month" # Options: "hour", "month"
   }
@@ -230,7 +248,10 @@ resource "hpe_morpheus_policy" "cluster_naming" {
   }
 
   config = {
-    serverNamingType     = "user"                                        # Options: "user" (user configurable), "fixed" (strict pattern)
+    # Required
+    serverNamingType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
+
+    # Optional
     serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
     serverNamingConflict = true                                          # Auto-resolve conflicts
   }
@@ -255,12 +276,15 @@ resource "hpe_morpheus_policy" "cypher_access" {
   }
 
   config = {
+    # Required
     keyPattern = "secret/*" # Pattern to match Cypher keys (e.g., "secret/*", "password/*")
-    read       = true       # Allow read access
-    write      = true       # Allow write access
-    update     = true       # Allow update access
-    delete     = false      # Deny delete access
-    list       = true       # Allow list access
+
+    # Optional
+    read   = true  # Allow read access
+    write  = true  # Allow write access
+    update = true  # Allow update access
+    delete = false # Deny delete access
+    list   = true  # Allow list access
   }
 }
 ```
@@ -283,6 +307,7 @@ resource "hpe_morpheus_policy" "delayed_delete" {
   }
 
   config = {
+    # Required
     removalAge = "30" # Number of days to delay deletion
   }
 }
@@ -306,7 +331,10 @@ resource "hpe_morpheus_policy" "expiration" {
   }
 
   config = {
-    lifecycleType                     = "user"                      # Options: "user" (user configurable), "fixed" (fixed expiration)
+    # Required
+    lifecycleType = "user" # Options: "user" (user configurable), "fixed" (fixed expiration)
+
+    # Optional
     lifecycleAge                      = "30"                        # Days until expiration
     lifecycleRenewal                  = "7"                         # Days for renewal window
     lifecycleNotify                   = "1"                         # Days before expiration to notify
@@ -341,6 +369,7 @@ resource "hpe_morpheus_policy" "file_share_quota" {
   }
 
   config = {
+    # Required
     maxStorage = "1000" # Maximum storage in GB
   }
 }
@@ -364,7 +393,10 @@ resource "hpe_morpheus_policy" "hostname" {
   }
 
   config = {
-    hostNamingType    = "user"                                     # Options: "user" (user configurable), "fixed" (strict pattern)
+    # Required
+    hostNamingType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
+
+    # Optional
     hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
   }
 }
@@ -388,7 +420,10 @@ resource "hpe_morpheus_policy" "instance_naming" {
   }
 
   config = {
-    namingType     = "user"                                   # Options: "user" (user configurable), "fixed" (strict pattern)
+    # Required
+    namingType = "user" # Options: "user" (user configurable), "fixed" (strict pattern)
+
+    # Optional
     namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
     namingConflict = true                                     # Auto-resolve conflicts
   }
@@ -413,6 +448,7 @@ resource "hpe_morpheus_policy" "required_networks" {
   }
 
   config = {
+    # Required
     requiredNetworks = [100, 200] # Array of required network IDs
   }
 }
@@ -436,6 +472,7 @@ resource "hpe_morpheus_policy" "max_containers" {
   }
 
   config = {
+    # Required
     maxContainers = "50" # Maximum number of containers
   }
 }
@@ -459,7 +496,10 @@ resource "hpe_morpheus_policy" "max_cores" {
   }
 
   config = {
-    maxCores          = "32"  # Maximum number of CPU cores
+    # Required
+    maxCores = "32" # Maximum number of CPU cores
+
+    # Optional
     excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }
@@ -483,6 +523,7 @@ resource "hpe_morpheus_policy" "max_hosts" {
   }
 
   config = {
+    # Required
     maxHosts = "10" # Maximum number of hosts
   }
 }
@@ -506,6 +547,7 @@ resource "hpe_morpheus_policy" "max_pools" {
   }
 
   config = {
+    # Required
     maxPools = "5" # Maximum number of load balancer pools
   }
 }
@@ -529,7 +571,10 @@ resource "hpe_morpheus_policy" "max_memory" {
   }
 
   config = {
-    maxMemory         = "8"   # Maximum memory in GB
+    # Required
+    maxMemory = "8" # Maximum memory in GB
+
+    # Optional
     excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }
@@ -553,6 +598,7 @@ resource "hpe_morpheus_policy" "max_pool_members" {
   }
 
   config = {
+    # Required
     maxPoolMembers = "10" # Maximum number of pool members
   }
 }
@@ -576,6 +622,7 @@ resource "hpe_morpheus_policy" "max_snapshots" {
   }
 
   config = {
+    # Required
     maxSnapshots = "5" # Maximum number of snapshots per VM
   }
 }
@@ -599,8 +646,11 @@ resource "hpe_morpheus_policy" "max_storage" {
   }
 
   config = {
-    maxStorage        = "1000" # Maximum storage in GB
-    excludeContainers = "off"  # Options: "on", "off" - exclude containers from count
+    # Required
+    maxStorage = "1000" # Maximum storage in GB
+
+    # Optional
+    excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }
 ```
@@ -623,6 +673,7 @@ resource "hpe_morpheus_policy" "max_virtual_servers" {
   }
 
   config = {
+    # Required
     maxVirtualServers = "10" # Maximum number of virtual servers
   }
 }
@@ -646,6 +697,7 @@ resource "hpe_morpheus_policy" "max_vms" {
   }
 
   config = {
+    # Required
     maxVms = "20" # Maximum number of VMs
   }
 }
@@ -668,10 +720,13 @@ resource "hpe_morpheus_policy" "motd" {
   }
 
   config = {
-    "motd.title"    = "Welcome"                          # Message title
-    "motd.message"  = "Welcome to the Morpheus platform" # Message content
-    "motd.type"     = "info"                             # Options: "info", "warning", "critical"
-    "motd.fullPage" = "off"                              # Options: "on", "off" - display full page
+    # Required
+    "motd.title"   = "Welcome"                          # Message title
+    "motd.message" = "Welcome to the Morpheus platform" # Message content
+    "motd.type"    = "info"                             # Options: "info", "warning", "critical"
+
+    # Optional
+    "motd.fullPage" = "off" # Options: "on", "off" - display full page
   }
 }
 ```
@@ -694,6 +749,7 @@ resource "hpe_morpheus_policy" "network_quota" {
   }
 
   config = {
+    # Required
     maxNetworks = "10" # Maximum number of networks
   }
 }
@@ -717,6 +773,7 @@ resource "hpe_morpheus_policy" "object_storage_quota" {
   }
 
   config = {
+    # Required
     maxStorage = "1000" # Maximum storage in GB
   }
 }
@@ -740,9 +797,12 @@ resource "hpe_morpheus_policy" "power_schedule" {
   }
 
   config = {
-    powerScheduleType      = "user" # Options: "user" (user configurable), "fixed" (strict schedule)
-    powerSchedule          = "1"    # ID of the power schedule
-    powerScheduleHideFixed = false  # Hide fixed schedule from users
+    # Required
+    powerScheduleType = "user" # Options: "user" (user configurable), "fixed" (strict schedule)
+
+    # Optional
+    powerSchedule          = "1"   # ID of the power schedule
+    powerScheduleHideFixed = false # Hide fixed schedule from users
   }
 }
 ```
@@ -765,6 +825,7 @@ resource "hpe_morpheus_policy" "router_quota" {
   }
 
   config = {
+    # Required
     maxRouters = "5" # Maximum number of routers
   }
 }
@@ -788,7 +849,10 @@ resource "hpe_morpheus_policy" "shutdown" {
   }
 
   config = {
-    shutdownType                     = "user"                        # Options: "user" (user configurable), "fixed" (strict shutdown)
+    # Required
+    shutdownType = "user" # Options: "user" (user configurable), "fixed" (strict shutdown)
+
+    # Optional
     shutdownAge                      = "30"                          # Days instance is allowed to run before shutdown
     shutdownRenewal                  = "7"                           # If the instance is renewed, this is the number of day increments the shutdown date is increased by
     shutdownNotify                   = "1"                           # Days before shutdown to notify via email
@@ -823,8 +887,11 @@ resource "hpe_morpheus_policy" "storage_server_quota" {
   }
 
   config = {
-    storageServerId = "1"    # ID of the storage server
-    maxStorage      = "1000" # Maximum storage in GB
+    # Required
+    storageServerId = "1" # ID of the storage server
+
+    # Optional
+    maxStorage = "1000" # Maximum storage in GB
   }
 }
 ```
@@ -847,7 +914,10 @@ resource "hpe_morpheus_policy" "tags" {
   }
 
   config = {
-    strict      = true          # Strict enforcement
+    # Required
+    strict = true # Strict enforcement
+
+    # Optional
     key         = "environment" # Tag key to enforce
     value       = "production"  # Tag value (optional, can be left empty for any value)
     valueListId = ""            # ID of value from value list (optional)
@@ -873,8 +943,11 @@ resource "hpe_morpheus_policy" "user_creation" {
   }
 
   config = {
+    # Required
     createUserType = "user" # Options: "user" (user configurable), "fixed"
-    createUser     = true   # Enforce user creation
+
+    # Optional
+    createUser = true # Enforce user creation
   }
 }
 ```
@@ -897,6 +970,7 @@ resource "hpe_morpheus_policy" "user_group_creation" {
   }
 
   config = {
+    # Required
     userGroup = "1" # ID of the user group to assign
   }
 }
@@ -942,6 +1016,7 @@ resource "hpe_morpheus_policy" "workflow" {
   }
 
   config = {
+    # Required
     workflowId = morpheus_operational_workflow.example.id # ID of the workflow to execute
   }
 }

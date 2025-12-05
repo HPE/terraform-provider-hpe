@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "budget" {
   }
 
   config = {
-    maxPrice         = "1000"  # Maximum price limit
+    # Required
+    maxPrice = "1000" # Maximum price limit
+
+    # Optional
     maxPriceCurrency = "USD"   # Currency code
     maxPriceUnit     = "month" # Options: "hour", "month"
   }

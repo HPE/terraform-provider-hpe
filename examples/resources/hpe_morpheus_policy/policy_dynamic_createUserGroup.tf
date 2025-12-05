@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "user_group_creation" {
   }
 
   config = {
+    # Required
     userGroup = "1" # ID of the user group to assign
   }
 }

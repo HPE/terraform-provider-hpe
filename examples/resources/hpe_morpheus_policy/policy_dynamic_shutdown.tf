@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "shutdown" {
   }
 
   config = {
-    shutdownType                     = "user"                        # Options: "user" (user configurable), "fixed" (strict shutdown)
+    # Required
+    shutdownType = "user" # Options: "user" (user configurable), "fixed" (strict shutdown)
+
+    # Optional
     shutdownAge                      = "30"                          # Days instance is allowed to run before shutdown
     shutdownRenewal                  = "7"                           # If the instance is renewed, this is the number of day increments the shutdown date is increased by
     shutdownNotify                   = "1"                           # Days before shutdown to notify via email

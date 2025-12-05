@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_vms" {
   }
 
   config = {
+    # Required
     maxVms = "20" # Maximum number of VMs
   }
 }
