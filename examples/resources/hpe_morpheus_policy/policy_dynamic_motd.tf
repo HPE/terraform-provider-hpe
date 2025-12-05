@@ -12,9 +12,9 @@ resource "hpe_morpheus_policy" "motd" {
   }
 
   config = {
-    "motd.title"     = "Welcome"                          # Message title
-    "motd.message"   = "Welcome to the Morpheus platform" # Message content
-    "motd.type"      = "info"                             # Options: "info", "warning", "danger"
-    "motd._fullPage" = "off"                              # Options: "on", "off" - display full page
+    "motd.title"    = "Welcome"                          # Message title
+    "motd.message"  = "Welcome to the Morpheus platform" # Message content
+    "motd.type"     = "info"                             # Options: "info", "warning", "critical"
+    "motd.fullPage" = "off"                              # Options: "on", "off" - display full page
   }
 }

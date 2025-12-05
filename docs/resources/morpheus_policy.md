@@ -74,7 +74,10 @@ resource "hpe_morpheus_policy" "approve_delete" {
   }
 
   config = {
-    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
+    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -97,7 +100,10 @@ resource "hpe_morpheus_policy" "approve_provision" {
   }
 
   config = {
-    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
+    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -120,7 +126,10 @@ resource "hpe_morpheus_policy" "approve_reconfigure" {
   }
 
   config = {
-    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
+    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -143,7 +152,10 @@ resource "hpe_morpheus_policy" "approve_workflow" {
   }
 
   config = {
-    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
+    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -219,7 +231,7 @@ resource "hpe_morpheus_policy" "cluster_naming" {
 
   config = {
     serverNamingType     = "user"                                        # Options: "user" (user configurable), "fixed" (strict pattern)
-    serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    serverNamingPattern  = "cluster-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
     serverNamingConflict = true                                          # Auto-resolve conflicts
   }
 }
@@ -299,10 +311,14 @@ resource "hpe_morpheus_policy" "expiration" {
     lifecycleRenewal                  = "7"                         # Days for renewal window
     lifecycleNotify                   = "1"                         # Days before expiration to notify
     lifecycleMessage                  = "Instance will expire soon" # Notification message
-    lifecycleAutoRenew                = "on"                        # Options: "on", "off"
+    lifecycleAutoRenew                = "on"                        # Options: "on", "off" - auto renewal lifecycle
     lifecycleAllowExtend              = "off"                       # Options: "on", "off" - allow users to extend
     lifecycleExtensionsBeforeApproval = "0"                         # Number of extensions before requiring approval
     lifecycleHideFixed                = false                       # Hide fixed expiration date from users
+    # accountIntegrationId = "1"                                    # ID of your ServiceNow or approval integration
+    # workflowType = "workflow"                                     # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # lifecycleWorkflowId = "123"                                   # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                                                # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```
@@ -349,7 +365,7 @@ resource "hpe_morpheus_policy" "hostname" {
 
   config = {
     hostNamingType    = "user"                                     # Options: "user" (user configurable), "fixed" (strict pattern)
-    hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
   }
 }
 ```
@@ -373,7 +389,7 @@ resource "hpe_morpheus_policy" "instance_naming" {
 
   config = {
     namingType     = "user"                                   # Options: "user" (user configurable), "fixed" (strict pattern)
-    namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    namingPattern  = "vm-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
     namingConflict = true                                     # Auto-resolve conflicts
   }
 }
@@ -652,10 +668,10 @@ resource "hpe_morpheus_policy" "motd" {
   }
 
   config = {
-    "motd.title"     = "Welcome"                          # Message title
-    "motd.message"   = "Welcome to the Morpheus platform" # Message content
-    "motd.type"      = "info"                             # Options: "info", "warning", "danger"
-    "motd._fullPage" = "off"                              # Options: "on", "off" - display full page
+    "motd.title"    = "Welcome"                          # Message title
+    "motd.message"  = "Welcome to the Morpheus platform" # Message content
+    "motd.type"     = "info"                             # Options: "info", "warning", "critical"
+    "motd.fullPage" = "off"                              # Options: "on", "off" - display full page
   }
 }
 ```
@@ -774,13 +790,17 @@ resource "hpe_morpheus_policy" "shutdown" {
   config = {
     shutdownType                     = "user"                        # Options: "user" (user configurable), "fixed" (strict shutdown)
     shutdownAge                      = "30"                          # Days instance is allowed to run before shutdown
-    shutdownRenewal                  = "7"                           # If the instance is renewed, this is the number of day increments the shutdown date is increased by.
+    shutdownRenewal                  = "7"                           # If the instance is renewed, this is the number of day increments the shutdown date is increased by
     shutdownNotify                   = "1"                           # Days before shutdown to notify via email
     shutdownMessage                  = "Instance will shutdown soon" # Notification message
     shutdownAutoRenew                = "on"                          # Options: "on", "off"
     shutdownAllowExtend              = "off"                         # Options: "on", "off" - allow users to extend
     shutdownExtensionsBeforeApproval = "0"                           # Number of extensions before requiring approval
-    shutdownHideFixed                = false                         # Hide shutdown if fixed value
+    shutdownHideFixed                = false                         # Hide fixed shutdown from users
+    # accountIntegrationId = "1"                                     # ID of your ServiceNow or approval integration
+    # workflowType = "workflow"                                      # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # shutdownWorkflowId = "123"                                     # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                                                 # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }
 ```

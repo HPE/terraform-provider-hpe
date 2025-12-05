@@ -13,6 +13,9 @@ resource "hpe_morpheus_policy" "approve_provision" {
   }
 
   config = {
-    accountIntegrationId = "1" # ID of your ServiceNow or approval integration
+    accountIntegrationId = "1"        # ID of your ServiceNow or approval integration
+    workflowType         = "workflow" # Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
+    # workflowId = "123"              # ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    # flowId = "456"                  # ID of ServiceNow Flow (set if workflowType is 'flow')
   }
 }

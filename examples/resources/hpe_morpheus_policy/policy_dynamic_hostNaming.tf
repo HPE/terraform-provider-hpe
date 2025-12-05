@@ -14,6 +14,6 @@ resource "hpe_morpheus_policy" "hostname" {
 
   config = {
     hostNamingType    = "user"                                     # Options: "user" (user configurable), "fixed" (strict pattern)
-    hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Naming pattern with variables
+    hostNamingPattern = "host-$${groupCode}-$${type}-$${sequence}" # Name pattern uses ${variable} string interpolation. Available variables: groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
   }
 }
