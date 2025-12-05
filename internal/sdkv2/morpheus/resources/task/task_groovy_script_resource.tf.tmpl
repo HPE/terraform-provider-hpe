@@ -1,0 +1,13 @@
+resource "hpe_morpheus_task_groovy_script" "{{.Name}}" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = ["demo", "terraform"]
+  source_type         = "{{.SourceType}}"
+  script_content      = <<EOF
+{{.ScriptContent}}
+EOF
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}
