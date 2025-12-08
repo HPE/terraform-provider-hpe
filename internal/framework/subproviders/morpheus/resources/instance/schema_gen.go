@@ -123,10 +123,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
 										MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-										Validators: []validator.String{
-											stringvalidator.OneOf("static", "dhcp"),
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
 										},
-										Default: stringdefault.StaticString("dhcp"),
+										Validators: []validator.String{
+											stringvalidator.OneOf("static", "dhcp", ""),
+										},
+										Default: stringdefault.StaticString(""),
 									},
 									"ip_pool": schema.Int64Attribute{
 										Optional:            true,
@@ -231,10 +234,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
 							MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							Validators: []validator.String{
-								stringvalidator.OneOf("static", "dhcp"),
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
 							},
-							Default: stringdefault.StaticString("dhcp"),
+							Validators: []validator.String{
+								stringvalidator.OneOf("static", "dhcp", ""),
+							},
+							Default: stringdefault.StaticString(""),
 						},
 						"ip_pool": schema.Int64Attribute{
 							Optional:            true,
