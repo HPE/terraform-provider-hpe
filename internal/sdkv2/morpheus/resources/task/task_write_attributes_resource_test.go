@@ -35,6 +35,46 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderTaskWriteAttributesConfig generates a Terraform configuration for testing
+// the task_write_attributes resource. It accepts overrides to customize field values.
+func RenderTaskWriteAttributesConfig(
+	t *testing.T,
+	name string,
+	code string,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Label1":            "demo",
+		"Label2":            "terraform",
+		"Attributes":        `{"demo":"test"}`,
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	// Apply overrides
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"../task/task_write_attributes_resource.tf.tmpl",
+		"Name", name,
+		"Code", code,
+		"Label1", defaults["Label1"],
+		"Label2", defaults["Label2"],
+		"Attributes", defaults["Attributes"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+}
+
 func TestAccMorpheusTaskWriteAttributesExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -49,17 +89,7 @@ func TestAccMorpheusTaskWriteAttributesExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	resourceConfig, err := testhelpers.RenderExample(t, "../task/task_write_attributes_resource.tf.tmpl",
-		"Name", name,
-		"Code", code,
-		"Label1", "demo",
-		"Label2", "terraform",
-		"Attributes", `{\"demo\":\"test\"}`,
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskWriteAttributesConfig(t, name, code, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
