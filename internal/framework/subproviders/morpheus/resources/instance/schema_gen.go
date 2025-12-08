@@ -121,8 +121,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 									"ip_mode": schema.StringAttribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-										MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
+										Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+										MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
 										PlanModifiers: []planmodifier.String{
 											stringplanmodifier.UseStateForUnknown(),
 										},
@@ -232,8 +232,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						"ip_mode": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
+							Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+							MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
