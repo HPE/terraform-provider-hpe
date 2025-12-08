@@ -349,7 +349,7 @@ cannot be empty, it can either not be specified in HCL or if specified must cont
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
-- `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
+- `ip_mode` (String) The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
@@ -366,7 +366,7 @@ Read-Only:
 Optional:
 
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
-- `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
+- `ip_mode` (String) The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
