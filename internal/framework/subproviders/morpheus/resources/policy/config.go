@@ -53,12 +53,14 @@ func mapStateToAddPolicyConfig(
 			return nil, diags
 		}
 	} else {
-		// Use static config fields
+		// Use static config fields based on policy type code
 		configMap = make(map[string]interface{})
 
-		// Map each static config field to the API structure
-		// 1. config_approval -> ApprovePolicyTypeConfiguration
-		if !plan.ConfigApproval.IsNull() && !plan.ConfigApproval.IsUnknown() {
+		policyTypeCode := plan.PolicyType.Code.ValueString()
+
+		// Map config based on policy type code
+		switch policyTypeCode {
+		case "deleteApproval", "provisionApproval", "reconfigureApproval", "workflowApproval":
 			approval := make(map[string]interface{})
 			if !plan.ConfigApproval.AccountIntegrationId.IsNull() {
 				approval["accountIntegrationId"] = plan.ConfigApproval.AccountIntegrationId.ValueString()
@@ -75,10 +77,8 @@ func mapStateToAddPolicyConfig(
 			if len(approval) > 0 {
 				configMap = approval
 			}
-		}
 
-		// 2. config_backup_storage -> BackupTargetsPolicyTypeConfiguration
-		if !plan.ConfigBackupStorage.IsNull() && !plan.ConfigBackupStorage.IsUnknown() {
+		case "backupStorage":
 			backupStorage := make(map[string]interface{})
 			if !plan.ConfigBackupStorage.BackupStorageIds.IsNull() {
 				var backupStorageIDs []int64
@@ -93,10 +93,8 @@ func mapStateToAddPolicyConfig(
 			if len(backupStorage) > 0 {
 				configMap = backupStorage
 			}
-		}
 
-		// 3. config_create_backup -> BackupCreationPolicyTypeConfiguration
-		if !plan.ConfigCreateBackup.IsNull() && !plan.ConfigCreateBackup.IsUnknown() {
+		case "createBackup":
 			createBackup := make(map[string]interface{})
 			if !plan.ConfigCreateBackup.CreateBackup.IsNull() {
 				createBackup["createBackup"] = plan.ConfigCreateBackup.CreateBackup.ValueBool()
@@ -107,10 +105,8 @@ func mapStateToAddPolicyConfig(
 			if len(createBackup) > 0 {
 				configMap = createBackup
 			}
-		}
 
-		// 4. config_create_user -> UserCreationPolicyTypeConfiguration
-		if !plan.ConfigCreateUser.IsNull() && !plan.ConfigCreateUser.IsUnknown() {
+		case "createUser":
 			createUser := make(map[string]interface{})
 			if !plan.ConfigCreateUser.CreateUser.IsNull() {
 				createUser["createUser"] = plan.ConfigCreateUser.CreateUser.ValueBool()
@@ -121,10 +117,8 @@ func mapStateToAddPolicyConfig(
 			if len(createUser) > 0 {
 				configMap = createUser
 			}
-		}
 
-		// 5. config_create_user_group -> UserGroupCreationPolicyTypeConfiguration
-		if !plan.ConfigCreateUserGroup.IsNull() && !plan.ConfigCreateUserGroup.IsUnknown() {
+		case "createUserGroup":
 			createUserGroup := make(map[string]interface{})
 			if !plan.ConfigCreateUserGroup.UserGroup.IsNull() {
 				createUserGroup["userGroup"] = plan.ConfigCreateUserGroup.UserGroup.ValueString()
@@ -132,10 +126,8 @@ func mapStateToAddPolicyConfig(
 			if len(createUserGroup) > 0 {
 				configMap = createUserGroup
 			}
-		}
 
-		// 6. config_cypher -> CypherAccessPolicyTypeConfiguration
-		if !plan.ConfigCypher.IsNull() && !plan.ConfigCypher.IsUnknown() {
+		case "cypher":
 			cypher := make(map[string]interface{})
 			if !plan.ConfigCypher.Delete.IsNull() {
 				cypher["delete"] = plan.ConfigCypher.Delete.ValueBool()
@@ -158,10 +150,8 @@ func mapStateToAddPolicyConfig(
 			if len(cypher) > 0 {
 				configMap = cypher
 			}
-		}
 
-		// 7. config_delayed_removal -> DelayedDeletePolicyTypeConfiguration
-		if !plan.ConfigDelayedRemoval.IsNull() && !plan.ConfigDelayedRemoval.IsUnknown() {
+		case "delayedRemoval":
 			delayedRemoval := make(map[string]interface{})
 			if !plan.ConfigDelayedRemoval.RemovalAge.IsNull() {
 				delayedRemoval["removalAge"] = plan.ConfigDelayedRemoval.RemovalAge.ValueString()
@@ -169,10 +159,8 @@ func mapStateToAddPolicyConfig(
 			if len(delayedRemoval) > 0 {
 				configMap = delayedRemoval
 			}
-		}
 
-		// 8. config_host_naming -> HostnamePolicyTypeConfiguration
-		if !plan.ConfigHostNaming.IsNull() && !plan.ConfigHostNaming.IsUnknown() {
+		case "hostNaming":
 			hostNaming := make(map[string]interface{})
 			if !plan.ConfigHostNaming.HostNamingPattern.IsNull() {
 				hostNaming["hostNamingPattern"] = plan.ConfigHostNaming.HostNamingPattern.ValueString()
@@ -183,10 +171,8 @@ func mapStateToAddPolicyConfig(
 			if len(hostNaming) > 0 {
 				configMap = hostNaming
 			}
-		}
 
-		// 9. config_lifecycle -> ExpirationPolicyTypeConfiguration2
-		if !plan.ConfigLifecycle.IsNull() && !plan.ConfigLifecycle.IsUnknown() {
+		case "lifecycle":
 			lifecycle := make(map[string]interface{})
 			if !plan.ConfigLifecycle.AccountIntegrationId.IsNull() {
 				lifecycle["accountIntegrationId"] = plan.ConfigLifecycle.AccountIntegrationId.ValueString()
@@ -235,10 +221,8 @@ func mapStateToAddPolicyConfig(
 			if len(lifecycle) > 0 {
 				configMap = lifecycle
 			}
-		}
 
-		// 10. config_max_containers -> MaxContainersPolicyTypeConfiguration
-		if !plan.ConfigMaxContainers.IsNull() && !plan.ConfigMaxContainers.IsUnknown() {
+		case "maxContainers":
 			maxContainers := make(map[string]interface{})
 			if !plan.ConfigMaxContainers.MaxContainers.IsNull() {
 				maxContainers["maxContainers"] = plan.ConfigMaxContainers.MaxContainers.ValueString()
@@ -246,10 +230,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxContainers) > 0 {
 				configMap = maxContainers
 			}
-		}
 
-		// 11. config_max_cores -> MaxCoresPolicyTypeConfiguration
-		if !plan.ConfigMaxCores.IsNull() && !plan.ConfigMaxCores.IsUnknown() {
+		case "maxCores":
 			maxCores := make(map[string]interface{})
 			if !plan.ConfigMaxCores.MaxCores.IsNull() {
 				maxCores["maxCores"] = plan.ConfigMaxCores.MaxCores.ValueString()
@@ -262,10 +244,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxCores) > 0 {
 				configMap = maxCores
 			}
-		}
 
-		// 12. config_max_hosts -> MaxHostsPolicyTypeConfiguration
-		if !plan.ConfigMaxHosts.IsNull() && !plan.ConfigMaxHosts.IsUnknown() {
+		case "maxHosts":
 			maxHosts := make(map[string]interface{})
 			if !plan.ConfigMaxHosts.MaxHosts.IsNull() {
 				maxHosts["maxHosts"] = plan.ConfigMaxHosts.MaxHosts.ValueString()
@@ -273,10 +253,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxHosts) > 0 {
 				configMap = maxHosts
 			}
-		}
 
-		// 13. config_max_memory -> MaxMemoryPolicyTypeConfiguration
-		if !plan.ConfigMaxMemory.IsNull() && !plan.ConfigMaxMemory.IsUnknown() {
+		case "maxMemory":
 			maxMemory := make(map[string]interface{})
 			if !plan.ConfigMaxMemory.MaxMemory.IsNull() {
 				maxMemory["maxMemory"] = plan.ConfigMaxMemory.MaxMemory.ValueString()
@@ -289,10 +267,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxMemory) > 0 {
 				configMap = maxMemory
 			}
-		}
 
-		// 14. config_max_networks -> NetworkQuotaPolicyTypeConfiguration
-		if !plan.ConfigMaxNetworks.IsNull() && !plan.ConfigMaxNetworks.IsUnknown() {
+		case "maxNetworks":
 			maxNetworks := make(map[string]interface{})
 			if !plan.ConfigMaxNetworks.MaxNetworks.IsNull() {
 				maxNetworks["maxNetworks"] = plan.ConfigMaxNetworks.MaxNetworks.ValueString()
@@ -300,10 +276,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxNetworks) > 0 {
 				configMap = maxNetworks
 			}
-		}
 
-		// 15. config_max_pool_members -> MaxPoolMembersPolicyTypeConfiguration
-		if !plan.ConfigMaxPoolMembers.IsNull() && !plan.ConfigMaxPoolMembers.IsUnknown() {
+		case "maxPoolMembers":
 			maxPoolMembers := make(map[string]interface{})
 			if !plan.ConfigMaxPoolMembers.MaxPoolMembers.IsNull() {
 				maxPoolMembers["maxPoolMembers"] = plan.ConfigMaxPoolMembers.MaxPoolMembers.ValueString()
@@ -311,10 +285,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxPoolMembers) > 0 {
 				configMap = maxPoolMembers
 			}
-		}
 
-		// 16. config_max_pools -> MaxLoadBalancerPoolsPolicyTypeConfiguration
-		if !plan.ConfigMaxPools.IsNull() && !plan.ConfigMaxPools.IsUnknown() {
+		case "maxPools":
 			maxPools := make(map[string]interface{})
 			if !plan.ConfigMaxPools.MaxPools.IsNull() {
 				maxPools["maxPools"] = plan.ConfigMaxPools.MaxPools.ValueString()
@@ -322,10 +294,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxPools) > 0 {
 				configMap = maxPools
 			}
-		}
 
-		// 17. config_max_price -> BudgetPolicyTypeConfiguration
-		if !plan.ConfigMaxPrice.IsNull() && !plan.ConfigMaxPrice.IsUnknown() {
+		case "maxPrice":
 			maxPrice := make(map[string]interface{})
 			if !plan.ConfigMaxPrice.MaxPrice.IsNull() {
 				// MaxPrice is a Number type, get the float value
@@ -341,10 +311,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxPrice) > 0 {
 				configMap = maxPrice
 			}
-		}
 
-		// 18. config_max_routers -> RouterQuotaPolicyTypeConfiguration
-		if !plan.ConfigMaxRouters.IsNull() && !plan.ConfigMaxRouters.IsUnknown() {
+		case "maxRouters":
 			maxRouters := make(map[string]interface{})
 			if !plan.ConfigMaxRouters.MaxRouters.IsNull() {
 				maxRouters["maxRouters"] = plan.ConfigMaxRouters.MaxRouters.ValueString()
@@ -352,10 +320,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxRouters) > 0 {
 				configMap = maxRouters
 			}
-		}
 
-		// 19. config_max_snapshots -> MaxSnapshotsPolicyTypeConfiguration
-		if !plan.ConfigMaxSnapshots.IsNull() && !plan.ConfigMaxSnapshots.IsUnknown() {
+		case "maxSnapshots":
 			maxSnapshots := make(map[string]interface{})
 			if !plan.ConfigMaxSnapshots.MaxSnapshots.IsNull() {
 				maxSnapshots["maxSnapshots"] = plan.ConfigMaxSnapshots.MaxSnapshots.ValueString()
@@ -363,10 +329,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxSnapshots) > 0 {
 				configMap = maxSnapshots
 			}
-		}
 
-		// 20. config_max_storage -> MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration
-		if !plan.ConfigMaxStorage.IsNull() && !plan.ConfigMaxStorage.IsUnknown() {
+		case "maxStorage":
 			maxStorage := make(map[string]interface{})
 			if !plan.ConfigMaxStorage.MaxStorage.IsNull() {
 				maxStorage["maxStorage"] = plan.ConfigMaxStorage.MaxStorage.ValueString()
@@ -379,10 +343,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxStorage) > 0 {
 				configMap = maxStorage
 			}
-		}
 
-		// 21. config_max_virtual_servers -> MaxVirtualServersPolicyTypeConfiguration
-		if !plan.ConfigMaxVirtualServers.IsNull() && !plan.ConfigMaxVirtualServers.IsUnknown() {
+		case "maxVirtualServers":
 			maxVirtualServers := make(map[string]interface{})
 			if !plan.ConfigMaxVirtualServers.MaxVirtualServers.IsNull() {
 				maxVirtualServers["maxVirtualServers"] = plan.ConfigMaxVirtualServers.MaxVirtualServers.ValueString()
@@ -390,10 +352,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxVirtualServers) > 0 {
 				configMap = maxVirtualServers
 			}
-		}
 
-		// 22. config_max_vms -> MaxVMsPolicyTypeConfiguration
-		if !plan.ConfigMaxVms.IsNull() && !plan.ConfigMaxVms.IsUnknown() {
+		case "maxVms":
 			maxVms := make(map[string]interface{})
 			if !plan.ConfigMaxVms.MaxVms.IsNull() {
 				maxVms["maxVms"] = plan.ConfigMaxVms.MaxVms.ValueString()
@@ -401,10 +361,8 @@ func mapStateToAddPolicyConfig(
 			if len(maxVms) > 0 {
 				configMap = maxVms
 			}
-		}
 
-		// 23. config_motd -> MessageOfTheDayPolicyTypeConfiguration2
-		if !plan.ConfigMotd.IsNull() && !plan.ConfigMotd.IsUnknown() {
+		case "motd":
 			motd := make(map[string]interface{})
 			if !plan.ConfigMotd.Motdtitle.IsNull() {
 				motd["motd.title"] = plan.ConfigMotd.Motdtitle.ValueString()
@@ -421,10 +379,8 @@ func mapStateToAddPolicyConfig(
 			if len(motd) > 0 {
 				configMap = motd
 			}
-		}
 
-		// 24. config_naming -> InstanceNamePolicyTypeConfiguration
-		if !plan.ConfigNaming.IsNull() && !plan.ConfigNaming.IsUnknown() {
+		case "naming":
 			naming := make(map[string]interface{})
 			if !plan.ConfigNaming.NamingConflict.IsNull() {
 				naming["namingConflict"] = plan.ConfigNaming.NamingConflict.ValueBool()
@@ -438,10 +394,8 @@ func mapStateToAddPolicyConfig(
 			if len(naming) > 0 {
 				configMap = naming
 			}
-		}
 
-		// 25. config_power_schedule -> PowerSchedulePolicyTypeConfiguration
-		if !plan.ConfigPowerSchedule.IsNull() && !plan.ConfigPowerSchedule.IsUnknown() {
+		case "powerSchedule":
 			powerSchedule := make(map[string]interface{})
 			if !plan.ConfigPowerSchedule.PowerSchedule.IsNull() {
 				powerSchedule["powerSchedule"] = plan.ConfigPowerSchedule.PowerSchedule.ValueString()
@@ -455,10 +409,8 @@ func mapStateToAddPolicyConfig(
 			if len(powerSchedule) > 0 {
 				configMap = powerSchedule
 			}
-		}
 
-		// 26. config_required_network -> RequiredNetworkPolicyTypeConfiguration
-		if !plan.ConfigRequiredNetwork.IsNull() && !plan.ConfigRequiredNetwork.IsUnknown() {
+		case "requiredNetwork":
 			requiredNetwork := make(map[string]interface{})
 			if !plan.ConfigRequiredNetwork.RequiredNetworks.IsNull() {
 				var requiredNetworks []int64
@@ -473,10 +425,8 @@ func mapStateToAddPolicyConfig(
 			if len(requiredNetwork) > 0 {
 				configMap = requiredNetwork
 			}
-		}
 
-		// 27. config_server_naming -> ClusterResourceNamePolicyTypeConfiguration
-		if !plan.ConfigServerNaming.IsNull() && !plan.ConfigServerNaming.IsUnknown() {
+		case "serverNaming":
 			serverNaming := make(map[string]interface{})
 			if !plan.ConfigServerNaming.ServerNamingConflict.IsNull() {
 				serverNaming["serverNamingConflict"] = plan.ConfigServerNaming.ServerNamingConflict.ValueBool()
@@ -490,10 +440,8 @@ func mapStateToAddPolicyConfig(
 			if len(serverNaming) > 0 {
 				configMap = serverNaming
 			}
-		}
 
-		// 28. config_shutdown -> ShutdownPolicyTypeConfiguration
-		if !plan.ConfigShutdown.IsNull() && !plan.ConfigShutdown.IsUnknown() {
+		case "shutdown":
 			shutdown := make(map[string]interface{})
 			if !plan.ConfigShutdown.AccountIntegrationId.IsNull() {
 				shutdown["accountIntegrationId"] = plan.ConfigShutdown.AccountIntegrationId.ValueString()
@@ -541,10 +489,8 @@ func mapStateToAddPolicyConfig(
 			if len(shutdown) > 0 {
 				configMap = shutdown
 			}
-		}
 
-		// 29. config_storage_server_quota -> StorageServerStorageQuotaPolicyTypeConfiguration
-		if !plan.ConfigStorageServerQuota.IsNull() && !plan.ConfigStorageServerQuota.IsUnknown() {
+		case "storageServerQuota":
 			storageServerQuota := make(map[string]interface{})
 			if !plan.ConfigStorageServerQuota.MaxStorage.IsNull() {
 				storageServerQuota["maxStorage"] = plan.ConfigStorageServerQuota.MaxStorage.ValueString()
@@ -555,10 +501,8 @@ func mapStateToAddPolicyConfig(
 			if len(storageServerQuota) > 0 {
 				configMap = storageServerQuota
 			}
-		}
 
-		// 30. config_tags -> TagsPolicyTypeConfiguration
-		if !plan.ConfigTags.IsNull() && !plan.ConfigTags.IsUnknown() {
+		case "tags":
 			tags := make(map[string]interface{})
 			if !plan.ConfigTags.Key.IsNull() {
 				tags["key"] = plan.ConfigTags.Key.ValueString()
@@ -575,10 +519,8 @@ func mapStateToAddPolicyConfig(
 			if len(tags) > 0 {
 				configMap = tags
 			}
-		}
 
-		// 31. config_workflow -> WorkflowPolicyTypeConfiguration
-		if !plan.ConfigWorkflow.IsNull() && !plan.ConfigWorkflow.IsUnknown() {
+		case "workflow":
 			workflow := make(map[string]interface{})
 			if !plan.ConfigWorkflow.WorkflowId.IsNull() {
 				workflow["workflowId"] = plan.ConfigWorkflow.WorkflowId.ValueString()
@@ -586,10 +528,10 @@ func mapStateToAddPolicyConfig(
 			if len(workflow) > 0 {
 				configMap = workflow
 			}
-		}
 
-		// Check if any config was provided
-		if len(configMap) == 0 {
+		default:
+
+			// No config was provided
 			diags.AddError(
 				"map state to API config",
 				"No configuration provided. Please provide at least one config_* field for this policy type.",
