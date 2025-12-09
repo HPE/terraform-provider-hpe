@@ -715,35 +715,29 @@ func getPolicyAsState(
 
 	// Handle Config - use static schema fields when available, fallback to dynamic
 	if p.Config != nil {
-		// Get policy type code for mapping (required field, but API could return nil)
-		policyTypeCode := ""
-		if p.PolicyType != nil && p.PolicyType.Code != nil {
-			policyTypeCode = *p.PolicyType.Code
-		}
+		// Check if user is using dynamic config field
+		usingDynamicConfig := plan != nil && !plan.Config.IsNull() && !plan.Config.IsUnknown()
 
-		// Map API config to static schema fields
-		configDiags := mapPolicyConfigToState(ctx, &state, p.Config, policyTypeCode)
-		if configDiags.HasError() {
-			diags.Append(configDiags...)
-
-			return state, diags
-		}
-
-		// Also preserve the dynamic config field if it was set in plan
-		if plan != nil && !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+		if usingDynamicConfig {
+			// User is using dynamic config - only populate the dynamic field
 			state.Config = plan.Config
 		} else {
-			// Convert API config to dynamic type as fallback
-			var err error
-			state.Config, err = convert.StructToDynamic(ctx, p.Config)
-			if err != nil {
-				diags.AddError(
-					"populate policy resource",
-					fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
-				)
+			// User is using static config fields - populate them from API response
+			// Get policy type code for mapping (required field, but API could return nil)
+			policyTypeCode := ""
+			if p.PolicyType != nil && p.PolicyType.Code != nil {
+				policyTypeCode = *p.PolicyType.Code
+			}
+
+			// Map API config to static schema fields
+			configDiags := mapPolicyConfigToState(ctx, &state, p.Config, policyTypeCode)
+			if configDiags.HasError() {
+				diags.Append(configDiags...)
 
 				return state, diags
 			}
+
+			// Don't populate dynamic config when using static fields to avoid drift
 		}
 	}
 
