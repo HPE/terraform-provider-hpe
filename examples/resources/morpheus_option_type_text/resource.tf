@@ -17,3 +17,4 @@ resource "hpe_morpheus_option_type_text" "tf_example_text_option_type" {
   required                 = true
   verify_pattern           = "a\\D{4}"
 }
+
