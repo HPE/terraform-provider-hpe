@@ -1,6 +1,6 @@
 resource "hpe_morpheus_wiki_page" "tfexample_wiki_page" {
-  name     = "tfexample_wiki_page"
-  category = "morpheus-terraform"
+  name     = "{{.Name}}"
+  category = "{{.Category}}"
   content  = <<EOF
 # Terraform Example
 
