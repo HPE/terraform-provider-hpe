@@ -1,0 +1,9 @@
+resource "hpe_morpheus_option_list_api" "tf_example_api_option_list" {
+  name               = "{{.Name}}"
+  description        = "{{.Description}}"
+  visibility         = "{{.Visibility}}"
+  option_list        = "{{.OptionList}}"
+  translation_script = <<SCRIPT
+{{.TranslationScript}}
+SCRIPT
+}
