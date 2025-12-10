@@ -34,6 +34,41 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func renderTaskGroovyScriptConfig(t *testing.T, overrides map[string]string) string {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"SourceType":        "local",
+		"ScriptContent":     "println \"hello\"",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"task_groovy_script_resource.tf.tmpl",
+		args...,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,19 +82,10 @@ func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_groovy_script_resource.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"SourceType", "local",
-		"ScriptContent", "println \"hello\"",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := renderTaskGroovyScriptConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
