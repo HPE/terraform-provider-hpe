@@ -11,6 +11,52 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
+// RenderTaskRubyScriptGitConfig generates configuration for task_ruby_script_resource_git tests
+func RenderTaskRubyScriptGitConfig(t *testing.T, overrides map[string]string) string {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              "",
+		"Code":              "",
+		"Labels":            "\"demo\", \"terraform\"",
+		"SourceType":        "repository",
+		"ResultType":        "json",
+		"ScriptPath":        "example.rb",
+		"VersionRef":        "master",
+		"RepositoryId":      "1",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"task_ruby_script_resource_git.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ResultType", defaults["ResultType"],
+		"ScriptPath", defaults["ScriptPath"],
+		"VersionRef", defaults["VersionRef"],
+		"RepositoryId", defaults["RepositoryId"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -24,23 +70,10 @@ func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_ruby_script_resource_git.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", "\"demo\", \"terraform\"",
-		"SourceType", "repository",
-		"ResultType", "json",
-		"ScriptPath", "example.rb",
-		"VersionRef", "master",
-		"RepositoryId", "1",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderTaskRubyScriptGitConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

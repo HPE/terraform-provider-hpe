@@ -11,6 +11,48 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
+// RenderTaskRubyScriptUrlConfig generates configuration for task_ruby_script_resource_url tests
+func RenderTaskRubyScriptUrlConfig(t *testing.T, overrides map[string]string) string {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              "",
+		"Code":              "",
+		"Labels":            "\"demo\", \"terraform\"",
+		"SourceType":        "url",
+		"ResultType":        "json",
+		"ScriptPath":        "https://example.com/example.rb",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"task_ruby_script_resource_url.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ResultType", defaults["ResultType"],
+		"ScriptPath", defaults["ScriptPath"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -24,21 +66,10 @@ func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_ruby_script_resource_url.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", "\"demo\", \"terraform\"",
-		"SourceType", "url",
-		"ResultType", "json",
-		"ScriptPath", "https://example.com/example.rb",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderTaskRubyScriptUrlConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
