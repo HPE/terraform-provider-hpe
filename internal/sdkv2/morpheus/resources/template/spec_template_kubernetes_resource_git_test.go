@@ -34,6 +34,42 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderSpecTemplateKubernetesResourceGitConfig renders the configuration for the Git-based
+// Kubernetes spec template resource. Pass overrides as a map to customize field values.
+func RenderSpecTemplateKubernetesResourceGitConfig(
+	t *testing.T,
+	overrides map[string]string,
+) string {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":         acctest.RandomWithPrefix(t.Name()),
+		"SourceType":   "repository",
+		"RepositoryId": "2",
+		"VersionRef":   "main",
+		"SpecPath":     "./spec.yaml",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"spec_template_kubernetes_resource_git.tf.tmpl",
+		"Name", defaults["Name"],
+		"SourceType", defaults["SourceType"],
+		"RepositoryId", defaults["RepositoryId"],
+		"VersionRef", defaults["VersionRef"],
+		"SpecPath", defaults["SpecPath"],
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,16 +83,9 @@ func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "spec_template_kubernetes_resource_git.tf.tmpl",
-		"Name", name,
-		"SourceType", "repository",
-		"RepositoryId", "2",
-		"VersionRef", "main",
-		"SpecPath", "./spec.yaml",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderSpecTemplateKubernetesResourceGitConfig(t, map[string]string{
+		"Name": name,
+	})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
