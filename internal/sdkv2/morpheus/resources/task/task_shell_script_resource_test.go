@@ -16,6 +16,40 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
+func RenderTaskShellScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Labels":            "\"demo\", \"terraform\"",
+		"SourceType":        "local",
+		"ScriptContent":     "  echo \"testing\"",
+		"Sudo":              "true",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(t, "task_shell_script_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ScriptContent", defaults["ScriptContent"],
+		"Sudo", defaults["Sudo"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+}
+
 func TestMain(m *testing.M) {
 	code := m.Run()
 
@@ -47,18 +81,10 @@ func TestAccMorpheusTaskShellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_shell_script_resource.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", "\"demo\", \"terraform\"",
-		"SourceType", "local",
-		"ScriptContent", "  echo \"testing\"",
-		"Sudo", "true",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskShellScriptConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
