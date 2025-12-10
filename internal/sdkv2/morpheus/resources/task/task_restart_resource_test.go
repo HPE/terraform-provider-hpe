@@ -34,6 +34,45 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderTaskRestartConfig renders the task restart resource configuration
+// with the provided overrides. Use the overrides map to customize field values.
+func RenderTaskRestartConfig(t *testing.T, overrides map[string]string) string {
+	t.Helper()
+
+	// Default values
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              "tfexample_restart",
+		"Labels":            `["demo", "terraform"]`,
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	// Apply overrides
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"task_restart_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -45,26 +84,12 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
-	resourceConfig, err := testhelpers.RenderExample(t, "task_restart_resource.tf.tmpl",
-		"Name", name,
-		"Code", "tfexample_restart",
-		"Labels", `["demo", "terraform"]`,
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderTaskRestartConfig(t, nil)
 
 	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_task_restart.tfexample_restart",
 			"name",
-			name,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_restart.tfexample_restart",
