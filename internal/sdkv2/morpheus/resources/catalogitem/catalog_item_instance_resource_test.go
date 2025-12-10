@@ -34,6 +34,45 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderCatalogItemInstanceConfig generates a Terraform configuration for catalog item instance resource.
+// It accepts a map of field overrides to customize the default values.
+func RenderCatalogItemInstanceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":        "tfexample_instance_catalog",
+		"Config":      "{\"name\":\"test\"}",
+		"Content":     "{\"name\":\"test\"}",
+		"Description": "terraform example instance catalog item",
+		"Enabled":     "true",
+		"Featured":    "true",
+		"ImageName":   "tfexample.png",
+		"ImagePath":   "tfexample.png",
+		"Visibility":  "private",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"catalog_item_instance_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Config", defaults["Config"],
+		"Content", defaults["Content"],
+		"Description", defaults["Description"],
+		"Enabled", defaults["Enabled"],
+		"Featured", defaults["Featured"],
+		"ImageName", defaults["ImageName"],
+		"ImagePath", defaults["ImagePath"],
+		"Visibility", defaults["Visibility"],
+	)
+}
+
 func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,17 +86,9 @@ func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "catalog_item_instance_resource.tf.tmpl",
-		"Name", name,
-		"Config", "{\"name\":\"test\"}",
-		"Content", "{\"name\":\"test\"}",
-		"Description", "terraform example instance catalog item",
-		"Enabled", "true",
-		"Featured", "true",
-		"ImageName", "tfexample.png",
-		"ImagePath", "tfexample.png",
-		"Visibility", "private",
-	)
+	resourceConfig, err := RenderCatalogItemInstanceConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
