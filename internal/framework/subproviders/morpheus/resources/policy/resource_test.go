@@ -306,6 +306,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_approval = {
+    account_integration_id = "1"
     workflow_type = "flow"
     flow_id = "1"
     workflow_id = "1"
@@ -346,6 +347,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_approval = {
+    account_integration_id = "1"
     workflow_type = "flow"
   }
 }
@@ -384,6 +386,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_approval = {
+    account_integration_id = "1"
     workflow_type = "workflow"
   }
 }
@@ -422,6 +425,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_lifecycle = {
+    lifecycle_type = "user"
     workflow_type = "flow"
   }
 }
@@ -460,6 +464,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_lifecycle = {
+    lifecycle_type = "user"
     workflow_type = "workflow"
   }
 }
@@ -498,6 +503,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_shutdown = {
+    shutdown_type = "user"
     workflow_type = "flow"
   }
 }
@@ -536,6 +542,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   }
   
   config_shutdown = {
+    shutdown_type = "user"
     workflow_type = "workflow"
   }
 }
