@@ -34,6 +34,57 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderTaskChefBootstrapConfig renders the task chef bootstrap resource configuration
+// with the provided overrides applied to default values.
+func RenderTaskChefBootstrapConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Labels":            `"demo", "terraform"`,
+		"ChefServerId":      "9",
+		"Environment":       "dev",
+		"RunList":           "role[web]",
+		"DataBagKey":        "test123",
+		"DataBagKeyPath":    "/etc/chef/databag_secret",
+		"NodeName":          "demonode",
+		"NodeAttributes":    `"test":"demo"`,
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+		"Visibility":        "public",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"task_chef_bootstrap_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"ChefServerId", defaults["ChefServerId"],
+		"Environment", defaults["Environment"],
+		"RunList", defaults["RunList"],
+		"DataBagKey", defaults["DataBagKey"],
+		"DataBagKeyPath", defaults["DataBagKeyPath"],
+		"NodeName", defaults["NodeName"],
+		"NodeAttributes", defaults["NodeAttributes"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		"Visibility", defaults["Visibility"],
+	)
+}
+
 func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,23 +98,10 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_chef_bootstrap_resource.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", `"demo", "terraform"`,
-		"ChefServerId", "9",
-		"Environment", "dev",
-		"RunList", "role[web]",
-		"DataBagKey", "test123",
-		"DataBagKeyPath", "/etc/chef/databag_secret",
-		"NodeName", "demonode",
-		"NodeAttributes", `"test":"demo"`,
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-		"Visibility", "public",
-	)
+	resourceConfig, err := RenderTaskChefBootstrapConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
