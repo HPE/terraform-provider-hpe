@@ -25,13 +25,41 @@ func TestMain(m *testing.M) {
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
+	return tf5to6server.UpgradeServer(
+		context.Background(),
+		sdkv2morpheus.Provider().GRPCProvider,
+	)
 }
 
 var testAccProtoV6ProviderFactories = map[string]func() (
 	tfprotov6.ProviderServer, error,
 ){
 	"hpe": newProviderWithError,
+}
+
+func RenderSpecTemplateHelmUrlConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":       acctest.RandomWithPrefix(t.Name()),
+		"SourceType": "url",
+		"SpecPath":   "http://example.com/chart.yaml",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"spec_template_helm_resource_url.tf.tmpl",
+		"Name", defaults["Name"],
+		"SourceType", defaults["SourceType"],
+		"SpecPath", defaults["SpecPath"],
+	)
 }
 
 func TestAccMorpheusSpecTemplateHelmUrlExampleOk(t *testing.T) {
@@ -47,35 +75,31 @@ func TestAccMorpheusSpecTemplateHelmUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "spec_template_helm_resource_url.tf.tmpl",
-		"Name", name,
-		"SourceType", "url",
-		"SpecPath", "http://example.com/chart.yaml",
-	)
+	resourceConfig, err := RenderSpecTemplateHelmUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
-		
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_url",
 			"name",
 			name,
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_url",
 			"source_type",
 			"url",
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_url",
 			"spec_path",
 			"http://example.com/chart.yaml",
 		),
-		
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)

@@ -11,6 +11,35 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
+func RenderSpecTemplateHelmGitConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":         acctest.RandomWithPrefix(t.Name()),
+		"RepositoryId": "2",
+		"SourceType":   "repository",
+		"SpecPath":     "./spec.yaml",
+		"VersionRef":   "main",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"spec_template_helm_resource_git.tf.tmpl",
+		"Name", defaults["Name"],
+		"RepositoryId", defaults["RepositoryId"],
+		"SourceType", defaults["SourceType"],
+		"SpecPath", defaults["SpecPath"],
+		"VersionRef", defaults["VersionRef"],
+	)
+}
+
 func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -24,49 +53,43 @@ func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "spec_template_helm_resource_git.tf.tmpl",
-		"Name", name,
-		"RepositoryId", "2",
-		"SourceType", "repository",
-		"SpecPath", "./spec.yaml",
-		"VersionRef", "main",
-	)
+	resourceConfig, err := RenderSpecTemplateHelmGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
-		
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
 			"name",
 			name,
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
 			"repository_id",
 			"2",
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
 			"source_type",
 			"repository",
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
 			"spec_path",
 			"./spec.yaml",
 		),
-		
+
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
 			"version_ref",
 			"main",
 		),
-		
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
