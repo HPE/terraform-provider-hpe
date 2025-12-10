@@ -154,17 +154,6 @@ func resourceSettingGuidanceCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateGuidanceSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateGuidanceSettingsResult); ok {
-		result = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
-	if result.GuidanceSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("GuidanceSettings"))
-	}
-
 	d.SetId(convert.Int64ToString(1))
 
 	diags = append(diags, resourceSettingGuidanceRead(ctx, d, meta)...)
