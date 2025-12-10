@@ -25,13 +25,46 @@ func TestMain(m *testing.M) {
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
+	return tf5to6server.UpgradeServer(
+		context.Background(),
+		sdkv2morpheus.Provider().GRPCProvider,
+	)
 }
 
 var testAccProtoV6ProviderFactories = map[string]func() (
 	tfprotov6.ProviderServer, error,
 ){
 	"hpe": newProviderWithError,
+}
+
+// RenderSpecTemplateTerraformUrlConfig renders the Terraform config for
+// spec_template_terraform_resource_url tests
+func RenderSpecTemplateTerraformUrlConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":       acctest.RandomWithPrefix(t.Name()),
+		"SourceType": "url",
+		"SpecPath":   "http://example.com/spec.tf",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"spec_template_terraform_resource_url.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
@@ -47,11 +80,9 @@ func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "spec_template_terraform_resource_url.tf.tmpl",
-		"Name", name,
-		"SourceType", "url",
-		"SpecPath", "http://example.com/spec.tf",
-	)
+	resourceConfig, err := RenderSpecTemplateTerraformUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
