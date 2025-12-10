@@ -34,6 +34,47 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderTaskPythonScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	defaults := map[string]string{
+		"Name":               name,
+		"Code":               name,
+		"Labels":             "[\"demo\", \"terraform\"]",
+		"SourceType":         "local",
+		"ScriptContent":      "print('morpheus')\\nprint('python')",
+		"CommandArguments":   "example",
+		"AdditionalPackages": "pyyaml",
+		"PythonBinary":       "/usr/bin/python3",
+		"Retryable":          "true",
+		"RetryCount":         "1",
+		"RetryDelaySeconds":  "10",
+		"AllowCustomConfig":  "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"task_python_script_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ScriptContent", defaults["ScriptContent"],
+		"CommandArguments", defaults["CommandArguments"],
+		"AdditionalPackages", defaults["AdditionalPackages"],
+		"PythonBinary", defaults["PythonBinary"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+}
+
 func TestAccMorpheusTaskPythonScriptExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,20 +88,10 @@ func TestAccMorpheusTaskPythonScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_python_script_resource.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", "[\"demo\", \"terraform\"]",
-		"SourceType", "local",
-		"ScriptContent", "print('morpheus')\\nprint('python')",
-		"CommandArguments", "example",
-		"AdditionalPackages", "pyyaml",
-		"PythonBinary", "/usr/bin/python3",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskPythonScriptConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
