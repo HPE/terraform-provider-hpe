@@ -25,6 +25,38 @@ var testAccProtoV6ProviderFactoriesGit = map[string]func() (
 	"hpe": newProviderWithErrorGit,
 }
 
+func RenderTaskEmailGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":                     acctest.RandomWithPrefix(t.Name()),
+		"Code":                     "tfexample_email_git",
+		"Labels":                   `["demo","terraform"]`,
+		"EmailAddress":             "<%=instance.createdByEmail%>",
+		"Subject":                  "<%=instance.hostname%> provisioning complete",
+		"Source":                   "repository",
+		"ContentPath":              "example.txt",
+		"RepositoryId":             "1",
+		"VersionRef":               "main",
+		"SkipWrappedEmailTemplate": "false",
+		"Retryable":                "true",
+		"RetryCount":               "1",
+		"RetryDelaySeconds":        "10",
+		"AllowCustomConfig":        "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "task_email_resource_git.tf.tmpl", args...)
+}
+
 func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -38,22 +70,7 @@ func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_email_resource_git.tf.tmpl",
-		"Name", name,
-		"Code", "tfexample_email_git",
-		"Labels", `["demo","terraform"]`,
-		"EmailAddress", "<%=instance.createdByEmail%>",
-		"Subject", "<%=instance.hostname%> provisioning complete",
-		"Source", "repository",
-		"ContentPath", "example.txt",
-		"RepositoryId", "1",
-		"VersionRef", "main",
-		"SkipWrappedEmailTemplate", "false",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskEmailGitConfig(t, map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}

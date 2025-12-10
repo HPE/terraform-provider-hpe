@@ -34,6 +34,36 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderTaskEmailConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":                     acctest.RandomWithPrefix(t.Name()),
+		"Code":                     "tfexample_email",
+		"Labels":                   `["demo","terraform"]`,
+		"EmailAddress":             "<%=instance.createdByEmail%>",
+		"Subject":                  "<%=instance.hostname%> provisioning complete",
+		"Source":                   "local",
+		"Content":                  "Your instance <%=instance.hostname%> was provisioned.",
+		"SkipWrappedEmailTemplate": "false",
+		"Retryable":                "true",
+		"RetryCount":               "1",
+		"RetryDelaySeconds":        "10",
+		"AllowCustomConfig":        "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "task_email_resource.tf.tmpl", args...)
+}
+
 func TestAccMorpheusTaskEmailExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,20 +77,7 @@ func TestAccMorpheusTaskEmailExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_email_resource.tf.tmpl",
-		"Name", name,
-		"Code", "tfexample_email",
-		"Labels", `["demo","terraform"]`,
-		"EmailAddress", "<%=instance.createdByEmail%>",
-		"Subject", "<%=instance.hostname%> provisioning complete",
-		"Source", "local",
-		"Content", "Your instance <%=instance.hostname%> was provisioned.",
-		"SkipWrappedEmailTemplate", "false",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskEmailConfig(t, map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}
