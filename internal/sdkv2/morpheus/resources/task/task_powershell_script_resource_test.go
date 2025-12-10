@@ -34,6 +34,42 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderTaskPowershellScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Labels":            `"demo", "terraform"`,
+		"SourceType":        "local",
+		"ScriptContent":     `Write-Output \"testing\"`,
+		"ElevatedShell":     "true",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"task_powershell_script_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ScriptContent", defaults["ScriptContent"],
+		"ElevatedShell", defaults["ElevatedShell"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+}
+
 func TestAccMorpheusTaskPowershellScriptResourceExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,18 +83,10 @@ func TestAccMorpheusTaskPowershellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_powershell_script_resource.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", `"demo", "terraform"`,
-		"SourceType", "local",
-		"ScriptContent", `Write-Output \"testing\"`,
-		"ElevatedShell", "true",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskPowershellScriptConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

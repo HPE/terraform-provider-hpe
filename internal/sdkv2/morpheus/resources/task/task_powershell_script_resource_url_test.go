@@ -11,6 +11,44 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
+func RenderTaskPowershellScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Labels":            `"demo", "terraform"`,
+		"SourceType":        "url",
+		"ResultType":        "json",
+		"ScriptPath":        "https://example.com/example.ps",
+		"ElevatedShell":     "true",
+		"Retryable":         "true",
+		"RetryCount":        "1",
+		"RetryDelaySeconds": "10",
+		"AllowCustomConfig": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"task_powershell_script_resource_url.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Labels", defaults["Labels"],
+		"SourceType", defaults["SourceType"],
+		"ResultType", defaults["ResultType"],
+		"ScriptPath", defaults["ScriptPath"],
+		"ElevatedShell", defaults["ElevatedShell"],
+		"Retryable", defaults["Retryable"],
+		"RetryCount", defaults["RetryCount"],
+		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
+		"AllowCustomConfig", defaults["AllowCustomConfig"],
+	)
+}
+
 func TestAccMorpheusTaskPowershellScriptResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -24,19 +62,10 @@ func TestAccMorpheusTaskPowershellScriptResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "task_powershell_script_resource_url.tf.tmpl",
-		"Name", name,
-		"Code", name,
-		"Labels", `"demo", "terraform"`,
-		"SourceType", "url",
-		"ResultType", "json",
-		"ScriptPath", "https://example.com/example.ps",
-		"ElevatedShell", "true",
-		"Retryable", "true",
-		"RetryCount", "1",
-		"RetryDelaySeconds", "10",
-		"AllowCustomConfig", "true",
-	)
+	resourceConfig, err := RenderTaskPowershellScriptUrlConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
