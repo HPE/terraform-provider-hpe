@@ -34,6 +34,49 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderClusterPackageConfig generates a test configuration for cluster package resource.
+// It accepts a map of field overrides to customize the default values.
+func RenderClusterPackageConfig(t *testing.T, overrides map[string]string) string {
+	t.Helper()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	defaults := map[string]string{
+		"Name":            name,
+		"Code":            "tf-example-cluster-package",
+		"Description":     "Terraform example cluster package",
+		"PackageVersion":  "1.2.3",
+		"Type":            "apps",
+		"PackageType":     "example",
+		"Enabled":         "true",
+		"RepeatInstall":   "true",
+		"SpecTemplateIds": "[1,2]",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"cluster_package_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Code", defaults["Code"],
+		"Description", defaults["Description"],
+		"PackageVersion", defaults["PackageVersion"],
+		"Type", defaults["Type"],
+		"PackageType", defaults["PackageType"],
+		"Enabled", defaults["Enabled"],
+		"RepeatInstall", defaults["RepeatInstall"],
+		"SpecTemplateIds", defaults["SpecTemplateIds"],
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -46,21 +89,7 @@ func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-
-	resourceConfig, err := testhelpers.RenderExample(t, "cluster_package_resource.tf.tmpl",
-		"Name", name,
-		"Code", "tf-example-cluster-package",
-		"Description", "Terraform example cluster package",
-		"PackageVersion", "1.2.3",
-		"Type", "apps",
-		"PackageType", "example",
-		"Enabled", "true",
-		"RepeatInstall", "true",
-		"SpecTemplateIds", "[1,2]",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderClusterPackageConfig(t, map[string]string{"Name": name})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
