@@ -1,9 +1,9 @@
 resource "hpe_morpheus_integration_servicenow" "tf_example_servicenow_integration" {
-  name                = "terraform servicenow integration"
-  enabled             = true
-  url                 = "https://servicenowprod.service-now.com"
-  username            = "my-snow-username"
-  password            = "my-snow-password"
+  name                = "{{.Name}}"
+  enabled             = {{.Enabled}}
+  url                 = "{{.Url}}"
+  username            = "{{.Username}}"
+  password            = "{{.Password}}"
   cmdb_custom_mapping = <<EOF
 {
 "object_id":"<%=instance.name%>",
@@ -16,5 +16,5 @@ resource "hpe_morpheus_integration_servicenow" "tf_example_servicenow_integratio
     "Hyper-V Hypervisor - Unmanaged" = "cmdb_ci_hyper_v_instance"
     "VMware Windows VM"              = "cmdb_ci_vmware_instance"
   }
-  default_cmdb_business_class = "demo"
+  default_cmdb_business_class = "{{.DefaultCmdbBusinessClass}}"
 }
