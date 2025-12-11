@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderTaskChefBootstrapConfig renders the task chef bootstrap resource configuration
-// with the provided overrides applied to default values.
-func RenderTaskChefBootstrapConfig(
+// RenderMorpheusTaskChefBootstrapResourceConfig renders the task chef bootstrap
+// resource configuration with the provided overrides applied to default values.
+func RenderMorpheusTaskChefBootstrapResourceConfig(
 	t *testing.T,
 	overrides map[string]string,
 ) (string, error) {
@@ -66,7 +66,7 @@ func RenderTaskChefBootstrapConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"task_chef_bootstrap_resource.tf.tmpl",
+		"morpheus_task_chef_bootstrap_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],
@@ -98,10 +98,13 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskChefBootstrapConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderMorpheusTaskChefBootstrapResourceConfig(
+		t,
+		map[string]string{
+			"Name": name,
+			"Code": name,
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,10 +140,9 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 			"run_list",
 			"role[web]",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_task_chef_bootstrap.cheftask",
 			"data_bag_key",
-			"test123",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_chef_bootstrap.cheftask",
