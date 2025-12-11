@@ -34,12 +34,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func renderTaskGroovyScriptConfig(t *testing.T, overrides map[string]string) string {
+func RenderMorpheusTaskGroovyScriptResourceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) string {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":              acctest.RandomWithPrefix(t.Name()),
 		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "local",
 		"ScriptContent":     "println \"hello\"",
 		"Retryable":         "true",
@@ -59,7 +63,7 @@ func renderTaskGroovyScriptConfig(t *testing.T, overrides map[string]string) str
 
 	resourceConfig, err := testhelpers.RenderExample(
 		t,
-		"task_groovy_script_resource.tf.tmpl",
+		"morpheus_task_groovy_script_resource.tf.tmpl",
 		args...,
 	)
 	if err != nil {
@@ -82,49 +86,59 @@ func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := renderTaskGroovyScriptConfig(t, map[string]string{
+	resourceConfig := RenderMorpheusTaskGroovyScriptResourceConfig(t, map[string]string{
 		"Name": name,
 		"Code": name,
 	})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"code",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
+			"labels.0",
+			"demo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
+			"labels.1",
+			"terraform",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"source_type",
 			"local",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"script_content",
 			"println \"hello\"\n",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"retryable",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"retry_count",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"retry_delay_seconds",
 			"10",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_task_groovy_script."+name,
+			"hpe_morpheus_task_groovy_script.tfexample_groovy_local",
 			"allow_custom_config",
 			"true",
 		),
