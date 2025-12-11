@@ -3,40 +3,30 @@
 package task_test
 
 import (
-	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func newProviderWithErrorGit() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactoriesGit = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithErrorGit,
-}
-
-func RenderTaskEmailGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusTaskEmailGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     acctest.RandomWithPrefix(t.Name()),
+		"Name":                     name,
 		"Code":                     "tfexample_email_git",
 		"Labels":                   `["demo","terraform"]`,
 		"EmailAddress":             "<%=instance.createdByEmail%>",
 		"Subject":                  "<%=instance.hostname%> provisioning complete",
 		"Source":                   "repository",
 		"ContentPath":              "example.txt",
-		"RepositoryId":             "1",
+		"RepositoryId":             "0",
 		"VersionRef":               "main",
 		"SkipWrappedEmailTemplate": "false",
 		"Retryable":                "true",
@@ -54,7 +44,8 @@ func RenderTaskEmailGitConfig(t *testing.T, overrides map[string]string) (string
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "task_email_resource_git.tf.tmpl", args...)
+	return testhelpers.RenderExample(t,
+		"morpheus_task_email_resource_git.tf.tmpl", args...)
 }
 
 func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
@@ -70,7 +61,7 @@ func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskEmailGitConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderMorpheusTaskEmailGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +115,7 @@ func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_email.tfexample_email_git",
 			"repository_id",
-			"1",
+			"0",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_email.tfexample_email_git",
@@ -160,7 +151,7 @@ func TestAccMorpheusTaskEmailGitExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesGit,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Plan
 			{

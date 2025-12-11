@@ -3,33 +3,23 @@
 package task_test
 
 import (
-	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func newProviderWithErrorUrl() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactoriesUrl = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithErrorUrl,
-}
-
-func RenderTaskEmailUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusTaskEmailUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     acctest.RandomWithPrefix(t.Name()),
+		"Name":                     name,
 		"Code":                     "tfexample_email_url",
 		"Labels":                   `["demo","terraform"]`,
 		"EmailAddress":             "<%=instance.createdByEmail%>",
@@ -52,7 +42,8 @@ func RenderTaskEmailUrlConfig(t *testing.T, overrides map[string]string) (string
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "task_email_resource_url.tf.tmpl", args...)
+	return testhelpers.RenderExample(t,
+		"morpheus_task_email_resource_url.tf.tmpl", args...)
 }
 
 func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
@@ -68,7 +59,7 @@ func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskEmailUrlConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderMorpheusTaskEmailUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +139,7 @@ func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesUrl,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Plan
 			{
