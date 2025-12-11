@@ -11,6 +11,34 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
+func RenderSpecTemplateCloudFormationResourceUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":                 "tf_cloud_formation_spec_example_url",
+		"SourceType":           "url",
+		"SpecPath":             "http://example.com/spec.yaml",
+		"CapabilityIam":        "true",
+		"CapabilityNamedIam":   "true",
+		"CapabilityAutoExpand": "true",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_cloud_formation_resource_url.tf.tmpl",
+		args...,
+	)
+}
+
 func TestAccMorpheusSpecTemplateCloudFormationResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -24,13 +52,9 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceUrlExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_spec_template_cloud_formation_resource_url.tf.tmpl",
-		"Name", name,
-		"SourceType", "url",
-		"SpecPath", "http://example.com/spec.yaml",
-		"CapabilityIam", "true",
-		"CapabilityNamedIam", "true",
-		"CapabilityAutoExpand", "true",
+	resourceConfig, err := RenderSpecTemplateCloudFormationResourceUrlConfig(
+		t,
+		map[string]string{"Name": name},
 	)
 	if err != nil {
 		t.Fatal(err)

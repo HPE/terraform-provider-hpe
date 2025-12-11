@@ -3,35 +3,42 @@
 package template_test
 
 import (
-	"context"
-	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
+func RenderSpecTemplateCloudFormationResourceGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
 
-	testhelpers.WriteMergedResults()
+	defaults := map[string]string{
+		"Name":                 "tf-cloud-formation-spec-example-git",
+		"SourceType":           "repository",
+		"RepositoryId":         "2",
+		"VersionRef":           "main",
+		"SpecPath":             "./spec.yaml",
+		"CapabilityIam":        "true",
+		"CapabilityNamedIam":   "true",
+		"CapabilityAutoExpand": "true",
+	}
 
-	os.Exit(code)
-}
+	for key, value := range overrides {
+		defaults[key] = value
+	}
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
 
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_cloud_formation_resource_git.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T) {
@@ -47,15 +54,9 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_spec_template_cloud_formation_resource_git.tf.tmpl",
-		"Name", name,
-		"SourceType", "repository",
-		"RepositoryId", "2",
-		"VersionRef", "main",
-		"SpecPath", "./spec.yaml",
-		"CapabilityIam", "true",
-		"CapabilityNamedIam", "true",
-		"CapabilityAutoExpand", "true",
+	resourceConfig, err := RenderSpecTemplateCloudFormationResourceGitConfig(
+		t,
+		map[string]string{"Name": name},
 	)
 	if err != nil {
 		t.Fatal(err)

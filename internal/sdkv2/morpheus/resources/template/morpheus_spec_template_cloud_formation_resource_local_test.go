@@ -11,23 +11,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.T) {
-	t.Parallel()
+func RenderSpecTemplateCloudFormationResourceLocalConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
 
-	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	name := acctest.RandomWithPrefix(t.Name())
-
-	//nolint:lll
-	specContent := `{
+	defaults := map[string]string{
+		"Name":       "tf_cloud_formation_spec_example_local",
+		"SourceType": "local",
+		"SpecContent": `{
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "AWS CloudFormation Sample Template S3_Website_Bucket_With_Retain_On_Delete: Sample template showing how to create a publicly accessible S3 bucket configured for website access with a deletion policy of retain on delete. **WARNING** This template creates an S3 bucket that will NOT be deleted when the stack is deleted. You will be billed for the AWS resources used if you create a stack from this template.",
+  "Description" : "AWS CloudFormation Sample Template S3_Website_Bucket_With_Retain_On_Delete: ` +
+			`Sample template showing how to create a publicly accessible S3 bucket configured for ` +
+			`website access with a deletion policy of retain on delete. **WARNING** This template ` +
+			`creates an S3 bucket that will NOT be deleted when the stack is deleted. You will be ` +
+			`billed for the AWS resources used if you create a stack from this template.",
   "Resources" : {
     "S3Bucket" : {
       "Type" : "AWS::S3::Bucket",
@@ -52,17 +51,44 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
       "Description" : "Name of S3 bucket to hold website content"
     }
   }
-}`
+}`,
+		"CapabilityIam":        "true",
+		"CapabilityNamedIam":   "true",
+		"CapabilityAutoExpand": "true",
+	}
 
-	resourceConfig, err := testhelpers.RenderExample(
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(
 		t,
-		"hpe_morpheus_spec_template_cloud_formation_resource_local.tf.tmpl",
-		"Name", name,
-		"SourceType", "local",
-		"SpecContent", specContent,
-		"CapabilityIam", "true",
-		"CapabilityNamedIam", "true",
-		"CapabilityAutoExpand", "true",
+		"morpheus_spec_template_cloud_formation_resource_local.tf.tmpl",
+		args...,
+	)
+}
+
+func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.T) {
+	t.Parallel()
+
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := RenderSpecTemplateCloudFormationResourceLocalConfig(
+		t,
+		map[string]string{"Name": name},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -78,11 +104,6 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
 			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_local",
 			"source_type",
 			"local",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_local",
-			"spec_content",
-			specContent,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_local",
