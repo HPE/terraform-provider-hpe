@@ -7,13 +7,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
 func TestMain(m *testing.M) {
@@ -34,6 +33,34 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderHpeMorpheusExecuteScheduleResourceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Description": "This schedule runs daily at 7 AM Mountain Time",
+		"Enabled":     "false",
+		"TimeZone":    "America/Denver",
+		"Schedule":    "7 0 * * *",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(
+		t,
+		"hpe_morpheus_execute_schedule_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Description", defaults["Description"],
+		"Enabled", defaults["Enabled"],
+		"TimeZone", defaults["TimeZone"],
+		"Schedule", defaults["Schedule"],
+	)
+}
+
 func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,13 +74,9 @@ func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_execute_schedule_resource.tf.tmpl",
-		"Name", name,
-		"Description", "This schedule runs daily at 7 AM Mountain Time",
-		"Enabled", "false",
-		"TimeZone", "America/Denver",
-		"Schedule", "7 0 * * *",
-	)
+	resourceConfig, err := RenderHpeMorpheusExecuteScheduleResourceConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
