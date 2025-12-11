@@ -34,6 +34,43 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderMorpheusFileTemplateResourceConfig generates a Terraform configuration
+// for the morpheus file template resource
+func RenderMorpheusFileTemplateResourceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":            acctest.RandomWithPrefix(t.Name()),
+		"Labels":          `["demo", "template", "terraform"]`,
+		"FileName":        "tfcustom.cnf",
+		"FilePath":        "/etc/my.cnf.d",
+		"Phase":           "preProvision",
+		"FileContent":     `"# Test MySQL Configuration\n[mysqld]\ninnodb_buffer_pool_size = 128M"`,
+		"FileOwner":       "root",
+		"SettingName":     "myCnf",
+		"SettingCategory": "master",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return testhelpers.RenderExample(t, "hpe_morpheus_file_template_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Labels", defaults["Labels"],
+		"FileName", defaults["FileName"],
+		"FilePath", defaults["FilePath"],
+		"Phase", defaults["Phase"],
+		"FileContent", defaults["FileContent"],
+		"FileOwner", defaults["FileOwner"],
+		"SettingName", defaults["SettingName"],
+		"SettingCategory", defaults["SettingCategory"],
+	)
+}
+
 func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,16 +84,8 @@ func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_file_template_resource.tf.tmpl",
-		"Name", name,
-		"Labels", `["demo", "template", "terraform"]`,
-		"FileName", "tfcustom.cnf",
-		"FilePath", "/etc/my.cnf.d",
-		"Phase", "preProvision",
-		"FileOwner", "root",
-		"SettingName", "myCnf",
-		"SettingCategory", "master",
-	)
+	resourceConfig, err := RenderMorpheusFileTemplateResourceConfig(t,
+		map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}
