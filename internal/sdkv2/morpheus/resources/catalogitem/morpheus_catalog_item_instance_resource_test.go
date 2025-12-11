@@ -60,7 +60,7 @@ func RenderCatalogItemInstanceConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"catalog_item_instance_resource.tf.tmpl",
+		"morpheus_catalog_item_instance_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Config", defaults["Config"],
 		"Content", defaults["Content"],
