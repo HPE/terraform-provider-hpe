@@ -256,13 +256,6 @@ func resourceSettingProvisioningCreate(ctx context.Context, d *schema.ResourceDa
 		},
 	}
 
-	// var cloudInitKeypairId = d.Get("cloudinit_keypair_id").(int)
-	// if cloudInitKeypairId != 0 {
-	// 	req.Body["cloudInitKeyPair"] = map[string]any{
-	// 		"id": cloudInitKeypairId,
-	// 	}
-	// }
-
 	resp, err := client.UpdateProvisioningSettings(req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
@@ -273,17 +266,6 @@ func resourceSettingProvisioningCreate(ctx context.Context, d *schema.ResourceDa
 
 	if resp.Result == nil {
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
-	}
-
-	var result *morpheus.UpdateProvisioningSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateProvisioningSettingsResult); ok {
-		result = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
-	if result.ProvisioningSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("ProvisioningSettings"))
 	}
 
 	// Successfully created resource, now set id
