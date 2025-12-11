@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "max_cores" {
   }
 
   config = {
-    maxCores          = "32"  # Maximum number of CPU cores
+    # Required
+    maxCores = "32" # Maximum number of CPU cores
+
+    # Optional
     excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }

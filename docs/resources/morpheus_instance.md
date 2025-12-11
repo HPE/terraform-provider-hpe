@@ -31,9 +31,10 @@ the creation of one VM per instance.  When executing terraform an error will be 
 to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
 
 -> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
-Note that we don't use the `timeouts` settings for `read`.  If the `timeouts` settings are changed in HCL an
+If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
-the new settings but no `Morpheus` `Update` API calls will be made.
+the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
+`read` and `update` is 45 minutes
 
 -> Beware when importing an instance where DHCP has been enabled: if the experimental `plan` functionality
 to generate HCL (flag `-generate-config-out`) is being used the resulting HCL will contain IP addresses for
@@ -218,10 +219,10 @@ resource "hpe_morpheus_instance" "example" {
 ### HVM Instance with timeouts
 
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
-The following example specifies `timeouts` for `create`, `delete` and `update`.  Note that we don't use the `timeouts`
-settings for `read`.  If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
+The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
+If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
 detected is for `timeouts` then the State will be updated with the new settings but no `Morpheus` `Update` API calls
-will be made.
+will be made.  The default timeout for `create`, `delete`, `read` and `update` is 45 minutes
 
 ```terraform
 data "hpe_morpheus_cloud" "vme_cloud" {
@@ -301,6 +302,7 @@ resource "hpe_morpheus_instance" "example" {
     create = "1h"
     delete = "20m"
     update = "20m"
+    read   = "10m"
   }
 }
 ```
@@ -347,7 +349,7 @@ cannot be empty, it can either not be specified in HCL or if specified must cont
 
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
-- `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
+- `ip_mode` (String) The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
@@ -364,7 +366,7 @@ Read-Only:
 Optional:
 
 - `ip_address` (String) The ip address. Not applicable when using DHCP or IP Pools.
-- `ip_mode` (String) The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.
+- `ip_mode` (String) The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'

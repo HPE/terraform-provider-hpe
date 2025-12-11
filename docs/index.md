@@ -134,11 +134,12 @@ In this release (v0.4.0) we have added the following resource functionality:
 - hpe_morpheus_image Update functionality has been added
 - hpe_morpheus_instance supports multiple networks and child virtual networks
 - hpe_morpheus_instance no longer requires that `ip_mode` is set to avoid forced replaces on Update
+- hpe_morpheus_instance supports `timeouts`
 
 In this release (v0.4.0) we have added the following data-source functionality:
 
-- hpe_morpheus_image data-source has been added
-- hpe_morpheus_policy data-source has been added
+- hpe_morpheus_image
+- hpe_morpheus_policy
 
 ### New known issues
 

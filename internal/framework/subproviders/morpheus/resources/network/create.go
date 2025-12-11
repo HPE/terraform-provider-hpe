@@ -287,7 +287,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, pdiags := getNetworkAsState(ctx, id, client)
+	state, pdiags := getNetworkAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

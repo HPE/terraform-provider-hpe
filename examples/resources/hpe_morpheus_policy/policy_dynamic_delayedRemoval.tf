@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "delayed_delete" {
   }
 
   config = {
+    # Required
     removalAge = "30" # Number of days to delay deletion
   }
 }

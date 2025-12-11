@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "network_quota" {
   }
 
   config = {
+    # Required
     maxNetworks = "10" # Maximum number of networks
   }
 }

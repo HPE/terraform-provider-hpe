@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "max_storage" {
   }
 
   config = {
-    maxStorage        = "1000" # Maximum storage in GB
-    excludeContainers = "off"  # Options: "on", "off" - exclude containers from count
+    # Required
+    maxStorage = "1000" # Maximum storage in GB
+
+    # Optional
+    excludeContainers = "off" # Options: "on", "off" - exclude containers from count
   }
 }

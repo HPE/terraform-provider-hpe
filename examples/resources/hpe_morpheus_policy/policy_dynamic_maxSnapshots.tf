@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_snapshots" {
   }
 
   config = {
+    # Required
     maxSnapshots = "5" # Maximum number of snapshots per VM
   }
 }

@@ -13,11 +13,14 @@ resource "hpe_morpheus_policy" "cypher_access" {
   }
 
   config = {
+    # Required
     keyPattern = "secret/*" # Pattern to match Cypher keys (e.g., "secret/*", "password/*")
-    read       = true       # Allow read access
-    write      = true       # Allow write access
-    update     = true       # Allow update access
-    delete     = false      # Deny delete access
-    list       = true       # Allow list access
+
+    # Optional
+    read   = true  # Allow read access
+    write  = true  # Allow write access
+    update = true  # Allow update access
+    delete = false # Deny delete access
+    list   = true  # Allow list access
   }
 }

@@ -5,8 +5,6 @@ package instance
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -15,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -25,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -121,18 +121,24 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 									"ip_mode": schema.StringAttribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-										MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-										Validators: []validator.String{
-											stringvalidator.OneOf("static", "dhcp"),
+										Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+										MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
 										},
-										Default: stringdefault.StaticString("dhcp"),
+										Validators: []validator.String{
+											stringvalidator.OneOf("static", "dhcp", ""),
+										},
+										Default: stringdefault.StaticString(""),
 									},
 									"ip_pool": schema.Int64Attribute{
 										Optional:            true,
 										Computed:            true,
 										Description:         "id of the ip pool to be used with this network",
 										MarkdownDescription: "id of the ip pool to be used with this network",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.UseStateForUnknown(),
+										},
 										Validators: []validator.Int64{
 											int64validator.ConflictsWith(path.Expressions{
 												path.MatchRelative().AtParent().AtName("ip_address"),
@@ -143,6 +149,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "The name of the interface, e.g. 'eth0', 'eth1'",
 										MarkdownDescription: "The name of the interface, e.g. 'eth0', 'eth1'",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
+										},
 									},
 									"network_group_id": schema.Int64Attribute{
 										Optional:            true,
@@ -183,6 +192,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "Is this interface the 'primary interface'?",
 										MarkdownDescription: "Is this interface the 'primary interface'?",
+										PlanModifiers: []planmodifier.Bool{
+											boolplanmodifier.UseStateForUnknown(),
+										},
 									},
 								},
 								CustomType: ChildVirtualNetworksType{
@@ -220,18 +232,24 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						"ip_mode": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							Validators: []validator.String{
-								stringvalidator.OneOf("static", "dhcp"),
+							Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+							MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
 							},
-							Default: stringdefault.StaticString("dhcp"),
+							Validators: []validator.String{
+								stringvalidator.OneOf("static", "dhcp", ""),
+							},
+							Default: stringdefault.StaticString(""),
 						},
 						"ip_pool": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "id of the ip pool to be used with this network",
 							MarkdownDescription: "id of the ip pool to be used with this network",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
 									path.MatchRelative().AtParent().AtName("ip_address"),
@@ -242,6 +260,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The name of the interface, e.g. 'eth0', 'eth1'",
 							MarkdownDescription: "The name of the interface, e.g. 'eth0', 'eth1'",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"network_group_id": schema.Int64Attribute{
 							Optional:            true,
@@ -282,6 +303,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "Is this interface the 'primary interface'?",
 							MarkdownDescription: "Is this interface the 'primary interface'?",
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 					CustomType: NetworkInterfacesType{

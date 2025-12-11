@@ -35,6 +35,7 @@ resource "hpe_morpheus_policy" "workflow" {
   }
 
   config = {
+    # Required
     workflowId = morpheus_operational_workflow.example.id # ID of the workflow to execute
   }
 }

@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_virtual_servers" {
   }
 
   config = {
+    # Required
     maxVirtualServers = "10" # Maximum number of virtual servers
   }
 }

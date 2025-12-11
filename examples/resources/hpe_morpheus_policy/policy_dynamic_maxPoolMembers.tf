@@ -13,6 +13,7 @@ resource "hpe_morpheus_policy" "max_pool_members" {
   }
 
   config = {
+    # Required
     maxPoolMembers = "10" # Maximum number of pool members
   }
 }

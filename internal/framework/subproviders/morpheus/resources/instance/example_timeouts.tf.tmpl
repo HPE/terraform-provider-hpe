@@ -75,5 +75,6 @@ resource "hpe_morpheus_instance" "example" {
     create = "1h"
     delete = "20m"
     update = "20m"
+    read   = "10m"
   }
 }

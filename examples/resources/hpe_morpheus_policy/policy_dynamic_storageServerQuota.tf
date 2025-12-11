@@ -13,7 +13,10 @@ resource "hpe_morpheus_policy" "storage_server_quota" {
   }
 
   config = {
-    storageServerId = "1"    # ID of the storage server
-    maxStorage      = "1000" # Maximum storage in GB
+    # Required
+    storageServerId = "1" # ID of the storage server
+
+    # Optional
+    maxStorage = "1000" # Maximum storage in GB
   }
 }

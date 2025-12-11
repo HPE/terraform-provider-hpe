@@ -13,6 +13,7 @@
 #   }
 #
 #   config = {
-#     backupStorageIds = [5, 6] # Array of backup storage IDs
+#     # Required
+#     backupStorageIds = [5, 6] # Array of backup storage IDs to restrict available backup targets
 #   }
 # }
