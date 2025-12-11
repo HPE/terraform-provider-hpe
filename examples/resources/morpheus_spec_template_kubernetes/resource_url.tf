@@ -1,5 +1,5 @@
 resource "hpe_morpheus_spec_template_kubernetes" "tfexample_kubernetes_spec_template_url" {
-  name        = "tf-kubernetes-spec-example-url"
-  source_type = "url"
-  spec_path   = "http://example.com/spec.yaml"
+  name        = "<no value>"
+  source_type = "<no value>"
+  spec_path   = "<no value>"
 }

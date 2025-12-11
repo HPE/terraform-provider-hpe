@@ -31,7 +31,7 @@ func RenderSpecTemplateKubernetesResourceUrlConfig(
 
 	resourceConfig, err := testhelpers.RenderExample(
 		t,
-		"spec_template_kubernetes_resource_url.tf.tmpl",
+		"morpheus_spec_template_kubernetes_resource_url.tf.tmpl",
 		"Name", defaults["Name"],
 		"SourceType", defaults["SourceType"],
 		"SpecPath", defaults["SpecPath"],

@@ -1,28 +1,6 @@
 resource "hpe_morpheus_spec_template_kubernetes" "tfexample_kubernetes_spec_template_local" {
-  name         = "tf-terraform-spec-example-local"
-  source_type  = "local"
+  name         = "<no value>"
+  source_type  = "<no value>"
   spec_content = <<TFEOF
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-  labels:
-    app: nginx
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.14.2
-        ports:
-        - containerPort: 80
-TFEOF
+<no value>TFEOF
 }

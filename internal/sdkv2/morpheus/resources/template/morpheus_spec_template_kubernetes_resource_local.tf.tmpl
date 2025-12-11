@@ -2,6 +2,6 @@ resource "hpe_morpheus_spec_template_kubernetes" "tfexample_kubernetes_spec_temp
   name         = "{{.Name}}"
   source_type  = "{{.SourceType}}"
   spec_content = <<TFEOF
-{{.SpecContent}}
+{{.SpecContent -}}
 TFEOF
 }

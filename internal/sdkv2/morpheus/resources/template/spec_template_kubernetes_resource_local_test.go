@@ -54,7 +54,7 @@ spec:
 
 	resourceConfig, err := testhelpers.RenderExample(
 		t,
-		"spec_template_kubernetes_resource_local.tf.tmpl",
+		"morpheus_spec_template_kubernetes_resource_local.tf.tmpl",
 		"Name", defaults["Name"],
 		"SourceType", defaults["SourceType"],
 		"SpecContent", defaults["SpecContent"],
@@ -100,7 +100,8 @@ spec:
       - name: nginx
         image: nginx:1.14.2
         ports:
-        - containerPort: 80`
+        - containerPort: 80
+`
 
 	resourceConfig := RenderSpecTemplateKubernetesResourceLocalConfig(t, map[string]string{
 		"Name":        name,
