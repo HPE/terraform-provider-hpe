@@ -34,6 +34,35 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// RenderHpeMorpheusCypherSecretResourceConfig generates a Terraform configuration
+// for the hpe_morpheus_cypher_secret resource from the template file.
+func RenderHpeMorpheusCypherSecretResourceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	// Default field values
+	defaults := map[string]string{
+		"Key":   "apipassword",
+		"Value": "password123",
+		"Ttl":   "86400",
+	}
+
+	// Apply overrides to defaults
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	// Build arguments for RenderExample
+	args := []string{"hpe_morpheus_cypher_secret_resource.tf.tmpl"}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, args[0], args[1:]...)
+}
+
 func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,19 +76,29 @@ func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_cypher_secret_resource.tf.tmpl",
-		"Key", name,
-		"Value", "password123",
-		"Ttl", "86400",
-	)
+	resourceConfig, err := RenderHpeMorpheusCypherSecretResourceConfig(t, map[string]string{
+		"Key": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("hpe_morpheus_cypher_secret.tf_example_cypher_secret", "key", name),
-		resource.TestCheckResourceAttr("hpe_morpheus_cypher_secret.tf_example_cypher_secret", "value", "password123"),
-		resource.TestCheckResourceAttr("hpe_morpheus_cypher_secret.tf_example_cypher_secret", "ttl", "86400"),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"key",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"value",
+			"password123",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"ttl",
+			"86400",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
