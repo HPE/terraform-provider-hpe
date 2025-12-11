@@ -34,6 +34,29 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderHpeMorpheusCypherTfvarsConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Key":   acctest.RandomWithPrefix(t.Name()),
+		"Ttl":   "86400",
+		"Value": "account=12345\npassword=supersecure",
+	}
+
+	for k, v := range overrides {
+		defaults[k] = v
+	}
+
+	return testhelpers.RenderExample(t, "hpe_morpheus_cypher_tfvars_resource.tf.tmpl",
+		"Key", defaults["Key"],
+		"Ttl", defaults["Ttl"],
+		"Value", defaults["Value"],
+	)
+}
+
 func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,11 +70,9 @@ func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_cypher_tfvars_resource.tf.tmpl",
-		"Key", name,
-		"Ttl", "86400",
-		"Value", "account=12345\npassword=supersecure",
-	)
+	resourceConfig, err := RenderHpeMorpheusCypherTfvarsConfig(t, map[string]string{
+		"Key": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +91,7 @@ func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
 			"value",
-			"account=12345\npassword=supersecure",
+			"account=12345\npassword=supersecure\n",
 		),
 	}
 
