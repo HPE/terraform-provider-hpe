@@ -1133,9 +1133,12 @@ Read-Only:
 <a id="nestedatt--config_approval"></a>
 ### Nested Schema for `config_approval`
 
-Optional:
+Required:
 
 - `account_integration_id` (String) ID of your ServiceNow or approval integration
+
+Optional:
+
 - `flow_id` (String) ID of ServiceNow Flow (set if workflowType is 'flow')
 - `workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
 - `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
@@ -1144,7 +1147,7 @@ Optional:
 <a id="nestedatt--config_backup_storage"></a>
 ### Nested Schema for `config_backup_storage`
 
-Optional:
+Required:
 
 - `backup_storage_ids` (Set of Number) Array of backup storage IDs to restrict available backup targets
 
@@ -1152,25 +1155,31 @@ Optional:
 <a id="nestedatt--config_create_backup"></a>
 ### Nested Schema for `config_create_backup`
 
+Required:
+
+- `create_backup_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
+
 Optional:
 
 - `create_backup` (Boolean) Enforce backup creation
-- `create_backup_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_create_user"></a>
 ### Nested Schema for `config_create_user`
 
+Required:
+
+- `create_user_type` (String) Options: "user" (user configurable), "fixed"
+
 Optional:
 
 - `create_user` (Boolean) Enforce user creation
-- `create_user_type` (String) Options: "user" (user configurable), "fixed"
 
 
 <a id="nestedatt--config_create_user_group"></a>
 ### Nested Schema for `config_create_user_group`
 
-Optional:
+Required:
 
 - `user_group` (String) ID of the user group to assign
 
@@ -1178,10 +1187,13 @@ Optional:
 <a id="nestedatt--config_cypher"></a>
 ### Nested Schema for `config_cypher`
 
+Required:
+
+- `key_pattern` (String) Pattern to match Cypher keys (e.g., "secret/*", "password/*")
+
 Optional:
 
 - `delete` (Boolean) Allow delete access
-- `key_pattern` (String) Pattern to match Cypher keys (e.g., "secret/*", "password/*")
 - `list` (Boolean) Allow list access
 - `read` (Boolean) Allow read access
 - `update` (Boolean) Allow update access
@@ -1191,7 +1203,7 @@ Optional:
 <a id="nestedatt--config_delayed_removal"></a>
 ### Nested Schema for `config_delayed_removal`
 
-Optional:
+Required:
 
 - `removal_age` (String) Number of days to delay deletion
 
@@ -1199,14 +1211,21 @@ Optional:
 <a id="nestedatt--config_host_naming"></a>
 ### Nested Schema for `config_host_naming`
 
+Required:
+
+- `host_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
+
 Optional:
 
 - `host_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
-- `host_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_lifecycle"></a>
 ### Nested Schema for `config_lifecycle`
+
+Required:
+
+- `lifecycle_type` (String) Options: "user" (user configurable), "fixed" (fixed expiration)
 
 Optional:
 
@@ -1220,7 +1239,6 @@ Optional:
 - `lifecycle_message` (String) Notification message
 - `lifecycle_notify` (String) Days before expiration to notify
 - `lifecycle_renewal` (String) Days for renewal window
-- `lifecycle_type` (String) Options: "user" (user configurable), "fixed" (fixed expiration)
 - `lifecycle_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
 - `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
 
@@ -1228,7 +1246,7 @@ Optional:
 <a id="nestedatt--config_max_containers"></a>
 ### Nested Schema for `config_max_containers`
 
-Optional:
+Required:
 
 - `max_containers` (String) Max Containers
 
@@ -1236,16 +1254,19 @@ Optional:
 <a id="nestedatt--config_max_cores"></a>
 ### Nested Schema for `config_max_cores`
 
+Required:
+
+- `max_cores` (String) Max Cores
+
 Optional:
 
 - `exclude_containers` (Boolean)
-- `max_cores` (String) Max Cores
 
 
 <a id="nestedatt--config_max_hosts"></a>
 ### Nested Schema for `config_max_hosts`
 
-Optional:
+Required:
 
 - `max_hosts` (String) Max Hosts
 
@@ -1253,16 +1274,19 @@ Optional:
 <a id="nestedatt--config_max_memory"></a>
 ### Nested Schema for `config_max_memory`
 
+Required:
+
+- `max_memory` (String) Max Memory (GB)
+
 Optional:
 
 - `exclude_containers` (Boolean)
-- `max_memory` (String) Max Memory (GB)
 
 
 <a id="nestedatt--config_max_networks"></a>
 ### Nested Schema for `config_max_networks`
 
-Optional:
+Required:
 
 - `max_networks` (String) Max Networks
 
@@ -1270,7 +1294,7 @@ Optional:
 <a id="nestedatt--config_max_pool_members"></a>
 ### Nested Schema for `config_max_pool_members`
 
-Optional:
+Required:
 
 - `max_pool_members` (String) Max Pool Members
 
@@ -1278,7 +1302,7 @@ Optional:
 <a id="nestedatt--config_max_pools"></a>
 ### Nested Schema for `config_max_pools`
 
-Optional:
+Required:
 
 - `max_pools` (String) Max Pools
 
@@ -1286,9 +1310,12 @@ Optional:
 <a id="nestedatt--config_max_price"></a>
 ### Nested Schema for `config_max_price`
 
-Optional:
+Required:
 
 - `max_price` (Number) Maximum price limit
+
+Optional:
+
 - `max_price_currency` (String) Currency code (e.g., USD)
 - `max_price_unit` (String) Options: "hour", "month"
 
@@ -1296,7 +1323,7 @@ Optional:
 <a id="nestedatt--config_max_routers"></a>
 ### Nested Schema for `config_max_routers`
 
-Optional:
+Required:
 
 - `max_routers` (String) Max Routers
 
@@ -1304,7 +1331,7 @@ Optional:
 <a id="nestedatt--config_max_snapshots"></a>
 ### Nested Schema for `config_max_snapshots`
 
-Optional:
+Required:
 
 - `max_snapshots` (String) Max Snapshots
 
@@ -1312,16 +1339,19 @@ Optional:
 <a id="nestedatt--config_max_storage"></a>
 ### Nested Schema for `config_max_storage`
 
+Required:
+
+- `max_storage` (String) Max Storage (GB)
+
 Optional:
 
 - `exclude_containers` (Boolean)
-- `max_storage` (String) Max Storage (GB)
 
 
 <a id="nestedatt--config_max_virtual_servers"></a>
 ### Nested Schema for `config_max_virtual_servers`
 
-Optional:
+Required:
 
 - `max_virtual_servers` (String) Max Virtual Servers
 
@@ -1329,7 +1359,7 @@ Optional:
 <a id="nestedatt--config_max_vms"></a>
 ### Nested Schema for `config_max_vms`
 
-Optional:
+Required:
 
 - `max_vms` (String) Max VMs
 
@@ -1348,27 +1378,33 @@ Optional:
 <a id="nestedatt--config_naming"></a>
 ### Nested Schema for `config_naming`
 
+Required:
+
+- `naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
+
 Optional:
 
 - `naming_conflict` (Boolean) Auto-resolve conflicts
 - `naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
-- `naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_power_schedule"></a>
 ### Nested Schema for `config_power_schedule`
 
+Required:
+
+- `power_schedule_type` (String) Options: "user" (user configurable), "fixed" (strict schedule)
+
 Optional:
 
 - `power_schedule` (String) ID of the power schedule
 - `power_schedule_hide_fixed` (Boolean) Hide fixed schedule from users
-- `power_schedule_type` (String) Options: "user" (user configurable), "fixed" (strict schedule)
 
 
 <a id="nestedatt--config_required_network"></a>
 ### Nested Schema for `config_required_network`
 
-Optional:
+Required:
 
 - `required_networks` (Set of Number) Array of required network IDs
 
@@ -1376,15 +1412,22 @@ Optional:
 <a id="nestedatt--config_server_naming"></a>
 ### Nested Schema for `config_server_naming`
 
+Required:
+
+- `server_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
+
 Optional:
 
 - `server_naming_conflict` (Boolean) Auto-resolve conflicts
 - `server_naming_pattern` (String) Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
-- `server_naming_type` (String) Options: "user" (user configurable), "fixed" (strict pattern)
 
 
 <a id="nestedatt--config_shutdown"></a>
 ### Nested Schema for `config_shutdown`
+
+Required:
+
+- `shutdown_type` (String) Options: "user" (user configurable), "fixed" (strict shutdown)
 
 Optional:
 
@@ -1398,7 +1441,6 @@ Optional:
 - `shutdown_message` (String) Notification message
 - `shutdown_notify` (String) Days before shutdown to notify via email
 - `shutdown_renewal` (String) If the instance is renewed, this is the number of day increments the shutdown date is increased by
-- `shutdown_type` (String) Options: "user" (user configurable), "fixed" (strict shutdown)
 - `shutdown_workflow_id` (String) ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
 - `workflow_type` (String) Options: "workflow" (legacy workflow), "flow" (ServiceNow Flow)
 
@@ -1406,19 +1448,25 @@ Optional:
 <a id="nestedatt--config_storage_server_quota"></a>
 ### Nested Schema for `config_storage_server_quota`
 
+Required:
+
+- `storage_server_id` (String) ID of the storage server
+
 Optional:
 
 - `max_storage` (String) Max Storage (GB)
-- `storage_server_id` (String) ID of the storage server
 
 
 <a id="nestedatt--config_tags"></a>
 ### Nested Schema for `config_tags`
 
+Required:
+
+- `strict` (Boolean) Strict enforcement
+
 Optional:
 
 - `key` (String) Tag key to enforce
-- `strict` (Boolean) Strict enforcement
 - `value` (String) Tag value (optional, can be left empty for any value)
 - `value_list_id` (String) ID of value from value list (optional)
 
@@ -1426,7 +1474,7 @@ Optional:
 <a id="nestedatt--config_workflow"></a>
 ### Nested Schema for `config_workflow`
 
-Optional:
+Required:
 
 - `workflow_id` (String) ID of the workflow to execute
 
