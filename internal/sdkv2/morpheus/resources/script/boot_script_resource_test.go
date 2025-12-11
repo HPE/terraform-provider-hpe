@@ -46,7 +46,7 @@ func TestAccMorpheusBootScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "boot_script_resource.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(t, "morpheus_boot_script_resource.tf.tmpl",
 		"Name", name,
 		"Content", "ls",
 	)
