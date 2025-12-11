@@ -2,8 +2,8 @@ param ($VERSION)
 
 $os="windows"
 $arch="amd64"
-$repo="HPE/terraform-provider-hpegl"
-$windows_hpegl_dir="$env:appdata\terraform.d\plugins\registry.terraform.io\hpe\hpegl"
+$repo="HPE/terraform-provider-hpe"
+$windows_hpe_dir="$env:appdata\terraform.d\plugins\registry.terraform.io\hpe\hpe"
 
 $users_pwd = Get-Location
 
@@ -22,32 +22,32 @@ if (!$VERSION) {
 
 $version_number=$VERSION -replace 'v'  
 
-$dest_dir="${windows_hpegl_dir}\${version_number}\${os}_${arch}\"
-$hpegl_zip="terraform-provider-hpegl_${version_number}_${os}_${arch}.zip"
-$hpegl=$hpegl_zip -replace '.zip'
-$hpegl_dl_url="https://github.com/${repo}/releases/download/${VERSION}/${hpegl_zip}"
+$dest_dir="${windows_hpe_dir}\${version_number}\${os}_${arch}\"
+$hpe_zip="terraform-provider-hpe_${version_number}_${os}_${arch}.zip"
+$hpe=$hpe_zip -replace '.zip'
+$hpe_dl_url="https://github.com/${repo}/releases/download/${VERSION}/${hpe_zip}"
 
 mkdir "$dest_dir" 
 Set-Location "$dest_dir"
 
 try {
-    Invoke-WebRequest $hpegl_dl_url -Out $hpegl_zip     
+    Invoke-WebRequest $hpe_dl_url -Out $hpe_zip     
 }
 catch {
     Write-Host "Error: The version that was specified does not exist."
 
     Set-Location "${users_pwd}"
-    Remove-Item -Path "${windows_hpegl_dir}\${version_number}" -Recurse -Force -ErrorAction SilentlyContinue 
+    Remove-Item -Path "${windows_hpe_dir}\${version_number}" -Recurse -Force -ErrorAction SilentlyContinue 
 
     Write-Host "Exiting..."
     Return 
 }
 
 Write-Host Extracting release files
-Expand-Archive $hpegl_zip -Force
+Expand-Archive $hpe_zip -Force
 
-Get-ChildItem -Path $hpegl -Recurse -File | Move-Item -Destination $dest_dir
+Get-ChildItem -Path $hpe -Recurse -File | Move-Item -Destination $dest_dir
 
-Remove-Item $hpegl_zip -Recurse -Force -ErrorAction SilentlyContinue 
-Remove-Item $hpegl -Recurse -Force -ErrorAction SilentlyContinue 
+Remove-Item $hpe_zip -Recurse -Force -ErrorAction SilentlyContinue 
+Remove-Item $hpe -Recurse -Force -ErrorAction SilentlyContinue 
 Write-Host Complete

@@ -1,18 +1,18 @@
-# Installing the Terraform Provider for HPE GreenLake
+# Installing the Terraform Provider for HPE
 
 This document assumes the use of Terraform 0.13 or later.
 
 
 ## Installation
 
-The latest release of the provider can be found on [`https://github.com/HPE/terraform-provider-hpegl/releases`][releases]. You can download the appropriate version of the provider for your operating system using a command line shell or a browser.
+The latest release of the provider can be found on [`https://github.com/HPE/terraform-provider-hpe/releases`][releases]. You can download the appropriate version of the provider for your operating system using a command line shell or a browser.
 
 This can be useful in environments that do not allow direct access to the Internet.
 
 ## Install Scripts
 
-See [linux](./scripts/install-hpegl-provider.sh), [windows](./scripts/install-hpegl-provider-windows.ps1), and
-[macOS](./scripts/install-hpegl-provider-macos.sh) install scripts that will download the latest release of the provider
+See [linux](./scripts/install-hpe-provider.sh), [windows](./scripts/install-hpe-provider-windows.ps1), and
+[macOS](./scripts/install-hpe-provider-macos.sh) install scripts that will download the latest release of the provider
 and install it in the appropriate location for your operating system.
 
 Then skip to [Configure the Terraform Configuration Files](#configure-the-terraform-configuration-files) to complete the
@@ -26,13 +26,13 @@ The following examples use Bash on Linux (x64).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpegl/releases/download/v${RELEASE}/terraform-provider-hpegl_${RELEASE}_linux_amd64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/terraform-provider-hpe_${RELEASE}_linux_amd64.zip
    ```
 
 2. Extract the plugin.
 
    ```console
-   unzip terraform-provider-hpegl_${RELEASE}_linux_amd64.zip -d terraform-provider-hpegl_${RELEASE}
+   unzip terraform-provider-hpe_${RELEASE}_linux_amd64.zip -d terraform-provider-hpe_${RELEASE}
    ```
 
 3. Create a directory for the provider.
@@ -44,19 +44,19 @@ The following examples use Bash on Linux (x64).
    > `$PLUGIN_DIRECTORY/$SOURCEHOSTNAME/$SOURCENAMESPACE/$NAME/$VERSION/$OS_$ARCH/`
 
    ```console
-   mkdir -p ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/linux_amd64
+   mkdir -p ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/linux_amd64
    ```
 
 4. Copy the extracted plugin to a target system and move to the Terraform plugins directory.
 
    ```console
-   mv terraform-provider-hpegl_${RELEASE}/terraform-provider-hpegl_v${RELEASE} ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/linux_amd64
+   mv terraform-provider-hpe_${RELEASE}/terraform-provider-hpe_v${RELEASE} ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/linux_amd64
    ```
 
 5. Verify the presence of the plugin in the Terraform plugins directory.
 
    ```console
-   cd ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/linux_amd64
+   cd ~/.local/share/terraform/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/linux_amd64
    ls
    ```
 
@@ -74,13 +74,13 @@ The following example uses Zsh (default) on macOS (Apple Silicon).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpegl/releases/download/v${RELEASE}/terraform-provider-hpegl_${RELEASE}_darwin_arm64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/terraform-provider-hpe_${RELEASE}_darwin_arm64.zip
    ```
 
 3. Extract the plugin.
 
    ```console
-   unzip terraform-provider-hpegl_${RELEASE}_darwin_arm64.zip -d terraform-provider-hpegl_${RELEASE}
+   unzip terraform-provider-hpe_${RELEASE}_darwin_arm64.zip -d terraform-provider-hpe_${RELEASE}
    ```
 
 4. Create a directory for the provider.
@@ -92,19 +92,19 @@ The following example uses Zsh (default) on macOS (Apple Silicon).
    > `$PLUGIN_DIRECTORY/$SOURCEHOSTNAME/$SOURCENAMESPACE/$NAME/$VERSION/$OS_$ARCH/`
 
    ```console
-   mkdir -p ~/.terraform.d/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/darwin_arm64
+   mkdir -p ~/.terraform.d/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/darwin_arm64
    ```
 
 5. Copy the extracted plugin to a target system and move to the Terraform plugins directory.
 
    ```console
-   mv terraform-provider-hpegl_${RELEASE}/terraform-provider-hpegl_v${RELEASE} ~/.terraform.d/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/darwin_arm64
+   mv terraform-provider-hpe_${RELEASE}/terraform-provider-hpe_v${RELEASE} ~/.terraform.d/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/darwin_arm64
    ```
 
 6. Verify the presence of the plugin in the Terraform plugins directory.
 
    ```console
-   cd ~/.terraform.d/plugins/registry.terraform.io/hpe/hpegl/${RELEASE}/darwin_arm64
+   cd ~/.terraform.d/plugins/registry.terraform.io/hpe/hpe/${RELEASE}/darwin_arm64
    ls
    ```
 
@@ -116,14 +116,14 @@ The following examples use PowerShell on Windows (x64).
 
    ```powershell
    Set-Variable -Name "RELEASE" -Value "x.y.z"
-   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpegl/releases/download/v${RELEASE}/terraform-provider-hpegl_${RELEASE}_windows_amd64.zip -outfile terraform-provider-hpegl_${RELEASE}_windows_amd64.zip
+   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/terraform-provider-hpe_${RELEASE}_windows_amd64.zip -outfile terraform-provider-hpe_${RELEASE}_windows_amd64.zip
    ```
 
 2. Extract the plugin.
 
    ```powershell
-   Expand-Archive terraform-provider-hpegl_${RELEASE}_windows_amd64.zip
-   cd terraform-provider-hpegl_${RELEASE}_windows_amd64
+   Expand-Archive terraform-provider-hpe_${RELEASE}_windows_amd64.zip
+   cd terraform-provider-hpe_${RELEASE}_windows_amd64
    ```
 
 3. Copy the extracted plugin to a target system and move to the Terraform plugins directory.
@@ -135,15 +135,15 @@ The following examples use PowerShell on Windows (x64).
    > `$PLUGIN_DIRECTORY/$SOURCEHOSTNAME/$SOURCENAMESPACE/$NAME/$VERSION/$OS_$ARCH/`
 
    ```powershell
-   New-Item $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpegl\${RELEASE}\ -Name "windows_amd64" -ItemType "directory"
+   New-Item $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpe\${RELEASE}\ -Name "windows_amd64" -ItemType "directory"
 
-   Move-Item terraform-provider-hpegl_v${RELEASE}.exe $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpegl\${RELEASE}\windows_amd64\terraform-provider-hpegl_v${RELEASE}.exe
+   Move-Item terraform-provider-hpe_v${RELEASE}.exe $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpe\${RELEASE}\windows_amd64\terraform-provider-hpe_v${RELEASE}.exe
    ```
 
 4. Verify the presence of the plugin in the Terraform plugins directory.
 
    ```powershell
-   cd $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpegl\${RELEASE}\windows_amd64
+   cd $ENV:APPDATA\terraform.d\plugins\registry.terraform.io\hpe\hpe\${RELEASE}\windows_amd64
    dir
    ```
 
@@ -156,8 +156,8 @@ A working directory can be initialized with providers that are installed locally
 ```hcl
 terraform {
   required_providers {
-    hpegl = {
-      source  = "HPE/hpegl"
+    hpe = {
+      source  = "HPE/hpe"
       version = ">= x.y.z"
     }
   }
@@ -167,7 +167,7 @@ terraform {
 
 ### Verify the Terraform Initialization of a Manually Installed Provider
 
-To verify the initialization, navigate to the working directory for your Terraform configuration and run `terraform init`. You should see a message indicating that Terraform has been successfully initialized and the installed version of the Terraform Provider for HPE Greenlake.
+To verify the initialization, navigate to the working directory for your Terraform configuration and run `terraform init`. You should see a message indicating that Terraform has been successfully initialized and the installed version of the Terraform Provider for HPE.
 
 **Example**: Initialize and Use a Manually Installed Provider
 
@@ -177,9 +177,9 @@ To verify the initialization, navigate to the working directory for your Terrafo
 Initializing the backend...
 
 Initializing provider plugins...
-- Reusing previous version of hpe/hpegl from the dependency lock file
-- Installing hpe/hpegl x.y.z...
-- Installed hpe/hpegl x.y.z (unauthenticated)
+- Reusing previous version of hpe/hpe from the dependency lock file
+- Installing hpe/hpe x.y.z...
+- Installed hpe/hpe x.y.z (unauthenticated)
 
 Terraform has been successfully initialized!
 ```
@@ -194,5 +194,5 @@ To find the provider version, navigate to the working directory of your Terrafor
 % terraform version
 Terraform x.y.z
 on darwin_arm64
-+ provider registry.terraform.io/hpe/hpegl x.y.z
++ provider registry.terraform.io/hpe/hpe x.y.z
 ```

@@ -14,4 +14,3 @@ if [ ! -z ${gofmt_files} ]; then
 fi
 
 exit 0
-
