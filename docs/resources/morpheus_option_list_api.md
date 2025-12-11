@@ -17,12 +17,12 @@ resource "hpe_morpheus_option_list_api" "tf_example_api_option_list" {
   visibility         = "private"
   option_list        = "instances"
   translation_script = <<SCRIPT
-  var i=0;
-  results = [];
-  for(i; i<data.length; i++) {
-    results.push({name: data[i].name, value: data[i].name});
-  }
-  SCRIPT
+var i=0;
+results = [];
+for(i; i<data.length; i++) {
+  results.push({name: data[i].name, value: data[i].name});
+}
+SCRIPT
 }
 ```
 
