@@ -1,0 +1,24 @@
+resource "hpe_morpheus_option_list_rest" "tf_example_rest_option_list" {
+  name               = "{{.Name}}"
+  description        = "{{.Description}}"
+  visibility         = "{{.Visibility}}"
+  source_url         = "{{.SourceUrl}}"
+  real_time          = {{.RealTime}}
+  ignore_ssl_errors  = {{.IgnoreSslErrors}}
+  source_method      = "{{.SourceMethod}}"
+  initial_dataset    = <<POLICY
+{{.InitialDataset}}
+  POLICY
+  translation_script = <<POLICY
+{{.TranslationScript}}
+  POLICY
+  source_headers {
+    name  = "{{.SourceHeaderName1}}"
+    value = "{{.SourceHeaderValue1}}"
+  }
+
+  source_headers {
+    name  = "{{.SourceHeaderName2}}"
+    value = "{{.SourceHeaderValue2}}"
+  }
+}
