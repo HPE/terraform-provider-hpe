@@ -1,0 +1,7 @@
+resource "hpe_morpheus_integration_docker_registry" "tf_example_docker_registry_integration" {
+  name     = "{{.Name}}"
+  enabled  = {{.Enabled}}
+  url      = "{{.Url}}"
+  username = "{{.Username}}"
+  password = "{{.Password}}"
+}
