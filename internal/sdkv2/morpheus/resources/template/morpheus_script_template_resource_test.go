@@ -3,35 +3,44 @@
 package template_test
 
 import (
-	"context"
-	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
+// RenderHpeMorpheusScriptTemplateResourceConfig renders the template with provided overrides
+func RenderHpeMorpheusScriptTemplateResourceConfig(
+	t *testing.T,
+	overrides map[string]string,
+) (string, error) {
+	t.Helper()
 
-	testhelpers.WriteMergedResults()
+	defaults := map[string]string{
+		"Name":          acctest.RandomWithPrefix(t.Name()),
+		"Labels":        "[\"demo\", \"template\", \"terraform\"]",
+		"ScriptType":    "bash",
+		"ScriptPhase":   "provision",
+		"ScriptContent": "echo \"testing\"",
+		"RunAsUser":     "root",
+		"Sudo":          "true",
+	}
 
-	os.Exit(code)
-}
+	for key, value := range overrides {
+		defaults[key] = value
+	}
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
+	return testhelpers.RenderExample(t, "morpheus_script_template_resource.tf.tmpl",
+		"Name", defaults["Name"],
+		"Labels", defaults["Labels"],
+		"ScriptType", defaults["ScriptType"],
+		"ScriptPhase", defaults["ScriptPhase"],
+		"ScriptContent", defaults["ScriptContent"],
+		"RunAsUser", defaults["RunAsUser"],
+		"Sudo", defaults["Sudo"],
+	)
 }
 
 func TestAccMorpheusScriptTemplateExampleOk(t *testing.T) {
@@ -47,14 +56,9 @@ func TestAccMorpheusScriptTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_script_template_resource.tf.tmpl",
-		"Name", name,
-		"Labels", "[\"demo\", \"template\", \"terraform\"]",
-		"ScriptType", "bash",
-		"ScriptPhase", "provision",
-		"ScriptContent", "echo \"testing\"",
-		"RunAsUser", "root",
-		"Sudo", "true",
+	resourceConfig, err := RenderHpeMorpheusScriptTemplateResourceConfig(
+		t,
+		map[string]string{"Name": name},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -99,7 +103,7 @@ func TestAccMorpheusScriptTemplateExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_script_template.tfexample_script_template",
 			"script_content",
-			"echo \"testing\"\n",
+			"echo \"testing\"",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_script_template.tfexample_script_template",
