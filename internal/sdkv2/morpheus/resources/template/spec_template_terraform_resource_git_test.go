@@ -38,7 +38,7 @@ func RenderSpecTemplateTerraformGitConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"spec_template_terraform_resource_git.tf.tmpl",
+		"morpheus_spec_template_terraform_resource_git.tf.tmpl",
 		args...,
 	)
 }
