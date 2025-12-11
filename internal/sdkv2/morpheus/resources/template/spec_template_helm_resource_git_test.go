@@ -31,7 +31,7 @@ func RenderSpecTemplateHelmGitConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"spec_template_helm_resource_git.tf.tmpl",
+		"morpheus_spec_template_helm_resource_git.tf.tmpl",
 		"Name", defaults["Name"],
 		"RepositoryId", defaults["RepositoryId"],
 		"SourceType", defaults["SourceType"],

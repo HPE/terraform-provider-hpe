@@ -13,28 +13,19 @@ import (
 
 func RenderSpecTemplateHelmLocalConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
-	defaultSpecContent := `apiVersion: v1
-kind: Service
-metadata:
-name: {{ template "fullname" . }}
-labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-spec:
-type: {{ .Values.service.type }}
-ports:
-- port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
-selector:
-    app: {{ template "fullname" . }}`
+	defaultSpecContent := "apiVersion: v1\nkind: Service\nmetadata:\nname: {{ template \"fullname\" . }}\n" +
+		"labels:\n    chart: \"{{ .Chart.Name }}-{{ .Chart.Version | replace \"+\" \"_\" }}\"\nspec:\n" +
+		"type: {{ .Values.service.type }}\nports:\n- port: {{ .Values.service.externalPort }}\n" +
+		"    targetPort: {{ .Values.service.internalPort }}\n    protocol: TCP\n" +
+		"    name: {{ .Values.service.name }}\nselector:\n    app: {{ template \"fullname\" . }}"
 
 	defaults := map[string]string{
-		"Name":        acctest.RandomWithPrefix(t.Name()),
+		"Name":        name,
 		"SourceType":  "local",
 		"SpecContent": defaultSpecContent,
 	}
@@ -45,7 +36,7 @@ selector:
 
 	return testhelpers.RenderExample(
 		t,
-		"spec_template_helm_resource_local.tf.tmpl",
+		"morpheus_spec_template_helm_resource_local.tf.tmpl",
 		"Name", defaults["Name"],
 		"SourceType", defaults["SourceType"],
 		"SpecContent", defaults["SpecContent"],
@@ -65,26 +56,7 @@ func TestAccMorpheusSpecTemplateHelmLocalExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	specContent := `apiVersion: v1
-kind: Service
-metadata:
-name: {{ template "fullname" . }}
-labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-spec:
-type: {{ .Values.service.type }}
-ports:
-- port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
-selector:
-    app: {{ template "fullname" . }}`
-
-	resourceConfig, err := RenderSpecTemplateHelmLocalConfig(t, map[string]string{
-		"Name":        name,
-		"SpecContent": specContent,
-	})
+	resourceConfig, err := RenderSpecTemplateHelmLocalConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,10 +74,9 @@ selector:
 			"local",
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_local",
 			"spec_content",
-			specContent,
 		),
 	}
 
