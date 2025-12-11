@@ -365,7 +365,7 @@ func mapPolicyConfigToState(
 			state.ConfigMaxSnapshots = maxSnapshotsValue
 		}
 
-	case "maxStorage":
+	case "maxStorage", "storageBucketQuota", "storageShareQuota":
 		maxStorageAttrs := map[string]attr.Value{
 			"exclude_containers": convert.StringToBool(
 				ctx,

@@ -330,7 +330,7 @@ func mapStateToAddPolicyConfig(
 				configMap = maxSnapshots
 			}
 
-		case "maxStorage":
+		case "maxStorage", "storageBucketQuota", "storageShareQuota":
 			maxStorage := make(map[string]interface{})
 			if !plan.ConfigMaxStorage.MaxStorage.IsNull() {
 				maxStorage["maxStorage"] = plan.ConfigMaxStorage.MaxStorage.ValueString()
