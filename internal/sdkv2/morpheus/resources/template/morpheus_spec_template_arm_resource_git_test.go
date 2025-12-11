@@ -11,7 +11,30 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
+func RenderMorpheusSpecTemplateArmGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":         "tf-arm-spec-example-git",
+		"SourceType":   "repository",
+		"RepositoryId": "2",
+		"VersionRef":   "main",
+		"SpecPath":     "./test.json",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "morpheus_spec_template_arm_resource_git.tf.tmpl", args...)
+}
+
+func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -24,30 +47,36 @@ func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_spec_template_arm_resource_url.tf.tmpl",
-		"Name", name,
-		"SourceType", "url",
-		"SpecPath", "http://example.com/spec.json",
-	)
+	resourceConfig, err := RenderMorpheusSpecTemplateArmGitConfig(t, map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
 			"source_type",
-			"url",
+			"repository",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
+			"repository_id",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
+			"version_ref",
+			"main",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
 			"spec_path",
-			"http://example.com/spec.json",
+			"./test.json",
 		),
 	}
 

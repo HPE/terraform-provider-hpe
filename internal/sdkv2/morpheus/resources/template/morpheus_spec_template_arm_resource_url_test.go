@@ -3,38 +3,36 @@
 package template_test
 
 import (
-	"context"
-	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
+func RenderMorpheusSpecTemplateArmUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
 
-	testhelpers.WriteMergedResults()
+	defaults := map[string]string{
+		"Name":       "tf-arm-spec-example-url",
+		"SourceType": "url",
+		"SpecPath":   "http://example.com/spec.json",
+	}
 
-	os.Exit(code)
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	args := []string{}
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "morpheus_spec_template_arm_resource_url.tf.tmpl", args...)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
-}
-
-func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -47,42 +45,26 @@ func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_spec_template_arm_resource_git.tf.tmpl",
-		"Name", name,
-		"SourceType", "repository",
-		"RepositoryId", "2",
-		"VersionRef", "main",
-		"SpecPath", "./test.json",
-	)
+	resourceConfig, err := RenderMorpheusSpecTemplateArmUrlConfig(t, map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
 			"source_type",
-			"repository",
+			"url",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
-			"repository_id",
-			"2",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
-			"version_ref",
-			"main",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_git",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_url",
 			"spec_path",
-			"./test.json",
+			"http://example.com/spec.json",
 		),
 	}
 
