@@ -5,6 +5,7 @@ package blueprint_test
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -34,6 +35,57 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+func RenderMorpheusInstanceTypeConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) string {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":                  name,
+		"Code":                  strings.ToLower(name),
+		"Description":           "Terraform Example Instance Type",
+		"Labels":                `["demo", "instance", "terraform"]`,
+		"Category":              "web",
+		"Visibility":            "private",
+		"ImagePath":             "tfexample.png",
+		"ImageName":             "tfexample.png",
+		"Featured":              "false",
+		"EnableDeployments":     "true",
+		"EnableScaling":         "true",
+		"EnableSettings":        "true",
+		"EnvironmentPrefix":     "TFEXAMPLE_DEMO",
+		"OptionTypeIds":         "[1910, 1912]",
+		"EvarFirstName":         "first",
+		"EvarFirstValue":        "first",
+		"EvarFirstExport":       "true",
+		"EvarSecondName":        "second",
+		"EvarSecondMaskedValue": "second",
+		"EvarSecondExport":      "false",
+	}
+
+	for k, v := range overrides {
+		defaults[k] = v
+	}
+
+	args := make([]string, 0, len(defaults)*2)
+	for k, v := range defaults {
+		args = append(args, k, v)
+	}
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"morpheus_instance_type_resource.tf.tmpl",
+		args...,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return resourceConfig
+}
+
 func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -47,31 +99,7 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "hpe_morpheus_instance_type_resource.tf.tmpl",
-		"Name", name,
-		"Code", "tf_example_instance",
-		"Description", "Terraform Example Instance Type",
-		"Labels", `["demo", "instance", "terraform"]`,
-		"Category", "web",
-		"Visibility", "private",
-		"ImagePath", "tfexample.png",
-		"ImageName", "tfexample.png",
-		"Featured", "false",
-		"EnableDeployments", "true",
-		"EnableScaling", "true",
-		"EnableSettings", "true",
-		"EnvironmentPrefix", "TFEXAMPLE_DEMO",
-		"OptionTypeIds", "[1910, 1912]",
-		"Evar1Name", "first",
-		"Evar1Value", "first",
-		"Evar1Export", "true",
-		"Evar2Name", "second",
-		"Evar2MaskedValue", "second",
-		"Evar2Export", "false",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	resourceConfig := RenderMorpheusInstanceTypeConfig(t, name, map[string]string{"Name": name})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -82,7 +110,7 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_instance_type.tf_example_instance_type",
 			"code",
-			"tf_example_instance",
+			strings.ToLower(name),
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_instance_type.tf_example_instance_type",

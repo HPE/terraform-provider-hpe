@@ -12,17 +12,17 @@ resource "hpe_morpheus_instance_type" "tf_example_instance_type" {
   enable_scaling     = {{.EnableScaling}}
   enable_settings    = {{.EnableSettings}}
   environment_prefix = "{{.EnvironmentPrefix}}"
-  option_type_ids    = {{.OptionTypeIds}}
+  # option_type_ids    = {{.OptionTypeIds}}
 
   evar {
-    name   = "{{.Evar1Name}}"
-    value  = "{{.Evar1Value}}"
-    export = {{.Evar1Export}}
+    name   = "{{.EvarFirstName}}"
+    value  = "{{.EvarFirstValue}}"
+    export = {{.EvarFirstExport}}
   }
 
   evar {
-    name         = "{{.Evar2Name}}"
-    masked_value = "{{.Evar2MaskedValue}}"
-    export       = {{.Evar2Export}}
+    name         = "{{.EvarSecondName}}"
+    masked_value = "{{.EvarSecondMaskedValue}}"
+    export       = {{.EvarSecondExport}}
   }
 }
