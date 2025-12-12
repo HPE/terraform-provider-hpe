@@ -34,9 +34,10 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderTaskJavascriptConfig generates a terraform configuration string for task javascript resource.
+// RenderMorpheusTaskJavascriptConfig generates a terraform configuration string
+// for task javascript resource.
 // It accepts a map to override default field values.
-func RenderTaskJavascriptConfig(
+func RenderMorpheusTaskJavascriptConfig(
 	t *testing.T,
 	overrides map[string]string,
 ) (string, error) {
@@ -59,7 +60,7 @@ func RenderTaskJavascriptConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"task_javascript_resource.tf.tmpl",
+		"morpheus_task_javascript_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],
@@ -84,7 +85,7 @@ func TestAccMorpheusTaskJavascriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskJavascriptConfig(t, map[string]string{
+	resourceConfig, err := RenderMorpheusTaskJavascriptConfig(t, map[string]string{
 		"Name": name,
 		"Code": name,
 	})
