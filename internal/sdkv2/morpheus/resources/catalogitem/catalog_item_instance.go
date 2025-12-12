@@ -86,6 +86,7 @@ func ResourceCatalogItemInstance() *schema.Resource {
 
 					return ""
 				},
+				DiffSuppressFunc: helpers.SuppressEquivalentJSONDiffs,
 			},
 			"config": {
 				Type:             schema.TypeString,
@@ -306,7 +307,7 @@ func resourceCatalogItemInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		filePayloads = append(filePayloads, filePayload)
 		response, err := client.UpdateCatalogItemLogo(catalogItemResult.ID, filePayloads, &morpheus.Request{})
 		if err != nil {
-			log.Printf("API FAILURE: %s - %s", response, err)
+			log.Printf("API LOGO FAILURE: %s - %s", response, err)
 
 			return diag.FromErr(err)
 		}

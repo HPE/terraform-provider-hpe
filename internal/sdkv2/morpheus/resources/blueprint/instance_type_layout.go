@@ -269,6 +269,7 @@ func resourceInstanceTypeLayoutCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	instanceLayout["supportsConvertToManaged"] = supportConvertToManaged
 
+	// TODO: Should this be a list of objects instead of just IDs?
 	instanceLayout["optionTypes"] = d.Get("option_type_ids")
 
 	var evarRaw []any
