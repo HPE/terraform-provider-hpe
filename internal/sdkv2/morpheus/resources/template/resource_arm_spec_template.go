@@ -55,6 +55,7 @@ func ResourceSpecTemplateARM() *schema.Resource {
 
 					return ""
 				},
+				DiffSuppressFunc: helpers.SuppressEquivalentJSONDiffs,
 			},
 			"spec_path": {
 				Type:        schema.TypeString,

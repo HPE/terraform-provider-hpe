@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderSecurityPackageConfig(
+func RenderSpecTemplateCloudFormationGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -19,12 +19,14 @@ func RenderSecurityPackageConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
-		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/" +
-			"v0.1.59/scap-security-guide-0.1.59.zip",
+		"Name":                 name,
+		"SourceType":           "repository",
+		"RepositoryId":         "2",
+		"VersionRef":           "main",
+		"SpecPath":             "./spec.yaml",
+		"CapabilityIam":        "true",
+		"CapabilityNamedIam":   "true",
+		"CapabilityAutoExpand": "true",
 	}
 
 	for key, value := range overrides {
@@ -38,12 +40,12 @@ func RenderSecurityPackageConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_security_package_resource.tf.tmpl",
+		"morpheus_spec_template_cloud_formation_resource_git.tf.tmpl",
 		args...,
 	)
 }
 
-func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -56,37 +58,55 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderSpecTemplateCloudFormationGitConfig(
+		t,
+		name,
+		map[string]string{},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"description",
-			"Terraform security package example",
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"source_type",
+			"repository",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"labels.#",
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"repository_id",
 			"2",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"enabled",
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"version_ref",
+			"main",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"spec_path",
+			"./spec.yaml",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"capability_iam",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"url",
-			"https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/"+
-				"scap-security-guide-0.1.59.zip",
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"capability_named_iam",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_cloud_formation.tfexample_cloud_formation_spec_template_git",
+			"capability_auto_expand",
+			"true",
 		),
 	}
 

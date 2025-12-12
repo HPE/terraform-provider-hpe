@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderSecurityPackageConfig(
+func RenderMorpheusSpecTemplateArmLocalConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -19,12 +19,8 @@ func RenderSecurityPackageConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
-		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/" +
-			"v0.1.59/scap-security-guide-0.1.59.zip",
+		"Name":       name,
+		"SourceType": "local",
 	}
 
 	for key, value := range overrides {
@@ -38,12 +34,12 @@ func RenderSecurityPackageConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_security_package_resource.tf.tmpl",
+		"morpheus_spec_template_arm_resource_local.tf.tmpl",
 		args...,
 	)
 }
 
-func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateArmResourceLocalExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -56,37 +52,25 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderMorpheusSpecTemplateArmLocalConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_local",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"description",
-			"Terraform security package example",
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_local",
+			"source_type",
+			"local",
 		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"labels.#",
-			"2",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"enabled",
-			"true",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"url",
-			"https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/"+
-				"scap-security-guide-0.1.59.zip",
+		resource.TestCheckResourceAttrSet(
+			"hpe_morpheus_spec_template_arm.tfexample_arm_spec_template_local",
+			"spec_content",
 		),
 	}
 
