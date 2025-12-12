@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package script_test
+package cypher_test
 
 import (
 	"testing"
@@ -11,34 +11,37 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
-// It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
+// RenderMorpheusCypherSecretConfig generates a Terraform configuration
+// for the hpe_morpheus_cypher_secret resource from the template file.
+func RenderMorpheusCypherSecretConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
+	// Default field values
 	defaults := map[string]string{
-		"Name":    name,
-		"Content": "ls",
+		"Key":   name,
+		"Value": "password123",
+		"Ttl":   "86400",
 	}
 
+	// Apply overrides to defaults
 	for key, value := range overrides {
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Content", defaults["Content"],
-	)
+	// Build arguments for RenderExample
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "morpheus_cypher_secret_resource_tf.tmpl", args...)
 }
 
-func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
+func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -51,23 +54,26 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
-		"Content": "ls",
-	})
+	resourceConfig, err := RenderMorpheusCypherSecretConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"name",
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"key",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"content",
-			"ls",
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"value",
+			"password123",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"ttl",
+			"86400",
 		),
 	}
 
