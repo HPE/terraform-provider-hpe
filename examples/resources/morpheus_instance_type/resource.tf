@@ -12,7 +12,7 @@ resource "hpe_morpheus_instance_type" "tf_example_instance_type" {
   enable_scaling     = true
   enable_settings    = true
   environment_prefix = "TFEXAMPLE_DEMO"
-  option_type_ids    = [1910, 1912]
+  # option_type_ids    = [1910, 1912]
 
   evar {
     name   = "first"
