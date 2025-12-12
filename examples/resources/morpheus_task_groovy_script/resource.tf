@@ -1,7 +1,7 @@
 resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_local" {
   name                = "tfexample_groovy_local"
   code                = "tfexample_groovy_local"
-  labels              = ["demo", "terraform"]
+  labels              = ["demo","terraform"]
   source_type         = "local"
   script_content      = <<EOF
 println "hello"
