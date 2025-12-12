@@ -56,7 +56,7 @@ func RenderTaskPowershellScriptConfig(t *testing.T, overrides map[string]string)
 
 	return testhelpers.RenderExample(
 		t,
-		"task_powershell_script_resource.tf.tmpl",
+		"morpheus_task_powershell_script_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],

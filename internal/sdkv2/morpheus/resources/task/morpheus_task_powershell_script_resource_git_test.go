@@ -3,6 +3,7 @@
 package task_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -11,18 +12,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderTaskPowershellScriptGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskPowershellScriptGitConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              strings.ToLower(name),
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "repository",
 		"ResultType":        "json",
 		"ScriptPath":        "example.ps",
 		"VersionRef":        "master",
-		"RepositoryId":      "1",
+		"RepositoryId":      "0",
 		"ElevatedShell":     "true",
 		"Retryable":         "true",
 		"RetryCount":        "1",
@@ -36,7 +37,7 @@ func RenderTaskPowershellScriptGitConfig(t *testing.T, overrides map[string]stri
 
 	return testhelpers.RenderExample(
 		t,
-		"task_powershell_script_resource_git.tf.tmpl",
+		"morpheus_task_powershell_script_resource_git.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],
@@ -66,10 +67,7 @@ func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskPowershellScriptGitConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderTaskPowershellScriptGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +81,7 @@ func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_powershell_script."+name,
 			"code",
-			name,
+			strings.ToLower(name),
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_powershell_script."+name,
@@ -108,7 +106,7 @@ func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_powershell_script."+name,
 			"repository_id",
-			"1",
+			"0",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_powershell_script."+name,
