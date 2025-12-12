@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func renderSpecTemplateHelmUrlConfig(
+func RenderSpecTemplateHelmUrlConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -50,7 +50,7 @@ func TestAccMorpheusSpecTemplateHelmUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderSpecTemplateHelmUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderSpecTemplateHelmUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

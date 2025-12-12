@@ -34,7 +34,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func renderSecurityPackageConfig(
+func RenderSecurityPackageConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -78,7 +78,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
