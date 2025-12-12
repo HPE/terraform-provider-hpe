@@ -62,7 +62,7 @@ func RenderTaskWriteAttributesConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"../task/task_write_attributes_resource.tf.tmpl",
+		"../task/morpheus_task_write_attributes_resource.tf.tmpl",
 		"Name", name,
 		"Code", code,
 		"Label1", defaults["Label1"],

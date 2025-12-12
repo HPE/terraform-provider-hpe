@@ -3,7 +3,7 @@ resource "hpe_morpheus_task_write_attributes" "tfexample_write_attributes" {
   code                = "tfexample_write_attributes"
   labels              = ["demo", "terraform"]
   attributes          = <<EOF
-{\"demo\":\"test\"}
+{"demo":"test"}
 EOF
   retryable           = true
   retry_count         = 1
