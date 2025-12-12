@@ -1,7 +1,7 @@
 resource "hpe_morpheus_task_email" "tfexample_email_url" {
   name                        = "tfexample_email_url"
   code                        = "tfexample_email_url"
-  labels                      = ["demo", "terraform"]
+  labels                      = ["demo","terraform"]
   email_address               = "<%=instance.createdByEmail%>"
   subject                     = "<%=instance.hostname%> provisioning complete"
   source                      = "url"
