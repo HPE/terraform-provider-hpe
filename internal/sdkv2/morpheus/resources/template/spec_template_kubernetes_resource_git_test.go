@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package cypher_test
+package template_test
 
 import (
 	"testing"
@@ -11,37 +11,44 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderMorpheusCypherSecretConfig generates a Terraform configuration
-// for the hpe_morpheus_cypher_secret resource from the template file.
-func RenderMorpheusCypherSecretConfig(
+// RenderSpecTemplateKubernetesGitConfig renders the configuration for the Git-based
+// Kubernetes spec template resource. Pass overrides as a map to customize field values.
+func RenderSpecTemplateKubernetesGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
-	// Default field values
 	defaults := map[string]string{
-		"Key":   name,
-		"Value": "password123",
-		"Ttl":   "86400",
+		"Name":         name,
+		"SourceType":   "repository",
+		"RepositoryId": "2",
+		"VersionRef":   "main",
+		"SpecPath":     "./spec.yaml",
 	}
 
-	// Apply overrides to defaults
 	for key, value := range overrides {
 		defaults[key] = value
 	}
 
-	// Build arguments for RenderExample
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
+	resourceConfig, err := testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_kubernetes_resource_git.tf.tmpl",
+		"Name", defaults["Name"],
+		"SourceType", defaults["SourceType"],
+		"RepositoryId", defaults["RepositoryId"],
+		"VersionRef", defaults["VersionRef"],
+		"SpecPath", defaults["SpecPath"],
+	)
+	if err != nil {
+		return "", err
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_cypher_secret_resource_tf.tmpl", args...)
+	return resourceConfig, nil
 }
 
-func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -54,26 +61,36 @@ func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusCypherSecretConfig(t, name, nil)
+	resourceConfig, err := RenderSpecTemplateKubernetesGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
-			"key",
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
-			"value",
-			"password123",
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"source_type",
+			"repository",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
-			"ttl",
-			"86400",
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"repository_id",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"version_ref",
+			"main",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"spec_path",
+			"./spec.yaml",
 		),
 	}
 
