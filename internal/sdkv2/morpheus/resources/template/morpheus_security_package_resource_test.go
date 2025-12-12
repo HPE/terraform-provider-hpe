@@ -13,7 +13,11 @@ import (
 
 // RenderMorpheusSecurityPackageConfig generates a test configuration for security package resource.
 // It accepts a name and a map of field overrides to customize the default values.
-func RenderMorpheusSecurityPackageConfig(t *testing.T, name string, overrides map[string]string) string {
+func RenderMorpheusSecurityPackageConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -39,10 +43,10 @@ func RenderMorpheusSecurityPackageConfig(t *testing.T, name string, overrides ma
 		"Url", defaults["Url"],
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
@@ -58,7 +62,10 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderMorpheusSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderMorpheusSecurityPackageConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
