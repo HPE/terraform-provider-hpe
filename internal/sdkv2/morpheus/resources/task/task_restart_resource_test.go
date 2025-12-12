@@ -34,14 +34,18 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderTaskRestartConfig renders the task restart resource configuration
-// with the provided overrides. Use the overrides map to customize field values.
-func RenderTaskRestartConfig(t *testing.T, overrides map[string]string) string {
+// renderTaskRestartConfig renders the task restart resource configuration
+// with the provided name and field overrides.
+func renderTaskRestartConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	// Default values
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
 		"Code":              "tfexample_restart",
 		"Labels":            `["demo", "terraform"]`,
 		"Retryable":         "true",
@@ -67,10 +71,10 @@ func RenderTaskRestartConfig(t *testing.T, overrides map[string]string) string {
 		"AllowCustomConfig", defaults["AllowCustomConfig"],
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
@@ -82,9 +86,14 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	name := acctest.RandomWithPrefix(t.Name())
+
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig := RenderTaskRestartConfig(t, nil)
+	resourceConfig, err := renderTaskRestartConfig(t, name, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(
