@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// renderTaskRestartConfig renders the task restart resource configuration
+// RenderTaskRestartConfig renders the task restart resource configuration
 // with the provided name and field overrides.
-func renderTaskRestartConfig(
+func RenderTaskRestartConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -90,7 +90,7 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := renderTaskRestartConfig(t, name, nil)
+	resourceConfig, err := RenderTaskRestartConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
