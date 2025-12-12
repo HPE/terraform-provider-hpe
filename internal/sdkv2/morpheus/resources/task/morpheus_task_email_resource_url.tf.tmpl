@@ -1,0 +1,14 @@
+resource "hpe_morpheus_task_email" "tfexample_email_url" {
+  name                        = "{{.Name}}"
+  code                        = "{{.Code}}"
+  labels                      = {{.Labels}}
+  email_address               = "{{.EmailAddress}}"
+  subject                     = "{{.Subject}}"
+  source                      = "{{.Source}}"
+  content_url                 = "{{.ContentUrl}}"
+  skip_wrapped_email_template = {{.SkipWrappedEmailTemplate}}
+  retryable                   = {{.Retryable}}
+  retry_count                 = {{.RetryCount}}
+  retry_delay_seconds         = {{.RetryDelaySeconds}}
+  allow_custom_config         = {{.AllowCustomConfig}}
+}
