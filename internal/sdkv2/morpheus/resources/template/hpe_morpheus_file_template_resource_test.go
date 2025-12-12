@@ -34,16 +34,15 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderMorpheusFileTemplateResourceConfig generates a Terraform configuration
-// for the morpheus file template resource
-func RenderMorpheusFileTemplateResourceConfig(
+func renderHpeMorpheusFileTemplateConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":            acctest.RandomWithPrefix(t.Name()),
+		"Name":            name,
 		"Labels":          `["demo", "template", "terraform"]`,
 		"FileName":        "tfcustom.cnf",
 		"FilePath":        "/etc/my.cnf.d",
@@ -58,7 +57,9 @@ func RenderMorpheusFileTemplateResourceConfig(
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(t, "hpe_morpheus_file_template_resource.tf.tmpl",
+	return testhelpers.RenderExample(
+		t,
+		"hpe_morpheus_file_template_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Labels", defaults["Labels"],
 		"FileName", defaults["FileName"],
@@ -84,8 +85,7 @@ func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusFileTemplateResourceConfig(t,
-		map[string]string{"Name": name})
+	resourceConfig, err := renderHpeMorpheusFileTemplateConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
