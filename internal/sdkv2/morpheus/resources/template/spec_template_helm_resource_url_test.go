@@ -11,14 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderSpecTemplateHelmUrlConfig(
+func renderSpecTemplateHelmUrlConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       acctest.RandomWithPrefix(t.Name()),
+		"Name":       name,
 		"SourceType": "url",
 		"SpecPath":   "http://example.com/chart.yaml",
 	}
@@ -49,9 +50,7 @@ func TestAccMorpheusSpecTemplateHelmUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateHelmUrlConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := renderSpecTemplateHelmUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
