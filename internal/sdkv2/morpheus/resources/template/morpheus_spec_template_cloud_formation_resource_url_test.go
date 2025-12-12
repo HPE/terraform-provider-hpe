@@ -11,11 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderSpecTemplateCloudFormationResourceUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+func renderMorpheusSpecTemplateCloudFormationUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 "tf_cloud_formation_spec_example_url",
+		"Name":                 name,
 		"SourceType":           "url",
 		"SpecPath":             "http://example.com/spec.yaml",
 		"CapabilityIam":        "true",
@@ -52,9 +56,10 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceUrlExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateCloudFormationResourceUrlConfig(
+	resourceConfig, err := renderMorpheusSpecTemplateCloudFormationUrlConfig(
 		t,
-		map[string]string{"Name": name},
+		name,
+		map[string]string{},
 	)
 	if err != nil {
 		t.Fatal(err)

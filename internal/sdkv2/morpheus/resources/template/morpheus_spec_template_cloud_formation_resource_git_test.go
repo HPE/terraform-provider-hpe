@@ -11,11 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderSpecTemplateCloudFormationResourceGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+func renderMorpheusSpecTemplateCloudFormationGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 "tf-cloud-formation-spec-example-git",
+		"Name":                 name,
 		"SourceType":           "repository",
 		"RepositoryId":         "2",
 		"VersionRef":           "main",
@@ -54,9 +58,10 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateCloudFormationResourceGitConfig(
+	resourceConfig, err := renderMorpheusSpecTemplateCloudFormationGitConfig(
 		t,
-		map[string]string{"Name": name},
+		name,
+		map[string]string{},
 	)
 	if err != nil {
 		t.Fatal(err)

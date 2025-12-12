@@ -34,11 +34,15 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderSecurityPackageConfig(t *testing.T, overrides map[string]string) (string, error) {
+func renderMorpheusSecurityPackageConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "tf_example_security_package",
+		"Name":        name,
 		"Description": "Terraform security package example",
 		"Labels":      "[\"demo\", \"terraform\"]",
 		"Enabled":     "true",
@@ -71,7 +75,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := renderMorpheusSecurityPackageConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
