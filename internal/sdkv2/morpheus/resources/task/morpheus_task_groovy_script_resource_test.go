@@ -34,15 +34,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderMorpheusTaskGroovyScriptResourceConfig(
+func RenderMorpheusTaskGroovyScriptConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
-) string {
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "local",
 		"ScriptContent":     "println \"hello\"",
@@ -67,10 +68,10 @@ func RenderMorpheusTaskGroovyScriptResourceConfig(
 		args...,
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
@@ -86,10 +87,10 @@ func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderMorpheusTaskGroovyScriptResourceConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderMorpheusTaskGroovyScriptConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

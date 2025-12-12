@@ -11,15 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusTaskGroovyScriptResourceUrlConfig(
+func RenderMorpheusTaskGroovyScriptUrlConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
-) string {
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "url",
 		"ResultType":        "json",
@@ -45,10 +46,10 @@ func RenderMorpheusTaskGroovyScriptResourceUrlConfig(
 		args...,
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusTaskGroovyScriptUrlExampleOk(t *testing.T) {
@@ -64,10 +65,10 @@ func TestAccMorpheusTaskGroovyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderMorpheusTaskGroovyScriptResourceUrlConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderMorpheusTaskGroovyScriptUrlConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
