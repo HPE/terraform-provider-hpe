@@ -11,15 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderHpeMorpheusScriptTemplateResourceConfig renders the template with provided overrides
-func RenderHpeMorpheusScriptTemplateResourceConfig(
+// RenderScriptTemplateConfig renders the template with provided overrides
+func RenderScriptTemplateConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":          acctest.RandomWithPrefix(t.Name()),
+		"Name":          name,
 		"Labels":        "[\"demo\", \"template\", \"terraform\"]",
 		"ScriptType":    "bash",
 		"ScriptPhase":   "provision",
@@ -32,7 +33,9 @@ func RenderHpeMorpheusScriptTemplateResourceConfig(
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_script_template_resource.tf.tmpl",
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_script_template_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Labels", defaults["Labels"],
 		"ScriptType", defaults["ScriptType"],
@@ -56,9 +59,10 @@ func TestAccMorpheusScriptTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderHpeMorpheusScriptTemplateResourceConfig(
+	resourceConfig, err := RenderScriptTemplateConfig(
 		t,
-		map[string]string{"Name": name},
+		name,
+		map[string]string{},
 	)
 	if err != nil {
 		t.Fatal(err)
