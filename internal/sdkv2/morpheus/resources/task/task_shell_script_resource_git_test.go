@@ -11,12 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderTaskShellScriptGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskShellScriptGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "repository",
 		"ResultType":        "json",
@@ -65,10 +69,7 @@ func TestAccMorpheusTaskShellScriptResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskShellScriptGitConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderTaskShellScriptGitConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

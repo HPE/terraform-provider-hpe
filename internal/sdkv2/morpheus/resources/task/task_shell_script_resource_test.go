@@ -16,12 +16,16 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-func RenderTaskShellScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskShellScriptConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "local",
 		"ScriptContent":     "  echo \"testing\"",
@@ -82,10 +86,7 @@ func TestAccMorpheusTaskShellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskShellScriptConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderTaskShellScriptConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
