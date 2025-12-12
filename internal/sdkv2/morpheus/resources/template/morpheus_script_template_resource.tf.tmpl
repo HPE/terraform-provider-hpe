@@ -1,0 +1,11 @@
+resource "hpe_morpheus_script_template" "tfexample_script_template" {
+  name           = "{{.Name}}"
+  labels         = {{.Labels}}
+  script_type    = "{{.ScriptType}}"
+  script_phase   = "{{.ScriptPhase}}"
+  script_content = <<EOF
+{{.ScriptContent}}
+EOF
+  run_as_user    = "{{.RunAsUser}}"
+  sudo           = {{.Sudo}}
+}

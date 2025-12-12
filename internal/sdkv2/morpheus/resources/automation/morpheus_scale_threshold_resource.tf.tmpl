@@ -1,0 +1,16 @@
+resource "hpe_morpheus_scale_threshold" "tf_example_scale_threshold" {
+  name                    = "{{.Name}}"
+  auto_upscale            = {{.AutoUpscale}}
+  auto_downscale          = {{.AutoDownscale}}
+  min_count               = {{.MinCount}}
+  max_count               = {{.MaxCount}}
+  enable_cpu_threshold    = {{.EnableCpuThreshold}}
+  min_cpu_percentage      = {{.MinCpuPercentage}}
+  max_cpu_percentage      = {{.MaxCpuPercentage}}
+  enable_memory_threshold = {{.EnableMemoryThreshold}}
+  min_memory_percentage   = {{.MinMemoryPercentage}}
+  max_memory_percentage   = {{.MaxMemoryPercentage}}
+  enable_disk_threshold   = {{.EnableDiskThreshold}}
+  min_disk_percentage     = {{.MinDiskPercentage}}
+  max_disk_percentage     = {{.MaxDiskPercentage}}
+}

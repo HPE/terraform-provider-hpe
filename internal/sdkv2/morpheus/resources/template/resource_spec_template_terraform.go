@@ -56,6 +56,13 @@ func ResourceSpecTemplateTerraform() *schema.Resource {
 
 					return ""
 				},
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					return old == new
+				},
+				DiffSuppressOnRefresh: true,
 			},
 			"spec_path": {
 				Type:        schema.TypeString,

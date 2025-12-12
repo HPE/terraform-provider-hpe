@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -56,16 +56,11 @@ func ResourceTaskJavaScript() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The content of the javascript script",
 				Optional:    true,
-				StateFunc: func(v interface{}) string {
-					json, _ := structure.NormalizeJsonString(v)
-
-					return json
-				},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					newJSON, _ := structure.NormalizeJsonString(new)
-					oldJSON, _ := structure.NormalizeJsonString(old)
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
 
-					return newJSON == oldJSON
+					return old == new
 				},
 			},
 			"retryable": {
