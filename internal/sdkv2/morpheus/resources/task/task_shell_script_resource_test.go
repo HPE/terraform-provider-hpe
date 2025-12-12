@@ -22,7 +22,7 @@ func RenderTaskShellScriptConfig(t *testing.T, overrides map[string]string) (str
 	defaults := map[string]string{
 		"Name":              acctest.RandomWithPrefix(t.Name()),
 		"Code":              acctest.RandomWithPrefix(t.Name()),
-		"Labels":            "\"demo\", \"terraform\"",
+		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "local",
 		"ScriptContent":     "  echo \"testing\"",
 		"Sudo":              "true",
@@ -36,7 +36,8 @@ func RenderTaskShellScriptConfig(t *testing.T, overrides map[string]string) (str
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(t, "task_shell_script_resource.tf.tmpl",
+	return testhelpers.RenderExample(t,
+		"morpheus_task_shell_script_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],

@@ -1,10 +1,12 @@
-resource "hpe_morpheus_task_shell_script" "tfexample_shell_url" {
+resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
   name                = "{{.Name}}"
   code                = "{{.Code}}"
-  labels              = [{{.Labels}}]
+  labels              = {{.Labels}}
   source_type         = "{{.SourceType}}"
   result_type         = "{{.ResultType}}"
   script_path         = "{{.ScriptPath}}"
+  version_ref         = "{{.VersionRef}}"
+  repository_id       = {{.RepositoryId}}
   sudo                = {{.Sudo}}
   retryable           = {{.Retryable}}
   retry_count         = {{.RetryCount}}

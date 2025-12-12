@@ -17,7 +17,7 @@ func RenderTaskShellScriptUrlConfig(t *testing.T, overrides map[string]string) (
 	defaults := map[string]string{
 		"Name":              acctest.RandomWithPrefix(t.Name()),
 		"Code":              acctest.RandomWithPrefix(t.Name()),
-		"Labels":            "\"demo\", \"terraform\"",
+		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "url",
 		"ResultType":        "json",
 		"ScriptPath":        "https://example.com/example.sh",
@@ -32,7 +32,8 @@ func RenderTaskShellScriptUrlConfig(t *testing.T, overrides map[string]string) (
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(t, "task_shell_script_resource_url.tf.tmpl",
+	return testhelpers.RenderExample(t,
+		"morpheus_task_shell_script_resource_url.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],

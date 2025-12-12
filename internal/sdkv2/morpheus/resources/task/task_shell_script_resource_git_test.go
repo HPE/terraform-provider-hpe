@@ -17,12 +17,12 @@ func RenderTaskShellScriptGitConfig(t *testing.T, overrides map[string]string) (
 	defaults := map[string]string{
 		"Name":              acctest.RandomWithPrefix(t.Name()),
 		"Code":              acctest.RandomWithPrefix(t.Name()),
-		"Labels":            "\"demo\", \"terraform\"",
+		"Labels":            "[\"demo\", \"terraform\"]",
 		"SourceType":        "repository",
 		"ResultType":        "json",
 		"ScriptPath":        "example.sh",
 		"VersionRef":        "master",
-		"RepositoryId":      "1",
+		"RepositoryId":      "0",
 		"Sudo":              "true",
 		"Retryable":         "true",
 		"RetryCount":        "1",
@@ -34,7 +34,8 @@ func RenderTaskShellScriptGitConfig(t *testing.T, overrides map[string]string) (
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(t, "task_shell_script_resource_git.tf.tmpl",
+	return testhelpers.RenderExample(t,
+		"morpheus_task_shell_script_resource_git.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],
@@ -116,7 +117,7 @@ func TestAccMorpheusTaskShellScriptResourceGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_shell_script.tfexample_shell_git",
 			"repository_id",
-			"1",
+			"0",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_shell_script.tfexample_shell_git",

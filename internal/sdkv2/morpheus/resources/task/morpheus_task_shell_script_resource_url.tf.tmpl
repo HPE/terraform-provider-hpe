@@ -1,11 +1,10 @@
-resource "hpe_morpheus_task_shell_script" "tfexample_shell_local" {
+resource "hpe_morpheus_task_shell_script" "tfexample_shell_url" {
   name                = "{{.Name}}"
   code                = "{{.Code}}"
-  labels              = [{{.Labels}}]
+  labels              = {{.Labels}}
   source_type         = "{{.SourceType}}"
-  script_content      = <<EOF
-{{.ScriptContent}}
-EOF
+  result_type         = "{{.ResultType}}"
+  script_path         = "{{.ScriptPath}}"
   sudo                = {{.Sudo}}
   retryable           = {{.Retryable}}
   retry_count         = {{.RetryCount}}
