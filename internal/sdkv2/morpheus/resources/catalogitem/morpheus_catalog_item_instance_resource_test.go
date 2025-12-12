@@ -1,14 +1,19 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package template_test
+package catalogitem_test
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
 func TestMain(m *testing.M) {
@@ -29,7 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderSecurityPackageConfig(
+// RenderCatalogItemInstanceConfig generates a Terraform configuration for catalog item instance resource.
+// It accepts a name and a map of field overrides to customize the default values.
+func RenderCatalogItemInstanceConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -38,11 +45,14 @@ func RenderSecurityPackageConfig(
 
 	defaults := map[string]string{
 		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
+		"Config":      "{\"name\":\"test\"}",
+		"Content":     "{\"name\":\"test\"}",
+		"Description": "terraform example instance catalog item",
 		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/" +
-			"scap-security-guide-0.1.59.zip",
+		"Featured":    "true",
+		"ImageName":   "tfexample.png",
+		"ImagePath":   "tfexample.png",
+		"Visibility":  "private",
 	}
 
 	for key, value := range overrides {
@@ -51,16 +61,20 @@ func RenderSecurityPackageConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_security_package_resource.tf.tmpl",
+		"morpheus_catalog_item_instance_resource.tf.tmpl",
 		"Name", defaults["Name"],
+		"Config", defaults["Config"],
+		"Content", defaults["Content"],
 		"Description", defaults["Description"],
-		"Labels", defaults["Labels"],
 		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
+		"Featured", defaults["Featured"],
+		"ImageName", defaults["ImageName"],
+		"ImagePath", defaults["ImagePath"],
+		"Visibility", defaults["Visibility"],
 	)
 }
 
-func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
+func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -73,37 +87,56 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderCatalogItemInstanceConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
 			"description",
-			"Terraform security package example",
+			"terraform example instance catalog item",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"labels.#",
-			"2",
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"image_path",
+			"tfexample.png",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"image_name",
+			"tfexample.png",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
 			"enabled",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"url",
-			"https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/"+
-				"scap-security-guide-0.1.59.zip",
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"featured",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"content",
+			"{\"name\":\"test\"}",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"config",
+			"{\"name\":\"test\"}",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item",
+			"visibility",
+			"private",
 		),
 	}
 
@@ -127,6 +160,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 			{
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
 				PlanOnly:           true,
 			},
 		},

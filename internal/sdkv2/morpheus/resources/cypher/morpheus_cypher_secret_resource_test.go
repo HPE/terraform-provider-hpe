@@ -1,14 +1,19 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package template_test
+package cypher_test
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
 func TestMain(m *testing.M) {
@@ -29,38 +34,37 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderSecurityPackageConfig(
+// RenderMorpheusCypherSecretConfig generates a Terraform configuration
+// for the hpe_morpheus_cypher_secret resource from the template file.
+func RenderMorpheusCypherSecretConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
+	// Default field values
 	defaults := map[string]string{
-		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
-		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/" +
-			"scap-security-guide-0.1.59.zip",
+		"Key":   name,
+		"Value": "password123",
+		"Ttl":   "86400",
 	}
 
+	// Apply overrides to defaults
 	for key, value := range overrides {
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_security_package_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Labels", defaults["Labels"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-	)
+	// Build arguments for RenderExample
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	return testhelpers.RenderExample(t, "morpheus_cypher_secret_resource_tf.tmpl", args...)
 }
 
-func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
+func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -73,37 +77,26 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderMorpheusCypherSecretConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"name",
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"key",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"description",
-			"Terraform security package example",
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"value",
+			"password123",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"labels.#",
-			"2",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"enabled",
-			"true",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"url",
-			"https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/"+
-				"scap-security-guide-0.1.59.zip",
+			"hpe_morpheus_cypher_secret.tf_example_cypher_secret",
+			"ttl",
+			"86400",
 		),
 	}
 
