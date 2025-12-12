@@ -11,13 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderTaskRubyScriptGitConfig generates configuration for task_ruby_script_resource_git tests
-func RenderTaskRubyScriptGitConfig(t *testing.T, overrides map[string]string) string {
+func renderTaskRubyScriptGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              "",
-		"Code":              "",
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "repository",
 		"ResultType":        "json",
@@ -50,11 +53,8 @@ func RenderTaskRubyScriptGitConfig(t *testing.T, overrides map[string]string) st
 		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
 		"AllowCustomConfig", defaults["AllowCustomConfig"],
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	return resourceConfig
+	return resourceConfig, err
 }
 
 func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
@@ -70,10 +70,10 @@ func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderTaskRubyScriptGitConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := renderTaskRubyScriptGitConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

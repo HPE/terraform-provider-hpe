@@ -11,13 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderTaskRubyScriptUrlConfig generates configuration for task_ruby_script_resource_url tests
-func RenderTaskRubyScriptUrlConfig(t *testing.T, overrides map[string]string) string {
+func renderTaskRubyScriptUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              "",
-		"Code":              "",
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "url",
 		"ResultType":        "json",
@@ -46,11 +49,8 @@ func RenderTaskRubyScriptUrlConfig(t *testing.T, overrides map[string]string) st
 		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
 		"AllowCustomConfig", defaults["AllowCustomConfig"],
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	return resourceConfig
+	return resourceConfig, err
 }
 
 func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
@@ -66,10 +66,10 @@ func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderTaskRubyScriptUrlConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := renderTaskRubyScriptUrlConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

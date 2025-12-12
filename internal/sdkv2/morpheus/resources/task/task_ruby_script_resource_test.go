@@ -34,13 +34,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderTaskRubyScriptConfig generates configuration for task_ruby_script_resource tests
-func RenderTaskRubyScriptConfig(t *testing.T, overrides map[string]string) string {
+func renderTaskRubyScriptConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              "",
-		"Code":              "",
+		"Name":              name,
+		"Code":              name,
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "local",
 		"ScriptContent":     "puts \"testing\"",
@@ -67,11 +70,8 @@ func RenderTaskRubyScriptConfig(t *testing.T, overrides map[string]string) strin
 		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
 		"AllowCustomConfig", defaults["AllowCustomConfig"],
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	return resourceConfig
+	return resourceConfig, err
 }
 
 func TestAccMorpheusTaskRubyScriptExampleOk(t *testing.T) {
@@ -87,10 +87,10 @@ func TestAccMorpheusTaskRubyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderTaskRubyScriptConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := renderTaskRubyScriptConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
