@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// renderContactConfig renders the contact resource configuration with
+// RenderContactConfig renders the contact resource configuration with
 // optional field overrides
-func renderContactConfig(
+func RenderContactConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -75,7 +75,7 @@ func TestAccMorpheusContactExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderContactConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderContactConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
