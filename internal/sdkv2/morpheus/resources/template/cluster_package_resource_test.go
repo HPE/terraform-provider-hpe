@@ -35,11 +35,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // RenderClusterPackageConfig generates a test configuration for cluster package resource.
-// It accepts a map of field overrides to customize the default values.
-func RenderClusterPackageConfig(t *testing.T, overrides map[string]string) string {
+// It accepts a name and a map of field overrides to customize the default values.
+func RenderClusterPackageConfig(t *testing.T, name string, overrides map[string]string) string {
 	t.Helper()
-
-	name := acctest.RandomWithPrefix(t.Name())
 
 	defaults := map[string]string{
 		"Name":            name,
@@ -89,7 +87,7 @@ func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig := RenderClusterPackageConfig(t, map[string]string{"Name": name})
+	resourceConfig := RenderClusterPackageConfig(t, name, map[string]string{})
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
