@@ -1,7 +1,7 @@
 resource "hpe_morpheus_spec_template_kubernetes" "tfexample_kubernetes_spec_template_git" {
-  name          = "<no value>"
-  source_type   = "<no value>"
-  repository_id = <no value>
-  version_ref   = "<no value>"
-  spec_path     = "<no value>"
+  name          = "tf-kubernetes-spec-example-git"
+  source_type   = "repository"
+  repository_id = 2
+  version_ref   = "main"
+  spec_path     = "./spec.yaml"
 }

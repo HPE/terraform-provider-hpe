@@ -11,16 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderSpecTemplateKubernetesResourceGitConfig renders the configuration for the Git-based
+// RenderSpecTemplateKubernetesGitConfig renders the configuration for the Git-based
 // Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesResourceGitConfig(
+func RenderSpecTemplateKubernetesGitConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
-) string {
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         acctest.RandomWithPrefix(t.Name()),
+		"Name":         name,
 		"SourceType":   "repository",
 		"RepositoryId": "2",
 		"VersionRef":   "main",
@@ -41,10 +42,10 @@ func RenderSpecTemplateKubernetesResourceGitConfig(
 		"SpecPath", defaults["SpecPath"],
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
@@ -60,9 +61,10 @@ func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderSpecTemplateKubernetesResourceGitConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderSpecTemplateKubernetesGitConfig(t, name, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

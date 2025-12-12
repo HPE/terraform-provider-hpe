@@ -11,12 +11,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderSpecTemplateKubernetesResourceLocalConfig renders the configuration for the local
+// RenderSpecTemplateKubernetesLocalConfig renders the configuration for the local
 // Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesResourceLocalConfig(
+func RenderSpecTemplateKubernetesLocalConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
-) string {
+) (string, error) {
 	t.Helper()
 
 	defaultSpecContent := `---
@@ -43,7 +44,7 @@ spec:
         - containerPort: 80`
 
 	defaults := map[string]string{
-		"Name":        acctest.RandomWithPrefix(t.Name()),
+		"Name":        name,
 		"SourceType":  "local",
 		"SpecContent": defaultSpecContent,
 	}
@@ -60,10 +61,10 @@ spec:
 		"SpecContent", defaults["SpecContent"],
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusSpecTemplateKubernetesResourceLocalExampleOk(t *testing.T) {
@@ -103,10 +104,12 @@ spec:
         - containerPort: 80
 `
 
-	resourceConfig := RenderSpecTemplateKubernetesResourceLocalConfig(t, map[string]string{
-		"Name":        name,
+	resourceConfig, err := RenderSpecTemplateKubernetesLocalConfig(t, name, map[string]string{
 		"SpecContent": specContent,
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
