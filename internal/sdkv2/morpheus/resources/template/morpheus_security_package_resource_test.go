@@ -11,24 +11,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func TestMain(m *testing.M) {
-	code := m.Run()
-
-	testhelpers.WriteMergedResults()
-
-	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
-}
-
 func RenderSecurityPackageConfig(
 	t *testing.T,
 	name string,
