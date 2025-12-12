@@ -34,11 +34,15 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderMorpheusScaleThresholdConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderScaleThresholdConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
+		"Name":                  name,
 		"AutoUpscale":           "true",
 		"AutoDownscale":         "true",
 		"MinCount":              "1",
@@ -63,7 +67,11 @@ func RenderMorpheusScaleThresholdConfig(t *testing.T, overrides map[string]strin
 		args = append(args, k, v)
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_scale_threshold_resource.tf.tmpl", args...)
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_scale_threshold_resource.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusScaleThresholdExampleOk(t *testing.T) {
@@ -79,9 +87,11 @@ func TestAccMorpheusScaleThresholdExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusScaleThresholdConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderScaleThresholdConfig(
+		t,
+		name,
+		map[string]string{},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
