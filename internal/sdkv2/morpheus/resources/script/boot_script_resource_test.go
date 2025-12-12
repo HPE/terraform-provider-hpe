@@ -3,18 +3,22 @@
 package script_test
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
+// RenderBootScriptConfig renders a Terraform configuration for boot_script resource.
 // It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
+func RenderBootScriptConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -32,13 +36,34 @@ func RenderPreseedScriptConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
+		"morpheus_boot_script_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Content", defaults["Content"],
 	)
 }
 
-func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
+func TestMain(m *testing.M) {
+	code := m.Run()
+
+	testhelpers.WriteMergedResults()
+
+	os.Exit(code)
+}
+
+func newProviderWithError() (tfprotov6.ProviderServer, error) {
+	return tf5to6server.UpgradeServer(
+		context.Background(),
+		sdkv2morpheus.Provider().GRPCProvider,
+	)
+}
+
+var testAccProtoV6ProviderFactories = map[string]func() (
+	tfprotov6.ProviderServer, error,
+){
+	"hpe": newProviderWithError,
+}
+
+func TestAccMorpheusBootScriptExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -51,7 +76,7 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
+	resourceConfig, err := RenderBootScriptConfig(t, name, map[string]string{
 		"Content": "ls",
 	})
 	if err != nil {
@@ -60,12 +85,12 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
+			"hpe_morpheus_boot_script.tf_example_boot_script",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
+			"hpe_morpheus_boot_script.tf_example_boot_script",
 			"content",
 			"ls",
 		),
@@ -91,6 +116,7 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 			{
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
 				PlanOnly:           true,
 			},
 		},
