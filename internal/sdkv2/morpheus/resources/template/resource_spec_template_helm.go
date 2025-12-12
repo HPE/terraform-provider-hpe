@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -48,13 +47,13 @@ func ResourceSpecTemplateHelm() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The content of the helm spec template. Used when the local source type is specified",
 				Optional:    true,
-				StateFunc: func(val any) string {
-					if v, ok := val.(string); ok {
-						return strings.TrimSuffix(v, "\n")
-					}
-
-					return ""
-				},
+				// StateFunc: func(val any) string {
+				// 	if v, ok := val.(string); ok {
+				// 		return strings.TrimSuffix(v, "\n")
+				// 	}
+				//
+				// 	return ""
+				// },
 			},
 			"spec_path": {
 				Type:        schema.TypeString,
