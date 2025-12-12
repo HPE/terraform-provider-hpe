@@ -34,12 +34,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderTaskPowershellScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskPowershellScriptConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "local",
 		"ScriptContent":     `Write-Output \"testing\"`,
@@ -83,10 +87,7 @@ func TestAccMorpheusTaskPowershellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskPowershellScriptConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderTaskPowershellScriptConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

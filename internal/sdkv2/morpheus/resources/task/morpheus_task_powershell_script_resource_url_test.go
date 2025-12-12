@@ -11,12 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderTaskPowershellScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskPowershellScriptUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              acctest.RandomWithPrefix(t.Name()),
-		"Code":              acctest.RandomWithPrefix(t.Name()),
+		"Name":              name,
+		"Code":              name,
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "url",
 		"ResultType":        "json",
@@ -62,10 +66,7 @@ func TestAccMorpheusTaskPowershellScriptResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskPowershellScriptUrlConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderTaskPowershellScriptUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

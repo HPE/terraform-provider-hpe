@@ -12,7 +12,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderTaskPowershellScriptGitConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderTaskPowershellScriptGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
