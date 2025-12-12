@@ -33,13 +33,15 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderHpeMorpheusExecuteScheduleResourceConfig(
-	t *testing.T,
+func RenderExecuteScheduleConfig(
+	name string,
 	overrides map[string]string,
+	t *testing.T,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
+		"Name":        name,
 		"Description": "This schedule runs daily at 7 AM Mountain Time",
 		"Enabled":     "false",
 		"TimeZone":    "America/Denver",
@@ -74,9 +76,11 @@ func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderHpeMorpheusExecuteScheduleResourceConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderExecuteScheduleConfig(
+		name,
+		map[string]string{},
+		t,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
