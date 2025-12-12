@@ -1,0 +1,7 @@
+resource "hpe_morpheus_execute_schedule" "tf_example_execute_schedule" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  enabled     = {{.Enabled}}
+  time_zone   = "{{.TimeZone}}"
+  schedule    = "{{.Schedule}}"
+}
