@@ -1,20 +1,42 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package script_test
+package contact_test
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
-// It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
+func TestMain(m *testing.M) {
+	code := m.Run()
+
+	testhelpers.WriteMergedResults()
+
+	os.Exit(code)
+}
+
+func newProviderWithError() (tfprotov6.ProviderServer, error) {
+	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
+}
+
+var testAccProtoV6ProviderFactories = map[string]func() (
+	tfprotov6.ProviderServer, error,
+){
+	"hpe": newProviderWithError,
+}
+
+// RenderContactConfig renders the contact resource configuration with
+// optional field overrides
+func RenderContactConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -22,8 +44,9 @@ func RenderPreseedScriptConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":    name,
-		"Content": "ls",
+		"Name":         name,
+		"EmailAddress": "tfcontact@demo.com",
+		"MobileNumber": "123-456-7890",
 	}
 
 	for key, value := range overrides {
@@ -32,13 +55,14 @@ func RenderPreseedScriptConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
+		"contact_resource.tf.tmpl",
 		"Name", defaults["Name"],
-		"Content", defaults["Content"],
+		"EmailAddress", defaults["EmailAddress"],
+		"MobileNumber", defaults["MobileNumber"],
 	)
 }
 
-func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
+func TestAccMorpheusContactExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -51,23 +75,26 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
-		"Content": "ls",
-	})
+	resourceConfig, err := RenderContactConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
+			"hpe_morpheus_contact.tf_example_contact",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"content",
-			"ls",
+			"hpe_morpheus_contact.tf_example_contact",
+			"email_address",
+			"tfcontact@demo.com",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_contact.tf_example_contact",
+			"mobile_number",
+			"123-456-7890",
 		),
 	}
 
