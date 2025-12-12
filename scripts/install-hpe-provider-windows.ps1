@@ -27,7 +27,7 @@ $hpe_zip="terraform-provider-hpe_${version_number}_${os}_${arch}.zip"
 $hpe=$hpe_zip -replace '.zip'
 $hpe_dl_url="https://github.com/${repo}/releases/download/${VERSION}/${hpe_zip}"
 
-mkdir "$dest_dir" 
+New-Item -ItemType Directory -Path "$dest_dir" -Force | Out-Null
 Set-Location "$dest_dir"
 
 try {
@@ -46,8 +46,10 @@ catch {
 Write-Host Extracting release files
 Expand-Archive $hpe_zip -Force
 
-Get-ChildItem -Path $hpe -Recurse -File | Move-Item -Destination $dest_dir
+Get-ChildItem -Path $hpe -Recurse -File | Move-Item -Destination $dest_dir -Force
 
 Remove-Item $hpe_zip -Recurse -Force -ErrorAction SilentlyContinue 
 Remove-Item $hpe -Recurse -Force -ErrorAction SilentlyContinue 
 Write-Host Complete
+
+Set-Location "${users_pwd}"
