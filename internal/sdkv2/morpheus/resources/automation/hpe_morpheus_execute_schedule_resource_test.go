@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func RenderExecuteScheduleConfig(
+	t *testing.T,
 	name string,
 	overrides map[string]string,
-	t *testing.T,
 ) (string, error) {
 	t.Helper()
 
@@ -77,9 +77,9 @@ func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := RenderExecuteScheduleConfig(
+		t,
 		name,
 		map[string]string{},
-		t,
 	)
 	if err != nil {
 		t.Fatal(err)
