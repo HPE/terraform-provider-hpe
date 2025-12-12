@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func renderMorpheusSecurityPackageConfig(
+func RenderMorpheusSecurityPackageConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -55,7 +55,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderMorpheusSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderMorpheusSecurityPackageConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
