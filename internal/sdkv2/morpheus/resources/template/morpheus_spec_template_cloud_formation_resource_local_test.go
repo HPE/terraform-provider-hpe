@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func renderMorpheusSpecTemplateCloudFormationLocalConfig(
+func RenderSpecTemplateCloudFormationLocalConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -87,7 +87,7 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderMorpheusSpecTemplateCloudFormationLocalConfig(
+	resourceConfig, err := RenderSpecTemplateCloudFormationLocalConfig(
 		t,
 		name,
 		map[string]string{},
