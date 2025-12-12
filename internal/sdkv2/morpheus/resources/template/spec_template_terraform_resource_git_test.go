@@ -15,12 +15,13 @@ import (
 // spec_template_terraform_resource_git tests
 func RenderSpecTemplateTerraformGitConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         acctest.RandomWithPrefix(t.Name()),
+		"Name":         name,
 		"SourceType":   "repository",
 		"RepositoryId": "2",
 		"VersionRef":   "main",
@@ -56,9 +57,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateTerraformGitConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderSpecTemplateTerraformGitConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -15,12 +15,13 @@ import (
 // spec_template_terraform_resource_url tests
 func RenderSpecTemplateTerraformUrlConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       acctest.RandomWithPrefix(t.Name()),
+		"Name":       name,
 		"SourceType": "url",
 		"SpecPath":   "http://example.com/spec.tf",
 	}
@@ -54,9 +55,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateTerraformUrlConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderSpecTemplateTerraformUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
