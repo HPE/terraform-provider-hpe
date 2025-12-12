@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderCypherSecretConfig generates a Terraform configuration
+// RenderMorpheusCypherSecretConfig generates a Terraform configuration
 // for the hpe_morpheus_cypher_secret resource from the template file.
-func RenderCypherSecretConfig(
+func RenderMorpheusCypherSecretConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -77,7 +77,7 @@ func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCypherSecretConfig(t, name, nil)
+	resourceConfig, err := RenderMorpheusCypherSecretConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
