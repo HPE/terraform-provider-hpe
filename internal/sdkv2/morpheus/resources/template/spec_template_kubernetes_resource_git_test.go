@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package script_test
+package template_test
 
 import (
 	"testing"
@@ -11,10 +11,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
-// It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
+// RenderSpecTemplateKubernetesGitConfig renders the configuration for the Git-based
+// Kubernetes spec template resource. Pass overrides as a map to customize field values.
+func RenderSpecTemplateKubernetesGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -22,23 +21,34 @@ func RenderPreseedScriptConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":    name,
-		"Content": "ls",
+		"Name":         name,
+		"SourceType":   "repository",
+		"RepositoryId": "2",
+		"VersionRef":   "main",
+		"SpecPath":     "./spec.yaml",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
 	}
 
-	return testhelpers.RenderExample(
+	resourceConfig, err := testhelpers.RenderExample(
 		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
+		"morpheus_spec_template_kubernetes_resource_git.tf.tmpl",
 		"Name", defaults["Name"],
-		"Content", defaults["Content"],
+		"SourceType", defaults["SourceType"],
+		"RepositoryId", defaults["RepositoryId"],
+		"VersionRef", defaults["VersionRef"],
+		"SpecPath", defaults["SpecPath"],
 	)
+	if err != nil {
+		return "", err
+	}
+
+	return resourceConfig, nil
 }
 
-func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -51,23 +61,36 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
-		"Content": "ls",
-	})
+	resourceConfig, err := RenderSpecTemplateKubernetesGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"content",
-			"ls",
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"source_type",
+			"repository",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"repository_id",
+			"2",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"version_ref",
+			"main",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_spec_template_kubernetes.tfexample_kubernetes_spec_template_git",
+			"spec_path",
+			"./spec.yaml",
 		),
 	}
 
