@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusSecurityPackageConfig(
+func RenderHpeMorpheusFileTemplateConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -19,12 +19,15 @@ func RenderMorpheusSecurityPackageConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
-		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/" +
-			"scap-security-guide-0.1.59.zip",
+		"Name":            name,
+		"Labels":          `["demo", "template", "terraform"]`,
+		"FileName":        "tfcustom.cnf",
+		"FilePath":        "/etc/my.cnf.d",
+		"Phase":           "preProvision",
+		"FileContent":     `"# Test MySQL Configuration\n[mysqld]\ninnodb_buffer_pool_size = 128M"`,
+		"FileOwner":       "root",
+		"SettingName":     "myCnf",
+		"SettingCategory": "master",
 	}
 
 	for key, value := range overrides {
@@ -33,16 +36,20 @@ func RenderMorpheusSecurityPackageConfig(
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_security_package_resource.tf.tmpl",
+		"morpheus_file_template_resource.tf.tmpl",
 		"Name", defaults["Name"],
-		"Description", defaults["Description"],
 		"Labels", defaults["Labels"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
+		"FileName", defaults["FileName"],
+		"FilePath", defaults["FilePath"],
+		"Phase", defaults["Phase"],
+		"FileContent", defaults["FileContent"],
+		"FileOwner", defaults["FileOwner"],
+		"SettingName", defaults["SettingName"],
+		"SettingCategory", defaults["SettingCategory"],
 	)
 }
 
-func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
+func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -55,37 +62,46 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderHpeMorpheusFileTemplateConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
+			"hpe_morpheus_file_template.tfexample_file_template",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"description",
-			"Terraform security package example",
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"file_name",
+			"tfcustom.cnf",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"labels.#",
-			"2",
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"file_path",
+			"/etc/my.cnf.d",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"enabled",
-			"true",
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"phase",
+			"preProvision",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_security_package.tf_example_security_package",
-			"url",
-			"https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/"+
-				"scap-security-guide-0.1.59.zip",
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"file_owner",
+			"root",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"setting_name",
+			"myCnf",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_file_template.tfexample_file_template",
+			"setting_category",
+			"master",
 		),
 	}
 

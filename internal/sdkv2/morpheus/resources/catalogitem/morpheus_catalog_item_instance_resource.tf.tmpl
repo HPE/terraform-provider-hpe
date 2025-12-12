@@ -1,0 +1,15 @@
+resource "hpe_morpheus_catalog_item_instance" "tf_example_instance_catalog_item" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  image_path  = "{{.ImagePath}}"
+  image_name  = "{{.ImageName}}"
+  enabled     = {{.Enabled}}
+  featured    = {{.Featured}}
+  content     = <<TFEOF
+  {{.Content}}
+  TFEOF
+  config      = <<TFEOF
+  {{.Config}}
+  TFEOF
+  visibility  = "{{.Visibility}}"
+}
