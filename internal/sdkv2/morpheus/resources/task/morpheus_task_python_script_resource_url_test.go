@@ -11,10 +11,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusTaskPythonScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusTaskPythonScriptUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
-	name := acctest.RandomWithPrefix(t.Name())
 	defaults := map[string]string{
 		"Name":               name,
 		"Code":               name,
@@ -67,10 +70,7 @@ func TestAccMorpheusTaskPythonScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusTaskPythonScriptUrlConfig(t, map[string]string{
-		"Name": name,
-		"Code": name,
-	})
+	resourceConfig, err := RenderMorpheusTaskPythonScriptUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
