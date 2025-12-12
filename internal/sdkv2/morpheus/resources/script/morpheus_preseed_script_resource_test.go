@@ -11,10 +11,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderMorpheusPreseedScriptConfig renders a Terraform configuration
-// for morpheus_preseed_script resource.
+// RenderPreseedScriptConfig renders a Terraform configuration
+// for preseed_script resource.
 // It accepts a name and a map of overrides to customize the default field values.
-func RenderMorpheusPreseedScriptConfig(
+func RenderPreseedScriptConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -51,7 +51,7 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusPreseedScriptConfig(t, name, map[string]string{
+	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
 		"Content": "ls",
 	})
 	if err != nil {
