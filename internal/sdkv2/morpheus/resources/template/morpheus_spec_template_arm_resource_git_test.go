@@ -11,11 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusSpecTemplateArmGitConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusSpecTemplateArmGitConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         "tf-arm-spec-example-git",
+		"Name":         name,
 		"SourceType":   "repository",
 		"RepositoryId": "2",
 		"VersionRef":   "main",
@@ -31,7 +35,11 @@ func RenderMorpheusSpecTemplateArmGitConfig(t *testing.T, overrides map[string]s
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_spec_template_arm_resource_git.tf.tmpl", args...)
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_arm_resource_git.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
@@ -47,7 +55,7 @@ func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSpecTemplateArmGitConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderMorpheusSpecTemplateArmGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

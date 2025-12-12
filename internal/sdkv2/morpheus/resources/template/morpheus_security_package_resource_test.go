@@ -34,16 +34,20 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderSecurityPackageConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderSecurityPackageConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "tf_example_security_package",
+		"Name":        name,
 		"Description": "Terraform security package example",
 		"Labels":      "[\"demo\", \"terraform\"]",
 		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/" +
-			"scap-security-guide-0.1.59.zip",
+		"Url": "https://github.com/ComplianceAsCode/content/releases/download/" +
+			"v0.1.59/scap-security-guide-0.1.59.zip",
 	}
 
 	for key, value := range overrides {
@@ -55,7 +59,11 @@ func RenderSecurityPackageConfig(t *testing.T, overrides map[string]string) (str
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_security_package_resource.tf.tmpl", args...)
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_security_package_resource.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
@@ -71,7 +79,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderSecurityPackageConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

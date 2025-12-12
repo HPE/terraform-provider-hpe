@@ -11,11 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusSpecTemplateArmLocalConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusSpecTemplateArmLocalConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       "tf-arm-spec-example-local",
+		"Name":       name,
 		"SourceType": "local",
 	}
 
@@ -28,7 +32,11 @@ func RenderMorpheusSpecTemplateArmLocalConfig(t *testing.T, overrides map[string
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_spec_template_arm_resource_local.tf.tmpl", args...)
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_arm_resource_local.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSpecTemplateArmResourceLocalExampleOk(t *testing.T) {
@@ -44,7 +52,7 @@ func TestAccMorpheusSpecTemplateArmResourceLocalExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSpecTemplateArmLocalConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderMorpheusSpecTemplateArmLocalConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

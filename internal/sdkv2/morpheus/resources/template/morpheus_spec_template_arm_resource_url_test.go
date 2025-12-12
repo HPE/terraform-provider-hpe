@@ -11,11 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-func RenderMorpheusSpecTemplateArmUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderMorpheusSpecTemplateArmUrlConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       "tf-arm-spec-example-url",
+		"Name":       name,
 		"SourceType": "url",
 		"SpecPath":   "http://example.com/spec.json",
 	}
@@ -29,7 +33,11 @@ func RenderMorpheusSpecTemplateArmUrlConfig(t *testing.T, overrides map[string]s
 		args = append(args, key, value)
 	}
 
-	return testhelpers.RenderExample(t, "morpheus_spec_template_arm_resource_url.tf.tmpl", args...)
+	return testhelpers.RenderExample(
+		t,
+		"morpheus_spec_template_arm_resource_url.tf.tmpl",
+		args...,
+	)
 }
 
 func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
@@ -45,7 +53,7 @@ func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSpecTemplateArmUrlConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := RenderMorpheusSpecTemplateArmUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
