@@ -34,9 +34,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// renderChefBootstrapConfig renders the task chef bootstrap
+// RenderChefBootstrapConfig renders the task chef bootstrap
 // resource configuration with the provided overrides applied to default values.
-func renderChefBootstrapConfig(
+func RenderChefBootstrapConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -99,7 +99,7 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderChefBootstrapConfig(
+	resourceConfig, err := RenderChefBootstrapConfig(
 		t,
 		name,
 		map[string]string{},
