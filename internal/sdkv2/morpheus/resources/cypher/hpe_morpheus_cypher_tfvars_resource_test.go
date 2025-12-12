@@ -1,20 +1,40 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package script_test
+package cypher_test
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 )
 
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
-// It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
+func TestMain(m *testing.M) {
+	code := m.Run()
+
+	testhelpers.WriteMergedResults()
+
+	os.Exit(code)
+}
+
+func newProviderWithError() (tfprotov6.ProviderServer, error) {
+	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
+}
+
+var testAccProtoV6ProviderFactories = map[string]func() (
+	tfprotov6.ProviderServer, error,
+){
+	"hpe": newProviderWithError,
+}
+
+func RenderCypherTfvarsConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -22,23 +42,25 @@ func RenderPreseedScriptConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":    name,
-		"Content": "ls",
+		"Key":   name,
+		"Ttl":   "86400",
+		"Value": "account=12345\npassword=supersecure",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
+	for k, v := range overrides {
+		defaults[k] = v
 	}
 
 	return testhelpers.RenderExample(
 		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Content", defaults["Content"],
+		"hpe_morpheus_cypher_tfvars_resource.tf.tmpl",
+		"Key", defaults["Key"],
+		"Ttl", defaults["Ttl"],
+		"Value", defaults["Value"],
 	)
 }
 
-func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
+func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -51,23 +73,26 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
-		"Content": "ls",
-	})
+	resourceConfig, err := RenderCypherTfvarsConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"name",
+			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
+			"key",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_preseed_script.tf_example_preseed_script",
-			"content",
-			"ls",
+			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
+			"ttl",
+			"86400",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_cypher_tfvars.tf_example_cypher_tfvars",
+			"value",
+			"account=12345\npassword=supersecure\n",
 		),
 	}
 
