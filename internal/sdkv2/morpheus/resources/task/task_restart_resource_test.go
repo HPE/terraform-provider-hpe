@@ -57,7 +57,7 @@ func RenderTaskRestartConfig(t *testing.T, overrides map[string]string) string {
 
 	resourceConfig, err := testhelpers.RenderExample(
 		t,
-		"task_restart_resource.tf.tmpl",
+		"morpheus_task_restart_resource.tf.tmpl",
 		"Name", defaults["Name"],
 		"Code", defaults["Code"],
 		"Labels", defaults["Labels"],
