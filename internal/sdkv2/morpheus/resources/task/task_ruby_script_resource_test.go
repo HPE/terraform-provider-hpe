@@ -34,7 +34,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func renderTaskRubyScriptConfig(
+func RenderTaskRubyScriptConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -87,7 +87,7 @@ func TestAccMorpheusTaskRubyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := renderTaskRubyScriptConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderTaskRubyScriptConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
