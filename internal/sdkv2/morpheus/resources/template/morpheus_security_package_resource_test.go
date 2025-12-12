@@ -56,7 +56,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, nil)
+	resourceConfig, err := RenderMorpheusSecurityPackageConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
