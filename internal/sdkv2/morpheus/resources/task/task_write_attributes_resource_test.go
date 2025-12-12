@@ -40,10 +40,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func RenderTaskWriteAttributesConfig(
 	t *testing.T,
 	name string,
-	code string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
+
+	code := strings.ToLower(name)
 
 	defaults := map[string]string{
 		"Label1":            "demo",
@@ -87,9 +88,8 @@ func TestAccMorpheusTaskWriteAttributesExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	code := strings.ToLower(name)
 
-	resourceConfig, err := RenderTaskWriteAttributesConfig(t, name, code, nil)
+	resourceConfig, err := RenderTaskWriteAttributesConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestAccMorpheusTaskWriteAttributesExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_write_attributes."+name,
 			"code",
-			code,
+			strings.ToLower(name),
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_write_attributes."+name,
