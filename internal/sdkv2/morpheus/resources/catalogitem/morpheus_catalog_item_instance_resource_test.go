@@ -35,15 +35,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // RenderCatalogItemInstanceConfig generates a Terraform configuration for catalog item instance resource.
-// It accepts a map of field overrides to customize the default values.
+// It accepts a name and a map of field overrides to customize the default values.
 func RenderCatalogItemInstanceConfig(
 	t *testing.T,
+	name string,
 	overrides map[string]string,
 ) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "tfexample_instance_catalog",
+		"Name":        name,
 		"Config":      "{\"name\":\"test\"}",
 		"Content":     "{\"name\":\"test\"}",
 		"Description": "terraform example instance catalog item",
@@ -86,9 +87,7 @@ func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCatalogItemInstanceConfig(t, map[string]string{
-		"Name": name,
-	})
+	resourceConfig, err := RenderCatalogItemInstanceConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
