@@ -1,0 +1,12 @@
+resource "hpe_morpheus_task_ruby_script" "tfexample_ruby_url" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = [{{.Labels}}]
+  source_type         = "{{.SourceType}}"
+  result_type         = "{{.ResultType}}"
+  script_path         = "{{.ScriptPath}}"
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}
