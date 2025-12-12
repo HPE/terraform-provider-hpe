@@ -158,10 +158,10 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= x.y.z"
+      version = ">= 0.4.0"
     }
   }
-  required_version = ">= 0.13"
+  required_version = ">= 1.11"
 }
 ```
 
