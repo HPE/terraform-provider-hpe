@@ -23,7 +23,7 @@ func RenderTaskRubyScriptGitConfig(t *testing.T, overrides map[string]string) st
 		"ResultType":        "json",
 		"ScriptPath":        "example.rb",
 		"VersionRef":        "master",
-		"RepositoryId":      "1",
+		"RepositoryId":      "0",
 		"Retryable":         "true",
 		"RetryCount":        "1",
 		"RetryDelaySeconds": "10",
@@ -124,7 +124,7 @@ func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_ruby_script.tfexample_ruby_git",
 			"repository_id",
-			"1",
+			"0",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_ruby_script.tfexample_ruby_git",
