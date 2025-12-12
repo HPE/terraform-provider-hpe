@@ -35,11 +35,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderMorpheusInstanceTypeConfig(
+func RenderInstanceTypeConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
-) string {
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -80,10 +80,10 @@ func RenderMorpheusInstanceTypeConfig(
 		args...,
 	)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
-	return resourceConfig
+	return resourceConfig, nil
 }
 
 func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
@@ -99,7 +99,10 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderMorpheusInstanceTypeConfig(t, name, map[string]string{"Name": name})
+	resourceConfig, err := RenderInstanceTypeConfig(t, name, map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
