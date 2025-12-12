@@ -11,9 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-// RenderMorpheusSecurityPackageConfig generates a test configuration for security package resource.
-// It accepts a name and a map of field overrides to customize the default values.
-func RenderMorpheusSecurityPackageConfig(
+func RenderSecurityPackageConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -33,7 +31,7 @@ func RenderMorpheusSecurityPackageConfig(
 		defaults[key] = value
 	}
 
-	resourceConfig, err := testhelpers.RenderExample(
+	return testhelpers.RenderExample(
 		t,
 		"morpheus_security_package_resource.tf.tmpl",
 		"Name", defaults["Name"],
@@ -42,11 +40,6 @@ func RenderMorpheusSecurityPackageConfig(
 		"Enabled", defaults["Enabled"],
 		"Url", defaults["Url"],
 	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
 }
 
 func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
@@ -62,7 +55,7 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
