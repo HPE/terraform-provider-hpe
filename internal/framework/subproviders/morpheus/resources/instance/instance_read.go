@@ -139,48 +139,14 @@ func getInstanceAsState(
 	// name
 	state.Name = convert.StrToType(instance.Name)
 
-	// network_interfaces
-	// We are going to read network interface information from containerDetails.server.interfaces
-	// Note that, at present, all network IP addresses will not be available to us when we reach
-	// this stage on instance creation, we will have enough in the state-file that a plan will
-	// be a no-op, and that when all IP addresses are available (this can be seen in the UI) an
-	// apply will update the state-file with the IP addresses etc.
-	subIntfMap, isSubIntf, serverIntfsMap, serverInterfaces := getAllServerInterfaces(instance)
-
-	var ifaces []NetworkInterfacesValue
-
-	for _, iface := range serverInterfaces {
-		// Skip sub-interfaces
-		if _, ok := isSubIntf[*iface.Id]; ok {
-			continue
-		}
-		ifaceVal := NetworkInterfacesValue{}
-
-		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
-		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
-		ifaceVal.NetworkGroupId = types.Int64Null()
-		if group, ok := iface.GetNetworkGroupOk(); ok {
-			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
-		}
-		if pool, ok := iface.GetNetworkPoolOk(); ok {
-			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
-		}
-		if net, ok := iface.GetNetworkOk(); ok {
-			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
-		}
-		ifaceVal.Name = convert.StrToType(iface.Name)
-		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
-
-		childInterfaces, childD := getChildNetworks(ctx, iface.Id, subIntfMap, serverIntfsMap)
-		diags.Append(childD...)
-		ifaceVal.ChildVirtualNetworks = childInterfaces
-
-		ifaceVal.state = attr.ValueStateKnown
-
-		ifaces = append(ifaces, ifaceVal)
+	// interfaces
+	ifaces, ifDiags := getStateInterfacesFromInstance(ctx, instance)
+	diags = append(diags, ifDiags...)
+	if diags.HasError() {
+		return state, diags
 	}
 
-	networkInterfacesSet, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), ifaces)
+	networkInterfacesList, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), ifaces)
 	diags.Append(d...)
 
 	if diags.HasError() {
@@ -189,7 +155,7 @@ func getInstanceAsState(
 		return state, diags
 	}
 
-	state.NetworkInterfaces = networkInterfacesSet
+	state.NetworkInterfaces = networkInterfacesList
 
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
@@ -299,18 +265,76 @@ func getInstanceEnvVars(
 	return resp.GetEnvs(), diags
 }
 
+// getStateInterfacesFromInstance get the []NetworkInterfacesValue from containerDetails.server.interfaces
+func getStateInterfacesFromInstance(
+	ctx context.Context,
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+) ([]NetworkInterfacesValue, diag.Diagnostics) {
+	// network_interfaces
+	// We are going to read network interface information from containerDetails.server.interfaces
+	// Note that, at present, all network IP addresses will not be available to us when we reach
+	// this stage on instance creation, we will have enough in the state-file that a plan will
+	// be a no-op, and that when all IP addresses are available (this can be seen in the UI) an
+	// apply will update the state-file with the IP addresses etc.
+	procIntfs := getAllServerInterfaces(instance)
+
+	var ifaces []NetworkInterfacesValue
+	var childInterfaces basetypes.ListValue
+	var diags diag.Diagnostics
+
+	for _, iface := range procIntfs.serverIntfsList {
+		// Skip sub-interfaces
+		if _, ok := procIntfs.isSubIntf[*iface.Id]; ok {
+			continue
+		}
+		ifaceVal := NetworkInterfacesValue{}
+
+		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
+		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
+		ifaceVal.NetworkGroupId = types.Int64Null()
+		if group, ok := iface.GetNetworkGroupOk(); ok {
+			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
+		}
+		if pool, ok := iface.GetNetworkPoolOk(); ok {
+			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+		}
+		if net, ok := iface.GetNetworkOk(); ok {
+			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
+		}
+		ifaceVal.Name = convert.StrToType(iface.Name)
+		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
+
+		childInterfaces, diags = getChildNetworks(ctx, iface.Id, procIntfs.subIntfsMap, procIntfs.serverIntfsMap)
+
+		ifaceVal.ChildVirtualNetworks = childInterfaces
+
+		ifaceVal.state = attr.ValueStateKnown
+
+		ifaces = append(ifaces, ifaceVal)
+	}
+
+	return ifaces, diags
+}
+
+// processedServerInterfaces struct that contains maps and a list produced from containerDetails.server.interfaces
+type processedServerInterfaces struct {
+	// subIntfsMap a map of interface-ids with a list of the ids of any sub-interfaces
+	// note that it is possible for two (or maybe more) interfaces to have the same sub-interfaces (bonds)
+	subIntfsMap map[int64][]int64
+	// isSubIntf a map of interface-ids with a boolean saying if they are sub-interfaces
+	isSubIntf map[int64]bool
+	// serverIntfsMap a map of interface-ids with the corresponding interface information
+	serverIntfsMap map[int64]sdk.InstanceContainerServerInterfacesInner1
+	// serverIntfsList a list of the interfaces, which should (hopefully be in the same order as those specified
+	// in network_interfaces
+	serverIntfsList []sdk.InstanceContainerServerInterfacesInner1
+}
+
 // Process the set of interfaces in an instance
-// This function takes an "instance" input and returns the following:
-//   - a map of interface-ids with a list of the ids of any sub-interfaces
-//   - a map of interface-ids with a boolean saying if they are sub-interfaces
-//   - a map of interface-ids with the corresponding interface information
-//   - a list of the interfaces, which should (hopefully) be in the same order as those specified
-//     in network_interfaces
+// This function takes an "instance" input and returns processedServerInterfaces
 func getAllServerInterfaces(
 	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
-) (map[int64][]int64, map[int64]bool,
-	map[int64]sdk.InstanceContainerServerInterfacesInner1, []sdk.InstanceContainerServerInterfacesInner1,
-) {
+) processedServerInterfaces {
 	subIntfsMap := make(map[int64][]int64)
 	isSubIntf := make(map[int64]bool)
 	serverIntfsMap := make(map[int64]sdk.InstanceContainerServerInterfacesInner1)
@@ -397,7 +421,13 @@ func getAllServerInterfaces(
 		}
 	}
 
-	return subIntfsMap, isSubIntf, serverIntfsMap, serverIntfsList
+	ret := processedServerInterfaces{}
+	ret.subIntfsMap = subIntfsMap
+	ret.isSubIntf = isSubIntf
+	ret.serverIntfsMap = serverIntfsMap
+	ret.serverIntfsList = serverIntfsList
+
+	return ret
 }
 
 // Get the child virtual network interface values
