@@ -16,6 +16,21 @@ import (
 	errfmt "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
+var (
+	UpdateTargetStatuses = []string{
+		"running",
+	}
+
+	UpdateErrorStatuses = []string{
+		"denied",
+		"cancelled",
+		"failed",
+		"suspended",
+		"removing",
+		"pendingRemoval",
+	}
+)
+
 // Update implements resource.Resource.
 func (g *Resource) Update(
 	ctx context.Context,
