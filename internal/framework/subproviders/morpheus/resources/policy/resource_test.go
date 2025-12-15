@@ -43,9 +43,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 // Test validation: associated_resource_id required when not Global
 func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	t.Parallel()
 
@@ -68,6 +65,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 `
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -81,26 +79,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 // Test validation: invalid policy type code
 func TestAccMorpheusPolicyValidationInvalidPolicyType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
-	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
 	resourceConfig := `
-resource "hpe_morpheus_group" "test" {
-  name = "` + groupName + `"
-  location = "test"
-}
-
 resource "hpe_morpheus_policy" "validation_test" {
   name = "` + name + `"
   associated_resource_type = "Group"
-  associated_resource_id = hpe_morpheus_group.test.id
+  associated_resource_id = 1
   
   policy_type = {
     code = "invalidPolicyType"
@@ -113,6 +102,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 `
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -126,9 +116,6 @@ resource "hpe_morpheus_policy" "validation_test" {
 // Test validation: invalid associated_resource_type
 func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
 
 	t.Parallel()
 
@@ -152,6 +139,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 `
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -279,6 +267,315 @@ resource "hpe_morpheus_policy" "validation_test" {
 			{
 				Config:      providerConfig + resourceConfig,
 				ExpectError: regexp.MustCompile("Tenants not supported for this policy type"),
+			},
+		},
+	})
+}
+
+// Test validation: config_approval flow_id and workflow_id conflict
+func TestAccMorpheusPolicyValidationApprovalWorkflowConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "approval"
+  }
+  
+  config_approval = {
+    account_integration_id = "1"
+    workflow_type = "flow"
+    flow_id = "1"
+    workflow_id = "1"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("Attribute \"config_approval.workflow_id\" cannot be specified when"),
+			},
+		},
+	})
+}
+
+// Test validation: config_approval flow_id required when workflow_type is flow
+func TestAccMorpheusPolicyValidationApprovalFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "provisionApproval"
+  }
+  
+  config_approval = {
+    account_integration_id = "1"
+    workflow_type = "flow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config_approval workflow_id required when workflow_type is workflow
+func TestAccMorpheusPolicyValidationApprovalWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "provisionApproval"
+  }
+  
+  config_approval = {
+    account_integration_id = "1"
+    workflow_type = "workflow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("workflow_id is required when workflow_type is 'workflow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config_lifecycle flow_id required when workflow_type is flow
+func TestAccMorpheusPolicyValidationLifecycleFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "lifecycle"
+  }
+  
+  config_lifecycle = {
+    lifecycle_type = "user"
+    workflow_type = "flow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config_lifecycle lifecycle_workflow_id required when workflow_type is workflow
+func TestAccMorpheusPolicyValidationLifecycleWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "lifecycle"
+  }
+  
+  config_lifecycle = {
+    lifecycle_type = "user"
+    workflow_type = "workflow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("lifecycle_workflow_id is required when workflow_type is 'workflow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config_shutdown flow_id required when workflow_type is flow
+func TestAccMorpheusPolicyValidationShutdownFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "shutdown"
+  }
+  
+  config_shutdown = {
+    shutdown_type = "user"
+    workflow_type = "flow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config_shutdown shutdown_workflow_id required when workflow_type is workflow
+func TestAccMorpheusPolicyValidationShutdownWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "shutdown"
+  }
+  
+  config_shutdown = {
+    shutdown_type = "user"
+    workflow_type = "workflow"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("shutdown_workflow_id is required when workflow_type is 'workflow'"),
+			},
+		},
+	})
+}
+
+// Test validation: config conflicts with config_* attributes
+func TestAccMorpheusPolicyValidationConfigConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "validation_test" {
+  name = "` + name + `"
+  associated_resource_type = "Group"
+  associated_resource_id = 1
+  
+  policy_type = {
+    code = "maxMemory"
+  }
+  
+  config = {
+    maxMemory = 8
+  }
+  
+  config_max_memory = {
+    max_memory = 8
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile("Attribute \"config_max_memory\" cannot be specified when"),
 			},
 		},
 	})
