@@ -20,3 +20,10 @@ const (
 	// AssociatedResourceTypeLabel is the resource type for label-scoped policies
 	AssociatedResourceTypeLabel = "Label"
 )
+
+const (
+	// WorkflowTypeFlow indicates a workflow of type "flow"
+	WorkflowTypeFlow = "flow"
+	// WorkflowTypeWorkflow indicates a workflow of type "workflow"
+	WorkflowTypeWorkflow = "workflow"
+)

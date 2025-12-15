@@ -17,6 +17,592 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
+// mapPolicyConfigToState maps the API config structure to the resource schema structure
+func mapPolicyConfigToState(
+	ctx context.Context,
+	state *PolicyModel,
+	apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig,
+	policyTypeCode string,
+) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	// Map API config field to the corresponding schema field based on policy type code
+	switch policyTypeCode {
+	case "deleteApproval", "provisionApproval", "reconfigureApproval", "workflowApproval":
+		approvalValue, approvalDiags := NewConfigApprovalValue(
+			ConfigApprovalValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration.AccountIntegrationId),
+				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.FlowId),
+				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowId),
+				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowType),
+			},
+		)
+		if approvalDiags.HasError() {
+			diags.Append(approvalDiags...)
+		} else {
+			state.ConfigApproval = approvalValue
+		}
+
+	case "backupStorage":
+		// Handle BackupStorageIds as a set of int64
+		var backupStorageIDsSet types.Set
+		var setDiags diag.Diagnostics
+		if len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds) == 0 {
+			backupStorageIDsSet = types.SetValueMust(types.Int64Type, []attr.Value{})
+		} else {
+			// BackupStorageIds come from API as []string, convert to []int64
+			backupStorageIDsSet, setDiags = types.SetValueFrom(
+				ctx,
+				types.Int64Type,
+				apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds,
+			)
+			if setDiags.HasError() {
+				diags.Append(setDiags...)
+			}
+		}
+
+		backupStorageAttrs := map[string]attr.Value{
+			"backup_storage_ids": backupStorageIDsSet,
+		}
+
+		backupStorageValue, backupStorageDiags := NewConfigBackupStorageValue(
+			ConfigBackupStorageValue{}.AttributeTypes(ctx),
+			backupStorageAttrs,
+		)
+		if backupStorageDiags.HasError() {
+			diags.Append(backupStorageDiags...)
+		} else {
+			state.ConfigBackupStorage = backupStorageValue
+		}
+
+	case "createBackup":
+		createBackupValue, createBackupDiags := NewConfigCreateBackupValue(
+			ConfigCreateBackupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackup),
+				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackupType),
+			},
+		)
+		if createBackupDiags.HasError() {
+			diags.Append(createBackupDiags...)
+		} else {
+			state.ConfigCreateBackup = createBackupValue
+		}
+
+	case "createUser":
+		createUserValue, createUserDiags := NewConfigCreateUserValue(
+			ConfigCreateUserValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration.CreateUser),
+				"create_user_type": convert.StrToType(&apiConfig.UserCreationPolicyTypeConfiguration.CreateUserType),
+			},
+		)
+		if createUserDiags.HasError() {
+			diags.Append(createUserDiags...)
+		} else {
+			state.ConfigCreateUser = createUserValue
+		}
+
+	case "createUserGroup":
+		createUserGroupValue, createUserGroupDiags := NewConfigCreateUserGroupValue(
+			ConfigCreateUserGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"user_group": convert.StrToType(&apiConfig.UserGroupCreationPolicyTypeConfiguration.UserGroup),
+			},
+		)
+		if createUserGroupDiags.HasError() {
+			diags.Append(createUserGroupDiags...)
+		} else {
+			state.ConfigCreateUserGroup = createUserGroupValue
+		}
+
+	case "cypher":
+		cypherValue, cypherDiags := NewConfigCypherValue(
+			ConfigCypherValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
+				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
+				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
+				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
+				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
+				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
+			},
+		)
+		if cypherDiags.HasError() {
+			diags.Append(cypherDiags...)
+		} else {
+			state.ConfigCypher = cypherValue
+		}
+
+	case "maxPrice":
+		maxPriceAttrs := map[string]attr.Value{
+			"max_price":          convert.NumToType(&apiConfig.BudgetPolicyTypeConfiguration.MaxPrice),
+			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency),
+			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit),
+		}
+
+		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
+		if maxPriceDiags.HasError() {
+			diags.Append(maxPriceDiags...)
+		} else {
+			state.ConfigMaxPrice = maxPriceValue
+		}
+
+	case "maxMemory":
+		maxMemoryAttrs := map[string]attr.Value{
+			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration.GetExcludeContainers()),
+		}
+
+		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
+		if maxMemoryDiags.HasError() {
+			diags.Append(maxMemoryDiags...)
+		} else {
+			state.ConfigMaxMemory = maxMemoryValue
+		}
+
+	case "maxCores":
+		maxCoresAttrs := map[string]attr.Value{
+			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration.GetExcludeContainers()),
+		}
+
+		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
+		if maxCoresDiags.HasError() {
+			diags.Append(maxCoresDiags...)
+		} else {
+			state.ConfigMaxCores = maxCoresValue
+		}
+
+	case "delayedRemoval":
+		delayedRemovalAttrs := map[string]attr.Value{
+			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
+		}
+
+		delayedRemovalValue, delayedRemovalDiags := NewConfigDelayedRemovalValue(
+			ConfigDelayedRemovalValue{}.AttributeTypes(ctx),
+			delayedRemovalAttrs,
+		)
+		if delayedRemovalDiags.HasError() {
+			diags.Append(delayedRemovalDiags...)
+		} else {
+			state.ConfigDelayedRemoval = delayedRemovalValue
+		}
+
+	case "lifecycle":
+		lifecycleAttrs := map[string]attr.Value{
+			"account_integration_id": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.AccountIntegrationId,
+			),
+			"flow_id":       convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.FlowId),
+			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAge),
+			"lifecycle_allow_extend": convert.StringToBool(
+				ctx,
+				apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAllowExtend(),
+			),
+			"lifecycle_auto_renew": convert.StringToBool(
+				ctx,
+				apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAutoRenew(),
+			),
+			"lifecycle_extensions_before_approval": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleExtensionsBeforeApproval,
+			),
+			"lifecycle_hide_fixed": convert.BoolToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleHideFixed,
+			),
+			"lifecycle_message": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleMessage,
+			),
+			"lifecycle_notify": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleNotify,
+			),
+			"lifecycle_renewal": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleRenewal,
+			),
+			"lifecycle_type": convert.StrToType(
+				&apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleType,
+			),
+			"lifecycle_workflow_id": convert.StrToType(
+				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleWorkflowId,
+			),
+			"workflow_type": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.WorkflowType),
+		}
+
+		lifecycleValue, lifecycleDiags := NewConfigLifecycleValue(ConfigLifecycleValue{}.AttributeTypes(ctx), lifecycleAttrs)
+		if lifecycleDiags.HasError() {
+			diags.Append(lifecycleDiags...)
+		} else {
+			state.ConfigLifecycle = lifecycleValue
+		}
+
+	case "hostNaming":
+		hostNamingAttrs := map[string]attr.Value{
+			"host_naming_pattern": convert.StrToType(apiConfig.HostnamePolicyTypeConfiguration.HostNamingPattern),
+			"host_naming_type":    convert.StrToType(&apiConfig.HostnamePolicyTypeConfiguration.HostNamingType),
+		}
+
+		hostNamingValue, hostNamingDiags := NewConfigHostNamingValue(
+			ConfigHostNamingValue{}.AttributeTypes(ctx),
+			hostNamingAttrs,
+		)
+		if hostNamingDiags.HasError() {
+			diags.Append(hostNamingDiags...)
+		} else {
+			state.ConfigHostNaming = hostNamingValue
+		}
+
+	case "naming":
+		namingAttrs := map[string]attr.Value{
+			"naming_conflict": convert.BoolToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingConflict),
+			"naming_pattern":  convert.StrToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingPattern),
+			"naming_type":     convert.StrToType(&apiConfig.InstanceNamePolicyTypeConfiguration.NamingType),
+		}
+
+		namingValue, namingDiags := NewConfigNamingValue(ConfigNamingValue{}.AttributeTypes(ctx), namingAttrs)
+		if namingDiags.HasError() {
+			diags.Append(namingDiags...)
+		} else {
+			state.ConfigNaming = namingValue
+		}
+
+	case "maxContainers":
+		maxContainersAttrs := map[string]attr.Value{
+			"max_containers": convert.StrToType(&apiConfig.MaxContainersPolicyTypeConfiguration.MaxContainers),
+		}
+
+		maxContainersValue, maxContainersDiags := NewConfigMaxContainersValue(
+			ConfigMaxContainersValue{}.AttributeTypes(ctx),
+			maxContainersAttrs,
+		)
+		if maxContainersDiags.HasError() {
+			diags.Append(maxContainersDiags...)
+		} else {
+			state.ConfigMaxContainers = maxContainersValue
+		}
+
+	case "maxHosts":
+		maxHostsAttrs := map[string]attr.Value{
+			"max_hosts": convert.StrToType(&apiConfig.MaxHostsPolicyTypeConfiguration.MaxHosts),
+		}
+
+		maxHostsValue, maxHostsDiags := NewConfigMaxHostsValue(ConfigMaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
+		if maxHostsDiags.HasError() {
+			diags.Append(maxHostsDiags...)
+		} else {
+			state.ConfigMaxHosts = maxHostsValue
+		}
+
+	case "maxNetworks":
+		maxNetworksAttrs := map[string]attr.Value{
+			"max_networks": convert.StrToType(&apiConfig.NetworkQuotaPolicyTypeConfiguration.MaxNetworks),
+		}
+
+		maxNetworksValue, maxNetworksDiags := NewConfigMaxNetworksValue(
+			ConfigMaxNetworksValue{}.AttributeTypes(ctx),
+			maxNetworksAttrs,
+		)
+		if maxNetworksDiags.HasError() {
+			diags.Append(maxNetworksDiags...)
+		} else {
+			state.ConfigMaxNetworks = maxNetworksValue
+		}
+
+	case "maxPoolMembers":
+		maxPoolMembersAttrs := map[string]attr.Value{
+			"max_pool_members": convert.StrToType(&apiConfig.MaxPoolMembersPolicyTypeConfiguration.MaxPoolMembers),
+		}
+
+		maxPoolMembersValue, maxPoolMembersDiags := NewConfigMaxPoolMembersValue(
+			ConfigMaxPoolMembersValue{}.AttributeTypes(ctx),
+			maxPoolMembersAttrs,
+		)
+		if maxPoolMembersDiags.HasError() {
+			diags.Append(maxPoolMembersDiags...)
+		} else {
+			state.ConfigMaxPoolMembers = maxPoolMembersValue
+		}
+
+	case "maxPools":
+		maxPoolsAttrs := map[string]attr.Value{
+			"max_pools": convert.StrToType(&apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration.MaxPools),
+		}
+
+		maxPoolsValue, maxPoolsDiags := NewConfigMaxPoolsValue(ConfigMaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
+		if maxPoolsDiags.HasError() {
+			diags.Append(maxPoolsDiags...)
+		} else {
+			state.ConfigMaxPools = maxPoolsValue
+		}
+
+	case "maxRouters":
+		maxRoutersAttrs := map[string]attr.Value{
+			"max_routers": convert.StrToType(&apiConfig.RouterQuotaPolicyTypeConfiguration.MaxRouters),
+		}
+
+		maxRoutersValue, maxRoutersDiags := NewConfigMaxRoutersValue(
+			ConfigMaxRoutersValue{}.AttributeTypes(ctx),
+			maxRoutersAttrs,
+		)
+		if maxRoutersDiags.HasError() {
+			diags.Append(maxRoutersDiags...)
+		} else {
+			state.ConfigMaxRouters = maxRoutersValue
+		}
+
+	case "maxSnapshots":
+		maxSnapshotsAttrs := map[string]attr.Value{
+			"max_snapshots": convert.StrToType(&apiConfig.MaxSnapshotsPolicyTypeConfiguration.MaxSnapshots),
+		}
+
+		maxSnapshotsValue, maxSnapshotsDiags := NewConfigMaxSnapshotsValue(
+			ConfigMaxSnapshotsValue{}.AttributeTypes(ctx),
+			maxSnapshotsAttrs,
+		)
+		if maxSnapshotsDiags.HasError() {
+			diags.Append(maxSnapshotsDiags...)
+		} else {
+			state.ConfigMaxSnapshots = maxSnapshotsValue
+		}
+
+	case "maxStorage", "storageBucketQuota", "storageShareQuota":
+		maxStorageAttrs := map[string]attr.Value{
+			"exclude_containers": convert.StringToBool(
+				ctx,
+				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.GetExcludeContainers(),
+			),
+			"max_storage": convert.StrToType(
+				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage,
+			),
+		}
+
+		maxStorageValue, maxStorageDiags := NewConfigMaxStorageValue(
+			ConfigMaxStorageValue{}.AttributeTypes(ctx),
+			maxStorageAttrs,
+		)
+		if maxStorageDiags.HasError() {
+			diags.Append(maxStorageDiags...)
+		} else {
+			state.ConfigMaxStorage = maxStorageValue
+		}
+
+	case "maxVirtualServers":
+		maxVirtualServersAttrs := map[string]attr.Value{
+			"max_virtual_servers": convert.StrToType(&apiConfig.MaxVirtualServersPolicyTypeConfiguration.MaxVirtualServers),
+		}
+
+		maxVirtualServersValue, maxVirtualServersDiags := NewConfigMaxVirtualServersValue(
+			ConfigMaxVirtualServersValue{}.AttributeTypes(ctx),
+			maxVirtualServersAttrs,
+		)
+		if maxVirtualServersDiags.HasError() {
+			diags.Append(maxVirtualServersDiags...)
+		} else {
+			state.ConfigMaxVirtualServers = maxVirtualServersValue
+		}
+
+	case "maxVms":
+		maxVmsAttrs := map[string]attr.Value{
+			"max_vms": convert.StrToType(&apiConfig.MaxVMsPolicyTypeConfiguration.MaxVms),
+		}
+
+		maxVmsValue, maxVmsDiags := NewConfigMaxVmsValue(ConfigMaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
+		if maxVmsDiags.HasError() {
+			diags.Append(maxVmsDiags...)
+		} else {
+			state.ConfigMaxVms = maxVmsValue
+		}
+
+	case "motd":
+		motdAttrs := map[string]attr.Value{
+			"motddate":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
+			"motdmessage": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
+			"motdtitle":   types.StringNull(),
+			"motdtype":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdType),
+		}
+
+		// Handle NullableString for MotdTitle
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.IsSet() {
+			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.Get())
+		}
+
+		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
+		if motdDiags.HasError() {
+			diags.Append(motdDiags...)
+		} else {
+			state.ConfigMotd = motdValue
+		}
+
+	case "powerSchedule":
+		powerScheduleAttrs := map[string]attr.Value{
+			"power_schedule": convert.StrToType(
+				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerSchedule,
+			),
+			"power_schedule_hide_fixed": convert.BoolToType(
+				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleHideFixed,
+			),
+			"power_schedule_type": convert.StrToType(
+				&apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleType,
+			),
+		}
+
+		powerScheduleValue, powerScheduleDiags := NewConfigPowerScheduleValue(
+			ConfigPowerScheduleValue{}.AttributeTypes(ctx),
+			powerScheduleAttrs,
+		)
+		if powerScheduleDiags.HasError() {
+			diags.Append(powerScheduleDiags...)
+		} else {
+			state.ConfigPowerSchedule = powerScheduleValue
+		}
+
+	case "requiredNetwork":
+		// Handle RequiredNetworks as a set of integers
+		var requiredNetworksSet types.Set
+		if len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks) == 0 {
+			requiredNetworksSet = types.SetValueMust(types.Int64Type, []attr.Value{})
+		} else {
+			int64Values := make([]attr.Value, len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks))
+			for i, networkID := range apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks {
+				int64Values[i] = types.Int64Value(networkID)
+			}
+			var setDiags diag.Diagnostics
+			requiredNetworksSet, setDiags = types.SetValueFrom(ctx, types.Int64Type, int64Values)
+			if setDiags.HasError() {
+				diags.Append(setDiags...)
+			}
+		}
+
+		requiredNetworkAttrs := map[string]attr.Value{
+			"required_networks": requiredNetworksSet,
+		}
+
+		requiredNetworkValue, requiredNetworkDiags := NewConfigRequiredNetworkValue(
+			ConfigRequiredNetworkValue{}.AttributeTypes(ctx),
+			requiredNetworkAttrs,
+		)
+		if requiredNetworkDiags.HasError() {
+			diags.Append(requiredNetworkDiags...)
+		} else {
+			state.ConfigRequiredNetwork = requiredNetworkValue
+		}
+
+	case "serverNaming":
+		serverNamingAttrs := map[string]attr.Value{
+			"server_naming_conflict": convert.BoolToType(
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingConflict,
+			),
+			"server_naming_pattern": convert.StrToType(
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingPattern,
+			),
+			"server_naming_type": convert.StrToType(
+				&apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType,
+			),
+		}
+
+		serverNamingValue, serverNamingDiags := NewConfigServerNamingValue(
+			ConfigServerNamingValue{}.AttributeTypes(ctx),
+			serverNamingAttrs,
+		)
+		if serverNamingDiags.HasError() {
+			diags.Append(serverNamingDiags...)
+		} else {
+			state.ConfigServerNaming = serverNamingValue
+		}
+
+	case "shutdown":
+		shutdownAttrs := map[string]attr.Value{
+			"account_integration_id": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.AccountIntegrationId,
+			),
+			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.FlowId),
+			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAge),
+			"shutdown_allow_extend": convert.StringToBool(
+				ctx,
+				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAllowExtend(),
+			),
+			"shutdown_auto_renew": convert.StringToBool(
+				ctx,
+				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAutoRenew(),
+			),
+			"shutdown_extensions_before_approval": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownExtensionsBeforeApproval,
+			),
+			"shutdown_hide_fixed": convert.BoolToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownHideFixed,
+			),
+			"shutdown_message": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownMessage,
+			),
+			"shutdown_notify": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownNotify,
+			),
+			"shutdown_renewal": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownRenewal,
+			),
+			"shutdown_type": convert.StrToType(
+				&apiConfig.ShutdownPolicyTypeConfiguration.ShutdownType,
+			),
+			"shutdown_workflow_id": convert.StrToType(
+				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownWorkflowId,
+			),
+			"workflow_type": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.WorkflowType),
+		}
+
+		shutdownValue, shutdownDiags := NewConfigShutdownValue(ConfigShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
+		if shutdownDiags.HasError() {
+			diags.Append(shutdownDiags...)
+		} else {
+			state.ConfigShutdown = shutdownValue
+		}
+
+	case "storageServerQuota":
+		storageServerQuotaAttrs := map[string]attr.Value{
+			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.MaxStorage),
+			"storage_server_id": convert.StrToType(&apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.StorageServerId),
+		}
+
+		storageServerQuotaValue, storageServerQuotaDiags := NewConfigStorageServerQuotaValue(
+			ConfigStorageServerQuotaValue{}.AttributeTypes(ctx),
+			storageServerQuotaAttrs,
+		)
+		if storageServerQuotaDiags.HasError() {
+			diags.Append(storageServerQuotaDiags...)
+		} else {
+			state.ConfigStorageServerQuota = storageServerQuotaValue
+		}
+
+	case "tags":
+		tagsAttrs := map[string]attr.Value{
+			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Key),
+			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration.Strict),
+			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Value),
+			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.ValueListId),
+		}
+
+		tagsValue, tagsDiags := NewConfigTagsValue(ConfigTagsValue{}.AttributeTypes(ctx), tagsAttrs)
+		if tagsDiags.HasError() {
+			diags.Append(tagsDiags...)
+		} else {
+			state.ConfigTags = tagsValue
+		}
+
+	case "workflow":
+		workflowAttrs := map[string]attr.Value{
+			"workflow_id": convert.StrToType(&apiConfig.WorkflowPolicyTypeConfiguration.WorkflowId),
+		}
+
+		workflowValue, workflowDiags := NewConfigWorkflowValue(ConfigWorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
+		if workflowDiags.HasError() {
+			diags.Append(workflowDiags...)
+		} else {
+			state.ConfigWorkflow = workflowValue
+		}
+	}
+
+	return diags
+}
+
 // populate policy resource model with current API values
 func getPolicyAsState(
 	ctx context.Context,
@@ -127,22 +713,31 @@ func getPolicyAsState(
 		state.PolicyType = policyTypeValue
 	}
 
-	// Handle Config - preserve from plan or convert from API
-	state.Config = types.DynamicNull()
+	// Handle Config - use static schema fields when available, fallback to dynamic
+	if p.Config != nil {
+		// Check if user is using dynamic config field
+		usingDynamicConfig := plan != nil && !plan.Config.IsNull() && !plan.Config.IsUnknown()
 
-	if plan != nil && !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
-	} else if p.Config != nil {
-		// Convert API config to dynamic type
-		var err error
-		state.Config, err = convert.StructToDynamic(ctx, p.Config)
-		if err != nil {
-			diags.AddError(
-				"populate policy resource",
-				fmt.Sprintf("policy %d: failed to convert config: %s", id, err.Error()),
-			)
+		if usingDynamicConfig {
+			// User is using dynamic config - only populate the dynamic field
+			state.Config = plan.Config
+		} else {
+			// User is using static config fields - populate them from API response
+			// Get policy type code for mapping (required field, but API could return nil)
+			policyTypeCode := ""
+			if p.PolicyType != nil && p.PolicyType.Code != nil {
+				policyTypeCode = *p.PolicyType.Code
+			}
 
-			return state, diags
+			// Map API config to static schema fields
+			configDiags := mapPolicyConfigToState(ctx, &state, p.Config, policyTypeCode)
+			if configDiags.HasError() {
+				diags.Append(configDiags...)
+
+				return state, diags
+			}
+
+			// Don't populate dynamic config when using static fields to avoid drift
 		}
 	}
 
