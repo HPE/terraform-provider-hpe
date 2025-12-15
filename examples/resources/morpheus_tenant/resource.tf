@@ -13,4 +13,3 @@ resource "hpe_morpheus_tenant" "tf_example_tenant" {
   account_name    = "tenant 12345"
   customer_number = "12345"
 }
-

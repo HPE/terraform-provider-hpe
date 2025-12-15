@@ -1,0 +1,15 @@
+data "hpe_morpheus_role" "example" {
+  name = "{{.RoleName}}"
+}
+
+resource "hpe_morpheus_tenant" "tf_example_tenant" {
+  name            = "{{.Name}}"
+  description     = "{{.Description}}"
+  enabled         = {{.Enabled}}
+  subdomain       = "{{.Subdomain}}"
+  base_role_id    = data.hpe_morpheus_role.example.id
+  currency        = "{{.Currency}}"
+  account_number  = "{{.AccountNumber}}"
+  account_name    = "{{.AccountName}}"
+  customer_number = "{{.CustomerNumber}}"
+}
