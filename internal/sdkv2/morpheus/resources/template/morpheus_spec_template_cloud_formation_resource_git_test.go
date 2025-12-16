@@ -9,41 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
+
 )
-
-func RenderSpecTemplateCloudFormationGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                 name,
-		"SourceType":           "repository",
-		"RepositoryId":         "2",
-		"VersionRef":           "main",
-		"SpecPath":             "./spec.yaml",
-		"CapabilityIam":        "true",
-		"CapabilityNamedIam":   "true",
-		"CapabilityAutoExpand": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_cloud_formation_resource_git.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
@@ -58,7 +26,7 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateCloudFormationGitConfig(
+	resourceConfig, err := template.RenderSpecTemplateCloudFormationGitConfig(
 		t,
 		name,
 		map[string]string{},

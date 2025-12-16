@@ -14,32 +14,9 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/network"
+
 )
-
-// RenderIPPoolIPv4Config generates a Terraform configuration for hpe_morpheus_ip_pool_ipv4 resource.
-// It accepts an optional map of field overrides. If nil or empty, default values are used.
-func RenderIPPoolIPv4Config(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":             "\"" + acctest.RandomWithPrefix(t.Name()) + "\"",
-		"StartingAddress1": "\"192.168.1.1\"",
-		"EndingAddress1":   "\"192.168.1.10\"",
-		"StartingAddress2": "\"10.0.0.1\"",
-		"EndingAddress2":   "\"10.0.0.10\"",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := make([]string, 0, len(defaults)*2)
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_ip_pool_ipv4_resource.tf.tmpl", args...)
-}
 
 func TestMain(m *testing.M) {
 	code := m.Run()
@@ -72,7 +49,7 @@ func TestAccMorpheusIpPoolIpv4ResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderIPPoolIPv4Config(t, map[string]string{
+	resourceConfig, err := network.RenderIPPoolIPv4Config(t, map[string]string{
 		"Name": "\"" + name + "\"",
 	})
 	if err != nil {

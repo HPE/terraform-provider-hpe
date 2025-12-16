@@ -9,50 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+
 )
-
-// RenderTaskRestartConfig renders the task restart resource configuration
-// with the provided name and field overrides.
-func RenderTaskRestartConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	// Default values
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              "tfexample_restart",
-		"Labels":            `["demo", "terraform"]`,
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	// Apply overrides
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"morpheus_task_restart_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
 
 func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 	t.Parallel()
@@ -67,7 +26,7 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := RenderTaskRestartConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskRestartConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

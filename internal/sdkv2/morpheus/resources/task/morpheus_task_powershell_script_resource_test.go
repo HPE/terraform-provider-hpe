@@ -9,47 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+
 )
-
-func RenderTaskPowershellScriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
-		"Labels":            `"demo", "terraform"`,
-		"SourceType":        "local",
-		"ScriptContent":     `Write-Output \"testing\"`,
-		"ElevatedShell":     "true",
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_task_powershell_script_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ScriptContent", defaults["ScriptContent"],
-		"ElevatedShell", defaults["ElevatedShell"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-}
 
 func TestAccMorpheusTaskPowershellScriptResourceExampleOk(t *testing.T) {
 	t.Parallel()
@@ -64,7 +26,7 @@ func TestAccMorpheusTaskPowershellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskPowershellScriptConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskPowershellScriptConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,37 +8,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
+
 )
-
-func RenderCredentialUsernameKeypairConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Description": "terraform credential example for username key pair",
-		"Enabled":     "true",
-		"Type":        "username-keypair",
-		"Username":    "admin",
-		"KeyPairId":   "2",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"credential_resource_username_keypair.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Username", defaults["Username"],
-		"KeyPairId", defaults["KeyPairId"],
-	)
-}
 
 func TestAccMorpheusCredentialResourceUsernameKeypairExampleOk(t *testing.T) {
 	t.Parallel()
@@ -53,7 +25,7 @@ func TestAccMorpheusCredentialResourceUsernameKeypairExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCredentialUsernameKeypairConfig(t, map[string]string{
+	resourceConfig, err := credential.RenderCredentialUsernameKeypairConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

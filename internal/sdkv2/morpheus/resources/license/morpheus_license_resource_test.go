@@ -13,6 +13,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/license"
+
 )
 
 func TestMain(m *testing.M) {
@@ -33,28 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderMorpheusLicenseConfig generates a Terraform configuration for the morpheus_license resource.
-// It accepts optional overrides for field values. Default values are used if not overridden.
-func RenderMorpheusLicenseConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Key": "22324FEF3WMCDMMSWE",
-	}
-
-	// Apply overrides to defaults
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_license_resource.tf.tmpl",
-		"Key",
-		defaults["Key"],
-	)
-}
-
 func TestAccMorpheusLicenseExampleOk(t *testing.T) {
 	t.Skip("Skipping due to lack of available resources to test against")
 
@@ -68,7 +48,7 @@ func TestAccMorpheusLicenseExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := RenderMorpheusLicenseConfig(t, nil)
+	resourceConfig, err := license.RenderMorpheusLicenseConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

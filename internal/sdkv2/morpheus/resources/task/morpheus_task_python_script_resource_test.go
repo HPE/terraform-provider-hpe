@@ -10,50 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+
 )
-
-func RenderMorpheusTaskPythonScriptConfig(
-	t *testing.T, name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":               name,
-		"Code":               strings.ToLower(name),
-		"Labels":             "[\"demo\", \"terraform\"]",
-		"SourceType":         "local",
-		"ScriptContent":      "print('morpheus')\\nprint('python')",
-		"CommandArguments":   "example",
-		"AdditionalPackages": "pyyaml",
-		"PythonBinary":       "/usr/bin/python3",
-		"Retryable":          "true",
-		"RetryCount":         "1",
-		"RetryDelaySeconds":  "10",
-		"AllowCustomConfig":  "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_task_python_script_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ScriptContent", defaults["ScriptContent"],
-		"CommandArguments", defaults["CommandArguments"],
-		"AdditionalPackages", defaults["AdditionalPackages"],
-		"PythonBinary", defaults["PythonBinary"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-}
 
 func TestAccMorpheusTaskPythonScriptExampleOk(t *testing.T) {
 	t.Parallel()
@@ -68,7 +27,7 @@ func TestAccMorpheusTaskPythonScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusTaskPythonScriptConfig(t, name, nil)
+	resourceConfig, err := task.RenderMorpheusTaskPythonScriptConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

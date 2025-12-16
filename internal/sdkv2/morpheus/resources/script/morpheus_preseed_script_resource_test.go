@@ -9,34 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/script"
+
 )
-
-// RenderPreseedScriptConfig renders a Terraform configuration
-// for preseed_script resource.
-// It accepts a name and a map of overrides to customize the default field values.
-func RenderPreseedScriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":    name,
-		"Content": "ls",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_preseed_script_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Content", defaults["Content"],
-	)
-}
 
 func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 	t.Parallel()
@@ -51,7 +26,7 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderPreseedScriptConfig(t, name, map[string]string{
+	resourceConfig, err := script.RenderPreseedScriptConfig(t, name, map[string]string{
 		"Content": "ls",
 	})
 	if err != nil {

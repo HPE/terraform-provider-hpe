@@ -14,6 +14,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/catalogitem"
+
 )
 
 func TestMain(m *testing.M) {
@@ -34,46 +36,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderCatalogItemInstanceConfig generates a Terraform configuration for catalog item instance resource.
-// It accepts a name and a map of field overrides to customize the default values.
-func RenderCatalogItemInstanceConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":        name,
-		"Config":      "{\"name\":\"test\"}",
-		"Content":     "{\"name\":\"test\"}",
-		"Description": "terraform example instance catalog item",
-		"Enabled":     "true",
-		"Featured":    "true",
-		"ImageName":   "tfexample.png",
-		"ImagePath":   "tfexample.png",
-		"Visibility":  "private",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_catalog_item_instance_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Config", defaults["Config"],
-		"Content", defaults["Content"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Featured", defaults["Featured"],
-		"ImageName", defaults["ImageName"],
-		"ImagePath", defaults["ImagePath"],
-		"Visibility", defaults["Visibility"],
-	)
-}
-
 func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -87,7 +49,7 @@ func TestAccMorpheusCatalogItemInstanceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCatalogItemInstanceConfig(t, name, map[string]string{})
+	resourceConfig, err := catalogitem.RenderCatalogItemInstanceConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

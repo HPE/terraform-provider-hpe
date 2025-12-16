@@ -9,37 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/setting"
+
 )
-
-func RenderMorpheusSettingGuidanceConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"PowerSettingsAverageCpu":         "75",
-		"PowerSettingsMaximumCpu":         "500",
-		"PowerSettingsNetworkThreshold":   "2000",
-		"CpuUpsizeAverageCpu":             "50",
-		"CpuUpsizeMaximumCpu":             "99",
-		"MemoryUpsizeMinimumFreeMemory":   "10",
-		"MemoryDownsizeAverageFreeMemory": "60",
-		"MemoryDownsizeMaximumFreeMemory": "30",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_setting_guidance_resource.tf.tmpl",
-		"PowerSettingsAverageCpu", defaults["PowerSettingsAverageCpu"],
-		"PowerSettingsMaximumCpu", defaults["PowerSettingsMaximumCpu"],
-		"PowerSettingsNetworkThreshold", defaults["PowerSettingsNetworkThreshold"],
-		"CpuUpsizeAverageCpu", defaults["CpuUpsizeAverageCpu"],
-		"CpuUpsizeMaximumCpu", defaults["CpuUpsizeMaximumCpu"],
-		"MemoryUpsizeMinimumFreeMemory", defaults["MemoryUpsizeMinimumFreeMemory"],
-		"MemoryDownsizeAverageFreeMemory", defaults["MemoryDownsizeAverageFreeMemory"],
-		"MemoryDownsizeMaximumFreeMemory", defaults["MemoryDownsizeMaximumFreeMemory"],
-	)
-}
 
 func TestAccMorpheusSettingGuidanceExampleOk(t *testing.T) {
 	t.Parallel()
@@ -55,7 +27,7 @@ func TestAccMorpheusSettingGuidanceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	_ = name // name is reserved for future use
 
-	resourceConfig, err := RenderMorpheusSettingGuidanceConfig(t, nil)
+	resourceConfig, err := setting.RenderMorpheusSettingGuidanceConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

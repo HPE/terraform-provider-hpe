@@ -14,6 +14,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cypher"
+
 )
 
 func TestMain(m *testing.M) {
@@ -34,32 +36,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderCypherTfvarsConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Key":   name,
-		"Ttl":   "86400",
-		"Value": "account=12345\npassword=supersecure",
-	}
-
-	for k, v := range overrides {
-		defaults[k] = v
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"hpe_morpheus_cypher_tfvars_resource.tf.tmpl",
-		"Key", defaults["Key"],
-		"Ttl", defaults["Ttl"],
-		"Value", defaults["Value"],
-	)
-}
-
 func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -73,7 +49,7 @@ func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCypherTfvarsConfig(t, name, map[string]string{})
+	resourceConfig, err := cypher.RenderCypherTfvarsConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

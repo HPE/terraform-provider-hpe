@@ -9,38 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
+
 )
-
-func RenderMorpheusSpecTemplateArmGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":         name,
-		"SourceType":   "repository",
-		"RepositoryId": "2",
-		"VersionRef":   "main",
-		"SpecPath":     "./test.json",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_arm_resource_git.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
@@ -55,7 +26,7 @@ func TestAccMorpheusSpecTemplateArmResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSpecTemplateArmGitConfig(t, name, nil)
+	resourceConfig, err := template.RenderMorpheusSpecTemplateArmGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

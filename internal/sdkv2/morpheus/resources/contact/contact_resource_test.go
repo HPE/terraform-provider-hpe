@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/contact"
 )
 
 func TestMain(m *testing.M) {
@@ -34,34 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderContactConfig renders the contact resource configuration with
-// optional field overrides
-func RenderContactConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":         name,
-		"EmailAddress": "tfcontact@demo.com",
-		"MobileNumber": "123-456-7890",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"contact_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"EmailAddress", defaults["EmailAddress"],
-		"MobileNumber", defaults["MobileNumber"],
-	)
-}
-
 func TestAccMorpheusContactExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -75,7 +48,7 @@ func TestAccMorpheusContactExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderContactConfig(t, name, map[string]string{})
+	resourceConfig, err := contact.RenderContactConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -9,48 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
+
 )
-
-func RenderMorpheusTaskGroovyScriptUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
-		"Labels":            "[\"demo\", \"terraform\"]",
-		"SourceType":        "url",
-		"ResultType":        "json",
-		"ScriptPath":        "https://example.com/example.groovy",
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"morpheus_task_groovy_script_resource_url.tf.tmpl",
-		args...,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
 
 func TestAccMorpheusTaskGroovyScriptUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -65,7 +26,7 @@ func TestAccMorpheusTaskGroovyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusTaskGroovyScriptUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderMorpheusTaskGroovyScriptUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
