@@ -49,6 +49,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					morpheusvalidators.ValidObjectMap(),
 				},
 			},
+			"connection_info": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Computed:            true,
+				Description:         "List of IP addresses to use when connecting to instance",
+				MarkdownDescription: "List of IP addresses to use when connecting to instance",
+			},
 			"evars": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -488,6 +494,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 type InstanceModel struct {
 	CloudId           types.Int64    `tfsdk:"cloud_id"`
 	Config            types.Dynamic  `tfsdk:"config"`
+	ConnectionInfo    types.List     `tfsdk:"connection_info"`
 	Evars             types.Set      `tfsdk:"evars"`
 	GroupId           types.Int64    `tfsdk:"group_id"`
 	Id                types.Int64    `tfsdk:"id"`
