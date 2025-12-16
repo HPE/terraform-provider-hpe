@@ -93,6 +93,15 @@ func getInstanceAsState(
 		state.Config = plan.Config
 	}
 
+	// connection_info
+	cInfo, dc := getConnectionInfo(instance)
+	diags.Append(dc...)
+	if diags.HasError() {
+		return state, diags
+	}
+
+	state.ConnectionInfo = cInfo
+
 	// evars
 	// API may respond with more evars than what the user set so we need to
 	// check the /instance/{id}/envs endpoint which gives us the user specified
@@ -140,7 +149,7 @@ func getInstanceAsState(
 	state.Name = convert.StrToType(instance.Name)
 
 	// interfaces
-	ifaces, ifDiags := getStateInterfacesFromInstance(ctx, instance)
+	ifaces, ifDiags := getStateInterfaces(ctx, instance, plan)
 	diags = append(diags, ifDiags...)
 	if diags.HasError() {
 		return state, diags
@@ -265,8 +274,196 @@ func getInstanceEnvVars(
 	return resp.GetEnvs(), diags
 }
 
-// getStateInterfacesFromInstance get the []NetworkInterfacesValue from containerDetails.server.interfaces
+// getConnectionInfo builds the connection_info list
+func getConnectionInfo(
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+) (types.List, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+	cInfo, ok := instance.GetConnectionInfoOk()
+	if !ok {
+		diags.AddError(
+			"cannot get instance connectionInfo",
+			fmt.Sprintf("instance %d GET connectionInfo failed", instance.GetId()))
+
+		return types.ListNull(types.StringType), diags
+	}
+
+	if len(cInfo) == 0 {
+		return types.ListNull(types.StringType), diags
+	}
+
+	var vals []attr.Value
+	for _, c := range cInfo {
+		if ip, ok := c.GetIpOk(); ok {
+			vals = append(vals, types.StringValue(*ip))
+		}
+	}
+
+	cList, dl := types.ListValue(types.StringType, vals)
+	diags = append(diags, dl...)
+
+	return cList, diags
+}
+
+// getStateInterfaces get the interfaces to be returned as state entries
+func getStateInterfaces(
+	ctx context.Context,
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	plan InstanceModel,
+) ([]NetworkInterfacesValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+		return getStateInterfacesFromInstance(ctx, instance)
+	}
+
+	// Generate []NetworkInterfacesValue from the API instance
+	intfsFromAPI, id := getStateInterfacesFromInstanceServer(ctx, instance)
+	diags = append(diags, id...)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	var planIntfs []NetworkInterfacesValue
+	pd := plan.NetworkInterfaces.ElementsAs(ctx, &planIntfs, false)
+	diags = append(diags, pd...)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	// Compare intfsFromAPI against the plan, to see if the "shapes" are the same
+	if compareAPIPlanIntfs(intfsFromAPI, planIntfs) {
+		return intfsFromAPI, diags
+	}
+
+	return planIntfs, diags
+}
+
+// compareAPIPlanIntfs compares the []NetworkInterfacesValues from the API and Plan to see if they are the same shape
+// Returns true if they are, false otherwise
+func compareAPIPlanIntfs(
+	apiIntfs, planIntfs []NetworkInterfacesValue,
+) bool {
+	// Check length of lists first
+	if len(apiIntfs) != len(planIntfs) {
+		return false
+	}
+
+	// Get list of lengths of child interfaces for api list
+	apiSubIntfs := make([]int, len(apiIntfs))
+	for _, apiIntf := range apiIntfs {
+		apiSubIntfs = append(apiSubIntfs, len(apiIntf.ChildVirtualNetworks.Elements()))
+	}
+
+	// Get list of lengths of child interfaces for plan list
+	planSubIntfs := make([]int, len(planIntfs))
+	for _, planIntf := range planIntfs {
+		planSubIntfs = append(planSubIntfs, len(planIntf.ChildVirtualNetworks.Elements()))
+	}
+
+	// Compare lengths of child interfaces for api and plan
+	for i := range apiSubIntfs {
+		if apiSubIntfs[i] != planSubIntfs[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// getStateInterfacesFromInstance build []NetworkInterfacesValue from interfaces, used on import
 func getStateInterfacesFromInstance(
+	ctx context.Context,
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+) ([]NetworkInterfacesValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	instIntfs, ok := instance.GetInterfacesOk()
+	if !ok {
+		diags.AddError(
+			"instance GetInterfaces failed",
+			fmt.Sprintf("instance %d GET interfaces failed", instance.GetId()))
+
+		return nil, diags
+	}
+
+	var ifaces []NetworkInterfacesValue
+	for _, instIntf := range instIntfs {
+		ifaceVal := NetworkInterfacesValue{}
+		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
+		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
+		ifaceVal.PrimaryInterface = types.BoolNull()
+		ifaceVal.Name = types.StringNull()
+		ifaceVal.NetworkId = types.Int64Null()
+		if net, ok := instIntf.GetNetworkOk(); ok {
+			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
+			ifaceVal.IpPool = types.Int64Null()
+			if pool, ok := net.GetPoolOk(); ok {
+				ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+			}
+			ifaceVal.NetworkGroupId = convert.Int64ToType(net.Group)
+		}
+		ifaceVal.NetworkTypeId = networkTypeId(instIntf.NetworkInterfaceTypeId)
+		ifaceVal.ChildVirtualNetworks = types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
+		if cnets, ok := instIntf.GetNetworkInterfacesOk(); ok {
+			if len(cnets) > 0 {
+				childNetworks, cd := getInstanceInterfacesChildNetworks(ctx, cnets)
+				ifaceVal.ChildVirtualNetworks = childNetworks
+				diags = append(diags, cd...)
+			}
+		}
+		ifaceVal.state = attr.ValueStateKnown
+
+		ifaces = append(ifaces, ifaceVal)
+	}
+
+	return ifaces, diags
+}
+
+// networkTypeId helper function to handle NetworkInterfaceTypeId
+// We only use this function on import, and it looks as if NetworkInterfaceTypeId will have a value of 0 instead
+// of null.  In this case we return a null value to avoid inadvertent instance recreations when the HCL has been
+// generated on import and a plan/apply following the initial import is performed
+func networkTypeId(i *int64) basetypes.Int64Value {
+	if i != nil && *i == 0 {
+		return basetypes.NewInt64Null()
+	}
+
+	return convert.Int64ToType(i)
+}
+
+// getInstanceInterfacesChildNetworks returns child_networks from interfaces.networkInterfaces, used on import
+func getInstanceInterfacesChildNetworks(
+	ctx context.Context,
+	nets []sdk.InstanceInterfacesNetworkInterfacesInner1,
+) (basetypes.ListValue, diag.Diagnostics) {
+	children := make([]ChildVirtualNetworksValue, 0)
+	for _, instIntf := range nets {
+		ifaceVal := ChildVirtualNetworksValue{}
+		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
+		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
+		ifaceVal.PrimaryInterface = types.BoolNull()
+		ifaceVal.Name = types.StringNull()
+		ifaceVal.NetworkId = types.Int64Null()
+		if net, ok := instIntf.GetNetworkOk(); ok {
+			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
+			ifaceVal.IpPool = types.Int64Null()
+			if pool, ok := net.GetPoolOk(); ok {
+				ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+			}
+			ifaceVal.NetworkGroupId = convert.Int64ToType(net.Group)
+		}
+		ifaceVal.NetworkTypeId = networkTypeId(instIntf.NetworkInterfaceTypeId)
+
+		ifaceVal.state = attr.ValueStateKnown
+		children = append(children, ifaceVal)
+	}
+
+	return types.ListValueFrom(ctx, ChildVirtualNetworksValue{}.Type(ctx), children)
+}
+
+// getStateInterfacesFromInstanceServer get the []NetworkInterfacesValue from containerDetails.server.interfaces
+func getStateInterfacesFromInstanceServer(
 	ctx context.Context,
 	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
