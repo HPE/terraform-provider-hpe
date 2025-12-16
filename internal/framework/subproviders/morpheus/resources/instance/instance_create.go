@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	errfmt "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 var (
@@ -231,15 +232,30 @@ func (g *Resource) Create(
 		return
 	}
 
-	plan.Id = convert.Int64ToType(instance.Instance.Id)
+	// OPTION 2: Don't set state until everything succeeds
+	// Store ID locally but NOT in state yet
+	instanceId := instance.Instance.GetId()
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper function to delete the instance if anything goes wrong
+	deleteOnError := func() {
+		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
+			ResourceType: "instance",
+			ResourceID:   instanceId,
+			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.InstancesAPI.DeleteInstance(ctx, id).Execute()
+				return resp, err
+			},
+			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.InstancesAPI.GetInstance(ctx, id).Execute()
+				return resp, err
+			},
+			Diagnostics: &resp.Diagnostics,
+		})
 	}
 
+	// Wait for the instance to be ready
 	waitForReady := func() (string, error) {
-		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
+		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceId).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			return "", backoff.Permanent(err)
 		}
@@ -262,20 +278,28 @@ func (g *Resource) Create(
 		resp.Diagnostics.AddError(
 			"create instance resource",
 			fmt.Sprintf(
-				"instance %d: provisioning failed current status is: %s",
-				plan.Id.ValueInt64(),
+				"instance %d: provisioning failed, current status is: %s",
+				instanceId,
 				status,
 			),
 		)
-	}
-
-	state, diag := getInstanceAsState(ctx, plan.Id.ValueInt64(), client, plan)
-	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		deleteOnError()
 		return
 	}
 
+	// Get the full instance state
+	state, diag := getInstanceAsState(ctx, instanceId, client, plan)
+	if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		deleteOnError()
+		return
+	}
+
+	// ONLY NOW do we set state - everything succeeded!
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		// State setting failed (this is rare), still try to clean up
+		deleteOnError()
 		return
 	}
 }

@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 func (r *Resource) Create(
@@ -279,12 +280,22 @@ func (r *Resource) Create(
 	}
 
 	id := *network.GetNetwork().Id
-	plan.Id = types.Int64Value(id)
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper function to delete the network if anything goes wrong
+	deleteOnError := func() {
+		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
+			ResourceType: "network",
+			ResourceID:   id,
+			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
+				return resp, err
+			},
+			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.NetworksAPI.GetNetwork(ctx, id).Execute()
+				return resp, err
+			},
+			Diagnostics: &resp.Diagnostics,
+		})
 	}
 
 	state, pdiags := getNetworkAsState(ctx, id, client, plan)
@@ -294,7 +305,7 @@ func (r *Resource) Create(
 			"create network resource",
 			fmt.Sprintf("network %d: failed to read from api", id),
 		)
-
+		deleteOnError()
 		return
 	}
 
@@ -303,4 +314,8 @@ func (r *Resource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		deleteOnError()
+		return
+	}
 }

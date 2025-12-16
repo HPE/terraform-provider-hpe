@@ -14,6 +14,8 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 const (
@@ -126,13 +128,24 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Set the resource ID
+	// Set the resource ID locally but NOT in state yet
 	plan.Id = types.Int64Value(id)
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper function to delete the datastore if anything goes wrong
+	deleteOnError := func() {
+		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
+				return resp, err
+			},
+			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
+				return resp, err
+			},
+			Diagnostics: &resp.Diagnostics,
+		})
 	}
 
 	// Wait for the datastore to be ready
@@ -171,9 +184,7 @@ func (r *Resource) Create(
 				status,
 			),
 		)
-	}
-
-	if resp.Diagnostics.HasError() {
+		deleteOnError()
 		return
 	}
 
@@ -184,7 +195,7 @@ func (r *Resource) Create(
 			"create datastore resource",
 			fmt.Sprintf("datastore %d: failed to read from api", plan.Id.ValueInt64()),
 		)
-
+		deleteOnError()
 		return
 	}
 
@@ -197,12 +208,13 @@ func (r *Resource) Create(
 			"create datastore resource",
 			fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),
 		)
-
+		deleteOnError()
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		deleteOnError()
 		return
 	}
 }

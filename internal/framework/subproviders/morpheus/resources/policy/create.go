@@ -8,9 +8,9 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 func (r *Resource) Create(
@@ -118,21 +118,35 @@ func (r *Resource) Create(
 	}
 
 	id := *policy.Policy.Id
-	plan.Id = types.Int64Value(id)
 
-	// Write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper function to delete the policy if anything goes wrong
+	deleteOnError := func() {
+		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
+			ResourceType: "policy",
+			ResourceID:   id,
+			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.PoliciesAPI.RemovePolicies(ctx, id).Execute()
+				return resp, err
+			},
+			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
+				_, resp, err := client.PoliciesAPI.GetPolicies(ctx, id).Execute()
+				return resp, err
+			},
+			Diagnostics: &resp.Diagnostics,
+		})
 	}
 
 	// Read the created policy to get full state
 	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
-
+		deleteOnError()
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		deleteOnError()
+		return
+	}
 }
