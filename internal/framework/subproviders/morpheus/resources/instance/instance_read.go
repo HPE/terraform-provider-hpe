@@ -313,57 +313,60 @@ func getStateInterfaces(
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if plan.Name.IsNull() || plan.Name.IsUnknown() {
-		return getStateInterfacesFromInstance(ctx, instance)
-	}
-
-	// Generate []NetworkInterfacesValue from the API instance
-	intfsFromAPI, id := getStateInterfacesFromInstanceServer(ctx, instance)
+	// Generate []NetworkInterfacesValue from instance.interfaces
+	intfsFromInstance, id := getStateInterfacesFromInstance(ctx, instance)
 	diags = append(diags, id...)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	var planIntfs []NetworkInterfacesValue
-	pd := plan.NetworkInterfaces.ElementsAs(ctx, &planIntfs, false)
-	diags = append(diags, pd...)
+	// If this is an import, then return intfsFromInstance
+	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+		return intfsFromInstance, diags
+	}
+
+	// Generate []NetworkInterfacesValue from the instance.containerDetails.server.interfaces
+	intfsFromServer, id := getStateInterfacesFromInstanceServer(ctx, instance)
+	diags = append(diags, id...)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	// Compare intfsFromAPI against the plan, to see if the "shapes" are the same
-	if compareAPIPlanIntfs(intfsFromAPI, planIntfs) {
-		return intfsFromAPI, diags
+	// Compare intfsFromServer against intfsFromIntance, to see if the "shapes" are the same
+	if compareServerInstanceIntfs(intfsFromServer, intfsFromInstance) {
+		return intfsFromServer, diags
 	}
 
-	return planIntfs, diags
+	// "Shape" isn't the same, return intfsFromInstance
+	return intfsFromInstance, diags
 }
 
-// compareAPIPlanIntfs compares the []NetworkInterfacesValues from the API and Plan to see if they are the same shape
+// compareServerInstanceIntfs compares the []NetworkInterfacesValues from instance.containerDetails.server.interfaces
+// and instance.interfaces to see if they are the same shape
 // Returns true if they are, false otherwise
-func compareAPIPlanIntfs(
-	apiIntfs, planIntfs []NetworkInterfacesValue,
+func compareServerInstanceIntfs(
+	intfsFromServer, intfsFromInstance []NetworkInterfacesValue,
 ) bool {
 	// Check length of lists first
-	if len(apiIntfs) != len(planIntfs) {
+	if len(intfsFromServer) != len(intfsFromInstance) {
 		return false
 	}
 
-	// Get list of lengths of child interfaces for api list
-	apiSubIntfs := make([]int, len(apiIntfs))
-	for _, apiIntf := range apiIntfs {
-		apiSubIntfs = append(apiSubIntfs, len(apiIntf.ChildVirtualNetworks.Elements()))
+	// Get list of lengths of child interfaces for instance.containerDetails.server.interfaces list
+	serverSubIntfs := make([]int, 0, len(intfsFromServer))
+	for _, serverIntf := range intfsFromServer {
+		serverSubIntfs = append(serverSubIntfs, len(serverIntf.ChildVirtualNetworks.Elements()))
 	}
 
-	// Get list of lengths of child interfaces for plan list
-	planSubIntfs := make([]int, len(planIntfs))
-	for _, planIntf := range planIntfs {
-		planSubIntfs = append(planSubIntfs, len(planIntf.ChildVirtualNetworks.Elements()))
+	// Get list of lengths of child interfaces for instance.interfaces list
+	instanceSubIntfs := make([]int, 0, len(intfsFromInstance))
+	for _, instanceIntf := range intfsFromInstance {
+		instanceSubIntfs = append(instanceSubIntfs, len(instanceIntf.ChildVirtualNetworks.Elements()))
 	}
 
-	// Compare lengths of child interfaces for api and plan
-	for i := range apiSubIntfs {
-		if apiSubIntfs[i] != planSubIntfs[i] {
+	// Compare lengths of child interfaces for "server" and "instance" lists
+	for i := range serverSubIntfs {
+		if serverSubIntfs[i] != instanceSubIntfs[i] {
 			return false
 		}
 	}
