@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_checkbox/resource.tf morpheus_option_type_checkbox_resource.tf.tmpl Name tfcheckboxexample Description "Terraform checkbox option type example" Labels "[\"demo\", \"terraform\"]" FieldName checkbox_example ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Checkbox Example" DefaultChecked true
@@ -18,11 +17,14 @@ import (
 // It accepts an optional map of field overrides to customize the default values.
 // Supported override keys: "Name", "Description", "Labels", "FieldName", "ExportMeta", "DependentField",
 // "VisibilityField", "RequireField", "ShowOnEdit", "Editable", "DisplayValueOnDetails", "FieldLabel", "DefaultChecked"
-func RenderOptionTypeCheckboxConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypeCheckboxConfig(t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
+		"Name":                  name,
 		"Description":           "Terraform checkbox option type example",
 		"Labels":                "[\"demo\", \"terraform\"]",
 		"FieldName":             "checkbox_example",

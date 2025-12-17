@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
-
 )
 
 func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
@@ -28,7 +27,7 @@ func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationChefConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationChefConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

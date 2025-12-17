@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
-
 )
 
 func TestAccMorpheusIntegrationAnsibleTowerExampleOk(t *testing.T) {
@@ -28,7 +27,7 @@ func TestAccMorpheusIntegrationAnsibleTowerExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationAnsibleTowerConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationAnsibleTowerConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

@@ -20,11 +20,15 @@ import (
 // Supported override keys: "Name", "Description", "Labels", "FieldName", "ExportMeta", "DependentField",
 // "VisibilityField", "RequireField", "ShowOnEdit", "Editable", "DisplayValueOnDetails", "FieldLabel",
 // "Placeholder", "DefaultValue", "HelpBlock", "Required", "VerifyPattern"
-func RenderOptionTypePasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypePasswordConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
+		"Name":                  name,
 		"Description":           "Terraform password option type example",
 		"Labels":                "[\"demo\", \"terraform\"]",
 		"FieldName":             "tfPasswordExample",

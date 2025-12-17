@@ -8,8 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
@@ -17,14 +15,17 @@ import (
 
 // RenderEnvironmentConfig renders the environment resource configuration with default values
 // that can be overridden by providing a map of field name to value.
-func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderEnvironmentConfig(t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Active":      "true",
 		"Code":        "tfexample",
 		"Description": "Terraform Example",
-		"Name":        acctest.RandomWithPrefix(t.Name()),
+		"Name":        name,
 	}
 
 	for key, value := range overrides {
@@ -48,4 +49,3 @@ func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string,
 		"Name", defaults["Name"],
 	)
 }
-

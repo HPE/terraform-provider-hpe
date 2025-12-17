@@ -15,11 +15,11 @@ import (
 
 // RenderIntegrationChefConfig generates a Terraform configuration for the Chef integration resource
 // using default values that can be overridden via the overrides map.
-func RenderIntegrationChefConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderIntegrationChefConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     "test-chef-integration",
+		"Name":                     name,
 		"Enabled":                  "true",
 		"Url":                      "https://chef.morpheusdata.com",
 		"Version":                  "15.9.38",

@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/environment"
-
 )
 
 func TestMain(m *testing.M) {
@@ -49,7 +48,7 @@ func TestAccMorpheusEnvironmentExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := environment.RenderEnvironmentConfig(t, map[string]string{
+	resourceConfig, err := environment.RenderEnvironmentConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_hidden/resource.tf morpheus_option_type_hidden_resource.tf.tmpl Name tf_example_hidden_option_type Description "Terraform hidden option type example" Labels ["demo","terraform"] FieldName hidden_example ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true DefaultValue example
@@ -19,11 +18,11 @@ import (
 // the default values. Supported override keys: "Name", "Description", "Labels", "FieldName",
 // "ExportMeta", "DependentField", "VisibilityField", "RequireField", "ShowOnEdit", "Editable",
 // "DisplayValueOnDetails", "DefaultValue"
-func RenderOptionTypeHiddenConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypeHiddenConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
+		"Name":                  name,
 		"Description":           "Terraform hidden option type example",
 		"Labels":                `["demo","terraform"]`,
 		"FieldName":             "hidden_example",

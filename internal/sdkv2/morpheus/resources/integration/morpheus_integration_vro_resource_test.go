@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
-
 )
 
 func TestMain(m *testing.M) {
@@ -51,7 +50,7 @@ func TestAccMorpheusIntegrationVroExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationVroConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationVroConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

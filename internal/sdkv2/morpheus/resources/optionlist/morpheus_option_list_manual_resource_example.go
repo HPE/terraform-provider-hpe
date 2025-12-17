@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_list_manual/resource.tf morpheus_option_list_manual_resource.tf.tmpl Name tf_example_manual_option_list Description "Terraform manual option list example" Dataset "[{\"name\": \"Level 1\",\"value\":\"level1\"},\n {\"name\": \"Level 2\",\"value\":\"level2\"},\n {\"name\": \"Level 3\",\"value\":\"level3\"}\n]" RealTime true
@@ -17,11 +16,15 @@ import (
 // RenderOptionListManualConfig generates a Terraform configuration for the
 // morpheus_option_list_manual resource. It accepts an optional map of field overrides to
 // customize the default values. Supported override keys: "Name", "Description", "Dataset", "RealTime"
-func RenderOptionListManualConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionListManualConfig(
+	t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        acctest.RandomWithPrefix(t.Name()),
+		"Name":        name,
 		"Description": "Terraform manual option list example",
 		"Dataset": "[{\"name\": \"Level 1\",\"value\":\"level1\"},\n " +
 			"{\"name\": \"Level 2\",\"value\":\"level2\"},\n " +

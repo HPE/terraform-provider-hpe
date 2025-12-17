@@ -15,11 +15,11 @@ import (
 
 // RenderIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
 // with default values that can be overridden via the overrides parameter.
-func RenderIntegrationAnsibleTowerConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderIntegrationAnsibleTowerConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     "tf_test_ansible_tower",
+		"Name":     name,
 		"Enabled":  "true",
 		"Url":      "https://ansibletower01.morpheusdata.com",
 		"Username": "admin",

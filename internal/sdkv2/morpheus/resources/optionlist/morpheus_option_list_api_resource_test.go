@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optionlist"
-
 )
 
 func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
@@ -26,7 +25,7 @@ func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optionlist.RenderOptionListApiConfig(t, map[string]string{
+	resourceConfig, err := optionlist.RenderOptionListApiConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optiontype"
-
 )
 
 func TestAccMorpheusOptionTypeHiddenExampleOk(t *testing.T) {
@@ -26,7 +25,9 @@ func TestAccMorpheusOptionTypeHiddenExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optiontype.RenderOptionTypeHiddenConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := optiontype.RenderOptionTypeHiddenConfig(t, name, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
