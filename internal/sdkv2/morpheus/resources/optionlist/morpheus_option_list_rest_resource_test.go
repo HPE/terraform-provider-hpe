@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optionlist"
-
 )
 
 func TestMain(m *testing.M) {
@@ -49,7 +48,9 @@ func TestAccMorpheusOptionListRestExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optionlist.RenderOptionListRestConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := optionlist.RenderOptionListRestConfig(t, name, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
