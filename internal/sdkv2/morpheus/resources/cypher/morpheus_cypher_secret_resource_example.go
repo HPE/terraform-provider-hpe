@@ -3,6 +3,9 @@
 package cypher
 
 import (
+	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -31,11 +34,18 @@ func RenderCypherSecretConfig(
 		defaults[key] = value
 	}
 
-	// Build arguments for RenderExample
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
 	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "morpheus_cypher_secret_resource_tf.tmpl")
 
-	return testhelpers.RenderExample(t, "morpheus_cypher_secret_resource_tf.tmpl", args...)
+	return testhelpers.RenderExample(t,
+		templatePath,
+		"Key", defaults["Key"],
+		"Value", defaults["Value"],
+		"Ttl", defaults["Ttl"],
+	)
 }

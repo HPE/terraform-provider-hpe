@@ -29,11 +29,6 @@ func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[stri
 		defaults[key] = value
 	}
 
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -44,5 +39,12 @@ func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[stri
 
 	return testhelpers.RenderExample(
 		t,
-		templatePath, args...)
+		templatePath,
+		"Name", defaults["Name"],
+		"Enabled", defaults["Enabled"],
+		"PuppetMasterHostname", defaults["PuppetMasterHostname"],
+		"AllowImmediateExecution", defaults["AllowImmediateExecution"],
+		"PuppetMasterSshUsername", defaults["PuppetMasterSshUsername"],
+		"PuppetMasterSshPassword", defaults["PuppetMasterSshPassword"],
+	)
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
 	"testing"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_wiki_page/resource.tf morpheus_wiki_page_resource.tf.tmpl Name tfexample_wiki_page Category morpheus-terraform
@@ -38,9 +38,9 @@ func RenderWikiPageConfig(t *testing.T, overrides map[string]string) (string, er
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "morpheus_wiki_page_resource.tf.tmpl")
 
-	return testhelpers.RenderExample(t, templatePath,
+	return testhelpers.RenderExample(t,
+		templatePath,
 		"Name", defaults["Name"],
 		"Category", defaults["Category"],
 	)
 }
-

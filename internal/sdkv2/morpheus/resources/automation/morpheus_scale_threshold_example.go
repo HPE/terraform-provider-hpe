@@ -40,11 +40,6 @@ func RenderScaleThresholdConfig(
 		defaults[k] = v
 	}
 
-	args := []string{}
-	for k, v := range defaults {
-		args = append(args, k, v)
-	}
-
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -56,6 +51,19 @@ func RenderScaleThresholdConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		args...,
+		"Name", defaults["Name"],
+		"AutoUpscale", defaults["AutoUpscale"],
+		"AutoDownscale", defaults["AutoDownscale"],
+		"MinCount", defaults["MinCount"],
+		"MaxCount", defaults["MaxCount"],
+		"EnableCpuThreshold", defaults["EnableCpuThreshold"],
+		"MinCpuPercentage", defaults["MinCpuPercentage"],
+		"MaxCpuPercentage", defaults["MaxCpuPercentage"],
+		"EnableMemoryThreshold", defaults["EnableMemoryThreshold"],
+		"MinMemoryPercentage", defaults["MinMemoryPercentage"],
+		"MaxMemoryPercentage", defaults["MaxMemoryPercentage"],
+		"EnableDiskThreshold", defaults["EnableDiskThreshold"],
+		"MinDiskPercentage", defaults["MinDiskPercentage"],
+		"MaxDiskPercentage", defaults["MaxDiskPercentage"],
 	)
 }

@@ -35,11 +35,6 @@ func RenderIntegrationChefConfig(t *testing.T, overrides map[string]string) (str
 		defaults[key] = value
 	}
 
-	args := make([]string, 0, len(defaults)*2)
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -50,5 +45,16 @@ func RenderIntegrationChefConfig(t *testing.T, overrides map[string]string) (str
 
 	return testhelpers.RenderExample(
 		t,
-		templatePath, args...)
+		templatePath,
+		"Name", defaults["Name"],
+		"Enabled", defaults["Enabled"],
+		"Url", defaults["Url"],
+		"Version", defaults["Version"],
+		"WindowsVersion", defaults["WindowsVersion"],
+		"WindowsMsiInstallUrl", defaults["WindowsMsiInstallUrl"],
+		"Organization", defaults["Organization"],
+		"Username", defaults["Username"],
+		"PrivateKey", defaults["PrivateKey"],
+		"OrganizationValidatorKey", defaults["OrganizationValidatorKey"],
+	)
 }
