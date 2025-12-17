@@ -3,9 +3,9 @@ data "morpheus_task" "example_legacy_task" {
 }
 
 resource "hpe_morpheus_role" "example_with_legacy_provider" {
-  name = "ExampleRoleWithLegacyProvider"
+  name        = "ExampleRoleWithLegacyProvider"
   description = "An example role using legacy provider"
-  role_type = "user"
+  role_type   = "user"
   permissions = {
     task_permissions = [
       {

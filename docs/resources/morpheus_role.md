@@ -10,14 +10,24 @@ description: |-
 
 Roles in HPE Morpheus Enterprise control the access levels for Morpheus resources and features that a User or Tenant has access to.
 
-## Example Usage
+## Example Usage (User Role)
 
 ```terraform
 resource "hpe_morpheus_role" "example" {
-  name = "ExampleRole"
+  name        = "ExampleUserRole"
   multitenant = false
-  description = "An example role"
-  role_type = "user"
+  description = "An example user role"
+  role_type   = "user"
+}
+```
+
+## Example Usage (Tenant Role)
+
+```terraform
+resource "hpe_morpheus_role" "example" {
+  name        = "ExampleTenantRole"
+  description = "An example tenant role"
+  role_type   = "tenant"
 }
 ```
 
@@ -30,9 +40,9 @@ data "morpheus_task" "example_legacy_task" {
 }
 
 resource "hpe_morpheus_role" "example_with_legacy_provider" {
-  name = "ExampleRoleWithLegacyProvider"
+  name        = "ExampleRoleWithLegacyProvider"
   description = "An example role using legacy provider"
-  role_type = "user"
+  role_type   = "user"
   permissions = {
     task_permissions = [
       {
