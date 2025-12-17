@@ -33,7 +33,7 @@ func RenderGroupConfig(t *testing.T, overrides map[string]string) (string, error
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "role_user.tf.tmpl")
+	templatePath := filepath.Join(dir, "example.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
