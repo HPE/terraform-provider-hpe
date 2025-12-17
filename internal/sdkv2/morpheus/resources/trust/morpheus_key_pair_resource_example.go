@@ -65,4 +65,3 @@ func RenderMorpheusKeyPairConfig(t *testing.T, overrides map[string]string) (str
 		"PrivateKey", defaults["PrivateKey"],
 	)
 }
-

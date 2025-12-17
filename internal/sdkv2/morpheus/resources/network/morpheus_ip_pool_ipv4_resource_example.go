@@ -3,12 +3,11 @@
 package network
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-
 	"fmt"
 	"path/filepath"
 	"runtime"
 	"testing"
+
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
@@ -16,11 +15,14 @@ import (
 
 // RenderIPPoolIPv4Config generates a Terraform configuration for hpe_morpheus_ip_pool_ipv4 resource.
 // It accepts an optional map of field overrides. If nil or empty, default values are used.
-func RenderIPPoolIPv4Config(t *testing.T, overrides map[string]string) (string, error) {
+func RenderIPPoolIPv4Config(t *testing.T,
+	name string,
+	overrides map[string]string,
+) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":             "\"" + acctest.RandomWithPrefix(t.Name()) + "\"",
+		"Name":             name,
 		"StartingAddress1": "\"192.168.1.1\"",
 		"EndingAddress1":   "\"192.168.1.10\"",
 		"StartingAddress2": "\"10.0.0.1\"",
@@ -29,11 +31,6 @@ func RenderIPPoolIPv4Config(t *testing.T, overrides map[string]string) (string, 
 
 	for key, value := range overrides {
 		defaults[key] = value
-	}
-
-	args := make([]string, 0, len(defaults)*2)
-	for key, value := range defaults {
-		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -46,6 +43,16 @@ func RenderIPPoolIPv4Config(t *testing.T, overrides map[string]string) (string, 
 
 	return testhelpers.RenderExample(
 		t,
-		templatePath, args...)
+		templatePath,
+		"Name",
+		defaults["Name"],
+		"StartingAddress1",
+		defaults["StartingAddress1"],
+		"EndingAddress1",
+		defaults["EndingAddress1"],
+		"StartingAddress2",
+		defaults["StartingAddress2"],
+		"EndingAddress2",
+		defaults["EndingAddress2"],
+	)
 }
-
