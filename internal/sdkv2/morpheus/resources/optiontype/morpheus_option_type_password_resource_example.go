@@ -3,13 +3,12 @@
 package optiontype
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_password/resource.tf morpheus_option_type_password_resource.tf.tmpl Name tf_example_password_option_type Description "Terraform password option type example" Labels "[\"demo\", \"terraform\"]" FieldName tfPasswordExample ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel numbers Placeholder fewf DefaultValue testing HelpBlock fiwefw Required true VerifyPattern "a\\\\D{4}"
