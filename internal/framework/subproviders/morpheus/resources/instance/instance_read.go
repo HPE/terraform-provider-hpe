@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -203,49 +202,7 @@ func getInstanceAsState(
 	state.TaskSetId = plan.TaskSetId
 
 	// volumes
-	apiVolumes := slices.DeleteFunc(
-		resp.GetInstance().Volumes,
-		func(v sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner) bool {
-			if v.Name == nil {
-				return false
-			}
-
-			if strings.HasPrefix(*v.Name, "CD ROM") {
-				return true
-			}
-
-			return false
-		},
-	)
-
-	volumes, d := convert.ToListType(
-		ctx,
-		apiVolumes,
-		func(
-			in sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
-		) VolumesValue {
-			v := VolumesValue{}
-			v.Id = convert.Int64ToType(in.Id)
-			v.RootVolume = convert.BoolToType(in.RootVolume)
-			v.Name = convert.StrToType(in.Name)
-			v.Size = convert.Int64ToType(in.Size)
-			v.StorageTypeId = convert.Int64ToType(in.StorageType)
-
-			if in.DatastoreId != nil {
-				datastore, err := strconv.ParseInt(in.GetDatastoreId(), 10, 64)
-				if err != nil {
-					v.DatastoreId = basetypes.NewInt64Unknown()
-				}
-
-				v.DatastoreId = types.Int64Value(datastore)
-			}
-
-			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
-			v.state = attr.ValueStateKnown
-
-			return v
-		},
-	)
+	volumes, d := getVolumes(ctx, instance)
 	diags.Append(d...)
 	state.Volumes = volumes
 
@@ -272,6 +229,90 @@ func getInstanceEnvVars(
 	// }
 
 	return resp.GetEnvs(), diags
+}
+
+// getVolumes builds the volumes list from instance.containerDetails.server.volumes
+func getVolumes(
+	ctx context.Context,
+	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+) (basetypes.ListValue, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	// Get volumes from instance.containerDetails.server.volumes
+	contDetails, ok := instance.GetContainerDetailsOk()
+	if !ok || len(contDetails) == 0 {
+		diags.AddError(
+			"cannot get instance containerDetails",
+			fmt.Sprintf("instance %d GET containerDetails failed", instance.GetId()))
+
+		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
+	}
+
+	server, ok := contDetails[0].GetServerOk()
+	if !ok {
+		diags.AddError(
+			"cannot get instance containerDetails server",
+			fmt.Sprintf("instance %d GET containerDetails.server failed", instance.GetId()))
+
+		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
+	}
+
+	serverVolumes, ok := server.GetVolumesOk()
+	if !ok {
+		diags.AddError(
+			"cannot get instance containerDetails server volumes",
+			fmt.Sprintf("instance %d GET containerDetails.server.volumes failed", instance.GetId()))
+
+		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
+	}
+
+	// Remove any CD ROM volumes from the list
+	apiVolumes := slices.DeleteFunc(
+		serverVolumes,
+		func(v sdk.InstanceContainerServerVolume1) bool {
+			if v.Name == nil {
+				return false
+			}
+
+			if strings.HasPrefix(*v.Name, "CD ROM") {
+				return true
+			}
+
+			return false
+		},
+	)
+
+	volumes, d := convert.ToListType(
+		ctx,
+		apiVolumes,
+		func(
+			in sdk.InstanceContainerServerVolume1,
+		) VolumesValue {
+			v := VolumesValue{}
+			v.Id = convert.Int64ToType(in.Id)
+			v.RootVolume = convert.BoolToType(in.RootVolume)
+			v.Name = convert.StrToType(in.Name)
+			v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage)) // Convert from bytes to GB
+			v.StorageTypeId = convert.Int64ToType(in.TypeId)
+			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
+			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
+			v.state = attr.ValueStateKnown
+
+			return v
+		},
+	)
+
+	return volumes, d
+}
+
+// convertBytesPtrToGBBytes converts a pointer to int64 bytes to a pointer to int64 GB bytes
+func convertBytesPtrToGBBytes(b *int64) *int64 {
+	if b == nil {
+		return nil
+	}
+	gb := *b / (1 << 30)
+
+	return &gb
 }
 
 // getConnectionInfo builds the connection_info list
