@@ -27,7 +27,7 @@ func TestAccMorpheusSettingGuidanceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	_ = name // name is reserved for future use
 
-	resourceConfig, err := setting.RenderMorpheusSettingGuidanceConfig(t, nil)
+	resourceConfig, err := setting.RenderSettingGuidanceConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

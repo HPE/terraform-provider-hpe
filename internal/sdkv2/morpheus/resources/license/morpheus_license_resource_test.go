@@ -48,7 +48,7 @@ func TestAccMorpheusLicenseExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := license.RenderMorpheusLicenseConfig(t, nil)
+	resourceConfig, err := license.RenderLicenseConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

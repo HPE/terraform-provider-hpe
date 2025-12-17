@@ -36,7 +36,7 @@ AMFfXwtstG7rrIp7Iv1TKAlVdF7pmlGsoLGonPnAKKllp/+PlwHmdyhY36oOXgZ93bRkDX
 -----END OPENSSH PRIVATE KEY-----`
 )
 
-func RenderMorpheusKeyPairConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderKeyPairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

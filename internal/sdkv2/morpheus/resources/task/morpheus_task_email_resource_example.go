@@ -15,7 +15,7 @@ import (
 //go:generate /bin/sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_email/resource_git.tf morpheus_task_email_resource_git.tf.tmpl Name tfexample_email_git Code tfexample_email_git Labels '[\"demo\",\"terraform\"]' EmailAddress '<%=instance.createdByEmail%>' Subject '<%=instance.hostname%> provisioning complete' Source repository ContentPath example.txt RepositoryId 1 VersionRef main SkipWrappedEmailTemplate false Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true"
 //go:generate /bin/sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_email/resource_url.tf morpheus_task_email_resource_url.tf.tmpl Name tfexample_email_url Code tfexample_email_url Labels '[\"demo\",\"terraform\"]' EmailAddress '<%=instance.createdByEmail%>' Subject '<%=instance.hostname%> provisioning complete' Source url ContentUrl https://example.com/example.txt SkipWrappedEmailTemplate false Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true"
 
-func RenderMorpheusTaskEmailConfig(
+func RenderTaskEmailConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -67,7 +67,7 @@ func RenderMorpheusTaskEmailConfig(
 	)
 }
 
-func RenderMorpheusTaskEmailGitConfig(
+func RenderTaskEmailGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -123,7 +123,7 @@ func RenderMorpheusTaskEmailGitConfig(
 	)
 }
 
-func RenderMorpheusTaskEmailUrlConfig(
+func RenderTaskEmailUrlConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,

@@ -14,9 +14,9 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_vro/resource.tf morpheus_integration_vro_resource.tf.tmpl Name "tfexample vro" Enabled true Url https://myvro/vco/api Username my-vro-username Password my-vro-password AuthType basic Tenant vsphere.local
 
-// RenderMorpheusIntegrationVroConfig generates a Terraform configuration for the VRO integration
+// RenderIntegrationVroConfig generates a Terraform configuration for the VRO integration
 // resource. It accepts an optional map of field overrides to customize the default values.
-func RenderMorpheusIntegrationVroConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderIntegrationVroConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	// Default field values

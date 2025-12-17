@@ -13,7 +13,7 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_puppet/resource.tf morpheus_integration_puppet_resource.tf.tmpl Name "tfexample puppet integration" Enabled true PuppetMasterHostname peserver01.morpheusdata.com AllowImmediateExecution true PuppetMasterSshUsername root PuppetMasterSshPassword password123
 
-func RenderMorpheusIntegrationPuppetConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

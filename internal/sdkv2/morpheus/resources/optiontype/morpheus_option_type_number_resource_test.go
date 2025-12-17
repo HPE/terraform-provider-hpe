@@ -26,7 +26,7 @@ func TestAccMorpheusOptionTypeNumberExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optiontype.RenderMorpheusOptionTypeNumberConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := optiontype.RenderOptionTypeNumberConfig(t, map[string]string{"Name": name})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -45,7 +45,7 @@ func TestAccMorpheusSettingProvisioningExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := setting.RenderMorpheusSettingProvisioningConfig(t, nil)
+	resourceConfig, err := setting.RenderSettingProvisioningConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

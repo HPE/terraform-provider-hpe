@@ -38,7 +38,7 @@ func TestAccMorpheusOptionTypeTextareaExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig := optiontype.RenderMorpheusOptionTypeTextareaConfig(t, nil)
+	resourceConfig := optiontype.RenderOptionTypeTextareaConfig(t, nil)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(

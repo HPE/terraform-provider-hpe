@@ -28,7 +28,7 @@ func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderMorpheusIntegrationPuppetConfig(t, name, nil)
+	resourceConfig, err := integration.RenderIntegrationPuppetConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

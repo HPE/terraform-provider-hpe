@@ -51,7 +51,7 @@ func TestAccMorpheusIntegrationVroExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderMorpheusIntegrationVroConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationVroConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

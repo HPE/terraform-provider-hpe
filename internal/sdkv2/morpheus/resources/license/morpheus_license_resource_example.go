@@ -12,9 +12,9 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_license/resource.tf morpheus_license_resource.tf.tmpl Key 22324FEF3WMCDMMSWE
 
-// RenderMorpheusLicenseConfig generates a Terraform configuration for the morpheus_license resource.
+// RenderLicenseConfig generates a Terraform configuration for the morpheus_license resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
-func RenderMorpheusLicenseConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderLicenseConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

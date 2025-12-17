@@ -14,13 +14,13 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_password/resource.tf morpheus_option_type_password_resource.tf.tmpl Name tf_example_password_option_type Description "Terraform password option type example" Labels "[\"demo\", \"terraform\"]" FieldName tfPasswordExample ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel numbers Placeholder fewf DefaultValue testing HelpBlock fiwefw Required true VerifyPattern "a\\\\D{4}"
 
-// RenderMorpheusOptionTypePasswordConfig generates a Terraform configuration for the
+// RenderOptionTypePasswordConfig generates a Terraform configuration for the
 // morpheus_option_type_password resource.
 // It accepts an optional map of field overrides to customize the default values.
 // Supported override keys: "Name", "Description", "Labels", "FieldName", "ExportMeta", "DependentField",
 // "VisibilityField", "RequireField", "ShowOnEdit", "Editable", "DisplayValueOnDetails", "FieldLabel",
 // "Placeholder", "DefaultValue", "HelpBlock", "Required", "VerifyPattern"
-func RenderMorpheusOptionTypePasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypePasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

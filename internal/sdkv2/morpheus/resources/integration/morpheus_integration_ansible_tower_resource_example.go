@@ -13,9 +13,9 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_ansible_tower/resource.tf morpheus_integration_ansible_tower_resource.tf.tmpl Name "tfexample ansible tower integration" Enabled true Url "https://ansibletower01.morpheusdata.com" Username admin Password password123
 
-// RenderMorpheusIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
+// RenderIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
 // with default values that can be overridden via the overrides parameter.
-func RenderMorpheusIntegrationAnsibleTowerConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderIntegrationAnsibleTowerConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

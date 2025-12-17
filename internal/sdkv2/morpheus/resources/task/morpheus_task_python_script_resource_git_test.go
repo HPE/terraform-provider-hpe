@@ -27,7 +27,7 @@ func TestAccMorpheusTaskPythonScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderMorpheusTaskPythonScriptGitConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskPythonScriptGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

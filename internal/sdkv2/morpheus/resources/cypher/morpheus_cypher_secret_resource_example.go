@@ -10,9 +10,9 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_cypher_secret/resource.tf morpheus_cypher_secret_resource_tf.tmpl Key apipassword Value password123 Ttl 86400
 
-// RenderMorpheusCypherSecretConfig generates a Terraform configuration
+// RenderCypherSecretConfig generates a Terraform configuration
 // for the hpe_morpheus_cypher_secret resource from the template file.
-func RenderMorpheusCypherSecretConfig(
+func RenderCypherSecretConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,

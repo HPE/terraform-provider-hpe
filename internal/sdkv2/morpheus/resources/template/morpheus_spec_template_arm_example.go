@@ -15,7 +15,7 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_arm/resource_local.tf morpheus_spec_template_arm_resource_local.tf.tmpl Name tf-arm-spec-example-local SourceType local
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_arm/resource_url.tf morpheus_spec_template_arm_resource_url.tf.tmpl Name tf-arm-spec-example-url SourceType url SpecPath http://example.com/spec.json
 
-func RenderMorpheusSpecTemplateArmLocalConfig(
+func RenderSpecTemplateArmLocalConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -47,7 +47,7 @@ func RenderMorpheusSpecTemplateArmLocalConfig(
 	)
 }
 
-func RenderMorpheusSpecTemplateArmUrlConfig(
+func RenderSpecTemplateArmUrlConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -81,7 +81,7 @@ func RenderMorpheusSpecTemplateArmUrlConfig(
 	)
 }
 
-func RenderMorpheusSpecTemplateArmGitConfig(
+func RenderSpecTemplateArmGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,

@@ -26,7 +26,7 @@ func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := cypher.RenderMorpheusCypherSecretConfig(t, name, nil)
+	resourceConfig, err := cypher.RenderCypherSecretConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

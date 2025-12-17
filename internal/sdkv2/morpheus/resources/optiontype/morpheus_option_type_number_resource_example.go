@@ -14,13 +14,13 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_number/resource.tf morpheus_option_type_number_resource.tf.tmpl Name tf_example_number_option_type Description "Terraform number option type example" Labels "[\"demo\", \"terraform\"]" FieldName tfNumberExample ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Number Example" Placeholder 12 DefaultValue 1 HelpBlock "Provide a number" Required true
 
-// RenderMorpheusOptionTypeNumberConfig generates a Terraform configuration for the
+// RenderOptionTypeNumberConfig generates a Terraform configuration for the
 // morpheus_option_type_number resource. It accepts an optional map of field overrides to
 // customize the default values.
 // Supported override keys: "Name", "Description", "Labels", "FieldName", "ExportMeta",
 // "DependentField", "VisibilityField", "RequireField", "ShowOnEdit", "Editable",
 // "DisplayValueOnDetails", "FieldLabel", "Placeholder", "DefaultValue", "HelpBlock", "Required"
-func RenderMorpheusOptionTypeNumberConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypeNumberConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

@@ -70,7 +70,7 @@ func TestAccMorpheusKeyPairExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := trust.RenderMorpheusKeyPairConfig(t, map[string]string{
+	resourceConfig, err := trust.RenderKeyPairConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

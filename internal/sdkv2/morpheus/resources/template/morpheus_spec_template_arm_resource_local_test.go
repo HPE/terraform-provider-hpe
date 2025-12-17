@@ -26,7 +26,7 @@ func TestAccMorpheusSpecTemplateArmResourceLocalExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderMorpheusSpecTemplateArmLocalConfig(t, name, nil)
+	resourceConfig, err := template.RenderSpecTemplateArmLocalConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

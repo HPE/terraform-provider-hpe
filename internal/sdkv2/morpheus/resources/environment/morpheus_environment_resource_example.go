@@ -15,9 +15,9 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_environment/resource.tf morpheus_environment_resource.tf.tmpl Active true Code tfexample Description "Terraform Example" Name tfexample
 
-// RenderMorpheusEnvironmentConfig renders the environment resource configuration with default values
+// RenderEnvironmentConfig renders the environment resource configuration with default values
 // that can be overridden by providing a map of field name to value.
-func RenderMorpheusEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{

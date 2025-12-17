@@ -18,7 +18,7 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_python_script/resource_git.tf morpheus_task_python_script_resource_git.tf.tmpl Name tfexample_python_git Code tfexample_python_git Labels "[\"demo\", \"terraform\"]" SourceType repository ResultType json ScriptPath example.py VersionRef master RepositoryId 1 CommandArguments example AdditionalPackages pyyaml PythonBinary /usr/bin/python3 Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
-func RenderMorpheusTaskPythonScriptConfig(
+func RenderTaskPythonScriptConfig(
 	t *testing.T, name string,
 	overrides map[string]string,
 ) (string, error) {
@@ -69,7 +69,7 @@ func RenderMorpheusTaskPythonScriptConfig(
 	)
 }
 
-func RenderMorpheusTaskPythonScriptUrlConfig(
+func RenderTaskPythonScriptUrlConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,
@@ -123,7 +123,7 @@ func RenderMorpheusTaskPythonScriptUrlConfig(
 	)
 }
 
-func RenderMorpheusTaskPythonScriptGitConfig(
+func RenderTaskPythonScriptGitConfig(
 	t *testing.T,
 	name string,
 	overrides map[string]string,

@@ -26,7 +26,7 @@ func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderHpeMorpheusFileTemplateConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderFileTemplateConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
