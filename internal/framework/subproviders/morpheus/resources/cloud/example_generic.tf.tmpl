@@ -1,7 +1,7 @@
 resource "hpe_morpheus_cloud" "example" {
   name      = "{{.Name}}"
-  tenant_id = 1
-  group_id  = 1
+  tenant_id = {{.TenantId}}
+  group_id  = {{.GroupId}}
 
   code             = "{{.Code}}"
   labels           = ["{{.Label}}1", "{{.Label}}2"]
@@ -18,7 +18,7 @@ resource "hpe_morpheus_cloud" "example" {
 
   security_mode = "off"
 
-  appliance_url            = "https://somewhere.com"
+  appliance_url            = "{{.ApplianceUrl}}"
   keyboard_layout = "us"
   data_center_name = "aDatacenter"
   external_id      = "{{.Code}}"
