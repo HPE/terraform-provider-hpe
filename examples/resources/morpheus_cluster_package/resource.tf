@@ -7,5 +7,5 @@ resource "hpe_morpheus_cluster_package" "tf_example_cluster_package" {
   package_type      = "example"
   enabled           = true
   repeat_install    = true
-  spec_template_ids = [1, 2]
+  spec_template_ids = [1,2]
 }

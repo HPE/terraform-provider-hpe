@@ -1,7 +1,7 @@
 resource "hpe_morpheus_option_type_hidden" "tf_example_hidden_option_type" {
   name                     = "tf_example_hidden_option_type"
   description              = "Terraform hidden option type example"
-  labels                   = ["demo", "terraform"]
+  labels                   = ["demo","terraform"]
   field_name               = "hidden_example"
   export_meta              = true
   dependent_field          = "dependent_example"

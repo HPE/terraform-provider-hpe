@@ -1,7 +1,7 @@
 resource "hpe_morpheus_option_type_textarea" "tf_example_textarea_option_type" {
   name                     = "tf_example_textarea_option_type"
   description              = "Terraform text area option type example"
-  labels                   = ["demo", "terraform"]
+  labels                   = ["demo","terraform"]
   field_name               = "textareaExample"
   export_meta              = true
   dependent_field          = "dependent_example"
