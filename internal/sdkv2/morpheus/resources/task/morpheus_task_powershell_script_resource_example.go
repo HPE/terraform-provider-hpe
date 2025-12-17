@@ -3,13 +3,13 @@
 package task
 
 import (
-	"strings"
-
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_powershell_script/resource.tf morpheus_task_powershell_script_resource.tf.tmpl Name tfexample_powershell_local Code tfexample_powershell_local Labels "\"demo\", \"terraform\"" SourceType local ScriptContent "Write-Output \"testing\"" ElevatedShell true Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true

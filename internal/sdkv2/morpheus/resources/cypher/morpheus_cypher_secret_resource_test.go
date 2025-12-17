@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/cypher"
-
 )
 
 func TestAccMorpheusCypherSecretExampleOk(t *testing.T) {

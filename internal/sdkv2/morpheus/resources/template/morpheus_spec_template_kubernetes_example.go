@@ -4,10 +4,11 @@ package template
 
 import (
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_kubernetes/resource_git.tf morpheus_spec_template_kubernetes_resource_git.tf.tmpl Name tf-kubernetes-spec-example-git SourceType repository RepositoryId 2 VersionRef main SpecPath ./spec.yaml

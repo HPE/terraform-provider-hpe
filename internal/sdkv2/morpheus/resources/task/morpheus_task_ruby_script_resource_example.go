@@ -111,7 +111,6 @@ func RenderTaskRubyScriptGitConfig(
 		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
 		"AllowCustomConfig", defaults["AllowCustomConfig"],
 	)
-
 }
 
 func RenderTaskRubyScriptUrlConfig(

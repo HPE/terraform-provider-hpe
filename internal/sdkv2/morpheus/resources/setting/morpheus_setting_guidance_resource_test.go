@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/setting"
-
 )
 
 func TestAccMorpheusSettingGuidanceExampleOk(t *testing.T) {

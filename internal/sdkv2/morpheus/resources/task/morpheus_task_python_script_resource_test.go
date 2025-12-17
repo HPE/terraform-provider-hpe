@@ -11,7 +11,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
-
 )
 
 func TestAccMorpheusTaskPythonScriptExampleOk(t *testing.T) {

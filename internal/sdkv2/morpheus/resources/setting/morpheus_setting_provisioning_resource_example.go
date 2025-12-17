@@ -56,4 +56,3 @@ func RenderSettingProvisioningConfig(t *testing.T, overrides map[string]string) 
 		"PxeRootPassword", defaults["PxeRootPassword"],
 	)
 }
-

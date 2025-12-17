@@ -4,10 +4,11 @@ package cypher
 
 import (
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_cypher_tfvars/resource.tf hpe_morpheus_cypher_tfvars_resource.tf.tmpl Key securetfvars Value 'account=12345\npassword=supersecure' Ttl 86400"

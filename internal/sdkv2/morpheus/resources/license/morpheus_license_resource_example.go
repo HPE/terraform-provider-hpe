@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
@@ -41,4 +42,3 @@ func RenderLicenseConfig(t *testing.T, overrides map[string]string) (string, err
 		defaults["Key"],
 	)
 }
-

@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/script"
-
 )
 
 func TestMain(m *testing.M) {

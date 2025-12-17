@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
@@ -59,4 +60,3 @@ func RenderCatalogItemInstanceConfig(
 		"Visibility", defaults["Visibility"],
 	)
 }
-

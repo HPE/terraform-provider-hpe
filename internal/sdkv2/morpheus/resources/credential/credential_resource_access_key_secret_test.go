@@ -6,10 +6,9 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
-
 )
 
 func TestAccMorpheusCredentialResourceAccessKeySecretExampleOk(t *testing.T) {

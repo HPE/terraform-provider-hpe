@@ -9,12 +9,11 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/automation"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/automation"
-
 )
 
 func TestMain(m *testing.M) {

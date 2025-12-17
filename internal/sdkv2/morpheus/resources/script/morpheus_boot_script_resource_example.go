@@ -4,10 +4,11 @@ package script
 
 import (
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_boot_script/resource.tf morpheus_boot_script_resource.tf.tmpl Name "TF Example Boot Script" Content "ls"
