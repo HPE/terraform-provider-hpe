@@ -9,42 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
-
-func RenderMorpheusTaskEmailUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                     name,
-		"Code":                     "tfexample_email_url",
-		"Labels":                   `["demo","terraform"]`,
-		"EmailAddress":             "<%=instance.createdByEmail%>",
-		"Subject":                  "<%=instance.hostname%> provisioning complete",
-		"Source":                   "url",
-		"ContentUrl":               "https://example.com/example.txt",
-		"SkipWrappedEmailTemplate": "false",
-		"Retryable":                "true",
-		"RetryCount":               "1",
-		"RetryDelaySeconds":        "10",
-		"AllowCustomConfig":        "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(t,
-		"morpheus_task_email_resource_url.tf.tmpl", args...)
-}
 
 func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -59,7 +25,7 @@ func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusTaskEmailUrlConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskEmailUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

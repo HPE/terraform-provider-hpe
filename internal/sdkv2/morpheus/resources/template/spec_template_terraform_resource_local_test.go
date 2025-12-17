@@ -9,41 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-// RenderSpecTemplateTerraformLocalConfig renders the Terraform config for
-// spec_template_terraform_resource_local tests
-func RenderSpecTemplateTerraformLocalConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       name,
-		"SourceType": "local",
-		"SpecContent": `resource "aws_instance" "instance_1" {
-  ami           = "ami-0b91a410940e82c54"
-  instance_type = "t2.micro"
-}`,
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_terraform_resource_local.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateTerraformResourceLocalExampleOk(t *testing.T) {
 	t.Parallel()
@@ -64,7 +31,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceLocalExampleOk(t *testing.T) {
 }
 `
 
-	resourceConfig, err := RenderSpecTemplateTerraformLocalConfig(t, name, map[string]string{
+	resourceConfig, err := template.RenderSpecTemplateTerraformLocalConfig(t, name, map[string]string{
 		"SpecContent": specContent,
 	})
 	if err != nil {

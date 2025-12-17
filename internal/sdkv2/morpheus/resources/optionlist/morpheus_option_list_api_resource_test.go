@@ -9,34 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optionlist"
 )
-
-func RenderMorpheusOptionListApiConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":        acctest.RandomWithPrefix(t.Name()),
-		"Description": "Terraform Morpheus API option list example",
-		"Visibility":  "private",
-		"OptionList":  "instances",
-		"TranslationScript": "var i=0;\nresults = [];\nfor(i; i<data.length; i++) {" +
-			"\n  results.push({name: data[i].name, value: data[i].name});\n}",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_option_list_api_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Visibility", defaults["Visibility"],
-		"OptionList", defaults["OptionList"],
-		"TranslationScript", defaults["TranslationScript"],
-	)
-}
 
 func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 	t.Parallel()
@@ -51,7 +25,7 @@ func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusOptionListApiConfig(t, map[string]string{
+	resourceConfig, err := optionlist.RenderOptionListApiConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

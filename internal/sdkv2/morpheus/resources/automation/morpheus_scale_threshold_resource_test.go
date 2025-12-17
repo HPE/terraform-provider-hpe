@@ -9,47 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/automation"
 )
-
-func RenderScaleThresholdConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                  name,
-		"AutoUpscale":           "true",
-		"AutoDownscale":         "true",
-		"MinCount":              "1",
-		"MaxCount":              "3",
-		"EnableCpuThreshold":    "true",
-		"MinCpuPercentage":      "30.0",
-		"MaxCpuPercentage":      "75.0",
-		"EnableMemoryThreshold": "true",
-		"MinMemoryPercentage":   "20.0",
-		"MaxMemoryPercentage":   "60.0",
-		"EnableDiskThreshold":   "true",
-		"MinDiskPercentage":     "25.0",
-		"MaxDiskPercentage":     "80.0",
-	}
-
-	for k, v := range overrides {
-		defaults[k] = v
-	}
-
-	args := []string{}
-	for k, v := range defaults {
-		args = append(args, k, v)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_scale_threshold_resource.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusScaleThresholdExampleOk(t *testing.T) {
 	t.Parallel()
@@ -64,7 +25,7 @@ func TestAccMorpheusScaleThresholdExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderScaleThresholdConfig(
+	resourceConfig, err := automation.RenderScaleThresholdConfig(
 		t,
 		name,
 		map[string]string{},

@@ -9,37 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 )
-
-// RenderIntegrationChefConfig generates a Terraform configuration for the Chef integration resource
-// using default values that can be overridden via the overrides map.
-func RenderIntegrationChefConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                     "test-chef-integration",
-		"Enabled":                  "true",
-		"Url":                      "https://chef.morpheusdata.com",
-		"Version":                  "15.9.38",
-		"WindowsVersion":           "15.9.38",
-		"WindowsMsiInstallUrl":     "https://packages.chef.io",
-		"Organization":             "morpheus",
-		"Username":                 "admin",
-		"PrivateKey":               "EXAMPLEPRIVATEKEY",
-		"OrganizationValidatorKey": "EXAMPLEPRIVATEKEY",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := make([]string, 0, len(defaults)*2)
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_integration_chef_resource.tf.tmpl", args...)
-}
 
 func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 	t.Skip("Skipping due to lack of available resources to test against")
@@ -56,7 +27,7 @@ func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderIntegrationChefConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationChefConfig(t, name, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

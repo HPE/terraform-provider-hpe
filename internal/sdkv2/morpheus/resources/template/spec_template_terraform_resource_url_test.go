@@ -9,38 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-// RenderSpecTemplateTerraformUrlConfig renders the Terraform config for
-// spec_template_terraform_resource_url tests
-func RenderSpecTemplateTerraformUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       name,
-		"SourceType": "url",
-		"SpecPath":   "http://example.com/spec.tf",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_terraform_resource_url.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -55,7 +25,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateTerraformUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSpecTemplateTerraformUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

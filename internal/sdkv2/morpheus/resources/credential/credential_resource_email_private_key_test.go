@@ -6,39 +6,10 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
-
-func RenderCredentialEmailPrivateKeyConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Description": "terraform credential example for email private key",
-		"Enabled":     "true",
-		"Type":        "email-private-key",
-		"Email":       "test@example.local",
-		"KeyPairId":   "2",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"credential_resource_email_private_key.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Email", defaults["Email"],
-		"KeyPairId", defaults["KeyPairId"],
-	)
-}
 
 func TestAccMorpheusCredentialResourceEmailPrivateKeyExampleOk(t *testing.T) {
 	t.Parallel()
@@ -53,7 +24,7 @@ func TestAccMorpheusCredentialResourceEmailPrivateKeyExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCredentialEmailPrivateKeyConfig(t, map[string]string{
+	resourceConfig, err := credential.RenderCredentialEmailPrivateKeyConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

@@ -9,53 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
-
-func RenderTaskRubyScriptGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
-		"Labels":            "\"demo\", \"terraform\"",
-		"SourceType":        "repository",
-		"ResultType":        "json",
-		"ScriptPath":        "example.rb",
-		"VersionRef":        "master",
-		"RepositoryId":      "0",
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"task_ruby_script_resource_git.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"VersionRef", defaults["VersionRef"],
-		"RepositoryId", defaults["RepositoryId"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-
-	return resourceConfig, err
-}
 
 func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 	t.Parallel()
@@ -70,7 +25,7 @@ func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskRubyScriptGitConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskRubyScriptGitConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

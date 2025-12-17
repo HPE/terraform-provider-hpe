@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
 
 func TestMain(m *testing.M) {
@@ -34,51 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderClusterPackageConfig generates a test configuration for cluster package resource.
-// It accepts a name and a map of field overrides to customize the default values.
-func RenderClusterPackageConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":            name,
-		"Code":            "tf-example-cluster-package",
-		"Description":     "Terraform example cluster package",
-		"PackageVersion":  "1.2.3",
-		"Type":            "apps",
-		"PackageType":     "example",
-		"Enabled":         "true",
-		"RepeatInstall":   "true",
-		"SpecTemplateIds": "[1,2]",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"cluster_package_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Description", defaults["Description"],
-		"PackageVersion", defaults["PackageVersion"],
-		"Type", defaults["Type"],
-		"PackageType", defaults["PackageType"],
-		"Enabled", defaults["Enabled"],
-		"RepeatInstall", defaults["RepeatInstall"],
-		"SpecTemplateIds", defaults["SpecTemplateIds"],
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
-
 func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -91,7 +47,7 @@ func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := RenderClusterPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderClusterPackageConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

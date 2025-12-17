@@ -9,45 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-func RenderHpeMorpheusFileTemplateConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":            name,
-		"Labels":          `["demo", "template", "terraform"]`,
-		"FileName":        "tfcustom.cnf",
-		"FilePath":        "/etc/my.cnf.d",
-		"Phase":           "preProvision",
-		"FileContent":     `"# Test MySQL Configuration\n[mysqld]\ninnodb_buffer_pool_size = 128M"`,
-		"FileOwner":       "root",
-		"SettingName":     "myCnf",
-		"SettingCategory": "master",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_file_template_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Labels", defaults["Labels"],
-		"FileName", defaults["FileName"],
-		"FilePath", defaults["FilePath"],
-		"Phase", defaults["Phase"],
-		"FileContent", defaults["FileContent"],
-		"FileOwner", defaults["FileOwner"],
-		"SettingName", defaults["SettingName"],
-		"SettingCategory", defaults["SettingCategory"],
-	)
-}
 
 func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 	t.Parallel()
@@ -62,7 +25,7 @@ func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderHpeMorpheusFileTemplateConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderFileTemplateConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

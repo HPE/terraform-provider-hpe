@@ -9,48 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
-
-func RenderTaskShellScriptUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
-		"Labels":            "[\"demo\", \"terraform\"]",
-		"SourceType":        "url",
-		"ResultType":        "json",
-		"ScriptPath":        "https://example.com/example.sh",
-		"Sudo":              "true",
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(t,
-		"morpheus_task_shell_script_resource_url.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"Sudo", defaults["Sudo"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-}
 
 func TestAccMorpheusTaskShellScriptResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -65,7 +25,7 @@ func TestAccMorpheusTaskShellScriptResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskShellScriptUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskShellScriptUrlConfig(t, name, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -9,36 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-func RenderMorpheusSpecTemplateArmUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       name,
-		"SourceType": "url",
-		"SpecPath":   "http://example.com/spec.json",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_arm_resource_url.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -53,7 +25,7 @@ func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusSpecTemplateArmUrlConfig(t, name, nil)
+	resourceConfig, err := template.RenderSpecTemplateArmUrlConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

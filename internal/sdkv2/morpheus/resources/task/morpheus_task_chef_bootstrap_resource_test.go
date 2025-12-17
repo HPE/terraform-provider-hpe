@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
 
 func TestMain(m *testing.M) {
@@ -34,58 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderChefBootstrapConfig renders the task chef bootstrap
-// resource configuration with the provided overrides applied to default values.
-func RenderChefBootstrapConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
-		"Labels":            `"demo", "terraform"`,
-		"ChefServerId":      "9",
-		"Environment":       "dev",
-		"RunList":           "role[web]",
-		"DataBagKey":        "test123",
-		"DataBagKeyPath":    "/etc/chef/databag_secret",
-		"NodeName":          "demonode",
-		"NodeAttributes":    `"test":"demo"`,
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-		"Visibility":        "public",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_task_chef_bootstrap_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"ChefServerId", defaults["ChefServerId"],
-		"Environment", defaults["Environment"],
-		"RunList", defaults["RunList"],
-		"DataBagKey", defaults["DataBagKey"],
-		"DataBagKeyPath", defaults["DataBagKeyPath"],
-		"NodeName", defaults["NodeName"],
-		"NodeAttributes", defaults["NodeAttributes"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-		"Visibility", defaults["Visibility"],
-	)
-}
-
 func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -99,7 +48,7 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderChefBootstrapConfig(
+	resourceConfig, err := task.RenderChefBootstrapConfig(
 		t,
 		name,
 		map[string]string{},

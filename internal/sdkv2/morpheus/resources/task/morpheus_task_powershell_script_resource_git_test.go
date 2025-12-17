@@ -10,53 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/task"
 )
-
-func RenderTaskPowershellScriptGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":              name,
-		"Code":              strings.ToLower(name),
-		"Labels":            `"demo", "terraform"`,
-		"SourceType":        "repository",
-		"ResultType":        "json",
-		"ScriptPath":        "example.ps",
-		"VersionRef":        "master",
-		"RepositoryId":      "0",
-		"ElevatedShell":     "true",
-		"Retryable":         "true",
-		"RetryCount":        "1",
-		"RetryDelaySeconds": "10",
-		"AllowCustomConfig": "true",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_task_powershell_script_resource_git.tf.tmpl",
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"VersionRef", defaults["VersionRef"],
-		"RepositoryId", defaults["RepositoryId"],
-		"ElevatedShell", defaults["ElevatedShell"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-	)
-}
 
 func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
@@ -71,7 +26,7 @@ func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderTaskPowershellScriptGitConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskPowershellScriptGitConfig(t, name, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
