@@ -9,16 +9,15 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_textarea/resource.tf morpheus_option_type_textarea_resource.tf.tmpl Name tf_example_textarea_option_type Description "Terraform text area option type example" Labels ["demo","terraform"] FieldName textareaExample ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Text Area Example" Rows 5 Placeholder "example text" DefaultValue example HelpBlock "Terraform text area option type example" Required true VerifyPattern "a\\\\D{4}"
 
-func RenderOptionTypeTextareaConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypeTextareaConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
+		"Name":                  name,
 		"Description":           "Terraform text area option type example",
 		"Labels":                `["demo","terraform"]`,
 		"FieldName":             "textareaExample",

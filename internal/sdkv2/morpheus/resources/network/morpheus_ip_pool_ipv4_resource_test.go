@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/network"
-
 )
 
 func TestMain(m *testing.M) {
@@ -49,7 +48,7 @@ func TestAccMorpheusIpPoolIpv4ResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := network.RenderIPPoolIPv4Config(t, map[string]string{
+	resourceConfig, err := network.RenderIPPoolIPv4Config(t, name, map[string]string{
 		"Name": "\"" + name + "\"",
 	})
 	if err != nil {

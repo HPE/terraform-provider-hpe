@@ -14,7 +14,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optiontype"
-
 )
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
@@ -38,7 +37,14 @@ func TestAccMorpheusOptionTypeTextareaExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig := optiontype.RenderOptionTypeTextareaConfig(t, nil)
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := optiontype.RenderOptionTypeTextareaConfig(t, name, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(
