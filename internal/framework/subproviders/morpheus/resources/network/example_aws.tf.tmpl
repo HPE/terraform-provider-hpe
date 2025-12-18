@@ -1,0 +1,38 @@
+data "hpe_morpheus_cloud" "example" {
+  name = "{{.CloudName}}"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "{{.GroupName}}"
+}
+
+data "hpe_morpheus_tenant" "example" {
+  name = "{{.TenantName}}"
+}
+
+resource "hpe_morpheus_network" "aws" {
+  name                       = "{{.Name}}"
+  description                = "{{.Description}}"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = {{.PoolId}}
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = {{.TypeId}}
+  config = {
+    assignPublicIp   = {{.AssignPublicIP}}
+    availabilityZone = "{{.AvailabilityZone}}"
+  }
+  active                     = {{.Active}}
+  dhcp_server                = {{.DHCPServer}}
+  appliance_url_proxy_bypass = {{.ApplianceURLProxyBypass}}
+  tenant_ids                 = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+  visibility                 = "{{.Visibility}}"
+  cidr                       = "{{.CIDR}}"
+  zone_pool_id               = {{.ZonePoolId}}
+  labels                     = [{{.Labels}}]
+
+  lifecycle {
+    ignore_changes = [name, display_name, description]
+  }
+}
