@@ -251,6 +251,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
 		)
 		setPartialState(imageId)
+
 		return
 	}
 
@@ -310,6 +311,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
+
 		return
 	}
 
@@ -325,6 +327,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
+
 		return
 	}
 
@@ -340,6 +343,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
+
 		return
 	}
 }

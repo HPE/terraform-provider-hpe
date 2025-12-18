@@ -34,8 +34,6 @@ func SetPartialState(ctx context.Context, config SetPartialStateConfig) {
 		config.ResourceType, config.ResourceID))
 
 	// Set ONLY the ID using SetAttribute - this works even when returning errors
-	// Unlike State.Set() which is ignored on error, SetAttribute can set individual fields
-	// IMPORTANT: Must convert int64 to types.Int64 - raw primitives don't work!
 	setDiags := config.StateWriter.SetAttribute(ctx, path.Root("id"), types.Int64Value(config.ResourceID))
 	config.Diagnostics.Append(setDiags...)
 	if setDiags.HasError() {

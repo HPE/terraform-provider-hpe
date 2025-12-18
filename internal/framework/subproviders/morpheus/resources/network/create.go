@@ -299,6 +299,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Network %d was created but could not be read", id),
 		)
 		setPartialState(id)
+
 		return
 	}
 
@@ -313,6 +314,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Network %d was created but state could not be saved", id),
 		)
 		setPartialState(id)
+
 		return
 	}
 }

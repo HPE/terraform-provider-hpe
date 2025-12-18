@@ -172,6 +172,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
 		)
 		setPartialState(id)
+
 		return
 	}
 
@@ -183,6 +184,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Datastore %d was created but could not be read", id),
 		)
 		setPartialState(id)
+
 		return
 	}
 
@@ -196,6 +198,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Datastore %d was created but permissions could not be updated", id),
 		)
 		setPartialState(id)
+
 		return
 	}
 
@@ -206,6 +209,7 @@ func (r *Resource) Create(
 			fmt.Sprintf("Datastore %d was created but state could not be saved", id),
 		)
 		setPartialState(id)
+
 		return
 	}
 }

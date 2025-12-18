@@ -272,6 +272,7 @@ func (g *Resource) Create(
 			fmt.Sprintf("Instance %d failed to reach running status. Current status: %s. Error: %v", instanceId, status, err),
 		)
 		setPartialState(instanceId)
+
 		return
 	}
 
@@ -283,6 +284,7 @@ func (g *Resource) Create(
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
 		)
 		setPartialState(instanceId)
+
 		return
 	}
 
@@ -294,6 +296,7 @@ func (g *Resource) Create(
 			fmt.Sprintf("Instance %d was created but state could not be saved", instanceId),
 		)
 		setPartialState(instanceId)
+
 		return
 	}
 }
