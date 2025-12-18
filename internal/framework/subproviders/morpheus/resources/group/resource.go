@@ -17,6 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -156,6 +157,16 @@ func (r *Resource) Create(
 	id := *group.GetGroup().Id
 	plan.Id = types.Int64Value(id)
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	// write id as soon as possible
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -169,12 +180,19 @@ func (r *Resource) Create(
 			"create group resource",
 			fmt.Sprintf("group %d: failed to read from api", id),
 		)
+		setPartialState(id)
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set group state",
+			fmt.Sprintf("Group %d was created but state could not be saved", id),
+		)
+		setPartialState(id)
+
 		return
 	}
 }
