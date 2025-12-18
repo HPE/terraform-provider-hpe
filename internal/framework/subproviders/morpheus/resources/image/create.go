@@ -232,28 +232,20 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	imageId := image.VirtualImage.GetId()
 
-	// Helper function to delete the image if anything goes wrong
-	deleteOnError := func() {
-		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
-			ResourceType: "image",
-			ResourceID:   imageId,
-			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.LibraryAPI.RemoveVirtualImage(ctx, id).Execute()
-				return resp, err
-			},
-			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
-				return resp, err
-			},
-			Diagnostics: &resp.Diagnostics,
-		})
-	}
-
-	// Set state only after everything succeeds (no read operation needed for images)
+	// Set state
 	plan.Id = convert.Int64ToType(&imageId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to set initial image state",
+			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "image",
+			ResourceID:   imageId,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
@@ -305,21 +297,44 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"create image resource",
-			fmt.Sprintf(
-				"image %s: creation failed current status is: %s",
-				plan.Name.ValueString(),
-				status,
-			),
+			fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
 		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "image",
+			ResourceID:   plan.Id.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+		return
 	}
 
 	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "image",
+			ResourceID:   plan.Id.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set image state",
+			fmt.Sprintf("Image %d was created but state could not be saved", plan.Id.ValueInt64()),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "image",
+			ResourceID:   plan.Id.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 }

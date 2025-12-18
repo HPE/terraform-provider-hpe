@@ -212,37 +212,34 @@ func (r *Resource) Create(
 
 	id := *cloud.GetZone().Id
 
-	// Helper function to delete the cloud if anything goes wrong
-	deleteOnError := func() {
-		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
-			ResourceType: "cloud",
-			ResourceID:   id,
-			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
-				return resp, err
-			},
-			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.CloudsAPI.GetClouds(ctx, id).Execute()
-				return resp, err
-			},
-			Diagnostics: &resp.Diagnostics,
-		})
-	}
-
 	state, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
-			"create cloud resource",
-			fmt.Sprintf("cloud %d: failed to read from api", id),
+			"failed to read cloud state",
+			fmt.Sprintf("Cloud %d was created but could not be read", id),
 		)
-		deleteOnError()
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "cloud",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to set cloud state",
+			fmt.Sprintf("Cloud %d was created but state could not be saved", id),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "cloud",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 }

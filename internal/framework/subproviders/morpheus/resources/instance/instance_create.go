@@ -232,26 +232,8 @@ func (g *Resource) Create(
 		return
 	}
 
-	// OPTION 2: Don't set state until everything succeeds
 	// Store ID locally but NOT in state yet
 	instanceId := instance.Instance.GetId()
-
-	// Helper function to delete the instance if anything goes wrong
-	deleteOnError := func() {
-		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
-			ResourceType: "instance",
-			ResourceID:   instanceId,
-			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.InstancesAPI.DeleteInstance(ctx, id).Execute()
-				return resp, err
-			},
-			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.InstancesAPI.GetInstance(ctx, id).Execute()
-				return resp, err
-			},
-			Diagnostics: &resp.Diagnostics,
-		})
-	}
 
 	// Wait for the instance to be ready
 	waitForReady := func() (string, error) {
@@ -276,30 +258,47 @@ func (g *Resource) Create(
 		backoff.WithMaxElapsedTime(createTimeout),
 	); err != nil {
 		resp.Diagnostics.AddError(
-			"create instance resource",
-			fmt.Sprintf(
-				"instance %d: provisioning failed, current status is: %s",
-				instanceId,
-				status,
-			),
+			"instance provisioning failed",
+			fmt.Sprintf("Instance %d failed to reach running status. Current status: %s. Error: %v", instanceId, status, err),
 		)
-		deleteOnError()
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "instance",
+			ResourceID:   instanceId,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
-	// Get the full instance state
 	state, diag := getInstanceAsState(ctx, instanceId, client, plan)
 	if diag.HasError() {
 		resp.Diagnostics.Append(diag...)
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to read instance state",
+			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "instance",
+			ResourceID:   instanceId,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
-	// ONLY NOW do we set state - everything succeeded!
+	// SUCCESS! Set the full state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		// State setting failed (this is rare), still try to clean up
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to set instance state",
+			fmt.Sprintf("Instance %d was created but state could not be saved", instanceId),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "instance",
+			ResourceID:   instanceId,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 }

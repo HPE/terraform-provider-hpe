@@ -4,6 +4,7 @@ package policy
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
@@ -119,34 +120,36 @@ func (r *Resource) Create(
 
 	id := *policy.Policy.Id
 
-	// Helper function to delete the policy if anything goes wrong
-	deleteOnError := func() {
-		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
-			ResourceType: "policy",
-			ResourceID:   id,
-			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.PoliciesAPI.RemovePolicies(ctx, id).Execute()
-				return resp, err
-			},
-			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.PoliciesAPI.GetPolicies(ctx, id).Execute()
-				return resp, err
-			},
-			Diagnostics: &resp.Diagnostics,
-		})
-	}
-
 	// Read the created policy to get full state
 	state, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to read policy state",
+			fmt.Sprintf("Policy %d was created but could not be read", id),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "policy",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
+	// Set the state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to set policy state",
+			fmt.Sprintf("Policy %d was created but state could not be saved", id),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "policy",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 }

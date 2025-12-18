@@ -8,6 +8,8 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -124,61 +126,60 @@ func CleanupResourceOnError(ctx context.Context, config CleanupConfig) {
 
 // SetPartialStateConfig holds configuration for setting partial state on error.
 type SetPartialStateConfig struct {
-	// ResourceType is the human-readable name of the resource
+	// ResourceType is the human-readable name of the resource (e.g. "instance", "cloud")
 	ResourceType string
-	// ResourceID is the ID of the resource
+	// ResourceID is the ID of the resource that was created
 	ResourceID int64
-	// State is the state object to set (must have an Id field)
-	State any
-	// StateWriter is the response state to write to
-	StateWriter any // Should be *resource.CreateResponse.State or similar
-	// Diagnostics is where to add errors/warnings
+	// StateWriter is the response state to write to (resource.CreateResponse.State)
+	StateWriter State
+	// Diagnostics is where to add warnings (errors should already be added before calling this)
 	Diagnostics *diag.Diagnostics
-	// ErrorTitle is the title of the error to add
-	ErrorTitle string
-	// ErrorDetail is the detailed error message
-	ErrorDetail string
 }
 
-// SetStateSetter is an interface for setting state (implemented by resource.CreateResponse.State)
-type SetStateSetter interface {
+// State is an interface for state operations (implemented by resource.CreateResponse.State)
+type State interface {
 	Set(ctx context.Context, val any) diag.Diagnostics
+	SetAttribute(ctx context.Context, path path.Path, val any) diag.Diagnostics
 }
 
-// SetPartialStateAndError sets minimal state (just ID) and returns an error.
-// This implements "Option 3" - let Terraform handle cleanup by marking the resource as tainted.
+// SetPartialState sets just the ID in state to mark the resource as tainted.
+// This implements "Option 3" - let Terraform handle cleanup by tainting the resource.
+// Uses SetAttribute to set only the ID field, which works even when diagnostics has errors.
+//
+// Call this AFTER adding your error to diagnostics. This function only sets the ID and adds
+// a warning about the tainted resource - it does not add the error itself.
 //
 // Usage example:
 //
-//	partialState := InstanceModel{
-//	    Id: convert.Int64ToType(instanceId),
-//	    // All other fields will be null/zero
-//	}
-//	utils.SetPartialStateAndError(ctx, utils.SetPartialStateConfig{
+//	resp.Diagnostics.AddError(
+//	    "instance provisioning failed",
+//	    fmt.Sprintf("Instance %d failed to reach running status", instanceId),
+//	)
+//	utils.SetPartialState(ctx, utils.SetPartialStateConfig{
 //	    ResourceType: "instance",
-//	    ResourceID: instanceId,
-//	    State: &partialState,
-//	    StateWriter: resp.State,
-//	    Diagnostics: &resp.Diagnostics,
-//	    ErrorTitle: "instance provisioning failed",
-//	    ErrorDetail: fmt.Sprintf("Instance %d failed to reach running status", instanceId),
+//	    ResourceID:   instanceId,
+//	    StateWriter:  resp.State,
+//	    Diagnostics:  &resp.Diagnostics,
 //	})
-func SetPartialStateAndError(ctx context.Context, config SetPartialStateConfig) {
-	tflog.Warn(ctx, fmt.Sprintf("%s %d: %s - setting partial state with ID only",
-		config.ResourceType, config.ResourceID, config.ErrorTitle))
+//	return
+func SetPartialState(ctx context.Context, config SetPartialStateConfig) {
+	tflog.Warn(ctx, fmt.Sprintf("%s %d created but encountered error - setting partial state with ID only",
+		config.ResourceType, config.ResourceID))
 
-	// Set the partial state
-	if setter, ok := config.StateWriter.(SetStateSetter); ok {
-		setDiags := setter.Set(ctx, config.State)
-		config.Diagnostics.Append(setDiags...)
+	// Set ONLY the ID using SetAttribute - this works even when returning errors
+	// Unlike State.Set() which is ignored on error, SetAttribute can set individual fields
+	// IMPORTANT: Must convert int64 to types.Int64 - raw primitives don't work!
+	setDiags := config.StateWriter.SetAttribute(ctx, path.Root("id"), types.Int64Value(config.ResourceID))
+	config.Diagnostics.Append(setDiags...)
+	if setDiags.HasError() {
+		tflog.Error(ctx, fmt.Sprintf("Failed to set ID attribute: %v", setDiags))
+	} else {
+		tflog.Info(ctx, fmt.Sprintf("Successfully set ID attribute to %d", config.ResourceID))
 	}
-
-	// Add the original error
-	config.Diagnostics.AddError(config.ErrorTitle, config.ErrorDetail)
 
 	// Add helpful guidance to the user
 	config.Diagnostics.AddWarning(
-		fmt.Sprintf("%s partially created", config.ResourceType),
+		fmt.Sprintf("%s partially created", capitalize(config.ResourceType)),
 		fmt.Sprintf("%s %d was created but could not be fully configured. "+
 			"The resource has been marked as tainted. "+
 			"On the next 'terraform apply', Terraform will destroy and recreate this %s. "+

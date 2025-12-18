@@ -13,7 +13,6 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
@@ -129,24 +128,6 @@ func (r *Resource) Create(
 	}
 
 	// Set the resource ID locally but NOT in state yet
-	plan.Id = types.Int64Value(id)
-
-	// Helper function to delete the datastore if anything goes wrong
-	deleteOnError := func() {
-		utils.CleanupResourceOnError(ctx, utils.CleanupConfig{
-			ResourceType: "datastore",
-			ResourceID:   id,
-			DeleteFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
-				return resp, err
-			},
-			GetFunc: func(ctx context.Context, id int64) (*http.Response, error) {
-				_, resp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
-				return resp, err
-			},
-			Diagnostics: &resp.Diagnostics,
-		})
-	}
 
 	// Wait for the datastore to be ready
 	waitForReady := func() (*sdk.GetDatastores200Response, error) {
@@ -177,44 +158,64 @@ func (r *Resource) Create(
 		}
 
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf(
-				"datastore %d: provisioning failed current status is: %v",
-				plan.Id.ValueInt64(),
-				status,
-			),
+			"datastore provisioning failed",
+			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
 		)
-		deleteOnError()
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
-	state, gdiags := getDatastoreAsState(ctx, plan.Id.ValueInt64(), plan, client)
+	state, gdiags := getDatastoreAsState(ctx, id, plan, client)
 	if gdiags.HasError() {
 		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf("datastore %d: failed to read from api", plan.Id.ValueInt64()),
+			"failed to read datastore state",
+			fmt.Sprintf("Datastore %d was created but could not be read", id),
 		)
-		deleteOnError()
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
 	// For now, we need to call update to set resourcePermission and tenantPermissions
 	// because the API does not set these on create, even if provided.
-	state, gdiags = updateDatastore(ctx, plan.Id.ValueInt64(), plan, state, client)
+	state, gdiags = updateDatastore(ctx, id, plan, state, client)
 	if gdiags.HasError() {
 		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),
+			"failed to update datastore",
+			fmt.Sprintf("Datastore %d was created but permissions could not be updated", id),
 		)
-		deleteOnError()
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
-		deleteOnError()
+		resp.Diagnostics.AddError(
+			"failed to set datastore state",
+			fmt.Sprintf("Datastore %d was created but state could not be saved", id),
+		)
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 		return
 	}
 }
