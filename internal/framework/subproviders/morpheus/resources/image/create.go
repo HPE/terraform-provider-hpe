@@ -305,12 +305,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"create image resource",
 			fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "image",
-			ResourceID:   plan.Id.ValueInt64(),
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(plan.Id.ValueInt64())
 
 		return
 	}
@@ -321,12 +316,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to read image state",
 			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "image",
-			ResourceID:   plan.Id.ValueInt64(),
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(plan.Id.ValueInt64())
 
 		return
 	}
@@ -337,12 +327,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to set image state",
 			fmt.Sprintf("Image %d was created but state could not be saved", plan.Id.ValueInt64()),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "image",
-			ResourceID:   plan.Id.ValueInt64(),
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(plan.Id.ValueInt64())
 
 		return
 	}
