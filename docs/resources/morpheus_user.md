@@ -8,13 +8,12 @@ description: |-
 
 
 
-
 ## Example Usage
 
 ```terraform
 resource "hpe_morpheus_user" "example" {
   tenant_id                   = 1
-  username                    = "testacc-example"
+  username                    = "example-user"
   email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1

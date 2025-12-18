@@ -12,10 +12,10 @@ description: |-
 
 ```terraform
 resource "hpe_morpheus_group" "example" {
-  name = "TestGroup"
+  name     = "TestGroup"
   location = "here"
-  code = "aCode"
-  labels = ["aLabel1", "aLabel2"]
+  code     = "aCode"
+  labels   = ["aLabel1", "aLabel2"]
 }
 ```
 

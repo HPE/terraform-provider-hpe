@@ -10,6 +10,12 @@ description: |-
 
 ## Example Usage
 
-{{ tffile "examples/resources/morpheus_group/example.tf" }}
+{{tffile "examples/resources/morpheus_user/example.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_user/import.sh" }}
