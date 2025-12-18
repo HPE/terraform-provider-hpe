@@ -281,6 +281,16 @@ func (r *Resource) Create(
 
 	id := *network.GetNetwork().Id
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "network",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	state, pdiags := getNetworkAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
@@ -288,12 +298,7 @@ func (r *Resource) Create(
 			"failed to read network state",
 			fmt.Sprintf("Network %d was created but could not be read", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "network",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 
@@ -307,12 +312,7 @@ func (r *Resource) Create(
 			"failed to set network state",
 			fmt.Sprintf("Network %d was created but state could not be saved", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "network",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 }

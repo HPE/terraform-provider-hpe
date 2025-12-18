@@ -26,6 +26,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "policy",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	name := plan.Name.ValueString()
 	addPolicy := sdk.NewAddPoliciesRequestPolicyWithDefaults()
 
@@ -128,12 +138,7 @@ func (r *Resource) Create(
 			"failed to read policy state",
 			fmt.Sprintf("Policy %d was created but could not be read", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "policy",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 
@@ -144,12 +149,7 @@ func (r *Resource) Create(
 			"failed to set policy state",
 			fmt.Sprintf("Policy %d was created but state could not be saved", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "policy",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 }

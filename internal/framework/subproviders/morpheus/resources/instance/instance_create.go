@@ -235,6 +235,16 @@ func (g *Resource) Create(
 	// Store ID locally but NOT in state yet
 	instanceId := instance.Instance.GetId()
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "instance",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	// Wait for the instance to be ready
 	waitForReady := func() (string, error) {
 		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceId).Execute()
@@ -261,12 +271,7 @@ func (g *Resource) Create(
 			"instance provisioning failed",
 			fmt.Sprintf("Instance %d failed to reach running status. Current status: %s. Error: %v", instanceId, status, err),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "instance",
-			ResourceID:   instanceId,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(instanceId)
 		return
 	}
 
@@ -277,12 +282,7 @@ func (g *Resource) Create(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "instance",
-			ResourceID:   instanceId,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(instanceId)
 		return
 	}
 
@@ -293,12 +293,7 @@ func (g *Resource) Create(
 			"failed to set instance state",
 			fmt.Sprintf("Instance %d was created but state could not be saved", instanceId),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "instance",
-			ResourceID:   instanceId,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(instanceId)
 		return
 	}
 }

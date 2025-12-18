@@ -129,6 +129,16 @@ func (r *Resource) Create(
 
 	// Set the resource ID locally but NOT in state yet
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	// Wait for the datastore to be ready
 	waitForReady := func() (*sdk.GetDatastores200Response, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, plan.Id.ValueInt64()).Execute()
@@ -161,12 +171,7 @@ func (r *Resource) Create(
 			"datastore provisioning failed",
 			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "datastore",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 
@@ -177,12 +182,7 @@ func (r *Resource) Create(
 			"failed to read datastore state",
 			fmt.Sprintf("Datastore %d was created but could not be read", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "datastore",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 
@@ -195,12 +195,7 @@ func (r *Resource) Create(
 			"failed to update datastore",
 			fmt.Sprintf("Datastore %d was created but permissions could not be updated", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "datastore",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 
@@ -210,12 +205,7 @@ func (r *Resource) Create(
 			"failed to set datastore state",
 			fmt.Sprintf("Datastore %d was created but state could not be saved", id),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "datastore",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(id)
 		return
 	}
 }

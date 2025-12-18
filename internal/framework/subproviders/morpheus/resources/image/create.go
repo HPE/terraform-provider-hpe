@@ -232,6 +232,16 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	imageId := image.VirtualImage.GetId()
 
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "image",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	// Set state
 	plan.Id = convert.Int64ToType(&imageId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -240,12 +250,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to set initial image state",
 			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
 		)
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "image",
-			ResourceID:   imageId,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
+		setPartialState(imageId)
 		return
 	}
 
