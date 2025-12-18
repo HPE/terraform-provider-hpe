@@ -1,8 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
-//go:generate go run ../../../../../../cmd/render example_generic.tf.tmpl Name "TestCloud" Code "aCode" Label "aLabel"
-
 package cloud_test
 
 import (
@@ -57,7 +54,10 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
 		"Code", code,
+		"TenantId", "1",
+		"GroupId", "1",
 		"Label", "aLabel",
+		"ApplianceUrl", "https://somewhere.com",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -205,7 +205,10 @@ func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
 	resourceConfig, err := testhelpers.RenderExample(t, "example_generic.tf.tmpl",
 		"Name", name,
 		"Code", code,
+		"TenantId", "1",
+		"GroupId", "1",
 		"Label", "aLabel",
+		"ApplianceUrl", "https://somewhere.com",
 	)
 	if err != nil {
 		t.Fatal(err)
