@@ -1,7 +1,7 @@
 resource "hpe_morpheus_cloud" "example" {
   name      = "{{.Name}}"
-  tenant_id = 1
-  group_id  = 1
+  tenant_id = {{.TenantId}}
+  group_id  = {{.GroupId}}
 
   code             = "{{.Code}}"
   external_id      = "{{.Code}}"
@@ -12,7 +12,7 @@ resource "hpe_morpheus_cloud" "example" {
   visibility       = "public"
 
   agent_install_mode       = "ssh"
-  appliance_url            = "https://somewhere.com"
+  appliance_url            = "{{.ApplianceUrl}}"
   auto_recover_power_state = true
   import_existing_vms      = "off"
 
