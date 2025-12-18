@@ -44,6 +44,11 @@ func RenderNetworkHostConfig(t *testing.T, overrides map[string]string) (string,
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -55,32 +60,7 @@ func RenderNetworkHostConfig(t *testing.T, overrides map[string]string) (string,
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"CloudName",
-		defaults["CloudName"],
-		"GroupName",
-		defaults["GroupName"],
-		"TenantName",
-		defaults["TenantName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"PoolId",
-		defaults["PoolId"],
-		"TypeId",
-		defaults["TypeId"],
-		"Active",
-		defaults["Active"],
-		"DHCPServer",
-		defaults["DHCPServer"],
-		"ApplianceURLProxyBypass",
-		defaults["ApplianceURLProxyBypass"],
-		"Visibility",
-		defaults["Visibility"],
-		"CIDR",
-		defaults["CIDR"],
-		"Labels",
-		defaults["Labels"],
+		args...,
 	)
 }
 
@@ -110,6 +90,11 @@ func RenderNetworkAWSConfig(t *testing.T, overrides map[string]string) (string, 
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -121,38 +106,7 @@ func RenderNetworkAWSConfig(t *testing.T, overrides map[string]string) (string, 
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"CloudName",
-		defaults["CloudName"],
-		"GroupName",
-		defaults["GroupName"],
-		"TenantName",
-		defaults["TenantName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"PoolId",
-		defaults["PoolId"],
-		"TypeId",
-		defaults["TypeId"],
-		"AssignPublicIP",
-		defaults["AssignPublicIP"],
-		"AvailabilityZone",
-		defaults["AvailabilityZone"],
-		"Active",
-		defaults["Active"],
-		"DHCPServer",
-		defaults["DHCPServer"],
-		"ApplianceURLProxyBypass",
-		defaults["ApplianceURLProxyBypass"],
-		"Visibility",
-		defaults["Visibility"],
-		"CIDR",
-		defaults["CIDR"],
-		"ZonePoolId",
-		defaults["ZonePoolId"],
-		"Labels",
-		defaults["Labels"],
+		args...,
 	)
 }
 
@@ -183,6 +137,11 @@ func RenderNetworkAzureConfig(t *testing.T, overrides map[string]string) (string
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -194,40 +153,7 @@ func RenderNetworkAzureConfig(t *testing.T, overrides map[string]string) (string
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"CloudName",
-		defaults["CloudName"],
-		"GroupName",
-		defaults["GroupName"],
-		"TenantName",
-		defaults["TenantName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"PoolId",
-		defaults["PoolId"],
-		"TypeId",
-		defaults["TypeId"],
-		"CIDR",
-		defaults["CIDR"],
-		"Visibility",
-		defaults["Visibility"],
-		"Active",
-		defaults["Active"],
-		"DHCPServer",
-		defaults["DHCPServer"],
-		"ApplianceURLProxyBypass",
-		defaults["ApplianceURLProxyBypass"],
-		"ResourceGroupId",
-		defaults["ResourceGroupId"],
-		"SubnetName",
-		defaults["SubnetName"],
-		"SubnetCIDR",
-		defaults["SubnetCIDR"],
-		"Location",
-		defaults["Location"],
-		"Labels",
-		defaults["Labels"],
+		args...,
 	)
 }
 
@@ -257,6 +183,11 @@ func RenderNetworkGCPConfig(t *testing.T, overrides map[string]string) (string, 
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -268,38 +199,7 @@ func RenderNetworkGCPConfig(t *testing.T, overrides map[string]string) (string, 
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"CloudName",
-		defaults["CloudName"],
-		"GroupName",
-		defaults["GroupName"],
-		"TenantName",
-		defaults["TenantName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"PoolId",
-		defaults["PoolId"],
-		"TypeId",
-		defaults["TypeId"],
-		"MTU",
-		defaults["MTU"],
-		"AutoCreate",
-		defaults["AutoCreate"],
-		"Active",
-		defaults["Active"],
-		"DHCPServer",
-		defaults["DHCPServer"],
-		"ApplianceURLProxyBypass",
-		defaults["ApplianceURLProxyBypass"],
-		"Visibility",
-		defaults["Visibility"],
-		"CIDR",
-		defaults["CIDR"],
-		"ZonePoolId",
-		defaults["ZonePoolId"],
-		"Labels",
-		defaults["Labels"],
+		args...,
 	)
 }
 
@@ -329,6 +229,11 @@ func RenderNetworkOVSPortGroupConfig(t *testing.T, overrides map[string]string) 
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -340,37 +245,6 @@ func RenderNetworkOVSPortGroupConfig(t *testing.T, overrides map[string]string) 
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"CloudName",
-		defaults["CloudName"],
-		"GroupName",
-		defaults["GroupName"],
-		"TenantName",
-		defaults["TenantName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"PoolId",
-		defaults["PoolId"],
-		"TypeId",
-		defaults["TypeId"],
-		"SwitchId",
-		defaults["SwitchId"],
-		"Active",
-		defaults["Active"],
-		"DHCPServer",
-		defaults["DHCPServer"],
-		"ApplianceURLProxyBypass",
-		defaults["ApplianceURLProxyBypass"],
-		"Visibility",
-		defaults["Visibility"],
-		"CIDR",
-		defaults["CIDR"],
-		"ZonePoolId",
-		defaults["ZonePoolId"],
-		"VLANId",
-		defaults["VLANId"],
-		"Labels",
-		defaults["Labels"],
+		args...,
 	)
 }
