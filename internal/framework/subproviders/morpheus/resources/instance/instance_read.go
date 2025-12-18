@@ -331,13 +331,20 @@ func setDatastoreAutoSelectionAndSize(
 		// Only set fields from plan if we have a corresponding plan volume
 		if i < maxIndex {
 			planVol := planVolumes[i].(VolumesValue)
+
+			// Initialize AdditionalProperties map if it doesn't exist
+			if apiVol.AdditionalProperties == nil {
+				apiVol.AdditionalProperties = make(map[string]interface{})
+			}
+
 			if !planVol.DatastoreAutoSelection.IsNull() && !planVol.DatastoreAutoSelection.IsUnknown() {
 				// Set AdditionalProperties to indicate auto-selection
-				apiVol.AdditionalProperties = map[string]interface{}{
-					"DatastoreAutoSelection": planVol.DatastoreAutoSelection.ValueString(),
-				}
+				apiVol.AdditionalProperties["DatastoreAutoSelection"] = planVol.DatastoreAutoSelection.ValueString()
 			}
+
 			apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
+			// We set this flag to indicate that Terraform set the MaxStorage value
+			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 
@@ -540,18 +547,36 @@ func convertAPIVolumesToStateVolumes(
 			v.Id = convert.Int64ToType(in.Id)
 			v.RootVolume = convert.BoolToType(in.RootVolume)
 			v.Name = convert.StrToType(in.Name)
-			v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage)) // Convert from bytes to GB
 			v.StorageTypeId = convert.Int64ToType(in.TypeId)
 			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
 			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
-			// Handle DatastoreAutoSelection from AdditionalProperties
+
+			// Handle DatastoreAutoSelection and TerraformSetMaxStorage from AdditionalProperties
+			// TerraformSetMaxStorage flag indicates that MaxStorage was set from plan (already in GB)
+			// and should not be converted from bytes
+			terraformSetMaxStorage := false
 			if in.AdditionalProperties != nil {
 				if dsAutoSel, ok := in.AdditionalProperties["DatastoreAutoSelection"]; ok {
 					if dsAutoSelStr, ok := dsAutoSel.(string); ok {
 						v.DatastoreAutoSelection = convert.StrToType(&dsAutoSelStr)
 					}
 				}
+
+				if tsms, ok := in.AdditionalProperties["TerraformSetMaxStorage"]; ok {
+					if tsmsBool, ok := tsms.(bool); ok {
+						terraformSetMaxStorage = tsmsBool
+					}
+				}
 			}
+
+			// Set Size: if TerraformSetMaxStorage is true, MaxStorage is already in GB from plan
+			// Otherwise, convert from bytes to GB
+			if terraformSetMaxStorage {
+				v.Size = convert.Int64ToType(in.MaxStorage)
+			} else {
+				v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage))
+			}
+
 			v.state = attr.ValueStateKnown
 
 			return v
