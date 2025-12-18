@@ -1,7 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "TestGroup" Location "here" Code "aCode" Label "aLabel"
-
 package group_test
 
 import (
