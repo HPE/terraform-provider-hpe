@@ -78,7 +78,8 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 	}
 
 	resourceConfig, err := tenant.RenderTenantConfig(t, map[string]string{
-		"Name": name,
+		"RoleName": name,
+		"Name":     name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -158,6 +159,12 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			// Delete this resource
+			{
+				Config:             providerConfig + dependencyResourceConfig,
+				ExpectNonEmptyPlan: false,
+			},
+			// Dependencies deleted last
 		},
 	})
 }
