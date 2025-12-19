@@ -49,7 +49,9 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := blueprint.RenderInstanceTypeConfig(t, name, map[string]string{})
+	resourceConfig, err := blueprint.RenderInstanceTypeConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

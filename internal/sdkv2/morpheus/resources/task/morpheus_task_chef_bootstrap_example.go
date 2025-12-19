@@ -15,16 +15,12 @@ import (
 
 // RenderChefBootstrapConfig renders the task chef bootstrap
 // resource configuration with the provided overrides applied to default values.
-func RenderChefBootstrapConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderChefBootstrapConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            `"demo", "terraform"`,
 		"ChefServerId":      "9",
 		"Environment":       "dev",
@@ -44,6 +40,11 @@ func RenderChefBootstrapConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -55,20 +56,6 @@ func RenderChefBootstrapConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"ChefServerId", defaults["ChefServerId"],
-		"Environment", defaults["Environment"],
-		"RunList", defaults["RunList"],
-		"DataBagKey", defaults["DataBagKey"],
-		"DataBagKeyPath", defaults["DataBagKeyPath"],
-		"NodeName", defaults["NodeName"],
-		"NodeAttributes", defaults["NodeAttributes"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
-		"Visibility", defaults["Visibility"],
+		args...,
 	)
 }

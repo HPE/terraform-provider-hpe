@@ -15,15 +15,11 @@ import (
 //go:generate /bin/sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_email/resource_git.tf morpheus_task_email_resource_git.tf.tmpl Name tfexample_email_git Code tfexample_email_git Labels '[\"demo\",\"terraform\"]' EmailAddress '<%=instance.createdByEmail%>' Subject '<%=instance.hostname%> provisioning complete' Source repository ContentPath example.txt RepositoryId 1 VersionRef main SkipWrappedEmailTemplate false Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true"
 //go:generate /bin/sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_email/resource_url.tf morpheus_task_email_resource_url.tf.tmpl Name tfexample_email_url Code tfexample_email_url Labels '[\"demo\",\"terraform\"]' EmailAddress '<%=instance.createdByEmail%>' Subject '<%=instance.hostname%> provisioning complete' Source url ContentUrl https://example.com/example.txt SkipWrappedEmailTemplate false Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true"
 
-func RenderTaskEmailConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskEmailConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     name,
+		"Name":                     "Example",
 		"Code":                     "tfexample_email",
 		"Labels":                   `["demo","terraform"]`,
 		"EmailAddress":             "<%=instance.createdByEmail%>",
@@ -41,6 +37,11 @@ func RenderTaskEmailConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -52,30 +53,15 @@ func RenderTaskEmailConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"EmailAddress", defaults["EmailAddress"],
-		"Subject", defaults["Subject"],
-		"Source", defaults["Source"],
-		"Content", defaults["Content"],
-		"SkipWrappedEmailTemplate", defaults["SkipWrappedEmailTemplate"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskEmailGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskEmailGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     name,
+		"Name":                     "Example",
 		"Code":                     "tfexample_email_git",
 		"Labels":                   `["demo","terraform"]`,
 		"EmailAddress":             "<%=instance.createdByEmail%>",
@@ -95,6 +81,11 @@ func RenderTaskEmailGitConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -106,32 +97,15 @@ func RenderTaskEmailGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"EmailAddress", defaults["EmailAddress"],
-		"Subject", defaults["Subject"],
-		"Source", defaults["Source"],
-		"ContentPath", defaults["ContentPath"],
-		"RepositoryId", defaults["RepositoryId"],
-		"VersionRef", defaults["VersionRef"],
-		"SkipWrappedEmailTemplate", defaults["SkipWrappedEmailTemplate"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskEmailUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskEmailUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     name,
+		"Name":                     "Example",
 		"Code":                     "tfexample_email_url",
 		"Labels":                   `["demo","terraform"]`,
 		"EmailAddress":             "<%=instance.createdByEmail%>",
@@ -149,6 +123,11 @@ func RenderTaskEmailUrlConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -160,17 +139,6 @@ func RenderTaskEmailUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"EmailAddress", defaults["EmailAddress"],
-		"Subject", defaults["Subject"],
-		"Source", defaults["Source"],
-		"ContentUrl", defaults["ContentUrl"],
-		"SkipWrappedEmailTemplate", defaults["SkipWrappedEmailTemplate"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

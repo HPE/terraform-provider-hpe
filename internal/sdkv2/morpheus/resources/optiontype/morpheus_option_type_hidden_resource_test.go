@@ -25,7 +25,7 @@ func TestAccMorpheusOptionTypeHiddenExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optiontype.RenderOptionTypeHiddenConfig(t, name, map[string]string{
+	resourceConfig, err := optiontype.RenderOptionTypeHiddenConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

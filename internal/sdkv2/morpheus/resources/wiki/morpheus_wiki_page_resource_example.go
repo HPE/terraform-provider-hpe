@@ -15,18 +15,23 @@ import (
 
 // RenderWikiPageConfig generates a Terraform configuration for the wiki page resource.
 // It accepts a map of field overrides to customize default values.
-func RenderWikiPageConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderWikiPageConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	// Default field values
 	defaults := map[string]string{
-		"Name":     name,
+		"Name":     "Example",
 		"Category": "morpheus-terraform",
 	}
 
 	// Apply overrides
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -37,9 +42,9 @@ func RenderWikiPageConfig(t *testing.T, name string, overrides map[string]string
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "morpheus_wiki_page_resource.tf.tmpl")
 
-	return testhelpers.RenderExample(t,
+	return testhelpers.RenderExample(
+		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Category", defaults["Category"],
+		args...,
 	)
 }

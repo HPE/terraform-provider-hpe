@@ -25,7 +25,9 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	resourceConfig, err := task.RenderTaskRestartConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskRestartConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

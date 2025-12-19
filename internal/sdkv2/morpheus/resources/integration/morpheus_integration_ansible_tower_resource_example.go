@@ -15,11 +15,11 @@ import (
 
 // RenderIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
 // with default values that can be overridden via the overrides parameter.
-func RenderIntegrationAnsibleTowerConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderIntegrationAnsibleTowerConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     name,
+		"Name":     "Example",
 		"Enabled":  "true",
 		"Url":      "https://ansibletower01.morpheusdata.com",
 		"Username": "admin",
@@ -29,6 +29,11 @@ func RenderIntegrationAnsibleTowerConfig(t *testing.T, name string, overrides ma
 	// Override defaults with provided values
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -42,10 +47,6 @@ func RenderIntegrationAnsibleTowerConfig(t *testing.T, name string, overrides ma
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
+		args...,
 	)
 }

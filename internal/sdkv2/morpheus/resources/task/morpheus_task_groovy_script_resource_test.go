@@ -25,7 +25,9 @@ func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskGroovyScriptConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskGroovyScriptConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -25,7 +25,9 @@ func TestAccMorpheusTaskEmailUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskEmailUrlConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskEmailUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

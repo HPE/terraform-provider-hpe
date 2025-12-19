@@ -15,21 +15,22 @@ import (
 
 // RenderContactConfig renders the contact resource configuration with
 // optional field overrides
-func RenderContactConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderContactConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         name,
+		"Name":         "Example",
 		"EmailAddress": "tfcontact@demo.com",
 		"MobileNumber": "123-456-7890",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -43,8 +44,6 @@ func RenderContactConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"EmailAddress", defaults["EmailAddress"],
-		"MobileNumber", defaults["MobileNumber"],
+		args...,
 	)
 }

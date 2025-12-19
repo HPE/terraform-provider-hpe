@@ -51,7 +51,7 @@ func TestAccMorpheusBootScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := script.RenderBootScriptConfig(t, name, map[string]string{
+	resourceConfig, err := script.RenderBootScriptConfig(t, map[string]string{
 		"Content": "ls",
 	})
 	if err != nil {

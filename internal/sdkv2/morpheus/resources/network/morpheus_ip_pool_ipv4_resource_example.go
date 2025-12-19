@@ -15,14 +15,11 @@ import (
 
 // RenderIPPoolIPv4Config generates a Terraform configuration for hpe_morpheus_ip_pool_ipv4 resource.
 // It accepts an optional map of field overrides. If nil or empty, default values are used.
-func RenderIPPoolIPv4Config(t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderIPPoolIPv4Config(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":             name,
+		"Name":             "Example",
 		"StartingAddress1": "\"192.168.1.1\"",
 		"EndingAddress1":   "\"192.168.1.10\"",
 		"StartingAddress2": "\"10.0.0.1\"",
@@ -31,6 +28,11 @@ func RenderIPPoolIPv4Config(t *testing.T,
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -44,15 +46,6 @@ func RenderIPPoolIPv4Config(t *testing.T,
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name",
-		defaults["Name"],
-		"StartingAddress1",
-		defaults["StartingAddress1"],
-		"EndingAddress1",
-		defaults["EndingAddress1"],
-		"StartingAddress2",
-		defaults["StartingAddress2"],
-		"EndingAddress2",
-		defaults["EndingAddress2"],
+		args...,
 	)
 }

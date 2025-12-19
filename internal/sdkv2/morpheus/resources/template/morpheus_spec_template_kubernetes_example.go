@@ -19,11 +19,7 @@ import (
 
 // RenderSpecTemplateKubernetesLocalConfig renders the configuration for the local
 // Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesLocalConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateKubernetesLocalConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaultSpecContent := `---
@@ -50,13 +46,18 @@ spec:
         - containerPort: 80`
 
 	defaults := map[string]string{
-		"Name":        name,
+		"Name":        "Example",
 		"SourceType":  "local",
 		"SpecContent": defaultSpecContent,
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -70,23 +71,17 @@ spec:
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecContent", defaults["SpecContent"],
+		args...,
 	)
 }
 
 // RenderSpecTemplateKubernetesGitConfig renders the configuration for the Git-based
 // Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateKubernetesGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         name,
+		"Name":         "Example",
 		"SourceType":   "repository",
 		"RepositoryId": "2",
 		"VersionRef":   "main",
@@ -95,6 +90,11 @@ func RenderSpecTemplateKubernetesGitConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -108,31 +108,28 @@ func RenderSpecTemplateKubernetesGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"RepositoryId", defaults["RepositoryId"],
-		"VersionRef", defaults["VersionRef"],
-		"SpecPath", defaults["SpecPath"],
+		args...,
 	)
 }
 
 // RenderSpecTemplateKubernetesUrlConfig renders the configuration for the URL-based
 // Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateKubernetesUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       name,
+		"Name":       "Example",
 		"SourceType": "url",
 		"SpecPath":   "http://example.com/spec.yaml",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -146,8 +143,6 @@ func RenderSpecTemplateKubernetesUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecPath", defaults["SpecPath"],
+		args...,
 	)
 }
