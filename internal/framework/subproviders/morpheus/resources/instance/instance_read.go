@@ -286,7 +286,7 @@ func getVolumes(
 	// Import
 	if plan.Name.IsNull() || plan.Name.IsUnknown() {
 		nonRaidVolumes := removeRaidDisks(apiVolumes)
-		markedRootVolumes := markRootVolume(nonRaidVolumes)
+		markedRootVolumes := markRootVolume(nonRaidVolumes, plan)
 		bootVolumeInFirst := bootVolumeFirst(markedRootVolumes)
 
 		return convertAPIVolumesToStateVolumes(ctx, bootVolumeInFirst)
@@ -301,7 +301,7 @@ func getVolumes(
 
 	// The number of volumes is different to the plan
 	nonRaidVolumes := removeRaidDisks(apiVolumes)
-	markedRootVolumes := markRootVolume(nonRaidVolumes)
+	markedRootVolumes := markRootVolume(nonRaidVolumes, plan)
 	bootVolumeInFirst := bootVolumeFirst(markedRootVolumes)
 	reorderedVolumes := reorderVolumes(bootVolumeInFirst, plan)
 	filledVolumes := fillVolumeFieldsFromPlan(reorderedVolumes, plan)
@@ -471,7 +471,20 @@ func reorderVolumes(
 // Hopefully in future the API will return the rootVolume flag correctly and we can remove this function
 func markRootVolume(
 	apiVolumes []sdk.InstanceContainerServerVolume1,
+	plan InstanceModel,
 ) []sdk.InstanceContainerServerVolume1 {
+	// Get the name of the boot volume from the plan
+	bootVolumeName := ""
+	foundBootVolume := false
+	planVolumes := plan.Volumes.Elements()
+	if len(planVolumes) > 0 {
+		volume := planVolumes[0].(VolumesValue)
+		if volume.RootVolume.ValueBool() {
+			bootVolumeName = volume.Name.ValueString()
+			foundBootVolume = true
+		}
+	}
+
 	// We're going to look for volumes with the same "name" and "deviceDisplayName" of "BootVolume" or similar
 	retVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
 	for _, volume := range apiVolumes {
@@ -480,6 +493,10 @@ func markRootVolume(
 				strings.Contains(*volume.DeviceDisplayName, "Boot Volume") {
 				rootBool := true
 				volume.RootVolume = &rootBool
+				// Also set the name to match the plan if we found it
+				if foundBootVolume {
+					volume.Name = &bootVolumeName
+				}
 			}
 			retVolumes = append(retVolumes, volume)
 		}
