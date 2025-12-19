@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 func (r *Resource) Create(
@@ -279,21 +280,25 @@ func (r *Resource) Create(
 	}
 
 	id := *network.GetNetwork().Id
-	plan.Id = types.Int64Value(id)
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "network",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 	}
 
 	state, pdiags := getNetworkAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
-			"create network resource",
-			fmt.Sprintf("network %d: failed to read from api", id),
+			"failed to read network state",
+			fmt.Sprintf("Network %d was created but could not be read", id),
 		)
+		taintResourceState(id)
 
 		return
 	}
@@ -303,4 +308,13 @@ func (r *Resource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set network state",
+			fmt.Sprintf("Network %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
+		return
+	}
 }

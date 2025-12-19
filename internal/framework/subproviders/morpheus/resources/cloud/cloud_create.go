@@ -9,13 +9,13 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/sdkfuncs"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 const defaultCloudType = "standard"
@@ -211,27 +211,37 @@ func (r *Resource) Create(
 	}
 
 	id := *cloud.GetZone().Id
-	plan.Id = types.Int64Value(id)
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "cloud",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 	}
 
 	state, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
-			"create cloud resource",
-			fmt.Sprintf("cloud %d: failed to read from api", id),
+			"failed to read cloud state",
+			fmt.Sprintf("Cloud %d was created but could not be read", id),
 		)
+		taintResourceState(id)
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set cloud state",
+			fmt.Sprintf("Cloud %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
 		return
 	}
 }

@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	errfmt "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 var (
@@ -231,15 +232,22 @@ func (g *Resource) Create(
 		return
 	}
 
-	plan.Id = convert.Int64ToType(instance.Instance.Id)
+	// Store ID locally but not in state yet
+	instanceId := instance.Instance.GetId()
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "instance",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 	}
 
+	// Wait for the instance to be ready
 	waitForReady := func() (string, error) {
-		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
+		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceId).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			return "", backoff.Permanent(err)
 		}
@@ -263,19 +271,35 @@ func (g *Resource) Create(
 			"create instance resource",
 			fmt.Sprintf(
 				"instance %d: provisioning failed current status is: %s",
-				plan.Id.ValueInt64(),
+				instanceId,
 				status,
 			),
 		)
+		taintResourceState(instanceId)
+
+		return
 	}
 
-	state, diag := getInstanceAsState(ctx, plan.Id.ValueInt64(), client, plan)
-	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+	state, diag := getInstanceAsState(ctx, instanceId, client, plan)
+	if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		resp.Diagnostics.AddError(
+			"failed to read instance state",
+			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
+		)
+		taintResourceState(instanceId)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set instance state",
+			fmt.Sprintf("Instance %d was created but state could not be saved", instanceId),
+		)
+		taintResourceState(instanceId)
+
 		return
 	}
 }

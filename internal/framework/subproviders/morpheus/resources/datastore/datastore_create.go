@@ -13,7 +13,8 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 const (
@@ -126,13 +127,16 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Set the resource ID
-	plan.Id = types.Int64Value(id)
+	// Set the resource ID locally but NOT in state yet
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "datastore",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 	}
 
 	// Wait for the datastore to be ready
@@ -164,45 +168,48 @@ func (r *Resource) Create(
 		}
 
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf(
-				"datastore %d: provisioning failed current status is: %v",
-				plan.Id.ValueInt64(),
-				status,
-			),
+			"datastore provisioning failed",
+			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
 		)
-	}
+		taintResourceState(id)
 
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	state, gdiags := getDatastoreAsState(ctx, plan.Id.ValueInt64(), plan, client)
+	state, gdiags := getDatastoreAsState(ctx, id, plan, client)
 	if gdiags.HasError() {
 		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf("datastore %d: failed to read from api", plan.Id.ValueInt64()),
+			"failed to read datastore state",
+			fmt.Sprintf("Datastore %d was created but could not be read", id),
 		)
+		taintResourceState(id)
 
 		return
 	}
 
 	// For now, we need to call update to set resourcePermission and tenantPermissions
 	// because the API does not set these on create, even if provided.
-	state, gdiags = updateDatastore(ctx, plan.Id.ValueInt64(), plan, state, client)
+	state, gdiags = updateDatastore(ctx, id, plan, state, client)
 	if gdiags.HasError() {
 		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(
-			"create datastore resource",
-			fmt.Sprintf("datastore %d: failed to update", plan.Id.ValueInt64()),
+			"failed to update datastore",
+			fmt.Sprintf("Datastore %d was created but permissions could not be updated", id),
 		)
+		taintResourceState(id)
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set datastore state",
+			fmt.Sprintf("Datastore %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
 		return
 	}
 }

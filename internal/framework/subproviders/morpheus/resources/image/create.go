@@ -18,6 +18,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 // Create implements resource.Resource.
@@ -229,10 +230,28 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
+	imageId := image.VirtualImage.GetId()
 
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "image",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
+	// Set state
+	plan.Id = convert.Int64ToType(&imageId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set initial image state",
+			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
+		)
+		taintResourceState(imageId)
+
 		return
 	}
 
@@ -284,21 +303,32 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"create image resource",
-			fmt.Sprintf(
-				"image %s: creation failed current status is: %s",
-				plan.Name.ValueString(),
-				status,
-			),
+			fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
 		)
+		taintResourceState(plan.Id.ValueInt64())
+
+		return
 	}
 
 	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
+		)
+		taintResourceState(plan.Id.ValueInt64())
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set image state",
+			fmt.Sprintf("Image %d was created but state could not be saved", plan.Id.ValueInt64()),
+		)
+		taintResourceState(plan.Id.ValueInt64())
+
 		return
 	}
 }

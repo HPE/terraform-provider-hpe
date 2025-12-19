@@ -18,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -484,6 +485,16 @@ func (r *Resource) Create(
 	id := *servicePlan.Id
 	plan.Id = types.Int64Value(id)
 
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
+			ResourceType: "service_plan",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	// write id as soon as possible
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -493,12 +504,23 @@ func (r *Resource) Create(
 	state, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"failed to read service plan state",
+			fmt.Sprintf("Service plan %d was created but could not be read", id),
+		)
+		taintResourceState(id)
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set service plan state",
+			fmt.Sprintf("Service plan %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
 		return
 	}
 }
