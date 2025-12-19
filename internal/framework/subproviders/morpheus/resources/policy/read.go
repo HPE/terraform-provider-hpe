@@ -32,10 +32,10 @@ func mapPolicyConfigToState(
 		approvalValue, approvalDiags := NewConfigApprovalValue(
 			ConfigApprovalValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration.AccountIntegrationId),
-				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.FlowId),
-				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowId),
-				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration.WorkflowType),
+				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration2.AccountIntegrationId),
+				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.FlowId),
+				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowId),
+				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowType),
 			},
 		)
 		if approvalDiags.HasError() {
@@ -80,8 +80,8 @@ func mapPolicyConfigToState(
 		createBackupValue, createBackupDiags := NewConfigCreateBackupValue(
 			ConfigCreateBackupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackup),
-				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration.CreateBackupType),
+				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackup),
+				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackupType),
 			},
 		)
 		if createBackupDiags.HasError() {
@@ -137,9 +137,9 @@ func mapPolicyConfigToState(
 
 	case "maxPrice":
 		maxPriceAttrs := map[string]attr.Value{
-			"max_price":          convert.NumToType(&apiConfig.BudgetPolicyTypeConfiguration.MaxPrice),
-			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceCurrency),
-			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration.MaxPriceUnit),
+			"max_price":          convert.NumToType(&apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice),
+			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceCurrency),
+			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceUnit),
 		}
 
 		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
