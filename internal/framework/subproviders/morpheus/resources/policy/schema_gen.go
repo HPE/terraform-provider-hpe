@@ -106,6 +106,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"flow",
+								"workflow",
+							),
+						},
 					},
 				},
 				CustomType: ConfigApprovalType{
@@ -153,6 +159,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigCreateBackupType{
@@ -179,6 +191,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\"",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\"",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigCreateUserType{
@@ -295,6 +313,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigHostNamingType{
@@ -376,6 +400,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 					"lifecycle_workflow_id": schema.StringAttribute{
 						Optional:            true,
@@ -393,6 +423,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"flow",
+								"workflow",
+							),
+						},
 					},
 				},
 				CustomType: ConfigLifecycleType{
@@ -573,6 +609,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Options: \"hour\", \"month\"",
 						MarkdownDescription: "Options: \"hour\", \"month\"",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"hour",
+								"month",
+							),
+						},
 					},
 				},
 				CustomType: ConfigMaxPriceType{
@@ -716,6 +758,13 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Options: \"info\", \"warning\", \"critical\"",
 						MarkdownDescription: "Options: \"info\", \"warning\", \"critical\"",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"info",
+								"warning",
+								"critical",
+							),
+						},
 					},
 				},
 				CustomType: ConfigMotdType{
@@ -748,6 +797,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigNamingType{
@@ -780,6 +835,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict schedule)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict schedule)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigPowerScheduleType{
@@ -833,6 +894,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 				},
 				CustomType: ConfigServerNamingType{
@@ -914,6 +981,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Required:            true,
 						Description:         "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)",
 						MarkdownDescription: "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"user",
+								"fixed",
+							),
+						},
 					},
 					"shutdown_workflow_id": schema.StringAttribute{
 						Optional:            true,
@@ -931,6 +1004,12 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
 						MarkdownDescription: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"flow",
+								"workflow",
+							),
+						},
 					},
 				},
 				CustomType: ConfigShutdownType{
