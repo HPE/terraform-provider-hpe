@@ -129,9 +129,9 @@ func (r *Resource) Create(
 
 	// Set the resource ID locally but NOT in state yet
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "datastore",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -171,7 +171,7 @@ func (r *Resource) Create(
 			"datastore provisioning failed",
 			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -183,7 +183,7 @@ func (r *Resource) Create(
 			"failed to read datastore state",
 			fmt.Sprintf("Datastore %d was created but could not be read", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -197,7 +197,7 @@ func (r *Resource) Create(
 			"failed to update datastore",
 			fmt.Sprintf("Datastore %d was created but permissions could not be updated", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -208,7 +208,7 @@ func (r *Resource) Create(
 			"failed to set datastore state",
 			fmt.Sprintf("Datastore %d was created but state could not be saved", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}

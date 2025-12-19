@@ -485,9 +485,9 @@ func (r *Resource) Create(
 	id := *servicePlan.Id
 	plan.Id = types.Int64Value(id)
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "service_plan",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -508,7 +508,7 @@ func (r *Resource) Create(
 			"failed to read service plan state",
 			fmt.Sprintf("Service plan %d was created but could not be read", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -519,7 +519,7 @@ func (r *Resource) Create(
 			"failed to set service plan state",
 			fmt.Sprintf("Service plan %d was created but state could not be saved", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}

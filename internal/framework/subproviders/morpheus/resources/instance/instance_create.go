@@ -235,9 +235,9 @@ func (g *Resource) Create(
 	// Store ID locally but NOT in state yet
 	instanceId := instance.Instance.GetId()
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "instance",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -271,7 +271,7 @@ func (g *Resource) Create(
 			"instance provisioning failed",
 			fmt.Sprintf("Instance %d failed to reach running status. Current status: %s. Error: %v", instanceId, status, err),
 		)
-		setPartialState(instanceId)
+		taintResourceState(instanceId)
 
 		return
 	}
@@ -283,7 +283,7 @@ func (g *Resource) Create(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
 		)
-		setPartialState(instanceId)
+		taintResourceState(instanceId)
 
 		return
 	}
@@ -295,7 +295,7 @@ func (g *Resource) Create(
 			"failed to set instance state",
 			fmt.Sprintf("Instance %d was created but state could not be saved", instanceId),
 		)
-		setPartialState(instanceId)
+		taintResourceState(instanceId)
 
 		return
 	}

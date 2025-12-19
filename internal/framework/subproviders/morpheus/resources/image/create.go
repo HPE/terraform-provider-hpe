@@ -232,9 +232,9 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	imageId := image.VirtualImage.GetId()
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "image",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -250,7 +250,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to set initial image state",
 			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
 		)
-		setPartialState(imageId)
+		taintResourceState(imageId)
 
 		return
 	}
@@ -305,7 +305,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"create image resource",
 			fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
 		)
-		setPartialState(plan.Id.ValueInt64())
+		taintResourceState(plan.Id.ValueInt64())
 
 		return
 	}
@@ -316,7 +316,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to read image state",
 			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
 		)
-		setPartialState(plan.Id.ValueInt64())
+		taintResourceState(plan.Id.ValueInt64())
 
 		return
 	}
@@ -327,7 +327,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"failed to set image state",
 			fmt.Sprintf("Image %d was created but state could not be saved", plan.Id.ValueInt64()),
 		)
-		setPartialState(plan.Id.ValueInt64())
+		taintResourceState(plan.Id.ValueInt64())
 
 		return
 	}

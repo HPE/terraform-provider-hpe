@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// SetPartialStateConfig holds configuration for setting partial state on error.
-type SetPartialStateConfig struct {
+// TaintResourceStateConfig holds configuration for tainting resource state on error.
+type TaintResourceStateConfig struct {
 	// ResourceType is the human-readable name of the resource (e.g. "instance", "cloud")
 	ResourceType string
 	// ResourceID is the ID of the resource that was created
@@ -28,8 +28,8 @@ type State interface {
 	SetAttribute(ctx context.Context, path path.Path, val any) diag.Diagnostics
 }
 
-// SetPartialState sets just the ID in state to mark the resource as tainted.
-func SetPartialState(ctx context.Context, config SetPartialStateConfig) {
+// TaintResourceState sets just the ID in state to mark the resource as tainted.
+func TaintResourceState(ctx context.Context, config TaintResourceStateConfig) {
 	tflog.Warn(ctx, fmt.Sprintf("%s %d created but encountered error - setting partial state with ID only",
 		config.ResourceType, config.ResourceID))
 

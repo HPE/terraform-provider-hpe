@@ -208,9 +208,9 @@ func (r *Resource) Create(
 	id := *user.GetUser().Id
 	plan.Id = types.Int64Value(id)
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "user",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -231,7 +231,7 @@ func (r *Resource) Create(
 			"create user resource",
 			fmt.Sprintf("user %d: failed to read from api", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -247,7 +247,7 @@ func (r *Resource) Create(
 			"failed to set user state",
 			fmt.Sprintf("User %d was created but state could not be saved", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}

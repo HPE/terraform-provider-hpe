@@ -1458,9 +1458,9 @@ func (r *Resource) Create(
 	id := *role.GetRole().Id
 	plan.Id = types.Int64Value(id)
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "role",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -1481,7 +1481,7 @@ func (r *Resource) Create(
 			"create role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -1553,7 +1553,7 @@ func (r *Resource) Create(
 			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
-				setPartialState(id)
+				taintResourceState(id)
 
 				return
 			}
@@ -1566,7 +1566,7 @@ func (r *Resource) Create(
 			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
-				setPartialState(id)
+				taintResourceState(id)
 
 				return
 			}
@@ -1589,7 +1589,7 @@ func (r *Resource) Create(
 						"create role resource",
 						fmt.Sprintf("role %d: permission with code %s not found", id, v.Code.String()),
 					)
-					setPartialState(id)
+					taintResourceState(id)
 
 					return
 				}
@@ -1602,7 +1602,7 @@ func (r *Resource) Create(
 			)
 			if diags.HasError() {
 				resp.Diagnostics.Append(diags...)
-				setPartialState(id)
+				taintResourceState(id)
 
 				return
 			}
@@ -1617,7 +1617,7 @@ func (r *Resource) Create(
 			"failed to set role state",
 			fmt.Sprintf("Role %d was created but state could not be saved", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}

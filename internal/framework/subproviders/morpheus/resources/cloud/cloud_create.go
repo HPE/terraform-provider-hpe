@@ -212,9 +212,9 @@ func (r *Resource) Create(
 
 	id := *cloud.GetZone().Id
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		utils.TaintResourceState(ctx, utils.TaintResourceStateConfig{
 			ResourceType: "cloud",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
@@ -229,7 +229,7 @@ func (r *Resource) Create(
 			"failed to read cloud state",
 			fmt.Sprintf("Cloud %d was created but could not be read", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
@@ -240,7 +240,7 @@ func (r *Resource) Create(
 			"failed to set cloud state",
 			fmt.Sprintf("Cloud %d was created but state could not be saved", id),
 		)
-		setPartialState(id)
+		taintResourceState(id)
 
 		return
 	}
