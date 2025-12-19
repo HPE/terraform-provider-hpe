@@ -25,7 +25,9 @@ func TestAccMorpheusSpecTemplateKubernetesResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateKubernetesGitConfig(t, name, nil)
+	resourceConfig, err := template.RenderSpecTemplateKubernetesGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

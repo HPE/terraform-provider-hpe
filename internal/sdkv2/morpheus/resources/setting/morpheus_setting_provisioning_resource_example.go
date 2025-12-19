@@ -33,6 +33,11 @@ func RenderSettingProvisioningConfig(t *testing.T, overrides map[string]string) 
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -44,15 +49,6 @@ func RenderSettingProvisioningConfig(t *testing.T, overrides map[string]string) 
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"AllowZoneSelection", defaults["AllowZoneSelection"],
-		"AllowHostSelection", defaults["AllowHostSelection"],
-		"RequireEnvironments", defaults["RequireEnvironments"],
-		"ShowPricing", defaults["ShowPricing"],
-		"HideDatastoreStats", defaults["HideDatastoreStats"],
-		"CrossTenantNamingPolicies", defaults["CrossTenantNamingPolicies"],
-		"CloudinitUsername", defaults["CloudinitUsername"],
-		"CloudinitPassword", defaults["CloudinitPassword"],
-		"WindowsPassword", defaults["WindowsPassword"],
-		"PxeRootPassword", defaults["PxeRootPassword"],
+		args...,
 	)
 }

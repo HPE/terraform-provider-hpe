@@ -18,15 +18,11 @@ import (
 // Supported override keys: "Name", "Description", "Visibility", "SourceUrl", "RealTime", "IgnoreSslErrors",
 // "SourceMethod", "InitialDataset", "TranslationScript", "SourceHeaderName1", "SourceHeaderValue1",
 // "SourceHeaderName2", "SourceHeaderValue2"
-func RenderOptionListRestConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderOptionListRestConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":            name,
+		"Name":            "Example",
 		"Description":     "Terraform REST option list example",
 		"Visibility":      "private",
 		"SourceUrl":       "https://api.github.com/repos/hashicorp/consul/releases",
@@ -50,6 +46,11 @@ func RenderOptionListRestConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	//nolint: lll
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
@@ -62,18 +63,6 @@ func RenderOptionListRestConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Visibility", defaults["Visibility"],
-		"SourceUrl", defaults["SourceUrl"],
-		"RealTime", defaults["RealTime"],
-		"IgnoreSslErrors", defaults["IgnoreSslErrors"],
-		"SourceMethod", defaults["SourceMethod"],
-		"InitialDataset", defaults["InitialDataset"],
-		"TranslationScript", defaults["TranslationScript"],
-		"SourceHeaderName1", defaults["SourceHeaderName1"],
-		"SourceHeaderValue1", defaults["SourceHeaderValue1"],
-		"SourceHeaderName2", defaults["SourceHeaderName2"],
-		"SourceHeaderValue2", defaults["SourceHeaderValue2"],
+		args...,
 	)
 }

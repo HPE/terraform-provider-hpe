@@ -13,13 +13,13 @@ Roles in HPE Morpheus Enterprise control the access levels for Morpheus resource
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_role" "test" {
+data "hpe_morpheus_role" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_role" "test" {
+data "hpe_morpheus_role" "example" {
   name = "Example name"
 }
 ```

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -16,16 +15,12 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_powershell_script/resource_git.tf morpheus_task_powershell_script_resource_git.tf.tmpl Name tfexample_powershell_git Code tfexample_powershell_git Labels "\"demo\", \"terraform\"" SourceType repository ResultType json ScriptPath example.ps VersionRef master RepositoryId 1 ElevatedShell true Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_powershell_script/resource_url.tf morpheus_task_powershell_script_resource_url.tf.tmpl Name tfexample_powershell_url Code tfexample_powershell_url Labels "\"demo\", \"terraform\"" SourceType url ResultType json ScriptPath https://example.com/example.ps ElevatedShell true Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
-func RenderTaskPowershellScriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPowershellScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "local",
 		"ScriptContent":     `Write-Output \"testing\"`,
@@ -40,6 +35,11 @@ func RenderTaskPowershellScriptConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -51,29 +51,16 @@ func RenderTaskPowershellScriptConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ScriptContent", defaults["ScriptContent"],
-		"ElevatedShell", defaults["ElevatedShell"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskPowershellScriptGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPowershellScriptGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              strings.ToLower(name),
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "repository",
 		"ResultType":        "json",
@@ -91,6 +78,11 @@ func RenderTaskPowershellScriptGitConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -102,32 +94,16 @@ func RenderTaskPowershellScriptGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"VersionRef", defaults["VersionRef"],
-		"RepositoryId", defaults["RepositoryId"],
-		"ElevatedShell", defaults["ElevatedShell"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskPowershellScriptUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPowershellScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            `"demo", "terraform"`,
 		"SourceType":        "url",
 		"ResultType":        "json",
@@ -143,6 +119,11 @@ func RenderTaskPowershellScriptUrlConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -154,16 +135,6 @@ func RenderTaskPowershellScriptUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"ElevatedShell", defaults["ElevatedShell"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

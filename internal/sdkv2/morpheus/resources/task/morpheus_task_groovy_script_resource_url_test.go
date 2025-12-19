@@ -25,7 +25,9 @@ func TestAccMorpheusTaskGroovyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskGroovyScriptUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskGroovyScriptUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

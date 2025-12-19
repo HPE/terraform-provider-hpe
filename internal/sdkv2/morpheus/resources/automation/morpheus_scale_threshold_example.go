@@ -13,15 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_scale_threshold/resource.tf morpheus_scale_threshold_resource.tf.tmpl Name example_scale_threshold AutoUpscale true AutoDownscale true MinCount 1 MaxCount 3 EnableCpuThreshold true MinCpuPercentage 30.0 MaxCpuPercentage 75.0 EnableMemoryThreshold true MinMemoryPercentage 20.0 MaxMemoryPercentage 60.0 EnableDiskThreshold true MinDiskPercentage 25.0 MaxDiskPercentage 80.0
 
-func RenderScaleThresholdConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderScaleThresholdConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  name,
+		"Name":                  "Example",
 		"AutoUpscale":           "true",
 		"AutoDownscale":         "true",
 		"MinCount":              "1",
@@ -37,8 +33,13 @@ func RenderScaleThresholdConfig(
 		"MaxDiskPercentage":     "80.0",
 	}
 
-	for k, v := range overrides {
-		defaults[k] = v
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -52,19 +53,6 @@ func RenderScaleThresholdConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"AutoUpscale", defaults["AutoUpscale"],
-		"AutoDownscale", defaults["AutoDownscale"],
-		"MinCount", defaults["MinCount"],
-		"MaxCount", defaults["MaxCount"],
-		"EnableCpuThreshold", defaults["EnableCpuThreshold"],
-		"MinCpuPercentage", defaults["MinCpuPercentage"],
-		"MaxCpuPercentage", defaults["MaxCpuPercentage"],
-		"EnableMemoryThreshold", defaults["EnableMemoryThreshold"],
-		"MinMemoryPercentage", defaults["MinMemoryPercentage"],
-		"MaxMemoryPercentage", defaults["MaxMemoryPercentage"],
-		"EnableDiskThreshold", defaults["EnableDiskThreshold"],
-		"MinDiskPercentage", defaults["MinDiskPercentage"],
-		"MaxDiskPercentage", defaults["MaxDiskPercentage"],
+		args...,
 	)
 }

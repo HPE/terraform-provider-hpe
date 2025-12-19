@@ -48,7 +48,7 @@ func TestAccMorpheusEnvironmentExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := environment.RenderEnvironmentConfig(t, name, map[string]string{
+	resourceConfig, err := environment.RenderEnvironmentConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

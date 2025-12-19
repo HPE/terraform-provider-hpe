@@ -15,11 +15,11 @@ import (
 
 // RenderIntegrationChefConfig generates a Terraform configuration for the Chef integration resource
 // using default values that can be overridden via the overrides map.
-func RenderIntegrationChefConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderIntegrationChefConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     name,
+		"Name":                     "Example",
 		"Enabled":                  "true",
 		"Url":                      "https://chef.morpheusdata.com",
 		"Version":                  "15.9.38",
@@ -35,6 +35,11 @@ func RenderIntegrationChefConfig(t *testing.T, name string, overrides map[string
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -46,15 +51,6 @@ func RenderIntegrationChefConfig(t *testing.T, name string, overrides map[string
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Version", defaults["Version"],
-		"WindowsVersion", defaults["WindowsVersion"],
-		"WindowsMsiInstallUrl", defaults["WindowsMsiInstallUrl"],
-		"Organization", defaults["Organization"],
-		"Username", defaults["Username"],
-		"PrivateKey", defaults["PrivateKey"],
-		"OrganizationValidatorKey", defaults["OrganizationValidatorKey"],
+		args...,
 	)
 }

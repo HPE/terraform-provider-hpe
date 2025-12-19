@@ -25,7 +25,9 @@ func TestAccMorpheusTaskRubyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskRubyScriptGitConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskRubyScriptGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

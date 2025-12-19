@@ -49,6 +49,11 @@ func RenderKeyPairConfig(t *testing.T, overrides map[string]string) (string, err
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -60,8 +65,6 @@ func RenderKeyPairConfig(t *testing.T, overrides map[string]string) (string, err
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"PublicKey", defaults["PublicKey"],
-		"PrivateKey", defaults["PrivateKey"],
+		args...,
 	)
 }

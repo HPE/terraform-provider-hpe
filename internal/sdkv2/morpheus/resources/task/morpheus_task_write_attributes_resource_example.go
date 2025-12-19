@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -16,16 +15,12 @@ import (
 
 // RenderTaskWriteAttributesConfig generates a Terraform configuration for testing
 // the task_write_attributes resource. It accepts overrides to customize field values.
-func RenderTaskWriteAttributesConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskWriteAttributesConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
-	code := strings.ToLower(name)
-
 	defaults := map[string]string{
+		"Name":              "Example",
+		"Code":              "example",
 		"Label1":            "demo",
 		"Label2":            "terraform",
 		"Attributes":        `{"demo":"test"}`,
@@ -40,6 +35,11 @@ func RenderTaskWriteAttributesConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -51,14 +51,6 @@ func RenderTaskWriteAttributesConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", name,
-		"Code", code,
-		"Label1", defaults["Label1"],
-		"Label2", defaults["Label2"],
-		"Attributes", defaults["Attributes"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

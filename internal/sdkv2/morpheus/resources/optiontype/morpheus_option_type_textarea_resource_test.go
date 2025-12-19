@@ -39,7 +39,7 @@ func TestAccMorpheusOptionTypeTextareaExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optiontype.RenderOptionTypeTextareaConfig(t, name, map[string]string{
+	resourceConfig, err := optiontype.RenderOptionTypeTextareaConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

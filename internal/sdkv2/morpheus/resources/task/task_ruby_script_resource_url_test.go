@@ -25,7 +25,9 @@ func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskRubyScriptUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskRubyScriptUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

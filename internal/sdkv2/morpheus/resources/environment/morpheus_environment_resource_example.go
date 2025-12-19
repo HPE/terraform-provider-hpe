@@ -15,21 +15,23 @@ import (
 
 // RenderEnvironmentConfig renders the environment resource configuration with default values
 // that can be overridden by providing a map of field name to value.
-func RenderEnvironmentConfig(t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Active":      "true",
 		"Code":        "tfexample",
 		"Description": "Terraform Example",
-		"Name":        name,
+		"Name":        "Example",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -43,9 +45,6 @@ func RenderEnvironmentConfig(t *testing.T,
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Active", defaults["Active"],
-		"Code", defaults["Code"],
-		"Description", defaults["Description"],
-		"Name", defaults["Name"],
+		args...,
 	)
 }

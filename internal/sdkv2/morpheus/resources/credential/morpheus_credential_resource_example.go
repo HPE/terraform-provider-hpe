@@ -21,10 +21,7 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_credential/resource_email_private_key.tf credential_resource_email_private_key.tf.tmpl Name "tf_example_credential_email_private_key" Description "terraform credential example for email private key" Enabled "true" Type "email-private-key" Email "test@example.local" KeyPairId "33"
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_credential/resource_client_id_secret.tf credential_resource_client_id_secret.tf.tmpl Name "tf_example_credential_client_id_secret" Description "terraform credential example for client id secret" Enabled "true" Type "client-id-secret" ClientId "FIEFMIQNQ" ClientSecret "MMEWMIFINWEINFINE"
 
-func RenderCredentialTenantUsernameKeypairConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialTenantUsernameKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -40,6 +37,11 @@ func RenderCredentialTenantUsernameKeypairConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -51,20 +53,11 @@ func RenderCredentialTenantUsernameKeypairConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Tenant", defaults["Tenant"],
-		"Username", defaults["Username"],
-		"KeyPairId", defaults["KeyPairId"],
+		args...,
 	)
 }
 
-func RenderCredentialClientIdSecretConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialClientIdSecretConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -79,6 +72,11 @@ func RenderCredentialClientIdSecretConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -90,19 +88,11 @@ func RenderCredentialClientIdSecretConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"ClientId", defaults["ClientId"],
-		"ClientSecret", defaults["ClientSecret"],
+		args...,
 	)
 }
 
-func RenderCredentialUsernameApiKeyConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialUsernameApiKeyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -117,6 +107,11 @@ func RenderCredentialUsernameApiKeyConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -128,19 +123,11 @@ func RenderCredentialUsernameApiKeyConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Username", defaults["Username"],
-		"ApiKey", defaults["ApiKey"],
+		args...,
 	)
 }
 
-func RenderCredentialUsernamePasswordKeypairConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialUsernamePasswordKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -156,6 +143,11 @@ func RenderCredentialUsernamePasswordKeypairConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -167,20 +159,11 @@ func RenderCredentialUsernamePasswordKeypairConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-		"KeyPairId", defaults["KeyPairId"],
+		args...,
 	)
 }
 
-func RenderCredentialAccessKeySecretConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialAccessKeySecretConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -195,6 +178,11 @@ func RenderCredentialAccessKeySecretConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -206,12 +194,7 @@ func RenderCredentialAccessKeySecretConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"AccessKey", defaults["AccessKey"],
-		"SecretKey", defaults["SecretKey"],
+		args...,
 	)
 }
 
@@ -229,6 +212,11 @@ func RenderCredentialApiKeyConfig(t *testing.T, overrides map[string]string) (st
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -240,18 +228,11 @@ func RenderCredentialApiKeyConfig(t *testing.T, overrides map[string]string) (st
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"ApiKey", defaults["ApiKey"],
+		args...,
 	)
 }
 
-func RenderCredentialUsernameKeypairConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialUsernameKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -266,6 +247,11 @@ func RenderCredentialUsernameKeypairConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -277,19 +263,11 @@ func RenderCredentialUsernameKeypairConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Username", defaults["Username"],
-		"KeyPairId", defaults["KeyPairId"],
+		args...,
 	)
 }
 
-func RenderCredentialUsernamePasswordConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialUsernamePasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -304,6 +282,11 @@ func RenderCredentialUsernamePasswordConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -315,19 +298,11 @@ func RenderCredentialUsernamePasswordConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
+		args...,
 	)
 }
 
-func RenderCredentialEmailPrivateKeyConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
+func RenderCredentialEmailPrivateKeyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
@@ -342,6 +317,11 @@ func RenderCredentialEmailPrivateKeyConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -353,11 +333,6 @@ func RenderCredentialEmailPrivateKeyConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"Email", defaults["Email"],
-		"KeyPairId", defaults["KeyPairId"],
+		args...,
 	)
 }

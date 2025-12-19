@@ -48,7 +48,9 @@ func TestAccMorpheusCypherTfvarsExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := cypher.RenderCypherTfvarsConfig(t, name, map[string]string{})
+	resourceConfig, err := cypher.RenderCypherTfvarsConfig(t, map[string]string{
+		"Key": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

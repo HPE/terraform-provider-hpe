@@ -11,12 +11,14 @@ description: |-
 ## Example Usage
 
 ```terraform
-variable "prefix" {
-  default = "documentation"
-}
-
 data "hpe_morpheus_network" "example" {
-  name = "${var.prefix}-example"
+  id = 99
+}
+```
+
+```terraform
+data "hpe_morpheus_network" "example" {
+  name = "Example name"
 }
 ```
 
@@ -36,5 +38,3 @@ data "hpe_morpheus_network" "example" {
 - `display_name` (String) Network Display Name
 - `labels` (Set of String)
 - `visibility` (String)
-
-

@@ -31,6 +31,11 @@ func RenderSettingGuidanceConfig(t *testing.T, overrides map[string]string) (str
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -42,13 +47,6 @@ func RenderSettingGuidanceConfig(t *testing.T, overrides map[string]string) (str
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"PowerSettingsAverageCpu", defaults["PowerSettingsAverageCpu"],
-		"PowerSettingsMaximumCpu", defaults["PowerSettingsMaximumCpu"],
-		"PowerSettingsNetworkThreshold", defaults["PowerSettingsNetworkThreshold"],
-		"CpuUpsizeAverageCpu", defaults["CpuUpsizeAverageCpu"],
-		"CpuUpsizeMaximumCpu", defaults["CpuUpsizeMaximumCpu"],
-		"MemoryUpsizeMinimumFreeMemory", defaults["MemoryUpsizeMinimumFreeMemory"],
-		"MemoryDownsizeAverageFreeMemory", defaults["MemoryDownsizeAverageFreeMemory"],
-		"MemoryDownsizeMaximumFreeMemory", defaults["MemoryDownsizeMaximumFreeMemory"],
+		args...,
 	)
 }

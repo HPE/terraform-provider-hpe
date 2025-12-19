@@ -25,7 +25,9 @@ func TestAccMorpheusTaskPowershellScriptResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskPowershellScriptUrlConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskPowershellScriptUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

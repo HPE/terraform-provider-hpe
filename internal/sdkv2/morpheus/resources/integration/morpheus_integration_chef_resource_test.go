@@ -27,7 +27,7 @@ func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationChefConfig(t, name, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationChefConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

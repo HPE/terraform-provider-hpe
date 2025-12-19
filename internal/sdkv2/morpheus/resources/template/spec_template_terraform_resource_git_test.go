@@ -25,7 +25,9 @@ func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateTerraformGitConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSpecTemplateTerraformGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

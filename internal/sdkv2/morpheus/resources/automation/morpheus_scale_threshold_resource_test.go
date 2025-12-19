@@ -25,11 +25,9 @@ func TestAccMorpheusScaleThresholdExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := automation.RenderScaleThresholdConfig(
-		t,
-		name,
-		map[string]string{},
-	)
+	resourceConfig, err := automation.RenderScaleThresholdConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

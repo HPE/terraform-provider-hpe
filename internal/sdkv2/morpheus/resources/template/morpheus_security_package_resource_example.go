@@ -13,15 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_security_package/resource.tf morpheus_security_package_resource.tf.tmpl Name "tf_example_security_package" Description "Terraform security package example" Labels "[\"demo\", \"terraform\"]" Enabled true Url "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/scap-security-guide-0.1.59.zip"
 
-func RenderSecurityPackageConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSecurityPackageConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        name,
+		"Name":        "Example",
 		"Description": "Terraform security package example",
 		"Labels":      "[\"demo\", \"terraform\"]",
 		"Enabled":     "true",
@@ -31,6 +27,11 @@ func RenderSecurityPackageConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -44,10 +45,6 @@ func RenderSecurityPackageConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Labels", defaults["Labels"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
+		args...,
 	)
 }

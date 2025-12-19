@@ -15,16 +15,12 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_ruby_script/resource_git.tf task_ruby_script_resource_git.tf.tmpl Name tfexample_ruby_git Code tfexample_ruby_git Labels "\"demo\", \"terraform\"" SourceType repository ResultType json ScriptPath example.rb VersionRef master RepositoryId 1 Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_ruby_script/resource_url.tf task_ruby_script_resource_url.tf.tmpl Name tfexample_ruby_url Code tfexample_ruby_url Labels "\"demo\", \"terraform\"" SourceType url ResultType json ScriptPath https://example.com/example.rb Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
-func RenderTaskRubyScriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskRubyScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "local",
 		"ScriptContent":     "puts \"testing\"",
@@ -38,6 +34,11 @@ func RenderTaskRubyScriptConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -49,28 +50,16 @@ func RenderTaskRubyScriptConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ScriptContent", defaults["ScriptContent"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskRubyScriptGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskRubyScriptGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "repository",
 		"ResultType":        "json",
@@ -87,6 +76,11 @@ func RenderTaskRubyScriptGitConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -98,31 +92,16 @@ func RenderTaskRubyScriptGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"VersionRef", defaults["VersionRef"],
-		"RepositoryId", defaults["RepositoryId"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskRubyScriptUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskRubyScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            "\"demo\", \"terraform\"",
 		"SourceType":        "url",
 		"ResultType":        "json",
@@ -137,6 +116,11 @@ func RenderTaskRubyScriptUrlConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -148,15 +132,6 @@ func RenderTaskRubyScriptUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

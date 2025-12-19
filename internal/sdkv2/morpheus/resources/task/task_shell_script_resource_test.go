@@ -25,7 +25,9 @@ func TestAccMorpheusTaskShellScriptResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskShellScriptConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskShellScriptConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

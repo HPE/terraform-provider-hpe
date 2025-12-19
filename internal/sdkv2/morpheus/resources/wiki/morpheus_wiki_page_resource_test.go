@@ -48,7 +48,7 @@ func TestAccMorpheusWikiPageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := wiki.RenderWikiPageConfig(t, name, map[string]string{
+	resourceConfig, err := wiki.RenderWikiPageConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {
