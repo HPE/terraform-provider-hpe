@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"strings"
 
@@ -19,6 +20,44 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
+func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+	authType := d.Get("auth_type").(string)
+
+	if authType == "aria" {
+		// For aria auth type, api_token is required
+		apiToken := d.Get("api_token").(string)
+		if apiToken == "" {
+			return fmt.Errorf("api_token is required when auth_type is 'aria'")
+		}
+	} else {
+		// For non-aria auth types, username, password, tenant, and auth_id are required
+		username := d.Get("username").(string)
+		password := d.Get("password").(string)
+		tenant := d.Get("tenant").(string)
+		authId := d.Get("auth_id").(string)
+
+		var missing []string
+		if username == "" {
+			missing = append(missing, "username")
+		}
+		if password == "" {
+			missing = append(missing, "password")
+		}
+		if tenant == "" {
+			missing = append(missing, "tenant")
+		}
+		if authId == "" {
+			missing = append(missing, "auth_id")
+		}
+
+		if len(missing) > 0 {
+			return fmt.Errorf("the following fields are required when auth_type is not 'aria': %s", strings.Join(missing, ", "))
+		}
+	}
+
+	return nil
+}
+
 func ResourceIntegrationVRO() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a vRealize Orchestrator integration resource",
@@ -26,6 +65,7 @@ func ResourceIntegrationVRO() *schema.Resource {
 		ReadContext:   resourceIntegrationVRORead,
 		UpdateContext: resourceIntegrationVROUpdate,
 		DeleteContext: resourceIntegrationVRODelete,
+		CustomizeDiff: validateVROAuthConfig,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -53,17 +93,17 @@ func ResourceIntegrationVRO() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The authentication type for the vRO integration",
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"basic"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"basic", "aria", "oauth", "vra"}, false),
 			},
 			"username": {
 				Type:        schema.TypeString,
-				Description: "The username of the account used to connect to vRO",
-				Required:    true,
+				Description: "The username of the account used to connect to vRO (required for non-aria auth types)",
+				Optional:    true,
 			},
 			"password": {
 				Type:        schema.TypeString,
-				Description: "The password of the account used to connect to vRO",
-				Required:    true,
+				Description: "The password of the account used to connect to vRO (required for non-aria auth types)",
+				Optional:    true,
 				Sensitive:   true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
@@ -76,8 +116,8 @@ func ResourceIntegrationVRO() *schema.Resource {
 			},
 			"tenant": {
 				Type:        schema.TypeString,
-				Description: "The tenant of the account used to connect to vRO",
-				Required:    true,
+				Description: "The tenant of the account used to connect to vRO (required for non-aria auth types)",
+				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
 					h.Write([]byte(new))
@@ -85,6 +125,18 @@ func ResourceIntegrationVRO() *schema.Resource {
 
 					return strings.EqualFold(old, sha256Hash)
 				},
+			},
+			"auth_id": {
+				Type:        schema.TypeString,
+				Description: "The authentication ID for the vRO integration (required for non-aria auth types)",
+				Optional:    true,
+				Computed:    true,
+			},
+			"api_token": {
+				Type:        schema.TypeString,
+				Description: "The API token for vRO (required when auth_type is aria)",
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -121,6 +173,14 @@ func resourceIntegrationVROCreate(ctx context.Context, d *schema.ResourceData, m
 
 	integration["type"] = "vro"
 
+	var authType string
+	if v, ok := d.Get("auth_type").(string); ok {
+		authType = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("auth_type", d.Get("auth_type")))
+	}
+	integration["authType"] = authType
+
 	var url string
 	if v, ok := d.Get("url").(string); ok {
 		url = v
@@ -129,39 +189,43 @@ func resourceIntegrationVROCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	integration["serviceUrl"] = url
 
-	var username string
-	if v, ok := d.Get("username").(string); ok {
-		username = v
+	// Handle different auth types
+	if authType == "aria" {
+		// For aria auth type, use api_token
+		var apiToken string
+		if v, ok := d.Get("api_token").(string); ok {
+			apiToken = v
+		}
+		config := make(map[string]any)
+		config["apiToken"] = apiToken
+		integration["config"] = config
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("username", d.Get("username")))
-	}
-	integration["serviceUsername"] = username
+		// For non-aria auth types (basic, oauth, vra), use username/password/tenant
+		var username string
+		if v, ok := d.Get("username").(string); ok {
+			username = v
+		}
+		integration["serviceUsername"] = username
 
-	var password string
-	if v, ok := d.Get("password").(string); ok {
-		password = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("password", d.Get("password")))
-	}
-	integration["servicePassword"] = password
+		var password string
+		if v, ok := d.Get("password").(string); ok {
+			password = v
+		}
+		integration["servicePassword"] = password
 
-	var tenant string
-	if v, ok := d.Get("tenant").(string); ok {
-		tenant = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("tenant", d.Get("tenant")))
-	}
-	integration["serviceToken"] = tenant
+		var tenant string
+		if v, ok := d.Get("tenant").(string); ok {
+			tenant = v
+		}
+		integration["serviceToken"] = tenant
 
-	integration["authId"] = ""
-
-	var authType string
-	if v, ok := d.Get("auth_type").(string); ok {
-		authType = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("auth_type", d.Get("auth_type")))
+		var authId string
+		if v, ok := d.Get("auth_id").(string); ok {
+			authId = v
+		}
+		// For non-aria auth types, authId must be set (can be empty string for local credentials)
+		integration["authId"] = authId
 	}
-	integration["authType"] = authType
 
 	req := &morpheus.Request{
 		Body: map[string]any{
