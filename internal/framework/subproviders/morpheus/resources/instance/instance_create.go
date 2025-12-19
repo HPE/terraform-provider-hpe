@@ -232,7 +232,7 @@ func (g *Resource) Create(
 		return
 	}
 
-	// Store ID locally but NOT in state yet
+	// Store ID locally but not in state yet
 	instanceId := instance.Instance.GetId()
 
 	// Helper to taint the resource state on an error after the POST request
@@ -268,8 +268,12 @@ func (g *Resource) Create(
 		backoff.WithMaxElapsedTime(createTimeout),
 	); err != nil {
 		resp.Diagnostics.AddError(
-			"instance provisioning failed",
-			fmt.Sprintf("Instance %d failed to reach running status. Current status: %s. Error: %v", instanceId, status, err),
+			"create instance resource",
+			fmt.Sprintf(
+				"instance %d: provisioning failed current status is: %s",
+				instanceId,
+				status,
+			),
 		)
 		taintResourceState(instanceId)
 
@@ -288,7 +292,6 @@ func (g *Resource) Create(
 		return
 	}
 
-	// SUCCESS! Set the full state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
