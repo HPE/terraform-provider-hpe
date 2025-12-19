@@ -13,15 +13,15 @@ Service Plans in HPE Morpheus Enterprise determine the memory, storage, and core
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_service_plan" "test" {
+data "hpe_morpheus_service_plan" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_service_plan" "test" {
-    name = "Example name"
-    provision_type_code = "arm"
+data "hpe_morpheus_service_plan" "example" {
+  name                = "Example name"
+  provision_type_code = "arm"
 }
 ```
 
