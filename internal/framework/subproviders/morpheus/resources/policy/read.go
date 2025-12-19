@@ -617,7 +617,7 @@ func getPolicyAsState(
 	if err != nil || hresp.StatusCode != http.StatusOK || policy == nil {
 		diags.AddError(
 			"populate policy resource",
-			fmt.Sprintf("policy %d GET failed", id)+errors.ErrMsg(err, hresp),
+			fmt.Sprintf("policy %d GET failed: ", id)+errors.ErrMsg(err, hresp),
 		)
 
 		return state, diags
