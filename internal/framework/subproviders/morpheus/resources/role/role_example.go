@@ -29,6 +29,11 @@ func RenderRoleUserConfig(t *testing.T, overrides map[string]string) (string, er
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -40,14 +45,7 @@ func RenderRoleUserConfig(t *testing.T, overrides map[string]string) (string, er
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name",
-		defaults["Name"],
-		"Multitenant",
-		defaults["Multitenant"],
-		"Description",
-		defaults["Description"],
-		"RoleType",
-		defaults["RoleType"],
+		args...,
 	)
 }
 
@@ -64,6 +62,11 @@ func RenderRoleTenantConfig(t *testing.T, overrides map[string]string) (string, 
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -75,11 +78,6 @@ func RenderRoleTenantConfig(t *testing.T, overrides map[string]string) (string, 
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"RoleType",
-		defaults["RoleType"],
+		args...,
 	)
 }
