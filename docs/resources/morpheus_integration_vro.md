@@ -29,14 +29,16 @@ resource "hpe_morpheus_integration_vro" "tf_example_vro_integration" {
 
 - `auth_type` (String) The authentication type for the vRO integration
 - `name` (String) The name of the vRO integration
-- `password` (String, Sensitive) The password of the account used to connect to vRO
-- `tenant` (String) The tenant of the account used to connect to vRO
 - `url` (String) The url of the vRO server
-- `username` (String) The username of the account used to connect to vRO
 
 ### Optional
 
+- `api_token` (String, Sensitive) The API token for vRO (required when auth_type is aria)
+- `auth_id` (String) The authentication ID for the vRO integration (required for non-aria auth types)
 - `enabled` (Boolean) Whether the vRO integration is enabled
+- `password` (String, Sensitive) The password of the account used to connect to vRO (required for non-aria auth types)
+- `tenant` (String) The tenant of the account used to connect to vRO (required for non-aria auth types)
+- `username` (String) The username of the account used to connect to vRO (required for non-aria auth types)
 
 ### Read-Only
 
