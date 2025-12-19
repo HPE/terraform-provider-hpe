@@ -31,7 +31,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceLocalExampleOk(t *testing.T) {
 }
 `
 
-	resourceConfig, err := template.RenderSpecTemplateTerraformLocalConfig(t, name, map[string]string{
+	resourceConfig, err := template.RenderSpecTemplateTerraformLocalConfig(t, map[string]string{
 		"SpecContent": specContent,
 	})
 	if err != nil {

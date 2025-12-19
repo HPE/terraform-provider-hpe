@@ -25,7 +25,7 @@ func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optionlist.RenderOptionListApiConfig(t, name, map[string]string{
+	resourceConfig, err := optionlist.RenderOptionListApiConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

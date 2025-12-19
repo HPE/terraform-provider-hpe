@@ -15,15 +15,11 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_cloud_formation/resource_local.tf morpheus_spec_template_cloud_formation_resource_local.tf.tmpl Name tf_cloud_formation_spec_example_local SourceType local SpecContent "{\n  \"AWSTemplateFormatVersion\" : \"2010-09-09\",\n  \"Description\" : \"AWS CloudFormation Sample Template S3_Website_Bucket_With_Retain_On_Delete: Sample template showing how to create a publicly accessible S3 bucket configured for website access with a deletion policy of retain on delete. **WARNING** This template creates an S3 bucket that will NOT be deleted when the stack is deleted. You will be billed for the AWS resources used if you create a stack from this template.\",\n  \"Resources\" : {\n    \"S3Bucket\" : {\n      \"Type\" : \"AWS::S3::Bucket\",\n      \"Properties\" : {\n        \"AccessControl\" : \"PublicRead\",\n        \"WebsiteConfiguration\" : {\n          \"IndexDocument\" : \"index.html\",\n          \"ErrorDocument\" : \"error.html\"\n         }\n      },\n      \"DeletionPolicy\" : \"Retain\"\n    }\n  },\n\n  \"Outputs\" : {\n    \"WebsiteURL\" : {\n      \"Value\" : { \"Fn::GetAtt\" : [ \"S3Bucket\", \"WebsiteURL\" ] },\n      \"Description\" : \"URL for website hosted on S3\"\n    },\n    \"S3BucketSecureURL\" : {\n      \"Value\" : { \"Fn::Join\" : [ \"\", [ \"https://\", { \"Fn::GetAtt\" : [ \"S3Bucket\", \"DomainName\" ] } ] ] },\n      \"Description\" : \"Name of S3 bucket to hold website content\"\n    }\n  }\n}" CapabilityIam true CapabilityNamedIam true CapabilityAutoExpand true
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_cloud_formation/resource_url.tf morpheus_spec_template_cloud_formation_resource_url.tf.tmpl Name tf_cloud_formation_spec_example_url SourceType url SpecPath http://example.com/spec.yaml CapabilityIam true CapabilityNamedIam true CapabilityAutoExpand true
 
-func RenderSpecTemplateCloudFormationLocalConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateCloudFormationLocalConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       name,
+		"Name":       "Example",
 		"SourceType": "local",
 		"SpecContent": `{
   "AWSTemplateFormatVersion" : "2010-09-09",
@@ -66,6 +62,11 @@ func RenderSpecTemplateCloudFormationLocalConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -77,24 +78,15 @@ func RenderSpecTemplateCloudFormationLocalConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecContent", defaults["SpecContent"],
-		"CapabilityIam", defaults["CapabilityIam"],
-		"CapabilityNamedIam", defaults["CapabilityNamedIam"],
-		"CapabilityAutoExpand", defaults["CapabilityAutoExpand"],
+		args...,
 	)
 }
 
-func RenderSpecTemplateCloudFormationUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateCloudFormationUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 name,
+		"Name":                 "Example",
 		"SourceType":           "url",
 		"SpecPath":             "http://example.com/spec.yaml",
 		"CapabilityIam":        "true",
@@ -104,6 +96,11 @@ func RenderSpecTemplateCloudFormationUrlConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -117,24 +114,15 @@ func RenderSpecTemplateCloudFormationUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecPath", defaults["SpecPath"],
-		"CapabilityIam", defaults["CapabilityIam"],
-		"CapabilityNamedIam", defaults["CapabilityNamedIam"],
-		"CapabilityAutoExpand", defaults["CapabilityAutoExpand"],
+		args...,
 	)
 }
 
-func RenderSpecTemplateCloudFormationGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateCloudFormationGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 name,
+		"Name":                 "Example",
 		"SourceType":           "repository",
 		"RepositoryId":         "2",
 		"VersionRef":           "main",
@@ -148,6 +136,11 @@ func RenderSpecTemplateCloudFormationGitConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -159,13 +152,6 @@ func RenderSpecTemplateCloudFormationGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"RepositoryId", defaults["RepositoryId"],
-		"VersionRef", defaults["VersionRef"],
-		"SpecPath", defaults["SpecPath"],
-		"CapabilityIam", defaults["CapabilityIam"],
-		"CapabilityNamedIam", defaults["CapabilityNamedIam"],
-		"CapabilityAutoExpand", defaults["CapabilityAutoExpand"],
+		args...,
 	)
 }

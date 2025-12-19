@@ -48,7 +48,7 @@ func TestAccMorpheusIpPoolIpv4ResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := network.RenderIPPoolIPv4Config(t, name, map[string]string{
+	resourceConfig, err := network.RenderIPPoolIPv4Config(t, map[string]string{
 		"Name": "\"" + name + "\"",
 	})
 	if err != nil {

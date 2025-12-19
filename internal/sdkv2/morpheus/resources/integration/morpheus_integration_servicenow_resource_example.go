@@ -13,15 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_servicenow/resource.tf morpheus_integration_servicenow_resource.tf.tmpl Name "terraform servicenow integration" Enabled true Url "https://servicenowprod.service-now.com" Username "my-snow-username" Password "my-snow-password" DefaultCmdbBusinessClass "demo"
 
-func RenderIntegrationServicenowConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderIntegrationServicenowConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                     name,
+		"Name":                     "Example",
 		"Enabled":                  "true",
 		"Url":                      "https://servicenowprod.service-now.com",
 		"Username":                 "my-snow-username",
@@ -31,6 +27,11 @@ func RenderIntegrationServicenowConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -44,11 +45,6 @@ func RenderIntegrationServicenowConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-		"DefaultCmdbBusinessClass", defaults["DefaultCmdbBusinessClass"],
+		args...,
 	)
 }

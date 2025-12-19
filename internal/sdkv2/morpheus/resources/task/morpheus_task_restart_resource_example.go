@@ -15,16 +15,12 @@ import (
 
 // RenderTaskRestartConfig renders the task restart resource configuration
 // with the provided name and field overrides.
-func RenderTaskRestartConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskRestartConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	// Default values
 	defaults := map[string]string{
-		"Name":              name,
+		"Name":              "Example",
 		"Code":              "tfexample_restart",
 		"Labels":            `["demo", "terraform"]`,
 		"Retryable":         "true",
@@ -38,6 +34,11 @@ func RenderTaskRestartConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -49,12 +50,6 @@ func RenderTaskRestartConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

@@ -25,7 +25,9 @@ func TestAccMorpheusTaskShellScriptResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskShellScriptGitConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskShellScriptGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

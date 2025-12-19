@@ -13,15 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_file_template/resource.tf morpheus_file_template_resource.tf.tmpl Name tf-terraform-file-template Labels ["demo","template","terraform"] FileName tfcustom.cnf FilePath /etc/my.cnf.d Phase preProvision FileOwner root SettingName myCnf SettingCategory master
 
-func RenderFileTemplateConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderFileTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":            name,
+		"Name":            "Example",
 		"Labels":          `["demo", "template", "terraform"]`,
 		"FileName":        "tfcustom.cnf",
 		"FilePath":        "/etc/my.cnf.d",
@@ -36,6 +32,11 @@ func RenderFileTemplateConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -47,14 +48,6 @@ func RenderFileTemplateConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Labels", defaults["Labels"],
-		"FileName", defaults["FileName"],
-		"FilePath", defaults["FilePath"],
-		"Phase", defaults["Phase"],
-		"FileContent", defaults["FileContent"],
-		"FileOwner", defaults["FileOwner"],
-		"SettingName", defaults["SettingName"],
-		"SettingCategory", defaults["SettingCategory"],
+		args...,
 	)
 }

@@ -15,20 +15,21 @@ import (
 
 // RenderBootScriptConfig renders a Terraform configuration for boot_script resource.
 // It accepts a name and a map of overrides to customize the default field values.
-func RenderBootScriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderBootScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":    name,
+		"Name":    "Example",
 		"Content": "ls",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -42,7 +43,6 @@ func RenderBootScriptConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Content", defaults["Content"],
+		args...,
 	)
 }

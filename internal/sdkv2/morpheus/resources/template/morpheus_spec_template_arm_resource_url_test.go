@@ -25,7 +25,9 @@ func TestAccMorpheusSpecTemplateArmResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateArmUrlConfig(t, name, nil)
+	resourceConfig, err := template.RenderSpecTemplateArmUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
