@@ -33,6 +33,11 @@ func RenderServicePlanConfig(t *testing.T, overrides map[string]string) (string,
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -44,15 +49,6 @@ func RenderServicePlanConfig(t *testing.T, overrides map[string]string) (string,
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"SortOrder", defaults["SortOrder"],
-		"MaxMemory", defaults["MaxMemory"],
-		"MaxStorage", defaults["MaxStorage"],
-		"ProvisionTypeCode", defaults["ProvisionTypeCode"],
-		"CustomMaxStorage", defaults["CustomMaxStorage"],
-		"CoresPerSocket", defaults["CoresPerSocket"],
-		"ConfigRangesMinStorage", defaults["ConfigRangesMinStorage"],
-		"ConfigRangesMaxStorage", defaults["ConfigRangesMaxStorage"],
+		args...,
 	)
 }

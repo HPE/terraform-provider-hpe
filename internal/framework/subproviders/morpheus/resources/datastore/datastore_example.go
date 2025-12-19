@@ -1,5 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-package user
+
+package datastore
 
 import (
 	"fmt"
@@ -10,16 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_user/example.tf example.tf.tmpl TenantId 1 Username "example-user" RoleIds 1 LinuxKeyPairId 100
+//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_datastore/example_alletramp_hvm.tf example_alletramp_hvm.tf.tmpl Name "TestAlletraDatastore" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
 
-func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderDatastoreAlletraMPHVMConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"TenantId":       "1",
-		"Username":       "example-user",
-		"RoleIds":        "1",
-		"LinuxKeyPairId": "100",
+		"Name":                 "TestAlletraDatastore",
+		"AssociatedResourceID": "1",
+		"StorageServerID":      "1",
+		"GroupID":              "1",
+		"TenantID":             "1",
 	}
 
 	for key, value := range overrides {
@@ -37,7 +39,7 @@ func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error)
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example.tf.tmpl")
+	templatePath := filepath.Join(dir, "role_user.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
