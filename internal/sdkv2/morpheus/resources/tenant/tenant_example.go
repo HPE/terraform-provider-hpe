@@ -3,6 +3,9 @@
 package tenant
 
 import (
+	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -32,26 +35,22 @@ func RenderTenantConfig(t *testing.T, overrides map[string]string) (string, erro
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "tenant_resource.tf.tmpl")
+
 	return testhelpers.RenderExample(
 		t,
-		"tenant_resource.tf.tmpl",
-		"RoleName",
-		defaults["RoleName"],
-		"Name",
-		defaults["Name"],
-		"Description",
-		defaults["Description"],
-		"Enabled",
-		defaults["Enabled"],
-		"Subdomain",
-		defaults["Subdomain"],
-		"Currency",
-		defaults["Currency"],
-		"AccountNumber",
-		defaults["AccountNumber"],
-		"AccountName",
-		defaults["AccountName"],
-		"CustomerNumber",
-		defaults["CustomerNumber"],
+		templatePath,
+		args...,
 	)
 }
