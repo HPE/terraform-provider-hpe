@@ -30,6 +30,11 @@ func RenderCloudConfig(t *testing.T, overrides map[string]string) (string, error
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -41,12 +46,7 @@ func RenderCloudConfig(t *testing.T, overrides map[string]string) (string, error
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"TenantId", defaults["TenantId"],
-		"GroupId", defaults["GroupId"],
-		"Code", defaults["Code"],
-		"Label", defaults["Label"],
-		"ApplianceUrl", defaults["ApplianceUrl"],
+		args...,
 	)
 }
 
@@ -66,6 +66,11 @@ func RenderCloudGenericConfig(t *testing.T, overrides map[string]string) (string
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -77,11 +82,6 @@ func RenderCloudGenericConfig(t *testing.T, overrides map[string]string) (string
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"TenantId", defaults["TenantId"],
-		"GroupId", defaults["GroupId"],
-		"Code", defaults["Code"],
-		"Label", defaults["Label"],
-		"ApplianceUrl", defaults["ApplianceUrl"],
+		args...,
 	)
 }

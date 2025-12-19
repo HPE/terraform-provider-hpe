@@ -26,6 +26,11 @@ func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error)
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -37,9 +42,6 @@ func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error)
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"TenantId", defaults["TenantId"],
-		"Username", defaults["Username"],
-		"RoleIds", defaults["RoleIds"],
-		"LinuxKeyPairId", defaults["LinuxKeyPairId"],
+		args...,
 	)
 }
