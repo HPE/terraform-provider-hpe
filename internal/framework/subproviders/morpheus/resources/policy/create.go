@@ -26,16 +26,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Helper to set partial state on error
-	setPartialState := func(id int64) {
-		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
-			ResourceType: "policy",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
-	}
-
 	name := plan.Name.ValueString()
 	addPolicy := sdk.NewAddPoliciesRequestPolicyWithDefaults()
 
@@ -129,6 +119,16 @@ func (r *Resource) Create(
 	}
 
 	id := *policy.Policy.Id
+
+	// Helper to set partial state on error
+	setPartialState := func(id int64) {
+		utils.SetPartialState(ctx, utils.SetPartialStateConfig{
+			ResourceType: "policy",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
 
 	// Read the created policy to get full state
 	state, diags := getPolicyAsState(ctx, id, client, &plan)
