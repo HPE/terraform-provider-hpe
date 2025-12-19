@@ -47,7 +47,9 @@ func TestAccMorpheusClusterPackageExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := template.RenderClusterPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderClusterPackageConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

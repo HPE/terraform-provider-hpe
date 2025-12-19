@@ -27,7 +27,9 @@ func TestAccMorpheusIntegrationServicenowExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationServicenowConfig(t, name, nil)
+	resourceConfig, err := integration.RenderIntegrationServicenowConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

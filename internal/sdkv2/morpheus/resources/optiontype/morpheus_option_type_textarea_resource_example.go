@@ -13,11 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_textarea/resource.tf morpheus_option_type_textarea_resource.tf.tmpl Name tf_example_textarea_option_type Description "Terraform text area option type example" Labels ["demo","terraform"] FieldName textareaExample ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Text Area Example" Rows 5 Placeholder "example text" DefaultValue example HelpBlock "Terraform text area option type example" Required true VerifyPattern "a\\\\D{4}"
 
-func RenderOptionTypeTextareaConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderOptionTypeTextareaConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  name,
+		"Name":                  "Example",
 		"Description":           "Terraform text area option type example",
 		"Labels":                `["demo","terraform"]`,
 		"FieldName":             "textareaExample",
@@ -41,6 +41,11 @@ func RenderOptionTypeTextareaConfig(t *testing.T, name string, overrides map[str
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -49,25 +54,9 @@ func RenderOptionTypeTextareaConfig(t *testing.T, name string, overrides map[str
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "morpheus_option_type_textarea_resource.tf.tmpl")
 
-	return testhelpers.RenderExample(t,
+	return testhelpers.RenderExample(
+		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Labels", defaults["Labels"],
-		"FieldName", defaults["FieldName"],
-		"ExportMeta", defaults["ExportMeta"],
-		"DependentField", defaults["DependentField"],
-		"VisibilityField", defaults["VisibilityField"],
-		"RequireField", defaults["RequireField"],
-		"ShowOnEdit", defaults["ShowOnEdit"],
-		"Editable", defaults["Editable"],
-		"DisplayValueOnDetails", defaults["DisplayValueOnDetails"],
-		"FieldLabel", defaults["FieldLabel"],
-		"Rows", defaults["Rows"],
-		"Placeholder", defaults["Placeholder"],
-		"DefaultValue", defaults["DefaultValue"],
-		"HelpBlock", defaults["HelpBlock"],
-		"Required", defaults["Required"],
-		"VerifyPattern", defaults["VerifyPattern"],
+		args...,
 	)
 }

@@ -14,15 +14,11 @@ import (
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_script_template/resource.tf morpheus_script_template_resource.tf.tmpl 'Name' 'tf-terraform-script-template' 'Labels' "[\"demo\", \"template\", \"terraform\"]" 'ScriptType' 'bash' 'ScriptPhase' 'provision' 'ScriptContent' "echo \"testing\"" 'RunAsUser' 'root' 'Sudo' 'true'
 
 // RenderScriptTemplateConfig renders the template with provided overrides
-func RenderScriptTemplateConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderScriptTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":          name,
+		"Name":          "Example",
 		"Labels":        "[\"demo\", \"template\", \"terraform\"]",
 		"ScriptType":    "bash",
 		"ScriptPhase":   "provision",
@@ -33,6 +29,11 @@ func RenderScriptTemplateConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -46,12 +47,6 @@ func RenderScriptTemplateConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Labels", defaults["Labels"],
-		"ScriptType", defaults["ScriptType"],
-		"ScriptPhase", defaults["ScriptPhase"],
-		"ScriptContent", defaults["ScriptContent"],
-		"RunAsUser", defaults["RunAsUser"],
-		"Sudo", defaults["Sudo"],
+		args...,
 	)
 }

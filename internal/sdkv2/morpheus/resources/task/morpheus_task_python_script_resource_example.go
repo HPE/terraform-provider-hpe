@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -18,15 +17,12 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_python_script/resource_git.tf morpheus_task_python_script_resource_git.tf.tmpl Name tfexample_python_git Code tfexample_python_git Labels "[\"demo\", \"terraform\"]" SourceType repository ResultType json ScriptPath example.py VersionRef master RepositoryId 1 CommandArguments example AdditionalPackages pyyaml PythonBinary /usr/bin/python3 Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
-func RenderTaskPythonScriptConfig(
-	t *testing.T, name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPythonScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":               name,
-		"Code":               strings.ToLower(name),
+		"Name":               "Example",
+		"Code":               "example",
 		"Labels":             "[\"demo\", \"terraform\"]",
 		"SourceType":         "local",
 		"ScriptContent":      "print('morpheus')\\nprint('python')",
@@ -43,6 +39,11 @@ func RenderTaskPythonScriptConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -54,31 +55,16 @@ func RenderTaskPythonScriptConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ScriptContent", defaults["ScriptContent"],
-		"CommandArguments", defaults["CommandArguments"],
-		"AdditionalPackages", defaults["AdditionalPackages"],
-		"PythonBinary", defaults["PythonBinary"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskPythonScriptUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPythonScriptUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":               name,
-		"Code":               name,
+		"Name":               "Example",
+		"Code":               "example",
 		"Labels":             "[\"demo\", \"terraform\"]",
 		"SourceType":         "url",
 		"ResultType":         "json",
@@ -96,6 +82,11 @@ func RenderTaskPythonScriptUrlConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -107,32 +98,16 @@ func RenderTaskPythonScriptUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"CommandArguments", defaults["CommandArguments"],
-		"AdditionalPackages", defaults["AdditionalPackages"],
-		"PythonBinary", defaults["PythonBinary"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }
 
-func RenderTaskPythonScriptGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskPythonScriptGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":               name,
-		"Code":               strings.ToLower(name),
+		"Name":               "Example",
+		"Code":               "example",
 		"Labels":             "[\"demo\", \"terraform\"]",
 		"SourceType":         "repository",
 		"ResultType":         "json",
@@ -152,6 +127,11 @@ func RenderTaskPythonScriptGitConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -163,20 +143,6 @@ func RenderTaskPythonScriptGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"SourceType", defaults["SourceType"],
-		"ResultType", defaults["ResultType"],
-		"ScriptPath", defaults["ScriptPath"],
-		"VersionRef", defaults["VersionRef"],
-		"RepositoryId", defaults["RepositoryId"],
-		"CommandArguments", defaults["CommandArguments"],
-		"AdditionalPackages", defaults["AdditionalPackages"],
-		"PythonBinary", defaults["PythonBinary"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

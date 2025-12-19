@@ -16,15 +16,11 @@ import (
 // RenderIntegrationDockerRegistryConfig renders the Docker Registry integration
 // resource configuration with the provided field overrides. Default values are used for any
 // fields not specified.
-func RenderIntegrationDockerRegistryConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderIntegrationDockerRegistryConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     name,
+		"Name":     "Example",
 		"Enabled":  "true",
 		"Url":      "https://index.docker.io/v1/",
 		"Username": "admin",
@@ -34,6 +30,11 @@ func RenderIntegrationDockerRegistryConfig(
 	// Apply overrides
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -47,10 +48,6 @@ func RenderIntegrationDockerRegistryConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
+		args...,
 	)
 }

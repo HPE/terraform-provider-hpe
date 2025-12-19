@@ -15,15 +15,11 @@ import (
 
 // RenderClusterPackageConfig generates a test configuration for cluster package resource.
 // It accepts a name and a map of field overrides to customize the default values.
-func RenderClusterPackageConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderClusterPackageConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":            name,
+		"Name":            "Example",
 		"Code":            "tf-example-cluster-package",
 		"Description":     "Terraform example cluster package",
 		"PackageVersion":  "1.2.3",
@@ -38,6 +34,11 @@ func RenderClusterPackageConfig(
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -49,14 +50,6 @@ func RenderClusterPackageConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Description", defaults["Description"],
-		"PackageVersion", defaults["PackageVersion"],
-		"Type", defaults["Type"],
-		"PackageType", defaults["PackageType"],
-		"Enabled", defaults["Enabled"],
-		"RepeatInstall", defaults["RepeatInstall"],
-		"SpecTemplateIds", defaults["SpecTemplateIds"],
+		args...,
 	)
 }

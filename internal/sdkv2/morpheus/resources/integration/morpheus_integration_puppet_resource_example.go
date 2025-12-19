@@ -13,11 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_puppet/resource.tf morpheus_integration_puppet_resource.tf.tmpl Name "tfexample puppet integration" Enabled true PuppetMasterHostname peserver01.morpheusdata.com AllowImmediateExecution true PuppetMasterSshUsername root PuppetMasterSshPassword password123
 
-func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderIntegrationPuppetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                    name,
+		"Name":                    "Example",
 		"Enabled":                 "true",
 		"PuppetMasterHostname":    "peserver01.morpheusdata.com",
 		"AllowImmediateExecution": "true",
@@ -27,6 +27,11 @@ func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[stri
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -40,11 +45,6 @@ func RenderIntegrationPuppetConfig(t *testing.T, name string, overrides map[stri
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"PuppetMasterHostname", defaults["PuppetMasterHostname"],
-		"AllowImmediateExecution", defaults["AllowImmediateExecution"],
-		"PuppetMasterSshUsername", defaults["PuppetMasterSshUsername"],
-		"PuppetMasterSshPassword", defaults["PuppetMasterSshPassword"],
+		args...,
 	)
 }

@@ -25,7 +25,7 @@ func TestAccMorpheusOptionTypeCheckboxExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optiontype.RenderOptionTypeCheckboxConfig(t, name, map[string]string{
+	resourceConfig, err := optiontype.RenderOptionTypeCheckboxConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

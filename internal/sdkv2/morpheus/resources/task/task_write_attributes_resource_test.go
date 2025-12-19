@@ -26,7 +26,9 @@ func TestAccMorpheusTaskWriteAttributesExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskWriteAttributesConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskWriteAttributesConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

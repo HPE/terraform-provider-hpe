@@ -13,21 +13,22 @@ import (
 
 //go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_cypher_tfvars/resource.tf hpe_morpheus_cypher_tfvars_resource.tf.tmpl Key securetfvars Value 'account=12345\npassword=supersecure' Ttl 86400"
 
-func RenderCypherTfvarsConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderCypherTfvarsConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Key":   name,
+		"Key":   "Example",
 		"Ttl":   "86400",
 		"Value": "account=12345\npassword=supersecure",
 	}
 
-	for k, v := range overrides {
-		defaults[k] = v
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -41,8 +42,6 @@ func RenderCypherTfvarsConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Key", defaults["Key"],
-		"Ttl", defaults["Ttl"],
-		"Value", defaults["Value"],
+		args...,
 	)
 }

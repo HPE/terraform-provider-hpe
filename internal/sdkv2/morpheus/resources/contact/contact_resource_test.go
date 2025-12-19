@@ -48,7 +48,9 @@ func TestAccMorpheusContactExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := contact.RenderContactConfig(t, name, map[string]string{})
+	resourceConfig, err := contact.RenderContactConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

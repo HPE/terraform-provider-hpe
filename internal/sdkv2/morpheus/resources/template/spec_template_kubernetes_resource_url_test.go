@@ -25,7 +25,9 @@ func TestAccMorpheusSpecTemplateKubernetesResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateKubernetesUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSpecTemplateKubernetesUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

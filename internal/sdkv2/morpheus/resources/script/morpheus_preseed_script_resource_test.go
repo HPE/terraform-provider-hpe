@@ -25,7 +25,7 @@ func TestAccMorpheusPreseedScriptExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := script.RenderPreseedScriptConfig(t, name, map[string]string{
+	resourceConfig, err := script.RenderPreseedScriptConfig(t, map[string]string{
 		"Content": "ls",
 	})
 	if err != nil {

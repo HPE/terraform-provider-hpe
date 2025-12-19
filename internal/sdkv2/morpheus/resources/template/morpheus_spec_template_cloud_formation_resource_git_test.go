@@ -25,11 +25,9 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceGitExampleOk(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateCloudFormationGitConfig(
-		t,
-		name,
-		map[string]string{},
-	)
+	resourceConfig, err := template.RenderSpecTemplateCloudFormationGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

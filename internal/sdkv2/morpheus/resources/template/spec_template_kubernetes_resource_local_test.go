@@ -49,7 +49,7 @@ spec:
         - containerPort: 80
 `
 
-	resourceConfig, err := template.RenderSpecTemplateKubernetesLocalConfig(t, name, map[string]string{
+	resourceConfig, err := template.RenderSpecTemplateKubernetesLocalConfig(t, map[string]string{
 		"SpecContent": specContent,
 	})
 	if err != nil {

@@ -13,15 +13,11 @@ import (
 
 //go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_execute_schedule/resource.tf hpe_morpheus_execute_schedule_resource.tf.tmpl Name "Run daily at 7 AM" Description "This schedule runs daily at 7 AM Mountain Time" Enabled false TimeZone "America/Denver" Schedule "7 0 * * *"
 
-func RenderExecuteScheduleConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderExecuteScheduleConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        name,
+		"Name":        "Example",
 		"Description": "This schedule runs daily at 7 AM Mountain Time",
 		"Enabled":     "false",
 		"TimeZone":    "America/Denver",
@@ -30,6 +26,11 @@ func RenderExecuteScheduleConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -43,10 +44,6 @@ func RenderExecuteScheduleConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"TimeZone", defaults["TimeZone"],
-		"Schedule", defaults["Schedule"],
+		args...,
 	)
 }

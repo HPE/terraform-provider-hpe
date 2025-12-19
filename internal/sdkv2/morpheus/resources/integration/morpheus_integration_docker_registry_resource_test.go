@@ -25,7 +25,7 @@ func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := integration.RenderIntegrationDockerRegistryConfig(t, name, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationDockerRegistryConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

@@ -48,7 +48,7 @@ func TestAccMorpheusOptionListRestExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := optionlist.RenderOptionListRestConfig(t, name, map[string]string{
+	resourceConfig, err := optionlist.RenderOptionListRestConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

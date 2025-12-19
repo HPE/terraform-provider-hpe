@@ -16,16 +16,12 @@ import (
 // RenderTaskJavascriptConfig generates a terraform configuration string
 // for task javascript resource.
 // It accepts a name and a map to override default field values.
-func RenderTaskJavascriptConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderTaskJavascriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              name,
-		"Code":              name,
+		"Name":              "Example",
+		"Code":              "example",
 		"Labels":            `["demo","terraform"]`,
 		"ScriptContent":     `console.log("testing")`,
 		"Retryable":         "true",
@@ -36,6 +32,11 @@ func RenderTaskJavascriptConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -49,13 +50,6 @@ func RenderTaskJavascriptConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Code", defaults["Code"],
-		"Labels", defaults["Labels"],
-		"ScriptContent", defaults["ScriptContent"],
-		"Retryable", defaults["Retryable"],
-		"RetryCount", defaults["RetryCount"],
-		"RetryDelaySeconds", defaults["RetryDelaySeconds"],
-		"AllowCustomConfig", defaults["AllowCustomConfig"],
+		args...,
 	)
 }

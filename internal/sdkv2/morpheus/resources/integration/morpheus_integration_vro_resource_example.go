@@ -15,12 +15,12 @@ import (
 
 // RenderIntegrationVroConfig generates a Terraform configuration for the VRO integration
 // resource. It accepts an optional map of field overrides to customize the default values.
-func RenderIntegrationVroConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
+func RenderIntegrationVroConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	// Default field values
 	defaults := map[string]string{
-		"Name":     name,
+		"Name":     "Example",
 		"Enabled":  "true",
 		"Url":      "https://myvro/vco/api",
 		"Username": "my-vro-username",
@@ -34,6 +34,11 @@ func RenderIntegrationVroConfig(t *testing.T, name string, overrides map[string]
 		defaults[key] = value
 	}
 
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
 	// Get the directory where this source file is located
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -45,12 +50,6 @@ func RenderIntegrationVroConfig(t *testing.T, name string, overrides map[string]
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-		"AuthType", defaults["AuthType"],
-		"Tenant", defaults["Tenant"],
+		args...,
 	)
 }

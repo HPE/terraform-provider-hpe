@@ -26,7 +26,9 @@ func TestAccMorpheusTaskPowershellScriptResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskPowershellScriptGitConfig(t, name, nil)
+	resourceConfig, err := task.RenderTaskPowershellScriptGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

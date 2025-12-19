@@ -17,15 +17,11 @@ import (
 
 // RenderSpecTemplateTerraformLocalConfig renders the Terraform config for
 // spec_template_terraform_resource_local tests
-func RenderSpecTemplateTerraformLocalConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateTerraformLocalConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       name,
+		"Name":       "Example",
 		"SourceType": "local",
 		"SpecContent": `resource "aws_instance" "instance_1" {
   ami           = "ami-0b91a410940e82c54"
@@ -35,6 +31,11 @@ func RenderSpecTemplateTerraformLocalConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -48,23 +49,17 @@ func RenderSpecTemplateTerraformLocalConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecContent", defaults["SpecContent"],
+		args...,
 	)
 }
 
 // RenderSpecTemplateTerraformGitConfig renders the Terraform config for
 // spec_template_terraform_resource_git tests
-func RenderSpecTemplateTerraformGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateTerraformGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         name,
+		"Name":         "Example",
 		"SourceType":   "repository",
 		"RepositoryId": "2",
 		"VersionRef":   "main",
@@ -73,6 +68,11 @@ func RenderSpecTemplateTerraformGitConfig(
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -86,31 +86,28 @@ func RenderSpecTemplateTerraformGitConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"RepositoryId", defaults["RepositoryId"],
-		"VersionRef", defaults["VersionRef"],
-		"SpecPath", defaults["SpecPath"],
+		args...,
 	)
 }
 
 // RenderSpecTemplateTerraformUrlConfig renders the Terraform config for
 // spec_template_terraform_resource_url tests
-func RenderSpecTemplateTerraformUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
+func RenderSpecTemplateTerraformUrlConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       name,
+		"Name":       "Example",
 		"SourceType": "url",
 		"SpecPath":   "http://example.com/spec.tf",
 	}
 
 	for key, value := range overrides {
 		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
 	}
 
 	// Get the directory where this source file is located
@@ -124,8 +121,6 @@ func RenderSpecTemplateTerraformUrlConfig(
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecPath", defaults["SpecPath"],
+		args...,
 	)
 }

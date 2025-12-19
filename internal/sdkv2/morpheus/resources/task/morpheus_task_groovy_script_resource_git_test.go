@@ -25,7 +25,9 @@ func TestAccMorpheusTaskGroovyScriptGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderTaskGroovyScriptGitConfig(t, name, map[string]string{})
+	resourceConfig, err := task.RenderTaskGroovyScriptGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -48,11 +48,9 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := task.RenderChefBootstrapConfig(
-		t,
-		name,
-		map[string]string{},
-	)
+	resourceConfig, err := task.RenderChefBootstrapConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
