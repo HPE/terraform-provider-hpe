@@ -9,34 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 )
-
-// RenderMorpheusIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
-// with default values that can be overridden via the overrides parameter.
-func RenderMorpheusIntegrationAnsibleTowerConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":     "tf_test_ansible_tower",
-		"Enabled":  "true",
-		"Url":      "https://ansibletower01.morpheusdata.com",
-		"Username": "admin",
-		"Password": "password123",
-	}
-
-	// Override defaults with provided values
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_integration_ansible_tower_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-	)
-}
 
 func TestAccMorpheusIntegrationAnsibleTowerExampleOk(t *testing.T) {
 	t.Skip("Skipping due to lack of available resources to test against")
@@ -53,7 +27,7 @@ func TestAccMorpheusIntegrationAnsibleTowerExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusIntegrationAnsibleTowerConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationAnsibleTowerConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

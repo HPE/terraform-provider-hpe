@@ -1,7 +1,6 @@
 package role
 
 import (
-	_ "embed"
 	"fmt"
 	"path/filepath"
 	"runtime"
@@ -10,31 +9,37 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "ExampleRole" Multitenant "false" Description "An example role" RoleType "user"
+//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_role/role_user.tf role_user.tf.tmpl Name "ExampleUserRole" Multitenant "false" Description "An example user role" RoleType "user"
 
-//go:generate go run ../../../../../../cmd/render example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
+//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_role/role_tenant.tf role_tenant.tf.tmpl Name "ExampleTenantRole" Description "An example tenant role" RoleType "tenant"
 
-//go:embed example.tf.tmpl
-var templateExample string
+//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_role/example-using-legacy-provider.tf example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
 
 func RenderRoleUserConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "ExampleRole",
+		"Name":        "ExampleUserRole",
 		"Multitenant": "false",
 		"Description": "An example user role",
 		"RoleType":    "user",
 	}
 
-	// Apply overrides to defaults
 	for key, value := range overrides {
 		defaults[key] = value
 	}
 
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "role_user.tf.tmpl")
+
 	return testhelpers.RenderExample(
 		t,
-		"example.tf.tmpl",
+		templatePath,
 		"Name",
 		defaults["Name"],
 		"Multitenant",
@@ -50,12 +55,11 @@ func RenderRoleTenantConfig(t *testing.T, overrides map[string]string) (string, 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "ExampleRole",
+		"Name":        "ExampleTenantRole",
 		"Description": "An example tenant role",
 		"RoleType":    "tenant",
 	}
 
-	// Apply overrides to defaults
 	for key, value := range overrides {
 		defaults[key] = value
 	}

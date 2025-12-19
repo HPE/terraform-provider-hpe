@@ -6,39 +6,10 @@ import (
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
-
-func RenderCredentialClientIdSecretConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Description":  "terraform credential example for client id secret",
-		"Enabled":      "true",
-		"Type":         "client-id-secret",
-		"ClientId":     "FIEFMIQNQ",
-		"ClientSecret": "MMEWMIFINWEINFINE",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"credential_resource_client_id_secret.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"Type", defaults["Type"],
-		"ClientId", defaults["ClientId"],
-		"ClientSecret", defaults["ClientSecret"],
-	)
-}
 
 func TestAccMorpheusCredentialResourceClientIdSecretExampleOk(t *testing.T) {
 	t.Parallel()
@@ -53,7 +24,7 @@ func TestAccMorpheusCredentialResourceClientIdSecretExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderCredentialClientIdSecretConfig(t, map[string]string{
+	resourceConfig, err := credential.RenderCredentialClientIdSecretConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

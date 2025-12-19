@@ -9,39 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 )
-
-func RenderIntegrationServicenowConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                     name,
-		"Enabled":                  "true",
-		"Url":                      "https://servicenowprod.service-now.com",
-		"Username":                 "my-snow-username",
-		"Password":                 "my-snow-password",
-		"DefaultCmdbBusinessClass": "demo",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_integration_servicenow_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-		"DefaultCmdbBusinessClass", defaults["DefaultCmdbBusinessClass"],
-	)
-}
 
 func TestAccMorpheusIntegrationServicenowExampleOk(t *testing.T) {
 	t.Skip("Skipping due to lack of available resources to test against")
@@ -58,7 +27,9 @@ func TestAccMorpheusIntegrationServicenowExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderIntegrationServicenowConfig(t, name, nil)
+	resourceConfig, err := integration.RenderIntegrationServicenowConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

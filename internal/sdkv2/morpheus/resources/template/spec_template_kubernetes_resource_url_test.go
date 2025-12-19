@@ -9,40 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-// RenderSpecTemplateKubernetesUrlConfig renders the configuration for the URL-based
-// Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesUrlConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       name,
-		"SourceType": "url",
-		"SpecPath":   "http://example.com/spec.yaml",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_kubernetes_resource_url.tf.tmpl",
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecPath", defaults["SpecPath"],
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
 
 func TestAccMorpheusSpecTemplateKubernetesResourceUrlExampleOk(t *testing.T) {
 	t.Parallel()
@@ -57,7 +25,9 @@ func TestAccMorpheusSpecTemplateKubernetesResourceUrlExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateKubernetesUrlConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSpecTemplateKubernetesUrlConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

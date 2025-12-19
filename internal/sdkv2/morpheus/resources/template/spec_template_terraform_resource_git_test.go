@@ -9,40 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-// RenderSpecTemplateTerraformGitConfig renders the Terraform config for
-// spec_template_terraform_resource_git tests
-func RenderSpecTemplateTerraformGitConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":         name,
-		"SourceType":   "repository",
-		"RepositoryId": "2",
-		"VersionRef":   "main",
-		"SpecPath":     "Instance Types/Terraform/CloudResource/aws/vpc.tf",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_terraform_resource_git.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
 	t.Parallel()
@@ -57,7 +25,9 @@ func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSpecTemplateTerraformGitConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSpecTemplateTerraformGitConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

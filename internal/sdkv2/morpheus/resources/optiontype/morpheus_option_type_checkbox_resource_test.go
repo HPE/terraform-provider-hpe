@@ -9,52 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/optiontype"
 )
-
-// RenderOptionTypeCheckboxConfig generates a Terraform configuration for the morpheus_option_type_checkbox resource.
-// It accepts an optional map of field overrides to customize the default values.
-// Supported override keys: "Name", "Description", "Labels", "FieldName", "ExportMeta", "DependentField",
-// "VisibilityField", "RequireField", "ShowOnEdit", "Editable", "DisplayValueOnDetails", "FieldLabel", "DefaultChecked"
-func RenderOptionTypeCheckboxConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                  acctest.RandomWithPrefix(t.Name()),
-		"Description":           "Terraform checkbox option type example",
-		"Labels":                "[\"demo\", \"terraform\"]",
-		"FieldName":             "checkbox_example",
-		"ExportMeta":            "true",
-		"DependentField":        "dependent_example",
-		"VisibilityField":       "visibility_example",
-		"RequireField":          "require_example",
-		"ShowOnEdit":            "true",
-		"Editable":              "true",
-		"DisplayValueOnDetails": "true",
-		"FieldLabel":            "Checkbox Example",
-		"DefaultChecked":        "true",
-	}
-
-	// Apply overrides
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_option_type_checkbox_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Labels", defaults["Labels"],
-		"FieldName", defaults["FieldName"],
-		"ExportMeta", defaults["ExportMeta"],
-		"DependentField", defaults["DependentField"],
-		"VisibilityField", defaults["VisibilityField"],
-		"RequireField", defaults["RequireField"],
-		"ShowOnEdit", defaults["ShowOnEdit"],
-		"Editable", defaults["Editable"],
-		"DisplayValueOnDetails", defaults["DisplayValueOnDetails"],
-		"FieldLabel", defaults["FieldLabel"],
-		"DefaultChecked", defaults["DefaultChecked"],
-	)
-}
 
 func TestAccMorpheusOptionTypeCheckboxExampleOk(t *testing.T) {
 	t.Parallel()
@@ -69,7 +25,9 @@ func TestAccMorpheusOptionTypeCheckboxExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderOptionTypeCheckboxConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := optiontype.RenderOptionTypeCheckboxConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

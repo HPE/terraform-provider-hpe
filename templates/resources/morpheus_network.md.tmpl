@@ -35,22 +35,22 @@ resource "hpe_morpheus_network" "a" {
 
 ### AWS Network
 
-{{ tffile "examples/resources/hpe_morpheus_network/resource.tf" }}
+{{ tffile "examples/resources/morpheus_network/example_aws.tf" }}
 
 ### Azure Network
 
-{{ tffile "examples/resources/hpe_morpheus_network/azure/resource.tf" }}
+{{ tffile "examples/resources/morpheus_network/example_azure.tf" }}
 
 ### GCP Network
 
-{{ tffile "examples/resources/hpe_morpheus_network/gcp/resource.tf" }}
+{{ tffile "examples/resources/morpheus_network/example_gcp.tf" }}
 
 ### Host Network
 
-{{ tffile "examples/resources/hpe_morpheus_network/host/resource.tf" }}
+{{ tffile "examples/resources/morpheus_network/example_host.tf" }}
 
 ### OVS Port Group Network
 
-{{ tffile "examples/resources/hpe_morpheus_network/ovs_port_group/resource.tf" }}
+{{ tffile "examples/resources/morpheus_network/example_ovs_port_group.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

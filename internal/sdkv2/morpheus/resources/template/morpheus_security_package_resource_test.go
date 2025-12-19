@@ -9,39 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-func RenderSecurityPackageConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":        name,
-		"Description": "Terraform security package example",
-		"Labels":      "[\"demo\", \"terraform\"]",
-		"Enabled":     "true",
-		"Url": "https://github.com/ComplianceAsCode/content/releases/download/" +
-			"v0.1.59/scap-security-guide-0.1.59.zip",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_security_package_resource.tf.tmpl",
-		args...,
-	)
-}
 
 func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 	t.Parallel()
@@ -56,7 +25,9 @@ func TestAccMorpheusSecurityPackageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderSecurityPackageConfig(t, name, map[string]string{})
+	resourceConfig, err := template.RenderSecurityPackageConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/wiki"
 )
 
 func TestMain(m *testing.M) {
@@ -34,33 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderMorpheusWikiPageConfig generates a Terraform configuration for the wiki page resource.
-// It accepts a map of field overrides to customize default values.
-func RenderMorpheusWikiPageConfig(t *testing.T, overrides map[string]string) string {
-	t.Helper()
-
-	// Default field values
-	defaults := map[string]string{
-		"Name":     acctest.RandomWithPrefix(t.Name()),
-		"Category": "morpheus-terraform",
-	}
-
-	// Apply overrides
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(t, "morpheus_wiki_page_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Category", defaults["Category"],
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return resourceConfig
-}
-
 func TestAccMorpheusWikiPageExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -74,9 +48,12 @@ func TestAccMorpheusWikiPageExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig := RenderMorpheusWikiPageConfig(t, map[string]string{
+	resourceConfig, err := wiki.RenderWikiPageConfig(t, map[string]string{
 		"Name": name,
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

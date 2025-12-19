@@ -9,6 +9,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/automation"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -33,36 +34,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderExecuteScheduleConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":        name,
-		"Description": "This schedule runs daily at 7 AM Mountain Time",
-		"Enabled":     "false",
-		"TimeZone":    "America/Denver",
-		"Schedule":    "7 0 * * *",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"hpe_morpheus_execute_schedule_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Description", defaults["Description"],
-		"Enabled", defaults["Enabled"],
-		"TimeZone", defaults["TimeZone"],
-		"Schedule", defaults["Schedule"],
-	)
-}
-
 func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -76,11 +47,9 @@ func TestAccMorpheusExecuteScheduleExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderExecuteScheduleConfig(
-		t,
-		name,
-		map[string]string{},
-	)
+	resourceConfig, err := automation.RenderExecuteScheduleConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

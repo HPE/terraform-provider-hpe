@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/trust"
 )
 
 // nolint: lll
@@ -55,28 +56,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderMorpheusKeyPairConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       acctest.RandomWithPrefix(t.Name()),
-		"PublicKey":  pubKey,
-		"PrivateKey": privKey,
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_key_pair_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"PublicKey", defaults["PublicKey"],
-		"PrivateKey", defaults["PrivateKey"],
-	)
-}
-
 func TestAccMorpheusKeyPairExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -90,7 +69,7 @@ func TestAccMorpheusKeyPairExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusKeyPairConfig(t, map[string]string{
+	resourceConfig, err := trust.RenderKeyPairConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

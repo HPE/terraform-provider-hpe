@@ -9,63 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
-
-// RenderSpecTemplateKubernetesLocalConfig renders the configuration for the local
-// Kubernetes spec template resource. Pass overrides as a map to customize field values.
-func RenderSpecTemplateKubernetesLocalConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaultSpecContent := `---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-  labels:
-    app: nginx
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.14.2
-        ports:
-        - containerPort: 80`
-
-	defaults := map[string]string{
-		"Name":        name,
-		"SourceType":  "local",
-		"SpecContent": defaultSpecContent,
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"morpheus_spec_template_kubernetes_resource_local.tf.tmpl",
-		"Name", defaults["Name"],
-		"SourceType", defaults["SourceType"],
-		"SpecContent", defaults["SpecContent"],
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
 
 func TestAccMorpheusSpecTemplateKubernetesResourceLocalExampleOk(t *testing.T) {
 	t.Parallel()
@@ -104,7 +49,7 @@ spec:
         - containerPort: 80
 `
 
-	resourceConfig, err := RenderSpecTemplateKubernetesLocalConfig(t, name, map[string]string{
+	resourceConfig, err := template.RenderSpecTemplateKubernetesLocalConfig(t, map[string]string{
 		"SpecContent": specContent,
 	})
 	if err != nil {

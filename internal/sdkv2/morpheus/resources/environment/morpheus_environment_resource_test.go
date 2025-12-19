@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/environment"
 )
 
 func TestMain(m *testing.M) {
@@ -34,30 +35,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-// RenderMorpheusEnvironmentConfig renders the environment resource configuration with default values
-// that can be overridden by providing a map of field name to value.
-func RenderMorpheusEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Active":      "true",
-		"Code":        "tfexample",
-		"Description": "Terraform Example",
-		"Name":        acctest.RandomWithPrefix(t.Name()),
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_environment_resource.tf.tmpl",
-		"Active", defaults["Active"],
-		"Code", defaults["Code"],
-		"Description", defaults["Description"],
-		"Name", defaults["Name"],
-	)
-}
-
 func TestAccMorpheusEnvironmentExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -71,7 +48,7 @@ func TestAccMorpheusEnvironmentExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusEnvironmentConfig(t, map[string]string{
+	resourceConfig, err := environment.RenderEnvironmentConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

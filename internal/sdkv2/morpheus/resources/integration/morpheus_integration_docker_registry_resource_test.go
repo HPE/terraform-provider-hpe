@@ -9,40 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 )
-
-// RenderMorpheusIntegrationDockerRegistryConfig renders the Docker Registry integration
-// resource configuration with the provided field overrides. Default values are used for any
-// fields not specified.
-func RenderMorpheusIntegrationDockerRegistryConfig(
-	t *testing.T,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":     acctest.RandomWithPrefix(t.Name()),
-		"Enabled":  "true",
-		"Url":      "https://index.docker.io/v1/",
-		"Username": "admin",
-		"Password": "password123",
-	}
-
-	// Apply overrides
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return testhelpers.RenderExample(
-		t,
-		"morpheus_integration_docker_registry_resource.tf.tmpl",
-		"Name", defaults["Name"],
-		"Enabled", defaults["Enabled"],
-		"Url", defaults["Url"],
-		"Username", defaults["Username"],
-		"Password", defaults["Password"],
-	)
-}
 
 func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 	t.Parallel()
@@ -57,7 +25,7 @@ func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusIntegrationDockerRegistryConfig(t, map[string]string{
+	resourceConfig, err := integration.RenderIntegrationDockerRegistryConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {

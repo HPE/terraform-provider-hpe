@@ -9,31 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/integration"
 )
-
-func RenderMorpheusIntegrationPuppetConfig(t *testing.T, name string, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                    name,
-		"Enabled":                 "true",
-		"PuppetMasterHostname":    "peserver01.morpheusdata.com",
-		"AllowImmediateExecution": "true",
-		"PuppetMasterSshUsername": "root",
-		"PuppetMasterSshPassword": "password123",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	args := []string{}
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	return testhelpers.RenderExample(t, "morpheus_integration_puppet_resource.tf.tmpl", args...)
-}
 
 func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
 	t.Skip("Skipping due to lack of available resources to test against")
@@ -50,7 +27,9 @@ func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderMorpheusIntegrationPuppetConfig(t, name, nil)
+	resourceConfig, err := integration.RenderIntegrationPuppetConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/blueprint"
 )
 
 func TestMain(m *testing.M) {
@@ -35,57 +36,6 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func RenderInstanceTypeConfig(
-	t *testing.T,
-	name string,
-	overrides map[string]string,
-) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":                  name,
-		"Code":                  strings.ToLower(name),
-		"Description":           "Terraform Example Instance Type",
-		"Labels":                `["demo", "instance", "terraform"]`,
-		"Category":              "web",
-		"Visibility":            "private",
-		"ImagePath":             "tfexample.png",
-		"ImageName":             "tfexample.png",
-		"Featured":              "false",
-		"EnableDeployments":     "true",
-		"EnableScaling":         "true",
-		"EnableSettings":        "true",
-		"EnvironmentPrefix":     "TFEXAMPLE_DEMO",
-		"OptionTypeIds":         "[1910, 1912]",
-		"EvarFirstName":         "first",
-		"EvarFirstValue":        "first",
-		"EvarFirstExport":       "true",
-		"EvarSecondName":        "second",
-		"EvarSecondMaskedValue": "second",
-		"EvarSecondExport":      "false",
-	}
-
-	for k, v := range overrides {
-		defaults[k] = v
-	}
-
-	args := make([]string, 0, len(defaults)*2)
-	for k, v := range defaults {
-		args = append(args, k, v)
-	}
-
-	resourceConfig, err := testhelpers.RenderExample(
-		t,
-		"morpheus_instance_type_resource.tf.tmpl",
-		args...,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceConfig, nil
-}
-
 func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 	t.Parallel()
 
@@ -99,7 +49,9 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := RenderInstanceTypeConfig(t, name, map[string]string{})
+	resourceConfig, err := blueprint.RenderInstanceTypeConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,9 +2,6 @@
 
 package serviceplan_test
 
-//go:generate go run ../../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../../cmd/render example-name-provision.tf.tmpl Name "Example name" ProvisionTypeCode "arm"
-
 import (
 	"os"
 	"regexp"
