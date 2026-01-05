@@ -19,6 +19,7 @@ resource "hpe_morpheus_integration_vro" "tf_example_vro_integration" {
   password  = "my-vro-password"
   auth_type = "basic"
   tenant    = "vsphere.local"
+  auth_id   = "1"
 }
 ```
 
