@@ -70,7 +70,8 @@ func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any
 		}
 
 		if username == "" || password == "" || tenant == "" || authId == "" {
-			return fmt.Errorf("the following fields are required when auth_type is not 'aria': username, password, tenant, auth_id")
+			return fmt.Errorf("the following fields are required when auth_type is not 'aria': " +
+				"username, password, tenant, auth_id")
 		}
 	}
 
