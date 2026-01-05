@@ -21,20 +21,53 @@ import (
 )
 
 func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any) error {
-	authType := d.Get("auth_type").(string)
+	var authType string
+	if v, ok := d.Get("auth_type").(string); ok {
+		authType = v
+	} else {
+		return fmt.Errorf("auth_type type assertion failed")
+	}
 
 	if authType == "aria" {
 		// For aria auth type, api_token is required
-		apiToken := d.Get("api_token").(string)
+		var apiToken string
+		if v, ok := d.Get("api_token").(string); ok {
+			apiToken = v
+		} else {
+			return fmt.Errorf("api_token type assertion failed")
+		}
 		if apiToken == "" {
 			return fmt.Errorf("api_token is required when auth_type is 'aria'")
 		}
 	} else {
 		// For non-aria auth types, username, password, tenant, and auth_id are required
-		username := d.Get("username").(string)
-		password := d.Get("password").(string)
-		tenant := d.Get("tenant").(string)
-		authId := d.Get("auth_id").(string)
+		var username string
+		if v, ok := d.Get("username").(string); ok {
+			username = v
+		} else {
+			return fmt.Errorf("username type assertion failed")
+		}
+		
+		var password string
+		if v, ok := d.Get("password").(string); ok {
+			password = v
+		} else {
+			return fmt.Errorf("password type assertion failed")
+		}
+		
+		var tenant string
+		if v, ok := d.Get("tenant").(string); ok {
+			tenant = v
+		} else {
+			return fmt.Errorf("tenant type assertion failed")
+		}
+		
+		var authId string
+		if v, ok := d.Get("auth_id").(string); ok {
+			authId = v
+		} else {
+			return fmt.Errorf("auth_id type assertion failed")
+		}
 
 		var missing []string
 		if username == "" {
