@@ -93,6 +93,11 @@ func TestAccMorpheusIntegrationVroExampleOk(t *testing.T) {
 			"tenant",
 			"vsphere.local",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_integration_vro.tf_example_vro_integration",
+			"auth_id",
+			"1",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
