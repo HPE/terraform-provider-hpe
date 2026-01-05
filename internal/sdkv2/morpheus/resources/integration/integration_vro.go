@@ -25,7 +25,7 @@ func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any
 	if v, ok := d.Get("auth_type").(string); ok {
 		authType = v
 	} else {
-		return fmt.Errorf("auth_type type assertion failed")
+		return helpers.TypeAssertFailError("auth_type", d.Get("auth_type"))
 	}
 
 	if authType == "aria" {
@@ -34,7 +34,7 @@ func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any
 		if v, ok := d.Get("api_token").(string); ok {
 			apiToken = v
 		} else {
-			return fmt.Errorf("api_token type assertion failed")
+			return helpers.TypeAssertFailError("api_token", d.Get("api_token"))
 		}
 		if apiToken == "" {
 			return fmt.Errorf("api_token is required when auth_type is 'aria'")
@@ -45,28 +45,28 @@ func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any
 		if v, ok := d.Get("username").(string); ok {
 			username = v
 		} else {
-			return fmt.Errorf("username type assertion failed")
+			return helpers.TypeAssertFailError("username", d.Get("username"))
 		}
-		
+
 		var password string
 		if v, ok := d.Get("password").(string); ok {
 			password = v
 		} else {
-			return fmt.Errorf("password type assertion failed")
+			return helpers.TypeAssertFailError("password", d.Get("password"))
 		}
-		
+
 		var tenant string
 		if v, ok := d.Get("tenant").(string); ok {
 			tenant = v
 		} else {
-			return fmt.Errorf("tenant type assertion failed")
+			return helpers.TypeAssertFailError("tenant", d.Get("tenant"))
 		}
-		
+
 		var authId string
 		if v, ok := d.Get("auth_id").(string); ok {
 			authId = v
 		} else {
-			return fmt.Errorf("auth_id type assertion failed")
+			return helpers.TypeAssertFailError("auth_id", d.Get("auth_id"))
 		}
 
 		var missing []string
