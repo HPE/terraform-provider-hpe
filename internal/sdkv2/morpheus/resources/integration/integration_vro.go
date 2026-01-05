@@ -69,22 +69,8 @@ func validateVROAuthConfig(ctx context.Context, d *schema.ResourceDiff, meta any
 			return helpers.TypeAssertFailError("auth_id", d.Get("auth_id"))
 		}
 
-		var missing []string
-		if username == "" {
-			missing = append(missing, "username")
-		}
-		if password == "" {
-			missing = append(missing, "password")
-		}
-		if tenant == "" {
-			missing = append(missing, "tenant")
-		}
-		if authId == "" {
-			missing = append(missing, "auth_id")
-		}
-
-		if len(missing) > 0 {
-			return fmt.Errorf("the following fields are required when auth_type is not 'aria': %s", strings.Join(missing, ", "))
+		if username == "" || password == "" || tenant == "" || authId == "" {
+			return fmt.Errorf("the following fields are required when auth_type is not 'aria': username, password, tenant, auth_id")
 		}
 	}
 
