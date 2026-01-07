@@ -3,18 +3,12 @@
 package tenant_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
@@ -28,33 +22,6 @@ func TestMain(m *testing.M) {
 	testhelpers.WriteMergedResults()
 
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	frameworkProvider := provider.New("test", morpheus.New())()
-
-	frameworkServer, err := providerserver.NewProtocol6WithError(frameworkProvider)()
-	if err != nil {
-		return nil, err
-	}
-
-	sdkv2Server, err := tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-	if err != nil {
-		return nil, err
-	}
-
-	providers := []func() tfprotov6.ProviderServer{
-		func() tfprotov6.ProviderServer { return frameworkServer },
-		func() tfprotov6.ProviderServer { return sdkv2Server },
-	}
-
-	return tf6muxserver.NewMuxServer(context.Background(), providers...)
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 func TestAccMorpheusTenantExampleOk(t *testing.T) {
@@ -134,7 +101,7 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Apply
 			{
