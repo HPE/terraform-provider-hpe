@@ -78,8 +78,8 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 	}
 
 	resourceConfig, err := tenant.RenderTenantConfig(t, map[string]string{
-		"RoleName": name,
-		"Name":     name,
+		"Name":       name,
+		"BaseRoleId": "hpe_morpheus_role.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -136,22 +136,11 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create dependencies
-			{
-				Config:             providerConfig + dependencyResourceConfig,
-				ExpectNonEmptyPlan: false,
-			},
-			// Plan
-			{
-				Config:             providerConfig + dependencyResourceConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
-				Check:              checkFn,
-				PlanOnly:           true,
-			},
 			// Apply
 			{
-				Config: providerConfig + dependencyResourceConfig + resourceConfig,
-				Check:  checkFn,
+				Config:             providerConfig + dependencyResourceConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
 			},
 			// Plan after apply
 			{
@@ -159,12 +148,6 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
-			// Delete this resource
-			{
-				Config:             providerConfig + dependencyResourceConfig,
-				ExpectNonEmptyPlan: false,
-			},
-			// Dependencies deleted last
 		},
 	})
 }
