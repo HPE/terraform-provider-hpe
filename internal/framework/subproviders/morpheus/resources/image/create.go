@@ -311,7 +311,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			} else {
 				resp.Diagnostics.AddError(
 					"image provisioning failed",
-					fmt.Sprintf("Image %d failed to reach provisioned status.", plan.Id.ValueInt64()),
+					fmt.Sprintf("Image %d failed to reach provisioned status - unknown error.", plan.Id.ValueInt64()),
 				)
 			}
 		} else {

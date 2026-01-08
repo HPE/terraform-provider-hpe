@@ -283,7 +283,7 @@ func (g *Resource) Create(
 				resp.Diagnostics.AddError(
 					"create instance resource",
 					fmt.Sprintf(
-						"instance %d: provisioning failed",
+						"instance %d: provisioning failed - unknown error",
 						instanceId,
 					),
 				)
