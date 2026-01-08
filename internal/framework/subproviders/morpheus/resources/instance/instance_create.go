@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -267,14 +268,36 @@ func (g *Resource) Create(
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(createTimeout),
 	); err != nil {
-		resp.Diagnostics.AddError(
-			"create instance resource",
-			fmt.Sprintf(
-				"instance %d: provisioning failed current status is: %s",
-				instanceId,
-				status,
-			),
-		)
+		if status == "" {
+			errUnwrapped := errors.Unwrap(err)
+			if errUnwrapped != nil {
+				resp.Diagnostics.AddError(
+					"create instance resource",
+					fmt.Sprintf(
+						"instance %d: provisioning failed: %v",
+						instanceId,
+						errUnwrapped,
+					),
+				)
+			} else {
+				resp.Diagnostics.AddError(
+					"create instance resource",
+					fmt.Sprintf(
+						"instance %d: provisioning failed",
+						instanceId,
+					),
+				)
+			}
+		} else {
+			resp.Diagnostics.AddError(
+				"create instance resource",
+				fmt.Sprintf(
+					"instance %d: provisioning failed current status is: %s",
+					instanceId,
+					status,
+				),
+			)
+		}
 		taintResourceState(instanceId)
 
 		return

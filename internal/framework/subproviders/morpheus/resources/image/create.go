@@ -301,10 +301,25 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
 		backoff.WithMaxElapsedTime(45*time.Minute),
 	); err != nil {
-		resp.Diagnostics.AddError(
-			"create image resource",
-			fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
-		)
+		if status == "" {
+			errUnwrapped := stderr.Unwrap(err)
+			if errUnwrapped != nil {
+				resp.Diagnostics.AddError(
+					"image provisioning failed",
+					fmt.Sprintf("Image %d failed to reach provisioned status: %v", plan.Id.ValueInt64(), errUnwrapped),
+				)
+			} else {
+				resp.Diagnostics.AddError(
+					"image provisioning failed",
+					fmt.Sprintf("Image %d failed to reach provisioned status.", plan.Id.ValueInt64()),
+				)
+			}
+		} else {
+			resp.Diagnostics.AddError(
+				"create image resource",
+				fmt.Sprintf("image %s: creation failed current status is: %s", plan.Name.ValueString(), status),
+			)
+		}
 		taintResourceState(plan.Id.ValueInt64())
 
 		return
