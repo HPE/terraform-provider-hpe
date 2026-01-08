@@ -51,6 +51,7 @@ func TestAccMorpheusInstanceTypeExampleOk(t *testing.T) {
 
 	resourceConfig, err := blueprint.RenderInstanceTypeConfig(t, map[string]string{
 		"Name": name,
+		"Code": strings.ToLower(name),
 	})
 	if err != nil {
 		t.Fatal(err)
