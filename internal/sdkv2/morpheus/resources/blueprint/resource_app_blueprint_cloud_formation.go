@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -90,13 +89,8 @@ func ResourceAppBlueprintCloudFormation() *schema.Resource {
 				Description: "The content of the cloud formation app blueprint. " +
 					"Used when the yaml or json source types are specified",
 				Optional: true,
-				StateFunc: func(val any) string {
-					var blueprintContent string
-					if v, ok := val.(string); ok {
-						blueprintContent = v
-					}
-
-					return strings.TrimSuffix(blueprintContent, "\n")
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return new == old
 				},
 			},
 			"working_path": {

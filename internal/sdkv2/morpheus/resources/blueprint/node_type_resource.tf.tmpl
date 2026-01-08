@@ -1,0 +1,22 @@
+resource "hpe_morpheus_node_type" "tf_example_node" {
+  name             = "{{.Name}}"
+  short_name       = "{{.ShortName}}"
+  labels           = {{.Labels}}
+  technology       = "{{.Technology}}"
+  version          = "{{.Version}}"
+  category         = "{{.Category}}"
+  virtual_image_id = {{.VirtualImageId}}
+
+  service_port {
+    name     = "{{.ServicePortName}}"
+    port     = "{{.ServicePortPort}}"
+    protocol = "{{.ServicePortProtocol}}"
+  }
+
+  service_port {
+    name     = "{{.ServicePortName2}}"
+    port     = "{{.ServicePortPort2}}"
+    protocol = "{{.ServicePortProtocol2}}"
+  }
+}
+

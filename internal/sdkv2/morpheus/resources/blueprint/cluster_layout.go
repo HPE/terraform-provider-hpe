@@ -802,21 +802,21 @@ func parseClusterLayoutEnvironmentVariables(variables []any) []map[string]any {
 		evarconfig := variables[i].(map[string]any)
 		for k, v := range evarconfig {
 			switch k {
-			case "name":
+			case "name": //nolint:goconst
 				row["name"] = v.(string)
 				// row["evarName"] = v.(string)
 				// row["valueType"] = "fixed"
-			case "value":
+			case "value": //nolint:goconst
 				if v.(string) != "" {
 					row["value"] = v.(string)
 					row["masked"] = false
 				}
-			case "masked_value":
+			case "masked_value": //nolint:goconst
 				if v.(string) != "" {
 					row["value"] = v.(string)
 					row["masked"] = true
 				}
-			case "export":
+			case "export": //nolint:goconst
 				row["export"] = v.(bool)
 			}
 		}

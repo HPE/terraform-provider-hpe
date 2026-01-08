@@ -1,0 +1,10 @@
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_specs" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  category          = "{{.Category}}"
+  source_type       = "{{.SourceType}}"
+  spec_template_ids = {{.SpecTemplateIds}}
+  terraform_version = "{{.TerraformVersion}}"
+  terraform_options = "{{.TerraformOptions}}"
+  tfvar_secret      = "{{.TfvarSecret}}"
+}

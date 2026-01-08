@@ -337,7 +337,7 @@ func resourceAppBlueprintKubernetesRead(
 				specTemplates = append(specTemplates, int64(specTemplate.ID))
 			}
 		}
-		d.Set("spec_templates_ids", specTemplates)
+		d.Set("spec_template_ids", specTemplates)
 	}
 
 	return diags

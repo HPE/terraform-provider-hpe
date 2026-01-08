@@ -1,0 +1,13 @@
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_json" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  category          = "{{.Category}}"
+  source_type       = "{{.SourceType}}"
+  blueprint_content = <<EOF
+{{.BlueprintContent}}
+EOF
+  terraform_version = "{{.TerraformVersion}}"
+  terraform_options = "{{.TerraformOptions}}"
+  tfvar_secret      = "{{.TfvarSecret}}"
+  visibility        = "{{.Visibility}}"
+}

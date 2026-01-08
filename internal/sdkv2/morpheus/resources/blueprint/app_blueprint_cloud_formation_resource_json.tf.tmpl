@@ -1,0 +1,14 @@
+resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formation_app_blueprint_json" {
+  name                   = "{{.Name}}"
+  description            = "{{.Description}}"
+  category               = "{{.Category}}"
+  install_agent          = {{.InstallAgent}}
+  cloud_init_enabled     = {{.CloudInitEnabled}}
+  capability_iam         = {{.CapabilityIam}}
+  capability_named_iam   = {{.CapabilityNamedIam}}
+  capability_auto_expand = {{.CapabilityAutoExpand}}
+  source_type            = "{{.SourceType}}"
+  blueprint_content      = <<TFEOF
+{{.BlueprintContent}}
+TFEOF
+}
