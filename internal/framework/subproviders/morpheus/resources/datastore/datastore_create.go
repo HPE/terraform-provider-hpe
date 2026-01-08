@@ -176,12 +176,12 @@ func (r *Resource) Create(
 		if errUnwrapped != nil {
 			resp.Diagnostics.AddError(
 				"datastore provisioning failed",
-				fmt.Sprintf("Datastore %d failed to reach provisioned status: %s", id, errUnwrapped),
+				fmt.Sprintf("Datastore %d failed to reach provisioned status: %v", id, errUnwrapped),
 			)
 		} else {
 			resp.Diagnostics.AddError(
 				"datastore provisioning failed",
-				fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
+				fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %s", id, status),
 			)
 		}
 		taintResourceState(id)
