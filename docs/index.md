@@ -217,7 +217,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_workflow_operational
 - hpe_morpheus_workflow_provisioning
 
-In this release (v0.5.0) we have added the following data-source functionality:
+In this release (v1.0.0) we have added the following data-source functionality:
 
 - hpe_morpheus_ansible_tower_inventory
 - hpe_morpheus_ansible_tower_job_template
