@@ -1,0 +1,8 @@
+resource "hpe_morpheus_network_domain" "tf_example_network_domain" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  public_zone = {{.PublicZone}}
+  visibility  = "{{.Visibility}}"
+  tenant_id   = {{.TenantId}}
+  active      = {{.Active}}
+}
