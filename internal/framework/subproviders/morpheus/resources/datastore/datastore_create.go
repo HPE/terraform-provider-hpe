@@ -167,10 +167,23 @@ func (r *Resource) Create(
 			status = r.GetDatastore().Status
 		}
 
-		resp.Diagnostics.AddError(
-			"datastore provisioning failed",
-			fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %v", id, status),
-		)
+		// Unwrap the error to get the API/SDK error message if present
+		var errUnwrapped error
+		if r == nil {
+			errUnwrapped = errors.Unwrap(err)
+		}
+
+		if errUnwrapped != nil {
+			resp.Diagnostics.AddError(
+				"datastore provisioning failed",
+				fmt.Sprintf("Datastore %d failed to reach provisioned status: %v", id, errUnwrapped),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				"datastore provisioning failed",
+				fmt.Sprintf("Datastore %d failed to reach provisioned status. Current status: %s", id, status),
+			)
+		}
 		taintResourceState(id)
 
 		return
