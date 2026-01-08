@@ -176,7 +176,7 @@ func (r *Resource) Create(
 		if errUnwrapped != nil {
 			resp.Diagnostics.AddError(
 				"datastore provisioning failed",
-				fmt.Sprintf("Datastore %d failed to reach provisioned status: %v", id, errUnwrapped),
+				fmt.Sprintf("Datastore %d failed to reach provisioned status: %s", id, errUnwrapped),
 			)
 		} else {
 			resp.Diagnostics.AddError(
