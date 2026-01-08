@@ -1,0 +1,16 @@
+resource "hpe_morpheus_catalog_item_workflow" "tfexample_workflow_catalog_item" {
+  name                 = "{{ .Name }}"
+  description          = "{{ .Description }}"
+  logo_image_path      = "{{ .LogoImagePath }}"
+  logo_image_name      = "{{ .LogoImageName }}"
+  dark_logo_image_path = "{{ .DarkLogoImagePath }}"
+  dark_logo_image_name = "{{ .DarkLogoImageName }}"
+  enabled              = {{ .Enabled }}
+  featured             = {{ .Featured }}
+  labels               = {{ .Labels }}
+  workflow_id          = {{ .WorkflowId }}
+  option_type_ids      = {{ .OptionTypeIds }}
+  context_type         = "{{ .ContextType }}"
+  content              = {{ .Content }}
+  visibility           = "{{ .Visibility }}"
+}

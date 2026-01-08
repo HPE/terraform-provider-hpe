@@ -1,0 +1,16 @@
+resource "hpe_morpheus_catalog_item_app_blueprint" "tf_example_app_blueprint_catalog_item" {
+  name                 = "{{ .Name }}"
+  description          = "{{ .Description }}"
+  logo_image_path      = "{{ .LogoImagePath }}"
+  logo_image_name      = "{{ .LogoImageName }}"
+  dark_logo_image_path = "{{ .DarkLogoImagePath }}"
+  dark_logo_image_name = "{{ .DarkLogoImageName }}"
+  enabled              = {{ .Enabled }}
+  featured             = {{ .Featured }}
+  labels               = {{ .Labels }}
+  content              = {{ .Content }}
+  visibility           = "{{ .Visibility }}"
+  blueprint_id         = {{ .BlueprintId }}
+  option_type_ids      = {{ .OptionTypeIds }}
+  app_spec             = {{ .AppSpec }}
+}
