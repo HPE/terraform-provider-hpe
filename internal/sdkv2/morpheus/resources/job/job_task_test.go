@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 
 func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
 	// this test has a dependency on Instance and will not be considered for now.
-	return
+	t.Skip()
 
 	t.Parallel()
 
@@ -134,7 +134,8 @@ func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
 
 func TestAccJobTaskScheduleExampleOk(t *testing.T) {
 	// this test has a dependency on Instance and will not be considered for now.
-	return
+	t.Skip()
+
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
