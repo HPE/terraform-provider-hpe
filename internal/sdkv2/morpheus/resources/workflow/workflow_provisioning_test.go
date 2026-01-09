@@ -52,6 +52,16 @@ func TestAccWorkflowProvisioningExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_workflow_provisioning.example",
+			"labels.0",
+			"demo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_workflow_provisioning.example",
+			"labels.1",
+			"terraform",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_workflow_provisioning.example",
 			"platform",
 			"all",
 		),

@@ -60,6 +60,16 @@ func TestAccMorpheusWorkflowOperationalExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_workflow_operational.example",
+			"labels.0",
+			"demo",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_workflow_operational.example",
+			"labels.1",
+			"terraform",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_workflow_operational.example",
 			"platform",
 			"all",
 		),
