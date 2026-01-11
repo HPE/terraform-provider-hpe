@@ -1,4 +1,4 @@
-resource "hpe_morpheus_option_type_radio_list" "tf_example_radio_list_option_type" {
+resource "hpe_morpheus_option_type_radio_list" "example" {
   name                     = "tf_example_radio_list_option_type"
   description              = "Terraform radio list option type example"
   labels                   = ["demo", "terraform"]
