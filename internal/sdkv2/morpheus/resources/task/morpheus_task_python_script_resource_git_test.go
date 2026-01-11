@@ -28,6 +28,7 @@ func TestAccMorpheusTaskPythonScriptGitExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderTaskPythonScriptGitConfig(t, map[string]string{
 		"Name": name,
+		"Code": strings.ToLower(name),
 	})
 	if err != nil {
 		t.Fatal(err)

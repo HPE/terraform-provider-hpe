@@ -27,6 +27,7 @@ func TestAccMorpheusTaskGroovyScriptExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderTaskGroovyScriptConfig(t, map[string]string{
 		"Name": name,
+		"Code": name,
 	})
 	if err != nil {
 		t.Fatal(err)
