@@ -12,7 +12,7 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently only HVM instances are supported.<br>
+-> Currently HVM and VMware instances are supported.<br>
 With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 The addition and removal of volumes is not supported during updates.<br>
 Updates fail when removing optional fields.<br>
@@ -298,6 +298,96 @@ resource "hpe_morpheus_instance" "example" {
     nestedVirtualization = "off"
     noAgent              = true
     createUser           = false
+  }
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+    update = "20m"
+    read   = "10m"
+  }
+}
+```
+
+### VMware VM Instance
+
+```terraform
+data "hpe_morpheus_cloud" "vmware_cloud" {
+  name = "QA VMware"
+}
+
+data "hpe_morpheus_service_plan" "vmware_512mb" {
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "vmware"
+}
+
+data "hpe_morpheus_instance_type_layout" "vmware" {
+  name    = "VMware VM"
+  version = "22.04"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
+  instance_type_id = 9
+
+  group_id = 28
+  plan_id  = data.hpe_morpheus_service_plan.vmware_512mb.id
+
+  instance_context = "dev"
+  network_interfaces = [
+    {
+      network_id = 86657
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 10
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    },
+    {
+      root_volume              = false
+      name                     = "data"
+      size                     = 10
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  tags = [
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config = {
+    resourcePoolId       = "pool-1"
+    nestedVirtualization = "off"
+    noAgent              = true
+    createUser           = false
+    vmwareFolderID       = "group-v79"
   }
 
   timeouts = {

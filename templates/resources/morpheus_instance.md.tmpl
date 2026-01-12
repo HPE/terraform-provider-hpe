@@ -12,7 +12,7 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently only HVM instances are supported.<br>
+-> Currently HVM and VMware instances are supported.<br>
 With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 The addition and removal of volumes is not supported during updates.<br>
 Updates fail when removing optional fields.<br>
@@ -65,5 +65,9 @@ detected is for `timeouts` then the State will be updated with the new settings 
 will be made.  The default timeout for `create`, `delete`, `read` and `update` is 45 minutes
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_timeouts.tf" }}
+
+### VMware VM Instance
+
+{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_vmware.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
