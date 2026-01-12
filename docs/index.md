@@ -159,6 +159,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_integration_puppet
 - hpe_morpheus_integration_servicenow
 - hpe_morpheus_integration_vro
+- hpe_morpheus_instance supports VMware instances
 - hpe_morpheus_instance_type
 - hpe_morpheus_instance_type_layout
 - hpe_morpheus_job_task
