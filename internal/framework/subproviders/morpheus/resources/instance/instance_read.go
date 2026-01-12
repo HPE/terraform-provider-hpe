@@ -286,8 +286,7 @@ func getVolumes(
 	// Import
 	if plan.Name.IsNull() || plan.Name.IsUnknown() {
 		nonRaidVolumes := removeRaidDisks(apiVolumes)
-		markedRootVolumes := markRootVolume(nonRaidVolumes, plan)
-		bootVolumeInFirst := bootVolumeFirst(markedRootVolumes)
+		bootVolumeInFirst := bootVolumeFirst(nonRaidVolumes)
 
 		return convertAPIVolumesToStateVolumes(ctx, bootVolumeInFirst)
 	}
@@ -301,9 +300,7 @@ func getVolumes(
 
 	// The number of volumes is different to the plan
 	nonRaidVolumes := removeRaidDisks(apiVolumes)
-	markedRootVolumes := markRootVolume(nonRaidVolumes, plan)
-	bootVolumeInFirst := bootVolumeFirst(markedRootVolumes)
-	reorderedVolumes := reorderVolumes(bootVolumeInFirst, plan)
+	reorderedVolumes := reorderVolumes(nonRaidVolumes, plan)
 	filledVolumes := fillVolumeFieldsFromPlan(reorderedVolumes, plan)
 	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan)
 
@@ -418,7 +415,7 @@ func bootVolumeFirst(
 	return result
 }
 
-// reorderVolumes re-orders the list of volumes to match the plan with boot volume first
+// reorderVolumes re-orders the list of volumes to match the plan
 func reorderVolumes(
 	apiVolumes []sdk.InstanceContainerServerVolume1,
 	plan InstanceModel,
@@ -433,22 +430,18 @@ func reorderVolumes(
 
 	// Now re-order to match plan
 	orderedVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
-	orderedVolumes = append(orderedVolumes, apiVolumes[0]) // Boot volume first
-	matchedVolumes[0] = true
 
 	// Match remaining volumes with plan volumes by name
 	for _, planVol := range plan.Volumes.Elements() {
 		planVolTyped := planVol.(VolumesValue)
-		for i, apiVol := range apiVolumes[1:] {
-			actualIndex := i + 1 // Account for slice starting at index 1
-			if matchedVolumes[actualIndex] {
+		for i, apiVol := range apiVolumes {
+			if matchedVolumes[i] {
 				continue // Skip already matched volumes
 			}
 
-			if apiVol.Name != nil && planVolTyped.Name.ValueString() == *apiVol.Name &&
-				apiVol.RootVolume != nil && !*apiVol.RootVolume {
+			if apiVol.Name != nil && planVolTyped.Name.ValueString() == *apiVol.Name {
 				orderedVolumes = append(orderedVolumes, apiVol)
-				matchedVolumes[actualIndex] = true
+				matchedVolumes[i] = true
 
 				break
 			}
@@ -463,46 +456,6 @@ func reorderVolumes(
 	}
 
 	return orderedVolumes
-}
-
-// markRootVolume marks the root volume in the list of volumes
-// Note that we hope that there is only one root volume
-// Also this function is almost entirely specific to Metal RAID volumes
-// Hopefully in future the API will return the rootVolume flag correctly and we can remove this function
-func markRootVolume(
-	apiVolumes []sdk.InstanceContainerServerVolume1,
-	plan InstanceModel,
-) []sdk.InstanceContainerServerVolume1 {
-	// Get the name of the boot volume from the plan
-	bootVolumeName := ""
-	foundBootVolume := false
-	planVolumes := plan.Volumes.Elements()
-	if len(planVolumes) > 0 {
-		volume := planVolumes[0].(VolumesValue)
-		if volume.RootVolume.ValueBool() {
-			bootVolumeName = volume.Name.ValueString()
-			foundBootVolume = true
-		}
-	}
-
-	// We're going to look for volumes with the same "name" and "deviceDisplayName" of "BootVolume" or similar
-	retVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
-	for _, volume := range apiVolumes {
-		if volume.Name != nil && volume.DeviceDisplayName != nil {
-			if strings.Contains(*volume.DeviceDisplayName, "BootVolume") ||
-				strings.Contains(*volume.DeviceDisplayName, "Boot Volume") {
-				rootBool := true
-				volume.RootVolume = &rootBool
-				// Also set the name to match the plan if we found it
-				if foundBootVolume {
-					volume.Name = &bootVolumeName
-				}
-			}
-			retVolumes = append(retVolumes, volume)
-		}
-	}
-
-	return retVolumes
 }
 
 // removeRaidDisks removes any RAID disks from the list of volumes
