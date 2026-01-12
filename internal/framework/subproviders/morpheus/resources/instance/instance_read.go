@@ -202,7 +202,7 @@ func getInstanceAsState(
 	state.TaskSetId = plan.TaskSetId
 
 	// volumes
-	volumes, d := getVolumes(ctx, instance)
+	volumes, d := getVolumes(ctx, instance, plan)
 	diags.Append(d...)
 	state.Volumes = volumes
 
@@ -235,6 +235,7 @@ func getInstanceEnvVars(
 func getVolumes(
 	ctx context.Context,
 	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	plan InstanceModel,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -282,27 +283,214 @@ func getVolumes(
 		},
 	)
 
-	volumes, d := convert.ToListType(
-		ctx,
-		apiVolumes,
-		func(
-			in sdk.InstanceContainerServerVolume1,
-		) VolumesValue {
-			v := VolumesValue{}
-			v.Id = convert.Int64ToType(in.Id)
-			v.RootVolume = convert.BoolToType(in.RootVolume)
-			v.Name = convert.StrToType(in.Name)
-			v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage)) // Convert from bytes to GB
-			v.StorageTypeId = convert.Int64ToType(in.TypeId)
-			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
-			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
-			v.state = attr.ValueStateKnown
+	// Import
+	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+		nonRaidVolumes := removeRaidDisks(apiVolumes)
+		bootVolumeInFirst := bootVolumeFirst(nonRaidVolumes)
 
-			return v
+		return convertAPIVolumesToStateVolumes(ctx, bootVolumeInFirst)
+	}
+
+	// If the number of volumes is the same as the plan, we can do a direct conversion
+	if len(apiVolumes) == len(plan.Volumes.Elements()) {
+		autoselectVolumes := setDatastoreAutoSelectionAndSize(apiVolumes, plan)
+
+		return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
+	}
+
+	// The number of volumes is different to the plan
+	nonRaidVolumes := removeRaidDisks(apiVolumes)
+	reorderedVolumes := reorderVolumes(nonRaidVolumes, plan)
+	filledVolumes := fillVolumeFieldsFromPlan(reorderedVolumes, plan)
+	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan)
+
+	return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
+}
+
+// setDatastoreAutoSelectionAndSize sets the AdditionalProperties field for volumes with
+// DatastoreAutoSelection set to that in the plan
+// Also sets the MaxStorage field from the plan size
+// Handles cases where the number of API volumes differs from plan volumes
+func setDatastoreAutoSelectionAndSize(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+	plan InstanceModel,
+) []sdk.InstanceContainerServerVolume1 {
+	autoSelection := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
+	planVolumes := plan.Volumes.Elements()
+
+	// Determine how many volumes we can safely access from the plan
+	maxIndex := len(apiVolumes)
+	if len(planVolumes) < maxIndex {
+		maxIndex = len(planVolumes)
+	}
+
+	for i, apiVol := range apiVolumes {
+		// Only set fields from plan if we have a corresponding plan volume
+		if i < maxIndex {
+			planVol := planVolumes[i].(VolumesValue)
+
+			// Initialize AdditionalProperties map if it doesn't exist
+			if apiVol.AdditionalProperties == nil {
+				apiVol.AdditionalProperties = make(map[string]interface{})
+			}
+
+			if !planVol.DatastoreAutoSelection.IsNull() && !planVol.DatastoreAutoSelection.IsUnknown() {
+				// Set AdditionalProperties to indicate auto-selection
+				apiVol.AdditionalProperties["DatastoreAutoSelection"] = planVol.DatastoreAutoSelection.ValueString()
+			}
+
+			apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
+			// We set this flag to indicate that Terraform set the MaxStorage value
+			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
+		}
+		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
+
+		autoSelection = append(autoSelection, apiVol)
+	}
+
+	return autoSelection
+}
+
+// fillVolumeFieldsFromPlan fills in some missing fields in the API volumes from the plan
+// This is needed because some fields are not returned by the API
+// for certain volume types (e.g. Metal RAID volumes)
+// We assume that the volumes are in the same order as the plan, but handle cases where
+// the number of volumes differs
+func fillVolumeFieldsFromPlan(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+	plan InstanceModel,
+) []sdk.InstanceContainerServerVolume1 {
+	// Now fill in any missing fields from the plan
+	filledVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
+	planVolumes := plan.Volumes.Elements()
+
+	// Determine how many volumes we can safely fill from the plan
+	maxIndex := len(apiVolumes)
+	if len(planVolumes) < maxIndex {
+		maxIndex = len(planVolumes)
+	}
+
+	for i, apiVol := range apiVolumes {
+		// Only fill from plan if we have a corresponding plan volume
+		if i < maxIndex {
+			planVol := planVolumes[i].(VolumesValue)
+			if apiVol.DatastoreId == nil {
+				apiVol.DatastoreId = planVol.DatastoreId.ValueInt64Pointer()
+			}
+			// We set TypeId for all volume types since for some types (e.g. Metal RAID) the API TypeId is different
+			apiVol.TypeId = planVol.StorageTypeId.ValueInt64Pointer()
+		}
+		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
+
+		filledVolumes = append(filledVolumes, apiVol)
+	}
+
+	return filledVolumes
+}
+
+// bootVolumeFirst puts the boot volume first in the list of volumes
+// We hope to remove this function in future when the API names RAID volumes correctly
+func bootVolumeFirst(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+) []sdk.InstanceContainerServerVolume1 {
+	// If there are no volumes, return the original list
+	if len(apiVolumes) == 0 {
+		return apiVolumes
+	}
+
+	// Put boot volume first
+	bootVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
+	otherVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
+	for _, v := range apiVolumes {
+		if v.RootVolume != nil && *v.RootVolume {
+			bootVolumes = append(bootVolumes, v)
+		} else {
+			otherVolumes = append(otherVolumes, v)
+		}
+	}
+
+	// Combine boot volumes first, then other volumes
+	result := append(bootVolumes, otherVolumes...)
+
+	return result
+}
+
+// reorderVolumes re-orders the list of volumes to match the plan
+func reorderVolumes(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+	plan InstanceModel,
+) []sdk.InstanceContainerServerVolume1 {
+	// If there are no volumes, return empty list
+	if len(apiVolumes) == 0 {
+		return apiVolumes
+	}
+
+	// Track which API volumes have been matched to avoid duplicates
+	matchedVolumes := make(map[int]bool)
+
+	// Now re-order to match plan
+	orderedVolumes := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
+
+	// Match remaining volumes with plan volumes by name
+	for _, planVol := range plan.Volumes.Elements() {
+		planVolTyped := planVol.(VolumesValue)
+		for i, apiVol := range apiVolumes {
+			if matchedVolumes[i] {
+				continue // Skip already matched volumes
+			}
+
+			if apiVol.Name != nil && planVolTyped.Name.ValueString() == *apiVol.Name {
+				orderedVolumes = append(orderedVolumes, apiVol)
+				matchedVolumes[i] = true
+
+				break
+			}
+		}
+	}
+
+	// Append any unmatched volumes at the end to avoid data loss
+	for i, apiVol := range apiVolumes {
+		if !matchedVolumes[i] {
+			orderedVolumes = append(orderedVolumes, apiVol)
+		}
+	}
+
+	return orderedVolumes
+}
+
+// removeRaidDisks removes any RAID disks from the list of volumes
+func removeRaidDisks(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+) []sdk.InstanceContainerServerVolume1 {
+	// build a map of device-counts for the API volumes
+	deviceCount := make(map[string]int)
+	for _, volume := range apiVolumes {
+		if volume.DeviceName != nil {
+			deviceCount[*volume.DeviceName]++
+		}
+	}
+
+	// remove the RAID disks from the apiVolumes list
+	nonRaidDiskVolumes := slices.DeleteFunc(
+		apiVolumes,
+		func(v sdk.InstanceContainerServerVolume1) bool {
+			// Skip volumes without a device name
+			if v.DeviceName == nil {
+				return false
+			}
+
+			if deviceCount[*v.DeviceName] > 1 {
+				// We're going to remove volumes which have a diskType
+				if v.DiskType != nil && v.DiskMode == nil {
+					return true
+				}
+			}
+
+			return false
 		},
 	)
 
-	return volumes, d
+	return nonRaidDiskVolumes
 }
 
 // convertBytesPtrToGBBytes converts a pointer to int64 bytes to a pointer to int64 GB bytes
@@ -313,6 +501,59 @@ func convertBytesPtrToGBBytes(b *int64) *int64 {
 	gb := *b / (1 << 30)
 
 	return &gb
+}
+
+func convertAPIVolumesToStateVolumes(
+	ctx context.Context,
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+) (basetypes.ListValue, diag.Diagnostics) {
+	volumes, d := convert.ToListType(
+		ctx,
+		apiVolumes,
+		func(
+			in sdk.InstanceContainerServerVolume1,
+		) VolumesValue {
+			v := VolumesValue{}
+			v.Id = convert.Int64ToType(in.Id)
+			v.RootVolume = convert.BoolToType(in.RootVolume)
+			v.Name = convert.StrToType(in.Name)
+			v.StorageTypeId = convert.Int64ToType(in.TypeId)
+			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
+			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
+
+			// Handle DatastoreAutoSelection and TerraformSetMaxStorage from AdditionalProperties
+			// TerraformSetMaxStorage flag indicates that MaxStorage was set from plan (already in GB)
+			// and should not be converted from bytes
+			terraformSetMaxStorage := false
+			if in.AdditionalProperties != nil {
+				if dsAutoSel, ok := in.AdditionalProperties["DatastoreAutoSelection"]; ok {
+					if dsAutoSelStr, ok := dsAutoSel.(string); ok {
+						v.DatastoreAutoSelection = convert.StrToType(&dsAutoSelStr)
+					}
+				}
+
+				if tsms, ok := in.AdditionalProperties["TerraformSetMaxStorage"]; ok {
+					if tsmsBool, ok := tsms.(bool); ok {
+						terraformSetMaxStorage = tsmsBool
+					}
+				}
+			}
+
+			// Set Size: if TerraformSetMaxStorage is true, MaxStorage is already in GB from plan
+			// Otherwise, convert from bytes to GB
+			if terraformSetMaxStorage {
+				v.Size = convert.Int64ToType(in.MaxStorage)
+			} else {
+				v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage))
+			}
+
+			v.state = attr.ValueStateKnown
+
+			return v
+		},
+	)
+
+	return volumes, d
 }
 
 // getConnectionInfo builds the connection_info list
