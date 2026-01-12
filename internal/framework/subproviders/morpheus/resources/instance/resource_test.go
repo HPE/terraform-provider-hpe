@@ -1,8 +1,9 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 //go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 //go:generate go run ../../../../../../cmd/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 //go:generate go run ../../../../../../cmd/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate go run ../../../../../../cmd/render example_vmware.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
 
 package instance_test
 
