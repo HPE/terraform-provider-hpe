@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package policy
 
@@ -9,6 +9,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
@@ -119,6 +120,7 @@ func (r *Resource) Create(
 	}
 
 	id := *policy.Policy.Id
+	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {

@@ -234,6 +234,7 @@ func (g *Resource) Create(
 	}
 
 	// Store ID locally but not in state yet
+	plan.Id = convert.Int64ToType(instance.Instance.Id)
 	instanceId := instance.Instance.GetId()
 
 	// Helper to taint the resource state on an error after the POST request
