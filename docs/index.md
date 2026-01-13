@@ -145,6 +145,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_credential
 - hpe_morpheus_cypher_secret
 - hpe_morpheus_cypher_tfvars
+- hpe_morpheus_datastore supports Alletra MP BMaaS datastores
 - hpe_morpheus_environment
 - hpe_morpheus_execute_schedule
 - hpe_morpheus_file_template
