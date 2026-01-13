@@ -24,10 +24,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
-	t.Skip("resource hpe_morpheus_job_workflow has external dependencies not yet implemented in test (instance)")
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
+
+	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -139,10 +140,11 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
-	t.Skip("resource hpe_morpheus_job_workflow has external dependencies not yet implemented in test (instance)")
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
+
+	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
