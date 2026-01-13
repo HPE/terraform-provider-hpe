@@ -25,12 +25,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
-	// this test has a dependency on Instance and will not be considered for now.
-	t.Skip()
 
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
+
+	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -133,12 +133,12 @@ func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
 }
 
 func TestAccJobTaskScheduleExampleOk(t *testing.T) {
-	// this test has a dependency on Instance and will not be considered for now.
-	t.Skip()
 
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
+
+	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
