@@ -30,6 +30,16 @@ Ensure the Morpheus appliance can reach the NFS server and that the share is acc
 
 ## Example Usage
 
+Note that the `datastore_type` stanza must contain the `id` and `code`.  To find both and in particular the `id` first
+get a Morpheus API Token for authentication using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
+and then make a call to the `/api/data-store-types` endpoint to list the available datastore types:
+
+```bash
+$ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
+$ export MORPHEUS_API_TOKEN=$(morpheus access-token get)
+$ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-store-types | jq . > data-store-types.json
+```
+
 {{ tffile "internal/framework/subproviders/morpheus/resources/datastore/example_alletramp_hvm.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
