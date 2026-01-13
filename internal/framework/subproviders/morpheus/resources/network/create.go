@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package network
 
@@ -280,6 +280,7 @@ func (r *Resource) Create(
 	}
 
 	id := *network.GetNetwork().Id
+	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {

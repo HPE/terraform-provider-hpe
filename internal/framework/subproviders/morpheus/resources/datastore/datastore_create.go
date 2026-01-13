@@ -13,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/utils"
 )
@@ -126,6 +127,9 @@ func (r *Resource) Create(
 
 		return
 	}
+
+	// Set the resource ID
+	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
