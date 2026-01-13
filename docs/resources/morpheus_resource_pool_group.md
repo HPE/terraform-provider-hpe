@@ -11,7 +11,7 @@ Provides a Morpheus resource pool group resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_resource_pool_group" "tfexample_resource_pool_group" {
+resource "hpe_morpheus_resource_pool_group" "example" {
   name              = "TFExample Resource Pool Group"
   description       = "TFExample Resource Pool Group"
   mode              = "roundRobin"
