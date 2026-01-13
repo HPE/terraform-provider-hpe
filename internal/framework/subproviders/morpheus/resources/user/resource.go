@@ -218,12 +218,6 @@ func (r *Resource) Create(
 		})
 	}
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	state, pdiags := getUserAsState(ctx, id, client)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)

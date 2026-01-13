@@ -230,7 +230,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	imageId := image.VirtualImage.GetId()
 	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
 	// Helper to taint the resource state on an error after the POST request
@@ -241,19 +240,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
-	}
-
-	// Set state
-	plan.Id = convert.Int64ToType(&imageId)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		resp.Diagnostics.AddError(
-			"failed to set initial image state",
-			fmt.Sprintf("Image %d was created but state could not be saved", imageId),
-		)
-		taintResourceState(imageId)
-
-		return
 	}
 
 	// rough template for what needs to be done to support file uploading

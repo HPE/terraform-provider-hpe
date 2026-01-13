@@ -1468,12 +1468,6 @@ func (r *Resource) Create(
 		})
 	}
 
-	// write id as soon as possible
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	apiState, diags := getRoleAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
