@@ -9,22 +9,20 @@ description: |-
 
 
 Datastores are used to provide storage for virtual machines and instances within a cloud environment.
-They can represent various types of storage backends, such as NFS shares, iSCSI or FC targets (such as AlletraMP),
+They can represent various types of storage backends, such as NFS shares, iSCSI or FC targets (such as Alletra MP),
 or cloud-based storage services.
 
--> Currently, only the AlletraMP HVM and NFS datastores are supported with specific config blocks, `config_alletramp_hvm`
-and `config_nfs`. Other datastore types can be created using the generic `config` which is a dynamic attribute.
-
--> Some datastore plugins add additional fields that aren't set by the user to their returned `config` block.  These fields are
+-> Currently, only the Alletra MP HVM and NFS datastores are supported with specific config blocks, `config_alletramp_hvm`
+and `config_nfs`. Other datastore types can be created using the generic `config` which is a dynamic attribute.<br><br>
+One of the config blocks must be specified, either `config_alletramp_hvm`, `config_nfs`, or the generic `config`.<br><br>
+Some datastore plugins add additional fields that aren't set by the user to their returned `config` block.  These fields are
 read-only and will be added to the `config_from_api` dynamic attribute after creation.
 
--> Datastore delete is not guaranteed to succeed.  AlletraMP HVM datastores will delete but NFS datastores
-may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+-> Datastore `destroy` is not guaranteed to succeed.  Alletra MP HVM and BMaaS datastores will `destroy` but NFS datastores
+may fail to `destroy`.  Always `destroy` VMs and other resources using the datastore before `destroying` the datastore itself.
 
 -> NFS datastores may remain in a `provisioning` state indefinitely if the NFS server is not reachable or the share is not accessible.
 Ensure the Morpheus appliance can reach the NFS server and that the share is accessible before creating.
-
--> One of the config blocks must be specified, either `config_alletramp_hvm`, `config_nfs`, or the generic `config`.
 
 -> When creating `associated_resource_type` `Cluster` datastores, the `storage_server` block is required.
 
@@ -39,6 +37,8 @@ $ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
 $ export MORPHEUS_API_TOKEN=$(morpheus access-token get)
 $ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-store-types | jq . > data-store-types.json
 ```
+
+### Alletra MP HVM Datastore
 
 ```terraform
 resource "hpe_morpheus_datastore" "example" {
@@ -55,6 +55,49 @@ resource "hpe_morpheus_datastore" "example" {
   config_alletramp_hvm = {
     protocol_type     = "iSCSI"
     enable_ransomware = false
+  }
+
+  storage_server = {
+    id = 1
+  }
+
+  resource_permissions = {
+    groups = [
+      {
+        id = 1
+      }
+    ]
+  }
+  tenants = [
+    {
+      id = 1
+    }
+  ]
+}
+```
+
+### Alletra MP BMaaS Datastore
+
+-> Note that Morpheus version `8.0.13` or later is required for BMaaS datastore support.
+
+```terraform
+data "hpe_morpheus_cloud" "metal" {
+  name = "Metal"
+}
+
+resource "hpe_morpheus_datastore" "example" {
+  name = "TestAlletraDatastore"
+  datastore_type = {
+    id   = 12
+    code = "hpedatastore-alletra-mp-bmaas"
+  }
+  associated_resource_type = "Cloud"
+  visibility               = "private"
+  active                   = true
+  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
+
+  config = {
+    protocol_type     = "iSCSI"
   }
 
   storage_server = {
