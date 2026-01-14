@@ -31,6 +31,9 @@ func TestAccCatalogItemWorkflowExampleOk(t *testing.T) {
 	dependencyConfig, err := workflow.RenderWorkflowOperationalConfig(t, map[string]string{
 		"Name": name,
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resourceConfig, err := catalogitem.RenderCatalogItemWorkflowConfig(t, map[string]string{
 		"Name":       name,
