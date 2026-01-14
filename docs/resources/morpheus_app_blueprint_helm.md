@@ -13,7 +13,7 @@ Provides a Morpheus helm app blueprint resource
 Creating the Helm app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_app_blueprint_helm" "tf_example_helm_app_blueprint" {
+resource "hpe_morpheus_app_blueprint_helm" "example" {
   name           = "helmappblueprint"
   description    = "tf example helm app blueprint"
   category       = "helm"

@@ -1,4 +1,4 @@
-resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_local" {
+resource "hpe_morpheus_spec_template_helm" "example" {
   name         = "tf-helm-spec-example-local"
   source_type  = "local"
   spec_content = <<TFEOF
@@ -7,15 +7,15 @@ kind: Service
 metadata:
 name: {{ template "fullname" . }}
 labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+ chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:
 type: {{ .Values.service.type }}
 ports:
 - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
+ targetPort: {{ .Values.service.internalPort }}
+ protocol: TCP
+ name: {{ .Values.service.name }}
 selector:
-    app: {{ template "fullname" . }}
+ app: {{ template "fullname" . }}
 TFEOF
 }

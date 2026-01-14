@@ -3,6 +3,7 @@
 package plan_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -15,9 +16,7 @@ import (
 )
 
 func TestAccMorpheusPricePlatformExampleOk(t *testing.T) {
-	// These tests when run in parallel generate errors which I believe could
-	// be race conditions in the Morpheus API.
-	// t.Parallel()
+	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
 
@@ -31,6 +30,7 @@ func TestAccMorpheusPricePlatformExampleOk(t *testing.T) {
 
 	resourceConfig, err := plan.RenderPricePlatformConfig(t, map[string]string{
 		"Name": name,
+		"Code": strings.ToLower(name),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +40,7 @@ func TestAccMorpheusPricePlatformExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_price.example",
 			"code",
-			"terraform-test",
+			strings.ToLower(name),
 		),
 
 		resource.TestCheckResourceAttr(
