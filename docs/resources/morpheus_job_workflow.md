@@ -13,7 +13,7 @@ Provides a workflow job resource
 **Manual**
 
 ```terraform
-resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
+resource "hpe_morpheus_job_workflow" "example" {
   name           = "TF Example Workflow Job Manual"
   enabled        = true
   labels         = ["aws", "demo"]
@@ -21,16 +21,14 @@ resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
   schedule_mode  = "manual"
   context_type   = "instance-label"
   instance_label = "demo"
-  custom_options = {
-    "demo" = "testing"
-  }
+  custom_options = { "demo" = "testing" }
 }
 ```
 
 **Date and Time**
 
 ```terraform
-resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
+resource "hpe_morpheus_job_workflow" "example" {
   name                    = "TF Example Workflow Job Date and Time"
   enabled                 = true
   labels                  = ["aws", "demo"]
@@ -39,16 +37,14 @@ resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
   scheduled_date_and_time = "2022-12-30T06:00:00Z"
   context_type            = "instance"
   instance_ids            = [1, 2]
-  custom_options = {
-    "demo" = "testing"
-  }
+  custom_options          = { "demo" = "testing" }
 }
 ```
 
 **Execution Schedule**
 
 ```terraform
-resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
+resource "hpe_morpheus_job_workflow" "example" {
   name                  = "TF Example Workflow Job Schedule"
   enabled               = true
   labels                = ["aws", "demo"]
@@ -57,9 +53,7 @@ resource "hpe_morpheus_job_workflow" "tf_example_workflow_job_date_and_time" {
   execution_schedule_id = 1
   context_type          = "instance"
   instance_ids          = [91]
-  custom_options = {
-    "demo" = "testing"
-  }
+  custom_options        = { "demo" = "testing" }
 }
 ```
 
