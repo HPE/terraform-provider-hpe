@@ -37,7 +37,7 @@ resource "hpe_morpheus_cluster_mks_vsphere" "example" {
     resource_pool_id = {{.WorkerNodePoolResourcePoolId}}
 
     network_interface {
-      network_id = {{.WorkerNodePoolNetworkInterface0NetworkId}}
+      network_id = {{.WorkerNodePoolNetworkInterfaceNetworkId}}
     }
 
     storage_volume {
