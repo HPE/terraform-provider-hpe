@@ -25,7 +25,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
-
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -133,7 +132,6 @@ func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
 }
 
 func TestAccJobTaskScheduleExampleOk(t *testing.T) {
-
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
