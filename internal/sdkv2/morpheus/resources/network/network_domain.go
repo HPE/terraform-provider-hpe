@@ -240,12 +240,24 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 
 	networkDomain := result.NetworkDomain
 	d.SetId(convert.Int64ToString(networkDomain.ID))
-	d.Set("name", networkDomain.Name)
-	d.Set("description", networkDomain.Description)
-	d.Set("active", networkDomain.Active)
-	d.Set("public_zone", networkDomain.PublicZone)
-	d.Set("domain_controller", networkDomain.DomainController)
-	d.Set("visibility", networkDomain.Visibility)
+	if err := d.Set("name", networkDomain.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", networkDomain.Description); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("active", networkDomain.Active); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("public_zone", networkDomain.PublicZone); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("domain_controller", networkDomain.DomainController); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("visibility", networkDomain.Visibility); err != nil {
+		return diag.FromErr(err)
+	}
 	// d.Set("fqdn", networkDomain.Fqdn)
 
 	return diags
