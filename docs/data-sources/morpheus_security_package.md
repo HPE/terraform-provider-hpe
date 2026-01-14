@@ -11,7 +11,7 @@ Provides a Morpheus security package data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_security_package" "tf_example_security_package" {
+data "hpe_morpheus_security_package" "example" {
   name = "tf_example_security_package"
 }
 ```
