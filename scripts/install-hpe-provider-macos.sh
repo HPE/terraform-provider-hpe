@@ -19,7 +19,7 @@ macos_hpe_dir="${HOME}/.terraform.d/plugins/registry.terraform.io/hpe/hpe"
 
 get_latest_release () {
   local release_url="https://api.github.com/repos/${repo}/releases/latest"
-  curl -sL "$release_url" | ggrep -Po '"tag_name": "\K.*?(?=")'
+  curl -sL "$release_url" | perl -nle 'print $1 if /"tag_name":\s*"(.*?)"/'
 }
 
 download_and_extract () {
