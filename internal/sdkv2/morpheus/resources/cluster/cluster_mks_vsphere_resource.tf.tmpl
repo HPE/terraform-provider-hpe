@@ -1,0 +1,63 @@
+resource "hpe_morpheus_cluster_mks_vsphere" "example" {
+  name                    = "{{.Name}}"
+  resource_prefix         = "{{.ResourcePrefix}}"
+  hostname_prefix         = "{{.HostnamePrefix}}"
+  description             = "{{.Description}}"
+  cloud_id                = {{.CloudId}}
+  group_id                = {{.GroupId}}
+  cluster_layout_id       = {{.ClusterLayoutId}}
+  pod_cidr                = "{{.PodCidr}}"
+  service_cidr            = "{{.ServiceCidr}}"
+  cluster_repo_account_id = {{.ClusterRepoAccountId}}
+
+  master_node_pool {
+    plan_id          = {{.MasterNodePoolPlanId}}
+    resource_pool_id = {{.MasterNodePoolResourcePoolId}}
+
+    network_interface {
+      network_id = {{.MasterNodePoolNetworkInterfaceNetworkId}}
+    }
+
+    storage_volume {
+      root         = {{.MasterNodePoolStorageVolumeRoot}}
+      size         = {{.MasterNodePoolStorageVolumeSize}}
+      name         = "{{.MasterNodePoolStorageVolumeName}}"
+      storage_type = {{.MasterNodePoolStorageVolumeStorageType}}
+      datastore_id = {{.MasterNodePoolStorageVolumeDatastoreId}}
+    }
+
+    tags = {
+      "app" = "{{.MasterNodePoolTagsApp}}"
+    }
+  }
+
+  worker_node_pool {
+    count            = {{.WorkerNodePoolCount}}
+    plan_id          = {{.WorkerNodePoolPlanId}}
+    resource_pool_id = {{.WorkerNodePoolResourcePoolId}}
+
+    network_interface {
+      network_id = {{.WorkerNodePoolNetworkInterface0NetworkId}}
+    }
+
+    storage_volume {
+      root         = {{.WorkerNodePoolStorageVolume0Root}}
+      size         = {{.WorkerNodePoolStorageVolume0Size}}
+      name         = "{{.WorkerNodePoolStorageVolume0Name}}"
+      storage_type = {{.WorkerNodePoolStorageVolume0StorageType}}
+      datastore_id = {{.WorkerNodePoolStorageVolume0DatastoreId}}
+    }
+
+    storage_volume {
+      root         = {{.WorkerNodePoolStorageVolume1Root}}
+      size         = {{.WorkerNodePoolStorageVolume1Size}}
+      name         = "{{.WorkerNodePoolStorageVolume1Name}}"
+      storage_type = {{.WorkerNodePoolStorageVolume1StorageType}}
+      datastore_id = {{.WorkerNodePoolStorageVolume1DatastoreId}}
+    }
+
+    tags = {
+      "app" = "{{.WorkerNodePoolTagsApp}}"
+    }
+  }
+}
