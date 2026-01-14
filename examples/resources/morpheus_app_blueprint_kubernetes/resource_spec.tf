@@ -5,4 +5,3 @@ resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_bluep
   source_type       = "spec"
   spec_template_ids = [2, 3]
 }
-
