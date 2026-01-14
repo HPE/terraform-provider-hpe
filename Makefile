@@ -22,6 +22,7 @@ test:
 	go test -short -v -cover -count 1 -timeout 10m ./...
 
 testacc:
+	cd internal/framework && \
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 60m ./...
 

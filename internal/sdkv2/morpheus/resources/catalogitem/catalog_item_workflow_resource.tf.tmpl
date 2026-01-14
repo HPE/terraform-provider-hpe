@@ -1,0 +1,15 @@
+resource "hpe_morpheus_catalog_item_workflow" "example" {
+  name                 = "{{.Name}}"
+  description          = "{{.Description}}"
+  logo_image_path      = "{{.LogoImagePath}}"
+  logo_image_name      = "{{.LogoImageName}}"
+  dark_logo_image_path = "{{.DarkLogoImagePath}}"
+  dark_logo_image_name = "{{.DarkLogoImageName}}"
+  enabled              = {{.Enabled}}
+  featured             = {{.Featured}}
+  labels               = {{.Labels}}
+  workflow_id          = {{.WorkflowId}}
+  context_type         = "{{.ContextType}}"
+  content              = {{.Content}}
+  visibility           = "{{.Visibility}}"
+}

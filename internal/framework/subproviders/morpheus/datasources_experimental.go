@@ -30,6 +30,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/user"
 )
 
 func (SubProvider) GetDataSources(
@@ -46,5 +47,6 @@ func (SubProvider) GetDataSources(
 		policy.NewDataSource,
 		role.NewDataSource,
 		serviceplan.NewDataSource,
+		user.NewDataSource,
 	}
 }

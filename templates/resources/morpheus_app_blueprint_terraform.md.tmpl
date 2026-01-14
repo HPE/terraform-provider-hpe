@@ -1,0 +1,35 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+Creating the terraform app blueprint with local content in hcl format:
+
+{{tffile "examples/resources/morpheus_app_blueprint_terraform/resource_hcl.tf"}}
+
+Creating the terraform app blueprint with local content in json format:
+
+{{tffile "examples/resources/morpheus_app_blueprint_terraform/resource_json.tf"}}
+
+Creating the terraform app blueprint with Terraform spec templates:
+
+{{tffile "examples/resources/morpheus_app_blueprint_terraform/resource_spec.tf"}}
+
+Creating the terraform app blueprint with the blueprint fetched via git:
+
+{{tffile "examples/resources/morpheus_app_blueprint_terraform/resource_git.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_app_blueprint_terraform/import.sh" }}

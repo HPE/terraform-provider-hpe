@@ -13,14 +13,14 @@ Clouds are integrations or connections to public, private, hybrid clouds, or bar
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_cloud" "test" {
+data "hpe_morpheus_cloud" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_cloud" "test" {
-  name = "Example name" 
+data "hpe_morpheus_cloud" "example_by_name" {
+  name = "Example name"
 }
 ```
 

@@ -1,0 +1,13 @@
+resource "hpe_morpheus_task_powershell_script" "{{.Name}}" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = [{{.Labels}}]
+  source_type         = "{{.SourceType}}"
+  result_type         = "{{.ResultType}}"
+  script_path         = "{{.ScriptPath}}"
+  elevated_shell      = {{.ElevatedShell}}
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}

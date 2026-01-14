@@ -1,0 +1,31 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+Creating the email task with local email template content:
+
+{{tffile "examples/resources/morpheus_task_email/resource.tf"}}
+
+Creating the email task with the email template fetched from a url:
+
+{{tffile "examples/resources/morpheus_task_email/resource_url.tf"}}
+
+Creating the email task with the email template fetched via git:
+
+{{tffile "examples/resources/morpheus_task_email/resource_git.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_task_email/import.sh" }}

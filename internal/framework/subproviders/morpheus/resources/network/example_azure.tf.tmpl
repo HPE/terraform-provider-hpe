@@ -1,0 +1,35 @@
+data "hpe_morpheus_cloud" "example" {
+  name = "{{.CloudName}}"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "{{.GroupName}}"
+}
+
+data "hpe_morpheus_tenant" "example" {
+  name = "{{.TenantName}}"
+}
+
+resource "hpe_morpheus_network" "azure" {
+  name                       = "{{.Name}}"
+  description                = "{{.Description}}"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = {{.PoolId}}
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = {{.TypeId}}
+  cidr                       = "{{.CIDR}}"
+  visibility                 = "{{.Visibility}}"
+  active                     = {{.Active}}
+  dhcp_server                = {{.DHCPServer}}
+  appliance_url_proxy_bypass = {{.ApplianceURLProxyBypass}}
+  labels                     = [{{.Labels}}]
+  config = {
+    "resourceGroupId" = {{.ResourceGroupId}}
+    "subnetName"      = "{{.SubnetName}}"
+    "subnetCidr"      = "{{.SubnetCIDR}}"
+    "location"        = "{{.Location}}"
+  }
+  tenant_ids                 = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+}

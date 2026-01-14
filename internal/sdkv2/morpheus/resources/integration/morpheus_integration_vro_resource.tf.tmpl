@@ -1,0 +1,10 @@
+resource "hpe_morpheus_integration_vro" "tf_example_vro_integration" {
+  name      = "{{.Name}}"
+  enabled   = {{.Enabled}}
+  url       = "{{.Url}}"
+  username  = "{{.Username}}"
+  password  = "{{.Password}}"
+  auth_type = "{{.AuthType}}"
+  tenant    = "{{.Tenant}}"
+  auth_id   = "{{.AuthId}}"
+}

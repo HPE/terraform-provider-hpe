@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_integration_puppet.tf_example_puppet_integration 1
