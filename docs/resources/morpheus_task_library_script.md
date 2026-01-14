@@ -13,7 +13,7 @@ Provides a Morpheus library script task resource
 Creating the library script task using a library script data source:
 
 ```terraform
-resource "hpe_morpheus_task_library_script" "tf_example_library_script_task" {
+resource "hpe_morpheus_task_library_script" "example" {
   name                = "Example Terraform Library Script Task"
   code                = "tf-example-library-script-task"
   labels              = ["demo", "library", "terraform"]
