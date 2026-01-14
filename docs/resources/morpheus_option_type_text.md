@@ -11,7 +11,7 @@ Provides a Morpheus text option type resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_option_type_text" "tf_example_text_option_type" {
+resource "hpe_morpheus_option_type_text" "example" {
   name                     = "tf_example_text_option_type"
   description              = "Terraform text option type example"
   labels                   = ["demo", "terraform"]
