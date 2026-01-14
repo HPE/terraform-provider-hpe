@@ -3,7 +3,6 @@
 package job_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,14 +13,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/job"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/workflow"
 )
-
-func TestMain(m *testing.M) {
-	code := m.Run()
-
-	testhelpers.WriteMergedResults()
-
-	os.Exit(code)
-}
 
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 	t.Parallel()
