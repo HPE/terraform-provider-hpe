@@ -676,8 +676,8 @@ func parseNodeTypeServicePorts(variables []any) []map[string]any {
 		svcportconfig := variables[i].(map[string]any)
 		for k, v := range svcportconfig {
 			switch k {
-			case "name":
-				row["name"] = v.(string)
+			case evarNameKey:
+				row[evarNameKey] = v.(string)
 			case "port":
 				row["port"] = v.(string)
 			case "protocol":

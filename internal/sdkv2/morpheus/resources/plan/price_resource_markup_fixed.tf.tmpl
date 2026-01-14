@@ -1,0 +1,12 @@
+resource "hpe_morpheus_price" "example" {
+  name          = "{{.Name}}"
+  code          = "{{.Code}}"
+  tenant_id     = {{.TenantId}}
+  price_type    = "{{.PriceType}}"
+  price_unit    = "{{.PriceUnit}}"
+  incur_charges = "{{.IncurCharges}}"
+  currency      = "{{.Currency}}"
+  cost          = {{.Cost}}
+  markup_type   = "{{.MarkupType}}"
+  markup_cost   = {{.MarkupCost}}
+}

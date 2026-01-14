@@ -1,7 +1,7 @@
-resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_git" {
+resource "hpe_morpheus_spec_template_helm" "example" {
   name          = "tf-helm-spec-example-git"
   source_type   = "repository"
-  repository_id = 2
+  repository_id = "2"
   version_ref   = "main"
   spec_path     = "./spec.yaml"
 }

@@ -11,7 +11,7 @@ Provides a Morpheus cloud type data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_cloud_type" "canonical_maas_cloud" {
+data "hpe_morpheus_cloud_type" "example" {
   name = "MaaS"
 }
 ```

@@ -1,0 +1,167 @@
+resource "hpe_morpheus_form" "example" {
+  name        = "{{.Name}}"
+  code        = "{{.Code}}"
+  description = "{{.Description}}"
+  labels      = {{.Labels}}
+
+  option_type {
+    name                     = "{{.OptionType1Name}}"
+    code                     = "{{.OptionType1Code}}"
+    description              = "{{.OptionType1Description}}"
+    type                     = "{{.OptionType1Type}}"
+    field_label              = "{{.OptionType1FieldLabel}}"
+    field_name               = "{{.OptionType1FieldName}}"
+    default_value            = "{{.OptionType1DefaultValue}}"
+    placeholder              = "{{.OptionType1Placeholder}}"
+    help_block               = "{{.OptionType1HelpBlock}}"
+    option_list_id           = {{.OptionType1OptionListId}}
+    required                 = {{.OptionType1Required}}
+    export_meta              = {{.OptionType1ExportMeta}}
+    display_value_on_details = {{.OptionType1DisplayValueOnDetails}}
+    locked                   = {{.OptionType1Locked}}
+    hidden                   = {{.OptionType1Hidden}}
+    exclude_from_search      = {{.OptionType1ExcludeFromSearch}}
+  }
+
+  option_type {
+    name                     = "{{.OptionType2Name}}"
+    code                     = "{{.OptionType2Code}}"
+    description              = "{{.OptionType2Description}}"
+    type                     = "{{.OptionType2Type}}"
+    field_label              = "{{.OptionType2FieldLabel}}"
+    field_name               = "{{.OptionType2FieldName}}"
+    default_value            = "{{.OptionType2DefaultValue}}"
+    placeholder              = "{{.OptionType2Placeholder}}"
+    help_block               = "{{.OptionType2HelpBlock}}"
+    option_list_id           = {{.OptionType2OptionListId}}
+    required                 = {{.OptionType2Required}}
+    export_meta              = {{.OptionType2ExportMeta}}
+    display_value_on_details = {{.OptionType2DisplayValueOnDetails}}
+    locked                   = {{.OptionType2Locked}}
+    hidden                   = {{.OptionType2Hidden}}
+    exclude_from_search      = {{.OptionType2ExcludeFromSearch}}
+  }
+
+  option_type {
+    name                     = "{{.OptionType3Name}}"
+    code                     = "{{.OptionType3Code}}"
+    description              = "{{.OptionType3Description}}"
+    type                     = "{{.OptionType3Type}}"
+    field_label              = "{{.OptionType3FieldLabel}}"
+    field_name               = "{{.OptionType3FieldName}}"
+    default_value            = "{{.OptionType3DefaultValue}}"
+    placeholder              = "{{.OptionType3Placeholder}}"
+    help_block               = "{{.OptionType3HelpBlock}}"
+    required                 = {{.OptionType3Required}}
+    export_meta              = {{.OptionType3ExportMeta}}
+    display_value_on_details = {{.OptionType3DisplayValueOnDetails}}
+    locked                   = {{.OptionType3Locked}}
+    hidden                   = {{.OptionType3Hidden}}
+    exclude_from_search      = {{.OptionType3ExcludeFromSearch}}
+  }
+
+  option_type {
+    name                       = "{{.OptionType4Name}}"
+    code                       = "{{.OptionType4Code}}"
+    description                = "{{.OptionType4Description}}"
+    type                       = "{{.OptionType4Type}}"
+    field_label                = "{{.OptionType4FieldLabel}}"
+    field_name                 = "{{.OptionType4FieldName}}"
+    default_checked            = {{.OptionType4DefaultChecked}}
+    placeholder                = "{{.OptionType4Placeholder}}"
+    help_block                 = "{{.OptionType4HelpBlock}}"
+    required                   = {{.OptionType4Required}}
+    export_meta                = {{.OptionType4ExportMeta}}
+    display_value_on_details   = {{.OptionType4DisplayValueOnDetails}}
+    locked                     = {{.OptionType4Locked}}
+    hidden                     = {{.OptionType4Hidden}}
+    exclude_from_search        = {{.OptionType4ExcludeFromSearch}}
+  }
+
+  option_type {
+    name                     = "{{.OptionType5Name}}"
+    code                     = "{{.OptionType5Code}}"
+    description              = "{{.OptionType5Description}}"
+    type                     = "{{.OptionType5Type}}"
+    field_label              = "{{.OptionType5FieldLabel}}"
+    field_name               = "{{.OptionType5FieldName}}"
+    default_value            = "{{.OptionType5DefaultValue}}"
+    placeholder              = "{{.OptionType5Placeholder}}"
+    help_block               = "{{.OptionType5HelpBlock}}"
+    required                 = {{.OptionType5Required}}
+    export_meta              = {{.OptionType5ExportMeta}}
+    display_value_on_details = {{.OptionType5DisplayValueOnDetails}}
+    locked                   = {{.OptionType5Locked}}
+    hidden                   = {{.OptionType5Hidden}}
+    exclude_from_search      = {{.OptionType5ExcludeFromSearch}}
+  }
+
+  option_type {
+    name                     = "{{.OptionType6Name}}"
+    code                     = "{{.OptionType6Code}}"
+    description              = "{{.OptionType6Description}}"
+    type                     = "{{.OptionType6Type}}"
+    field_label              = "{{.OptionType6FieldLabel}}"
+    field_name               = "{{.OptionType6FieldName}}"
+    default_value            = "{{.OptionType6DefaultValue}}"
+    placeholder              = "{{.OptionType6Placeholder}}"
+    help_block               = "{{.OptionType6HelpBlock}}"
+    required                 = {{.OptionType6Required}}
+    export_meta              = {{.OptionType6ExportMeta}}
+    display_value_on_details = {{.OptionType6DisplayValueOnDetails}}
+    locked                   = {{.OptionType6Locked}}
+    hidden                   = {{.OptionType6Hidden}}
+    exclude_from_search      = {{.OptionType6ExcludeFromSearch}}
+    min_value                = {{.OptionType6MinValue}}
+    max_value                = {{.OptionType6MaxValue}}
+    step                     = {{.OptionType6Step}}
+  }
+
+  field_group {
+    name                   = "{{.FieldGroup1Name}}"
+    description            = "{{.FieldGroup1Description}}"
+    collapsible            = {{.FieldGroup1Collapsible}}
+    collapsed_by_default   = {{.FieldGroup1CollapsedByDefault}}
+    option_type {
+      name                     = "{{.FieldGroup1OptionTypeName}}"
+      code                     = "{{.FieldGroup1OptionTypeCode}}"
+      description              = "{{.FieldGroup1OptionTypeDescription}}"
+      type                     = "{{.FieldGroup1OptionTypeType}}"
+      field_label              = "{{.FieldGroup1OptionTypeFieldLabel}}"
+      field_name               = "{{.FieldGroup1OptionTypeFieldName}}"
+      default_value            = "{{.FieldGroup1OptionTypeDefaultValue}}"
+      placeholder              = "{{.FieldGroup1OptionTypePlaceholder}}"
+      help_block               = "{{.FieldGroup1OptionTypeHelpBlock}}"
+      required                 = {{.FieldGroup1OptionTypeRequired}}
+      export_meta              = {{.FieldGroup1OptionTypeExportMeta}}
+      display_value_on_details = {{.FieldGroup1OptionTypeDisplayValueOnDetails}}
+      locked                   = {{.FieldGroup1OptionTypeLocked}}
+      hidden                   = {{.FieldGroup1OptionTypeHidden}}
+      exclude_from_search      = {{.FieldGroup1OptionTypeExcludeFromSearch}}
+    }
+  }
+
+  field_group {
+    name                   = "{{.FieldGroup2Name}}"
+    description            = "{{.FieldGroup2Description}}"
+    collapsible            = {{.FieldGroup2Collapsible}}
+    collapsed_by_default   = {{.FieldGroup2CollapsedByDefault}}
+    option_type {
+      name                     = "{{.FieldGroup2OptionTypeName}}"
+      code                     = "{{.FieldGroup2OptionTypeCode}}"
+      description              = "{{.FieldGroup2OptionTypeDescription}}"
+      type                     = "{{.FieldGroup2OptionTypeType}}"
+      field_label              = "{{.FieldGroup2OptionTypeFieldLabel}}"
+      field_name               = "{{.FieldGroup2OptionTypeFieldName}}"
+      default_value            = "{{.FieldGroup2OptionTypeDefaultValue}}"
+      placeholder              = "{{.FieldGroup2OptionTypePlaceholder}}"
+      help_block               = "{{.FieldGroup2OptionTypeHelpBlock}}"
+      required                 = {{.FieldGroup2OptionTypeRequired}}
+      export_meta              = {{.FieldGroup2OptionTypeExportMeta}}
+      display_value_on_details = {{.FieldGroup2OptionTypeDisplayValueOnDetails}}
+      locked                   = {{.FieldGroup2OptionTypeLocked}}
+      hidden                   = {{.FieldGroup2OptionTypeHidden}}
+      exclude_from_search      = {{.FieldGroup2OptionTypeExcludeFromSearch}}
+    }
+  }
+}
