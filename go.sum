@@ -1,7 +1,7 @@
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
-github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba h1:bp92Ge78ab+lf3B1icgUPWHNUNotlVl1f2TrYtMqA7s=
-github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251023165624-010e4bb578ba/go.mod h1:euek+CMVFJjCC79mG3TfGd5bPebzytyGg5wzLx1e/2c=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251210145034-858ae7ad7e4f h1:Ll3XSZ77la4UcNNVB8WotMQmaZUd3C1PbwGDD4IHhKY=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20251210145034-858ae7ad7e4f/go.mod h1:euek+CMVFJjCC79mG3TfGd5bPebzytyGg5wzLx1e/2c=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.11.0 h1:lBd9+adSPXZy8fSGOyxKA4Yj7nxnNKiZPzkPFXo0/b4=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.11.0/go.mod h1:hH79EA7VE9lwShyc9M4jii794SzNC24Guh0BKITV+Lc=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
