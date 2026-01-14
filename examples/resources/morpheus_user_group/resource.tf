@@ -1,4 +1,4 @@
-resource "hpe_morpheus_user_group" "tf_example_user_group" {
+resource "hpe_morpheus_user_group" "example" {
   name         = "tftest"
   description  = "terraform"
   sudo_access  = true

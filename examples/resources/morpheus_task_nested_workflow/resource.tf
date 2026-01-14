@@ -1,4 +1,4 @@
-resource "hpe_morpheus_task_nested_workflow" "tfexample_nested_workflow" {
+resource "hpe_morpheus_task_nested_workflow" "example" {
   name                      = "tfexample_nested_workflow"
   code                      = "tfexample_nested_workflow"
   labels                    = ["demo", "terraform"]

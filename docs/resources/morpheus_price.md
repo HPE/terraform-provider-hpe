@@ -11,7 +11,7 @@ Provides a price resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -26,7 +26,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Load balancer example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -41,7 +41,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Load balancer virtual server example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -56,7 +56,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Custom markup example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -73,7 +73,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Fixed markup example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -90,7 +90,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Percent markup example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name           = "terraform-test"
   code           = "terraform-test"
   tenant_id      = 1
@@ -107,7 +107,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Platform example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1
@@ -123,7 +123,7 @@ resource "hpe_morpheus_price" "tf_example_price" {
 ### Software example
 
 ```terraform
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1

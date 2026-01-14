@@ -1,0 +1,143 @@
+#!/bin/sh
+# Helper script to generate the form resource example
+
+go run ../../../../../cmd/render \
+  -out examples/resources/morpheus_form/resource.tf \
+  form_resource.tf.tmpl \
+  Code 'demo' \
+  Description 'demo' \
+  FieldGroup1CollapsedByDefault 'true' \
+  FieldGroup1Collapsible 'true' \
+  FieldGroup1Description 'testin' \
+  FieldGroup1Name 'fg1' \
+  FieldGroup1OptionTypeCode 'test-input' \
+  FieldGroup1OptionTypeDefaultValue 'Demo123' \
+  FieldGroup1OptionTypeDescription 'Terraform text input example' \
+  FieldGroup1OptionTypeDisplayValueOnDetails 'true' \
+  FieldGroup1OptionTypeExcludeFromSearch 'true' \
+  FieldGroup1OptionTypeExportMeta 'true' \
+  FieldGroup1OptionTypeFieldLabel 'Testin' \
+  FieldGroup1OptionTypeFieldName 'test' \
+  FieldGroup1OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup1OptionTypeHidden 'false' \
+  FieldGroup1OptionTypeLocked 'true' \
+  FieldGroup1OptionTypeName 'tf field group 1 text input example' \
+  FieldGroup1OptionTypePlaceholder 'Testing 123' \
+  FieldGroup1OptionTypeRequired 'true' \
+  FieldGroup1OptionTypeType 'text' \
+  FieldGroup2CollapsedByDefault 'true' \
+  FieldGroup2Collapsible 'true' \
+  FieldGroup2Description 'testin' \
+  FieldGroup2Name 'fg2' \
+  FieldGroup2OptionTypeCode 'test-input' \
+  FieldGroup2OptionTypeDefaultValue 'Demo123' \
+  FieldGroup2OptionTypeDescription 'Terraform text input example' \
+  FieldGroup2OptionTypeDisplayValueOnDetails 'true' \
+  FieldGroup2OptionTypeExcludeFromSearch 'true' \
+  FieldGroup2OptionTypeExportMeta 'true' \
+  FieldGroup2OptionTypeFieldLabel 'Testin' \
+  FieldGroup2OptionTypeFieldName 'test' \
+  FieldGroup2OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup2OptionTypeHidden 'false' \
+  FieldGroup2OptionTypeLocked 'true' \
+  FieldGroup2OptionTypeName 'tf field group 2 text input example' \
+  FieldGroup2OptionTypePlaceholder 'Testing 123' \
+  FieldGroup2OptionTypeRequired 'true' \
+  FieldGroup2OptionTypeType 'text' \
+  Labels '["terraform", "demo"]' \
+  Name 'demo' \
+  OptionType1Code 'select-input' \
+  OptionType1DefaultValue 'test123' \
+  OptionType1Description 'Terraform select example' \
+  OptionType1DisplayValueOnDetails 'true' \
+  OptionType1ExcludeFromSearch 'true' \
+  OptionType1ExportMeta 'true' \
+  OptionType1FieldLabel 'Select Test' \
+  OptionType1FieldName 'selectTest' \
+  OptionType1HelpBlock 'Select an option' \
+  OptionType1Hidden 'true' \
+  OptionType1Locked 'true' \
+  OptionType1Name 'tf example select' \
+  OptionType1OptionListId '1' \
+  OptionType1Placeholder 'Testing 123' \
+  OptionType1Required 'true' \
+  OptionType1Type 'select' \
+  OptionType2Code 'radio-input' \
+  OptionType2DefaultValue 'Demo123' \
+  OptionType2Description 'Terraform radio example' \
+  OptionType2DisplayValueOnDetails 'true' \
+  OptionType2ExcludeFromSearch 'true' \
+  OptionType2ExportMeta 'true' \
+  OptionType2FieldLabel 'Radio Test' \
+  OptionType2FieldName 'radioTest' \
+  OptionType2HelpBlock 'Select an option' \
+  OptionType2Hidden 'true' \
+  OptionType2Locked 'true' \
+  OptionType2Name 'tf radio example' \
+  OptionType2OptionListId '1' \
+  OptionType2Placeholder 'Testing 123' \
+  OptionType2Required 'true' \
+  OptionType2Type 'radio' \
+  OptionType3Code 'test-input' \
+  OptionType3DefaultValue 'Demo123' \
+  OptionType3Description 'Terraform text example' \
+  OptionType3DisplayValueOnDetails 'true' \
+  OptionType3ExcludeFromSearch 'true' \
+  OptionType3ExportMeta 'true' \
+  OptionType3FieldLabel 'Testin' \
+  OptionType3FieldName 'test' \
+  OptionType3HelpBlock 'Is this working now' \
+  OptionType3Hidden 'true' \
+  OptionType3Locked 'true' \
+  OptionType3Name 'tf text example' \
+  OptionType3Placeholder 'Testing 123' \
+  OptionType3Required 'true' \
+  OptionType3Type 'text' \
+  OptionType4Code 'checkbox-input' \
+  OptionType4DefaultChecked 'true' \
+  OptionType4Description 'Terraform checkbox example' \
+  OptionType4DisplayValueOnDetails 'true' \
+  OptionType4ExcludeFromSearch 'true' \
+  OptionType4ExportMeta 'true' \
+  OptionType4FieldLabel 'checkbox input' \
+  OptionType4FieldName 'checkboxInput' \
+  OptionType4HelpBlock 'Is this working now' \
+  OptionType4Hidden 'true' \
+  OptionType4Locked 'true' \
+  OptionType4Name 'tf checkbox example' \
+  OptionType4Placeholder 'Testing 123' \
+  OptionType4Required 'true' \
+  OptionType4Type 'checkbox' \
+  OptionType5Code 'hidden-input' \
+  OptionType5DefaultValue 'test' \
+  OptionType5Description 'Terraform hidden input example' \
+  OptionType5DisplayValueOnDetails 'true' \
+  OptionType5ExcludeFromSearch 'true' \
+  OptionType5ExportMeta 'true' \
+  OptionType5FieldLabel 'hidden input' \
+  OptionType5FieldName 'hiddenInput' \
+  OptionType5HelpBlock 'Is this working now' \
+  OptionType5Hidden 'true' \
+  OptionType5Locked 'true' \
+  OptionType5Name 'tf hidden input example' \
+  OptionType5Placeholder 'Testing 123' \
+  OptionType5Required 'true' \
+  OptionType5Type 'hidden' \
+  OptionType6Code 'number-input' \
+  OptionType6DefaultValue '4' \
+  OptionType6Description 'Terraform number example' \
+  OptionType6DisplayValueOnDetails 'true' \
+  OptionType6ExcludeFromSearch 'true' \
+  OptionType6ExportMeta 'true' \
+  OptionType6FieldLabel 'number input' \
+  OptionType6FieldName 'numberInput' \
+  OptionType6HelpBlock 'Is this working now' \
+  OptionType6Hidden 'true' \
+  OptionType6Locked 'true' \
+  OptionType6MaxValue '44' \
+  OptionType6MinValue '3' \
+  OptionType6Name 'tf number input example' \
+  OptionType6Placeholder 'Testing 123' \
+  OptionType6Required 'true' \
+  OptionType6Step '2' \
+  OptionType6Type 'number'
