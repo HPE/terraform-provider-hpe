@@ -1,4 +1,4 @@
-resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formation_app_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_cloud_formation" "example" {
   name                   = "example_cloud_formation_app_blueprint_git"
   description            = "Example cloud formation app blueprint"
   category               = "cloudformation"
@@ -13,4 +13,3 @@ resource "hpe_morpheus_app_blueprint_cloud_formation" "tf_example_cloud_formatio
   repository_id          = 1
   version_ref            = "main"
 }
-

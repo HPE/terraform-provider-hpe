@@ -1,4 +1,4 @@
-resource "hpe_morpheus_setting_backup" "tf_example_backup_setting" {
+resource "hpe_morpheus_setting_backup" "example" {
   scheduled_backups                = true
   create_backups                   = true
   backup_appliance                 = false

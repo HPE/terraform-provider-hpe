@@ -19,7 +19,7 @@ data "hpe_morpheus_cloud" "example" {
 ```
 
 ```terraform
-data "hpe_morpheus_cloud" "example" {
+data "hpe_morpheus_cloud" "example_by_name" {
   name = "Example name"
 }
 ```
