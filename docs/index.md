@@ -42,7 +42,7 @@ be toggled off by setting `insecure` to `true` in the provider block.
 #### Using a username and password
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
@@ -66,7 +66,7 @@ provider "hpe" {
 #### Using an access token
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
@@ -89,7 +89,7 @@ provider "hpe" {
 #### Using an access token with insecure
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
