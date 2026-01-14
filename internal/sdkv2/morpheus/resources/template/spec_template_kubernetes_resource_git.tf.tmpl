@@ -1,0 +1,7 @@
+resource "hpe_morpheus_spec_template_kubernetes" "example" {
+  name          = "{{.Name}}"
+  source_type   = "{{.SourceType}}"
+  repository_id = {{.RepositoryId}}
+  version_ref   = "{{.VersionRef}}"
+  spec_path     = "{{.SpecPath}}"
+}
