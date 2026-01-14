@@ -185,7 +185,9 @@ func resourceIPPoolIPv4Read(ctx context.Context, d *schema.ResourceData, meta an
 
 	pool := result.NetworkPool
 	d.SetId(convert.Int64ToString(pool.ID))
-	d.Set("name", pool.Name)
+	if err := d.Set("name", pool.Name); err != nil {
+		return diag.FromErr(err)
+	}
 
 	var ipRanges []map[string]any
 	var unsortedRanges []IPRange
@@ -209,7 +211,9 @@ func resourceIPPoolIPv4Read(ctx context.Context, d *schema.ResourceData, meta an
 			ipRanges = append(ipRanges, rangePayload)
 		}
 	}
-	d.Set("ip_range", ipRanges)
+	if err := d.Set("ip_range", ipRanges); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
