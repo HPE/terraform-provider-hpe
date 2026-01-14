@@ -1,4 +1,4 @@
-resource "hpe_morpheus_setting_monitoring" "tf_example_guidance_setting" {
+resource "hpe_morpheus_setting_monitoring" "example" {
   morpheus_auto_create_checks         = true
   morpheus_availability_time_frame    = 30
   morpheus_availability_precision     = 4
