@@ -1,4 +1,4 @@
-resource "hpe_morpheus_setting_appliance" "tf_example_appliance_setting" {
+resource "hpe_morpheus_setting_appliance" "example" {
   appliance_url             = "https://morpheus.test.local"
   internal_appliance_url    = "https://pxemorpheus.test.local"
   api_allowed_origins       = "demo"

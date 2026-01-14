@@ -8,7 +8,6 @@ resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_git" {
   repository_id     = 1
   version_ref       = "main"
   terraform_version = "1.1.1"
-  terraform_options = "-var 'foo=bar'"
+  terraform_options = "-var foo=bar"
   tfvar_secret      = "tfvars/rdsdemo-secrets"
 }
-

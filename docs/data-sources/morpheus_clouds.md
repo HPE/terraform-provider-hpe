@@ -11,7 +11,7 @@ Provides a Morpheus clouds data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_clouds" "tf_example_clouds" {
+data "hpe_morpheus_clouds" "example" {
   sort_ascending = true
   filter {
     name   = "name"
