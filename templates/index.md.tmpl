@@ -54,18 +54,21 @@ be toggled off by setting `insecure` to `true` in the provider block.
 ## Release Notes
 
 ->The following resources use `WriteOnly` attributes:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_image<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_user<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_image<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_user<br><br>
 `WriteOnly` attributes are supported by Terraform versions 1.11 and later.
 
 ->The following resources use a `Dynamic` attribute for `config`:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_cloud<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_datastore<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_instance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_network<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_policy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_policy<br><br>
 This means that the `config` block can contain arbitrary nested attributes which
-will be evaluated at run-time.  Examples of these are shown in the documentation.
+will be evaluated at run-time.  Examples of these are shown in the documentation.<br><br>
+Note that the attributes in the `config` blocks must match those specified in the
+[Morpheus API documentation](https://apidocs.morpheusdata.com/reference/listactivity).
+That is, the attribute names are case-sensitive and must match exactly.
 
 ### New functionality
 
@@ -248,9 +251,49 @@ In this release (v1.0.0) we have added the following data-source functionality:
 ## Morpheus Provider Mapping
 
 The tables below show the mapping of the Morpheus provider resources and data sources to the corresponding
-`hpe` Morpheus resources and data sources.
+`hpe` Morpheus resources and data sources where there are one-to-one equivalents.  Note that some Morpheus
+resource and data sources have been replaced with "generalised" resources and data sources so that several
+Morpheus resources and data sources are covered by a single `hpe` resource or data source.
 
-### Resources
+### Resources replaced by generalised equivalents
+
+| Morpheus Provider Resource Name | hpe Provider Resource Name |
+|---------------------------------|----------------------------|
+| morpheus_aws_cloud | hpe_morpheus_cloud |
+| morpheus_aws_instance | hpe_morpheus_instance |
+| morpheus_azure_cloud | hpe_morpheus_cloud |
+| morpheus_backup_creation_policy | hpe_morpheus_policy |
+| morpheus_budget_policy | hpe_morpheus_policy |
+| morpheus_cluster_resource_name_policy | hpe_morpheus_policy |
+| morpheus_cypher_access_policy | hpe_morpheus_policy |
+| morpheus_delayed_delete_policy | hpe_morpheus_policy |
+| morpheus_delete_approval_policy | hpe_morpheus_policy |
+| morpheus_hostname_policy | hpe_morpheus_policy |
+| morpheus_instance_name_policy | hpe_morpheus_policy |
+| morpheus_max_containers_policy | hpe_morpheus_policy |
+| morpheus_max_cores_policy | hpe_morpheus_policy |
+| morpheus_max_hosts_policy | hpe_morpheus_policy |
+| morpheus_max_memory_policy | hpe_morpheus_policy |
+| morpheus_max_storage_policy | hpe_morpheus_policy |
+| morpheus_max_vms_policy | hpe_morpheus_policy |
+| morpheus_motd_policy | hpe_morpheus_policy |
+| morpheus_mvm_instance | hpe_morpheus_instance |
+| morpheus_network_quota_policy | hpe_morpheus_policy |
+| morpheus_power_schedule_policy | hpe_morpheus_policy |
+| morpheus_provision_approval_policy | hpe_morpheus_policy |
+| morpheus_router_quota_policy | hpe_morpheus_policy |
+| morpheus_standard_cloud | hpe_morpheus_cloud |
+| morpheus_tag_policy | hpe_morpheus_policy |
+| morpheus_tenant_role | hpe_morpheus_role |
+| morpheus_user_creation_policy | hpe_morpheus_policy |
+| morpheus_user_group_creation_policy | hpe_morpheus_policy |
+| morpheus_user_role | hpe_morpheus_role |
+| morpheus_vsphere_cloud | hpe_morpheus_cloud |
+| morpheus_vsphere_cloud_datastore_configuration | hpe_morpheus_datastore |
+| morpheus_vsphere_instance | hpe_morpheus_instance |
+| morpheus_workflow_policy | hpe_morpheus_policy |
+
+### Resources with one-to-one mapping
 
 | Morpheus Provider Resource Name           | hpe Provider Resource Name                    |
 |-------------------------------------------|-----------------------------------------------|
@@ -343,7 +386,16 @@ The tables below show the mapping of the Morpheus provider resources and data so
 | morpheus_workflow_job                     | hpe_morpheus_job_workflow                     |
 | morpheus_write_attributes_task            | hpe_morpheus_task_write_attributes            |
 
-### Data Sources
+### Data Sources replaced by generalised equivalents
+
+| Morpheus Provider Data Source Name | hpe Provider Data Source Name |
+|------------------------------------|-------------------------------|
+| morpheus_cloud_datastore | hpe_morpheus_datastore |
+| morpheus_tenant_role     | hpe_morpheus_role      |
+| morpheus_user_role       | hpe_morpheus_role      |
+| morpheus_virtual_image   | hpe_morpheus_image     |
+
+### Data Sources with one-to-one mapping
 
 | Morpheus Provider Data Source Name  | hpe Provider Data Source Name           |
 |-------------------------------------|-----------------------------------------|
