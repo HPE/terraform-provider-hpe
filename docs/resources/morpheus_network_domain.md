@@ -11,7 +11,7 @@ Provides a Morpheus network domain resource.
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_network_domain" "tf_example_network_domain" {
+resource "hpe_morpheus_network_domain" "example" {
   name        = "tfexampledomain"
   description = "Terraform example network domain"
   public_zone = true
