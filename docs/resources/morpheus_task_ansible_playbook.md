@@ -11,7 +11,7 @@ Provides a Morpheus ansible playbook task resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_task_ansible_playbook" "ansplaybook" {
+resource "hpe_morpheus_task_ansible_playbook" "example" {
   name                = "tfansibletest"
   code                = "tfansibletest"
   labels              = ["demo", "terraform"]

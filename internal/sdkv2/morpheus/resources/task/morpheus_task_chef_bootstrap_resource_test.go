@@ -50,6 +50,7 @@ func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderChefBootstrapConfig(t, map[string]string{
 		"Name": name,
+		"Code": name,
 	})
 	if err != nil {
 		t.Fatal(err)
