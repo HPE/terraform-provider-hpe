@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_instance_type_layout/resource.tf instance_type_layout_resource.tf.tmpl InstanceTypeId "hpe_morpheus_instance_type.tf_example_instance_type.id" Labels "[\"demo\", \"layout\", \"terraform\"]" Name "todo_app_frontend" Technology "vmware" Version "1.0"
+//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_instance_type_layout/resource.tf instance_type_layout_resource.tf.tmpl InstanceTypeId "data.hpe_morpheus_instance_type.example.id" Labels "[\"demo\", \"layout\", \"terraform\"]" Name "todo_app_frontend" Technology "vmware" Version "1.0"
 
 // RenderInstanceTypeLayoutConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
@@ -20,7 +20,7 @@ func RenderInstanceTypeLayoutConfig(t *testing.T, overrides map[string]string) (
 	t.Helper()
 
 	defaults := map[string]string{
-		"InstanceTypeId": "hpe_morpheus_instance_type.tf_example_instance_type.id",
+		"InstanceTypeId": "data.hpe_morpheus_instance_type.example.id",
 		"Labels":         "[\"demo\", \"layout\", \"terraform\"]",
 		"Name":           "todo_app_frontend",
 		"Technology":     "vmware",
