@@ -13,7 +13,7 @@ Provides a Morpheus library template task resource
 Creating the library template task using a file template data source:
 
 ```terraform
-resource "hpe_morpheus_task_library_template" "tf_example_task_library_template" {
+resource "hpe_morpheus_task_library_template" "example" {
   name                = "Example Terraform Library Template Task"
   code                = "tf-example-library-template-task"
   labels              = ["demo", "library", "terraform"]

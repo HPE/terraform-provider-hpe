@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package template_test
 
@@ -8,11 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/template"
 )
 
-func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
+func TestAccMorpheusSpecTemplateHelmExampleOk_git(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -21,11 +23,16 @@ func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	// t.Skip("Skipping due to API error")
+	// t.Skip("Skipping due to missing infrastructure in test environment")
+	// t.Skip("Skipping due to missing resource implementation")
+	// t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
+
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := template.RenderSpecTemplateHelmGitConfig(t, map[string]string{
+	resourceConfig, err := template.RenderSpecTemplateHelmConfigGit(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {
@@ -34,31 +41,31 @@ func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
+			"hpe_morpheus_spec_template_helm.example",
 			"name",
 			name,
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
+			"hpe_morpheus_spec_template_helm.example",
 			"repository_id",
 			"2",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
+			"hpe_morpheus_spec_template_helm.example",
 			"source_type",
 			"repository",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
+			"hpe_morpheus_spec_template_helm.example",
 			"spec_path",
 			"./spec.yaml",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_spec_template_helm.tfexample_helm_spec_template_git",
+			"hpe_morpheus_spec_template_helm.example",
 			"version_ref",
 			"main",
 		),
@@ -66,19 +73,13 @@ func TestAccMorpheusSpecTemplateHelmGitExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
-			// Plan
-			{
-				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
-				Check:              checkFn,
-				PlanOnly:           true,
-			},
 			// Apply
 			{
-				Config: providerConfig + resourceConfig,
-				Check:  checkFn,
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
 			},
 			// Plan after apply
 			{

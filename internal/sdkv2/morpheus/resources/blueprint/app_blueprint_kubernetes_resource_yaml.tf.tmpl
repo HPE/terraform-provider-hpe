@@ -1,0 +1,9 @@
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_yaml" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  category          = "{{.Category}}"
+  source_type       = "{{.SourceType}}"
+  blueprint_content = <<TFEOF
+{{.BlueprintContent}}
+TFEOF
+}

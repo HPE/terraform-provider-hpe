@@ -1,0 +1,8 @@
+resource "hpe_morpheus_price_set" "example" {
+  name             = "{{.Name}}"
+  code             = "{{.Code}}"
+  region_code      = "{{.RegionCode}}"
+  price_unit       = "{{.PriceUnit}}"
+  type             = "{{.Type}}"
+  price_ids        = {{.PriceIds}}
+}

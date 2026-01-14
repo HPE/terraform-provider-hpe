@@ -1,33 +1,32 @@
-resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint" {
+resource "hpe_morpheus_app_blueprint_terraform" "example" {
   name              = "tfappbluedemo"
   description       = "testing terraform"
   category          = "terraformdemo"
   source_type       = "hcl"
   blueprint_content = <<EOF
 variable "master_username" {
-  type = string
+ type = string
 }
 
 variable "master_password" {
-  type      = string
-  sensitive = true
+ type = string
+ sensitive = true
 }
 
 variable "engine_version" {
-  type = string
+ type = string
 }
 
 variable "instance_class" {
-  type = string
+ type = string
 }
 
 resource "local_file" "foo" {
-    content  = "foo!"
-    filename = "${path.module}/foo.bar"
+ content = "foo!"
+ filename = "/foo.bar"
 }
 EOF
   terraform_version = "1.1.1"
-  terraform_options = "-var 'foo=bar'"
+  terraform_options = "-var foo=bar"
   tfvar_secret      = "tfvars/rdsdemo-secrets"
 }
-

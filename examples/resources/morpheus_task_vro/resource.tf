@@ -1,4 +1,4 @@
-resource "hpe_morpheus_task_vro" "tf_example_task_vro" {
+resource "hpe_morpheus_task_vro" "example" {
   name               = "tfexample vro-task"
   code               = "tfexample-vro-task"
   labels             = ["demo", "terraform"]
@@ -6,17 +6,17 @@ resource "hpe_morpheus_task_vro" "tf_example_task_vro" {
   vro_workflow_value = 1
   body               = <<EOF
 {
-    "parameters": [
-        {
-            "name": "vmName",
-            "type": "string",
-            "value": {
-                "string": {
-                    "value": "<%=instance.hostname%>"
-                }
-            }
-        }
-    ]
+ "parameters": [
+ {
+ "name": "vmName",
+ "type": "string",
+ "value": {
+ "string": {
+ "value": "<%=instance.hostname%>"
+ }
+ }
+ }
+ ]
 }
 EOF
   execute_target     = "local"
