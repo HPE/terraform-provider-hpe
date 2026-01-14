@@ -1,4 +1,4 @@
-resource "hpe_morpheus_price" "tf_example_price" {
+resource "hpe_morpheus_price" "example" {
   name          = "terraform-test"
   code          = "terraform-test"
   tenant_id     = 1

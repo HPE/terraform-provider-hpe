@@ -11,7 +11,7 @@ Provides a Morpheus workflow catalog item resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_catalog_item_workflow" "tfexample_workflow_catalog_item" {
+resource "hpe_morpheus_catalog_item_workflow" "example" {
   name                 = "tfexample_workflow_catalog_item"
   description          = "Example Terraform workflow catalog item"
   logo_image_path      = "wordpress.png"
@@ -20,11 +20,10 @@ resource "hpe_morpheus_catalog_item_workflow" "tfexample_workflow_catalog_item" 
   dark_logo_image_name = "wordpressbak.png"
   enabled              = true
   featured             = true
-  labels               = ["aws", "demo"]
+  labels               = ["terraform", "demo"]
   workflow_id          = 1
-  option_type_ids      = [2056, 2006]
   context_type         = "appliance"
-  content              = file("${path.module}/catalog-data.md")
+  content              = "Example catalog content"
   visibility           = "public"
 }
 ```

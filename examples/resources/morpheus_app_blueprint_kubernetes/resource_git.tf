@@ -8,4 +8,3 @@ resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_bluep
   version_ref    = "main"
   working_path   = "./test"
 }
-
