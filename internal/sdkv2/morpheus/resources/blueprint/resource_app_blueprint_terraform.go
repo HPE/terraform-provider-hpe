@@ -377,16 +377,14 @@ func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceDa
 		d.Set("version_ref", terraformBlueprint.Blueprint.Config.Terraform.Git.Branch)
 	case "spec":
 		d.Set("source_type", "spec")
-		// spec templates
 		var specTemplates []int64
 		if terraformBlueprint.Blueprint.Config.Config.Specs != nil {
-			// iterate over the array of tasks
 			for i := 0; i < len(terraformBlueprint.Blueprint.Config.Config.Specs); i++ {
 				specTemplate := terraformBlueprint.Blueprint.Config.Config.Specs[i]
 				specTemplates = append(specTemplates, int64(specTemplate.ID))
 			}
 		}
-		d.Set("specTemplates_ids", specTemplates)
+		d.Set("spec_template_ids", specTemplates)
 	}
 
 	return diags

@@ -20,6 +20,13 @@ import (
 	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 )
 
+const (
+	evarNameKey        = "name"
+	evarValueKey       = "value"
+	evarMaskedValueKey = "masked_value"
+	evarExportKey      = "export"
+)
+
 func ResourceClusterLayout() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus cluster layout resource",
@@ -802,22 +809,22 @@ func parseClusterLayoutEnvironmentVariables(variables []any) []map[string]any {
 		evarconfig := variables[i].(map[string]any)
 		for k, v := range evarconfig {
 			switch k {
-			case "name":
-				row["name"] = v.(string)
+			case evarNameKey:
+				row[evarNameKey] = v.(string)
 				// row["evarName"] = v.(string)
 				// row["valueType"] = "fixed"
-			case "value":
+			case evarValueKey:
 				if v.(string) != "" {
-					row["value"] = v.(string)
+					row[evarValueKey] = v.(string)
 					row["masked"] = false
 				}
-			case "masked_value":
+			case evarMaskedValueKey:
 				if v.(string) != "" {
-					row["value"] = v.(string)
+					row[evarValueKey] = v.(string)
 					row["masked"] = true
 				}
-			case "export":
-				row["export"] = v.(bool)
+			case evarExportKey:
+				row[evarExportKey] = v.(bool)
 			}
 		}
 		evars = append(evars, row)

@@ -1,17 +1,12 @@
-resource "hpe_morpheus_cluster_layout" "example_kubernetes_layout" {
+resource "hpe_morpheus_cluster_layout" "example" {
   name              = "tfexample cluster layout"
   description       = "Terraform example cluster layout"
   version           = "1.0"
   creatable         = false
   minimum_memory    = 4294967296
-  workflow_id       = 2
   cluster_type_id   = 1
   provision_type_id = 3
   enable_scaling    = false
-  option_type_ids = [
-    1910,
-    2037
-  ]
 
   evar {
     name   = "application"
@@ -37,4 +32,3 @@ resource "hpe_morpheus_cluster_layout" "example_kubernetes_layout" {
     priority_order = 2
   }
 }
-

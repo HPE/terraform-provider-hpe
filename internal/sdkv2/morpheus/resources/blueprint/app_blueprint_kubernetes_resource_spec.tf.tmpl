@@ -1,0 +1,7 @@
+resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_spec" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  category          = "{{.Category}}"
+  source_type       = "{{.SourceType}}"
+  spec_template_ids = {{.SpecTemplateIds}}
+}
