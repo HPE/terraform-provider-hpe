@@ -11,7 +11,7 @@ Provides a Morpheus select list option type resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_option_type_select_list" "tf_example_select_list_option_type" {
+resource "hpe_morpheus_option_type_select_list" "example" {
   name                     = "tf_example_select_list_option_type"
   description              = "Terraform select list option type example"
   labels                   = ["demo", "terraform"]

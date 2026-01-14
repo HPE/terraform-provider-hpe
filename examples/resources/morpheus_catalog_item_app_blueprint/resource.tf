@@ -8,9 +8,9 @@ resource "hpe_morpheus_catalog_item_app_blueprint" "tf_example_app_blueprint_cat
   enabled              = true
   featured             = true
   labels               = ["aws", "demo", "testing"]
-  content              = file("${path.module}/catalog-data.md")
+  content              = file("/catalog-data.md")
   visibility           = "public"
   blueprint_id         = 5
   option_type_ids      = [2056, 2006, 2058]
-  app_spec             = file("${path.module}/appSpec.yaml")
+  app_spec             = file("/appSpec.yaml")
 }

@@ -52,11 +52,12 @@ func ResourceInstanceTypeLayout() *schema.Resource {
 				Required:    true,
 			},
 			"labels": {
-				Type:        schema.TypeSet,
-				Description: "The organization labels associated with the script template (Only supported on Morpheus 5.5.3 or higher)",
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeSet,
+				Description: "The organization labels associated with the script template " +
+					"(Only supported on Morpheus 5.5.3 or higher)",
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -71,11 +72,19 @@ func ResourceInstanceTypeLayout() *schema.Resource {
 				Computed:    true,
 			},
 			"technology": {
-				Type:         schema.TypeString,
-				Description:  "The technology of the instance layout (alibaba, amazon, arm, azure, maas, cloudFormation, docker, esxi, fusion, google, huawei, hyperv, kubernetes, kvm, nutanix, opentelekom, openstack, oraclecloud, oraclevm, scvmm, terraform, upcloud, vcd.vapp, vcd, vmware, workflow, xen)",
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"alibaba", "amazon", "arm", "azure", "maas", "cloudFormation", "docker", "esxi", "fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix", "opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "terraform", "upcloud", "vcd.vapp", "vcd", "vmware", "workflow", "xen"}, false),
+				Type: schema.TypeString,
+				Description: "The technology of the instance layout (alibaba, amazon, arm, azure, " +
+					"maas, cloudFormation, docker, esxi, fusion, google, huawei, hyperv, kubernetes, " +
+					"kvm, nutanix, opentelekom, openstack, oraclecloud, oraclevm, scvmm, terraform, " +
+					"upcloud, vcd.vapp, vcd, vmware, workflow, xen)",
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"alibaba", "amazon", "arm", "azure", "maas", "cloudFormation", "docker", "esxi",
+					"fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix",
+					"opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "terraform",
+					"upcloud", "vcd.vapp", "vcd", "vmware", "workflow", "xen",
+				}, false),
 			},
 			"minimum_memory": {
 				Type:        schema.TypeInt,

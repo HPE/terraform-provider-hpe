@@ -13,7 +13,7 @@ Provides a Morpheus helm spec template resource
 Creating the helm spec template with local content:
 
 ```terraform
-resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_local" {
+resource "hpe_morpheus_spec_template_helm" "example" {
   name         = "tf-helm-spec-example-local"
   source_type  = "local"
   spec_content = <<TFEOF
@@ -22,16 +22,16 @@ kind: Service
 metadata:
 name: {{ template "fullname" . }}
 labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+ chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:
 type: {{ .Values.service.type }}
 ports:
 - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
+ targetPort: {{ .Values.service.internalPort }}
+ protocol: TCP
+ name: {{ .Values.service.name }}
 selector:
-    app: {{ template "fullname" . }}
+ app: {{ template "fullname" . }}
 TFEOF
 }
 ```
@@ -39,7 +39,7 @@ TFEOF
 Creating the helm spec template with the template fetched from a url:
 
 ```terraform
-resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_url" {
+resource "hpe_morpheus_spec_template_helm" "example" {
   name        = "tf-helm-spec-example-url"
   source_type = "url"
   spec_path   = "http://example.com/chart.yaml"
@@ -49,10 +49,10 @@ resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_url" {
 Creating the helm spec template with the template fetched via git:
 
 ```terraform
-resource "hpe_morpheus_spec_template_helm" "tfexample_helm_spec_template_git" {
+resource "hpe_morpheus_spec_template_helm" "example" {
   name          = "tf-helm-spec-example-git"
   source_type   = "repository"
-  repository_id = 2
+  repository_id = "2"
   version_ref   = "main"
   spec_path     = "./spec.yaml"
 }

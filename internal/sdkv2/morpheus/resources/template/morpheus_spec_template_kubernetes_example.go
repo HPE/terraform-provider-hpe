@@ -66,7 +66,7 @@ spec:
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "morpheus_spec_template_kubernetes_resource_local.tf.tmpl")
+	templatePath := filepath.Join(dir, "spec_template_kubernetes_resource_local.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
@@ -103,7 +103,7 @@ func RenderSpecTemplateKubernetesGitConfig(t *testing.T, overrides map[string]st
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "morpheus_spec_template_kubernetes_resource_git.tf.tmpl")
+	templatePath := filepath.Join(dir, "spec_template_kubernetes_resource_git.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
@@ -138,7 +138,7 @@ func RenderSpecTemplateKubernetesUrlConfig(t *testing.T, overrides map[string]st
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "morpheus_spec_template_kubernetes_resource_url.tf.tmpl")
+	templatePath := filepath.Join(dir, "spec_template_kubernetes_resource_url.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

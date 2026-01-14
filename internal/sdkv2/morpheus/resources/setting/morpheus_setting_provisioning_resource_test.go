@@ -3,14 +3,12 @@
 package setting_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/setting"
@@ -22,16 +20,6 @@ func TestMain(m *testing.M) {
 	testhelpers.WriteMergedResults()
 
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	return tf5to6server.UpgradeServer(context.Background(), sdkv2morpheus.Provider().GRPCProvider)
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 func TestAccMorpheusSettingProvisioningExampleOk(t *testing.T) {
@@ -90,7 +78,7 @@ func TestAccMorpheusSettingProvisioningExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Plan
 			{
