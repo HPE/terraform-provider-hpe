@@ -13,7 +13,7 @@ Of the default Morpheus Cloud types available, only VMWare Clouds support Cloud 
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_cloud_folder" "cloud_folder" {
+data "hpe_morpheus_cloud_folder" "example" {
   name     = "cloudfolder01"
   cloud_id = 4
 }

@@ -1,12 +1,8 @@
-resource "hpe_morpheus_workflow_operational" "tf_example_operational_workflow" {
+resource "hpe_morpheus_workflow_operational" "example" {
   name                = "tf_example_operational_workflow"
   description         = "Terraform operational workflow example"
   labels              = ["demo", "terraform"]
   platform            = "all"
   visibility          = "private"
   allow_custom_config = true
-  option_types = [
-    1730
-  ]
-  task_ids = [18]
 }

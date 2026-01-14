@@ -49,8 +49,7 @@ func ResourceOptionTypeHidden() *schema.Resource {
 			"field_name": {
 				Type:        schema.TypeString,
 				Description: "The field name of the hidden option type",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"export_meta": {
 				Type:        schema.TypeBool,

@@ -1,4 +1,4 @@
-resource "hpe_morpheus_task_ansible_playbook" "ansplaybook" {
+resource "hpe_morpheus_task_ansible_playbook" "example" {
   name                = "tfansibletest"
   code                = "tfansibletest"
   labels              = ["demo", "terraform"]
@@ -14,4 +14,3 @@ resource "hpe_morpheus_task_ansible_playbook" "ansplaybook" {
   retry_delay_seconds = 10
   allow_custom_config = true
 }
-

@@ -1,0 +1,17 @@
+resource "hpe_morpheus_task_ansible_tower" "example" {
+  name                         = "{{.Name}}"
+  code                         = "{{.Code}}"
+  labels                       = {{.Labels}}
+  ansible_tower_integration_id = {{.AnsibleTowerIntegrationId}}
+  ansible_tower_inventory_id   = {{.AnsibleTowerInventoryId}}
+  group                        = "{{.Group}}"
+  job_template_id              = {{.JobTemplateId}}
+  scm_override                 = "{{.ScmOverride}}"
+  execute_mode                 = "{{.ExecuteMode}}"
+  execute_target               = "{{.ExecuteTarget}}"
+  retryable                    = {{.Retryable}}
+  retry_count                  = {{.RetryCount}}
+  retry_delay_seconds          = {{.RetryDelaySeconds}}
+  allow_custom_config          = {{.AllowCustomConfig}}
+  visibility                   = "{{.Visibility}}"
+}
