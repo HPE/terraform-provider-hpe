@@ -1,0 +1,13 @@
+data "hpe_morpheus_policies" "example" {
+  sort_ascending = {{.SortAscending}}
+
+  filter {
+    name   = {{.Filter0Name}}
+    values = {{.Filter0Values}}
+  }
+
+  filter {
+    name   = {{.Filter1Name}}
+    values = {{.Filter1Values}}
+  }
+}
