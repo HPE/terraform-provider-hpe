@@ -1,7 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// Package sweep allows deletion of dangling test resources
-package sweep
+package user
 
 import (
 	"context"
@@ -10,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
@@ -28,24 +28,36 @@ func isSweepableEmail(email string) bool {
 	return sweepableEmails[email]
 }
 
-func Users() {
+// userSweeper handles cleanup of test users
+type userSweeper struct {
+	client *sdk.APIClient
+}
+
+// NewUserSweeper creates and registers a user sweeper
+func NewUserSweeper(client *sdk.APIClient) {
+	s := &userSweeper{
+		client: client,
+	}
+
 	resource.AddTestSweepers(
 		"hpe_morpheus_user",
 		&resource.Sweeper{
 			Name: "hpe_morpheus_user",
-			F:    testSweepMorpheusUsers,
+			F:    s.Sweep,
 		})
 }
 
-func testSweepMorpheusUsers(_ string) error {
+// Sweep cleans up test users
+func (s *userSweeper) Sweep(_ string) error {
 	ctx := context.Background()
 
-	client, err := NewSweepClient(ctx)
-	if err != nil {
-		return err
+	if s.client == nil {
+		log.Printf("[INFO] No client provided, skipping user sweep")
+
+		return nil
 	}
 
-	users, hresp, err := client.UsersAPI.ListUsers(ctx).
+	users, hresp, err := s.client.UsersAPI.ListUsers(ctx).
 		Phrase(testUserPrefix).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to list users: %s", errors.ErrMsg(err, hresp))
@@ -84,7 +96,7 @@ func testSweepMorpheusUsers(_ string) error {
 		log.Printf("[INFO] Sweeping user: %s (id: %d)", *username, *id)
 
 		// Delete the user
-		_, hresp, err := client.UsersAPI.DeleteUser(ctx, *id).Execute()
+		_, hresp, err := s.client.UsersAPI.DeleteUser(ctx, *id).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete user %s (id: %d): %s",
