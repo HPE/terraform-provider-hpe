@@ -4,7 +4,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 0.3.0"
+      version = "= 0.5.0"
     }
   }
 }
