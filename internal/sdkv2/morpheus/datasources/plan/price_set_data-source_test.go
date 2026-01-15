@@ -16,7 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/plan"
 )
 
-func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
+func TestAccMorpheusDataSourcePriceSetExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -40,8 +40,18 @@ func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
 		dependenciesConfig += currentDependency
 	}
 
-	datasourceConfig, err := dsplan.RenderPriceConfig(t, map[string]string{
-		"Name": "resource.hpe_morpheus_price.example.name",
+	if currentDependency, err := plan.RenderPriceSetConfig(t, map[string]string{
+		"Name":     name,
+		"Code":     strings.ToLower(name),
+		"PriceIds": "[resource.hpe_morpheus_price.example.id]",
+	}); err != nil {
+		t.Fatal(err)
+	} else {
+		dependenciesConfig += currentDependency
+	}
+
+	datasourceConfig, err := dsplan.RenderPriceSetConfig(t, map[string]string{
+		"Name": "resource.hpe_morpheus_price_set.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -49,7 +59,7 @@ func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_price.example",
+			"data.hpe_morpheus_price_set.example",
 			"name",
 			name,
 		),
