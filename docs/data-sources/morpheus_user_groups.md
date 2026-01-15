@@ -11,12 +11,12 @@ Provides a Morpheus user groups data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_user_groups" "example_user_groups" {
+data "hpe_morpheus_user_groups" "example" {
   sort_ascending = true
 
   filter {
     name   = "name"
-    values = ["Test*"]
+    values = [".*"]
   }
 }
 ```

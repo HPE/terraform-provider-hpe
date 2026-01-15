@@ -11,7 +11,7 @@ Provides a Morpheus ansible tower job template data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_ansible_tower_job_template" "example_ansible_tower_job_template" {
+data "hpe_morpheus_ansible_tower_job_template" "example" {
   name = "Demo Job Template"
 }
 ```
