@@ -1,3 +1,3 @@
-data "hpe_morpheus_ansible_tower_inventory" "example_ansible_tower_inventory" {
+data "hpe_morpheus_ansible_tower_inventory" "example" {
   name = "Demo Inventory"
 }

@@ -5,11 +5,14 @@ package convert
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func StrToType(s *string) types.String {
@@ -53,6 +56,25 @@ func SetToStrSlice(set types.Set) ([]string, error) {
 	return items, nil
 }
 
+func SetToSlice[T any](ctx context.Context, set types.Set) ([]T, error) {
+	var items []T
+	for _, elem := range set.Elements() {
+		a, err := ValueToAny(ctx, elem)
+		if err != nil {
+			return nil, err
+		}
+
+		v, ok := a.(T)
+		if !ok {
+			return nil, fmt.Errorf("converting Set to %T not possible, underlying type does not match", items)
+		}
+
+		items = append(items, v)
+	}
+
+	return items, nil
+}
+
 func BoolToType(b *bool) types.Bool {
 	if b == nil {
 		return types.BoolNull()
@@ -61,12 +83,69 @@ func BoolToType(b *bool) types.Bool {
 	return types.BoolValue(*b)
 }
 
+func StringToBool(ctx context.Context, s string) types.Bool {
+	switch strings.ToLower(s) {
+	case "on", "true", "yes":
+		return types.BoolValue(true)
+	case "off", "false", "no":
+		return types.BoolValue(false)
+	default:
+		tflog.Debug(ctx, fmt.Sprintf("converting string to BoolNull: %s", s))
+
+		return types.BoolNull()
+	}
+}
+
+func BoolToStringOnOff(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("on")
+	case false:
+		return types.StringValue("off")
+	default:
+		return types.StringNull()
+	}
+}
+
+func BoolToStringYesNo(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("yes")
+	case false:
+		return types.StringValue("no")
+	default:
+		return types.StringNull()
+	}
+}
+
+func BoolToStringTrueFalse(b bool) types.String {
+	switch b {
+	case true:
+		return types.StringValue("true")
+	case false:
+		return types.StringValue("false")
+	default:
+		return types.StringNull()
+	}
+}
+
 func Int64ToType(i *int64) types.Int64 {
 	if i == nil {
 		return types.Int64Null()
 	}
 
 	return types.Int64Value(*i)
+}
+
+func NumToType(f *float32) types.Number {
+	if f == nil {
+		return types.NumberNull()
+	}
+
+	// Convert float32 to big.Float
+	bf := big.NewFloat(float64(*f))
+
+	return types.NumberValue(bf)
 }
 
 func Int64SliceToSet(items []int64) types.Set {

@@ -40,5 +40,5 @@ docs-experimental:
 	rm -rf templates-combined-temp
 
 sweep:
-	go test -v ./internal/subproviders/morpheus/test/sweep/... \
-	  -sweep=all -sweep-run=hpe_morpheus_datastore,hpe_morpheus_instance,hpe_morpheus_network,hpe_morpheus_user
+	go test -v ./internal/framework/subproviders/morpheus/test/sweep/... \
+	  -sweep=all -sweep-run=hpe_morpheus_datastore,hpe_morpheus_instance,hpe_morpheus_network,hpe_morpheus_policy,hpe_morpheus_user
