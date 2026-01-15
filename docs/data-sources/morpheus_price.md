@@ -11,7 +11,7 @@ The Price data source allows details of a Price to be retrieved by its name.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_price" "resource_price" {
+data "hpe_morpheus_price" "example" {
   name = "resourceprice"
 }
 ```
