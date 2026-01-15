@@ -1,3 +1,3 @@
-data "morpheus_task" "deploy_app" {
-  name = "Deploy app"
+data "hpe_morpheus_task" "example" {
+  id = 1
 }

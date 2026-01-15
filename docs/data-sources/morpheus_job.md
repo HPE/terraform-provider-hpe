@@ -11,7 +11,7 @@ Provides a Morpheus job data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_job" "example_job" {
+data "hpe_morpheus_job" "example" {
   name = "TF Example job"
 }
 ```
