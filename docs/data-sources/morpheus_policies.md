@@ -11,12 +11,12 @@ Provides a Morpheus policies data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_policies" "example_policies" {
+data "hpe_morpheus_policies" "example" {
   sort_ascending = true
 
   filter {
     name   = "name"
-    values = ["Test*"]
+    values = [".*"]
   }
 
   filter {
