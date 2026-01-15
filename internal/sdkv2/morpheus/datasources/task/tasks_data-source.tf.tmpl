@@ -1,0 +1,13 @@
+data "hpe_morpheus_tasks" "example" {
+  sort_ascending = {{.SortAscending}}
+
+  filter {
+    name   = "{{.FilterName}}"
+    values = {{.FilterValues}}
+  }
+
+  filter {
+    name   = "{{.FilterName2}}"
+    values = {{.FilterValues2}}
+  }
+}
