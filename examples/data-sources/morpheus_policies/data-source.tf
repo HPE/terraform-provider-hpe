@@ -1,4 +1,4 @@
-data "hpe_morpheus_policies" "example_policies" {
+data "hpe_morpheus_policies" "example" {
   sort_ascending = true
 
   filter {
