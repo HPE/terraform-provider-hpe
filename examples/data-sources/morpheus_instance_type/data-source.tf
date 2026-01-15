@@ -1,3 +1,3 @@
-data "hpe_morpheus_instance_type" "apache" {
+data "hpe_morpheus_instance_type" "example" {
   name = "apache"
 }

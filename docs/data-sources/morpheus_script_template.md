@@ -11,7 +11,7 @@ Provides a Morpheus script template data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_script_template" "example_script_template" {
+data "hpe_morpheus_script_template" "example" {
   name = "Terraform Example Script Template"
 }
 ```
