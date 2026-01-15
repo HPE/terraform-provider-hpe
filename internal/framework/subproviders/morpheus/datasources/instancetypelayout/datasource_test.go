@@ -38,6 +38,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -92,6 +93,7 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -146,6 +148,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -207,6 +210,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -257,6 +261,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -294,6 +299,7 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{
@@ -324,6 +330,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 }
 
 func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{
@@ -356,6 +363,7 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{

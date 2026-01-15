@@ -37,6 +37,8 @@ resource "hpe_morpheus_option_type_password" "tf_example_password_option_type" {
 
 ### Required
 
+- `field_label` (String) The label associated with the field in the UI
+- `field_name` (String) The field name of the password option type
 - `name` (String) The name of the password option type
 
 ### Optional
@@ -47,8 +49,6 @@ resource "hpe_morpheus_option_type_password" "tf_example_password_option_type" {
 - `display_value_on_details` (Boolean) Display the selected value of the password option type on the associated resource's details page
 - `editable` (Boolean) Whether the value of the option type can be edited after the initial request
 - `export_meta` (Boolean) Whether to export the password option type as a tag
-- `field_label` (String) The label associated with the field in the UI
-- `field_name` (String) The field name of the password option type
 - `help_block` (String) Password that provides additional details about the use of the option type
 - `labels` (Set of String) The organization labels associated with the option type (Only supported on Morpheus 5.5.3 or higher)
 - `placeholder` (String) Password in the field used as a placeholder for example purposes
