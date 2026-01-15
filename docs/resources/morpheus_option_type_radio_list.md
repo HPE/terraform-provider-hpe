@@ -36,7 +36,10 @@ resource "hpe_morpheus_option_type_radio_list" "example" {
 
 ### Required
 
+- `field_label` (String) The label associated with the field in the UI
+- `field_name` (String) The field name of the radio list option type
 - `name` (String) The name of the radio list option type
+- `option_list_id` (Number) The ID of the associated option list
 
 ### Optional
 
@@ -46,11 +49,8 @@ resource "hpe_morpheus_option_type_radio_list" "example" {
 - `display_value_on_details` (Boolean) Display the selected value of the radio list option type on the associated resource's details page
 - `editable` (Boolean) Whether the value of the option type can be edited after the initial request
 - `export_meta` (Boolean) Whether to export the radio list option type as a tag
-- `field_label` (String) The label associated with the field in the UI
-- `field_name` (String) The field name of the radio list option type
 - `help_block` (String) Text that provides additional details about the use of the option type
 - `labels` (Set of String) The organization labels associated with the option type(Only supported on Morpheus 5.5.3 or higher)
-- `option_list_id` (Number) The ID of the associated option list
 - `require_field` (String) The field or code used to trigger the required status of the field
 - `required` (Boolean) Whether the option type is required
 - `show_on_edit` (Boolean) Whether the option type will display in the edit section of the provisioned resource

@@ -52,6 +52,7 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 }
 
 func TestAccProviderBlockWithAccessToken(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -85,6 +86,7 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 }
 
 func TestAccProviderBlockWithCredentials(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -119,6 +121,7 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 
 // if all access token and creds are provided, then it'll prefer access token
 func TestAccProviderBlockAllAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -153,6 +156,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingURL(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -191,6 +195,7 @@ func TestAccProviderBlockMissingURL(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -218,6 +223,7 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingUsername(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -260,6 +266,7 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 }
 
 func TestAccProviderBlockMissingPassword(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -288,6 +295,7 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 }
 
 func TestAccProviderBlockNoneSet(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

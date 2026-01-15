@@ -65,7 +65,7 @@ func getCloudAsState(
 	state.GroupId = convert.Int64ToType(cloud.Groups[0].Id)
 	state.AgentInstallMode = convert.StrToType(cloud.AgentMode)
 	state.AutoRecoverPowerState = convert.BoolToType(cloud.AutoRecoverPowerState)
-	if *cloud.Code != "standard" { // workaround an API bug
+	if cloud.GetCode() != "standard" { // workaround an API bug
 		state.Code = convert.StrToType(cloud.Code)
 	}
 	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
