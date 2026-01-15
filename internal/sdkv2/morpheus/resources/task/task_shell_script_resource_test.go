@@ -27,6 +27,7 @@ func TestAccMorpheusTaskShellScriptResourceExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderTaskShellScriptConfig(t, map[string]string{
 		"Name": name,
+		"Code": name,
 	})
 	if err != nil {
 		t.Fatal(err)

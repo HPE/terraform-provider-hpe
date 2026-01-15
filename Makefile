@@ -22,6 +22,7 @@ test:
 	go test -short -v -cover -count 1 -timeout 10m ./...
 
 testacc:
+	cd internal/framework && \
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 60m ./...
 
@@ -39,5 +40,5 @@ docs-experimental:
 	rm -rf templates-combined-temp
 
 sweep:
-	go test -v ./internal/subproviders/morpheus/test/sweep/... \
-	  -sweep=all -sweep-run=hpe_morpheus_datastore,hpe_morpheus_instance,hpe_morpheus_network,hpe_morpheus_user
+	go test -v ./internal/framework/subproviders/morpheus/test/sweep/... \
+	  -sweep=all -sweep-run=hpe_morpheus_datastore,hpe_morpheus_instance,hpe_morpheus_network,hpe_morpheus_policy,hpe_morpheus_user

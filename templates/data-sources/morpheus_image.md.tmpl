@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Image datasource provides information about Morpheus images which may be used
+during instance provisioning.
+
+## Example Usage
+
+Get an `image` by `id`
+{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-id.tf" }}
+
+Get an `image` by `name`
+{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-name.tf" }}
+
+Get an `image` by `name` and `image_type`, this option can be useful when there are multiple
+images with the same name.
+{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-name-type.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

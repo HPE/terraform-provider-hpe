@@ -143,7 +143,7 @@ func NewAPIClient(
 		}
 		c.GetConfig().HTTPClient = &http.Client{
 			Transport: authRoundTripper,
-			Timeout:   15 * time.Second,
+			Timeout:   15 * time.Minute,
 		}
 	}
 

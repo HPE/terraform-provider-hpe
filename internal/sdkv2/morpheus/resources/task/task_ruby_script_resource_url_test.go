@@ -27,6 +27,7 @@ func TestAccMorpheusTaskRubyScriptUrlExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderTaskRubyScriptUrlConfig(t, map[string]string{
 		"Name": name,
+		"Code": name,
 	})
 	if err != nil {
 		t.Fatal(err)

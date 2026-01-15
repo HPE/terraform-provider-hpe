@@ -7,22 +7,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -45,6 +49,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					morpheusvalidators.ValidObjectMap(),
 				},
 			},
+			"connection_info": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Computed:            true,
+				Description:         "List of IP addresses to use when connecting to instance",
+				MarkdownDescription: "List of IP addresses to use when connecting to instance",
+			},
 			"evars": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -65,6 +75,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Environment Variables, an array of objects that have name and value.",
 				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
@@ -93,55 +106,214 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The layout id for the instance type that you want to provision. i.e. single process or cluster",
 				MarkdownDescription: "The layout id for the instance type that you want to provision. i.e. single process or cluster",
 			},
-			"layout_size": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Apply a multiply factor of containers/vms within the instance.",
-				MarkdownDescription: "Apply a multiply factor of containers/vms within the instance.",
-				Default:             int64default.StaticInt64(1),
-			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "Name of the instance to be created.",
 				MarkdownDescription: "Name of the instance to be created.",
 			},
-			"network_interfaces": schema.SetNestedAttribute{
+			"network_interfaces": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"child_virtual_networks": schema.ListNestedAttribute{
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"ip_address": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "The ip address. Not applicable when using DHCP or IP Pools.",
+										MarkdownDescription: "The ip address. Not applicable when using DHCP or IP Pools.",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
+										},
+									},
+									"ip_mode": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+										MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
+										},
+										Validators: []validator.String{
+											stringvalidator.OneOf("static", "dhcp", ""),
+										},
+										Default: stringdefault.StaticString(""),
+									},
+									"ip_pool": schema.Int64Attribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "id of the ip pool to be used with this network",
+										MarkdownDescription: "id of the ip pool to be used with this network",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.UseStateForUnknown(),
+										},
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.Expressions{
+												path.MatchRelative().AtParent().AtName("ip_address"),
+											}...),
+										},
+									},
+									"name": schema.StringAttribute{
+										Computed:            true,
+										Description:         "The name of the interface, e.g. 'eth0', 'eth1'",
+										MarkdownDescription: "The name of the interface, e.g. 'eth0', 'eth1'",
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
+										},
+									},
+									"network_group_id": schema.Int64Attribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
+										MarkdownDescription: "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
+										},
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.Expressions{
+												path.MatchRelative().AtParent().AtName("network_id"),
+											}...),
+										},
+									},
+									"network_id": schema.Int64Attribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
+										MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
+										},
+									},
+									"network_type_id": schema.Int64Attribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "The id of the type of network interface",
+										MarkdownDescription: "The id of the type of network interface",
+										PlanModifiers: []planmodifier.Int64{
+											int64planmodifier.UseStateForUnknown(),
+											int64planmodifier.RequiresReplace(),
+										},
+									},
+									"primary_interface": schema.BoolAttribute{
+										Computed:            true,
+										Description:         "Is this interface the 'primary interface'?",
+										MarkdownDescription: "Is this interface the 'primary interface'?",
+										PlanModifiers: []planmodifier.Bool{
+											boolplanmodifier.UseStateForUnknown(),
+										},
+									},
+								},
+								CustomType: ChildVirtualNetworksType{
+									ObjectType: types.ObjectType{
+										AttrTypes: ChildVirtualNetworksValue{}.AttributeTypes(ctx),
+									},
+								},
+							},
+							Optional:            true,
+							Description:         "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							MarkdownDescription: "The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list\ncannot be empty, it can either not be specified in HCL or if specified must contain at least one element.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+							PlanModifiers: []planmodifier.List{
+								listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
+									if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+										return
+									}
+									if len(req.StateValue.Elements()) != len(req.ConfigValue.Elements()) {
+										resp.RequiresReplace = true
+									}
+								}, "require replace if number of entries in list has changed", "require replace if number of entries in list has changed"),
+							},
+							Validators: []validator.List{
+								listvalidator.SizeAtLeast(1),
+							},
+						},
 						"ip_address": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
 							Description:         "The ip address. Not applicable when using DHCP or IP Pools.",
 							MarkdownDescription: "The ip address. Not applicable when using DHCP or IP Pools.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"ip_mode": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
-							MarkdownDescription: "The mode for determining ip address. Use 'static' when specifying an ipAddress, otherwise 'dhcp' is used.",
+							Description:         "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+							MarkdownDescription: "The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 							Validators: []validator.String{
-								stringvalidator.OneOf(
-									"static",
-									"dhcp",
-								),
+								stringvalidator.OneOf("static", "dhcp", ""),
+							},
+							Default: stringdefault.StaticString(""),
+						},
+						"ip_pool": schema.Int64Attribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "id of the ip pool to be used with this network",
+							MarkdownDescription: "id of the ip pool to be used with this network",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
+							Validators: []validator.Int64{
+								int64validator.ConflictsWith(path.Expressions{
+									path.MatchRelative().AtParent().AtName("ip_address"),
+								}...),
+							},
+						},
+						"name": schema.StringAttribute{
+							Computed:            true,
+							Description:         "The name of the interface, e.g. 'eth0', 'eth1'",
+							MarkdownDescription: "The name of the interface, e.g. 'eth0', 'eth1'",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
 						"network_group_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "id of the network group to be used.",
-							MarkdownDescription: "id of the network group to be used.",
+							Description:         "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
+							MarkdownDescription: "id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'\n",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
+							},
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
-									path.MatchRoot("network_id"),
+									path.MatchRelative().AtParent().AtName("network_id"),
 								}...),
 							},
 						},
 						"network_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "id of the network to be used.",
-							MarkdownDescription: "id of the network to be used.",
+							Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
+							MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
+							},
+						},
+						"network_type_id": schema.Int64Attribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "The id of the type of network interface",
+							MarkdownDescription: "The id of the type of network interface",
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+								int64planmodifier.RequiresReplace(),
+							},
+						},
+						"primary_interface": schema.BoolAttribute{
+							Computed:            true,
+							Description:         "Is this interface the 'primary interface'?",
+							MarkdownDescription: "Is this interface the 'primary interface'?",
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 					CustomType: NetworkInterfacesType{
@@ -153,15 +325,15 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
 				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
 						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
 							return
 						}
-						if !req.StateValue.Equal(req.ConfigValue) {
+						if len(req.StateValue.Elements()) != len(req.ConfigValue.Elements()) {
 							resp.RequiresReplace = true
 						}
-					}, "require replace if network interface layout has changed", "require replace if network interface layout has changed"),
+					}, "require replace if number of entries in list has changed", "require replace if number of entries in list has changed"),
 				},
 			},
 			"plan_id": schema.Int64Attribute{
@@ -225,6 +397,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Workflow ID to execute.",
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
+			"timeouts": timeouts.AttributesAll(ctx),
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -319,22 +492,23 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceModel struct {
-	CloudId           types.Int64   `tfsdk:"cloud_id"`
-	Config            types.Dynamic `tfsdk:"config"`
-	Evars             types.Set     `tfsdk:"evars"`
-	GroupId           types.Int64   `tfsdk:"group_id"`
-	Id                types.Int64   `tfsdk:"id"`
-	InstanceContext   types.String  `tfsdk:"instance_context"`
-	InstanceTypeId    types.Int64   `tfsdk:"instance_type_id"`
-	LayoutId          types.Int64   `tfsdk:"layout_id"`
-	LayoutSize        types.Int64   `tfsdk:"layout_size"`
-	Name              types.String  `tfsdk:"name"`
-	NetworkInterfaces types.Set     `tfsdk:"network_interfaces"`
-	PlanId            types.Int64   `tfsdk:"plan_id"`
-	Ports             types.Set     `tfsdk:"ports"`
-	Tags              types.Set     `tfsdk:"tags"`
-	TaskSetId         types.Int64   `tfsdk:"task_set_id"`
-	Volumes           types.List    `tfsdk:"volumes"`
+	CloudId           types.Int64    `tfsdk:"cloud_id"`
+	Config            types.Dynamic  `tfsdk:"config"`
+	ConnectionInfo    types.List     `tfsdk:"connection_info"`
+	Evars             types.Set      `tfsdk:"evars"`
+	GroupId           types.Int64    `tfsdk:"group_id"`
+	Id                types.Int64    `tfsdk:"id"`
+	InstanceContext   types.String   `tfsdk:"instance_context"`
+	InstanceTypeId    types.Int64    `tfsdk:"instance_type_id"`
+	LayoutId          types.Int64    `tfsdk:"layout_id"`
+	Name              types.String   `tfsdk:"name"`
+	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
+	PlanId            types.Int64    `tfsdk:"plan_id"`
+	Ports             types.Set      `tfsdk:"ports"`
+	Tags              types.Set      `tfsdk:"tags"`
+	TaskSetId         types.Int64    `tfsdk:"task_set_id"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Volumes           types.List     `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}
@@ -570,12 +744,14 @@ func (t EvarsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -614,6 +790,7 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Name.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -621,6 +798,7 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["name"] = val
 
 		val, err = v.Value.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -753,6 +931,24 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 
 	attributes := in.Attributes()
 
+	childVirtualNetworksAttribute, ok := attributes["child_virtual_networks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`child_virtual_networks is missing from object`)
+
+		return nil, diags
+	}
+
+	childVirtualNetworksVal, ok := childVirtualNetworksAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`child_virtual_networks expected to be basetypes.ListValue, was: %T`, childVirtualNetworksAttribute))
+	}
+
 	ipAddressAttribute, ok := attributes["ip_address"]
 
 	if !ok {
@@ -787,6 +983,42 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
+	}
+
+	ipPoolAttribute, ok := attributes["ip_pool"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_pool is missing from object`)
+
+		return nil, diags
+	}
+
+	ipPoolVal, ok := ipPoolAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_pool expected to be basetypes.Int64Value, was: %T`, ipPoolAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	networkGroupIdAttribute, ok := attributes["network_group_id"]
@@ -825,16 +1057,57 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 			fmt.Sprintf(`network_id expected to be basetypes.Int64Value, was: %T`, networkIdAttribute))
 	}
 
+	networkTypeIdAttribute, ok := attributes["network_type_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_type_id is missing from object`)
+
+		return nil, diags
+	}
+
+	networkTypeIdVal, ok := networkTypeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_type_id expected to be basetypes.Int64Value, was: %T`, networkTypeIdAttribute))
+	}
+
+	primaryInterfaceAttribute, ok := attributes["primary_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`primary_interface is missing from object`)
+
+		return nil, diags
+	}
+
+	primaryInterfaceVal, ok := primaryInterfaceAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return NetworkInterfacesValue{
-		IpAddress:      ipAddressVal,
-		IpMode:         ipModeVal,
-		NetworkGroupId: networkGroupIdVal,
-		NetworkId:      networkIdVal,
-		state:          attr.ValueStateKnown,
+		ChildVirtualNetworks: childVirtualNetworksVal,
+		IpAddress:            ipAddressVal,
+		IpMode:               ipModeVal,
+		IpPool:               ipPoolVal,
+		Name:                 nameVal,
+		NetworkGroupId:       networkGroupIdVal,
+		NetworkId:            networkIdVal,
+		NetworkTypeId:        networkTypeIdVal,
+		PrimaryInterface:     primaryInterfaceVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -901,6 +1174,24 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 		return NewNetworkInterfacesValueUnknown(), diags
 	}
 
+	childVirtualNetworksAttribute, ok := attributes["child_virtual_networks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`child_virtual_networks is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	childVirtualNetworksVal, ok := childVirtualNetworksAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`child_virtual_networks expected to be basetypes.ListValue, was: %T`, childVirtualNetworksAttribute))
+	}
+
 	ipAddressAttribute, ok := attributes["ip_address"]
 
 	if !ok {
@@ -935,6 +1226,42 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
+	}
+
+	ipPoolAttribute, ok := attributes["ip_pool"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_pool is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	ipPoolVal, ok := ipPoolAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_pool expected to be basetypes.Int64Value, was: %T`, ipPoolAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	networkGroupIdAttribute, ok := attributes["network_group_id"]
@@ -973,16 +1300,57 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 			fmt.Sprintf(`network_id expected to be basetypes.Int64Value, was: %T`, networkIdAttribute))
 	}
 
+	networkTypeIdAttribute, ok := attributes["network_type_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_type_id is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	networkTypeIdVal, ok := networkTypeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_type_id expected to be basetypes.Int64Value, was: %T`, networkTypeIdAttribute))
+	}
+
+	primaryInterfaceAttribute, ok := attributes["primary_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`primary_interface is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	primaryInterfaceVal, ok := primaryInterfaceAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
+	}
+
 	if diags.HasError() {
 		return NewNetworkInterfacesValueUnknown(), diags
 	}
 
 	return NetworkInterfacesValue{
-		IpAddress:      ipAddressVal,
-		IpMode:         ipModeVal,
-		NetworkGroupId: networkGroupIdVal,
-		NetworkId:      networkIdVal,
-		state:          attr.ValueStateKnown,
+		ChildVirtualNetworks: childVirtualNetworksVal,
+		IpAddress:            ipAddressVal,
+		IpMode:               ipModeVal,
+		IpPool:               ipPoolVal,
+		Name:                 nameVal,
+		NetworkGroupId:       networkGroupIdVal,
+		NetworkId:            networkIdVal,
+		NetworkTypeId:        networkTypeIdVal,
+		PrimaryInterface:     primaryInterfaceVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1029,12 +1397,14 @@ func (t NetworkInterfacesType) ValueFromTerraform(ctx context.Context, in tftype
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1052,31 +1422,52 @@ func (t NetworkInterfacesType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = NetworkInterfacesValue{}
 
 type NetworkInterfacesValue struct {
-	IpAddress      basetypes.StringValue `tfsdk:"ip_address"`
-	IpMode         basetypes.StringValue `tfsdk:"ip_mode"`
-	NetworkGroupId basetypes.Int64Value  `tfsdk:"network_group_id"`
-	NetworkId      basetypes.Int64Value  `tfsdk:"network_id"`
-	state          attr.ValueState
+	ChildVirtualNetworks basetypes.ListValue   `tfsdk:"child_virtual_networks"`
+	IpAddress            basetypes.StringValue `tfsdk:"ip_address"`
+	IpMode               basetypes.StringValue `tfsdk:"ip_mode"`
+	IpPool               basetypes.Int64Value  `tfsdk:"ip_pool"`
+	Name                 basetypes.StringValue `tfsdk:"name"`
+	NetworkGroupId       basetypes.Int64Value  `tfsdk:"network_group_id"`
+	NetworkId            basetypes.Int64Value  `tfsdk:"network_id"`
+	NetworkTypeId        basetypes.Int64Value  `tfsdk:"network_type_id"`
+	PrimaryInterface     basetypes.BoolValue   `tfsdk:"primary_interface"`
+	state                attr.ValueState
 }
 
 func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 4)
+	attrTypes := make(map[string]tftypes.Type, 9)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["child_virtual_networks"] = basetypes.ListType{
+		ElemType: ChildVirtualNetworksValue{}.Type(ctx),
+	}.TerraformType(ctx)
 	attrTypes["ip_address"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["ip_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ip_pool"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["network_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["network_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["network_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["primary_interface"] = basetypes.BoolType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 4)
+		vals := make(map[string]tftypes.Value, 9)
+
+		val, err = v.ChildVirtualNetworks.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["child_virtual_networks"] = val
 
 		val, err = v.IpAddress.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1084,13 +1475,31 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["ip_address"] = val
 
 		val, err = v.IpMode.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
 		vals["ip_mode"] = val
 
+		val, err = v.IpPool.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ip_pool"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
 		val, err = v.NetworkGroupId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1098,11 +1507,28 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["network_group_id"] = val
 
 		val, err = v.NetworkId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
 		vals["network_id"] = val
+
+		val, err = v.NetworkTypeId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["network_type_id"] = val
+
+		val, err = v.PrimaryInterface.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["primary_interface"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -1133,11 +1559,47 @@ func (v NetworkInterfacesValue) String() string {
 func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	childVirtualNetworksVal := types.ListValueMust(
+		ChildVirtualNetworksType{
+			basetypes.ObjectType{
+				AttrTypes: ChildVirtualNetworksValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.ChildVirtualNetworks.Elements(),
+	)
+
+	if v.ChildVirtualNetworks.IsNull() {
+		childVirtualNetworksVal = types.ListNull(
+			ChildVirtualNetworksType{
+				basetypes.ObjectType{
+					AttrTypes: ChildVirtualNetworksValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
+	if v.ChildVirtualNetworks.IsUnknown() {
+		childVirtualNetworksVal = types.ListUnknown(
+			ChildVirtualNetworksType{
+				basetypes.ObjectType{
+					AttrTypes: ChildVirtualNetworksValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
-		"ip_address":       basetypes.StringType{},
-		"ip_mode":          basetypes.StringType{},
-		"network_group_id": basetypes.Int64Type{},
-		"network_id":       basetypes.Int64Type{},
+		"child_virtual_networks": basetypes.ListType{
+			ElemType: ChildVirtualNetworksValue{}.Type(ctx),
+		},
+		"ip_address":        basetypes.StringType{},
+		"ip_mode":           basetypes.StringType{},
+		"ip_pool":           basetypes.Int64Type{},
+		"name":              basetypes.StringType{},
+		"network_group_id":  basetypes.Int64Type{},
+		"network_id":        basetypes.Int64Type{},
+		"network_type_id":   basetypes.Int64Type{},
+		"primary_interface": basetypes.BoolType{},
 	}
 
 	if v.IsNull() {
@@ -1151,10 +1613,15 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"ip_address":       v.IpAddress,
-			"ip_mode":          v.IpMode,
-			"network_group_id": v.NetworkGroupId,
-			"network_id":       v.NetworkId,
+			"child_virtual_networks": childVirtualNetworksVal,
+			"ip_address":             v.IpAddress,
+			"ip_mode":                v.IpMode,
+			"ip_pool":                v.IpPool,
+			"name":                   v.Name,
+			"network_group_id":       v.NetworkGroupId,
+			"network_id":             v.NetworkId,
+			"network_type_id":        v.NetworkTypeId,
+			"primary_interface":      v.PrimaryInterface,
 		})
 
 	return objVal, diags
@@ -1162,6 +1629,730 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 
 func (v NetworkInterfacesValue) Equal(o attr.Value) bool {
 	other, ok := o.(NetworkInterfacesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ChildVirtualNetworks.Equal(other.ChildVirtualNetworks) {
+		return false
+	}
+
+	if !v.IpAddress.Equal(other.IpAddress) {
+		return false
+	}
+
+	if !v.IpMode.Equal(other.IpMode) {
+		return false
+	}
+
+	if !v.IpPool.Equal(other.IpPool) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.NetworkGroupId.Equal(other.NetworkGroupId) {
+		return false
+	}
+
+	if !v.NetworkId.Equal(other.NetworkId) {
+		return false
+	}
+
+	if !v.NetworkTypeId.Equal(other.NetworkTypeId) {
+		return false
+	}
+
+	if !v.PrimaryInterface.Equal(other.PrimaryInterface) {
+		return false
+	}
+
+	return true
+}
+
+func (v NetworkInterfacesValue) Type(ctx context.Context) attr.Type {
+	return NetworkInterfacesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v NetworkInterfacesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"child_virtual_networks": basetypes.ListType{
+			ElemType: ChildVirtualNetworksValue{}.Type(ctx),
+		},
+		"ip_address":        basetypes.StringType{},
+		"ip_mode":           basetypes.StringType{},
+		"ip_pool":           basetypes.Int64Type{},
+		"name":              basetypes.StringType{},
+		"network_group_id":  basetypes.Int64Type{},
+		"network_id":        basetypes.Int64Type{},
+		"network_type_id":   basetypes.Int64Type{},
+		"primary_interface": basetypes.BoolType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ChildVirtualNetworksType{}
+
+type ChildVirtualNetworksType struct {
+	basetypes.ObjectType
+}
+
+func (t ChildVirtualNetworksType) Equal(o attr.Type) bool {
+	other, ok := o.(ChildVirtualNetworksType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ChildVirtualNetworksType) String() string {
+	return "ChildVirtualNetworksType"
+}
+
+func (t ChildVirtualNetworksType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewChildVirtualNetworksValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewChildVirtualNetworksValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	ipAddressAttribute, ok := attributes["ip_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_address is missing from object`)
+
+		return nil, diags
+	}
+
+	ipAddressVal, ok := ipAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_address expected to be basetypes.StringValue, was: %T`, ipAddressAttribute))
+	}
+
+	ipModeAttribute, ok := attributes["ip_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_mode is missing from object`)
+
+		return nil, diags
+	}
+
+	ipModeVal, ok := ipModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
+	}
+
+	ipPoolAttribute, ok := attributes["ip_pool"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_pool is missing from object`)
+
+		return nil, diags
+	}
+
+	ipPoolVal, ok := ipPoolAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_pool expected to be basetypes.Int64Value, was: %T`, ipPoolAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	networkGroupIdAttribute, ok := attributes["network_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	networkGroupIdVal, ok := networkGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_group_id expected to be basetypes.Int64Value, was: %T`, networkGroupIdAttribute))
+	}
+
+	networkIdAttribute, ok := attributes["network_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_id is missing from object`)
+
+		return nil, diags
+	}
+
+	networkIdVal, ok := networkIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_id expected to be basetypes.Int64Value, was: %T`, networkIdAttribute))
+	}
+
+	networkTypeIdAttribute, ok := attributes["network_type_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_type_id is missing from object`)
+
+		return nil, diags
+	}
+
+	networkTypeIdVal, ok := networkTypeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_type_id expected to be basetypes.Int64Value, was: %T`, networkTypeIdAttribute))
+	}
+
+	primaryInterfaceAttribute, ok := attributes["primary_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`primary_interface is missing from object`)
+
+		return nil, diags
+	}
+
+	primaryInterfaceVal, ok := primaryInterfaceAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ChildVirtualNetworksValue{
+		IpAddress:        ipAddressVal,
+		IpMode:           ipModeVal,
+		IpPool:           ipPoolVal,
+		Name:             nameVal,
+		NetworkGroupId:   networkGroupIdVal,
+		NetworkId:        networkIdVal,
+		NetworkTypeId:    networkTypeIdVal,
+		PrimaryInterface: primaryInterfaceVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewChildVirtualNetworksValueNull() ChildVirtualNetworksValue {
+	return ChildVirtualNetworksValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewChildVirtualNetworksValueUnknown() ChildVirtualNetworksValue {
+	return ChildVirtualNetworksValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewChildVirtualNetworksValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ChildVirtualNetworksValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ChildVirtualNetworksValue Attribute Value",
+				"While creating a ChildVirtualNetworksValue value, a missing attribute value was detected. "+
+					"A ChildVirtualNetworksValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ChildVirtualNetworksValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ChildVirtualNetworksValue Attribute Type",
+				"While creating a ChildVirtualNetworksValue value, an invalid attribute value was detected. "+
+					"A ChildVirtualNetworksValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ChildVirtualNetworksValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ChildVirtualNetworksValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ChildVirtualNetworksValue Attribute Value",
+				"While creating a ChildVirtualNetworksValue value, an extra attribute value was detected. "+
+					"A ChildVirtualNetworksValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ChildVirtualNetworksValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	ipAddressAttribute, ok := attributes["ip_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_address is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	ipAddressVal, ok := ipAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_address expected to be basetypes.StringValue, was: %T`, ipAddressAttribute))
+	}
+
+	ipModeAttribute, ok := attributes["ip_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_mode is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	ipModeVal, ok := ipModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
+	}
+
+	ipPoolAttribute, ok := attributes["ip_pool"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_pool is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	ipPoolVal, ok := ipPoolAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_pool expected to be basetypes.Int64Value, was: %T`, ipPoolAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	networkGroupIdAttribute, ok := attributes["network_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_group_id is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	networkGroupIdVal, ok := networkGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_group_id expected to be basetypes.Int64Value, was: %T`, networkGroupIdAttribute))
+	}
+
+	networkIdAttribute, ok := attributes["network_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_id is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	networkIdVal, ok := networkIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_id expected to be basetypes.Int64Value, was: %T`, networkIdAttribute))
+	}
+
+	networkTypeIdAttribute, ok := attributes["network_type_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_type_id is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	networkTypeIdVal, ok := networkTypeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_type_id expected to be basetypes.Int64Value, was: %T`, networkTypeIdAttribute))
+	}
+
+	primaryInterfaceAttribute, ok := attributes["primary_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`primary_interface is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	primaryInterfaceVal, ok := primaryInterfaceAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
+	}
+
+	if diags.HasError() {
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	return ChildVirtualNetworksValue{
+		IpAddress:        ipAddressVal,
+		IpMode:           ipModeVal,
+		IpPool:           ipPoolVal,
+		Name:             nameVal,
+		NetworkGroupId:   networkGroupIdVal,
+		NetworkId:        networkIdVal,
+		NetworkTypeId:    networkTypeIdVal,
+		PrimaryInterface: primaryInterfaceVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewChildVirtualNetworksValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ChildVirtualNetworksValue {
+	object, diags := NewChildVirtualNetworksValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewChildVirtualNetworksValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ChildVirtualNetworksType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewChildVirtualNetworksValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewChildVirtualNetworksValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewChildVirtualNetworksValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewChildVirtualNetworksValueMust(ChildVirtualNetworksValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ChildVirtualNetworksType) ValueType(ctx context.Context) attr.Value {
+	return ChildVirtualNetworksValue{}
+}
+
+var _ basetypes.ObjectValuable = ChildVirtualNetworksValue{}
+
+type ChildVirtualNetworksValue struct {
+	IpAddress        basetypes.StringValue `tfsdk:"ip_address"`
+	IpMode           basetypes.StringValue `tfsdk:"ip_mode"`
+	IpPool           basetypes.Int64Value  `tfsdk:"ip_pool"`
+	Name             basetypes.StringValue `tfsdk:"name"`
+	NetworkGroupId   basetypes.Int64Value  `tfsdk:"network_group_id"`
+	NetworkId        basetypes.Int64Value  `tfsdk:"network_id"`
+	NetworkTypeId    basetypes.Int64Value  `tfsdk:"network_type_id"`
+	PrimaryInterface basetypes.BoolValue   `tfsdk:"primary_interface"`
+	state            attr.ValueState
+}
+
+func (v ChildVirtualNetworksValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 8)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["ip_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ip_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ip_pool"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["network_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["network_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["network_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["primary_interface"] = basetypes.BoolType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 8)
+
+		val, err = v.IpAddress.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ip_address"] = val
+
+		val, err = v.IpMode.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ip_mode"] = val
+
+		val, err = v.IpPool.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ip_pool"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		val, err = v.NetworkGroupId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["network_group_id"] = val
+
+		val, err = v.NetworkId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["network_id"] = val
+
+		val, err = v.NetworkTypeId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["network_type_id"] = val
+
+		val, err = v.PrimaryInterface.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["primary_interface"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ChildVirtualNetworksValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ChildVirtualNetworksValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ChildVirtualNetworksValue) String() string {
+	return "ChildVirtualNetworksValue"
+}
+
+func (v ChildVirtualNetworksValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"ip_address":        basetypes.StringType{},
+		"ip_mode":           basetypes.StringType{},
+		"ip_pool":           basetypes.Int64Type{},
+		"name":              basetypes.StringType{},
+		"network_group_id":  basetypes.Int64Type{},
+		"network_id":        basetypes.Int64Type{},
+		"network_type_id":   basetypes.Int64Type{},
+		"primary_interface": basetypes.BoolType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"ip_address":        v.IpAddress,
+			"ip_mode":           v.IpMode,
+			"ip_pool":           v.IpPool,
+			"name":              v.Name,
+			"network_group_id":  v.NetworkGroupId,
+			"network_id":        v.NetworkId,
+			"network_type_id":   v.NetworkTypeId,
+			"primary_interface": v.PrimaryInterface,
+		})
+
+	return objVal, diags
+}
+
+func (v ChildVirtualNetworksValue) Equal(o attr.Value) bool {
+	other, ok := o.(ChildVirtualNetworksValue)
 
 	if !ok {
 		return false
@@ -1183,6 +2374,14 @@ func (v NetworkInterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.IpPool.Equal(other.IpPool) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
 	if !v.NetworkGroupId.Equal(other.NetworkGroupId) {
 		return false
 	}
@@ -1191,23 +2390,35 @@ func (v NetworkInterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.NetworkTypeId.Equal(other.NetworkTypeId) {
+		return false
+	}
+
+	if !v.PrimaryInterface.Equal(other.PrimaryInterface) {
+		return false
+	}
+
 	return true
 }
 
-func (v NetworkInterfacesValue) Type(ctx context.Context) attr.Type {
-	return NetworkInterfacesType{
+func (v ChildVirtualNetworksValue) Type(ctx context.Context) attr.Type {
+	return ChildVirtualNetworksType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v NetworkInterfacesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ChildVirtualNetworksValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"ip_address":       basetypes.StringType{},
-		"ip_mode":          basetypes.StringType{},
-		"network_group_id": basetypes.Int64Type{},
-		"network_id":       basetypes.Int64Type{},
+		"ip_address":        basetypes.StringType{},
+		"ip_mode":           basetypes.StringType{},
+		"ip_pool":           basetypes.Int64Type{},
+		"name":              basetypes.StringType{},
+		"network_group_id":  basetypes.Int64Type{},
+		"network_id":        basetypes.Int64Type{},
+		"network_type_id":   basetypes.Int64Type{},
+		"primary_interface": basetypes.BoolType{},
 	}
 }
 
@@ -1482,12 +2693,14 @@ func (t PortsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1528,6 +2741,7 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.LoadBalancerProtocol.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1535,6 +2749,7 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["load_balancer_protocol"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1542,6 +2757,7 @@ func (v PortsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["name"] = val
 
 		val, err = v.Port.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1881,12 +3097,14 @@ func (t TagsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (att
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1925,6 +3143,7 @@ func (v TagsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Name.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1932,6 +3151,7 @@ func (v TagsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["name"] = val
 
 		val, err = v.Value.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2530,12 +3750,14 @@ func (t VolumesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -2588,6 +3810,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 9)
 
 		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2595,6 +3818,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["controller_mount_point"] = val
 
 		val, err = v.DatastoreAutoSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2602,6 +3826,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["datastore_auto_selection"] = val
 
 		val, err = v.DatastoreId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2609,6 +3834,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["datastore_id"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2616,6 +3842,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2623,6 +3850,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["name"] = val
 
 		val, err = v.RootVolume.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2630,6 +3858,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["root_volume"] = val
 
 		val, err = v.Size.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2637,6 +3866,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["size"] = val
 
 		val, err = v.SizeId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2644,6 +3874,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["size_id"] = val
 
 		val, err = v.StorageTypeId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

@@ -46,7 +46,7 @@ func ResourceTaskNestedWorkflow() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"operational_workflow_id": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Description: "The ID of the operational workflow",
 				Optional:    true,
 				Computed:    true,
@@ -108,8 +108,8 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 
 	taskOptions := make(map[string]any)
 
-	var operationalWorkflowId int
-	if operationalWorkflowIdValue, ok := d.Get("operational_workflow_id").(int); ok {
+	var operationalWorkflowId string
+	if operationalWorkflowIdValue, ok := d.Get("operational_workflow_id").(string); ok {
 		operationalWorkflowId = operationalWorkflowIdValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("operational_workflow_id", d.Get("operational_workflow_id")))
@@ -312,8 +312,8 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 
 	taskOptions := make(map[string]any)
 
-	var operationalWorkflowId int
-	if operationalWorkflowIdValue, ok := d.Get("operational_workflow_id").(int); ok {
+	var operationalWorkflowId string
+	if operationalWorkflowIdValue, ok := d.Get("operational_workflow_id").(string); ok {
 		operationalWorkflowId = operationalWorkflowIdValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("operational_workflow_id", d.Get("operational_workflow_id")))

@@ -11,7 +11,7 @@ Provides a Morpheus Ansible Tower task resource
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_task_ansible_tower" "tfexample_task_ansible_tower" {
+resource "hpe_morpheus_task_ansible_tower" "example" {
   name                         = "tfexample_task_ansible_tower"
   code                         = "tfexample-ansible-tower-task"
   labels                       = ["demo", "terraform"]

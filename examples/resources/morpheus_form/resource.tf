@@ -1,4 +1,4 @@
-resource "hpe_morpheus_form" "tf_example_form" {
+resource "hpe_morpheus_form" "example" {
   name        = "demo"
   code        = "demo"
   description = "demo"
@@ -61,21 +61,21 @@ resource "hpe_morpheus_form" "tf_example_form" {
   }
 
   option_type {
-    name                       = "tf checkbox example"
-    code                       = "checkbox-input"
-    description                = "Terraform checkbox example"
-    type                       = "checkbox"
-    field_label                = "checkbox input"
-    field_name                 = "checkboxInput"
-    default_chedefault_checked = true
-    placeholder                = "Testing 123"
-    help_block                 = "Is this working now"
-    required                   = true
-    export_meta                = true
-    display_value_on_details   = true
-    locked                     = true
-    hidden                     = true
-    exclude_from_search        = true
+    name                     = "tf checkbox example"
+    code                     = "checkbox-input"
+    description              = "Terraform checkbox example"
+    type                     = "checkbox"
+    field_label              = "checkbox input"
+    field_name               = "checkboxInput"
+    default_checked          = true
+    placeholder              = "Testing 123"
+    help_block               = "Is this working now"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = true
+    exclude_from_search      = true
   }
 
   option_type {
@@ -121,7 +121,7 @@ resource "hpe_morpheus_form" "tf_example_form" {
     name                 = "fg1"
     description          = "testin"
     collapsible          = true
-    collapsed_by_deafult = true
+    collapsed_by_default = true
     option_type {
       name                     = "tf field group 1 text input example"
       code                     = "test-input"
@@ -145,7 +145,7 @@ resource "hpe_morpheus_form" "tf_example_form" {
     name                 = "fg2"
     description          = "testin"
     collapsible          = true
-    collapsed_by_deafult = true
+    collapsed_by_default = true
     option_type {
       name                     = "tf field group 2 text input example"
       code                     = "test-input"

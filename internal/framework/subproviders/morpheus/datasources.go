@@ -19,10 +19,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/cloud"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/group"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/image"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/network"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/role"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/user"
@@ -33,10 +36,13 @@ func (SubProvider) GetDataSources(
 ) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		cloud.NewDataSource,
+		datastore.NewDataSource,
 		environment.NewDataSource,
 		group.NewDataSource,
 		instancetypelayout.NewDataSource,
+		image.NewDataSource,
 		network.NewDataSource,
+		policy.NewDataSource,
 		role.NewDataSource,
 		serviceplan.NewDataSource,
 		user.NewDataSource,
