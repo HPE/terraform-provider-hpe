@@ -1,3 +1,3 @@
-data "hpe_morpheus_security_package" "tf_example_security_package" {
+data "hpe_morpheus_security_package" "example" {
   name = "tf_example_security_package"
 }

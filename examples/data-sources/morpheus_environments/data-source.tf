@@ -1,3 +1,3 @@
-data "hpe_morpheus_environments" "tf_environments" {
+data "hpe_morpheus_environments" "example" {
   sort_ascending = false
 }

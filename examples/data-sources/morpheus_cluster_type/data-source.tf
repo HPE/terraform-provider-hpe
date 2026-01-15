@@ -1,4 +1,3 @@
-data "hpe_morpheus_cluster_type" "kubernetes_cluster" {
+data "hpe_morpheus_cluster_type" "example" {
   name = "Kubernetes Cluster"
 }
-
