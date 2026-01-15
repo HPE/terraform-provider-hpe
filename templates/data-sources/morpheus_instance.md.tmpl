@@ -1,0 +1,29 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Instance is a virtual machine or container deployed and managed by HPE Morpheus.
+Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
+monitoring, and eventual decommissioning.
+
+The datasource aims to closely match the API response and include as much
+information about the instance as possible. While the schema should match the API
+response closely some fields have been renamed, please reference the field names
+below.
+
+## Example Usage
+
+Get an `instance` by `id`
+{{ tffile "internal/framework/subproviders/morpheus/datasources/instance/example-id.tf" }}
+
+Get an `instance` by `name`
+{{ tffile "internal/framework/subproviders/morpheus/datasources/instance/example-name.tf" }}
+
+
+{{ .SchemaMarkdown | trimspace }}
