@@ -11,7 +11,7 @@ Provides a Morpheus blueprint data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_blueprint" "example_blueprint" {
+data "hpe_morpheus_blueprint" "example" {
   name = "TF Example Blueprint"
 }
 ```
