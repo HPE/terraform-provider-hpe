@@ -50,8 +50,7 @@ func ResourceOptionTypePassword() *schema.Resource {
 			"field_name": {
 				Type:        schema.TypeString,
 				Description: "The field name of the password option type",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"export_meta": {
 				Type:        schema.TypeBool,
@@ -98,8 +97,7 @@ func ResourceOptionTypePassword() *schema.Resource {
 			"field_label": {
 				Type:        schema.TypeString,
 				Description: "The label associated with the field in the UI",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"placeholder": {
 				Type:        schema.TypeString,
