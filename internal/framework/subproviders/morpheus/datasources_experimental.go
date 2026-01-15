@@ -25,6 +25,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/image"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/datasources/policy"
@@ -42,6 +43,7 @@ func (SubProvider) GetDataSources(
 		environment.NewDataSource,
 		group.NewDataSource,
 		image.NewDataSource,
+		instance.NewDataSource,
 		instancetypelayout.NewDataSource,
 		network.NewDataSource,
 		policy.NewDataSource,
