@@ -18,8 +18,8 @@ var (
 	permissionsPlansFunc   = sdk.NewListBackupSettings200ResponseBackupSettingsDefaultScheduleWithDefaults
 	permissionsSitesFunc   = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
 	tenantsFunc            = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
-	nfsConfigFunc          = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOfWithDefaults
-	alletrampHvmConfigFunc = sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf2WithDefaults
+	nfsConfigFunc          = sdk.NewNFSDatastoreConfigurationWithDefaults
+	alletrampHvmConfigFunc = sdk.NewAlletraMPHVMDatastoreConfiguration1WithDefaults
 	storageServerFunc      = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
 )
 
@@ -78,19 +78,19 @@ func datastoreCreateDatastore(ctx context.Context,
 			nfsConfig.SetSourceVersion(plan.ConfigNfs.SourceVersion.ValueString())
 		}
 
-		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf = nfsConfig
+		createConfig.NFSDatastoreConfiguration = nfsConfig
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigFunc()
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
-			alletrampHvmConfig.SetEnableRansomware(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
+			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
+			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
 			alletrampHvmConfig.SetProtocolType(plan.ConfigAlletrampHvm.ProtocolType.ValueString())
 		}
-
-		createConfig.SaveClusterDatastoreRequestDatastoreConfigAnyOf2 = alletrampHvmConfig
+		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
 
 		// removing for now
 		/*

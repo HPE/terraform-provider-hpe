@@ -32,6 +32,7 @@ resource "hpe_morpheus_option_type_hidden" "tf_example_hidden_option_type" {
 
 ### Required
 
+- `field_name` (String) The field name of the hidden option type
 - `name` (String) The name of the hidden option type
 
 ### Optional
@@ -42,7 +43,6 @@ resource "hpe_morpheus_option_type_hidden" "tf_example_hidden_option_type" {
 - `display_value_on_details` (Boolean) Display the selected value of the number option type on the associated resource's details page
 - `editable` (Boolean) Whether the value of the option type can be edited after the initial request
 - `export_meta` (Boolean) Whether to export the hidden option type as a tag
-- `field_name` (String) The field name of the hidden option type
 - `labels` (Set of String) The organization labels associated with the option type (Only supported on Morpheus 5.5.3 or higher)
 - `require_field` (String) The field or code used to trigger the requirement of this field
 - `show_on_edit` (Boolean) Whether the option type will display in the edit section of the provisioned resource

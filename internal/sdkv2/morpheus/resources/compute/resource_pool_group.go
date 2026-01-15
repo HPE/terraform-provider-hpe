@@ -199,7 +199,7 @@ func resourceResourcePoolGroupCreate(ctx context.Context, d *schema.ResourceData
 
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"resourceResourcePoolGroup": map[string]any{
+			"resourcePoolGroup": map[string]any{
 				"name":        name,
 				"description": description,
 				"mode":        mode,

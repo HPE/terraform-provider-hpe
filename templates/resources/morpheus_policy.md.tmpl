@@ -1,0 +1,232 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Policies are different rules that can be applied to various Morpheus resources.
+
+-> An `associated_resource_type` must be set (can be one of 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'). The choice of `policy_type` impacts what `associated_resource_type` values are valid and if you can set `tenants`.
+
+-> If the `associated_resource_type` is not 'Global', then an `associated_resource_id` must also be set.
+
+-> A `policy_type.code` must be set corresponding to the respective policy type.
+
+-> The `config` block may be set corresponding to the respective policy type. Alternatively - the corresponding `config_*` block can be used which provides additional validation. Example dynamic configs for respective policy types are included below, along with their respective `config_*` block alternative:
+
+- [Approve Delete (deleteApproval)](#approve-delete-deleteapproval) (uses [config_approval](#nestedatt--config_approval))
+- [Approve Provision (provisionApproval)](#approve-provision-provisionapproval) (uses [config_approval](#nestedatt--config_approval))
+- [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval) (uses [config_approval](#nestedatt--config_approval))
+- [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval) (uses [config_approval](#nestedatt--config_approval))
+- [Backup Creation (createBackup)](#backup-creation-createbackup) (uses [config_create_backup](#nestedatt--config_create_backup))
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Not currently supported (uses [config_backup_storage](#nestedatt--config_backup_storage))
+- [Budget (maxPrice)](#budget-maxprice) (uses [config_max_price](#nestedatt--config_max_price))
+- [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming) (uses [config_server_naming](#nestedatt--config_server_naming))
+- [Cypher Access (cypher)](#cypher-access-cypher) (uses [config_cypher](#nestedatt--config_cypher))
+- [Delayed Delete (delayedRemoval)](#delayed-delete-delayedremoval) (uses [config_delayed_removal](#nestedatt--config_delayed_removal))
+- [Expiration (lifecycle)](#expiration-lifecycle) (uses [config_lifecycle](#nestedatt--config_lifecycle))
+- [File Share Storage Quota (storageShareQuota)](#file-share-storage-quota-storagesharequota) (uses [config_max_storage](#nestedatt--config_max_storage))
+- [Hostname (hostNaming)](#hostname-hostnaming) (uses [config_host_naming](#nestedatt--config_host_naming))
+- [Instance Name (naming)](#instance-name-naming) (uses [config_naming](#nestedatt--config_naming))
+- [Instance Networks (requiredNetwork)](#instance-networks-requirednetwork) (uses [config_required_network](#nestedatt--config_required_network))
+- [Max Containers (maxContainers)](#max-containers-maxcontainers) (uses [config_max_containers](#nestedatt--config_max_containers))
+- [Max Cores (maxCores)](#max-cores-maxcores) (uses [config_max_cores](#nestedatt--config_max_cores))
+- [Max Hosts (maxHosts)](#max-hosts-maxhosts) (uses [config_max_hosts](#nestedatt--config_max_hosts))
+- [Max Load Balancer Pools (maxPools)](#max-load-balancer-pools-maxpools) (uses [config_max_pools](#nestedatt--config_max_pools))
+- [Max Memory (maxMemory)](#max-memory-maxmemory) (uses [config_max_memory](#nestedatt--config_max_memory))
+- [Max Pool Members (maxPoolMembers)](#max-pool-members-maxpoolmembers) (uses [config_max_pool_members](#nestedatt--config_max_pool_members))
+- [Max Snapshots (maxSnapshots)](#max-snapshots-maxsnapshots) (uses [config_max_snapshots](#nestedatt--config_max_snapshots))
+- [Max Storage (maxStorage)](#max-storage-maxstorage) (uses [config_max_storage](#nestedatt--config_max_storage))
+- [Max Virtual Servers (maxVirtualServers)](#max-virtual-servers-maxvirtualservers) (uses [config_max_virtual_servers](#nestedatt--config_max_virtual_servers))
+- [Max VMs (maxVms)](#max-vms-maxvms) (uses [config_max_vms](#nestedatt--config_max_vms))
+- [Message of the Day (motd)](#message-of-the-day-motd) (uses [config_motd](#nestedatt--config_motd))
+- [Network Quota (maxNetworks)](#network-quota-maxnetworks) (uses [config_max_networks](#nestedatt--config_max_networks))
+- [Object Storage Quota (storageBucketQuota)](#object-storage-quota-storagebucketquota) (uses [config_max_storage](#nestedatt--config_max_storage))
+- [Power Scheduling (powerSchedule)](#power-scheduling-powerschedule) (uses [config_power_schedule](#nestedatt--config_power_schedule))
+- [Router Quota (maxRouters)](#router-quota-maxrouters) (uses [config_max_routers](#nestedatt--config_max_routers))
+- [Shutdown (shutdown)](#shutdown-shutdown) (uses [config_shutdown](#nestedatt--config_shutdown))
+- [Storage Server Storage Quota (storageServerQuota)](#storage-server-storage-quota-storageserverquota) (uses [config_storage_server_quota](#nestedatt--config_storage_server_quota))
+- [Tags (tags)](#tags-tags) (uses [config_tags](#nestedatt--config_tags))
+- [User Creation (createUser)](#user-creation-createuser) (uses [config_create_user](#nestedatt--config_create_user))
+- [User Group Creation (createUserGroup)](#user-group-creation-createusergroup) (uses [config_create_user_group](#nestedatt--config_create_user_group))
+- [Workflow (workflow)](#workflow-workflow) (uses [config_workflow](#nestedatt--config_workflow))
+
+## Config Examples
+
+### Approve Delete (deleteApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_deleteApproval.tf" }}
+
+### Approve Provision (provisionApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_provisionApproval.tf" }}
+
+### Approve Reconfigure (reconfigureApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_reconfigureApproval.tf" }}
+
+### Approve Workflow Execute (workflowApproval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_workflowApproval.tf" }}
+
+### Backup Creation (createBackup)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createBackup.tf" }}
+
+### Backup Targets (backupStorage)
+Not currently supported
+
+### Budget (maxPrice)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPrice.tf" }}
+
+### Cluster Resource Name (serverNaming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_serverNaming.tf" }}
+
+### Cypher Access (cypher)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_cypher.tf" }}
+
+### Delayed Delete (delayedRemoval)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_delayedRemoval.tf" }}
+
+### Expiration (lifecycle)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_lifecycle.tf" }}
+
+### File Share Storage Quota (storageShareQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageShareQuota.tf" }}
+
+### Hostname (hostNaming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_hostNaming.tf" }}
+
+### Instance Name (naming)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_naming.tf" }}
+
+### Instance Networks (requiredNetwork)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_requiredNetwork.tf" }}
+
+### Max Containers (maxContainers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxContainers.tf" }}
+
+### Max Cores (maxCores)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxCores.tf" }}
+
+### Max Hosts (maxHosts)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxHosts.tf" }}
+
+### Max Load Balancer Pools (maxPools)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPools.tf" }}
+
+### Max Memory (maxMemory)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxMemory.tf" }}
+
+### Max Pool Members (maxPoolMembers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxPoolMembers.tf" }}
+
+### Max Snapshots (maxSnapshots)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxSnapshots.tf" }}
+
+### Max Storage (maxStorage)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxStorage.tf" }}
+
+### Max Virtual Servers (maxVirtualServers)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxVirtualServers.tf" }}
+
+### Max VMs (maxVms)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxVms.tf" }}
+
+### Message of the Day (motd)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_motd.tf" }}
+
+### Network Quota (maxNetworks)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxNetworks.tf" }}
+
+### Object Storage Quota (storageBucketQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageBucketQuota.tf" }}
+
+### Power Scheduling (powerSchedule)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_powerSchedule.tf" }}
+
+### Router Quota (maxRouters)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_maxRouters.tf" }}
+
+### Shutdown (shutdown)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_shutdown.tf" }}
+
+### Storage Server Storage Quota (storageServerQuota)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_storageServerQuota.tf" }}
+
+### Tags (tags)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_tags.tf" }}
+
+### User Creation (createUser)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createUser.tf" }}
+
+### User Group Creation (createUserGroup)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createUserGroup.tf" }}
+
+### Workflow (workflow)
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_workflow.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Policies can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_policy.example 123
+```
+
+## Notes
+### Associated Resource Types
+
+Policies can be associated with different resource types:
+
+- `Global` - Applies to all resources in the account
+- `Group` - Applies to a specific group
+- `Cloud` - Applies to a specific cloud
+- `User` - Applies to a specific user
+- `Role` - Applies to a specific role
+- `Network` - Applies to a specific network
+- `Plan` - Applies to a specific service plan
+
+### Resource Dependencies
+
+Before creating a policy resource, ensure that:
+
+1. The specified resource `associated_resource_id` refers to exists if `associated_resource_type` is not `Global`
+2. Any referenced integrations (e.g., ServiceNow for approval policies) are properly configured
+3. Any referenced resources (e.g., workflows, power schedules, networks) exist in Morpheus
