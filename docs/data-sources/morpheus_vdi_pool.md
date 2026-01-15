@@ -11,7 +11,7 @@ Provides a Morpheus user group data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_vdi_pool" "example_vdi_pool" {
+data "hpe_morpheus_vdi_pool" "example" {
   name = "Terraform Example VDI Pool"
 }
 ```
