@@ -3,7 +3,6 @@
 package plan_test
 
 import (
-	"os"
 	"strings"
 	"testing"
 
@@ -16,14 +15,6 @@ import (
 	dsplan "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/plan"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/plan"
 )
-
-func TestMain(m *testing.M) {
-	code := m.Run()
-
-	testhelpers.WriteMergedResults()
-
-	os.Exit(code)
-}
 
 func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
 	t.Parallel()
