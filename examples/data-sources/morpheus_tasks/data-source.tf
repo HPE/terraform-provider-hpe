@@ -1,9 +1,9 @@
-data "hpe_morpheus_tasks" "example_tasks" {
+data "hpe_morpheus_tasks" "example" {
   sort_ascending = true
 
   filter {
     name   = "name"
-    values = ["Test*"]
+    values = [".*"]
   }
 
   filter {
@@ -11,4 +11,3 @@ data "hpe_morpheus_tasks" "example_tasks" {
     values = ["Shell Script", "Python Script"]
   }
 }
-
