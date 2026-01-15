@@ -179,24 +179,17 @@ func ToSetType[S any, O basetypes.ObjectValuable](
 ) (basetypes.SetValue, diag.Diagnostics) {
 	values := []attr.Value{}
 	var obj O
-	v, _ := obj.ToObjectValue(ctx)
-
 	if len(slice) == 0 {
-		return basetypes.NewSetNull(v.Type(ctx)), nil
+		return basetypes.NewSetNull(obj.Type(ctx)), nil
 	}
 
 	for _, i := range slice {
 		v := mapper(i)
 
-		obj, d := v.ToObjectValue(ctx)
-		if d.HasError() {
-			return types.SetUnknown(basetypes.ObjectType{}), d
-		}
-
-		values = append(values, obj)
+		values = append(values, v)
 	}
 
-	return types.SetValue(v.Type(ctx), values)
+	return types.SetValue(obj.Type(ctx), values)
 }
 
 // Map objects in a slice into a Terraform List Type according to the mapping
@@ -210,24 +203,18 @@ func ToListType[S any, O basetypes.ObjectValuable](
 ) (basetypes.ListValue, diag.Diagnostics) {
 	values := []attr.Value{}
 	var obj O
-	v, _ := obj.ToObjectValue(ctx)
 
 	if len(slice) == 0 {
-		return basetypes.NewListNull(v.Type(ctx)), nil
+		return basetypes.NewListNull(obj.Type(ctx)), nil
 	}
 
 	for _, i := range slice {
 		v := mapper(i)
 
-		obj, d := v.ToObjectValue(ctx)
-		if d.HasError() {
-			return types.ListUnknown(basetypes.ObjectType{}), d
-		}
-
-		values = append(values, obj)
+		values = append(values, v)
 	}
 
-	return types.ListValue(v.Type(ctx), values)
+	return types.ListValue(obj.Type(ctx), values)
 }
 
 // Map List objects into a slice of objects according to the mapping function.
