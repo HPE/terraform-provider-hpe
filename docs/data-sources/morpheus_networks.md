@@ -11,7 +11,7 @@ Provides a Morpheus networks data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_networks" "tf_example_networks" {
+data "hpe_morpheus_networks" "example" {
   cloud_id       = 3
   sort_ascending = true
   filter {
