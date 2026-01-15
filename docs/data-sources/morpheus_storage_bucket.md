@@ -11,7 +11,7 @@ Provides a Morpheus storage bucket data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_storage_bucket" "tf_example_bucket" {
+data "hpe_morpheus_storage_bucket" "example" {
   name = "TF Example Bucket"
 }
 ```
