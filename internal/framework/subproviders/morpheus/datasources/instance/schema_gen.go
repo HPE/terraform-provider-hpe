@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -905,6 +906,7 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 				Validators: []validator.Int64{
 					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("id"), path.MatchRoot("name")}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
 			"instance_context": schema.StringAttribute{
@@ -1140,6 +1142,9 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+				},
 			},
 			"network_level": schema.StringAttribute{
 				Computed: true,
