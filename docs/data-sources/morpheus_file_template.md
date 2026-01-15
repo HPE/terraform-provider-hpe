@@ -11,7 +11,7 @@ Provides a Morpheus file template data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_file_template" "example_file_template" {
+data "hpe_morpheus_file_template" "example" {
   name = "Terraform Example File Template"
 }
 ```

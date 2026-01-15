@@ -1,6 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "Alpine Example Image"
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package image_test
 
@@ -52,6 +50,7 @@ func TestAccMorpheusImageExampleOk(t *testing.T) {
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
+		"StorageProviderId", "196",
 	)
 	if err != nil {
 		t.Fatal(err)
