@@ -3,7 +3,7 @@ data "hpe_morpheus_policies" "example" {
 
   filter {
     name   = "name"
-    values = ["Test*"]
+    values = [".*"]
   }
 
   filter {
