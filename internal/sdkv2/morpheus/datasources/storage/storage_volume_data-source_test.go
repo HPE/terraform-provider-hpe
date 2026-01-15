@@ -1,0 +1,97 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+package storage_test
+
+import (
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	dsstorage "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/storage"
+)
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+
+	testhelpers.WriteMergedResults()
+
+	os.Exit(code)
+}
+
+func TestAccMorpheusDataSourceStorageVolumeExampleOk(t *testing.T) {
+	t.Parallel()
+
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	var dependenciesConfig string
+
+	// The data source only accepts IDs and computes the rest
+	// We don't have a storage volume resource, so we'll use the first one created on the system
+	datasourceConfig, err := dsstorage.RenderStorageVolumeConfig(t, map[string]string{
+		"Id": "1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_storage_volume.example",
+			"id",
+			"1",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"name",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"active",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"category",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"status",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"type",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"type_id",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume.example",
+			"uuid",
+		),
+		// not testing: cloud, datastore, source properties as they may not apply for
+		// the type of storage volume with ID 1
+		// i.e. we're missing infrastructure / provider features to test these.
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + dependenciesConfig + datasourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
