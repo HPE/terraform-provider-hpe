@@ -56,8 +56,6 @@ func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Log(providerConfig + dependenciesConfig + datasourceConfig)
-
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_price.example",
