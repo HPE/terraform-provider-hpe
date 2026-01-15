@@ -1,3 +1,3 @@
-data "hpe_morpheus_provision_type" "provision_layout" {
+data "hpe_morpheus_provision_type" "example" {
   name = "VMware"
 }
