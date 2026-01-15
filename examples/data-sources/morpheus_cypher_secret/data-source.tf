@@ -1,3 +1,3 @@
-data "hpe_morpheus_cypher_secret" "secret_test" {
+data "hpe_morpheus_cypher_secret" "example" {
   key = "demo/test"
 }
