@@ -1,3 +1,3 @@
-data "hpe_morpheus_integration" "tf_example_integration" {
+data "hpe_morpheus_integration" "example" {
   name = "ansible dev"
 }
