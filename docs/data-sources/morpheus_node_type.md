@@ -11,7 +11,7 @@ Provides a Morpheus node type data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_node_type" "example_node_type" {
+data "hpe_morpheus_node_type" "example" {
   name = "TF Example node type"
 }
 ```

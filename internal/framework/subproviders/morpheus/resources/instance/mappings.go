@@ -1,9 +1,14 @@
 package instance
 
 import (
+	"context"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
 )
 
 // Map Terraform volume value into an API request struct
@@ -52,8 +57,50 @@ func volumeMapper(
 
 // Map Terraform network interface value into an API request struct
 func networkInterfaceMapper(
-	in NetworkInterfacesValue,
-) sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigNetworkInterfacesInner {
+	ctx context.Context,
+) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces {
+	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces {
+		var id string
+		if !in.NetworkGroupId.IsNull() {
+			id = "networkGroup-" + in.NetworkGroupId.String()
+		}
+
+		if !in.NetworkId.IsNull() {
+			id = in.NetworkId.String()
+		}
+
+		ipPool := sdk.NewInstancesNetworkInterfacesNetworkPoolWithDefaults()
+		if !in.IpPool.IsNull() {
+			ipPool.SetId(in.IpPool.ValueInt64())
+		}
+
+		childNetworkInterfaces, diags := convert.FromListType(
+			ctx,
+			in.ChildVirtualNetworks,
+			childNetworkInterfaceMapper,
+		)
+		if diags.HasError() {
+			tflog.Error(ctx, "cannot convert child virtual network interfaces")
+		}
+
+		return sdk.InstancesNetworkInterfaces{
+			Network: sdk.
+				InstancesNetworkInterfacesNetwork{
+				Id:   id,
+				Pool: ipPool,
+			},
+			IpMode:                 in.IpMode.ValueStringPointer(),
+			IpAddress:              in.IpAddress.ValueStringPointer(),
+			NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
+			NetworkInterfaces:      childNetworkInterfaces,
+		}
+	}
+}
+
+// Map Child Virtual Network interface if it exists
+func childNetworkInterfaceMapper(
+	in ChildVirtualNetworksValue,
+) sdk.InstancesNetworkInterfacesNetworkInterfacesInner {
 	var id string
 	if !in.NetworkGroupId.IsNull() {
 		id = "networkGroup-" + in.NetworkGroupId.String()
@@ -63,13 +110,19 @@ func networkInterfaceMapper(
 		id = in.NetworkId.String()
 	}
 
-	return sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigNetworkInterfacesInner{
-		Network: sdk.
-			AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigNetworkInterfacesInnerNetwork{
-			Id: id,
+	ipPool := sdk.NewInstancesNetworkInterfacesNetworkPoolWithDefaults()
+	if !in.IpPool.IsNull() {
+		ipPool.SetId(in.IpPool.ValueInt64())
+	}
+
+	return sdk.InstancesNetworkInterfacesNetworkInterfacesInner{
+		Network: sdk.InstancesNetworkInterfacesNetwork{
+			Id:   id,
+			Pool: ipPool,
 		},
-		IpMode:    in.IpMode.ValueStringPointer(),
-		IpAddress: in.IpAddress.ValueStringPointer(),
+		IpMode:                 in.IpMode.ValueStringPointer(),
+		IpAddress:              in.IpAddress.ValueStringPointer(),
+		NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
 	}
 }
 

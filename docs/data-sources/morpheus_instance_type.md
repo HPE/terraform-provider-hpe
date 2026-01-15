@@ -11,7 +11,7 @@ Provides a Morpheus instance type data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_instance_type" "apache" {
+data "hpe_morpheus_instance_type" "example" {
   name = "apache"
 }
 ```
