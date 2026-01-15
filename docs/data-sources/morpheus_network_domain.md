@@ -11,7 +11,7 @@ Provides a Morpheus domain data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_network_domain" "testdomain" {
+data "hpe_morpheus_network_domain" "example" {
   name = "test.local"
 }
 ```
