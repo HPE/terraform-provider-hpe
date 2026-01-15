@@ -111,6 +111,7 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusGroupUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

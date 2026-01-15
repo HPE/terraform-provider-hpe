@@ -1,14 +1,15 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package credential_test
 
 import (
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/resources/credential"
 )
 
 func TestAccMorpheusCredentialResourceUsernameApiKeyExampleOk(t *testing.T) {
