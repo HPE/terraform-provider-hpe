@@ -16,6 +16,21 @@ import (
 	errfmt "github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
 )
 
+var (
+	UpdateTargetStatuses = []string{
+		"running",
+	}
+
+	UpdateErrorStatuses = []string{
+		"denied",
+		"cancelled",
+		"failed",
+		"suspended",
+		"removing",
+		"pendingRemoval",
+	}
+)
+
 // Update implements resource.Resource.
 func (g *Resource) Update(
 	ctx context.Context,
@@ -41,9 +56,45 @@ func (g *Resource) Update(
 		return
 	}
 
+	// Get timeout from HCL if set, the default is 45 minutes
+	updateTimeout, diags := plan.Timeouts.Update(ctx, 45*time.Minute)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
+	defer cancel()
+
+	if isAPIUpdateNeeded(plan, state) {
+		makeUpdateAPIcalls(ctx, client, plan, state, updateTimeout, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
 	tflog.Info(ctx, fmt.Sprintf("Instance update plan: %v", plan.Volumes.Elements()))
 
+	newState, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
+	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+// makeUpdateAPIcalls makes any Update API calls that are needed
+func makeUpdateAPIcalls(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan, state InstanceModel,
+	updateTimeout time.Duration,
+	resp *resource.UpdateResponse,
+) {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
 	updateRequest := sdk.NewUpdateInstanceRequest()
 	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstance()
@@ -115,13 +166,15 @@ func (g *Resource) Update(
 
 	// compare state and plan network_interfaces so we only resize if required
 	// TODO: make this compare each network interface rather than just length
+	// TODO: if we're resizing network interfaces, then we need to remove the PlanModifier and RequiresReplace from Schema.
+	// TODO: and add the id of the interface to the Schema
 	if len(state.NetworkInterfaces.Elements()) != len(plan.NetworkInterfaces.Elements()) {
 		resizing = true
 
-		networkInterfaces, diags := convert.FromSetType(
+		networkInterfaces, diags := convert.FromListType(
 			ctx,
 			plan.NetworkInterfaces,
-			networkInterfaceMapper,
+			networkInterfaceMapper(ctx),
 		)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert network interfaces")
@@ -169,7 +222,7 @@ func (g *Resource) Update(
 			ctx,
 			waitForReady,
 			backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
-			backoff.WithMaxElapsedTime(45*time.Minute),
+			backoff.WithMaxElapsedTime(updateTimeout),
 		); err != nil {
 			resp.Diagnostics.AddError(
 				"resize instance resource",
@@ -181,14 +234,50 @@ func (g *Resource) Update(
 			)
 		}
 	}
+}
 
-	newState, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
-	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
-		return
+// isAPIUpdateNeeded is a function that will compare the plan and state of attributes
+// that can be updated, and if the only attribute is Timeouts then it returns false
+func isAPIUpdateNeeded(plan, state InstanceModel) bool {
+	// name
+	if plan.Name != state.Name {
+		return true
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
-	if resp.Diagnostics.HasError() {
-		return
+	// TODO add description here
+	// description
+
+	// instance_context
+	if !plan.InstanceContext.Equal(state.InstanceContext) {
+		return true
 	}
+
+	// group_id
+	if !plan.GroupId.Equal(state.GroupId) {
+		return true
+	}
+
+	// tags
+	if !plan.Tags.Equal(state.Tags) {
+		return true
+	}
+
+	// volumes
+	if !plan.Volumes.Equal(state.Volumes) {
+		return true
+	}
+
+	// network-interfaces
+	// TODO check this carefully when resizing of networks is allowed
+	if !plan.NetworkInterfaces.Equal(state.NetworkInterfaces) {
+		return true
+	}
+
+	// timeouts - this should be the last comparison
+	if !plan.Timeouts.Equal(state.Timeouts) {
+		return false
+	}
+
+	// For safety's sake we will return true by default
+	return true
 }

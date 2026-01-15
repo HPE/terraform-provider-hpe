@@ -1,13 +1,16 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
 package testhelpers_test
 
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	"github.com/HPE/terraform-provider-hpe/subprovider"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type providerTestCase struct {

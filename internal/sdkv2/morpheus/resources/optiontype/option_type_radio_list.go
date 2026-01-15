@@ -50,8 +50,7 @@ func ResourceOptionTypeRadioList() *schema.Resource {
 			"field_name": {
 				Type:        schema.TypeString,
 				Description: "The field name of the radio list option type",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"export_meta": {
 				Type:        schema.TypeBool,
@@ -98,8 +97,7 @@ func ResourceOptionTypeRadioList() *schema.Resource {
 			"field_label": {
 				Type:        schema.TypeString,
 				Description: "The label associated with the field in the UI",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"default_value": {
 				Type:        schema.TypeString,
@@ -122,8 +120,7 @@ func ResourceOptionTypeRadioList() *schema.Resource {
 			"option_list_id": {
 				Type:        schema.TypeInt,
 				Description: "The ID of the associated option list",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
