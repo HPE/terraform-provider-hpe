@@ -3,7 +3,6 @@
 package storage_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -13,14 +12,6 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
 	dsstorage "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/datasources/storage"
 )
-
-func TestMain(m *testing.M) {
-	code := m.Run()
-
-	testhelpers.WriteMergedResults()
-
-	os.Exit(code)
-}
 
 func TestAccMorpheusDataSourceStorageVolumeExampleOk(t *testing.T) {
 	t.Parallel()
