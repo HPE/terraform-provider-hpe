@@ -1,4 +1,4 @@
-resource "hpe_morpheus_option_type_number" "tf_example_number_option_type" {
+resource "hpe_morpheus_option_type_number" "example" {
   name                     = "tf_example_number_option_type"
   description              = "Terraform number option type example"
   labels                   = ["demo", "terraform"]
