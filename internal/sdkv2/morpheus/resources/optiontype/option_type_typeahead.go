@@ -55,8 +55,7 @@ func ResourceOptionTypeTypeahead() *schema.Resource {
 			"field_name": {
 				Type:        schema.TypeString,
 				Description: "The field name of the typeahead option type",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"export_meta": {
 				Type:        schema.TypeBool,
@@ -103,8 +102,7 @@ func ResourceOptionTypeTypeahead() *schema.Resource {
 			"field_label": {
 				Type:        schema.TypeString,
 				Description: "The label associated with the field in the UI",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"placeholder": {
 				Type:        schema.TypeString,
@@ -127,8 +125,7 @@ func ResourceOptionTypeTypeahead() *schema.Resource {
 			"option_list_id": {
 				Type:        schema.TypeInt,
 				Description: "The ID of the associated option list",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"allow_multiple_selections": {
 				Type:        schema.TypeBool,

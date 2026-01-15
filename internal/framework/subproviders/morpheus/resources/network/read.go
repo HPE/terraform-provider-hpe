@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -21,6 +22,7 @@ func getNetworkAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	plan NetworkModel,
 ) (NetworkModel, diag.Diagnostics) {
 	var state NetworkModel
 	var diags diag.Diagnostics
@@ -123,22 +125,32 @@ func getNetworkAsState(
 		state.VlanId = convert.Int64ToType(net.VlanId.Get())
 	}
 
-	state.Labels = types.SetNull(types.StringType)
-	if net.Labels != nil {
-		var labelValues []attr.Value
-		for _, label := range net.Labels {
-			labelValues = append(labelValues, types.StringValue(label))
-		}
+	respLabels := net.Labels
 
-		if len(labelValues) > 0 {
-			labelsSet, d := types.SetValue(types.StringType, labelValues)
-			diags.Append(d...)
-			if diags.HasError() {
-				return state, diags
+	labels, err := convert.SetToStrSlice(plan.Labels)
+	if err != nil {
+		diags.AddError(
+			"populate image resource",
+			"could not parse a slice of labels",
+		)
+
+		return state, diags
+	}
+
+	// Morpheus API may change the casing of the labels, to avoid Terraform
+	// throwing a gasket we convert the casing of labels to be as specified
+	// by the user.
+	for _, label := range labels {
+		for i, respLabel := range respLabels {
+			if strings.EqualFold(label, respLabel) {
+				if label != respLabel {
+					respLabels[i] = label
+				}
 			}
-			state.Labels = labelsSet
 		}
 	}
+
+	state.Labels = convert.StrSliceToSet(respLabels)
 
 	state.Config = types.DynamicNull()
 
@@ -278,7 +290,7 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, diags := getNetworkAsState(ctx, id, client)
+	state, diags := getNetworkAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

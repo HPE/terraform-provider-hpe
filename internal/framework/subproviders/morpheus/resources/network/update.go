@@ -207,7 +207,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	networkState, diags := getNetworkAsState(ctx, id, client)
+	networkState, diags := getNetworkAsState(ctx, id, client, plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
