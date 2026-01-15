@@ -11,17 +11,12 @@ Provides a Morpheus virtual images data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_images" "example_virtual_images" {
+data "hpe_morpheus_images" "example" {
   sort_ascending = true
   source         = "Synced"
   filter {
     name   = "name"
     values = ["Test*"]
-  }
-
-  filter {
-    name   = "type"
-    values = ["vmdk", "iso"]
   }
 }
 ```
