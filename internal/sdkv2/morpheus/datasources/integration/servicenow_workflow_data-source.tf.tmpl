@@ -1,9 +1,9 @@
 data "hpe_morpheus_integration" "servicenow_prod" {
-  name = "Morpheus Approvals"
+  name = {{.Name}}
 }
 
 data "hpe_morpheus_servicenow_workflow" "example" {
-  name           = "Morpheus Approvals"
+  name           = {{.Name}}
   integration_id = data.morpheus_integration.servicenow_prod.id
 }
 
