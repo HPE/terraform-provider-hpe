@@ -76,9 +76,9 @@ func TestAccMorpheusDataSourceStorageBucketExampleOk(t *testing.T) {
 		// should have same id as the example_id config
 		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_storage_bucket.example_id",
-			"name",
+			"id",
 			"data.hpe_morpheus_storage_bucket.example",
-			"name",
+			"id",
 		),
 	}
 
