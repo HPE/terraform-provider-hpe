@@ -140,13 +140,7 @@ func dataSourceStorageVolumeRead(ctx context.Context, d *schema.ResourceData, me
 
 	storageVolume := result.StorageVolume
 
-	if v, ok := storageVolume.ID.(int); ok {
-		id = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("StorageVolume.ID", storageVolume.ID))
-	}
-
-	d.SetId(convert.IntToString(id))
+	d.SetId(convert.Int64ToString(storageVolume.ID))
 	d.Set("name", storageVolume.Name)
 	d.Set("active", storageVolume.Active)
 	d.Set("category", storageVolume.Category)
