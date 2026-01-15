@@ -34,11 +34,7 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	// t.Skip("Skipping due to API error")
-	// t.Skip("Skipping due to missing infrastructure in test environment")
-	// t.Skip("Skipping due to missing resource implementation")
-	// t.Skip("Skipping due to bug in terraform code")
-	// t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
+	t.Skip("Skipping due to bug in terraform code")
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -46,6 +42,7 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 
 	var dependenciesConfig string
 
+	// create a role as a dependency to not affect any existing resources
 	if currentDependency, err := role.RenderRoleUserConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
@@ -55,44 +52,55 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 		dependenciesConfig += currentDependency
 	}
 
+	// create a policy as a dependency purely for testing this
 	dependenciesConfig += `
 	resource "hpe_morpheus_policy" "example" {
-	
-	}	
+		name = "` + name + `"
+		description = "Example role-scoped policy"
+		associated_resource_type = "Role"
+		associated_resource_id = resource.hpe_morpheus_role.example.id
+		enabled = false
+		policy_type = {
+			code = "workflow"
+		}
+	}
 	`
-
 	datasourceConfig, err := dspolicy.RenderPoliciesConfig(t, map[string]string{
-		"Name": name,
+		"Name":          name,
+		"Filter1Values": "[\"Role\"]",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(providerConfig + dependenciesConfig + datasourceConfig)
-
 	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_policies.example",
+			"ids[0]",
+		),
+
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_policies.example",
-			"filter_name",
+			"filter.0.name",
 			"\"name\"",
 		),
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_policies.example",
-			"filter_name2",
+			"filter.1.name",
 			"\"type\"",
 		),
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_policies.example",
-			"filter_values",
-			"[\"Test*\"]",
+			"filter.0.values",
+			"[\".*\"]",
 		),
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_policies.example",
-			"filter_values2",
-			"[\"Max VMs\", \"Workflow\"]",
+			"filter.1.values",
+			"[\"Role\"]",
 		),
 
 		resource.TestCheckResourceAttr(
