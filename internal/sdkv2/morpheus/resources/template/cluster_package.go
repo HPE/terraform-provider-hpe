@@ -76,7 +76,7 @@ func ResourceClusterPackage() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "A list of spec template ids associated with the cluster package",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
-				Optional:    true,
+				Required:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
