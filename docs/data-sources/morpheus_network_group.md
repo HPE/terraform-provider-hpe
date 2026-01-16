@@ -11,7 +11,7 @@ Provides a Morpheus network group data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_network_group" "tf_example_network_group" {
+data "hpe_morpheus_network_group" "example" {
   name = "TF Example Network Group"
 }
 ```

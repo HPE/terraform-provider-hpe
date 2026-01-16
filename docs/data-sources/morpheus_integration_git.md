@@ -11,7 +11,7 @@ Provides a Morpheus git integration data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_integration_git" "tf_example_integration_git" {
+data "hpe_morpheus_integration_git" "example" {
   name = "MorpheusAutomation"
 }
 ```

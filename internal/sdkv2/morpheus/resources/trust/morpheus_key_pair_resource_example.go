@@ -8,8 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
@@ -40,7 +38,7 @@ func RenderKeyPairConfig(t *testing.T, overrides map[string]string) (string, err
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":       acctest.RandomWithPrefix(t.Name()),
+		"Name":       "example-key-pair",
 		"PublicKey":  pubKey,
 		"PrivateKey": privKey,
 	}

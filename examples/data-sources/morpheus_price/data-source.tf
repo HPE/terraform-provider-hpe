@@ -1,3 +1,3 @@
-data "hpe_morpheus_price" "resource_price" {
+data "hpe_morpheus_price" "example" {
   name = "resourceprice"
 }

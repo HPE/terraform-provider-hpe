@@ -1,3 +1,3 @@
-data "hpe_morpheus_tenant" "example_tenant" {
+data "hpe_morpheus_tenant" "example" {
   name = "Demo"
 }
