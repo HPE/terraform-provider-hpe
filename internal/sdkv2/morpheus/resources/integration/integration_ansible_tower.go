@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"strings"
 
@@ -22,6 +23,35 @@ const (
 	credentialTypeLocal            = "local"
 )
 
+func validateAnsibleTowerAuth(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+	var credentialID int
+	if v, ok := d.Get("credential_id").(int); ok {
+		credentialID = v
+	} else {
+		return helpers.TypeAssertFailError("credential_id", d.Get("credential_id"))
+	}
+
+	var username string
+	if v, ok := d.Get("username").(string); ok {
+		username = v
+	} else {
+		return helpers.TypeAssertFailError("username", d.Get("username"))
+	}
+
+	var password string
+	if v, ok := d.Get("password").(string); ok {
+		password = v
+	} else {
+		return helpers.TypeAssertFailError("password", d.Get("password"))
+	}
+
+	if credentialID == 0 && (username == "" || password == "") {
+		return fmt.Errorf("either credential_id must be provided, or both username and password must be provided")
+	}
+
+	return nil
+}
+
 func ResourceIntegrationAnsibleTower() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides an Ansible Tower integration resource",
@@ -29,6 +59,7 @@ func ResourceIntegrationAnsibleTower() *schema.Resource {
 		ReadContext:   resourceIntegrationAnsibleTowerRead,
 		UpdateContext: resourceIntegrationAnsibleTowerUpdate,
 		DeleteContext: resourceIntegrationAnsibleTowerDelete,
+		CustomizeDiff: validateAnsibleTowerAuth,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
