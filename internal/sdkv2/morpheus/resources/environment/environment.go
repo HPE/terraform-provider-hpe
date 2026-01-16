@@ -49,8 +49,7 @@ func ResourceEnvironment() *schema.Resource {
 			"code": {
 				Type:        schema.TypeString,
 				Description: "The code of the environment",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"visibility": {
 				Type:        schema.TypeString,

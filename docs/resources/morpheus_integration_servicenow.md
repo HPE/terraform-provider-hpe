@@ -39,9 +39,7 @@ resource "hpe_morpheus_integration_servicenow" "tf_example_servicenow_integratio
 ### Required
 
 - `name` (String) The name of the ServiceNow integration
-- `password` (String, Sensitive) The password of the account used to connect to ServiceNow
 - `url` (String) The url of the ServiceNow instance
-- `username` (String) The username of the account used to connect to ServiceNow
 
 ### Optional
 
@@ -50,6 +48,8 @@ resource "hpe_morpheus_integration_servicenow" "tf_example_servicenow_integratio
 - `credential_id` (Number) The id of the credential store entry used for authentication
 - `default_cmdb_business_class` (String) The default ServiceNow table that records are written to if they aren't explicitly defined
 - `enabled` (Boolean) Whether the SerivceNow integration is enabled
+- `password` (String, Sensitive) The password of the account used to connect to ServiceNow
+- `username` (String) The username of the account used to connect to ServiceNow
 
 ### Read-Only
 
