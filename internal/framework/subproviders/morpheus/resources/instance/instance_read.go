@@ -144,6 +144,16 @@ func getInstanceAsState(
 	// layout_id
 	state.LayoutId = convert.Int64ToType(instance.Layout.Id)
 
+	// layout_size - from Config
+	if config, ok := instance.GetConfigOk(); ok {
+		if layoutSize, ok := config.GetLayoutSizeOk(); ok {
+			state.LayoutSize = convert.Int64ToType(layoutSize)
+		}
+	} else if !plan.LayoutSize.IsNull() && !plan.LayoutSize.IsUnknown() {
+		// fallback to instance.layoutSize
+		state.LayoutSize = plan.LayoutSize
+	}
+
 	// name
 	state.Name = convert.StrToType(instance.Name)
 

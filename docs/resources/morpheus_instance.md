@@ -25,10 +25,8 @@ When an instance is created, it is marked as "ready" before DHCP has assigned IP
 will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
 `terraform apply` will report that no changes have been made but will update the state-file to include
 the missing IP addresses.<br><br>
-We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
-the creation of one VM per instance.  When executing terraform an error will be raised stating that
-`layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
-to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.<br><br>
+`layout_size` is optional and at the moment the only supported value is `1` which is also the default.
+In other words we only support the creation of one VM per instance.  We may relax this restriction in a future release.<br><br>
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
@@ -537,6 +535,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
+- `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))

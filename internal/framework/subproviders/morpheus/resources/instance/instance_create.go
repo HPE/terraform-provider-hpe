@@ -1,3 +1,5 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
 package instance
 
 import (
@@ -151,6 +153,11 @@ func (g *Resource) Create(
 				plan.LayoutId.ValueInt64(),
 			),
 		)
+	}
+
+	// layout_size
+	if !plan.LayoutSize.IsNull() {
+		reqInstance.SetLayoutSize(plan.LayoutSize.ValueInt64())
 	}
 
 	// name
