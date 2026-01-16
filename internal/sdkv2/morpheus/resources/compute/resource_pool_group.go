@@ -445,7 +445,7 @@ func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData
 
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"resourceResourcePoolGroup": map[string]any{
+			"resourcePoolGroup": map[string]any{
 				"name":        name,
 				"description": description,
 				"mode":        mode,
@@ -479,8 +479,8 @@ func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.NotFoundInResponseError("ResourcePoolGroup"))
 	}
 
-	resourceResourcePoolGroup := result.ResourcePoolGroup
-	d.SetId(convert.Int64ToString(resourceResourcePoolGroup.ID))
+	resourcePoolGroup := result.ResourcePoolGroup
+	d.SetId(convert.Int64ToString(resourcePoolGroup.ID))
 
 	return resourceResourcePoolGroupRead(ctx, d, meta)
 }
