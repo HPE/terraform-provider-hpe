@@ -324,8 +324,13 @@ Morpheus resources and data sources are covered by a single `hpe` resource or da
 | Morpheus Provider Resource Name | hpe Provider Resource Name |
 |---------------------------------|----------------------------|
 | morpheus_aws_cloud | hpe_morpheus_cloud |
-| morpheus_aws_instance | hpe_morpheus_instance |
 | morpheus_azure_cloud | hpe_morpheus_cloud |
+| morpheus_standard_cloud | hpe_morpheus_cloud |
+| morpheus_vsphere_cloud | hpe_morpheus_cloud |
+| morpheus_vsphere_cloud_datastore_configuration | hpe_morpheus_datastore |
+| morpheus_aws_instance | hpe_morpheus_instance |
+| morpheus_mvm_instance | hpe_morpheus_instance |
+| morpheus_vsphere_instance | hpe_morpheus_instance |
 | morpheus_backup_creation_policy | hpe_morpheus_policy |
 | morpheus_budget_policy | hpe_morpheus_policy |
 | morpheus_cluster_resource_name_policy | hpe_morpheus_policy |
@@ -341,21 +346,16 @@ Morpheus resources and data sources are covered by a single `hpe` resource or da
 | morpheus_max_storage_policy | hpe_morpheus_policy |
 | morpheus_max_vms_policy | hpe_morpheus_policy |
 | morpheus_motd_policy | hpe_morpheus_policy |
-| morpheus_mvm_instance | hpe_morpheus_instance |
 | morpheus_network_quota_policy | hpe_morpheus_policy |
 | morpheus_power_schedule_policy | hpe_morpheus_policy |
 | morpheus_provision_approval_policy | hpe_morpheus_policy |
 | morpheus_router_quota_policy | hpe_morpheus_policy |
-| morpheus_standard_cloud | hpe_morpheus_cloud |
 | morpheus_tag_policy | hpe_morpheus_policy |
-| morpheus_tenant_role | hpe_morpheus_role |
 | morpheus_user_creation_policy | hpe_morpheus_policy |
 | morpheus_user_group_creation_policy | hpe_morpheus_policy |
-| morpheus_user_role | hpe_morpheus_role |
-| morpheus_vsphere_cloud | hpe_morpheus_cloud |
-| morpheus_vsphere_cloud_datastore_configuration | hpe_morpheus_datastore |
-| morpheus_vsphere_instance | hpe_morpheus_instance |
 | morpheus_workflow_policy | hpe_morpheus_policy |
+| morpheus_tenant_role | hpe_morpheus_role |
+| morpheus_user_role | hpe_morpheus_role |
 
 ### Resources with one-to-one mapping
 
