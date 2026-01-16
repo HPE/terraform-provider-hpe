@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -18,6 +19,35 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/helpers"
 )
 
+func validateServiceNowAuth(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+	var credentialID int
+	if v, ok := d.Get("credential_id").(int); ok {
+		credentialID = v
+	} else {
+		return helpers.TypeAssertFailError("credential_id", d.Get("credential_id"))
+	}
+
+	var username string
+	if v, ok := d.Get("username").(string); ok {
+		username = v
+	} else {
+		return helpers.TypeAssertFailError("username", d.Get("username"))
+	}
+
+	var password string
+	if v, ok := d.Get("password").(string); ok {
+		password = v
+	} else {
+		return helpers.TypeAssertFailError("password", d.Get("password"))
+	}
+
+	if credentialID == 0 && (username == "" || password == "") {
+		return fmt.Errorf("either credential_id must be provided, or both username and password must be provided")
+	}
+
+	return nil
+}
+
 func ResourceIntegrationServiceNow() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a ServiceNow integration resource",
@@ -25,6 +55,7 @@ func ResourceIntegrationServiceNow() *schema.Resource {
 		ReadContext:   resourceIntegrationServiceNowRead,
 		UpdateContext: resourceIntegrationServiceNowUpdate,
 		DeleteContext: resourceIntegrationServiceNowDelete,
+		CustomizeDiff: validateServiceNowAuth,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -56,15 +87,17 @@ func ResourceIntegrationServiceNow() *schema.Resource {
 				ConflictsWith: []string{"username", "password"},
 			},
 			"username": {
-				Type:        schema.TypeString,
-				Description: "The username of the account used to connect to ServiceNow",
-				Required:    true,
+				Type:          schema.TypeString,
+				Description:   "The username of the account used to connect to ServiceNow",
+				Optional:      true,
+				ConflictsWith: []string{"credential_id"},
 			},
 			"password": {
-				Type:        schema.TypeString,
-				Description: "The password of the account used to connect to ServiceNow",
-				Required:    true,
-				Sensitive:   true,
+				Type:          schema.TypeString,
+				Description:   "The password of the account used to connect to ServiceNow",
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{"credential_id"},
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
 					h.Write([]byte(new))
