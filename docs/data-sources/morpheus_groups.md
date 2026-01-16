@@ -11,13 +11,8 @@ Provides a Morpheus groups data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_groups" "terraform_test" {
+data "hpe_morpheus_groups" "example" {
   sort_ascending = false
-  filter {
-    name   = "name"
-    values = ["^tf*"]
-  }
-
   filter {
     name   = "location"
     values = ["denver"]

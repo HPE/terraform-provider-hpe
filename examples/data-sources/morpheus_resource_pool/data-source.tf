@@ -1,4 +1,4 @@
-data "hpe_morpheus_resource_pool" "morpheus_pool" {
+data "hpe_morpheus_resource_pool" "example" {
   name     = "morpheuspool"
-  cloud_id = data.morpheus_cloud.vspherecloud.id
+  cloud_id = data.hpe_morpheus_cloud.vspherecloud.id
 }

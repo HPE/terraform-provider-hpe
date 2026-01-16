@@ -11,7 +11,7 @@ Provides a Morpheus user group data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_user_group" "tf_example_user_group" {
+data "hpe_morpheus_user_group" "example" {
   name = "TF Example User Group"
 }
 ```

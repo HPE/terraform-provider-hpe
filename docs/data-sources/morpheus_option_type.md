@@ -11,7 +11,7 @@ Provides a Morpheus option type data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_option_type" "versions" {
+data "hpe_morpheus_option_type" "example" {
   name = "App Versions"
 }
 ```

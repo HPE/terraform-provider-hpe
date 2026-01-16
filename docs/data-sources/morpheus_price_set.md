@@ -11,7 +11,7 @@ The Price Set data source allows details of a Price Set to be retrieved by its n
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_price_set" "resource_price_set" {
+data "hpe_morpheus_price_set" "example" {
   name = "resourceprice"
 }
 ```
