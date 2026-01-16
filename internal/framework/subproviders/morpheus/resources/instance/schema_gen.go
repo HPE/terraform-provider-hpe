@@ -5,8 +5,7 @@ package instance
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -15,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -25,8 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -105,6 +104,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The layout id for the instance type that you want to provision. i.e. single process or cluster",
 				MarkdownDescription: "The layout id for the instance type that you want to provision. i.e. single process or cluster",
+			},
+			"layout_size": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Apply a multiply factor of containers/vms within the instance.",
+				MarkdownDescription: "Apply a multiply factor of containers/vms within the instance.",
+				Validators: []validator.Int64{
+					int64validator.OneOf(1),
+				},
+				Default: int64default.StaticInt64(1),
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -501,6 +510,7 @@ type InstanceModel struct {
 	InstanceContext   types.String   `tfsdk:"instance_context"`
 	InstanceTypeId    types.Int64    `tfsdk:"instance_type_id"`
 	LayoutId          types.Int64    `tfsdk:"layout_id"`
+	LayoutSize        types.Int64    `tfsdk:"layout_size"`
 	Name              types.String   `tfsdk:"name"`
 	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
 	PlanId            types.Int64    `tfsdk:"plan_id"`

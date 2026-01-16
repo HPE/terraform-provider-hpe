@@ -12,51 +12,49 @@ Instance is a virtual machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM and VMware instances are supported.<br>
-With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
-The addition and removal of volumes is not supported during updates.<br>
-Updates fail when removing optional fields.<br>
-Updates fail when removing `evars`.<br>
+-> Currently HVM, VMware and BMaaS instances are supported. Some general issues<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br><br>
 These will be addressed in a future release.
 
--> When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
+-> Some general notes:<br><br>
+When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
 `network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
 will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
 `terraform apply` will report that no changes have been made but will update the state-file to include
-the missing IP addresses.
-
--> We have removed `layout_size` from the Schema.  For technical reasons we have decided to only allow
-the creation of one VM per instance.  When executing terraform an error will be raised stating that
-`layout_size` is unsupported.  It is safe to remove the attribute from HCL, a `plan` will show no changes
-to infrastructure after removal and on the next `apply` the attribute will be removed from the state-file.
-
--> We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+the missing IP addresses.<br><br>
+`layout_size` is optional and at the moment the only supported value is `1` which is also the default.
+In other words we only support the creation of one VM per instance.  We may relax this restriction in a future release.<br><br>
+We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
-`read` and `update` is 45 minutes
-
--> We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
-can be accessed
-
--> When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
+`read` and `update` is 45 minutes.<br><br>
+We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
+can be accessed<br><br>
+When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
 
-## Example Usage
+-> The following examples all have the following settings in their `config` blocks:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `noAgent` is set to `false`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `createUser` is set to `true`<br><br>
+These settings can be changed as required.
 
-### HVM instance
+## HVM Instance
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example.tf" }}
 
-### HVM Instance with two networks
+## HVM Instance with two networks
 
 One of these networks has a `child_virtual_networks` entry.  Note that only some network types support `child_virtual_networks`.
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_twonetworks.tf" }}
 
-### HVM Instance with timeouts
+## HVM Instance with timeouts
 
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
 The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
@@ -66,8 +64,21 @@ will be made.  The default timeout for `create`, `delete`, `read` and `update` i
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_timeouts.tf" }}
 
-### VMware VM Instance
+## VMware VM Instance
 
 {{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_vmware.tf" }}
+
+## BMaaS Instance
+
+-> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
+
+For the `root` volume, to get the appropriate `storage_type_id` use the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html).<br>
+```bash
+$ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
+$ morpheus storage-volume-types list hpeilo-raid1
+```
+Put that `id` in the `storage_type_id` field for the `root` volume below.  Leave the other fields unchanged.
+
+{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_metal.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
