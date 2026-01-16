@@ -58,12 +58,12 @@ func ResourceIntegrationServiceNow() *schema.Resource {
 			"username": {
 				Type:        schema.TypeString,
 				Description: "The username of the account used to connect to ServiceNow",
-				Optional:    true,
+				Required:    true,
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Description: "The password of the account used to connect to ServiceNow",
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					h := sha256.New()
