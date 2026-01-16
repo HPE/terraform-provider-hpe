@@ -1,10 +1,10 @@
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 0.5.0"
+      version = "= 1.0.0"
     }
   }
 }

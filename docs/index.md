@@ -16,16 +16,15 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the terraform binary to work properly.
 
-->In some circumstances users may need to use this provider and the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest)
-in the same configuration.  To ensure that Morpheus API SSL cert checking is consistent across both providers
-the `MORPHEUS_API_SECURE` environment variable (set to true) can be used to enable SSL cert checking in the Morpheus provider.
-This environment variable is supported by versions 0.14.0 and later of the Morpheus provider.  Note that
-Morpheus API SSL cert checking is enabled by default in this provider.
+->This v1.0.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+This provider can now be used as a replacement for the Morpheus provider. Users are encouraged to migrate to this provider,
+as the Morpheus provider will be deprecated in the future.<br><br>
+See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
 
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v0.5.0).
+release notes for the current version (v1.0.0).
 
 ### Authentication
 
@@ -43,13 +42,13 @@ be toggled off by setting `insecure` to `true` in the provider block.
 #### Using a username and password
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 0.5.0"
+      version = "= 1.0.0"
     }
   }
 }
@@ -67,13 +66,13 @@ provider "hpe" {
 #### Using an access token
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 0.5.0"
+      version = "= 1.0.0"
     }
   }
 }
@@ -90,13 +89,13 @@ provider "hpe" {
 #### Using an access token with insecure
 
 ```terraform
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 0.5.0"
+      version = "= 1.0.0"
     }
   }
 }
@@ -114,30 +113,170 @@ provider "hpe" {
 ## Release Notes
 
 ->The following resources use `WriteOnly` attributes:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_image<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_user<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_image<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_user<br><br>
 `WriteOnly` attributes are supported by Terraform versions 1.11 and later.
 
 ->The following resources use a `Dynamic` attribute for `config`:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_cloud<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_datastore<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_instance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_network<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hpe_morpheus_policy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_policy<br><br>
 This means that the `config` block can contain arbitrary nested attributes which
-will be evaluated at run-time.  Examples of these are shown in the documentation.
+will be evaluated at run-time.  Examples of these are shown in the documentation.<br><br>
+Note that the attributes in the `config` blocks must match those specified in the
+[Morpheus API documentation](https://apidocs.morpheusdata.com/reference/listactivity).
+That is, the attribute names are case-sensitive and must match exactly.
 
 ### New functionality
 
-In this release (v0.5.0) we have added the following resource functionality:
+In this release (v1.0.0) we have added the following resource functionality:
 
+- hpe_morpheus_app_blueprint_arm
+- hpe_morpheus_app_blueprint_cloud_formation
+- hpe_morpheus_app_blueprint_helm
+- hpe_morpheus_app_blueprint_kubernetes
+- hpe_morpheus_app_blueprint_terraform
+- hpe_morpheus_catalog_item_app_blueprint
+- hpe_morpheus_catalog_item_instance
+- hpe_morpheus_catalog_item_workflow
+- hpe_morpheus_cluster_layout
+- hpe_morpheus_cluster_mks_vsphere
+- hpe_morpheus_cluster_package
+- hpe_morpheus_contact
+- hpe_morpheus_credential
+- hpe_morpheus_cypher_secret
+- hpe_morpheus_cypher_tfvars
+- hpe_morpheus_datastore supports Alletra MP BMaaS datastores
+- hpe_morpheus_environment
+- hpe_morpheus_execute_schedule
+- hpe_morpheus_file_template
+- hpe_morpheus_form
+- hpe_morpheus_identity_source_active_directory
+- hpe_morpheus_identity_source_saml
+- hpe_morpheus_integration_ansible
+- hpe_morpheus_integration_ansible_tower
+- hpe_morpheus_integration_chef
+- hpe_morpheus_integration_docker_registry
+- hpe_morpheus_integration_git
+- hpe_morpheus_integration_puppet
+- hpe_morpheus_integration_servicenow
+- hpe_morpheus_integration_vro
+- hpe_morpheus_instance supports VMware and BMaaS instances
+- hpe_morpheus_instance_type
+- hpe_morpheus_instance_type_layout
+- hpe_morpheus_job_task
+- hpe_morpheus_job_workflow
+- hpe_morpheus_key_pair
+- hpe_morpheus_license
+- hpe_morpheus_network_domain
+- hpe_morpheus_node_type
+- hpe_morpheus_option_list_api
+- hpe_morpheus_option_list_manual
+- hpe_morpheus_option_list_rest
+- hpe_morpheus_option_type_checkbox
+- hpe_morpheus_option_type_hidden
+- hpe_morpheus_option_type_number
+- hpe_morpheus_option_type_password
+- hpe_morpheus_option_type_radio_list
+- hpe_morpheus_option_type_select_list
+- hpe_morpheus_option_type_text
+- hpe_morpheus_option_type_textarea
+- hpe_morpheus_option_type_typeahead
 - hpe_morpheus_policy has a comprehensive collection of static schema for the various supported policies
+- hpe_morpheus_preseed_script
+- hpe_morpheus_price
+- hpe_morpheus_price_set
+- hpe_morpheus_resource_pool_group
+- hpe_morpheus_scale_threshold
+- hpe_morpheus_script_template
+- hpe_morpheus_security_package
+- hpe_morpheus_setting_appliance
+- hpe_morpheus_setting_backup
+- hpe_morpheus_setting_guidance
+- hpe_morpheus_setting_monitoring
+- hpe_morpheus_setting_provisioning
+- hpe_morpheus_spec_template_arm
+- hpe_morpheus_spec_template_cloud_formation
+- hpe_morpheus_spec_template_helm
+- hpe_morpheus_spec_template_kubernetes
+- hpe_morpheus_spec_template_terraform
+- hpe_morpheus_task_ansible_playbook
+- hpe_morpheus_task_ansible_tower
+- hpe_morpheus_task_chef_bootstrap
+- hpe_morpheus_task_email
+- hpe_morpheus_task_groovy_script
+- hpe_morpheus_task_javascript
+- hpe_morpheus_task_library_script
+- hpe_morpheus_task_library_template
+- hpe_morpheus_task_nested_workflow
+- hpe_morpheus_task_powershell_script
+- hpe_morpheus_task_python_script
+- hpe_morpheus_task_restart
+- hpe_morpheus_task_ruby_script
+- hpe_morpheus_task_shell_script
+- hpe_morpheus_task_write_attributes
+- hpe_morpheus_tenant
+- hpe_morpheus_user_group
+- hpe_morpheus_wiki_page
+- hpe_morpheus_workflow_operational
+- hpe_morpheus_workflow_provisioning
 
+In this release (v1.0.0) we have added the following data-source functionality:
 
-In this release (v0.5.0) we have added the following data-source functionality:
-
+- hpe_morpheus_ansible_tower_inventory
+- hpe_morpheus_ansible_tower_job_template
+- hpe_morpheus_blueprint
+- hpe_morpheus_budget
+- hpe_morpheus_catalog_item_type
+- hpe_morpheus_cloud_folder
+- hpe_morpheus_cloud_type
+- hpe_morpheus_clouds
+- hpe_morpheus_cluster_type
+- hpe_morpheus_contact
+- hpe_morpheus_credential
+- hpe_morpheus_cypher_secret
+- hpe_morpheus_environments
+- hpe_morpheus_execute_schedule
+- hpe_morpheus_file_template
+- hpe_morpheus_groups
+- hpe_morpheus_images
+- hpe_morpheus_integration
+- hpe_morpheus_integration_git
 - hpe_morpheus_instance
-
+- hpe_morpheus_instance_type
+- hpe_morpheus_job
+- hpe_morpheus_key_pair
+- hpe_morpheus_network_domain
+- hpe_morpheus_network_group
+- hpe_morpheus_network_subnet
+- hpe_morpheus_networks
+- hpe_morpheus_node_type
+- hpe_morpheus_option_list
+- hpe_morpheus_option_type
+- hpe_morpheus_policies
+- hpe_morpheus_power_schedule
+- hpe_morpheus_price
+- hpe_morpheus_price_set
+- hpe_morpheus_provision_type
+- hpe_morpheus_resource_pool
+- hpe_morpheus_script_template
+- hpe_morpheus_security_package
+- hpe_morpheus_servicenow_workflow
+- hpe_morpheus_spec_template
+- hpe_morpheus_storage_bucket
+- hpe_morpheus_storage_volume
+- hpe_morpheus_storage_volume_type
+- hpe_morpheus_task
+- hpe_morpheus_tasks
+- hpe_morpheus_tenant
+- hpe_morpheus_tenants
+- hpe_morpheus_user_group
+- hpe_morpheus_user_groups
+- hpe_morpheus_vdi_pool
+- hpe_morpheus_vro_workflow
+- hpe_morpheus_workflow
 
 ### New known issues
 
@@ -167,6 +306,214 @@ In this release (v0.5.0) we have added the following data-source functionality:
   may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
 - `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
+
+## Morpheus Provider Mapping
+
+The tables below show the mapping of the Morpheus provider resources and data sources to the corresponding
+`hpe` Morpheus resources and data sources where there are one-to-one equivalents.  Note that some Morpheus
+resource and data sources have been replaced with "generalised" resources and data sources so that several
+Morpheus resources and data sources are covered by a single `hpe` resource or data source.
+
+### Resources replaced by generalised equivalents
+
+-> We haven't verified the following generalised resource examples, we plan to do so in a future release:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance AWS<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud AWS, Azure, Vsphere<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore Vsphere<br>
+
+| Morpheus Provider Resource Name | hpe Provider Resource Name |
+|---------------------------------|----------------------------|
+| morpheus_aws_cloud | hpe_morpheus_cloud |
+| morpheus_azure_cloud | hpe_morpheus_cloud |
+| morpheus_standard_cloud | hpe_morpheus_cloud |
+| morpheus_vsphere_cloud | hpe_morpheus_cloud |
+| morpheus_vsphere_cloud_datastore_configuration | hpe_morpheus_datastore |
+| morpheus_aws_instance | hpe_morpheus_instance |
+| morpheus_mvm_instance | hpe_morpheus_instance |
+| morpheus_vsphere_instance | hpe_morpheus_instance |
+| morpheus_backup_creation_policy | hpe_morpheus_policy |
+| morpheus_budget_policy | hpe_morpheus_policy |
+| morpheus_cluster_resource_name_policy | hpe_morpheus_policy |
+| morpheus_cypher_access_policy | hpe_morpheus_policy |
+| morpheus_delayed_delete_policy | hpe_morpheus_policy |
+| morpheus_delete_approval_policy | hpe_morpheus_policy |
+| morpheus_hostname_policy | hpe_morpheus_policy |
+| morpheus_instance_name_policy | hpe_morpheus_policy |
+| morpheus_max_containers_policy | hpe_morpheus_policy |
+| morpheus_max_cores_policy | hpe_morpheus_policy |
+| morpheus_max_hosts_policy | hpe_morpheus_policy |
+| morpheus_max_memory_policy | hpe_morpheus_policy |
+| morpheus_max_storage_policy | hpe_morpheus_policy |
+| morpheus_max_vms_policy | hpe_morpheus_policy |
+| morpheus_motd_policy | hpe_morpheus_policy |
+| morpheus_network_quota_policy | hpe_morpheus_policy |
+| morpheus_power_schedule_policy | hpe_morpheus_policy |
+| morpheus_provision_approval_policy | hpe_morpheus_policy |
+| morpheus_router_quota_policy | hpe_morpheus_policy |
+| morpheus_tag_policy | hpe_morpheus_policy |
+| morpheus_user_creation_policy | hpe_morpheus_policy |
+| morpheus_user_group_creation_policy | hpe_morpheus_policy |
+| morpheus_workflow_policy | hpe_morpheus_policy |
+| morpheus_tenant_role | hpe_morpheus_role |
+| morpheus_user_role | hpe_morpheus_role |
+
+### Resources with one-to-one mapping
+
+| Morpheus Provider Resource Name           | hpe Provider Resource Name                    |
+|-------------------------------------------|-----------------------------------------------|
+| morpheus_active_directory_identity_source | hpe_morpheus_identity_source_active_directory |
+| morpheus_ansible_integration              | hpe_morpheus_integration_ansible              |
+| morpheus_ansible_playbook_task            | hpe_morpheus_task_ansible_playbook            |
+| morpheus_ansible_tower_integration        | hpe_morpheus_integration_ansible_tower        |
+| morpheus_ansible_tower_task               | hpe_morpheus_task_ansible_tower               |
+| morpheus_api_option_list                  | hpe_morpheus_option_list_api                  |
+| morpheus_app_blueprint_catalog_item       | hpe_morpheus_catalog_item_app_blueprint       |
+| morpheus_appliance_setting                | hpe_morpheus_setting_appliance                |
+| morpheus_arm_app_blueprint                | hpe_morpheus_app_blueprint_arm                |
+| morpheus_arm_spec_template                | hpe_morpheus_spec_template_arm                |
+| morpheus_backup_setting                   | hpe_morpheus_setting_backup                   |
+| morpheus_boot_script                      | hpe_morpheus_boot_script                      |
+| morpheus_checkbox_option_type             | hpe_morpheus_option_type_checkbox             |
+| morpheus_chef_bootstrap_task              | hpe_morpheus_task_chef_bootstrap              |
+| morpheus_chef_integration                 | hpe_morpheus_integration_chef                 |
+| morpheus_cloud_formation_app_blueprint    | hpe_morpheus_app_blueprint_cloud_formation    |
+| morpheus_cloud_formation_spec_template    | hpe_morpheus_spec_template_cloud_formation    |
+| morpheus_cluster_layout                   | hpe_morpheus_cluster_layout                   |
+| morpheus_cluster_package                  | hpe_morpheus_cluster_package                  |
+| morpheus_contact                          | hpe_morpheus_contact                          |
+| morpheus_credential                       | hpe_morpheus_credential                       |
+| morpheus_cypher_secret                    | hpe_morpheus_cypher_secret                    |
+| morpheus_cypher_tfvars                    | hpe_morpheus_cypher_tfvars                    |
+| morpheus_docker_registry_integration      | hpe_morpheus_integration_docker_registry      |
+| morpheus_email_task                       | hpe_morpheus_task_email                       |
+| morpheus_environment                      | hpe_morpheus_environment                      |
+| morpheus_execute_schedule                 | hpe_morpheus_execute_schedule                 |
+| morpheus_file_template                    | hpe_morpheus_file_template                    |
+| morpheus_form                             | hpe_morpheus_form                             |
+| morpheus_git_integration                  | hpe_morpheus_integration_git                  |
+| morpheus_groovy_script_task               | hpe_morpheus_task_groovy_script               |
+| morpheus_guidance_setting                 | hpe_morpheus_setting_guidance                 |
+| morpheus_helm_app_blueprint               | hpe_morpheus_app_blueprint_helm               |
+| morpheus_helm_spec_template               | hpe_morpheus_spec_template_helm               |
+| morpheus_hidden_option_type               | hpe_morpheus_option_type_hidden               |
+| morpheus_instance_catalog_item            | hpe_morpheus_catalog_item_instance            |
+| morpheus_instance_layout                  | hpe_morpheus_instance_type_layout             |
+| morpheus_instance_type                    | hpe_morpheus_instance_type                    |
+| morpheus_ipv4_ip_pool                     | hpe_morpheus_ip_pool_ipv4                     |
+| morpheus_javascript_task                  | hpe_morpheus_task_javascript                  |
+| morpheus_key_pairs                        | hpe_morpheus_key_pair                         |
+| morpheus_kubernetes_app_blueprint         | hpe_morpheus_app_blueprint_kubernetes         |
+| morpheus_kubernetes_spec_template         | hpe_morpheus_spec_template_kubernetes         |
+| morpheus_library_script_task              | hpe_morpheus_task_library_script              |
+| morpheus_library_template_task            | hpe_morpheus_task_library_template            |
+| morpheus_license                          | hpe_morpheus_license                          |
+| morpheus_manual_option_list               | hpe_morpheus_option_list_manual               |
+| morpheus_monitoring_setting               | hpe_morpheus_setting_monitoring               |
+| morpheus_nested_workflow_task             | hpe_morpheus_task_nested_workflow             |
+| morpheus_network_domain                   | hpe_morpheus_network_domain                   |
+| morpheus_node_type                        | hpe_morpheus_node_type                        |
+| morpheus_number_option_type               | hpe_morpheus_option_type_number               |
+| morpheus_operational_workflow             | hpe_morpheus_workflow_operational             |
+| morpheus_password_option_type             | hpe_morpheus_option_type_password             |
+| morpheus_powershell_script_task           | hpe_morpheus_task_powershell_script           |
+| morpheus_preseed_script                   | hpe_morpheus_preseed_script                   |
+| morpheus_price                            | hpe_morpheus_price                            |
+| morpheus_price_set                        | hpe_morpheus_price_set                        |
+| morpheus_provisioning_setting             | hpe_morpheus_setting_provisioning             |
+| morpheus_provisioning_workflow            | hpe_morpheus_workflow_provisioning            |
+| morpheus_puppet_integration               | hpe_morpheus_integration_puppet               |
+| morpheus_python_script_task               | hpe_morpheus_task_python_script               |
+| morpheus_radio_list_option_type           | hpe_morpheus_option_type_radio_list           |
+| morpheus_resource_pool_group              | hpe_morpheus_resource_pool_group              |
+| morpheus_rest_option_list                 | hpe_morpheus_option_list_rest                 |
+| morpheus_restart_task                     | hpe_morpheus_task_restart                     |
+| morpheus_ruby_script_task                 | hpe_morpheus_task_ruby_script                 |
+| morpheus_saml_identity_source             | hpe_morpheus_identity_source_saml             |
+| morpheus_scale_threshold                  | hpe_morpheus_scale_threshold                  |
+| morpheus_script_template                  | hpe_morpheus_script_template                  |
+| morpheus_security_package                 | hpe_morpheus_security_package                 |
+| morpheus_select_list_option_type          | hpe_morpheus_option_type_select_list          |
+| morpheus_servicenow_integration           | hpe_morpheus_integration_servicenow           |
+| morpheus_shell_script_task                | hpe_morpheus_task_shell_script                |
+| morpheus_task_job                         | hpe_morpheus_job_task                         |
+| morpheus_tenant                           | hpe_morpheus_tenant                           |
+| morpheus_terraform_app_blueprint          | hpe_morpheus_app_blueprint_terraform          |
+| morpheus_terraform_spec_template          | hpe_morpheus_spec_template_terraform          |
+| morpheus_text_option_type                 | hpe_morpheus_option_type_text                 |
+| morpheus_textarea_option_type             | hpe_morpheus_option_type_textarea             |
+| morpheus_typeahead_option_type            | hpe_morpheus_option_type_typeahead            |
+| morpheus_user_group                       | hpe_morpheus_user_group                       |
+| morpheus_vro_integration                  | hpe_morpheus_integration_vro                  |
+| morpheus_vsphere_mks_cluster              | hpe_morpheus_cluster_mks_vsphere              |
+| morpheus_wiki_page                        | hpe_morpheus_wiki_page                        |
+| morpheus_workflow_catalog_item            | hpe_morpheus_catalog_item_workflow            |
+| morpheus_workflow_job                     | hpe_morpheus_job_workflow                     |
+| morpheus_write_attributes_task            | hpe_morpheus_task_write_attributes            |
+
+### Data Sources replaced by generalised equivalents
+
+| Morpheus Provider Data Source Name | hpe Provider Data Source Name |
+|------------------------------------|-------------------------------|
+| morpheus_cloud_datastore | hpe_morpheus_datastore |
+| morpheus_tenant_role     | hpe_morpheus_role      |
+| morpheus_user_role       | hpe_morpheus_role      |
+| morpheus_virtual_image   | hpe_morpheus_image     |
+
+### Data Sources with one-to-one mapping
+
+| Morpheus Provider Data Source Name  | hpe Provider Data Source Name           |
+|-------------------------------------|-----------------------------------------|
+| morpheus_ansible_tower_inventory    | hpe_morpheus_ansible_tower_inventory    |
+| morpheus_ansible_tower_job_template | hpe_morpheus_ansible_tower_job_template |
+| morpheus_blueprint                  | hpe_morpheus_blueprint                  |
+| morpheus_budget                     | hpe_morpheus_budget                     |
+| morpheus_catalog_item_type          | hpe_morpheus_catalog_item_type          |
+| morpheus_cloud_folder               | hpe_morpheus_cloud_folder               |
+| morpheus_cloud_type                 | hpe_morpheus_cloud_type                 |
+| morpheus_clouds                     | hpe_morpheus_clouds                     |
+| morpheus_cluster_type               | hpe_morpheus_cluster_type               |
+| morpheus_contact                    | hpe_morpheus_contact                    |
+| morpheus_credential                 | hpe_morpheus_credential                 |
+| morpheus_cypher_secret              | hpe_morpheus_cypher_secret              |
+| morpheus_domain                     | hpe_morpheus_network_domain             |
+| morpheus_environments               | hpe_morpheus_environments               |
+| morpheus_execute_schedule           | hpe_morpheus_execute_schedule           |
+| morpheus_file_template              | hpe_morpheus_file_template              |
+| morpheus_git_integration            | hpe_morpheus_integration_git            |
+| morpheus_groups                     | hpe_morpheus_groups                     |
+| morpheus_instance_type              | hpe_morpheus_instance_type              |
+| morpheus_integration                | hpe_morpheus_integration                |
+| morpheus_job                        | hpe_morpheus_job                        |
+| morpheus_key_pair                   | hpe_morpheus_key_pair                   |
+| morpheus_network_group              | hpe_morpheus_network_group              |
+| morpheus_network_subnet             | hpe_morpheus_network_subnet             |
+| morpheus_networks                   | hpe_morpheus_networks                   |
+| morpheus_node_type                  | hpe_morpheus_node_type                  |
+| morpheus_option_list                | hpe_morpheus_option_list                |
+| morpheus_option_type                | hpe_morpheus_option_type                |
+| morpheus_policies                   | hpe_morpheus_policies                   |
+| morpheus_power_schedule             | hpe_morpheus_power_schedule             |
+| morpheus_price                      | hpe_morpheus_price                      |
+| morpheus_price_set                  | hpe_morpheus_price_set                  |
+| morpheus_provision_type             | hpe_morpheus_provision_type             |
+| morpheus_resource_pool              | hpe_morpheus_resource_pool              |
+| morpheus_script_template            | hpe_morpheus_script_template            |
+| morpheus_security_package           | hpe_morpheus_security_package           |
+| morpheus_servicenow_workflow        | hpe_morpheus_servicenow_workflow        |
+| morpheus_spec_template              | hpe_morpheus_spec_template              |
+| morpheus_storage_bucket             | hpe_morpheus_storage_bucket             |
+| morpheus_storage_volume             | hpe_morpheus_storage_volume             |
+| morpheus_storage_volume_type        | hpe_morpheus_storage_volume_type        |
+| morpheus_task                       | hpe_morpheus_task                       |
+| morpheus_tasks                      | hpe_morpheus_tasks                      |
+| morpheus_tenant                     | hpe_morpheus_tenant                     |
+| morpheus_tenants                    | hpe_morpheus_tenants                    |
+| morpheus_user_group                 | hpe_morpheus_user_group                 |
+| morpheus_user_groups                | hpe_morpheus_user_groups                |
+| morpheus_vdi_pool                   | hpe_morpheus_vdi_pool                   |
+| morpheus_virtual_images             | hpe_morpheus_images                     |
+| morpheus_vro_workflow               | hpe_morpheus_vro_workflow               |
+| morpheus_workflow                   | hpe_morpheus_workflow                   |
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
