@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package form
 
@@ -918,8 +918,6 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		} else {
 			return diag.FromErr(helpers.TypeAssertFailError("labels", attr))
 		}
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("labels", d.Get("labels")))
 	}
 
 	var code string

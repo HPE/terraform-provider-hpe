@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package morpheus
 
@@ -292,7 +292,19 @@ func providerSchemaMorpheus() *schema.Schema {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	morpheusConfig := d.Get("morpheus").([]interface{})[0].(map[string]interface{})
+	morph, ok := d.GetOk("morpheus")
+	if !ok {
+		return `Morpheus resource or data source present, but possible missing morpheus provider block.
+ 
+ provider "hpe" {
+   morpheus { <- missing or duplicate?
+     url = "https://example.com"
+   }
+ }
+`, nil
+	}
+
+	morpheusConfig := morph.([]interface{})[0].(map[string]interface{})
 
 	config := Config{
 		Url:         morpheusConfig["url"].(string),

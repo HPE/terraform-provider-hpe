@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package template
 
@@ -76,7 +76,7 @@ func ResourceClusterPackage() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "A list of spec template ids associated with the cluster package",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
-				Optional:    true,
+				Required:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

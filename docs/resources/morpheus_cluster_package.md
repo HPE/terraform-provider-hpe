@@ -33,6 +33,7 @@ resource "hpe_morpheus_cluster_package" "tf_example_cluster_package" {
 - `name` (String) The name of the cluster package
 - `package_type` (String) A one word descriptor of package, such as calico, rook, prometheus, etc.
 - `package_version` (String) The version of the cluster package
+- `spec_template_ids` (List of Number) A list of spec template ids associated with the cluster package
 - `type` (String) The package category type (apps, custom, ingress, logging, monitoring, morpheus, network, serviceMesh, storage)
 
 ### Optional
@@ -40,7 +41,6 @@ resource "hpe_morpheus_cluster_package" "tf_example_cluster_package" {
 - `description` (String) The description of the cluster package
 - `enabled` (Boolean) Whether the cluster package is enabled
 - `repeat_install` (Boolean) Whether to support the reinstallation of the package
-- `spec_template_ids` (List of Number) A list of spec template ids associated with the cluster package
 
 ### Read-Only
 
