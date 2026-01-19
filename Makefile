@@ -26,6 +26,9 @@ testacc:
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 60m ./...
 
+collect-test-results:
+	./scripts/collect-test-results.bash
+
 docs:
 	go generate ./...
 	cd tools && go generate

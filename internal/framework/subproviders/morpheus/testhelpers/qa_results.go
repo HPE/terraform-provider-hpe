@@ -5,67 +5,58 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
-type TestResult struct {
+type testResult struct {
 	Status string `json:"status"`
 	Error  string `json:"error"`
 }
 
-var TestResults = make(map[string]TestResult)
+var (
+	testResults         = make(map[string]testResult)
+	m                   sync.Mutex
+	_, recordingEnabled = os.LookupEnv("RECORD_TEST_RESULTS")
+)
 
 func RecordResult(t *testing.T) {
-	if os.Getenv("RECORD_TEST_RESULTS") != "true" {
+	if !recordingEnabled {
 		return
 	}
 
+	m.Lock()
 	if t.Failed() {
-		TestResults[t.Name()] = TestResult{
+		testResults[t.Name()] = testResult{
 			Status: "Failed",
 			Error:  "Test " + t.Name() + "failed.",
 		}
 	} else if t.Skipped() {
-		TestResults[t.Name()] = TestResult{
+		testResults[t.Name()] = testResult{
 			Status: "Skipped",
 			Error:  "",
 		}
 	} else {
-		TestResults[t.Name()] = TestResult{
+		testResults[t.Name()] = testResult{
 			Status: "Passed",
 			Error:  "",
 		}
 	}
+	m.Unlock()
 }
 
 func WriteMergedResults() {
+	if !recordingEnabled {
+		return
+	}
+
 	rootOutputDir := filepath.Join("/tmp", "test_output")
-	outputFile := filepath.Join(rootOutputDir, "result.json")
-
-	existing := map[string]TestResult{}
-
-	// Try to read the existing file
-	data, err := os.ReadFile(outputFile)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			log.Printf("Error reading existing results file: %v", err)
-			os.Exit(1)
-		}
-	} else {
-		// File exists, parse the JSON data
-		if err := json.Unmarshal(data, &existing); err != nil {
-			log.Printf("Error parsing JSON from existing results file: %v", err)
-			os.Exit(1)
-		}
-	}
-
-	// Merge new results into existing map
-	for k, v := range TestResults {
-		existing[k] = v
-	}
+	outputFile := filepath.Join(rootOutputDir, acctest.RandomWithPrefix("test-result")+".result")
 
 	// Marshal the merged results
-	output, err := json.MarshalIndent(existing, "", "  ")
+	output, err := json.MarshalIndent(testResults, "", "  ")
 	if err != nil {
 		log.Printf("Error marshalling merged results: %v", err)
 		os.Exit(1)
