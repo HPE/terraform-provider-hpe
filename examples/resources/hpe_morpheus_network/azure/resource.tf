@@ -19,7 +19,7 @@ variable "cloud_id" {
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 6446
 }
 
 variable "group_id" {
