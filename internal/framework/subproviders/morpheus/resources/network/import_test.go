@@ -50,7 +50,7 @@ variable "cloud_id" {
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 6446
 }
 
 variable "group_id" {
@@ -178,7 +178,7 @@ destroy = false
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.net1",
 			"pool_id",
-			"1",
+			"6446",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.net1",
