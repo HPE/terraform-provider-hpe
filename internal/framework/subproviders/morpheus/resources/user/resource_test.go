@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/provider"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/resources/user"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -83,14 +83,12 @@ func TestAccMorpheusUserExample(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	path := "../../../../../../examples/resources/hpe_morpheus_user/resource.tf"
-	exampleConfig, err := os.ReadFile(path)
+	resourceConfig, err := user.RenderUserConfig(t, map[string]string{
+		"Username": name,
+	})
 	if err != nil {
-		t.Fatalf("Error reading example config: %v", err)
+		t.Fatal(err)
 	}
-
-	// Replace the hardcoded username with our generated name
-	configWithGeneratedName := strings.Replace(string(exampleConfig), "testacc-example", name, 1)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -187,7 +185,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + configWithGeneratedName,
+				Config:   providerConfig + resourceConfig,
 				Check:    checkFn,
 				PlanOnly: false,
 			},
