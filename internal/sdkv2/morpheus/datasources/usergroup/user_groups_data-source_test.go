@@ -3,6 +3,7 @@
 package usergroup_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -41,8 +42,9 @@ func TestAccMorpheusDataSourceUserGroupsExampleOk(t *testing.T) {
 	}
 
 	if currentDependency, err := user.RenderUserConfig(t, map[string]string{
-		"Name":    name,
-		"RoleIds": "resource.hpe_morpheus_role.example.id",
+		"Name":     name,
+		"Username": strings.ToLower(name),
+		"RoleIds":  "resource.hpe_morpheus_role.example.id",
 	}); err != nil {
 		t.Fatal(err)
 	} else {
