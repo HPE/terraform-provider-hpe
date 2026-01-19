@@ -501,8 +501,6 @@ resource "hpe_morpheus_instance" "example" {
   config = {
     imageId         = 231
     resourcePoolId  = "pool-1"
-    layoutSize      = 1
-    isEC2           = false
     isVpcSelectable = true
     serverId        = 155
     noAgent         = false
