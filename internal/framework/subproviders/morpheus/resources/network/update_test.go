@@ -51,7 +51,7 @@ variable "cloud_id" {
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 6446
 }
 
 variable "group_id" {
@@ -164,7 +164,7 @@ resource "hpe_morpheus_network" "foo" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.foo",
 			"pool_id",
-			"1",
+			"6446",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.foo",
@@ -267,7 +267,7 @@ resource "hpe_morpheus_network" "foo" {
 				Config: baseConfigText,
 				ConfigVariables: config.Variables{
 					"name":    config.StringVariable(uniqueName),
-					"pool_id": config.IntegerVariable(2), // CHANGED
+					"pool_id": config.IntegerVariable(5958), // CHANGED
 				},
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -325,7 +325,7 @@ resource "hpe_morpheus_network" "foo" {
 					// Keep original name
 					"name":        config.StringVariable(uniqueName),
 					"description": config.StringVariable("Comprehensive update test"),
-					"pool_id":     config.IntegerVariable(2),
+					"pool_id":     config.IntegerVariable(5958),
 					// Keep original CIDR
 					"cidr":                       config.StringVariable("10.50.0.0/16"),
 					"visibility":                 config.StringVariable("public"),
@@ -343,7 +343,7 @@ resource "hpe_morpheus_network" "foo" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "description", "Comprehensive update test"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "pool_id", "2"),
+						"hpe_morpheus_network.foo", "pool_id", "5958"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16"), // CIDR unchanged
 					resource.TestCheckResourceAttr(
