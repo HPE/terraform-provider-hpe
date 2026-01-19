@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package optiontype_test
 
@@ -36,77 +36,77 @@ func TestAccMorpheusOptionTypeNumberExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"description",
 			"Terraform number option type example",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"field_name",
 			"tfNumberExample",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"export_meta",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"dependent_field",
 			"dependent_example",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"visibility_field",
 			"visibility_example",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"require_field",
 			"require_example",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"show_on_edit",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"editable",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"display_value_on_details",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"field_label",
 			"Number Example",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"placeholder",
 			"12",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"default_value",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"help_block",
 			"Provide a number",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_option_type_number."+name,
+			"hpe_morpheus_option_type_number.example",
 			"required",
 			"true",
 		),
