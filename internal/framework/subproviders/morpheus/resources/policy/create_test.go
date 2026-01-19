@@ -640,7 +640,7 @@ resource "hpe_morpheus_network" "test" {
   name = "` + networkName + `"
   description = "Test network"
   cloud_id = hpe_morpheus_cloud.test.id
-  pool_id = 1
+  pool_id = 6446
   group_id = hpe_morpheus_group.test.id
   type_id = 1
   config = {}
