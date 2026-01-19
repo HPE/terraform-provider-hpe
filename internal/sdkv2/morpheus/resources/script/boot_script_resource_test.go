@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package script_test
 
@@ -52,6 +52,7 @@ func TestAccMorpheusBootScriptExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := script.RenderBootScriptConfig(t, map[string]string{
+		"Name":    name,
 		"Content": "ls",
 	})
 	if err != nil {
