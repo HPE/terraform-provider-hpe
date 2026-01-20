@@ -8,7 +8,7 @@ description: |-
 
 Provides a Morpheus Cloud Folder data source.
 
-Of the default Morpheus Cloud types available, only VMWare Clouds support Cloud Folders.
+Of the default Morpheus Cloud types available, only VMware Clouds support Cloud Folders.
 
 ## Example Usage
 
