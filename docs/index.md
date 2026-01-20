@@ -288,8 +288,6 @@ In this release (v1.0.0) we have added the following data-source functionality:
   datastores.  This is an API bug which is being investigated.
 - `hpe_morpheus_policy resource` does not currently support the Backup Targets (`backupStorage`) policy type
   due to improper handling of the `backupStorageIds` attribute. This is an API bug which is being investigated.
-- `hpe_morpheus_instance` has issues with using the same `datastore_id` with multiple volumes, please use
-  a different `datastore_id` for each volume.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.
 - `hpe_morpheus_instance` updates fail when removing `evars`.
