@@ -9,7 +9,7 @@ description: |-
 
 
 Datastores are used to provide storage for virtual machines and instances within a cloud environment.
-They can represent various types of storage backends, such as NFS shares, iSCSI or FC targets (such as AlletraMP),
+They can represent various types of storage backends, such as NFS shares, iSCSI or FC targets (such as Alletra MP),
 or cloud-based storage services.
 
 -> If a datastore with the specified name cannot be found (i.e. the corresponding list API request fails), the error

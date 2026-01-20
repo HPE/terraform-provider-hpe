@@ -113,8 +113,8 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "AlletraMP HVM Datastore Configuration",
-				MarkdownDescription: "AlletraMP HVM Datastore Configuration",
+				Description:         "Alletra MP HVM Datastore Configuration",
+				MarkdownDescription: "Alletra MP HVM Datastore Configuration",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},

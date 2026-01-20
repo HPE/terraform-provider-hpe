@@ -133,7 +133,7 @@ resource "hpe_morpheus_datastore" "example" {
 
 - `active` (Boolean)
 - `config` (Dynamic) Generic configuration options for the datastore, varies based on the type of datastore.
-- `config_alletramp_hvm` (Attributes) AlletraMP HVM Datastore Configuration (see [below for nested schema](#nestedatt--config_alletramp_hvm))
+- `config_alletramp_hvm` (Attributes) Alletra MP HVM Datastore Configuration (see [below for nested schema](#nestedatt--config_alletramp_hvm))
 - `config_nfs` (Attributes) NFS Cluster Datastore Configuration (see [below for nested schema](#nestedatt--config_nfs))
 - `datastores` (Attributes Set) List of datastores associated with this datastore, for use with vSphere clouds. (see [below for nested schema](#nestedatt--datastores))
 - `default_store` (Boolean)
