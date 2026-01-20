@@ -8,7 +8,7 @@ description: |-
 
 
 
-Instance is a virtual machine or container deployed and managed by HPE Morpheus.
+Instance is a virtual machine, bare metal machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
@@ -34,6 +34,7 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 `read` and `update` is 45 minutes.<br><br>
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
+The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
 When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
