@@ -11,18 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_cluster_mks_vsphere/resource.tf cluster_mks_vsphere_resource.tf.tmpl Name "tfvsphere" ResourcePrefix "vmpre" HostnamePrefix "ospre" Description "Terraform MKS cluster example" CloudId "data.hpe_morpheus_cloud.morpheus_vsphere.id" GroupId "data.hpe_morpheus_group.morpheus_lab.id" ClusterLayoutId "1070" PodCidr "172.20.0.0/16" ServiceCidr "172.30.0.0/16" ClusterRepoAccountId "1" MasterNodePoolPlanId "data.hpe_morpheus_service_plan.master_nodes.id" MasterNodePoolResourcePoolId "data.hpe_morpheus_resource_pool.vsphere_resource_pool.id" MasterNodePoolNetworkInterfaceNetworkId "data.hpe_morpheus_network.vm_network.id" MasterNodePoolStorageVolumeRoot "true" MasterNodePoolStorageVolumeSize "20" MasterNodePoolStorageVolumeName "root" MasterNodePoolStorageVolumeStorageType "1" MasterNodePoolStorageVolumeDatastoreId "9" MasterNodePoolTagsApp "mksmaster" WorkerNodePoolCount "3" WorkerNodePoolPlanId "data.hpe_morpheus_service_plan.worker_nodes.id" WorkerNodePoolResourcePoolId "data.hpe_morpheus_resource_pool.vsphere_resource_pool.id" WorkerNodePoolNetworkInterfaceNetworkId "data.hpe_morpheus_network.vm_network.id" WorkerNodePoolStorageVolume0Root "true" WorkerNodePoolStorageVolume0Size "20" WorkerNodePoolStorageVolume0Name "root" WorkerNodePoolStorageVolume0StorageType "1" WorkerNodePoolStorageVolume0DatastoreId "2" WorkerNodePoolStorageVolume1Root "false" WorkerNodePoolStorageVolume1Size "20" WorkerNodePoolStorageVolume1Name "data" WorkerNodePoolStorageVolume1StorageType "1" WorkerNodePoolStorageVolume1DatastoreId "2" WorkerNodePoolTagsApp "mksworker"
+//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_cluster_hks_vsphere/resource.tf cluster_hks_vsphere_resource.tf.tmpl Name "tfvsphere" ResourcePrefix "vmpre" HostnamePrefix "ospre" Description "Terraform HKS cluster example" CloudId "data.hpe_morpheus_cloud.morpheus_vsphere.id" GroupId "data.hpe_morpheus_group.morpheus_lab.id" ClusterLayoutId "1070" PodCidr "172.20.0.0/16" ServiceCidr "172.30.0.0/16" ClusterRepoAccountId "1" MasterNodePoolPlanId "data.hpe_morpheus_service_plan.master_nodes.id" MasterNodePoolResourcePoolId "data.hpe_morpheus_resource_pool.vsphere_resource_pool.id" MasterNodePoolNetworkInterfaceNetworkId "data.hpe_morpheus_network.vm_network.id" MasterNodePoolStorageVolumeRoot "true" MasterNodePoolStorageVolumeSize "20" MasterNodePoolStorageVolumeName "root" MasterNodePoolStorageVolumeStorageType "1" MasterNodePoolStorageVolumeDatastoreId "9" MasterNodePoolTagsApp "hksmaster" WorkerNodePoolCount "3" WorkerNodePoolPlanId "data.hpe_morpheus_service_plan.worker_nodes.id" WorkerNodePoolResourcePoolId "data.hpe_morpheus_resource_pool.vsphere_resource_pool.id" WorkerNodePoolNetworkInterfaceNetworkId "data.hpe_morpheus_network.vm_network.id" WorkerNodePoolStorageVolume0Root "true" WorkerNodePoolStorageVolume0Size "20" WorkerNodePoolStorageVolume0Name "root" WorkerNodePoolStorageVolume0StorageType "1" WorkerNodePoolStorageVolume0DatastoreId "2" WorkerNodePoolStorageVolume1Root "false" WorkerNodePoolStorageVolume1Size "20" WorkerNodePoolStorageVolume1Name "data" WorkerNodePoolStorageVolume1StorageType "1" WorkerNodePoolStorageVolume1DatastoreId "2" WorkerNodePoolTagsApp "hksworker"
 
-// RenderClusterMksVsphereConfig generates a Terraform configuration for the cluster_mks_vsphere resource.
+// RenderClusterHKSVsphereConfig generates a Terraform configuration for the cluster_hks_vsphere resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
-func RenderClusterMksVsphereConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderClusterHKSVsphereConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":                         "tfvsphere",
 		"ResourcePrefix":               "vmpre",
 		"HostnamePrefix":               "ospre",
-		"Description":                  "Terraform MKS cluster example",
+		"Description":                  "Terraform HKS cluster example",
 		"CloudId":                      "data.hpe_morpheus_cloud.morpheus_vsphere.id",
 		"GroupId":                      "data.hpe_morpheus_group.morpheus_lab.id",
 		"ClusterLayoutId":              "1070",
@@ -38,7 +38,7 @@ func RenderClusterMksVsphereConfig(t *testing.T, overrides map[string]string) (s
 		"MasterNodePoolStorageVolumeName":         "root",
 		"MasterNodePoolStorageVolumeStorageType":  "1",
 		"MasterNodePoolStorageVolumeDatastoreId":  "9",
-		"MasterNodePoolTagsApp":                   "mksmaster",
+		"MasterNodePoolTagsApp":                   "hksmaster",
 		"WorkerNodePoolCount":                     "3",
 		"WorkerNodePoolPlanId":                    "data.hpe_morpheus_service_plan.worker_nodes.id",
 		"WorkerNodePoolResourcePoolId":            "data.hpe_morpheus_resource_pool.vsphere_resource_pool.id",
@@ -53,7 +53,7 @@ func RenderClusterMksVsphereConfig(t *testing.T, overrides map[string]string) (s
 		"WorkerNodePoolStorageVolume1Name":        "data",
 		"WorkerNodePoolStorageVolume1StorageType": "1",
 		"WorkerNodePoolStorageVolume1DatastoreId": "2",
-		"WorkerNodePoolTagsApp":                   "mksworker",
+		"WorkerNodePoolTagsApp":                   "hksworker",
 	}
 
 	// Apply overrides to defaults
@@ -72,7 +72,7 @@ func RenderClusterMksVsphereConfig(t *testing.T, overrides map[string]string) (s
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "cluster_mks_vsphere_resource.tf.tmpl")
+	templatePath := filepath.Join(dir, "cluster_hks_vsphere_resource.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

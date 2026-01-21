@@ -11,7 +11,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_catalog_item_instance
 - hpe_morpheus_catalog_item_workflow
 - hpe_morpheus_cluster_layout
-- hpe_morpheus_cluster_mks_vsphere
+- hpe_morpheus_cluster_hks_vsphere
 - hpe_morpheus_cluster_package
 - hpe_morpheus_contact
 - hpe_morpheus_credential
@@ -189,7 +189,6 @@ In this release (v0.4.0) we have added the following data-source functionality:
 
 ## New known issues
 
-
 ## Known issues from previous releases
 
 - `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
@@ -341,4 +340,3 @@ In this release (v0.1.0) the following data sources have been added:
 - hpe_morpheus_user will force recreation if an attribute is updated
 - There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
   If this happens please retry the operation.  This is being investigated.
-
