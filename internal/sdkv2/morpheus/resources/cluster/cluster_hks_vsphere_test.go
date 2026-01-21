@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccClusterMksVsphereExampleOk(t *testing.T) {
+func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -36,7 +36,7 @@ func TestAccClusterMksVsphereExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := cluster.RenderClusterMksVsphereConfig(t, map[string]string{
+	resourceConfig, err := cluster.RenderClusterHKSVsphereConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {
@@ -78,171 +78,171 @@ func TestAccClusterMksVsphereExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"resource_prefix",
 			"vmpre",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"hostname_prefix",
 			"ospre",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"description",
-			"Terraform MKS cluster example",
+			"Terraform HKS cluster example",
 		),
 		resource.TestCheckResourceAttrSet(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"cloud_id",
 		),
 		resource.TestCheckResourceAttrSet(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"group_id",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"cluster_layout_id",
 			"1070",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"pod_cidr",
 			"172.20.0.0/16",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"service_cidr",
 			"172.30.0.0/16",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"cluster_repo_account_id",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.plan_id",
 			"244",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.resource_pool_id",
 			"5",
 		),
 		resource.TestCheckResourceAttrSet(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.network_interface.0.network_id",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.storage_volume.0.root",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.storage_volume.0.size",
 			"20",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.storage_volume.0.name",
 			"root",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.storage_volume.0.storage_type",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.storage_volume.0.datastore_id",
 			"9",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"master_node_pool.0.tags.app",
-			"mksmaster",
+			"hksmaster",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.count",
 			"3",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.plan_id",
 			"244",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.resource_pool_id",
 			"5",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.network_interface.0.network_id",
 			"86657",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.0.root",
 			"true",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.0.size",
 			"20",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.0.name",
 			"root",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.0.storage_type",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.0.datastore_id",
 			"2",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.1.root",
 			"false",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.1.size",
 			"20",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.1.name",
 			"data",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.1.storage_type",
 			"1",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.storage_volume.1.datastore_id",
 			"2",
 		),
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_cluster_mks_vsphere.example",
+			"hpe_morpheus_cluster_hks_vsphere.example",
 			"worker_node_pool.0.tags.app",
-			"mksworker",
+			"hksworker",
 		),
 	}
 

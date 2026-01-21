@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	minimumMKSWorkerNodes = 3
+	minimumHKSWorkerNodes = 3
 	pollIntervalSeconds   = 10
 
 	statusCancelled      = "cancelled"
@@ -54,24 +54,24 @@ func validateCountDiagFunc(i interface{}, _ cty.Path) diag.Diagnostics {
 		return diag.FromErr(helpers.TypeAssertFailError("count", i))
 	}
 
-	if count < minimumMKSWorkerNodes {
-		return diag.Errorf("count must be a minimum of %d, count is %d", minimumMKSWorkerNodes, count)
+	if count < minimumHKSWorkerNodes {
+		return diag.Errorf("count must be a minimum of %d, count is %d", minimumHKSWorkerNodes, count)
 	}
 
 	return nil
 }
 
 func defaultCountFunc() (interface{}, error) {
-	return minimumMKSWorkerNodes, nil
+	return minimumHKSWorkerNodes, nil
 }
 
-func ResourceClusterMKSVSphere() *schema.Resource {
+func ResourceClusterHKSVSphere() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Provides an Morpheus Kubernetes Service (MKS) cluster on VMware vSphere resource",
-		CreateContext: resourceClusterMKSVSphereCreate,
-		ReadContext:   resourceClusterMKSVSphereRead,
-		UpdateContext: resourceClusterMKSVSphereUpdate,
-		DeleteContext: resourceClusterMKSVSphereDelete,
+		Description:   "Provides a HPE Kubernetes Service (HKS) cluster on VMware vSphere cloud",
+		CreateContext: resourceClusterHKSVSphereCreate,
+		ReadContext:   resourceClusterHKSVSphereRead,
+		UpdateContext: resourceClusterHKSVSphereUpdate,
+		DeleteContext: resourceClusterHKSVSphereDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(45 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -451,7 +451,7 @@ func filterOutClusterWorkersByStatus(workers []morpheus.ClusterWorker, status st
 	return filteredWorkers
 }
 
-func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceClusterHKSVSphereCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -803,7 +803,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(cluster.ID))
-	diags = append(diags, resourceClusterMKSVSphereRead(ctx, d, meta)...)
+	diags = append(diags, resourceClusterHKSVSphereRead(ctx, d, meta)...)
 
 	// Fail the cluster deployment if the cluster status is in a failed state
 	if clusterStatus == statusFailed {
@@ -813,7 +813,7 @@ func resourceClusterMKSVSphereCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceClusterMKSVSphereRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceClusterHKSVSphereRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -1152,7 +1152,7 @@ func doClusterWorkerDelete(ctx context.Context, client *morpheus.Client, cluster
 	return nil
 }
 
-func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceClusterHKSVSphereUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
@@ -1256,10 +1256,10 @@ func resourceClusterMKSVSphereUpdate(ctx context.Context, d *schema.ResourceData
 		log.Printf("API RESPONSE: %s", resp)
 	}
 
-	return resourceClusterMKSVSphereRead(ctx, d, meta)
+	return resourceClusterHKSVSphereRead(ctx, d, meta)
 }
 
-func resourceClusterMKSVSphereDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceClusterHKSVSphereDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var client *morpheus.Client
 	if clientAssert, ok := meta.(*morpheus.Client); ok {
 		client = clientAssert
