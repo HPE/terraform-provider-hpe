@@ -1,16 +1,16 @@
 ---
-page_title: "Migrate Morpheus Instance to HPE Instance - terraform-provider-hpe"
+page_title: "Migrate Morpheus Provider Instance to hpe Provider Instance"
 subcategory: "Migration"
 ---
 
-# Migrate Morpheus Instance to HPE Instance
+# Migrate Morpheus Provider Instance to hpe Provider Instance
 
-This guide provides step-by-step instructions on how to migrate a Morpheus instance to an HPE instance using the `hpe_morpheus_instance` resource in Terraform.
+This guide provides step-by-step instructions on how to migrate a Morpheus provider instance to a hpe provider instance using the `hpe_morpheus_instance` resource in Terraform.
 The guide covers the following types of Morpheus instance:
 - VMware Virtual Machine
 - HVM Virtual Machine
 
-We strongly recommend that users familiarize themselves with the [importing existing resources](https://developer.hashicorp.com/terraform/language/import)
+We strongly recommend that users familiarise themselves with the [importing existing resources](https://developer.hashicorp.com/terraform/language/import)
 documentation provided by HashiCorp before proceeding with the migration process.
 
 The following instructions describe importing a single Morpheus instance.
@@ -64,6 +64,12 @@ The process involves the following steps:
    ```bash
    $ terraform plan -var-file local_test.tfvars -generate-config-out=generated_instance_example.tf
    ```
+   This is the content of `locat_test.tfvars`:
+   ```HCL
+   morpheus_url     = < url >
+   password         = < password >
+   username         = < username >
+   ```
 1. Review the generated file `generated_instance_example.tf` and make any necessary adjustments as explained in the following sections.
 1. Once satisfied with the generated file, proceed to the actual migration by running `terraform apply` in the test directory.
    ```bash
@@ -101,18 +107,10 @@ The process involves the following steps:
    │ This is a bug in the provider, which should be reported in the provider's own issue tracker.
    ```
 1. Remove the relevant `import` block from the configuration file
-1. Check that a subsequent `terraform plan` will complete successfully and show no changes - ignore the warning about provider development overrides,
-   that is because in my testing I am using a locally built version of the provider:
+1. Check that a subsequent `terraform plan` will complete successfully and show no changes:
    ```bash
    $ terraform plan -var-file local_test.tfvars
-   ╷
-   │ Warning: Provider development overrides are in effect
-   │ 
-   │ The following provider development overrides are set in the CLI configuration:
-   │  - hpe/hpe in /Users/eamonn/go/bin
-   │ 
-   │ The behavior may therefore not match any released version of the provider and applying changes may cause the state to become incompatible with published releases.
-   ╵
+   
    hpe_morpheus_instance.example: Refreshing state... [name=EOTVMWareInstance-2]
    
    No changes. Your infrastructure matches the configuration.
