@@ -3,18 +3,18 @@ layout: ""
 page_title: "hpe Provider"
 subcategory: ""
 description: |-
-  This is the hpe terraform provider
+  This is the HPE Terraform provider
 ---
 
 # hpe Provider
 
-This is the hpe terraform provider which is still in development.  It will eventually replace the
+This is the HPE Terraform provider which is still in development.  It will eventually replace the
 [HPE GreenLake Terraform Provider](https://registry.terraform.io/providers/HPE/hpegl/latest) and the
 [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 
 Initially this provider will support Morpheus, but will in time expand to cover other HPE offerings.
 
-This provider requires 64-bit versions of the terraform binary to work properly.
+This provider requires 64-bit versions of the Terraform binary to work properly.
 
 ->This v1.0.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now be used as a replacement for the Morpheus provider. Users are encouraged to migrate to this provider,
@@ -308,18 +308,13 @@ In this release (v1.0.0) we have added the following data-source functionality:
 ## Morpheus Provider Mapping
 
 The tables below show the mapping of the Morpheus provider resources and data sources to the corresponding
-`hpe` Morpheus resources and data sources where there are one-to-one equivalents.  Note that some Morpheus
+HPE Morpheus resources and data sources where there are one-to-one equivalents.  Note that some Morpheus
 resource and data sources have been replaced with "generalised" resources and data sources so that several
-Morpheus resources and data sources are covered by a single `hpe` resource or data source.
+Morpheus resources and data sources are covered by a single HPE resource or data source.
 
 ### Resources replaced by generalised equivalents
 
--> We haven't verified the following generalised resource examples, we plan to do so in a future release:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance AWS<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud AWS, Azure, vSphere<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore vSphere<br>
-
-| Morpheus Provider Resource Name | hpe Provider Resource Name |
+| Morpheus Provider Resource Name | HPE Provider Resource Name |
 |---------------------------------|----------------------------|
 | morpheus_aws_cloud | hpe_morpheus_cloud |
 | morpheus_azure_cloud | hpe_morpheus_cloud |
@@ -357,7 +352,7 @@ Morpheus resources and data sources are covered by a single `hpe` resource or da
 
 ### Resources with one-to-one mapping
 
-| Morpheus Provider Resource Name           | hpe Provider Resource Name                    |
+| Morpheus Provider Resource Name           | HPE Provider Resource Name                    |
 |-------------------------------------------|-----------------------------------------------|
 | morpheus_active_directory_identity_source | hpe_morpheus_identity_source_active_directory |
 | morpheus_ansible_integration              | hpe_morpheus_integration_ansible              |
@@ -450,7 +445,7 @@ Morpheus resources and data sources are covered by a single `hpe` resource or da
 
 ### Data Sources replaced by generalised equivalents
 
-| Morpheus Provider Data Source Name | hpe Provider Data Source Name |
+| Morpheus Provider Data Source Name | HPE Provider Data Source Name |
 |------------------------------------|-------------------------------|
 | morpheus_cloud_datastore | hpe_morpheus_datastore |
 | morpheus_tenant_role     | hpe_morpheus_role      |
@@ -459,7 +454,7 @@ Morpheus resources and data sources are covered by a single `hpe` resource or da
 
 ### Data Sources with one-to-one mapping
 
-| Morpheus Provider Data Source Name  | hpe Provider Data Source Name           |
+| Morpheus Provider Data Source Name  | HPE Provider Data Source Name           |
 |-------------------------------------|-----------------------------------------|
 | morpheus_ansible_tower_inventory    | hpe_morpheus_ansible_tower_inventory    |
 | morpheus_ansible_tower_job_template | hpe_morpheus_ansible_tower_job_template |
