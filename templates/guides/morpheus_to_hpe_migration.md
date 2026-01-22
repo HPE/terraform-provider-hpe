@@ -1,18 +1,18 @@
 ---
-page_title: "Migrate Morpheus Provider Resources to hpe Provider Resources"
+page_title: "Migrate Morpheus Provider Resources to HPE Provider Resources"
 subcategory: "Migration"
 ---
 
-# Migrate Morpheus Provider Resources to hpe Provider Resources
+# Migrate Morpheus Provider Resources to HPE Provider Resources
 
-To migrate resources from the Morpheus Terraform provider to the hpe Terraform provider the basic principle is to
-import the existing Morpheus resources created with the Morpheus provider into the hpe provider. HashiCorp documentation
+To migrate resources from the Morpheus Terraform provider to the HPE Terraform provider the basic principle is to
+import the existing Morpheus resources created with the Morpheus provider into the HPE provider. HashiCorp documentation
 on import can be found [here](https://developer.hashicorp.com/terraform/language/import).
 
 -> The section on [Bulk Import](https://developer.hashicorp.com/terraform/language/v1.14.x/import/bulk?page=import&page=bulk)
-requires provider support for the `List` RPC.  The hpe provider does not currently support `List`, this is something that we
+requires provider support for the `List` RPC.  The HPE provider does not currently support `List`, this is something that we
 are considering for a future release.<br><br>
-Note that some resources in the Morpheus provider have been converted to a more generalised resource in the hpe provider.
+Note that some resources in the Morpheus provider have been converted to a more generalised resource in the HPE provider.
 See below for details.
 
 ## Import Blocks
@@ -40,9 +40,9 @@ In addition to the import blocks resource definitions must be supplied.  In gene
 definitions to consider:
 
 ### Identical Schema
-The following table lists the resources that have identical schema between the Morpheus and hpe providers.
+The following table lists the resources that have identical schema between the Morpheus and HPE providers.
 
-| Morpheus Provider Resource Name           | hpe Provider Resource Name                    |
+| Morpheus Provider Resource Name           | HPE Provider Resource Name                    |
 |-------------------------------------------|-----------------------------------------------|
 | morpheus_active_directory_identity_source | hpe_morpheus_identity_source_active_directory |
 | morpheus_ansible_integration              | hpe_morpheus_integration_ansible              |
@@ -134,14 +134,14 @@ The following table lists the resources that have identical schema between the M
 | morpheus_write_attributes_task            | hpe_morpheus_task_write_attributes            |
 
 For these resources we can simply copy the resource definition from the Morpheus provider config and change the resource
-type to the corresponding hpe provider resource type.  This needs to be done manually for each resource.  Then an
-import block must be added for each hpe resource to import the existing Morpheus resource.
+type to the corresponding HPE provider resource type.  This needs to be done manually for each resource.  Then an
+import block must be added for each HPE resource to import the existing Morpheus resource.
 
 ### Different Schema
-Some resources have differences in schema between the Morpheus and hpe providers.  These resources are generalised
-in the hpe provider and several Morpheus provider resources map to a single hpe provider resource:
+Some resources have differences in schema between the Morpheus and HPE providers.  These resources are generalised
+in the HPE provider and several Morpheus provider resources map to a single HPE provider resource:
 
-| Morpheus Provider Resource Name | hpe Provider Resource Name |
+| Morpheus Provider Resource Name | HPE Provider Resource Name |
 |---------------------------------|----------------------------|
 | morpheus_aws_cloud | hpe_morpheus_cloud |
 | morpheus_azure_cloud | hpe_morpheus_cloud |
@@ -177,7 +177,7 @@ in the hpe provider and several Morpheus provider resources map to a single hpe 
 | morpheus_tenant_role | hpe_morpheus_role |
 | morpheus_user_role | hpe_morpheus_role |
 
-For these resources terraform can be used to generate the hpe resource definition.  Examples of this process for `hpe_morpheus_instance`
+For these resources terraform can be used to generate the HPE resource definition.  Examples of this process for `hpe_morpheus_instance`
 are documented [here](./morpheus_instance_to_hpe_instance.md).  The configuration can be generated resource by resource or for
 multiple resources at once depending on the number of `import` blocks that are specified.  We recommend generating, editing
 and testing the configuration(s) in a separate directory before using them in your main Terraform configuration.

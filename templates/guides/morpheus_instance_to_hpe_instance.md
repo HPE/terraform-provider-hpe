@@ -1,11 +1,11 @@
 ---
-page_title: "Migrate Morpheus Provider Instance to hpe Provider Instance"
+page_title: "Migrate Morpheus Provider Instance to HPE Provider Instance"
 subcategory: "Migration"
 ---
 
-# Migrate Morpheus Provider Instance to hpe Provider Instance
+# Migrate Morpheus Provider Instance to HPE Provider Instance
 
-This guide provides step-by-step instructions on how to migrate a Morpheus provider instance to a hpe provider instance using the `hpe_morpheus_instance` resource in Terraform.
+This guide provides step-by-step instructions on how to migrate a Morpheus provider instance to a HPE provider instance using the `hpe_morpheus_instance` resource in Terraform.
 The guide covers the following types of Morpheus instance:
 - VMware Virtual Machine
 - HVM Virtual Machine
