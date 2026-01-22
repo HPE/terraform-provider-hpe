@@ -4,12 +4,12 @@ package morpheus
 
 import (
 	"context"
-	"os"
 
 	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
+	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/httptrace"
 	"github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus/client"
 )
 
@@ -30,7 +30,7 @@ type Config struct {
 }
 
 func (c *Config) Client() (*sdklegacy.Client, diag.Diagnostics) {
-	debug := logging.IsDebugOrHigher() && os.Getenv("MORPHEUS_API_HTTPTRACE") == "true"
+	debug := logging.IsDebugOrHigher() && httptrace.IsEnabled()
 	diags := diag.Diagnostics{}
 
 	if c.client == nil {
