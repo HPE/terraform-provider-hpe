@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_catalog_item_instance":            catalogitem.ResourceCatalogItemInstance(),
 			"hpe_morpheus_catalog_item_workflow":            catalogitem.ResourceCatalogItemWorkflow(),
 			"hpe_morpheus_cluster_layout":                   blueprint.ResourceClusterLayout(),
+			"hpe_morpheus_cluster_hks_hvm":                  cluster.ResourceClusterHKSHVM(),
 			"hpe_morpheus_cluster_hks_vsphere":              cluster.ResourceClusterHKSVSphere(),
 			"hpe_morpheus_cluster_package":                  template.ResourceClusterPackage(),
 			"hpe_morpheus_contact":                          contact.ResourceContact(),
