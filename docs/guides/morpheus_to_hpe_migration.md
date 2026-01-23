@@ -1,5 +1,5 @@
 ---
-page_title: "Migrate Morpheus Provider Resources to HPE Provider Resources"
+page_title: "Morpheus to HPE"
 subcategory: "Migration"
 ---
 

@@ -1,5 +1,5 @@
 ---
-page_title: "Migrate Morpheus Provider Instance to HPE Provider Instance"
+page_title: "Morpheus Instance to HPE Instance"
 subcategory: "Migration"
 ---
 
