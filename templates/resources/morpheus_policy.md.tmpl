@@ -23,7 +23,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 - [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval) (uses [config_approval](#nestedatt--config_approval))
 - [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval) (uses [config_approval](#nestedatt--config_approval))
 - [Backup Creation (createBackup)](#backup-creation-createbackup) (uses [config_create_backup](#nestedatt--config_create_backup))
-- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Not currently supported (uses [config_backup_storage](#nestedatt--config_backup_storage))
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Supported for Morpheus 8.1.0 or later. (uses [config_backup_storage](#nestedatt--config_backup_storage))
 - [Budget (maxPrice)](#budget-maxprice) (uses [config_max_price](#nestedatt--config_max_price))
 - [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming) (uses [config_server_naming](#nestedatt--config_server_naming))
 - [Cypher Access (cypher)](#cypher-access-cypher) (uses [config_cypher](#nestedatt--config_cypher))
@@ -78,7 +78,8 @@ Policies are different rules that can be applied to various Morpheus resources.
 {{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_createBackup.tf" }}
 
 ### Backup Targets (backupStorage)
-Not currently supported
+
+{{ tffile "examples/resources/hpe_morpheus_policy/policy_dynamic_backupStorage.tf" }}
 
 ### Budget (maxPrice)
 

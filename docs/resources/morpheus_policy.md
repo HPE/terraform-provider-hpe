@@ -23,7 +23,7 @@ Policies are different rules that can be applied to various Morpheus resources.
 - [Approve Reconfigure (reconfigureApproval)](#approve-reconfigure-reconfigureapproval) (uses [config_approval](#nestedatt--config_approval))
 - [Approve Workflow Execute (workflowApproval)](#approve-workflow-execute-workflowapproval) (uses [config_approval](#nestedatt--config_approval))
 - [Backup Creation (createBackup)](#backup-creation-createbackup) (uses [config_create_backup](#nestedatt--config_create_backup))
-- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Not currently supported (uses [config_backup_storage](#nestedatt--config_backup_storage))
+- [Backup Targets (backupStorage)](#backup-targets-backupstorage) Supported for Morpheus 8.1.0 or later. (uses [config_backup_storage](#nestedatt--config_backup_storage))
 - [Budget (maxPrice)](#budget-maxprice) (uses [config_max_price](#nestedatt--config_max_price))
 - [Cluster Resource Name (serverNaming)](#cluster-resource-name-servernaming) (uses [config_server_naming](#nestedatt--config_server_naming))
 - [Cypher Access (cypher)](#cypher-access-cypher) (uses [config_cypher](#nestedatt--config_cypher))
@@ -201,7 +201,29 @@ resource "hpe_morpheus_policy" "backup_creation" {
 ```
 
 ### Backup Targets (backupStorage)
-Not currently supported
+
+```terraform
+# Backup Targets Policy - Restricts available backup storage targets
+# Allowed associated_resource_types: Group, Cloud, User, Global, Role
+# Tenant specification: NOT allowed (cannot specify tenants array)
+# Supported in Morpheus 8.1.0 or later (previous versions double nest the backupStorageIds attribute)
+resource "hpe_morpheus_policy" "backup_targets" {
+  name                     = "Backup Targets Policy"
+  description              = "Restrict available backup targets"
+  associated_resource_type = "User"
+  associated_resource_id   = 9969
+  enabled                  = true
+
+  policy_type = {
+    code = "backupStorage"
+  }
+
+  config = {
+    # Required
+    backupStorageIds = [5, 6] # Array of backup storage IDs to restrict available backup targets
+  }
+}
+```
 
 ### Budget (maxPrice)
 
