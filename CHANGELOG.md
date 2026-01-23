@@ -11,7 +11,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_catalog_item_instance
 - hpe_morpheus_catalog_item_workflow
 - hpe_morpheus_cluster_layout
-- hpe_morpheus_cluster_mks_vsphere
+- hpe_morpheus_cluster_hks_vsphere
 - hpe_morpheus_cluster_package
 - hpe_morpheus_contact
 - hpe_morpheus_credential
@@ -156,8 +156,6 @@ In this release (v1.0.0) we have added the following data-source functionality:
   datastores.  This is an API bug which is being investigated.
 - `hpe_morpheus_policy` resource does not currently support the Backup Targets (`backupStorage`) policy type
   due to improper handling of the `backupStorageIds` attribute. This is an API bug which is being investigated.
-- `hpe_morpheus_instance` has issues with using the same `datastore_id` with multiple volumes, please use
-  a different `datastore_id` for each volume.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.
 - `hpe_morpheus_instance` updates fail when removing `evars`.
@@ -170,7 +168,7 @@ In this release (v1.0.0) we have added the following data-source functionality:
 - `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
   The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
   and that the share is accessible before creating.
-- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  AlletraMP HVM datastores will delete but NFS datastores
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
   may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
 - `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
@@ -190,7 +188,6 @@ In this release (v0.4.0) we have added the following data-source functionality:
 - hpe_morpheus_policy
 
 ## New known issues
-
 
 ## Known issues from previous releases
 
@@ -343,4 +340,3 @@ In this release (v0.1.0) the following data sources have been added:
 - hpe_morpheus_user will force recreation if an attribute is updated
 - There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
   If this happens please retry the operation.  This is being investigated.
-

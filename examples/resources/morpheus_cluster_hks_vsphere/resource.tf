@@ -1,8 +1,8 @@
-resource "hpe_morpheus_cluster_mks_vsphere" "example" {
+resource "hpe_morpheus_cluster_hks_vsphere" "example" {
   name                    = "tfvsphere"
   resource_prefix         = "vmpre"
   hostname_prefix         = "ospre"
-  description             = "Terraform MKS cluster example"
+  description             = "Terraform HKS cluster example"
   cloud_id                = data.hpe_morpheus_cloud.morpheus_vsphere.id
   group_id                = data.hpe_morpheus_group.morpheus_lab.id
   cluster_layout_id       = 1070
@@ -27,7 +27,7 @@ resource "hpe_morpheus_cluster_mks_vsphere" "example" {
     }
 
     tags = {
-      "app" = "mksmaster"
+      "app" = "hksmaster"
     }
   }
 
@@ -57,7 +57,7 @@ resource "hpe_morpheus_cluster_mks_vsphere" "example" {
     }
 
     tags = {
-      "app" = "mksworker"
+      "app" = "hksworker"
     }
   }
 }

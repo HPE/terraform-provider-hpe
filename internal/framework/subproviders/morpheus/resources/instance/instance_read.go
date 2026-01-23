@@ -1,9 +1,12 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
 package instance
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -88,7 +91,17 @@ func getInstanceAsState(
 	// config
 	state.Config = types.DynamicNull()
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+		// on import, always read the config from the API
+		if apiConfig, ok := instance.GetConfigOk(); ok {
+			config, cdiags := getInstanceConfig(ctx, id, apiConfig)
+			diags.Append(cdiags...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.Config = config
+		}
+	} else if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		state.Config = plan.Config
 	}
 
@@ -217,6 +230,82 @@ func getInstanceAsState(
 	state.Volumes = volumes
 
 	return state, diags
+}
+
+func getInstanceConfig(
+	ctx context.Context,
+	id int64,
+	apiConfig *sdk.AddInstance200ResponseAllOfOneOfInstanceConfig,
+) (types.Dynamic, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Convert apiConfig to map[string]any
+	apiConfigForConfig, err := apiConfig.ToMap()
+	if err != nil {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d: failed to convert apiConfig to map: %s", id, err.Error()),
+		)
+
+		return types.DynamicNull(), diags
+	}
+
+	// Dereference pointers in apiConfigForConfig
+	for k, v := range apiConfigForConfig {
+		if v != nil {
+			vType := reflect.TypeOf(v)
+			if vType != nil && vType.Kind() == reflect.Ptr {
+				vValue := reflect.ValueOf(v)
+				if !vValue.IsNil() {
+					if vValue.Elem().Kind() == reflect.Struct {
+						// Convert struct to map
+						apiConfigForConfig[k] = convertStructToMap(vValue.Elem().Interface())
+					} else {
+						apiConfigForConfig[k] = vValue.Elem().Interface()
+					}
+				}
+			}
+		}
+	}
+
+	configDynamic, err := convert.MapToDynamic(ctx, apiConfigForConfig)
+	if err != nil {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d: failed to convert config to dynamic config: %s", id, err.Error()),
+		)
+
+		return types.DynamicNull(), diags
+	}
+
+	return configDynamic, diags
+}
+
+func convertStructToMap(s any) map[string]any {
+	result := make(map[string]any)
+	val := reflect.ValueOf(s)
+	typ := reflect.TypeOf(s)
+
+	// Validate it's a struct
+	if typ.Kind() != reflect.Struct {
+		return result
+	}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+
+		fieldValue := val.Field(i).Interface()
+		if reflect.TypeOf(fieldValue).Kind() == reflect.Ptr {
+			if !reflect.ValueOf(fieldValue).IsNil() {
+				fieldValue = reflect.ValueOf(fieldValue).Elem().Interface()
+			} else {
+				fieldValue = nil
+			}
+		}
+		result[field.Name] = fieldValue
+	}
+
+	return result
 }
 
 func getInstanceEnvVars(

@@ -1,13 +1,13 @@
 ---
-page_title: "hpe_morpheus_cluster_mks_vsphere Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_cluster_hks_vsphere Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Provides an Morpheus Kubernetes Service (MKS) cluster on VMware vSphere resource
+  Provides a HPE Kubernetes Service (HKS) cluster on VMware vSphere cloud
 ---
 
-# hpe_morpheus_cluster_mks_vsphere (Resource)
+# hpe_morpheus_cluster_hks_vsphere (Resource)
 
-Provides an Morpheus Kubernetes Service (MKS) cluster on VMware vSphere resource
+Provides a HPE Kubernetes Service (HKS) cluster on VMware vSphere cloud
 
 ## Notes
 
@@ -17,11 +17,11 @@ Sometimes updating the number of worker nodes may fail unexpectedly and the new 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_cluster_mks_vsphere" "example" {
+resource "hpe_morpheus_cluster_hks_vsphere" "example" {
   name                    = "tfvsphere"
   resource_prefix         = "vmpre"
   hostname_prefix         = "ospre"
-  description             = "Terraform MKS cluster example"
+  description             = "Terraform HKS cluster example"
   cloud_id                = data.hpe_morpheus_cloud.morpheus_vsphere.id
   group_id                = data.hpe_morpheus_group.morpheus_lab.id
   cluster_layout_id       = 1070
@@ -46,7 +46,7 @@ resource "hpe_morpheus_cluster_mks_vsphere" "example" {
     }
 
     tags = {
-      "app" = "mksmaster"
+      "app" = "hksmaster"
     }
   }
 
@@ -76,7 +76,7 @@ resource "hpe_morpheus_cluster_mks_vsphere" "example" {
     }
 
     tags = {
-      "app" = "mksworker"
+      "app" = "hksworker"
     }
   }
 }
@@ -205,5 +205,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_cluster_mks_vsphere.tf_example_vsphere_mks_cluster 1
+terraform import hpe_morpheus_cluster_hks_vsphere.tf_example_vsphere_hks_cluster 1
 ```
