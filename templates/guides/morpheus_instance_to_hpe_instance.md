@@ -299,7 +299,7 @@ The following changes are needed:
 - Change the `noAgent` block to `noAgent = true` which is the setting in the `Bool` field of the block
 - Change the `resourcePoolId` block to `resourcePoolId = "pool-62299"` which is the value in the `String` field of the block
 
-### VMware Specific Adjustments
+## VMware Specific Adjustments
 After step 5 above, the generated file `generated_instance_example.tf` will need some adjustments specific to VMware instances.
 This is an example generated file for an VMware instance:
 ```HCL
