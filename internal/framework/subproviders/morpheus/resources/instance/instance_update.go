@@ -207,14 +207,26 @@ func makeUpdateAPIcalls(
 
 		waitForReady := func() (string, error) {
 			resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
-			if err != nil || hresp.StatusCode != http.StatusOK {
-				return "", backoff.Permanent(err)
+			if err != nil {
+				if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusOK {
+					return "", backoff.Permanent(err)
+				}
 			}
 
-			status := resp.Instance.GetStatus()
+			// Get instance
+			inst, ok := resp.GetInstanceOk()
+			if !ok || inst == nil {
+				return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty instance", plan.Id.ValueInt64()))
+			}
 
-			return status, checkStatusDone(
-				status,
+			// Get status
+			status, ok := inst.GetStatusOk()
+			if !ok || status == nil {
+				return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", plan.Id.ValueInt64()))
+			}
+
+			return *status, checkStatusDone(
+				*status,
 				UpdateTargetStatuses,
 				UpdateErrorStatuses,
 			)
