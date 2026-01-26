@@ -68,8 +68,10 @@ func (g *Resource) Delete(
 
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
 		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, data.Id.ValueInt64()).Execute()
-		if err != nil && hresp.StatusCode != http.StatusNotFound {
-			return nil, backoff.Permanent(err)
+		if err != nil {
+			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusNotFound {
+				return nil, backoff.Permanent(err)
+			}
 		}
 
 		// 404 status code counts as a successful delete
@@ -77,10 +79,20 @@ func (g *Resource) Delete(
 			return nil, nil
 		}
 
-		status := resp.Instance.GetStatus()
+		// Get instance
+		instance, ok := resp.GetInstanceOk()
+		if !ok || instance == nil {
+			return nil, backoff.Permanent(fmt.Errorf("instance %d: GET returned empty instance", id))
+		}
+
+		// Get status
+		status, ok := instance.GetStatusOk()
+		if !ok || status == nil {
+			return nil, backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", id))
+		}
 
 		return resp, checkStatusDone(
-			status,
+			*status,
 			nil,
 			DeleteErrorStatuses,
 		)
