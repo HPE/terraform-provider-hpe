@@ -68,7 +68,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_group.example",
 			"name",
 			name,
 		),
@@ -111,7 +111,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_group.test",
+			"data.hpe_morpheus_group.example",
 			"name",
 			name,
 		),
