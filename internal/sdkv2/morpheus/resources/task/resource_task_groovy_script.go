@@ -67,13 +67,13 @@ func ResourceTaskGroovyScript() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimSuffix(old, "\n")
-					newPayload := strings.TrimSuffix(new, "\n")
+					oldPayload := strings.TrimRight(old, "\n")
+					newPayload := strings.TrimRight(new, "\n")
 
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimRight(val.(string), "\n")
 				},
 			},
 			"script_path": {

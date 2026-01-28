@@ -45,12 +45,17 @@ func ResourceWikiPage() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The content of the wiki page",
 				Optional:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldPayload := strings.TrimRight(old, "\n")
+					newPayload := strings.TrimRight(new, "\n")
+					return oldPayload == newPayload
+				},
 				StateFunc: func(v any) string {
 					var payload string
 					if strVal, ok := v.(string); ok {
 						payload = strVal
 					}
-					payload = strings.TrimSuffix(payload, "\n")
+					payload = strings.TrimRight(payload, "\n")
 
 					return payload
 				},

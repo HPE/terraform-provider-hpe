@@ -59,8 +59,13 @@ func ResourceOptionListManual() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The dataset for the manual option list",
 				Optional:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldPayload := strings.TrimRight(old, "\n")
+					newPayload := strings.TrimRight(new, "\n")
+					return oldPayload == newPayload
+				},
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimRight(val.(string), "\n")
 				},
 			},
 			"real_time": {

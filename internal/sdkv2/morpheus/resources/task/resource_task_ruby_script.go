@@ -63,13 +63,13 @@ func ResourceTaskRubyScript() *schema.Resource {
 				Description: "The content of the ruby script. Used when the local source type is specified",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimSuffix(old, "\n")
-					newPayload := strings.TrimSuffix(new, "\n")
+					oldPayload := strings.TrimRight(old, "\n")
+					newPayload := strings.TrimRight(new, "\n")
 
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimRight(val.(string), "\n")
 				},
 			},
 			"script_path": {
