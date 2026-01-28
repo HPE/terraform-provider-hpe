@@ -282,6 +282,7 @@ In this release (v1.0.0) we have added the following data-source functionality:
 ### New known issues
 
 - `hpe_morpheus_cluster_hks_vsphere` has issues with scale-down, which are being investigated.
+- `hpe_morpheus_cluster_hks_vsphere` destroy may not succeed, this issue is being investigated.
 
 
 ### Known issues from previous releases
