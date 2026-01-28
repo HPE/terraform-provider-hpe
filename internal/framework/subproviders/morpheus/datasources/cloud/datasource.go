@@ -10,6 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/constants"
@@ -103,6 +104,7 @@ func getCloudByName(
 	clouds := sdk.NewListClouds200Response().Zones
 
 	for _, c := range cs.Zones {
+		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", c.GetName()))
 		if c.GetName() == name {
 			clouds = append(clouds, c)
 		}
