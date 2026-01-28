@@ -9,9 +9,11 @@ To migrate resources from the Morpheus Terraform provider to the HPE Terraform p
 import the existing Morpheus resources created with the Morpheus provider into the HPE provider. HashiCorp documentation
 on import can be found [here](https://developer.hashicorp.com/terraform/language/import).
 
--> The section on [Bulk Import](https://developer.hashicorp.com/terraform/language/v1.14.x/import/bulk?page=import&page=bulk)
-requires provider support for the `List` RPC.  The HPE provider does not currently support `List`, this is something that we
-are considering for a future release.<br><br>
+-> We plan to develop tooling to assist with this migration in the future; however, the process is currently manual.
+In the meantime, we intend to publish guides on our blog, as well as other materials, to demonstrate the migration
+process using real-world use cases.<br><br>
+The section on [Bulk Import](https://developer.hashicorp.com/terraform/language/v1.14.x/import/bulk?page=import&page=bulk) requires provider support for the `List` RPC.  The HPE provider does not currently
+support `List`, this is something that we are considering for a future release.<br><br>
 Note that some resources in the Morpheus provider have been converted to a more generalised resource in the HPE provider.
 See below for details.
 
