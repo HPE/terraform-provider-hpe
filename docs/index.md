@@ -17,8 +17,8 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
 ->This v1.0.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
-This provider can now be used as a replacement for the Morpheus provider. Users are encouraged to migrate to this provider,
-as the Morpheus provider will be deprecated in the future.<br><br>
+This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
+the Morpheus provider will be deprecated in the future.<br><br>
 See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
 
 ## Morpheus
@@ -142,6 +142,7 @@ In this release (v1.0.0) we have added the following resource functionality:
 - hpe_morpheus_catalog_item_instance
 - hpe_morpheus_catalog_item_workflow
 - hpe_morpheus_cluster_layout
+- hpe_morpheus_cluster_hks_hvm
 - hpe_morpheus_cluster_hks_vsphere
 - hpe_morpheus_cluster_package
 - hpe_morpheus_contact
@@ -279,6 +280,9 @@ In this release (v1.0.0) we have added the following data-source functionality:
 - hpe_morpheus_workflow
 
 ### New known issues
+
+- `hpe_morpheus_cluster_hks_vsphere` has issues with scale-down, which are being investigated.
+- `hpe_morpheus_cluster_hks_vsphere` destroy may not succeed, this issue is being investigated.
 
 
 ### Known issues from previous releases

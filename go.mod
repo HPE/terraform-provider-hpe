@@ -3,7 +3,7 @@ module github.com/HPE/terraform-provider-hpe
 go 1.24.1
 
 require (
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260121111707-f8f6ff481a3e
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260127104537-7d5e34cd02e9
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.12.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
