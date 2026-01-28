@@ -69,14 +69,14 @@ resource "hpe_morpheus_role" "test" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.example",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.test",
 			"id",
-			"data.hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.example",
 			"id",
 		),
 	}
@@ -124,14 +124,14 @@ resource "hpe_morpheus_role" "test" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.example",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.test",
 			"id",
-			"data.hpe_morpheus_role.test",
+			"data.hpe_morpheus_role.example",
 			"id",
 		),
 	}
