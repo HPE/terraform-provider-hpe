@@ -5,6 +5,7 @@ package cloud_test
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -54,26 +55,57 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
-# assume tenant_id 1 exists
-resource "morpheus_standard_cloud" "test_cloud" {
-  name = "` + name + `"
-  code = "standard"
+resource "hpe_morpheus_cloud" "test_cloud" {
+  # Required fields
+  name      = "` + name + `"
   tenant_id = 1
+  group_id  = 1
+
+
+  # General configuration
+  code             = "` + strings.ToLower(name) + `"
+  labels           = ["aLabel1", "aLabel2"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  # Agent and provisioning settings
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  # Cost and guidance settings
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  # Security settings
+  security_mode = "off"
+
+  # Console settings
+  keyboard_layout = "us"
+
+  # HVM-specific configuration
+  config_hvm = {
+    certificate_provider          = "internal"
+    enable_network_type_selection = false
+  }
 }
 `
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "morpheus_standard_cloud.test_cloud.id")
+		"example-id.tf.tmpl", "Id", "hpe_morpheus_cloud.test_cloud.id")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_cloud.test",
+			"data.hpe_morpheus_cloud.example",
 			"name",
 			name,
 		),
@@ -82,12 +114,6 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -108,26 +134,57 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
-# assume tenant_id 1 exists
-resource "morpheus_standard_cloud" "test_cloud" {
-  name = "` + name + `"
-  code = "standard"
+resource "hpe_morpheus_cloud" "test_cloud" {
+  # Required fields
+  name      = "` + name + `"
   tenant_id = 1
+  group_id  = 1
+
+
+  # General configuration
+  code             = "` + strings.ToLower(name) + `"
+  labels           = ["aLabel1", "aLabel2"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  # Agent and provisioning settings
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  # Cost and guidance settings
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  # Security settings
+  security_mode = "off"
+
+  # Console settings
+  keyboard_layout = "us"
+
+  # HVM-specific configuration
+  config_hvm = {
+    certificate_provider          = "internal"
+    enable_network_type_selection = false
+  }
 }
 `
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-name.tf.tmpl", "Name", "morpheus_standard_cloud.test_cloud.name")
+		"example-name.tf.tmpl", "Name", "hpe_morpheus_cloud.test_cloud.name")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_cloud.test",
+			"data.hpe_morpheus_cloud.example",
 			"name",
 			name,
 		),
@@ -136,12 +193,6 @@ resource "morpheus_standard_cloud" "test_cloud" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

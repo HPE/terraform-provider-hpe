@@ -63,7 +63,7 @@ resource "hpe_morpheus_user" "test_user" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_user.test",
+			"data.hpe_morpheus_user.example",
 			"username",
 			username,
 		),
