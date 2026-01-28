@@ -66,13 +66,13 @@ func ResourceTaskPythonScript() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimSuffix(old, "\n")
-					newPayload := strings.TrimSuffix(new, "\n")
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
 
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimSpace(val.(string))
 				},
 			},
 			"script_path": {
@@ -402,6 +402,9 @@ func resourceTaskPythonScriptRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("script_path", pythonScriptTask.File.ContentPath)
 	d.Set("version_ref", pythonScriptTask.File.ContentRef)
 	d.Set("repository_id", pythonScriptTask.File.Repository.ID)
+	d.Set("command_arguments", pythonScriptTask.TaskOptions.PythonArgs)
+	d.Set("additional_packages", pythonScriptTask.TaskOptions.PythonAdditionalPackages)
+	d.Set("python_binary", pythonScriptTask.TaskOptions.PythonBinary)
 	d.Set("retryable", pythonScriptTask.Retryable)
 	d.Set("retry_count", pythonScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", pythonScriptTask.RetryDelaySeconds)
