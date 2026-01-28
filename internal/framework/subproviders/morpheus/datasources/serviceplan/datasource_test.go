@@ -74,7 +74,7 @@ resource "morpheus_service_plan" "test" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_service_plan.test",
+			"data.hpe_morpheus_service_plan.example",
 			"name",
 			servicePlanName,
 		),
@@ -128,12 +128,12 @@ resource "morpheus_service_plan" "test" {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_service_plan.test",
+			"data.hpe_morpheus_service_plan.example",
 			"name",
 			name,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_service_plan.test",
+			"data.hpe_morpheus_service_plan.example",
 			"provision_type_code",
 			provisionTypeCode,
 		),
