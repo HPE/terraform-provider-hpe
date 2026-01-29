@@ -39,8 +39,14 @@ func ResourceBootScript() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The content of the boot script",
 				Optional:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
+
+					return oldPayload == newPayload
+				},
 				StateFunc: func(v any) string {
-					payload := strings.TrimSuffix(v.(string), "\n")
+					payload := strings.TrimSpace(v.(string))
 
 					return payload
 				},

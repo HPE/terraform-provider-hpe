@@ -93,8 +93,14 @@ func ResourceTaskEmail() *schema.Resource {
 				Description: "The body of the email is HTML. Morpheus automation variables can be injected into the email body when needed. Used with a source type of local",
 				Optional:    true,
 				Computed:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
+
+					return oldPayload == newPayload
+				},
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimSpace(val.(string))
 				},
 			},
 			"skip_wrapped_email_template": {

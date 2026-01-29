@@ -51,7 +51,7 @@ func ResourceSpecTemplateTerraform() *schema.Resource {
 				Computed:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
-						return strings.TrimSuffix(v, "\n")
+						return strings.TrimSpace(v)
 					}
 
 					return ""

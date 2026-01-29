@@ -81,12 +81,17 @@ func ResourceCatalogItemInstance() *schema.Resource {
 				Computed:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
-						return strings.TrimSuffix(v, "\n")
+						return strings.TrimSpace(v)
 					}
 
 					return ""
 				},
-				DiffSuppressFunc: helpers.SuppressEquivalentJSONDiffs,
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					return old == new
+				},
 			},
 			"config": {
 				Type:             schema.TypeString,

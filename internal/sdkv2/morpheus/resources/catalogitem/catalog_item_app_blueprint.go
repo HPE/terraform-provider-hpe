@@ -67,7 +67,13 @@ func ResourceCatalogItemAppBlueprint() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				StateFunc: func(val any) string {
-					return strings.TrimSuffix(val.(string), "\n")
+					return strings.TrimSpace(val.(string))
+				},
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					return old == new
 				},
 			},
 			"labels": {
