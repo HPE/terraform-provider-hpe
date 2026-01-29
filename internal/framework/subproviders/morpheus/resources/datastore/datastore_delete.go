@@ -45,7 +45,7 @@ func (r *Resource) Delete(
 	waitForReady := func() (int, error) {
 		_, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
 		if err != nil {
-			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusNotFound {
+			if hresp == nil || hresp.StatusCode != http.StatusNotFound {
 				return 0, backoff.Permanent(err)
 			}
 		}

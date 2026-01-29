@@ -145,7 +145,7 @@ func (r *Resource) Create(
 	waitForReady := func() (*sdk.GetDatastores200Response, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
 		if err != nil {
-			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusOK {
+			if hresp == nil || hresp.StatusCode != http.StatusOK {
 				return nil, backoff.Permanent(err)
 			}
 		}

@@ -69,7 +69,7 @@ func (g *Resource) Delete(
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
 		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, data.Id.ValueInt64()).Execute()
 		if err != nil {
-			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusNotFound {
+			if hresp == nil || hresp.StatusCode != http.StatusNotFound {
 				return nil, backoff.Permanent(err)
 			}
 		}

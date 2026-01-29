@@ -46,7 +46,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id.ValueInt64()).Execute()
 		// 404 status code counts as a successful delete
 		if err != nil {
-			if httpResp == nil || httpResp != nil && httpResp.StatusCode != http.StatusNotFound {
+			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
 				return nil, backoff.Permanent(err)
 			}
 		}

@@ -167,7 +167,7 @@ func updateDatastore(
 	waitForReady := func() (string, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
 		if err != nil {
-			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusOK {
+			if hresp == nil || hresp.StatusCode != http.StatusOK {
 				return "", backoff.Permanent(err)
 			}
 		}

@@ -270,7 +270,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	waitForReady := func() (string, error) {
 		resp, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, plan.Id.ValueInt64()).Execute()
 		if err != nil {
-			if httpResp == nil || httpResp != nil && httpResp.StatusCode != http.StatusOK {
+			if httpResp == nil || httpResp.StatusCode != http.StatusOK {
 				return "", backoff.Permanent(err)
 			}
 		}
