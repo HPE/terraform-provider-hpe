@@ -208,7 +208,7 @@ func makeUpdateAPIcalls(
 		waitForReady := func() (string, error) {
 			resp, hresp, err := client.InstancesAPI.GetInstance(ctx, plan.Id.ValueInt64()).Execute()
 			if err != nil {
-				if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusOK {
+				if hresp == nil || hresp.StatusCode != http.StatusOK {
 					return "", backoff.Permanent(err)
 				}
 			}

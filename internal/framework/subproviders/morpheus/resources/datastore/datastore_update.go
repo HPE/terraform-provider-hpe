@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package datastore
 
@@ -166,8 +166,10 @@ func updateDatastore(
 	// Wait for the datastore to be ready
 	waitForReady := func() (string, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			return "", backoff.Permanent(err)
+		if err != nil {
+			if hresp == nil || hresp.StatusCode != http.StatusOK {
+				return "", backoff.Permanent(err)
+			}
 		}
 
 		status := response.GetDatastore().Status

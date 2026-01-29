@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package datastore
 
@@ -44,8 +44,10 @@ func (r *Resource) Delete(
 	// Wait for the datastore to be "not found" which means it has been deleted
 	waitForReady := func() (int, error) {
 		_, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
-		if err != nil && hresp.StatusCode != http.StatusNotFound {
-			return hresp.StatusCode, backoff.Permanent(err)
+		if err != nil {
+			if hresp == nil || hresp.StatusCode != http.StatusNotFound {
+				return 0, backoff.Permanent(err)
+			}
 		}
 
 		switch hresp.StatusCode {

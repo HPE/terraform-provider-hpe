@@ -258,7 +258,7 @@ func (g *Resource) Create(
 	waitForReady := func() (string, error) {
 		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceId).Execute()
 		if err != nil {
-			if hresp == nil || hresp != nil && hresp.StatusCode != http.StatusOK {
+			if hresp == nil || hresp.StatusCode != http.StatusOK {
 				return "", backoff.Permanent(err)
 			}
 		}

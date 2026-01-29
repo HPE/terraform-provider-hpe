@@ -144,8 +144,10 @@ func (r *Resource) Create(
 	// Wait for the datastore to be ready
 	waitForReady := func() (*sdk.GetDatastores200Response, error) {
 		response, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			return nil, backoff.Permanent(err)
+		if err != nil {
+			if hresp == nil || hresp.StatusCode != http.StatusOK {
+				return nil, backoff.Permanent(err)
+			}
 		}
 
 		status := response.GetDatastore().Status

@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package image
 
@@ -45,8 +45,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
 		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id.ValueInt64()).Execute()
 		// 404 status code counts as a successful delete
-		if err != nil && httpResp.StatusCode != http.StatusNotFound {
-			return nil, backoff.Permanent(err)
+		if err != nil {
+			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
+				return nil, backoff.Permanent(err)
+			}
 		}
 
 		return nil, nil
