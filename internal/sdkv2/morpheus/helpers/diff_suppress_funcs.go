@@ -4,11 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func SuppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) bool {
+	// First try simple whitespace-trimmed comparison
+	if strings.TrimSpace(old) == strings.TrimSpace(new) {
+		return true
+	}
+
+	// Trim whitespace before attempting JSON parsing
+	// This handles cases where JSON has leading/trailing whitespace
+	old = strings.TrimSpace(old)
+	new = strings.TrimSpace(new)
+
 	ob := bytes.NewBufferString("")
 	if err := json.Compact(ob, []byte(old)); err != nil {
 		return false
