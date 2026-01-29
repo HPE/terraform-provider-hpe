@@ -38,6 +38,13 @@ docs:
 	go generate ./...
 	cd tools && go generate
 
+docs-quick:
+	for d in $$(dirname $$(git diff --name-only $$(git merge-base origin/HEAD HEAD)) | grep -v ^examples | grep -v ^docs | sort -u); do \
+		cd $$(git rev-parse --show-toplevel); \
+		cd $$d && go generate; \
+	done
+	cd tools && go generate
+
 docs-experimental:
 	rm -rf templates-combined-temp
 	mkdir -p templates-combined-temp
