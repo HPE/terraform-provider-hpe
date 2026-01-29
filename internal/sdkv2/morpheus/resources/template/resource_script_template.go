@@ -67,6 +67,7 @@ func ResourceScriptTemplate() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					oldPayload := strings.TrimSpace(old)
 					newPayload := strings.TrimSpace(new)
+
 					return oldPayload == newPayload
 				},
 				StateFunc: func(v any) string {

@@ -62,6 +62,7 @@ func ResourceOptionListManual() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					oldPayload := strings.TrimSpace(old)
 					newPayload := strings.TrimSpace(new)
+
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val any) string {
