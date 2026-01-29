@@ -93,10 +93,16 @@ func resourceCatalogItemWorkflow() *schema.Resource {
 				Computed:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
-						return strings.TrimSuffix(v, "\n")
+						return strings.TrimSpace(v)
 					}
 
 					return ""
+				},
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					return old == new
 				},
 			},
 			"option_type_ids": {

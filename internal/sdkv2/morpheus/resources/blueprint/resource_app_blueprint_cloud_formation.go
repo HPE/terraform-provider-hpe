@@ -96,7 +96,13 @@ func ResourceAppBlueprintCloudFormation() *schema.Resource {
 						blueprintContent = v
 					}
 
-					return strings.TrimSuffix(blueprintContent, "\n")
+					return strings.TrimSpace(blueprintContent)
+				},
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					return old == new
 				},
 			},
 			"working_path": {

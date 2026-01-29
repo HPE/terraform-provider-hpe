@@ -49,7 +49,7 @@ func ResourceSpecTemplateKubernetes() *schema.Resource {
 				Optional:    true,
 				// StateFunc: func(val any) string {
 				// 	if v, ok := val.(string); ok {
-				// 		return strings.TrimSuffix(v, "\n")
+				// 		return strings.TrimSpace(v)
 				// 	}
 				//
 				// 	return ""
