@@ -50,12 +50,19 @@ func ResourceSpecTemplateCloudFormation() *schema.Resource {
 				Optional:    true,
 				StateFunc: func(val any) string {
 					if v, ok := val.(string); ok {
-						return strings.TrimRight(v, "\n")
+						return strings.TrimSpace(v)
 					}
 
 					return ""
 				},
-				DiffSuppressFunc: helpers.SuppressEquivalentJSONDiffs,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// First try simple whitespace-trimmed comparison (works for YAML)
+					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+						return true
+					}
+					// Fall back to JSON comparison for JSON templates
+					return helpers.SuppressEquivalentJSONDiffs(k, old, new, d)
+				},
 			},
 			"spec_path": {
 				Type:        schema.TypeString,

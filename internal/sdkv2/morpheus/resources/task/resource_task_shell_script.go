@@ -74,14 +74,14 @@ func ResourceTaskShellScript() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimRight(old, "\n")
-					newPayload := strings.TrimRight(new, "\n")
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
 
 					return oldPayload == newPayload
 				},
 				StateFunc: func(val any) string {
 					if str, ok := val.(string); ok {
-						return strings.TrimRight(str, "\n")
+						return strings.TrimSpace(str)
 					}
 
 					return ""

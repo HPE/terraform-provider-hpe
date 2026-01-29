@@ -40,14 +40,14 @@ func ResourcePreseedScript() *schema.Resource {
 				Description: "The content of the preseed script",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimRight(old, "\n")
-					newPayload := strings.TrimRight(new, "\n")
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
 					return oldPayload == newPayload
 				},
 				StateFunc: func(v any) string {
 					var payload string
 					if vStr, ok := v.(string); ok {
-						payload = strings.TrimRight(vStr, "\n")
+						payload = strings.TrimSpace(vStr)
 					}
 
 					return payload

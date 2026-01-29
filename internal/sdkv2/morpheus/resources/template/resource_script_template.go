@@ -65,13 +65,13 @@ func ResourceScriptTemplate() *schema.Resource {
 				Description: "The content of the script template",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimRight(old, "\n")
-					newPayload := strings.TrimRight(new, "\n")
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
 					return oldPayload == newPayload
 				},
 				StateFunc: func(v any) string {
 					if str, ok := v.(string); ok {
-						return strings.TrimRight(str, "\n")
+						return strings.TrimSpace(str)
 					}
 
 					return ""

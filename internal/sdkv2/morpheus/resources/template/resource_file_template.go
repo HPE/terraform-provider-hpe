@@ -67,8 +67,8 @@ func ResourceFileTemplate() *schema.Resource {
 				Description: "The content of the file template",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					oldPayload := strings.TrimRight(old, "\n")
-					newPayload := strings.TrimRight(new, "\n")
+					oldPayload := strings.TrimSpace(old)
+					newPayload := strings.TrimSpace(new)
 					return oldPayload == newPayload
 				},
 				StateFunc: func(v any) string {
@@ -76,7 +76,7 @@ func ResourceFileTemplate() *schema.Resource {
 					if str, ok := v.(string); ok {
 						payload = str
 					}
-					payload = strings.TrimRight(payload, "\n")
+					payload = strings.TrimSpace(payload)
 
 					return payload
 				},
