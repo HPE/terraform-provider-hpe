@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_workflow_provisioning/resource.tf workflow_provisioning_resource.tf.tmpl Name "tf_example_provisioning_workflow" Description "Terraform provisioning workflow example" Labels "[\"demo\", \"terraform\"]" Platform "all" Visibility "private"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_workflow_provisioning/resource.tf workflow_provisioning_resource.tf.tmpl Name "tf_example_provisioning_workflow" Description "Terraform provisioning workflow example" Labels "[\"demo\", \"terraform\"]" Platform "all" Visibility "private"
 
 // RenderWorkflowProvisioningConfig generates a Terraform configuration for the workflow provisioning resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

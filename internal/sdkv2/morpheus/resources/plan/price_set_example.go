@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_price_set/resource.tf price_set_resource.tf.tmpl Name 'terraform-test' Code 'terraform-test' RegionCode 'us-west-2' PoolId '1' PriceUnit 'minute' Type 'fixed' PriceIds '[1]'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_price_set/resource.tf price_set_resource.tf.tmpl Name 'terraform-test' Code 'terraform-test' RegionCode 'us-west-2' PoolId '1' PriceUnit 'minute' Type 'fixed' PriceIds '[1]'"
 
 // RenderPriceSetConfig generates a Terraform configuration for the price_set resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

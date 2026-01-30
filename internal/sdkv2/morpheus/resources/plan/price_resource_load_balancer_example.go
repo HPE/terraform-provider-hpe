@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_price/resource_load_balancer.tf price_resource_load_balancer.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' IncurCharges 'always' Name 'terraform-test' PriceType 'fixed' PriceUnit 'minute' TenantId '1'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_price/resource_load_balancer.tf price_resource_load_balancer.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' IncurCharges 'always' Name 'terraform-test' PriceType 'fixed' PriceUnit 'minute' TenantId '1'"
 
 // RenderPriceLoadBalancerConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_cluster_layout/resource.tf cluster_layout_resource.tf.tmpl Name "tfexample cluster layout" Description "Terraform example cluster layout" Version "1.0" Creatable "false" MinimumMemory "4294967296" ClusterTypeId "1" ProvisionTypeId "3" EnableScaling "false" EvarName "application" EvarValue "first" EvarExport "true" MasterNodePoolCount "1" MasterNodePoolNodeTypeId "3" MasterNodePoolPriorityOrder "0" WorkerNodePool1Count "4" WorkerNodePool1NodeTypeId "4" WorkerNodePool1PriorityOrder "1" WorkerNodePool2Count "4" WorkerNodePool2NodeTypeId "3" WorkerNodePool2PriorityOrder "2"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_cluster_layout/resource.tf cluster_layout_resource.tf.tmpl Name "tfexample cluster layout" Description "Terraform example cluster layout" Version "1.0" Creatable "false" MinimumMemory "4294967296" ClusterTypeId "1" ProvisionTypeId "3" EnableScaling "false" EvarName "application" EvarValue "first" EvarExport "true" MasterNodePoolCount "1" MasterNodePoolNodeTypeId "3" MasterNodePoolPriorityOrder "0" WorkerNodePool1Count "4" WorkerNodePool1NodeTypeId "4" WorkerNodePool1PriorityOrder "1" WorkerNodePool2Count "4" WorkerNodePool2NodeTypeId "3" WorkerNodePool2PriorityOrder "2"
 
 // RenderClusterLayoutConfig generates a Terraform configuration for the cluster layout resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

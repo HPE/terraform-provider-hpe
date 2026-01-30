@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_contact/data-source.tf contact_data-source.tf.tmpl Name '\"example contact\"'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_contact/data-source.tf contact_data-source.tf.tmpl Name '\"example contact\"'"
 
 // RenderContactConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

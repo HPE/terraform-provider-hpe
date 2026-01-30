@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_integration/data-source.tf integration_data-source.tf.tmpl Name '\"ansible dev\"'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_integration/data-source.tf integration_data-source.tf.tmpl Name '\"ansible dev\"'"
 
 // RenderIntegrationConfig generates a Terraform configuration for the integration resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

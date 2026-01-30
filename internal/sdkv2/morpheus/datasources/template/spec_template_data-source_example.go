@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_spec_template/data-source.tf spec_template_data-source.tf.tmpl Name '\"tf vpc spec template\"'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_spec_template/data-source.tf spec_template_data-source.tf.tmpl Name '\"tf vpc spec template\"'"
 
 // RenderSpecTemplateConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

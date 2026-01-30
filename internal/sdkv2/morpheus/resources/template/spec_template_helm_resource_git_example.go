@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_spec_template_helm/resource_git.tf spec_template_helm_resource_git.tf.tmpl Name 'tf-helm-spec-example-git' RepositoryId '2' SourceType 'repository' SpecPath './spec.yaml' VersionRef 'main'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_spec_template_helm/resource_git.tf spec_template_helm_resource_git.tf.tmpl Name 'tf-helm-spec-example-git' RepositoryId '2' SourceType 'repository' SpecPath './spec.yaml' VersionRef 'main'"
 
 // RenderSpecTemplateHelmConfigGit generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

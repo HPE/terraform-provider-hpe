@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_app_blueprint_kubernetes/resource_yaml.tf app_blueprint_kubernetes_resource_yaml.tf.tmpl BlueprintContent '---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n name: nginx-deployment\n labels:\n app: nginx\nspec:\n replicas: 3\n selector:\n matchLabels:\n app: nginx\n template:\n metadata:\n labels:\n app: nginx\n spec:\n containers:\n - name: nginx\n image: nginx:1.14.2\n ports:\n - containerPort: 80' Category 'k8s' Description 'tf example kubernetes app blueprint' Name 'tf-kubernetes-app-blueprint-example-yaml' SourceType 'yaml'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_app_blueprint_kubernetes/resource_yaml.tf app_blueprint_kubernetes_resource_yaml.tf.tmpl BlueprintContent '---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n name: nginx-deployment\n labels:\n app: nginx\nspec:\n replicas: 3\n selector:\n matchLabels:\n app: nginx\n template:\n metadata:\n labels:\n app: nginx\n spec:\n containers:\n - name: nginx\n image: nginx:1.14.2\n ports:\n - containerPort: 80' Category 'k8s' Description 'tf example kubernetes app blueprint' Name 'tf-kubernetes-app-blueprint-example-yaml' SourceType 'yaml'"
 
 // RenderAppBlueprintKubernetesYamlConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

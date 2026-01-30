@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_file_template/resource.tf morpheus_file_template_resource.tf.tmpl Name tf-terraform-file-template Labels ["demo","template","terraform"] FileName tfcustom.cnf FilePath /etc/my.cnf.d Phase preProvision FileOwner root SettingName myCnf SettingCategory master
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_file_template/resource.tf morpheus_file_template_resource.tf.tmpl Name tf-terraform-file-template Labels ["demo","template","terraform"] FileName tfcustom.cnf FilePath /etc/my.cnf.d Phase preProvision FileOwner root SettingName myCnf SettingCategory master
 
 func RenderFileTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

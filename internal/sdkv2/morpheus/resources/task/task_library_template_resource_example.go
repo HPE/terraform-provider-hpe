@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_library_template/resource.tf task_library_template_resource.tf.tmpl AllowCustomConfig 'true' Code 'tf-example-library-template-task' ExecuteTarget 'resource' FileTemplate 'My file template' FileTemplateId '1' Labels '[\"demo\", \"library\", \"terraform\"]' Name 'Example Terraform Library Template Task' RetryCount '1' RetryDelaySeconds '10' Retryable 'true'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_library_template/resource.tf task_library_template_resource.tf.tmpl AllowCustomConfig 'true' Code 'tf-example-library-template-task' ExecuteTarget 'resource' FileTemplate 'My file template' FileTemplateId '1' Labels '[\"demo\", \"library\", \"terraform\"]' Name 'Example Terraform Library Template Task' RetryCount '1' RetryDelaySeconds '10' Retryable 'true'"
 
 // RenderTaskLibraryTemplateConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

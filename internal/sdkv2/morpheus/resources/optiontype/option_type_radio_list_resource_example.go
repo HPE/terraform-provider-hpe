@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_option_type_radio_list/resource.tf option_type_radio_list_resource.tf.tmpl DefaultValue 'example' DependentField 'dependent_example' Description 'Terraform radio list option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'Radio Example' FieldName 'radioExample' HelpBlock 'Terraform radio list option type example' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_radio_list_option_type' OptionListId '3' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_option_type_radio_list/resource.tf option_type_radio_list_resource.tf.tmpl DefaultValue 'example' DependentField 'dependent_example' Description 'Terraform radio list option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'Radio Example' FieldName 'radioExample' HelpBlock 'Terraform radio list option type example' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_radio_list_option_type' OptionListId '3' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
 
 // RenderOptionTypeRadioListConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_vro_workflow/data-source.tf vro_workflow_data-source.tf.tmpl Name '\"Create an AD Computer Object\"'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_vro_workflow/data-source.tf vro_workflow_data-source.tf.tmpl Name '\"Create an AD Computer Object\"'"
 
 // RenderVroWorkflowConfig generates a Terraform configuration for the vro_workflow resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

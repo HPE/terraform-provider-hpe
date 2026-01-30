@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_restart/resource.tf morpheus_task_restart_resource.tf.tmpl Name tfexample_restart Code tfexample_restart Labels "[\"demo\", \"terraform\"]" Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_task_restart/resource.tf morpheus_task_restart_resource.tf.tmpl Name tfexample_restart Code tfexample_restart Labels "[\"demo\", \"terraform\"]" Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
 // RenderTaskRestartConfig renders the task restart resource configuration
 // with the provided name and field overrides.

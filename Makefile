@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test docs docs-experimental experimental sweep
+.PHONY: build linter lint test docs docs-experimental experimental sweep build-render-tool
 
 build:
 	go build
@@ -34,11 +34,14 @@ testsdkv2:
 collect-test-results:
 	./scripts/collect-test-results.bash
 
-docs:
+build-render-tool:
+	go build -o bin/render ./cmd/render
+
+docs: build-render-tool
 	go generate ./...
 	cd tools && go generate
 
-docs-experimental:
+docs-experimental: build-render-tool
 	rm -rf templates-combined-temp
 	mkdir -p templates-combined-temp
 	cp -r ./templates/* templates-combined-temp

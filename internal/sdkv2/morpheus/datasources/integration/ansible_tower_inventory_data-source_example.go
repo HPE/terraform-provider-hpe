@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_ansible_tower_inventory/data-source.tf ansible_tower_inventory_data-source.tf.tmpl Name '\"Demo Inventory\"'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_ansible_tower_inventory/data-source.tf ansible_tower_inventory_data-source.tf.tmpl Name '\"Demo Inventory\"'"
 
 // RenderAnsibleTowerInventoryConfig generates a Terraform configuration for the ansible_tower_inventory resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_group/example.tf example.tf.tmpl Name "TestGroup" Location "here" Code "aCode" Label "aLabel"
+//go:generate ../../../../../../bin/render -out examples/resources/morpheus_group/example.tf example.tf.tmpl Name "TestGroup" Location "here" Code "aCode" Label "aLabel"
 
 func RenderGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_chef/resource.tf morpheus_integration_chef_resource.tf.tmpl Name "tfexample chef integration" Enabled true Url "https://chef.morpheusdata.com" Version "15.9.38" WindowsVersion "15.9.38" WindowsMsiInstallUrl "https://packages.chef.io" Organization "morpheus" Username "admin" PrivateKey "EXAMPLEPRIVATEKEY" OrganizationValidatorKey "EXAMPLEPRIVATEKEY"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_integration_chef/resource.tf morpheus_integration_chef_resource.tf.tmpl Name "tfexample chef integration" Enabled true Url "https://chef.morpheusdata.com" Version "15.9.38" WindowsVersion "15.9.38" WindowsMsiInstallUrl "https://packages.chef.io" Organization "morpheus" Username "admin" PrivateKey "EXAMPLEPRIVATEKEY" OrganizationValidatorKey "EXAMPLEPRIVATEKEY"
 
 // RenderIntegrationChefConfig generates a Terraform configuration for the Chef integration resource
 // using default values that can be overridden via the overrides map.

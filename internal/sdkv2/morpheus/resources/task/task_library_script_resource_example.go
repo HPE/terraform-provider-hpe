@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_library_script/resource.tf task_library_script_resource.tf.tmpl AllowCustomConfig 'true' Code 'tf-example-library-script-task' ExecuteTarget 'resource' Labels '[\"demo\", \"library\", \"terraform\"]' Name 'Example Terraform Library Script Task' RetryCount '1' RetryDelaySeconds '10' Retryable 'true' ScriptTemplate 'My script template' ScriptTemplateId '1'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_library_script/resource.tf task_library_script_resource.tf.tmpl AllowCustomConfig 'true' Code 'tf-example-library-script-task' ExecuteTarget 'resource' Labels '[\"demo\", \"library\", \"terraform\"]' Name 'Example Terraform Library Script Task' RetryCount '1' RetryDelaySeconds '10' Retryable 'true' ScriptTemplate 'My script template' ScriptTemplateId '1'"
 
 // RenderTaskLibraryScriptConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

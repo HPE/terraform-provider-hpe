@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_catalog_item_workflow/resource.tf catalog_item_workflow_resource.tf.tmpl Name tfexample_workflow_catalog_item Description "Example Terraform workflow catalog item" LogoImagePath wordpress.png LogoImageName wordpress.png DarkLogoImagePath wordpressbak.png DarkLogoImageName wordpressbak.png Enabled true Featured true Labels "[\"terraform\",\"demo\"]" WorkflowId 1 ContextType appliance Content "\"Example catalog content\"" Visibility public
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_catalog_item_workflow/resource.tf catalog_item_workflow_resource.tf.tmpl Name tfexample_workflow_catalog_item Description "Example Terraform workflow catalog item" LogoImagePath wordpress.png LogoImageName wordpress.png DarkLogoImagePath wordpressbak.png DarkLogoImageName wordpressbak.png Enabled true Featured true Labels "[\"terraform\",\"demo\"]" WorkflowId 1 ContextType appliance Content "\"Example catalog content\"" Visibility public
 
 // RenderCatalogItemWorkflowConfig generates a Terraform configuration for catalog item workflow resource.
 // It accepts a name and a map of field overrides to customize the default values.

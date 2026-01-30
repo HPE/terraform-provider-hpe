@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_task_ansible_playbook/resource.tf task_ansible_playbook_resource.tf.tmpl AllowCustomConfig 'true' AnsibleRepoId '5' Code 'tfansibletest' CommandOptions '-b' ExecuteTarget 'local' GitRef 'master' Labels '[\"demo\", \"terraform\"]' Name 'tfansibletest' Playbook 'mongo_install' RetryCount '1' RetryDelaySeconds '10' Retryable 'true' SkipTags 'web' Tags 'mongo'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_ansible_playbook/resource.tf task_ansible_playbook_resource.tf.tmpl AllowCustomConfig 'true' AnsibleRepoId '5' Code 'tfansibletest' CommandOptions '-b' ExecuteTarget 'local' GitRef 'master' Labels '[\"demo\", \"terraform\"]' Name 'tfansibletest' Playbook 'mongo_install' RetryCount '1' RetryDelaySeconds '10' Retryable 'true' SkipTags 'web' Tags 'mongo'"
 
 // RenderTaskAnsiblePlaybookConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

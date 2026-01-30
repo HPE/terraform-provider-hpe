@@ -11,9 +11,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render/main.go -out examples/resources/morpheus_job_task/resource_date_and_time.tf job_task_date_and_time.tf.tmpl Name "TF Example Job Task Date and Time" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode date_and_time ScheduledDateAndTime 2022-12-30T06:00:00Z ContextType instance InstanceIds "[1, 2]"
-//go:generate go run ../../../../../cmd/render/main.go -out examples/resources/morpheus_job_task/resource_schedule.tf job_task_schedule.tf.tmpl Name "TF Example Job Task Schedule" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode scheduled ExecutionScheduleId 1 ContextType instance InstanceIds "[91]" CustomConfig "{\\\"test\\\":\\\"new\\\"}"
-//go:generate go run ../../../../../cmd/render/main.go -out examples/resources/morpheus_job_task/resource_manual.tf job_task_manual.tf.tmpl Name "TF Example Job Task Manual" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode manual ContextType instance-label InstanceLabel demo
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_job_task/resource_date_and_time.tf job_task_date_and_time.tf.tmpl Name "TF Example Job Task Date and Time" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode date_and_time ScheduledDateAndTime 2022-12-30T06:00:00Z ContextType instance InstanceIds "[1, 2]"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_job_task/resource_schedule.tf job_task_schedule.tf.tmpl Name "TF Example Job Task Schedule" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode scheduled ExecutionScheduleId 1 ContextType instance InstanceIds "[91]" CustomConfig "{\\\"test\\\":\\\"new\\\"}"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_job_task/resource_manual.tf job_task_manual.tf.tmpl Name "TF Example Job Task Manual" Enabled true Labels "[\"aws\", \"demo\"]" TaskId 1 ScheduleMode manual ContextType instance-label InstanceLabel demo
 
 // RenderJobTaskDateAndTimeConfig generates a Terraform configuration for the job task resource
 // with date and time scheduling. It accepts optional overrides for field values.
