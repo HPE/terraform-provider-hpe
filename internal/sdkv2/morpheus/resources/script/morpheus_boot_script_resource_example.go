@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_boot_script/resource.tf morpheus_boot_script_resource.tf.tmpl Name "TF Example Boot Script" Content "ls"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_boot_script/resource.tf morpheus_boot_script_resource.tf.tmpl Name "TF Example Boot Script" Content "ls"
 
 // RenderBootScriptConfig renders a Terraform configuration for boot_script resource.
 // It accepts a name and a map of overrides to customize the default field values.

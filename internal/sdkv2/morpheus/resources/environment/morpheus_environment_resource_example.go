@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_environment/resource.tf morpheus_environment_resource.tf.tmpl Active true Code tfexample Description "Terraform Example" Name tfexample
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_environment/resource.tf morpheus_environment_resource.tf.tmpl Active true Code tfexample Description "Terraform Example" Name tfexample
 
 // RenderEnvironmentConfig renders the environment resource configuration with default values
 // that can be overridden by providing a map of field name to value.

@@ -1,7 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example-id.tf.tmpl Id 99
-//go:generate go run ../../../../../../cmd/render example-name.tf.tmpl Name "HVM Instance"
+//go:generate ../../../../../../bin/render example-id.tf.tmpl Id 99
+//go:generate ../../../../../../bin/render example-name.tf.tmpl Name "HVM Instance"
 package instance_test
 
 import (

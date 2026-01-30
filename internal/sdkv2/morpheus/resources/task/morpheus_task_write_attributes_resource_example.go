@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_task_write_attributes/resource.tf morpheus_task_write_attributes_resource.tf.tmpl Name tfexample_write_attributes Code tfexample_write_attributes Label1 demo Label2 terraform Attributes {"demo":"test"} Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_task_write_attributes/resource.tf morpheus_task_write_attributes_resource.tf.tmpl Name tfexample_write_attributes Code tfexample_write_attributes Label1 demo Label2 terraform Attributes {"demo":"test"} Retryable true RetryCount 1 RetryDelaySeconds 10 AllowCustomConfig true
 
 // RenderTaskWriteAttributesConfig generates a Terraform configuration for testing
 // the task_write_attributes resource. It accepts overrides to customize field values.

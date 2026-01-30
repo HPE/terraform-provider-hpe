@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_integration_docker_registry/resource.tf morpheus_integration_docker_registry_resource.tf.tmpl Name tfexampledockerregistry Enabled true Url https://index.docker.io/v1/ Username admin Password password123
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_integration_docker_registry/resource.tf morpheus_integration_docker_registry_resource.tf.tmpl Name tfexampledockerregistry Enabled true Url https://index.docker.io/v1/ Username admin Password password123
 
 // RenderIntegrationDockerRegistryConfig renders the Docker Registry integration
 // resource configuration with the provided field overrides. Default values are used for any

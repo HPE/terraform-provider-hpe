@@ -11,8 +11,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_cloud/example.tf example.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
-//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_cloud/example_generic.tf example_generic.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
+//go:generate ../../../../../../bin/render -out examples/resources/morpheus_cloud/example.tf example.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
+//go:generate ../../../../../../bin/render -out examples/resources/morpheus_cloud/example_generic.tf example_generic.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
 
 func RenderCloudConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

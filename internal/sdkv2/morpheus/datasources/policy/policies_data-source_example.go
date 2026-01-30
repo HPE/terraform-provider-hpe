@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/data-sources/morpheus_policies/data-source.tf policies_data-source.tf.tmpl Filter0Name '\"name\"' Filter1Name '\"type\"' Filter0Values '[\".*\"]' Filter1Values '[\"Max VMs\", \"Workflow\"]' SortAscending 'true'"
+//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_policies/data-source.tf policies_data-source.tf.tmpl Filter0Name '\"name\"' Filter1Name '\"type\"' Filter0Values '[\".*\"]' Filter1Values '[\"Max VMs\", \"Workflow\"]' SortAscending 'true'"
 
 // RenderPoliciesConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

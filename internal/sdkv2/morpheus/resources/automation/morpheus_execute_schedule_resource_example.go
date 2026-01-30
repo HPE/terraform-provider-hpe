@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_execute_schedule/resource.tf hpe_morpheus_execute_schedule_resource.tf.tmpl Name "Run daily at 7 AM" Description "This schedule runs daily at 7 AM Mountain Time" Enabled false TimeZone "America/Denver" Schedule "7 0 * * *"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_execute_schedule/resource.tf hpe_morpheus_execute_schedule_resource.tf.tmpl Name "Run daily at 7 AM" Description "This schedule runs daily at 7 AM Mountain Time" Enabled false TimeZone "America/Denver" Schedule "7 0 * * *"
 
 func RenderExecuteScheduleConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

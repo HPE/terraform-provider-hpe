@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_preseed_script/resource.tf morpheus_preseed_script_resource.tf.tmpl Name "TF Example Preseed Script" Content "ls"
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_preseed_script/resource.tf morpheus_preseed_script_resource.tf.tmpl Name "TF Example Preseed Script" Content "ls"
 
 // RenderPreseedScriptConfig renders a Terraform configuration
 // for preseed_script resource.

@@ -1,7 +1,7 @@
 // (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example_alletramp_hvm.tf.tmpl Name "TestAlletraDatastore" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
-//go:generate go run ../../../../../../cmd/render example_alletramp_bm.tf.tmpl Name "TestAlletraDatastore" CloudName "Metal" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
+//go:generate ../../../../../../bin/render example_alletramp_hvm.tf.tmpl Name "TestAlletraDatastore" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
+//go:generate ../../../../../../bin/render example_alletramp_bm.tf.tmpl Name "TestAlletraDatastore" CloudName "Metal" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
 
 package datastore_test
 

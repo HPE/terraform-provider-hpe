@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../cmd/render -out examples/resources/morpheus_script_template/resource.tf morpheus_script_template_resource.tf.tmpl 'Name' 'tf-terraform-script-template' 'Labels' "[\"demo\", \"template\", \"terraform\"]" 'ScriptType' 'bash' 'ScriptPhase' 'provision' 'ScriptContent' "echo \"testing\"" 'RunAsUser' 'root' 'Sudo' 'true'
+//go:generate ../../../../../bin/render -out examples/resources/morpheus_script_template/resource.tf morpheus_script_template_resource.tf.tmpl 'Name' 'tf-terraform-script-template' 'Labels' "[\"demo\", \"template\", \"terraform\"]" 'ScriptType' 'bash' 'ScriptPhase' 'provision' 'ScriptContent' "echo \"testing\"" 'RunAsUser' 'root' 'Sudo' 'true'
 
 // RenderScriptTemplateConfig renders the template with provided overrides
 func RenderScriptTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {

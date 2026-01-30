@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate sh -c "go run ../../../../../cmd/render -out examples/resources/morpheus_setting_monitoring/resource.tf setting_monitoring_resource.tf.tmpl MorpheusAutoCreateChecks 'true' MorpheusAvailabilityPrecision '4' MorpheusAvailabilityTimeFrame '30' MorpheusDefaultCheckInterval '120' NewRelicLicenseKey 'ABC123' NewRelicMonitoringEnabled 'true' ServicenowCloseIncidentAction 'activity' ServicenowIntegrationId '1' ServicenowMonitoringEnabled 'true' ServicenowNewIncidentAction 'create' ServicenowSeverityCriticalImpact 'low' ServicenowSeverityInfoImpact 'high' ServicenowSeverityWarningImpact 'high'"
+//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_setting_monitoring/resource.tf setting_monitoring_resource.tf.tmpl MorpheusAutoCreateChecks 'true' MorpheusAvailabilityPrecision '4' MorpheusAvailabilityTimeFrame '30' MorpheusDefaultCheckInterval '120' NewRelicLicenseKey 'ABC123' NewRelicMonitoringEnabled 'true' ServicenowCloseIncidentAction 'activity' ServicenowIntegrationId '1' ServicenowMonitoringEnabled 'true' ServicenowNewIncidentAction 'create' ServicenowSeverityCriticalImpact 'low' ServicenowSeverityInfoImpact 'high' ServicenowSeverityWarningImpact 'high'"
 
 // RenderSettingMonitoringConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

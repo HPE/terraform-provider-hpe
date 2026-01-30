@@ -1,10 +1,10 @@
 // (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
-//go:generate go run ../../../../../../cmd/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
-//go:generate go run ../../../../../../cmd/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
-//go:generate go run ../../../../../../cmd/render example_vmware.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
-//go:generate go run ../../../../../../cmd/render example_metal.tf.tmpl Name "TestInstance" CloudName "aCloud" EnvironmentName "anEnvironment" GroupName "aGroup" InstanceTypeLayout "Single ILO Server" Role "aRole" PlanName "G3i"
+//go:generate ../../../../../../bin/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate ../../../../../../bin/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate ../../../../../../bin/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate ../../../../../../bin/render example_vmware.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
+//go:generate ../../../../../../bin/render example_metal.tf.tmpl Name "TestInstance" CloudName "aCloud" EnvironmentName "anEnvironment" GroupName "aGroup" InstanceTypeLayout "Single ILO Server" Role "aRole" PlanName "G3i"
 
 package instance_test
 

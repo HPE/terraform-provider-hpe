@@ -10,7 +10,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render -out examples/resources/morpheus_user/example.tf example.tf.tmpl TenantId 1 Username "example-user" RoleIds 1 LinuxKeyPairId 100
+//go:generate ../../../../../../bin/render -out examples/resources/morpheus_user/example.tf example.tf.tmpl TenantId 1 Username "example-user" RoleIds 1 LinuxKeyPairId 100
 
 func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
