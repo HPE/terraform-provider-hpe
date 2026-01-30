@@ -1,0 +1,21 @@
+resource "hpe_morpheus_task" "example_task" {
+  name           = "Example Conditional Workflow Task"
+  task_type_code = "conditionalWorkflow"
+  config_conditional_workflow = {
+    conditional_script           = <<-EOT
+        if (1 == true) {
+            return true;
+        }
+
+        return false;
+        EOT
+    if_operational_workflow_id   = 90
+    if_operational_workflow_name = "Test 1"
+
+    else_operational_workflow_id   = 91
+    else_operational_workflow_name = "Test 2"
+  }
+
+  execute_target = "local"
+  retryable      = false
+}
