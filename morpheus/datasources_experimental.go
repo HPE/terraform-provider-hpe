@@ -1,0 +1,54 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+//go:build experimental
+
+// This file is used to include experimental datasources in the Morpheus
+// subprovider. It is not included in the release build. It is used to test new
+// datasources before they are included in the release build. It is not
+// intended for production use and may contain unstable or incomplete features.
+
+// When building the provider, use the `-tags experimental` flag to include
+// this file.
+
+// When datasources are ready for production use, they should be moved to the
+// `datasources.go` file.
+
+package morpheus
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/role"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
+)
+
+func (SubProvider) GetDataSources(
+	_ context.Context,
+) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		cloud.NewDataSource,
+		datastore.NewDataSource,
+		environment.NewDataSource,
+		group.NewDataSource,
+		image.NewDataSource,
+		instance.NewDataSource,
+		instancetypelayout.NewDataSource,
+		network.NewDataSource,
+		policy.NewDataSource,
+		role.NewDataSource,
+		serviceplan.NewDataSource,
+		user.NewDataSource,
+	}
+}

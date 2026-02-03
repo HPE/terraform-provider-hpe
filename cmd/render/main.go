@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
 const usage = `
