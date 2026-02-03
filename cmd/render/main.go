@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/cmd/render/render"
 )
 
 const usage = `
@@ -44,8 +44,8 @@ func main() {
 	}
 
 	if *out != "" {
-		testhelpers.WriteExampleToDir(*out, fn, args...)
+		render.WriteExampleToDir(*out, fn, args...)
 	} else {
-		testhelpers.WriteExample(fn, args...)
+		render.WriteExample(fn, args...)
 	}
 }
