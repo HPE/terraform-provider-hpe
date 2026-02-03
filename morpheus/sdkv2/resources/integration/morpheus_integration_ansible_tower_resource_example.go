@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_integration_ansible_tower/resource.tf morpheus_integration_ansible_tower_resource.tf.tmpl Name "tfexample ansible tower integration" Enabled true Url "https://ansibletower01.morpheusdata.com" Username admin Password password123
+//go:generate../../../../bin/render -out examples/resources/morpheus_integration_ansible_tower/resource.tf morpheus_integration_ansible_tower_resource.tf.tmpl Name "tfexample ansible tower integration" Enabled true Url "https://ansibletower01.morpheusdata.com" Username admin Password password123
 
 // RenderIntegrationAnsibleTowerConfig renders the Ansible Tower integration resource configuration
 // with default values that can be overridden via the overrides parameter.

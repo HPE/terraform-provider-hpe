@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_instance_type_layout/resource.tf instance_type_layout_resource.tf.tmpl InstanceTypeId "data.hpe_morpheus_instance_type.example.id" Labels "[\"demo\", \"layout\", \"terraform\"]" Name "todo_app_frontend" Technology "vmware" Version "1.0"
+//go:generate../../../../bin/render -out examples/resources/morpheus_instance_type_layout/resource.tf instance_type_layout_resource.tf.tmpl InstanceTypeId "data.hpe_morpheus_instance_type.example.id" Labels "[\"demo\", \"layout\", \"terraform\"]" Name "todo_app_frontend" Technology "vmware" Version "1.0"
 
 // RenderInstanceTypeLayoutConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

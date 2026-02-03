@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_storage_volume/data-source.tf storage_volume_data-source.tf.tmpl Id '1234'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_storage_volume/data-source.tf storage_volume_data-source.tf.tmpl Id '1234'"
 
 // RenderStorageVolumeConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

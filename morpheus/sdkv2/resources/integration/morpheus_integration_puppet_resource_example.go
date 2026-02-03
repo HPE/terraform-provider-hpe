@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_integration_puppet/resource.tf morpheus_integration_puppet_resource.tf.tmpl Name "tfexample puppet integration" Enabled true PuppetMasterHostname peserver01.morpheusdata.com AllowImmediateExecution true PuppetMasterSshUsername root PuppetMasterSshPassword password123
+//go:generate../../../../bin/render -out examples/resources/morpheus_integration_puppet/resource.tf morpheus_integration_puppet_resource.tf.tmpl Name "tfexample puppet integration" Enabled true PuppetMasterHostname peserver01.morpheusdata.com AllowImmediateExecution true PuppetMasterSshUsername root PuppetMasterSshPassword password123
 
 func RenderIntegrationPuppetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

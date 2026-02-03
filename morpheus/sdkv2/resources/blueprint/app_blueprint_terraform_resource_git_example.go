@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_app_blueprint_terraform/resource_git.tf app_blueprint_terraform_resource_git.tf.tmpl Category 'terraformdemo' Description 'testing terraform' IntegrationId '3' Name 'tfappbluedemogit' RepositoryId '1' SourceType 'repository' TerraformOptions '-var foo=bar' TerraformVersion '1.1.1' TfvarSecret 'tfvars/rdsdemo-secrets' VersionRef 'main' WorkingPath './test'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_app_blueprint_terraform/resource_git.tf app_blueprint_terraform_resource_git.tf.tmpl Category 'terraformdemo' Description 'testing terraform' IntegrationId '3' Name 'tfappbluedemogit' RepositoryId '1' SourceType 'repository' TerraformOptions '-var foo=bar' TerraformVersion '1.1.1' TfvarSecret 'tfvars/rdsdemo-secrets' VersionRef 'main' WorkingPath './test'"
 
 // RenderAppBlueprintTerraformGitConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

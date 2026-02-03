@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_groups/data-source.tf groups_data-source.tf.tmpl Name 'location' SortAscending 'false' Values '[\"denver\"]'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_groups/data-source.tf groups_data-source.tf.tmpl Name 'location' SortAscending 'false' Values '[\"denver\"]'"
 
 // RenderGroupsConfig generates a Terraform configuration for the groups resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

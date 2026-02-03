@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_option_type_checkbox/resource.tf morpheus_option_type_checkbox_resource.tf.tmpl Name tfcheckboxexample Description "Terraform checkbox option type example" Labels "[\"demo\", \"terraform\"]" FieldName checkbox_example ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Checkbox Example" DefaultChecked true
+//go:generate../../../../bin/render -out examples/resources/morpheus_option_type_checkbox/resource.tf morpheus_option_type_checkbox_resource.tf.tmpl Name tfcheckboxexample Description "Terraform checkbox option type example" Labels "[\"demo\", \"terraform\"]" FieldName checkbox_example ExportMeta true DependentField dependent_example VisibilityField visibility_example RequireField require_example ShowOnEdit true Editable true DisplayValueOnDetails true FieldLabel "Checkbox Example" DefaultChecked true
 
 // RenderOptionTypeCheckboxConfig generates a Terraform configuration for the morpheus_option_type_checkbox resource.
 // It accepts an optional map of field overrides to customize the default values.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_price/resource_platform.tf price_resource_platform.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' IncurCharges 'always' Name 'terraform-test' Platform 'linux' PriceType 'platform' PriceUnit 'minute' TenantId '1'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_price/resource_platform.tf price_resource_platform.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' IncurCharges 'always' Name 'terraform-test' Platform 'linux' PriceType 'platform' PriceUnit 'minute' TenantId '1'"
 
 // RenderPricePlatformConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

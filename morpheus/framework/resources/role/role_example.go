@@ -9,11 +9,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../../bin/render -out examples/resources/morpheus_role/role_user.tf role_user.tf.tmpl Name "ExampleUserRole" Multitenant "false" Description "An example user role" RoleType "user"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_role/role_user.tf role_user.tf.tmpl Name "ExampleUserRole" Multitenant "false" Description "An example user role" RoleType "user"
 
-//go:generate ../../../../../../bin/render -out examples/resources/morpheus_role/role_tenant.tf role_tenant.tf.tmpl Name "ExampleTenantRole" Description "An example tenant role" RoleType "tenant"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_role/role_tenant.tf role_tenant.tf.tmpl Name "ExampleTenantRole" Description "An example tenant role" RoleType "tenant"
 
-//go:generate ../../../../../../bin/render -out examples/resources/morpheus_role/example-using-legacy-provider.tf example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_role/example-using-legacy-provider.tf example-using-legacy-provider.tf.tmpl TaskDataSourceName "example_legacy_task" TaskName "example_task" ResourceName "example_with_legacy_provider" Name "ExampleRoleWithLegacyProvider" Description "An example role using legacy provider" RoleType "user" Task0Access "full"
 
 func RenderRoleUserConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

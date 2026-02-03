@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_network_domain/resource.tf network_domain_resource.tf.tmpl Active 'true' Description 'Terraform example network domain' Name 'tfexampledomain' PublicZone 'true' TenantId '1' Visibility 'private'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_network_domain/resource.tf network_domain_resource.tf.tmpl Active 'true' Description 'Terraform example network domain' Name 'tfexampledomain' PublicZone 'true' TenantId '1' Visibility 'private'"
 
 // RenderNetworkDomainConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

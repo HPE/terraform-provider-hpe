@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_wiki_page/resource.tf morpheus_wiki_page_resource.tf.tmpl Name tfexample_wiki_page Category morpheus-terraform
+//go:generate../../../../bin/render -out examples/resources/morpheus_wiki_page/resource.tf morpheus_wiki_page_resource.tf.tmpl Name tfexample_wiki_page Category morpheus-terraform
 
 // RenderWikiPageConfig generates a Terraform configuration for the wiki page resource.
 // It accepts a map of field overrides to customize default values.

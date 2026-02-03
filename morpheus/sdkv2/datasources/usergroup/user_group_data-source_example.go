@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_user_group/data-source.tf user_group_data-source.tf.tmpl Name '\"TF Example User Group\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_user_group/data-source.tf user_group_data-source.tf.tmpl Name '\"TF Example User Group\"'"
 
 // RenderUserGroupConfig generates a Terraform configuration for the user_group resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

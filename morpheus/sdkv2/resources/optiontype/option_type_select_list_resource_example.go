@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_option_type_select_list/resource.tf option_type_select_list_resource.tf.tmpl DefaultValue 'testing' DependentField 'dependent_example' Description 'Terraform select list option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'tfSelectExample' HelpBlock 'fiwefw' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_select_list_option_type' OptionListId '3' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_option_type_select_list/resource.tf option_type_select_list_resource.tf.tmpl DefaultValue 'testing' DependentField 'dependent_example' Description 'Terraform select list option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'tfSelectExample' HelpBlock 'fiwefw' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_select_list_option_type' OptionListId '3' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
 
 // RenderOptionTypeSelectListConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

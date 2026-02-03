@@ -1,7 +1,7 @@
 #!/bin/sh
 # Helper script to generate the form resource example
 
- ../../../../../bin/render \
+ ../../../../bin/render \
   -out examples/resources/morpheus_form/resource.tf \
   form_resource.tf.tmpl \
   Code 'demo' \

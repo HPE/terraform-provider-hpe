@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_integration_git/data-source.tf integration_git_data-source.tf.tmpl Name '\"MorpheusAutomation\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_integration_git/data-source.tf integration_git_data-source.tf.tmpl Name '\"MorpheusAutomation\"'"
 
 // RenderIntegrationGitConfig generates a Terraform configuration for the integration_git resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

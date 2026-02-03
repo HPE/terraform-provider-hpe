@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_app_blueprint_helm/resource.tf app_blueprint_helm_resource.tf.tmpl Category 'helm' Description 'tf example helm app blueprint' IntegrationId '3' Name 'helmappblueprint' RepositoryId '1' VersionRef 'main' WorkingPath './test'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_app_blueprint_helm/resource.tf app_blueprint_helm_resource.tf.tmpl Category 'helm' Description 'tf example helm app blueprint' IntegrationId '3' Name 'helmappblueprint' RepositoryId '1' VersionRef 'main' WorkingPath './test'"
 
 // RenderAppBlueprintHelmConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_price/resource_markup_custom.tf price_resource_markup_custom.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' CustomPrice '45.00' IncurCharges 'always' MarkupType 'custom' Name 'terraform-test' PriceType 'fixed' PriceUnit 'minute' TenantId '1'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_price/resource_markup_custom.tf price_resource_markup_custom.tf.tmpl Code 'terraform-test' Cost '38.00' Currency 'USD' CustomPrice '45.00' IncurCharges 'always' MarkupType 'custom' Name 'terraform-test' PriceType 'fixed' PriceUnit 'minute' TenantId '1'"
 
 // RenderPriceMarkupCustomConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

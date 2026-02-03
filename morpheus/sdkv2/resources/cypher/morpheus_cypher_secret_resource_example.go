@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_cypher_secret/resource.tf morpheus_cypher_secret_resource_tf.tmpl Key apipassword Value password123 Ttl 86400
+//go:generate../../../../bin/render -out examples/resources/morpheus_cypher_secret/resource.tf morpheus_cypher_secret_resource_tf.tmpl Key apipassword Value password123 Ttl 86400
 
 // RenderCypherSecretConfig generates a Terraform configuration
 // for the hpe_morpheus_cypher_secret resource from the template file.

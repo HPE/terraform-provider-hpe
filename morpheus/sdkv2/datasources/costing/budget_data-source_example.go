@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_budget/data-source.tf budget_data-source.tf.tmpl Name 'example budget'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_budget/data-source.tf budget_data-source.tf.tmpl Name 'example budget'"
 
 // RenderBudgetConfig generates a Terraform configuration for the budget resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

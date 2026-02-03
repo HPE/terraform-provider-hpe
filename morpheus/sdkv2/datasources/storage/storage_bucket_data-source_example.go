@@ -13,7 +13,7 @@ import (
 
 // we'll only render docs for the example using name
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_storage_bucket/data-source.tf storage_bucket_data-source.tf.tmpl Name '\"TF Example Bucket\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_storage_bucket/data-source.tf storage_bucket_data-source.tf.tmpl Name '\"TF Example Bucket\"'"
 
 // RenderStorageBucketConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

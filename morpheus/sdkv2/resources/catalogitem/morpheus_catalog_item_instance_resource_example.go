@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_catalog_item_instance/resource.tf morpheus_catalog_item_instance_resource.tf.tmpl Name tfexample_instance_catalog Description "terraform example instance catalog item" ImagePath tfexample.png ImageName tfexample.png Enabled true Featured true Content "{\"name\":\"test\"}" Config "{\"name\":\"test\"}" Visibility private
+//go:generate../../../../bin/render -out examples/resources/morpheus_catalog_item_instance/resource.tf morpheus_catalog_item_instance_resource.tf.tmpl Name tfexample_instance_catalog Description "terraform example instance catalog item" ImagePath tfexample.png ImageName tfexample.png Enabled true Featured true Content "{\"name\":\"test\"}" Config "{\"name\":\"test\"}" Visibility private
 
 // RenderCatalogItemInstanceConfig generates a Terraform configuration for catalog item instance resource.
 // It accepts a name and a map of field overrides to customize the default values.

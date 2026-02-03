@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_tenant/data-source.tf tenant_data-source.tf.tmpl Name '\"Demo\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_tenant/data-source.tf tenant_data-source.tf.tmpl Name '\"Demo\"'"
 
 // RenderTenantConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

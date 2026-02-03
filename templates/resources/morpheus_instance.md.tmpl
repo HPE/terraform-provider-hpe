@@ -46,14 +46,14 @@ These settings can be changed as required.
 
 ## HVM Instance
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example.tf" }}
+{{ tffile "morpheus/framework/resources/instance/example.tf" }}
 
 ## HVM Instance with two networks
 
 One of these networks has a `child_virtual_networks` entry.  Note that only some network types support `child_virtual_networks`.
 The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_twonetworks.tf" }}
+{{ tffile "morpheus/framework/resources/instance/example_twonetworks.tf" }}
 
 ## HVM Instance with timeouts
 
@@ -63,11 +63,11 @@ If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If
 detected is for `timeouts` then the State will be updated with the new settings but no `Morpheus` `Update` API calls
 will be made.  The default timeout for `create`, `delete`, `read` and `update` is 45 minutes
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_timeouts.tf" }}
+{{ tffile "morpheus/framework/resources/instance/example_timeouts.tf" }}
 
 ## VMware VM Instance
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_vmware.tf" }}
+{{ tffile "morpheus/framework/resources/instance/example_vmware.tf" }}
 
 ## BMaaS Instance
 
@@ -80,6 +80,6 @@ $ morpheus storage-volume-types list hpeilo-raid1
 ```
 Put that `id` in the `storage_type_id` field for the `root` volume below.  Leave the other fields unchanged.
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/instance/example_metal.tf" }}
+{{ tffile "morpheus/framework/resources/instance/example_metal.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

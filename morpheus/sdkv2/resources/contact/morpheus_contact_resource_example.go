@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_contact/resource.tf contact_resource.tf.tmpl Name tfcontactdemo EmailAddress tfcontact@demo.com MobileNumber 123-456-7890
+//go:generate../../../../bin/render -out examples/resources/morpheus_contact/resource.tf contact_resource.tf.tmpl Name tfcontactdemo EmailAddress tfcontact@demo.com MobileNumber 123-456-7890
 
 // RenderContactConfig renders the contact resource configuration with
 // optional field overrides

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_cypher_tfvars/resource.tf hpe_morpheus_cypher_tfvars_resource.tf.tmpl Key securetfvars Value 'account=12345\npassword=supersecure' Ttl 86400"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_cypher_tfvars/resource.tf hpe_morpheus_cypher_tfvars_resource.tf.tmpl Key securetfvars Value 'account=12345\npassword=supersecure' Ttl 86400"
 
 func RenderCypherTfvarsConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

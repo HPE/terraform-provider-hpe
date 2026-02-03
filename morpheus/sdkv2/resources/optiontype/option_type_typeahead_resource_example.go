@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_option_type_typeahead/resource.tf option_type_typeahead_resource.tf.tmpl AllowMultipleSelections 'true' DefaultValue 'testing' DependentField 'dependent_example' Description 'terraform example typeahead option type' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'example' HelpBlock 'terraform example typeahead' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_typeahead_option_type' OptionListId '3' Placeholder 'enter text here' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_option_type_typeahead/resource.tf option_type_typeahead_resource.tf.tmpl AllowMultipleSelections 'true' DefaultValue 'testing' DependentField 'dependent_example' Description 'terraform example typeahead option type' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'example' HelpBlock 'terraform example typeahead' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_typeahead_option_type' OptionListId '3' Placeholder 'enter text here' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VisibilityField 'visibility_example'"
 
 // RenderOptionTypeTypeaheadConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_workflow_operational/resource.tf workflow_operational_resource.tf.tmpl Name tf_example_operational_workflow Description "Terraform operational workflow example" Labels "[\"demo\", \"terraform\"]" Platform all Visibility private AllowCustomConfig true
+//go:generate../../../../bin/render -out examples/resources/morpheus_workflow_operational/resource.tf workflow_operational_resource.tf.tmpl Name tf_example_operational_workflow Description "Terraform operational workflow example" Labels "[\"demo\", \"terraform\"]" Platform all Visibility private AllowCustomConfig true
 
 // RenderWorkflowOperationalConfig generates a Terraform configuration for the workflow operational resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

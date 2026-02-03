@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_setting_backup/resource.tf setting_backup_resource.tf.tmpl BackupAppliance 'false' CreateBackups 'true' DefaultBackupScheduleId '3' DefaultBackupStorageBucketId '17' RetentionDays '21' ScheduledBackups 'true'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_setting_backup/resource.tf setting_backup_resource.tf.tmpl BackupAppliance 'false' CreateBackups 'true' DefaultBackupScheduleId '3' DefaultBackupStorageBucketId '17' RetentionDays '21' ScheduledBackups 'true'"
 
 // RenderSettingBackupConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_vdi_pool/data-source.tf vdi_pool_data-source.tf.tmpl Name '\"Terraform Example VDI Pool\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_vdi_pool/data-source.tf vdi_pool_data-source.tf.tmpl Name '\"Terraform Example VDI Pool\"'"
 
 // RenderVdiPoolConfig generates a Terraform configuration for the vdi_pool data source.
 // It accepts optional overrides for field values. Default values are used if not overridden.

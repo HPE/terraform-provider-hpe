@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_ansible_tower/resource.tf task_ansible_tower_resource.tf.tmpl AllowCustomConfig 'true' AnsibleTowerIntegrationId '1' AnsibleTowerInventoryId '5' Code 'tfexample-ansible-tower-task' ExecuteMode 'executeAll' ExecuteTarget 'local' Group 'demo' JobTemplateId '3' Labels '[\"demo\", \"terraform\"]' Name 'tfexample_task_ansible_tower' RetryCount '5' RetryDelaySeconds '10' Retryable 'true' ScmOverride 'main' Visibility 'public'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_task_ansible_tower/resource.tf task_ansible_tower_resource.tf.tmpl AllowCustomConfig 'true' AnsibleTowerIntegrationId '1' AnsibleTowerInventoryId '5' Code 'tfexample-ansible-tower-task' ExecuteMode 'executeAll' ExecuteTarget 'local' Group 'demo' JobTemplateId '3' Labels '[\"demo\", \"terraform\"]' Name 'tfexample_task_ansible_tower' RetryCount '5' RetryDelaySeconds '10' Retryable 'true' ScmOverride 'main' Visibility 'public'"
 
 // RenderTaskAnsibleTowerConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

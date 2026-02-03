@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_power_schedule/data-source.tf power_schedule_data-source.tf.tmpl Name '\"TF Example power schedule\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_power_schedule/data-source.tf power_schedule_data-source.tf.tmpl Name '\"TF Example power schedule\"'"
 
 // RenderPowerScheduleConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

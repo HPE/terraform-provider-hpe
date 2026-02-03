@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_vro/resource.tf task_vro_resource.tf.tmpl Body '<<EOF\n{\n \"parameters\": [\n {\n \"name\": \"vmName\",\n \"type\": \"string\",\n \"value\": {\n \"string\": {\n \"value\": \"<%=instance.hostname%>\"\n }\n }\n }\n ]\n}\nEOF' Code 'tfexample-vro-task' ExecuteTarget 'local' Labels '[\"demo\", \"terraform\"]' Name 'tfexample vro-task' Retryable 'false' VroIntegrationId '1' VroWorkflowValue '1'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_task_vro/resource.tf task_vro_resource.tf.tmpl Body '<<EOF\n{\n \"parameters\": [\n {\n \"name\": \"vmName\",\n \"type\": \"string\",\n \"value\": {\n \"string\": {\n \"value\": \"<%=instance.hostname%>\"\n }\n }\n }\n ]\n}\nEOF' Code 'tfexample-vro-task' ExecuteTarget 'local' Labels '[\"demo\", \"terraform\"]' Name 'tfexample vro-task' Retryable 'false' VroIntegrationId '1' VroWorkflowValue '1'"
 
 // RenderTaskVroConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

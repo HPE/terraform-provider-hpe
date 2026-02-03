@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../../bin/render -out examples/resources/morpheus_service_plan/example.tf example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912" SortOrder "10000" CoresPerSocket "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_service_plan/example.tf example.tf.tmpl Name "ExampleServicePlan" Code "exampleserviceplan" MaxMemory "4294967296" MaxStorage "536870912"  ProvisionTypeCode "arm" CustomMaxStorage "true" ConfigRangesMinStorage "268435456" ConfigRangesMaxStorage "536870912" SortOrder "10000" CoresPerSocket "1"
 
 func RenderServicePlanConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

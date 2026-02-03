@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_task_nested_workflow/resource.tf task_nested_workflow_resource.tf.tmpl Code 'tfexample_nested_workflow' Labels '[\"demo\", \"terraform\"]' Name 'tfexample_nested_workflow' OperationalWorkflowId '1' OperationalWorkflowName 'Example workflow'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_task_nested_workflow/resource.tf task_nested_workflow_resource.tf.tmpl Code 'tfexample_nested_workflow' Labels '[\"demo\", \"terraform\"]' Name 'tfexample_nested_workflow' OperationalWorkflowId '1' OperationalWorkflowName 'Example workflow'"
 
 // RenderTaskNestedWorkflowConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

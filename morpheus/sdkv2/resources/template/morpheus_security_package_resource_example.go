@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_security_package/resource.tf morpheus_security_package_resource.tf.tmpl Name "tf_example_security_package" Description "Terraform security package example" Labels "[\"demo\", \"terraform\"]" Enabled true Url "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/scap-security-guide-0.1.59.zip"
+//go:generate../../../../bin/render -out examples/resources/morpheus_security_package/resource.tf morpheus_security_package_resource.tf.tmpl Name "tf_example_security_package" Description "Terraform security package example" Labels "[\"demo\", \"terraform\"]" Enabled true Url "https://github.com/ComplianceAsCode/content/releases/download/v0.1.59/scap-security-guide-0.1.59.zip"
 
 func RenderSecurityPackageConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

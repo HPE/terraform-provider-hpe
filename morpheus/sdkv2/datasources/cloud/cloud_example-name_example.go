@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_cloud/example-name.tf cloud_example-name.tf.tmpl Name '\"Example name\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_cloud/example-name.tf cloud_example-name.tf.tmpl Name '\"Example name\"'"
 
 // RenderCloudConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

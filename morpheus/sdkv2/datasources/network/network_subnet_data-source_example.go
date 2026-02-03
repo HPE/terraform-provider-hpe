@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_network_subnet/data-source.tf network_subnet_data-source.tf.tmpl Name '\"TF Example Network Subnet\"' NetworkId '166333'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_network_subnet/data-source.tf network_subnet_data-source.tf.tmpl Name '\"TF Example Network Subnet\"' NetworkId '166333'"
 
 // RenderNetworkSubnetConfig generates a Terraform configuration for the network_subnet resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

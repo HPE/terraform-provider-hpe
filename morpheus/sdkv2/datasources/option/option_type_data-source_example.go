@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_option_type/data-source.tf option_type_data-source.tf.tmpl Name '\"App Versions\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_option_type/data-source.tf option_type_data-source.tf.tmpl Name '\"App Versions\"'"
 
 // RenderOptionTypeConfig generates a Terraform configuration for the option_type resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

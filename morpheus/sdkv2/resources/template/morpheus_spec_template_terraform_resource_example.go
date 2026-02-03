@@ -11,9 +11,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_url.tf morpheus_spec_template_terraform_resource_url.tf.tmpl Name "tf-terraform-spec-example-url" SourceType "url" SpecPath "http://example.com/spec.tf"
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_local.tf morpheus_spec_template_terraform_resource_local.tf.tmpl Name "tf-terraform-spec-example-local" SourceType "local" SpecContent "resource \"aws_instance\" \"instance_1\" {\n  ami           = \"ami-0b91a410940e82c54\"\n  instance_type = \"t2.micro\"\n}"
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_git.tf morpheus_spec_template_terraform_resource_git.tf.tmpl Name "tf-terraform-spec-example-git" SourceType "repository" RepositoryId "2" VersionRef "main" SpecPath "Instance Types/Terraform/CloudResource/aws/vpc.tf"
+//go:generate../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_url.tf morpheus_spec_template_terraform_resource_url.tf.tmpl Name "tf-terraform-spec-example-url" SourceType "url" SpecPath "http://example.com/spec.tf"
+//go:generate../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_local.tf morpheus_spec_template_terraform_resource_local.tf.tmpl Name "tf-terraform-spec-example-local" SourceType "local" SpecContent "resource \"aws_instance\" \"instance_1\" {\n  ami           = \"ami-0b91a410940e82c54\"\n  instance_type = \"t2.micro\"\n}"
+//go:generate../../../../bin/render -out examples/resources/morpheus_spec_template_terraform/resource_git.tf morpheus_spec_template_terraform_resource_git.tf.tmpl Name "tf-terraform-spec-example-git" SourceType "repository" RepositoryId "2" VersionRef "main" SpecPath "Instance Types/Terraform/CloudResource/aws/vpc.tf"
 
 // RenderSpecTemplateTerraformLocalConfig renders the Terraform config for
 // spec_template_terraform_resource_local tests

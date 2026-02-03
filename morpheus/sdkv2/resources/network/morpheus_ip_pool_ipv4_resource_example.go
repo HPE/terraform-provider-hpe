@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_ip_pool_ipv4/resource.tf morpheus_ip_pool_ipv4_resource.tf.tmpl Name "\"Terraform Example IPv4 IP pool\"" StartingAddress1 "\"192.168.1.1\"" EndingAddress1 "\"192.168.1.10\"" StartingAddress2 "\"10.0.0.1\"" EndingAddress2 "\"10.0.0.10\""
+//go:generate../../../../bin/render -out examples/resources/morpheus_ip_pool_ipv4/resource.tf morpheus_ip_pool_ipv4_resource.tf.tmpl Name "\"Terraform Example IPv4 IP pool\"" StartingAddress1 "\"192.168.1.1\"" EndingAddress1 "\"192.168.1.10\"" StartingAddress2 "\"10.0.0.1\"" EndingAddress2 "\"10.0.0.10\""
 
 // RenderIPPoolIPv4Config generates a Terraform configuration for hpe_morpheus_ip_pool_ipv4 resource.
 // It accepts an optional map of field overrides. If nil or empty, default values are used.

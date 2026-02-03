@@ -2,8 +2,8 @@
 
 package policy_test
 
-//go:generate ../../../../../../bin/render example-id.tf.tmpl Id 99
-//go:generate ../../../../../../bin/render example-name.tf.tmpl Name "Example name"
+//go:generate ../../../../bin/render example-id.tf.tmpl Id 99
+//go:generate ../../../../bin/render example-name.tf.tmpl Name "Example name"
 
 import (
 	"os"

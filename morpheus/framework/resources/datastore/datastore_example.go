@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../../bin/render -out examples/resources/morpheus_datastore/example_alletramp_hvm.tf example_alletramp_hvm.tf.tmpl Name "TestAlletraDatastore" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
+//go:generate ../../../../bin/render -out examples/resources/morpheus_datastore/example_alletramp_hvm.tf example_alletramp_hvm.tf.tmpl Name "TestAlletraDatastore" AssociatedResourceID 1 StorageServerID 1 GroupID 1 TenantID 1
 
 func RenderDatastoreAlletraMPHVMConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

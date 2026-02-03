@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_license/resource.tf morpheus_license_resource.tf.tmpl Key 22324FEF3WMCDMMSWE
+//go:generate../../../../bin/render -out examples/resources/morpheus_license/resource.tf morpheus_license_resource.tf.tmpl Key 22324FEF3WMCDMMSWE
 
 // RenderLicenseConfig generates a Terraform configuration for the morpheus_license resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

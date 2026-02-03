@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_resource_pool_group/resource.tf resource_pool_group_resource.tf.tmpl Name "TFExample Resource Pool Group" Description "TFExample Resource Pool Group" Mode roundrobin ResourcePoolIds "[1, 2, 3]" AllGroupAccess true GroupAccessGroupId 2 GroupAccessDefault true Visibility public TenantIds "[1, 2]"
+//go:generate../../../../bin/render -out examples/resources/morpheus_resource_pool_group/resource.tf resource_pool_group_resource.tf.tmpl Name "TFExample Resource Pool Group" Description "TFExample Resource Pool Group" Mode roundrobin ResourcePoolIds "[1, 2, 3]" AllGroupAccess true GroupAccessGroupId 2 GroupAccessDefault true Visibility public TenantIds "[1, 2]"
 
 // RenderResourcePoolGroupConfig generates a Terraform configuration for the resource pool group resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

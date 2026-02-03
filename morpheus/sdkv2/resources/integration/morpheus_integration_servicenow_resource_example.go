@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../../bin/render -out examples/resources/morpheus_integration_servicenow/resource.tf morpheus_integration_servicenow_resource.tf.tmpl Name "terraform servicenow integration" Enabled true Url "https://servicenowprod.service-now.com" Username "my-snow-username" Password "my-snow-password" DefaultCmdbBusinessClass "demo"
+//go:generate../../../../bin/render -out examples/resources/morpheus_integration_servicenow/resource.tf morpheus_integration_servicenow_resource.tf.tmpl Name "terraform servicenow integration" Enabled true Url "https://servicenowprod.service-now.com" Username "my-snow-username" Password "my-snow-password" DefaultCmdbBusinessClass "demo"
 
 func RenderIntegrationServicenowConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

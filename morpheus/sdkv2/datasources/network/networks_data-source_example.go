@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_networks/data-source.tf networks_data-source.tf.tmpl CloudId '3' Name '\"name\"' SortAscending 'true' Values '[\"Test*\"]'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_networks/data-source.tf networks_data-source.tf.tmpl CloudId '3' Name '\"name\"' SortAscending 'true' Values '[\"Test*\"]'"
 
 // RenderNetworksConfig generates a Terraform configuration for the networks resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

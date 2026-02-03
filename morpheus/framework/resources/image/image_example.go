@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate go run ../../../../../../cmd/render example.tf.tmpl Name "Alpine Example Image" StorageProviderId "196"
+//go:generate ../../../../bin/render example.tf.tmpl Name "Alpine Example Image" StorageProviderId "196"
 
 func RenderImageConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

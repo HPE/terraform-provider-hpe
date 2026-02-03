@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/data-sources/morpheus_network_domain/data-source.tf network_domain_data-source.tf.tmpl Name '\"test.local\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_network_domain/data-source.tf network_domain_data-source.tf.tmpl Name '\"test.local\"'"
 
 // RenderNetworkDomainConfig generates a Terraform configuration for the network_domain resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

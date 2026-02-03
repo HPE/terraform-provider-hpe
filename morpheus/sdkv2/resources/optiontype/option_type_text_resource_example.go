@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_option_type_text/resource.tf option_type_text_resource.tf.tmpl DefaultValue 'testing' DependentField 'dependent_example' Description 'Terraform text option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'test1' HelpBlock 'fiwefw' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_text_option_type' Placeholder 'fewf' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VerifyPattern 'a\\\\D{4}' VisibilityField 'visibility_example'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_option_type_text/resource.tf option_type_text_resource.tf.tmpl DefaultValue 'testing' DependentField 'dependent_example' Description 'Terraform text option type example' DisplayValueOnDetails 'true' Editable 'true' ExportMeta 'true' FieldLabel 'numbers' FieldName 'test1' HelpBlock 'fiwefw' Labels '[\"demo\", \"terraform\"]' Name 'tf_example_text_option_type' Placeholder 'fewf' RequireField 'require_example' Required 'true' ShowOnEdit 'true' VerifyPattern 'a\\\\D{4}' VisibilityField 'visibility_example'"
 
 // RenderOptionTypeTextConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

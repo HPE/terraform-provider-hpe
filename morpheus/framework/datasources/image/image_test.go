@@ -1,8 +1,8 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate ../../../../../../bin/render example-id.tf.tmpl Id 99
-//go:generate ../../../../../../bin/render example-name.tf.tmpl Name "\"Example name\""
-//go:generate ../../../../../../bin/render example-name-type.tf.tmpl Name "\"Example name\"" Type "\"qcow2\""
+//go:generate ../../../../bin/render example-id.tf.tmpl Id 99
+//go:generate ../../../../bin/render example-name.tf.tmpl Name "\"Example name\""
+//go:generate ../../../../bin/render example-name-type.tf.tmpl Name "\"Example name\"" Type "\"qcow2\""
 
 package image_test
 

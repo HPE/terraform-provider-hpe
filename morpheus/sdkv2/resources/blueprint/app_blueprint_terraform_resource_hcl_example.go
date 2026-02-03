@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c " ../../../../../bin/render -out examples/resources/morpheus_app_blueprint_terraform/resource_hcl.tf app_blueprint_terraform_resource_hcl.tf.tmpl BlueprintContent 'variable \"master_username\" {\n type = string\n}\n\nvariable \"master_password\" {\n type = string\n sensitive = true\n}\n\nvariable \"engine_version\" {\n type = string\n}\n\nvariable \"instance_class\" {\n type = string\n}\n\nresource \"local_file\" \"foo\" {\n content = \"foo!\"\n filename = \"/foo.bar\"\n}' Category 'terraformdemo' Description 'testing terraform' Name 'tfappbluedemo' SourceType 'hcl' TerraformOptions '-var foo=bar' TerraformVersion '1.1.1' TfvarSecret 'tfvars/rdsdemo-secrets'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_app_blueprint_terraform/resource_hcl.tf app_blueprint_terraform_resource_hcl.tf.tmpl BlueprintContent 'variable \"master_username\" {\n type = string\n}\n\nvariable \"master_password\" {\n type = string\n sensitive = true\n}\n\nvariable \"engine_version\" {\n type = string\n}\n\nvariable \"instance_class\" {\n type = string\n}\n\nresource \"local_file\" \"foo\" {\n content = \"foo!\"\n filename = \"/foo.bar\"\n}' Category 'terraformdemo' Description 'testing terraform' Name 'tfappbluedemo' SourceType 'hcl' TerraformOptions '-var foo=bar' TerraformVersion '1.1.1' TfvarSecret 'tfvars/rdsdemo-secrets'"
 
 // RenderAppBlueprintTerraformHclConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
