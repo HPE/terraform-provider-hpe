@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/provider"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus"
-	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/internal/sdkv2/morpheus"
+	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
+	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 var version = "dev"

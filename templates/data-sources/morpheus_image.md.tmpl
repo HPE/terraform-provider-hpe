@@ -14,13 +14,13 @@ during instance provisioning.
 ## Example Usage
 
 Get an `image` by `id`
-{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-id.tf" }}
+{{ tffile "morpheus/framework/datasources/image/example-id.tf" }}
 
 Get an `image` by `name`
-{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-name.tf" }}
+{{ tffile "morpheus/framework/datasources/image/example-name.tf" }}
 
 Get an `image` by `name` and `image_type`, this option can be useful when there are multiple
 images with the same name.
-{{ tffile "internal/framework/subproviders/morpheus/datasources/image/example-name-type.tf" }}
+{{ tffile "morpheus/framework/datasources/image/example-name-type.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

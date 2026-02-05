@@ -40,13 +40,13 @@ $ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-st
 
 ### Alletra MP HVM Datastore
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/datastore/example_alletramp_hvm.tf" }}
+{{ tffile "morpheus/framework/resources/datastore/example_alletramp_hvm.tf" }}
 
 ### Alletra MP BMaaS Datastore
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS datastore support.
 
-{{ tffile "internal/framework/subproviders/morpheus/resources/datastore/example_alletramp_bm.tf" }}
+{{ tffile "morpheus/framework/resources/datastore/example_alletramp_bm.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
