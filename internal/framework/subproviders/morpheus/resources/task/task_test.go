@@ -76,6 +76,11 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 			"config_conditional_workflow.else_operational_workflow_id",
 			"91",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"allow_custom_config",
+			"true",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -145,6 +150,11 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 			"config_conditional_workflow.else_operational_workflow_id",
 			"91",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"allow_custom_config",
+			"false",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -194,6 +204,7 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 
 						execute_target = "local"
 						retryable = false
+						allow_custom_config = false
 					}`,
 			},
 			// check if changing task_type_code requires replace

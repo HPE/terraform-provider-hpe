@@ -26,11 +26,11 @@ import (
 func TaskResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"account_id": schema.Int64Attribute{
-				Computed: true,
-			},
 			"allow_custom_config": schema.BoolAttribute{
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				Description:         "When enabled, a text area is provided at Task execution time to allow the user to pass extra variables or specify extra configuration",
+				MarkdownDescription: "When enabled, a text area is provided at Task execution time to allow the user to pass extra variables or specify extra configuration",
 			},
 			"code": schema.StringAttribute{
 				Optional:            true,
@@ -172,7 +172,6 @@ func TaskResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type TaskModel struct {
-	AccountId                 types.Int64                    `tfsdk:"account_id"`
 	AllowCustomConfig         types.Bool                     `tfsdk:"allow_custom_config"`
 	Code                      types.String                   `tfsdk:"code"`
 	Config                    types.Dynamic                  `tfsdk:"config"`
