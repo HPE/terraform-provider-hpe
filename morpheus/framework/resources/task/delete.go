@@ -11,7 +11,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -35,7 +35,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"delete task resource",
-			fmt.Sprintf("task %d: DELETE failed ", id)+errors.ErrMsg(err, hresp),
+			fmt.Sprintf("task %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
 		return

@@ -5,8 +5,10 @@ package task
 import (
 	"context"
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/customtypes"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/morpheusvalidators"
+	"strings"
+
+	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -44,7 +45,7 @@ func TaskResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object. Settings vary by type.",
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
-					morpheusvalidators.ValidObjectMap(),
+					validators.ValidObjectMap(),
 				},
 			},
 			"config_conditional_workflow": schema.SingleNestedAttribute{
@@ -535,14 +536,12 @@ func (t ConfigConditionalWorkflowType) ValueFromTerraform(ctx context.Context, i
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -587,7 +586,6 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals := make(map[string]tftypes.Value, 5)
 
 		val, err = v.ConditionalScript.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -595,7 +593,6 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["conditional_script"] = val
 
 		val, err = v.ElseOperationalWorkflowId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -603,7 +600,6 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["else_operational_workflow_id"] = val
 
 		val, err = v.ElseOperationalWorkflowName.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -611,7 +607,6 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["else_operational_workflow_name"] = val
 
 		val, err = v.IfOperationalWorkflowId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -619,7 +614,6 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["if_operational_workflow_id"] = val
 
 		val, err = v.IfOperationalWorkflowName.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

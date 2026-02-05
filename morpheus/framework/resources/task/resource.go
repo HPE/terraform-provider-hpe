@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/constants"
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 type Resource struct {

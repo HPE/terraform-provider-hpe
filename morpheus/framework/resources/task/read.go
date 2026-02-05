@@ -13,9 +13,9 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/customtypes"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
 )
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -57,7 +57,7 @@ func getTaskAsState(
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate task resource",
-			fmt.Sprintf("task %d GET failed: ", id)+errors.ErrMsg(err, httpResp),
+			fmt.Sprintf("task %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
 		return state, diags

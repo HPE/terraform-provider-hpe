@@ -8,28 +8,14 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/convert"
-	"github.com/HPE/terraform-provider-hpe/internal/framework/subproviders/morpheus/errors"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
-func (r *Resource) Update(
-	ctx context.Context,
-	req resource.UpdateRequest,
-	resp *resource.UpdateResponse,
-) {
-	var plan, state, config TaskModel
+func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan TaskModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -41,28 +27,28 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateRequest := sdk.NewUpdateTasksRequestWithDefaults()
-	updateTask := sdk.NewUpdateTasksRequestTaskWithDefaults()
+	addTaskReq := sdk.NewAddTasksRequestWithDefaults()
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		updateTask.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+		addTaskReq.Task.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateTask.SetCode(plan.Code.ValueString())
+		addTaskReq.Task.SetCode(plan.Code.ValueString())
 	}
 
-	taskOptions := sdk.AddTasksRequestTaskTaskOptions{}
+	taskOptionsSet := false
 
 	// config
+	taskOptions := &sdk.AddTasksRequestTaskTaskOptions{}
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		configValue := plan.Config.UnderlyingValue()
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"update task resource",
+				"create task resource",
 				"task: failed to convert config: "+
 					err.Error(),
 			)
@@ -73,7 +59,7 @@ func (r *Resource) Update(
 		configDataMap, ok := configAny.(map[string]any)
 		if !ok {
 			resp.Diagnostics.AddError(
-				"error updating task",
+				"error creating task",
 				"could not parse config value",
 			)
 
@@ -81,30 +67,39 @@ func (r *Resource) Update(
 		}
 
 		taskOptions.MapmapOfStringAny = &configDataMap
+		taskOptionsSet = true
 	}
 
 	// config_conditional_workflow
 	if !plan.ConfigConditionalWorkflow.IsNull() && !plan.ConfigConditionalWorkflow.IsUnknown() {
 		conditionalWorkflow := &sdk.ConditionalWorkflowTaskConfig{}
-		conditionalWorkflow.ConditionalScript = plan.ConfigConditionalWorkflow.
-			ConditionalScript.ValueStringPointer()
+		trimmed := plan.ConfigConditionalWorkflow.ConditionalScript.ValueString()
+		conditionalWorkflow.ConditionalScript = &trimmed
+
 		conditionalWorkflow.IfOperationalWorkflowId = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowId.ValueInt64Pointer()
+
 		conditionalWorkflow.IfOperationalWorkflowName = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowName.ValueStringPointer()
+
 		conditionalWorkflow.ElseOperationalWorkflowId = plan.ConfigConditionalWorkflow.
 			ElseOperationalWorkflowId.ValueInt64Pointer()
+
 		conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
 			ElseOperationalWorkflowName.ValueStringPointer()
 
 		taskOptions.ConditionalWorkflowTaskConfig = conditionalWorkflow
+
+		taskOptionsSet = true
 	}
 
-	updateTask.SetTaskOptions(taskOptions)
+	if taskOptionsSet {
+		addTaskReq.Task.SetTaskOptions(*taskOptions)
+	}
 
 	// execute_target
 	if !plan.ExecuteTarget.IsNull() && !plan.ExecuteTarget.IsUnknown() {
-		updateTask.SetExecuteTarget(plan.ExecuteTarget.ValueString())
+		addTaskReq.Task.SetExecuteTarget(plan.ExecuteTarget.ValueString())
 	}
 
 	// labels
@@ -119,59 +114,53 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateTask.SetLabels(labels)
+		addTaskReq.Task.SetLabels(labels)
 	}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		updateTask.SetName(plan.Name.ValueString())
+		addTaskReq.Task.SetName(plan.Name.ValueString())
 	}
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		updateTask.SetResultType(plan.ResultType.ValueString())
+		addTaskReq.Task.SetResultType(plan.ResultType.ValueString())
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		updateTask.SetRetryCount(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.SetRetryCount(plan.RetryCount.ValueInt64())
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		updateTask.SetRetryDelaySeconds(plan.RetryDelaySeconds.ValueInt64())
+		addTaskReq.Task.SetRetryDelaySeconds(plan.RetryCount.ValueInt64())
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		updateTask.SetRetryable(plan.Retryable.ValueBool())
+		addTaskReq.Task.SetRetryable(plan.Retryable.ValueBool())
 	}
 
 	// task_type_code
 	if !plan.TaskTypeCode.IsNull() && !plan.TaskTypeCode.IsUnknown() {
-		updateTask.SetTaskType(*sdk.NewUpdateTasksRequestTaskTaskType(
-			plan.TaskTypeCode.ValueString(),
-		))
+		addTaskReq.Task.TaskType.SetCode(plan.TaskTypeCode.ValueString())
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateTask.SetVisibility(
-			plan.Visibility.ValueString(),
-		)
+		addTaskReq.Task.SetVisibility(plan.Visibility.ValueString())
 	}
 
-	updateRequest.SetTask(*updateTask)
-	taskResp, httpResp, err := client.AutomationAPI.UpdateTasks(ctx, state.Id.ValueInt64()).
-		UpdateTasksRequest(*updateRequest).
-		Execute()
+	// send the API request here
+	taskResp, httpResp, err := client.AutomationAPI.AddTasks(ctx).
+		AddTasksRequest(*addTaskReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("error updating task", errors.ErrMsg(err, httpResp))
+		resp.Diagnostics.AddError("error creating task", errfmt.ErrMsg(err, httpResp))
 
 		return
 	}
 
-	// set the ID value in state
 	plan.Id = convert.Int64ToType(taskResp.Task.Id)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -179,7 +168,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getTaskAsState(ctx, *taskResp.Task.Id, client, plan)
+	state, diag := getTaskAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
