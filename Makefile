@@ -3,13 +3,10 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test docs docs-experimental experimental sweep build-render-tool
+.PHONY: build linter lint test docs sweep build-render-tool
 
 build:
 	go build
-
-experimental:
-	go build -tags=experimental
 
 linter:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
@@ -39,15 +36,6 @@ build-render-tool:
 docs: build-render-tool
 	go generate ./...
 	cd tools && go generate
-
-docs-experimental: build-render-tool
-	rm -rf templates-combined-temp
-	mkdir -p templates-combined-temp
-	cp -r ./templates/* templates-combined-temp
-	cp -r ./templates-experimental/* templates-combined-temp
-	go generate -tags=experimental ./...
-	cd tools && env GOFLAGS="-tags=experimental" go generate
-	rm -rf templates-combined-temp
 
 sweep:
 	go test -v ./morpheus/utils/test/sweep/... \
