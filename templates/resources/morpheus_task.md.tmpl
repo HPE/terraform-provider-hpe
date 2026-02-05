@@ -1,0 +1,29 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+Tasks are used as components of workflows or units that can be executed directly
+on an existing instance.
+
+The `{{.Name}}` resource currently only supports Conditional Workflows, however
+other types may be used through the generic config.
+
+## Conditional Workflow Task
+
+{{tffile "examples/resources/morpheus_task/example_conditional_workflow.tf"}}
+
+## Generic Config Task
+
+{{tffile "examples/resources/morpheus_task/example_generic_config.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_task/import.sh" }}
