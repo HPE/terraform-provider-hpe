@@ -18,4 +18,5 @@ resource "hpe_morpheus_task" "example_task" {
 
     execute_target = "local"
     retryable = false
+    allow_custom_config = true
 }

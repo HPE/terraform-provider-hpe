@@ -44,6 +44,11 @@ func (r *Resource) Update(
 	updateRequest := sdk.NewUpdateTasksRequestWithDefaults()
 	updateTask := sdk.NewUpdateTasksRequestTaskWithDefaults()
 
+	// allow_custom_config
+	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
+		updateTask.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+	}
+
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
 		updateTask.SetCode(plan.Code.ValueString())

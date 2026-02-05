@@ -64,6 +64,10 @@ func getTaskAsState(
 	}
 
 	task := taskResp.GetTask()
+
+	// allow_custom_config
+	state.AllowCustomConfig = convert.BoolToType(task.AllowCustomConfig)
+
 	// code
 	state.Code = convert.StrToType(task.Code.Get())
 

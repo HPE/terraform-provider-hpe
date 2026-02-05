@@ -16,6 +16,7 @@ resource "hpe_morpheus_task" "example_task" {
     else_operational_workflow_name = "Test 2"
   }
 
-  execute_target = "local"
-  retryable      = false
+  execute_target      = "local"
+  retryable           = false
+  allow_custom_config = true
 }

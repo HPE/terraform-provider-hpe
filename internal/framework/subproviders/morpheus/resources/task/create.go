@@ -29,6 +29,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	addTaskReq := sdk.NewAddTasksRequestWithDefaults()
 
+	// allow_custom_config
+	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
+		addTaskReq.Task.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+	}
+
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
 		addTaskReq.Task.SetCode(plan.Code.ValueString())
