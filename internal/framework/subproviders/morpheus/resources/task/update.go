@@ -58,7 +58,7 @@ func (r *Resource) Update(
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"update task resource",
-				"instance: failed to convert config: "+
+				"task: failed to convert config: "+
 					err.Error(),
 			)
 
@@ -107,8 +107,8 @@ func (r *Resource) Update(
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"create image resource",
-				"image "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
+				"create task resource",
+				"task "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
 			)
 
 			return

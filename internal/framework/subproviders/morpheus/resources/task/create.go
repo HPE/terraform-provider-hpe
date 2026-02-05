@@ -43,8 +43,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"create instance resource",
-				"instance: failed to convert config: "+
+				"create task resource",
+				"task: failed to convert config: "+
 					err.Error(),
 			)
 
@@ -102,8 +102,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"create image resource",
-				"image "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
+				"create task resource",
+				"task "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
 			)
 
 			return
@@ -151,7 +151,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	taskResp, httpResp, err := client.AutomationAPI.AddTasks(ctx).
 		AddTasksRequest(*addTaskReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("error creating instance", errors.ErrMsg(err, httpResp))
+		resp.Diagnostics.AddError("error creating task", errors.ErrMsg(err, httpResp))
 
 		return
 	}

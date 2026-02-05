@@ -41,11 +41,13 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
+	waitForDeleted := func() (*sdk.GetTasks200Response, error) {
 		_, httpResp, err := client.AutomationAPI.GetTasks(ctx, id.ValueInt64()).Execute()
 		// 404 status code counts as a successful delete
-		if err != nil && httpResp.StatusCode != http.StatusNotFound {
-			return nil, backoff.Permanent(err)
+		if err != nil {
+			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
+				return nil, backoff.Permanent(err)
+			}
 		}
 
 		return nil, nil
