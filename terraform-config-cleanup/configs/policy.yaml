@@ -1,0 +1,234 @@
+# Policy resource cleanup configuration
+
+hpe_morpheus_policy:
+  # Removes - mix of simple (go-split style) and extended format
+  removes:
+    # Remove each_user unless associated_resource_type is Role
+    - path: each_user
+      when:
+        attribute: associated_resource_type
+        not_equals: Role
+    
+    # Remove workflow_type if both workflow_id and flow_id are null
+    - path: config_approval.workflow_type
+      when:
+        and:
+          - attribute: config_approval.workflow_id
+            is_null: true
+          - attribute: config_approval.flow_id
+            is_null: true
+    
+    # Wildcard with exceptions + conditionals
+    # For approval policies (delete, provision, reconfigure, workflow)
+    - path: config_*
+      except: [config_approval]
+      when:
+        attribute: policy_type.code
+        in: [deleteApproval, provisionApproval, reconfigureApproval, workflowApproval]
+    
+    # For backup policies
+    - path: config_*
+      except: [config_backup_storage, config_create_backup]
+      when:
+        attribute: policy_type.code
+        in: [backupStorage, createBackup]
+    
+    # For user creation policy
+    - path: config_*
+      except: [config_create_user]
+      when:
+        attribute: policy_type.code
+        equals: createUser
+    
+    # For user group creation policy
+    - path: config_*
+      except: [config_create_user_group]
+      when:
+        attribute: policy_type.code
+        equals: createUserGroup
+    
+    # For cypher policy
+    - path: config_*
+      except: [config_cypher]
+      when:
+        attribute: policy_type.code
+        equals: cypherAccess
+    
+    # For delayed removal policy
+    - path: config_*
+      except: [config_delayed_removal]
+      when:
+        attribute: policy_type.code
+        equals: delayedRemoval
+    
+    # For host naming policy
+    - path: config_*
+      except: [config_host_naming]
+      when:
+        attribute: policy_type.code
+        equals: hostNaming
+    
+    # For lifecycle policy
+    - path: config_*
+      except: [config_lifecycle]
+      when:
+        attribute: policy_type.code
+        equals: lifecycle
+    
+    # For max containers policy
+    - path: config_*
+      except: [config_max_containers]
+      when:
+        attribute: policy_type.code
+        equals: maxContainers
+    
+    # For max cores policy
+    - path: config_*
+      except: [config_max_cores]
+      when:
+        attribute: policy_type.code
+        equals: maxCores
+    
+    # For max hosts policy
+    - path: config_*
+      except: [config_max_hosts]
+      when:
+        attribute: policy_type.code
+        equals: maxHosts
+    
+    # For max memory policy
+    - path: config_*
+      except: [config_max_memory]
+      when:
+        attribute: policy_type.code
+        equals: maxMemory
+    
+    # For max networks policy
+    - path: config_*
+      except: [config_max_networks]
+      when:
+        attribute: policy_type.code
+        equals: maxNetworks
+    
+    # For max pool members policy
+    - path: config_*
+      except: [config_max_pool_members]
+      when:
+        attribute: policy_type.code
+        equals: maxPoolMembers
+    
+    # For max pools policy
+    - path: config_*
+      except: [config_max_pools]
+      when:
+        attribute: policy_type.code
+        equals: maxPools
+    
+    # For max price policy
+    - path: config_*
+      except: [config_max_price]
+      when:
+        attribute: policy_type.code
+        equals: maxPrice
+    
+    # For max routers policy
+    - path: config_*
+      except: [config_max_routers]
+      when:
+        attribute: policy_type.code
+        equals: maxRouters
+    
+    # For max snapshots policy
+    - path: config_*
+      except: [config_max_snapshots]
+      when:
+        attribute: policy_type.code
+        equals: maxSnapshots
+    
+    # For max storage policy
+    - path: config_*
+      except: [config_max_storage]
+      when:
+        attribute: policy_type.code
+        equals: maxStorage
+    
+    # For max virtual servers policy
+    - path: config_*
+      except: [config_max_virtual_servers]
+      when:
+        attribute: policy_type.code
+        equals: maxVirtualServers
+    
+    # For max VMs policy
+    - path: config_*
+      except: [config_max_vms]
+      when:
+        attribute: policy_type.code
+        equals: maxVms
+    
+    # For MOTD policy
+    - path: config_*
+      except: [config_motd]
+      when:
+        attribute: policy_type.code
+        equals: motd
+    
+    # For naming policy
+    - path: config_*
+      except: [config_naming]
+      when:
+        attribute: policy_type.code
+        equals: naming
+    
+    # For power schedule policy
+    - path: config_*
+      except: [config_power_schedule]
+      when:
+        attribute: policy_type.code
+        equals: powerSchedule
+    
+    # For required network policy
+    - path: config_*
+      except: [config_required_network]
+      when:
+        attribute: policy_type.code
+        equals: requiredNetwork
+    
+    # For server naming policy
+    - path: config_*
+      except: [config_server_naming]
+      when:
+        attribute: policy_type.code
+        equals: serverNaming
+    
+    # For shutdown policy
+    - path: config_*
+      except: [config_shutdown]
+      when:
+        attribute: policy_type.code
+        equals: shutdown
+    
+    # For storage server quota policy
+    - path: config_*
+      except: [config_storage_server_quota]
+      when:
+        attribute: policy_type.code
+        equals: storageServerQuota
+    
+    # For tags policy
+    - path: config_*
+      except: [config_tags]
+      when:
+        attribute: policy_type.code
+        equals: tags
+    
+    # For workflow policy
+    - path: config_*
+      except: [config_workflow]
+      when:
+        attribute: policy_type.code
+        equals: workflow
+  
+  # Global cleanup
+  remove_null_values: true
+  remove_empty_blocks: true

@@ -1,0 +1,20 @@
+# Instance resource cleanup configuration
+
+hpe_morpheus_instance:
+  # Moves (go-split style) - extract from union types
+  moves:
+    - config.noAgent.Bool: config.noAgent
+    - config.resourcePoolId.String: config.resourcePoolId
+  
+  # Removes (go-split style) - simple list
+  removes:
+    - config.backup
+    - config.createBackup
+    - config.customOptions
+    - config.layoutSize
+    - config.memoryDisplay
+    - config.kvmHostId
+  
+  # Global cleanup operations
+  remove_null_values: true
+  remove_empty_blocks: true
