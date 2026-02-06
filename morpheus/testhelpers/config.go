@@ -1,73 +1,76 @@
 package testhelpers
 
-//nolint:lll
-const providerConfig = `
-variable "testacc_morpheus_url" {
-  default = null
-}
-variable "testacc_morpheus_username" {
-  default = null
-}
-variable "testacc_morpheus_password" {
-  default = null
-}
-variable "testacc_morpheus_access_token" {
-  default = null
-}
-variable "testacc_morpheus_insecure" {
-  default = false
-}
+import (
+	"bytes"
+	"text/template"
+)
 
-provider "hpe" {
-        morpheus {
-                url = var.testacc_morpheus_url
-                access_token    = var.testacc_morpheus_access_token
-                username = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
-                password = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
-                insecure = var.testacc_morpheus_insecure
-        }
+const providerVariables = `
+variable "testacc_morpheus_{{.}}_url" {
+  default = null
+}
+variable "testacc_morpheus_{{.}}_username" {
+  default = null
+}
+variable "testacc_morpheus_{{.}}_password" {
+  default = null
+}
+variable "testacc_morpheus_{{.}}_access_token" {
+  default = null
+}
+variable "testacc_morpheus_{{.}}_insecure" {
+  default = false
 }
 `
 
 //nolint:lll
-const providerConfigLegacy = `
-variable "testacc_morpheus_url" {
-  default = null
+const providerConfig = providerVariables + `
+
+provider "hpe" {
+    morpheus {
+        url = var.testacc_morpheus_url
+        access_token    = var.testacc_morpheus_{{.}}_access_token
+        username = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_username : null
+        password = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_password : null
+        insecure = var.testacc_morpheus_{{.}}_insecure
+    }
 }
-variable "testacc_morpheus_username" {
-  default = null
-}
-variable "testacc_morpheus_password" {
-  default = null
-}
-variable "testacc_morpheus_access_token" {
-  default = null
-}
-variable "testacc_morpheus_insecure" {
-  default = false
-}
+`
+
+//nolint:lll
+const providerConfigLegacy = providerVariables + `
 
 provider "morpheus" {
-  url          = var.testacc_morpheus_url
-  access_token = var.testacc_morpheus_access_token
-  username     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
-  password     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
+  url          = var.testacc_morpheus_{{.}}_url
+  access_token = var.testacc_morpheus_{{.}}_access_token
+  username     = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_username : null
+  password     = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_password : null
 }
 `
 
 //nolint:lll
 const providerConfigLegacyProviderBlockOnly = `
 provider "morpheus" {
-  url          = var.testacc_morpheus_url
-  access_token = var.testacc_morpheus_access_token
-  username     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
-  password     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
+  url          = var.testacc_morpheus_{{.}}_url
+  access_token = var.testacc_morpheus_{{.}}_access_token
+  username     = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_username : null
+  password     = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_password : null
 }
 `
 
 // Returns a provider block that can be used for acceptance testing
-func ProviderBlock() string {
-	return providerConfig
+func ProviderBlock(preferredSystem string) string {
+	tmpl, err := template.New("provider-block").Parse(providerConfig)
+	if err != nil {
+		panic("could not parse template" + err.Error())
+	}
+
+	var out bytes.Buffer
+	if err := tmpl.Execute(&out, preferredSystem); err != nil {
+		panic("could not execute template" + err.Error())
+	}
+
+	return out.String()
 }
 
 // Returns a provider block for the legacy morpheus provider that can be used for acceptance testing
