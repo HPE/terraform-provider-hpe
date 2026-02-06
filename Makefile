@@ -20,6 +20,7 @@ test:
 
 testacc:
 	cd morpheus/framework && \
+	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 60m ./...
 
 testsdkv2:
