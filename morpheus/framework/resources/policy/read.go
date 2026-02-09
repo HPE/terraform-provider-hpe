@@ -21,7 +21,7 @@ import (
 func mapPolicyConfigToState(
 	ctx context.Context,
 	state *PolicyModel,
-	apiConfig *sdk.AddPolicies200ResponseAllOfPolicyConfig,
+	apiConfig *sdk.GetPolicies200ResponseAllOfPolicyConfig,
 	policyTypeCode string,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
@@ -32,10 +32,10 @@ func mapPolicyConfigToState(
 		approvalValue, approvalDiags := NewConfigApprovalValue(
 			ConfigApprovalValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration2.AccountIntegrationId),
-				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.FlowId),
-				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowId),
-				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration2.WorkflowType),
+				"account_integration_id": convert.StrToType(&apiConfig.ApprovePolicyTypeConfiguration3.AccountIntegrationId),
+				"flow_id":                convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration3.FlowId),
+				"workflow_id":            convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration3.WorkflowId),
+				"workflow_type":          convert.StrToType(apiConfig.ApprovePolicyTypeConfiguration3.WorkflowType),
 			},
 		)
 		if approvalDiags.HasError() {
@@ -48,14 +48,14 @@ func mapPolicyConfigToState(
 		// Handle BackupStorageIds as a set of int64
 		var backupStorageIDsSet types.Set
 		var setDiags diag.Diagnostics
-		if len(apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds) == 0 {
+		if len(apiConfig.BackupTargetsPolicyTypeConfiguration3.BackupStorageIds) == 0 {
 			backupStorageIDsSet = types.SetValueMust(types.Int64Type, []attr.Value{})
 		} else {
 			// BackupStorageIds come from API as []string, convert to []int64
 			backupStorageIDsSet, setDiags = types.SetValueFrom(
 				ctx,
 				types.Int64Type,
-				apiConfig.BackupTargetsPolicyTypeConfiguration.BackupStorageIds,
+				apiConfig.BackupTargetsPolicyTypeConfiguration3.BackupStorageIds,
 			)
 			if setDiags.HasError() {
 				diags.Append(setDiags...)
@@ -80,8 +80,8 @@ func mapPolicyConfigToState(
 		createBackupValue, createBackupDiags := NewConfigCreateBackupValue(
 			ConfigCreateBackupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackup),
-				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration2.CreateBackupType),
+				"create_backup":      convert.BoolToType(apiConfig.BackupCreationPolicyTypeConfiguration3.CreateBackup),
+				"create_backup_type": convert.StrToType(&apiConfig.BackupCreationPolicyTypeConfiguration3.CreateBackupType),
 			},
 		)
 		if createBackupDiags.HasError() {
@@ -94,8 +94,8 @@ func mapPolicyConfigToState(
 		createUserValue, createUserDiags := NewConfigCreateUserValue(
 			ConfigCreateUserValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration.CreateUser),
-				"create_user_type": convert.StrToType(&apiConfig.UserCreationPolicyTypeConfiguration.CreateUserType),
+				"create_user":      convert.BoolToType(apiConfig.UserCreationPolicyTypeConfiguration3.CreateUser),
+				"create_user_type": convert.StrToType(&apiConfig.UserCreationPolicyTypeConfiguration3.CreateUserType),
 			},
 		)
 		if createUserDiags.HasError() {
@@ -108,7 +108,7 @@ func mapPolicyConfigToState(
 		createUserGroupValue, createUserGroupDiags := NewConfigCreateUserGroupValue(
 			ConfigCreateUserGroupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"user_group": convert.StrToType(&apiConfig.UserGroupCreationPolicyTypeConfiguration.UserGroup),
+				"user_group": convert.StrToType(&apiConfig.UserGroupCreationPolicyTypeConfiguration3.UserGroup),
 			},
 		)
 		if createUserGroupDiags.HasError() {
@@ -121,12 +121,12 @@ func mapPolicyConfigToState(
 		cypherValue, cypherDiags := NewConfigCypherValue(
 			ConfigCypherValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Delete),
-				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration.KeyPattern),
-				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.List),
-				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Read),
-				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Update),
-				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration.Write),
+				"delete":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration3.Delete),
+				"key_pattern": convert.StrToType(&apiConfig.CypherAccessPolicyTypeConfiguration3.KeyPattern),
+				"list":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration3.List),
+				"read":        convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration3.Read),
+				"update":      convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration3.Update),
+				"write":       convert.BoolToType(apiConfig.CypherAccessPolicyTypeConfiguration3.Write),
 			},
 		)
 		if cypherDiags.HasError() {
@@ -137,9 +137,9 @@ func mapPolicyConfigToState(
 
 	case "maxPrice":
 		maxPriceAttrs := map[string]attr.Value{
-			"max_price":          convert.NumToType(&apiConfig.BudgetPolicyTypeConfiguration2.MaxPrice),
-			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceCurrency),
-			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration2.MaxPriceUnit),
+			"max_price":          convert.NumToType(&apiConfig.BudgetPolicyTypeConfiguration3.MaxPrice),
+			"max_price_currency": convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration3.MaxPriceCurrency),
+			"max_price_unit":     convert.StrToType(apiConfig.BudgetPolicyTypeConfiguration3.MaxPriceUnit),
 		}
 
 		maxPriceValue, maxPriceDiags := NewConfigMaxPriceValue(ConfigMaxPriceValue{}.AttributeTypes(ctx), maxPriceAttrs)
@@ -151,8 +151,8 @@ func mapPolicyConfigToState(
 
 	case "maxMemory":
 		maxMemoryAttrs := map[string]attr.Value{
-			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration.MaxMemory),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration.GetExcludeContainers()),
+			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration3.MaxMemory),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration3.GetExcludeContainers()),
 		}
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
@@ -164,8 +164,8 @@ func mapPolicyConfigToState(
 
 	case "maxCores":
 		maxCoresAttrs := map[string]attr.Value{
-			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration.MaxCores),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration.GetExcludeContainers()),
+			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration3.MaxCores),
+			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration3.GetExcludeContainers()),
 		}
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
@@ -177,7 +177,7 @@ func mapPolicyConfigToState(
 
 	case "delayedRemoval":
 		delayedRemovalAttrs := map[string]attr.Value{
-			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration.RemovalAge),
+			"removal_age": convert.StrToType(&apiConfig.DelayedDeletePolicyTypeConfiguration3.RemovalAge),
 		}
 
 		delayedRemovalValue, delayedRemovalDiags := NewConfigDelayedRemovalValue(
@@ -193,40 +193,40 @@ func mapPolicyConfigToState(
 	case "lifecycle":
 		lifecycleAttrs := map[string]attr.Value{
 			"account_integration_id": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.AccountIntegrationId,
+				apiConfig.ExpirationPolicyTypeConfiguration3.AccountIntegrationId,
 			),
-			"flow_id":       convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.FlowId),
-			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleAge),
+			"flow_id":       convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.FlowId),
+			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAge),
 			"lifecycle_allow_extend": convert.StringToBool(
 				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAllowExtend(),
+				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAllowExtend(),
 			),
 			"lifecycle_auto_renew": convert.StringToBool(
 				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration2.GetLifecycleAutoRenew(),
+				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAutoRenew(),
 			),
 			"lifecycle_extensions_before_approval": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleExtensionsBeforeApproval,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleExtensionsBeforeApproval,
 			),
 			"lifecycle_hide_fixed": convert.BoolToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleHideFixed,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleHideFixed,
 			),
 			"lifecycle_message": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleMessage,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleMessage,
 			),
 			"lifecycle_notify": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleNotify,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleNotify,
 			),
 			"lifecycle_renewal": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleRenewal,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleRenewal,
 			),
 			"lifecycle_type": convert.StrToType(
-				&apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleType,
+				&apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleType,
 			),
 			"lifecycle_workflow_id": convert.StrToType(
-				apiConfig.ExpirationPolicyTypeConfiguration2.LifecycleWorkflowId,
+				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleWorkflowId,
 			),
-			"workflow_type": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration2.WorkflowType),
+			"workflow_type": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.WorkflowType),
 		}
 
 		lifecycleValue, lifecycleDiags := NewConfigLifecycleValue(ConfigLifecycleValue{}.AttributeTypes(ctx), lifecycleAttrs)
@@ -238,8 +238,8 @@ func mapPolicyConfigToState(
 
 	case "hostNaming":
 		hostNamingAttrs := map[string]attr.Value{
-			"host_naming_pattern": convert.StrToType(apiConfig.HostnamePolicyTypeConfiguration.HostNamingPattern),
-			"host_naming_type":    convert.StrToType(&apiConfig.HostnamePolicyTypeConfiguration.HostNamingType),
+			"host_naming_pattern": convert.StrToType(apiConfig.HostnamePolicyTypeConfiguration3.HostNamingPattern),
+			"host_naming_type":    convert.StrToType(&apiConfig.HostnamePolicyTypeConfiguration3.HostNamingType),
 		}
 
 		hostNamingValue, hostNamingDiags := NewConfigHostNamingValue(
@@ -254,9 +254,9 @@ func mapPolicyConfigToState(
 
 	case "naming":
 		namingAttrs := map[string]attr.Value{
-			"naming_conflict": convert.BoolToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingConflict),
-			"naming_pattern":  convert.StrToType(apiConfig.InstanceNamePolicyTypeConfiguration.NamingPattern),
-			"naming_type":     convert.StrToType(&apiConfig.InstanceNamePolicyTypeConfiguration.NamingType),
+			"naming_conflict": convert.BoolToType(apiConfig.InstanceNamePolicyTypeConfiguration3.NamingConflict),
+			"naming_pattern":  convert.StrToType(apiConfig.InstanceNamePolicyTypeConfiguration3.NamingPattern),
+			"naming_type":     convert.StrToType(&apiConfig.InstanceNamePolicyTypeConfiguration3.NamingType),
 		}
 
 		namingValue, namingDiags := NewConfigNamingValue(ConfigNamingValue{}.AttributeTypes(ctx), namingAttrs)
@@ -268,7 +268,7 @@ func mapPolicyConfigToState(
 
 	case "maxContainers":
 		maxContainersAttrs := map[string]attr.Value{
-			"max_containers": convert.StrToType(&apiConfig.MaxContainersPolicyTypeConfiguration.MaxContainers),
+			"max_containers": convert.StrToType(&apiConfig.MaxContainersPolicyTypeConfiguration3.MaxContainers),
 		}
 
 		maxContainersValue, maxContainersDiags := NewConfigMaxContainersValue(
@@ -283,7 +283,7 @@ func mapPolicyConfigToState(
 
 	case "maxHosts":
 		maxHostsAttrs := map[string]attr.Value{
-			"max_hosts": convert.StrToType(&apiConfig.MaxHostsPolicyTypeConfiguration.MaxHosts),
+			"max_hosts": convert.StrToType(&apiConfig.MaxHostsPolicyTypeConfiguration3.MaxHosts),
 		}
 
 		maxHostsValue, maxHostsDiags := NewConfigMaxHostsValue(ConfigMaxHostsValue{}.AttributeTypes(ctx), maxHostsAttrs)
@@ -295,7 +295,7 @@ func mapPolicyConfigToState(
 
 	case "maxNetworks":
 		maxNetworksAttrs := map[string]attr.Value{
-			"max_networks": convert.StrToType(&apiConfig.NetworkQuotaPolicyTypeConfiguration.MaxNetworks),
+			"max_networks": convert.StrToType(&apiConfig.NetworkQuotaPolicyTypeConfiguration3.MaxNetworks),
 		}
 
 		maxNetworksValue, maxNetworksDiags := NewConfigMaxNetworksValue(
@@ -310,7 +310,7 @@ func mapPolicyConfigToState(
 
 	case "maxPoolMembers":
 		maxPoolMembersAttrs := map[string]attr.Value{
-			"max_pool_members": convert.StrToType(&apiConfig.MaxPoolMembersPolicyTypeConfiguration.MaxPoolMembers),
+			"max_pool_members": convert.StrToType(&apiConfig.MaxPoolMembersPolicyTypeConfiguration3.MaxPoolMembers),
 		}
 
 		maxPoolMembersValue, maxPoolMembersDiags := NewConfigMaxPoolMembersValue(
@@ -325,7 +325,7 @@ func mapPolicyConfigToState(
 
 	case "maxPools":
 		maxPoolsAttrs := map[string]attr.Value{
-			"max_pools": convert.StrToType(&apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration.MaxPools),
+			"max_pools": convert.StrToType(&apiConfig.MaxLoadBalancerPoolsPolicyTypeConfiguration3.MaxPools),
 		}
 
 		maxPoolsValue, maxPoolsDiags := NewConfigMaxPoolsValue(ConfigMaxPoolsValue{}.AttributeTypes(ctx), maxPoolsAttrs)
@@ -337,7 +337,7 @@ func mapPolicyConfigToState(
 
 	case "maxRouters":
 		maxRoutersAttrs := map[string]attr.Value{
-			"max_routers": convert.StrToType(&apiConfig.RouterQuotaPolicyTypeConfiguration.MaxRouters),
+			"max_routers": convert.StrToType(&apiConfig.RouterQuotaPolicyTypeConfiguration3.MaxRouters),
 		}
 
 		maxRoutersValue, maxRoutersDiags := NewConfigMaxRoutersValue(
@@ -352,7 +352,7 @@ func mapPolicyConfigToState(
 
 	case "maxSnapshots":
 		maxSnapshotsAttrs := map[string]attr.Value{
-			"max_snapshots": convert.StrToType(&apiConfig.MaxSnapshotsPolicyTypeConfiguration.MaxSnapshots),
+			"max_snapshots": convert.StrToType(&apiConfig.MaxSnapshotsPolicyTypeConfiguration3.MaxSnapshots),
 		}
 
 		maxSnapshotsValue, maxSnapshotsDiags := NewConfigMaxSnapshotsValue(
@@ -369,10 +369,10 @@ func mapPolicyConfigToState(
 		maxStorageAttrs := map[string]attr.Value{
 			"exclude_containers": convert.StringToBool(
 				ctx,
-				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.GetExcludeContainers(),
+				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.GetExcludeContainers(),
 			),
 			"max_storage": convert.StrToType(
-				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration.MaxStorage,
+				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.MaxStorage,
 			),
 		}
 
@@ -388,7 +388,7 @@ func mapPolicyConfigToState(
 
 	case "maxVirtualServers":
 		maxVirtualServersAttrs := map[string]attr.Value{
-			"max_virtual_servers": convert.StrToType(&apiConfig.MaxVirtualServersPolicyTypeConfiguration.MaxVirtualServers),
+			"max_virtual_servers": convert.StrToType(&apiConfig.MaxVirtualServersPolicyTypeConfiguration3.MaxVirtualServers),
 		}
 
 		maxVirtualServersValue, maxVirtualServersDiags := NewConfigMaxVirtualServersValue(
@@ -403,7 +403,7 @@ func mapPolicyConfigToState(
 
 	case "maxVms":
 		maxVmsAttrs := map[string]attr.Value{
-			"max_vms": convert.StrToType(&apiConfig.MaxVMsPolicyTypeConfiguration.MaxVms),
+			"max_vms": convert.StrToType(&apiConfig.MaxVMsPolicyTypeConfiguration3.MaxVms),
 		}
 
 		maxVmsValue, maxVmsDiags := NewConfigMaxVmsValue(ConfigMaxVmsValue{}.AttributeTypes(ctx), maxVmsAttrs)
@@ -415,15 +415,15 @@ func mapPolicyConfigToState(
 
 	case "motd":
 		motdAttrs := map[string]attr.Value{
-			"motddate":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdDate),
-			"motdmessage": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdMessage),
+			"motddate":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdDate),
+			"motdmessage": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdMessage),
 			"motdtitle":   types.StringNull(),
-			"motdtype":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdType),
+			"motdtype":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdType),
 		}
 
 		// Handle NullableString for MotdTitle
-		if apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.IsSet() {
-			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration2.MotdTitle.Get())
+		if apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.IsSet() {
+			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.Get())
 		}
 
 		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
@@ -436,13 +436,13 @@ func mapPolicyConfigToState(
 	case "powerSchedule":
 		powerScheduleAttrs := map[string]attr.Value{
 			"power_schedule": convert.StrToType(
-				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerSchedule,
+				apiConfig.PowerSchedulePolicyTypeConfiguration3.PowerSchedule,
 			),
 			"power_schedule_hide_fixed": convert.BoolToType(
-				apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleHideFixed,
+				apiConfig.PowerSchedulePolicyTypeConfiguration3.PowerScheduleHideFixed,
 			),
 			"power_schedule_type": convert.StrToType(
-				&apiConfig.PowerSchedulePolicyTypeConfiguration.PowerScheduleType,
+				&apiConfig.PowerSchedulePolicyTypeConfiguration3.PowerScheduleType,
 			),
 		}
 
@@ -459,11 +459,11 @@ func mapPolicyConfigToState(
 	case "requiredNetwork":
 		// Handle RequiredNetworks as a set of integers
 		var requiredNetworksSet types.Set
-		if len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks) == 0 {
+		if len(apiConfig.RequiredNetworkPolicyTypeConfiguration3.RequiredNetworks) == 0 {
 			requiredNetworksSet = types.SetValueMust(types.Int64Type, []attr.Value{})
 		} else {
-			int64Values := make([]attr.Value, len(apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks))
-			for i, networkID := range apiConfig.RequiredNetworkPolicyTypeConfiguration.RequiredNetworks {
+			int64Values := make([]attr.Value, len(apiConfig.RequiredNetworkPolicyTypeConfiguration3.RequiredNetworks))
+			for i, networkID := range apiConfig.RequiredNetworkPolicyTypeConfiguration3.RequiredNetworks {
 				int64Values[i] = types.Int64Value(networkID)
 			}
 			var setDiags diag.Diagnostics
@@ -490,13 +490,13 @@ func mapPolicyConfigToState(
 	case "serverNaming":
 		serverNamingAttrs := map[string]attr.Value{
 			"server_naming_conflict": convert.BoolToType(
-				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingConflict,
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration3.ServerNamingConflict,
 			),
 			"server_naming_pattern": convert.StrToType(
-				apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingPattern,
+				apiConfig.ClusterResourceNamePolicyTypeConfiguration3.ServerNamingPattern,
 			),
 			"server_naming_type": convert.StrToType(
-				&apiConfig.ClusterResourceNamePolicyTypeConfiguration.ServerNamingType,
+				&apiConfig.ClusterResourceNamePolicyTypeConfiguration3.ServerNamingType,
 			),
 		}
 
@@ -513,40 +513,40 @@ func mapPolicyConfigToState(
 	case "shutdown":
 		shutdownAttrs := map[string]attr.Value{
 			"account_integration_id": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.AccountIntegrationId,
+				apiConfig.ShutdownPolicyTypeConfiguration3.AccountIntegrationId,
 			),
-			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.FlowId),
-			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.ShutdownAge),
+			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.FlowId),
+			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAge),
 			"shutdown_allow_extend": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAllowExtend(),
+				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAllowExtend(),
 			),
 			"shutdown_auto_renew": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration.GetShutdownAutoRenew(),
+				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAutoRenew(),
 			),
 			"shutdown_extensions_before_approval": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownExtensionsBeforeApproval,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownExtensionsBeforeApproval,
 			),
 			"shutdown_hide_fixed": convert.BoolToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownHideFixed,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownHideFixed,
 			),
 			"shutdown_message": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownMessage,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownMessage,
 			),
 			"shutdown_notify": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownNotify,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownNotify,
 			),
 			"shutdown_renewal": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownRenewal,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownRenewal,
 			),
 			"shutdown_type": convert.StrToType(
-				&apiConfig.ShutdownPolicyTypeConfiguration.ShutdownType,
+				&apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownType,
 			),
 			"shutdown_workflow_id": convert.StrToType(
-				apiConfig.ShutdownPolicyTypeConfiguration.ShutdownWorkflowId,
+				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownWorkflowId,
 			),
-			"workflow_type": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration.WorkflowType),
+			"workflow_type": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.WorkflowType),
 		}
 
 		shutdownValue, shutdownDiags := NewConfigShutdownValue(ConfigShutdownValue{}.AttributeTypes(ctx), shutdownAttrs)
@@ -558,8 +558,8 @@ func mapPolicyConfigToState(
 
 	case "storageServerQuota":
 		storageServerQuotaAttrs := map[string]attr.Value{
-			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.MaxStorage),
-			"storage_server_id": convert.StrToType(&apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration.StorageServerId),
+			"max_storage":       convert.StrToType(apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration3.MaxStorage),
+			"storage_server_id": convert.StrToType(&apiConfig.StorageServerStorageQuotaPolicyTypeConfiguration3.StorageServerId),
 		}
 
 		storageServerQuotaValue, storageServerQuotaDiags := NewConfigStorageServerQuotaValue(
@@ -574,10 +574,10 @@ func mapPolicyConfigToState(
 
 	case "tags":
 		tagsAttrs := map[string]attr.Value{
-			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Key),
-			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration.Strict),
-			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.Value),
-			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration.ValueListId),
+			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.Key),
+			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration3.Strict),
+			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.Value),
+			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.ValueListId),
 		}
 
 		tagsValue, tagsDiags := NewConfigTagsValue(ConfigTagsValue{}.AttributeTypes(ctx), tagsAttrs)
@@ -589,7 +589,7 @@ func mapPolicyConfigToState(
 
 	case "workflow":
 		workflowAttrs := map[string]attr.Value{
-			"workflow_id": convert.StrToType(&apiConfig.WorkflowPolicyTypeConfiguration.WorkflowId),
+			"workflow_id": convert.StrToType(&apiConfig.WorkflowPolicyTypeConfiguration3.WorkflowId),
 		}
 
 		workflowValue, workflowDiags := NewConfigWorkflowValue(ConfigWorkflowValue{}.AttributeTypes(ctx), workflowAttrs)
@@ -794,8 +794,8 @@ func getPolicyAsState(
 
 	// Set Owner if present
 	state.Owner = NewOwnerValueNull()
-	if p.Owner.IsSet() && p.Owner.Get() != nil {
-		owner := p.Owner.Get()
+	if p.Owner.IsSetId() {
+		owner := p.Owner
 		ownerAttrs := map[string]attr.Value{}
 		if owner.Id != nil {
 			ownerAttrs["id"] = types.Int64Value(*owner.Id)

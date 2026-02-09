@@ -85,12 +85,13 @@ func (r *Resource) Create(
 			config.CertificateProvider = plan.ConfigHvm.CertificateProvider.ValueStringPointer()
 		}
 		if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() && !plan.ConfigHvm.EnableNetworkTypeSelection.IsUnknown() {
-			config.EnableNetworkTypeSelection = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBoolPointer()
+			config.EnableNetworkTypeSelection.Set(
+				convert.BoolToStringOnOff(
+					plan.ConfigHvm.EnableNetworkTypeSelection.ValueBool()).ValueStringPointer(),
+			)
 		}
 
-		addHvmConfig := sdkfuncs.AddCloudRequestHVMConfig(config)
-
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &addHvmConfig
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf2 = config
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()

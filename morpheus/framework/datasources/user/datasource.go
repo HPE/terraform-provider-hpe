@@ -233,7 +233,7 @@ func getUserByID(
 
 func getAccessAsState(
 	ctx context.Context,
-	user *sdk.ListUsers200ResponseAllOfUsersInner,
+	user *sdk.GetUser200ResponseUser,
 ) (AccessValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 

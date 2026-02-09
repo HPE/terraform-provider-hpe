@@ -235,7 +235,7 @@ func getInstanceAsState(
 func getInstanceConfig(
 	ctx context.Context,
 	id int64,
-	apiConfig *sdk.AddInstance200ResponseAllOfOneOfInstanceConfig,
+	apiConfig *sdk.GetInstance200ResponseInstanceConfig,
 ) (types.Dynamic, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -333,7 +333,7 @@ func getInstanceEnvVars(
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes
 func getVolumes(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -657,7 +657,7 @@ func convertAPIVolumesToStateVolumes(
 
 // getConnectionInfo builds the connection_info list
 func getConnectionInfo(
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	cInfo, ok := instance.GetConnectionInfoOk()
@@ -689,7 +689,7 @@ func getConnectionInfo(
 // getStateInterfaces get the interfaces to be returned as state entries
 func getStateInterfaces(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -758,7 +758,7 @@ func compareServerInstanceIntfs(
 // getStateInterfacesFromInstance build []NetworkInterfacesValue from interfaces, used on import
 func getStateInterfacesFromInstance(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -849,7 +849,7 @@ func getInstanceInterfacesChildNetworks(
 // getStateInterfacesFromInstanceServer get the []NetworkInterfacesValue from containerDetails.server.interfaces
 func getStateInterfacesFromInstanceServer(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	// network_interfaces
 	// We are going to read network interface information from containerDetails.server.interfaces
@@ -914,7 +914,7 @@ type processedServerInterfaces struct {
 // Process the set of interfaces in an instance
 // This function takes an "instance" input and returns processedServerInterfaces
 func getAllServerInterfaces(
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) processedServerInterfaces {
 	subIntfsMap := make(map[int64][]int64)
 	isSubIntf := make(map[int64]bool)

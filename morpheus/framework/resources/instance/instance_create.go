@@ -102,7 +102,7 @@ func (g *Resource) Create(
 			)
 		}
 	}
-	reqInstance.Config = sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigConfig{
+	reqInstance.Config = sdk.AddInstanceRequestConfig{
 		MapmapOfStringAny: &configMap,
 	}
 
@@ -169,7 +169,7 @@ func (g *Resource) Create(
 	networkInterfaces, diags := convert.FromListType(
 		ctx,
 		plan.NetworkInterfaces,
-		networkInterfaceMapper(ctx),
+		createNetworkInterfaceMapper(ctx),
 	)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert network interfaces")
@@ -207,7 +207,7 @@ func (g *Resource) Create(
 	reqInstance.SetPorts(ports)
 
 	// tags
-	tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
+	tags, diags := convert.FromSetType(ctx, plan.Tags, createTagMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -222,7 +222,7 @@ func (g *Resource) Create(
 	}
 
 	// volumes
-	volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
+	volumes, diags := convert.FromListType(ctx, plan.Volumes, createVolumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)

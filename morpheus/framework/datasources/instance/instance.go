@@ -187,7 +187,7 @@ func getConfigFromResponse(r *http.Response) (map[string]any, error) {
 
 func parseAsData(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 	data *InstanceModel,
 	configData map[string]any,
 ) diag.Diagnostics {
@@ -248,7 +248,7 @@ func parseAsData(
 		ctx,
 		instance.ContainerDetails,
 		func(
-			in sdk.InstanceContainer1,
+			in sdk.InstanceContainer2,
 		) ContainerDetailsValue {
 			containerDetails, d := parseContainerDetails(ctx, in)
 			if d.HasError() {
@@ -269,7 +269,7 @@ func parseAsData(
 		ctx,
 		instance.Controllers,
 		func(
-			in sdk.ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner,
+			in sdk.AddInstance200ResponseAllOfOneOfInstanceControllersInner,
 		) ControllersValue {
 			controllersType := ControllersTypeValue{
 				Code:  convert.StrToType(in.Type.Code),
@@ -369,9 +369,12 @@ func parseAsData(
 	data.FirewallEnabled = convert.BoolToType(instance.FirewallEnabled)
 
 	// group
+	groupID := instance.Group.GetId()
+	groupName := instance.Group.GetName()
+
 	data.Group = GroupValue{
-		Id:    convert.Int64ToType(instance.Group.Get().Id),
-		Name:  convert.StrToType(instance.Group.Get().Name),
+		Id:    convert.Int64ToType(&groupID),
+		Name:  convert.StrToType(&groupName),
 		state: attr.ValueStateKnown,
 	}
 
@@ -393,9 +396,11 @@ func parseAsData(
 	// instance_price
 	data.InstancePrice = NewInstancePriceValueNull()
 	if instance.InstancePrice != nil {
+		currency := instance.InstancePrice.GetCurrency()
+
 		data.InstancePrice = InstancePriceValue{
 			Cost:     convert.NumToType(instance.InstancePrice.Cost),
-			Currency: convert.StrToType(instance.InstancePrice.Currency),
+			Currency: convert.StrToType(&currency),
 			Price:    convert.NumToType(instance.InstancePrice.Price),
 			Unit:     convert.StrToType(instance.InstancePrice.Unit),
 			state:    attr.ValueStateKnown,
@@ -615,14 +620,17 @@ func parseAsData(
 	data.Tags = tags
 
 	// tenant
+	tenantID := instance.Tenant.GetId()
+	tenantName := instance.Tenant.GetName()
+
 	data.Tenant = TenantValue{
-		Id:    convert.Int64ToType(instance.Tenant.Get().Id),
-		Name:  convert.StrToType(instance.Tenant.Get().Name),
+		Id:    convert.Int64ToType(&tenantID),
+		Name:  convert.StrToType(&tenantName),
 		state: attr.ValueStateKnown,
 	}
 
 	// tenant_id
-	data.TenantId = convert.Int64ToType(instance.Tenant.Get().Id)
+	data.TenantId = convert.Int64ToType(&tenantID)
 
 	// user_status
 	data.UserStatus = convert.StrToType(instance.UserStatus.Get())
@@ -666,7 +674,7 @@ func parseAsData(
 
 func parseCluster(
 	ctx context.Context,
-	cluster *sdk.ListInstances200ResponseAllOfInstancesInnerCluster,
+	cluster *sdk.GetInstance200ResponseInstanceCluster,
 ) (ClusterValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -696,7 +704,7 @@ func parseCluster(
 
 func parseContainerDetails(
 	ctx context.Context,
-	containerDetails sdk.InstanceContainer1,
+	containerDetails sdk.InstanceContainer2,
 ) (ContainerDetailsValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -924,7 +932,7 @@ func parseContainerDetails(
 
 func parseChildVolumes(
 	ctx context.Context,
-	containerDetails sdk.InstanceContainer1,
+	containerDetails sdk.InstanceContainer2,
 ) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -1006,7 +1014,7 @@ func parseChildVolumes(
 
 func parseContainerType(
 	ctx context.Context,
-	containerDetails sdk.InstanceContainer1,
+	containerDetails sdk.InstanceContainer2,
 ) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -1027,7 +1035,7 @@ func parseContainerType(
 
 func parseContainerInterfaces(
 	ctx context.Context,
-	containerDetails sdk.InstanceContainer1,
+	containerDetails sdk.InstanceContainer2,
 ) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -1038,7 +1046,7 @@ func parseContainerInterfaces(
 			childInterfaces, d := convert.ToSetType(
 				ctx,
 				in.Interfaces,
-				func(in sdk.InstanceInterfacesNetworkInterfacesInnerNetworkPool) ChildInterfacesValue {
+				func(in sdk.InstanceContainerServerInstancesInnerInner1) ChildInterfacesValue {
 					return ChildInterfacesValue{
 						Id:    convert.Int64ToType(in.Id),
 						Name:  convert.StrToType(in.Name),
