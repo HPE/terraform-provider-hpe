@@ -17,6 +17,7 @@ func (f *testOverrideFlags) String() string {
 
 func (f *testOverrideFlags) Set(value string) error {
 	*f = append(*f, value)
+
 	return nil
 }
 
@@ -28,7 +29,7 @@ func ParseFlags() {
 	systemOverrides = make(map[string]string)
 
 	var overrideSystem testOverrideFlags
-	flag.Var(&overrideSystem, "morpheus.system-override", "override test system")
+	flag.Var(&overrideSystem, "system-override", "override test system")
 	flag.Parse()
 
 	for _, override := range overrideSystem {
