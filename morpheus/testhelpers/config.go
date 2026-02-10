@@ -74,11 +74,31 @@ func ProviderBlock(preferredSystem string) string {
 }
 
 // Returns a provider block for the legacy morpheus provider that can be used for acceptance testing
-func ProviderBlockLegacy() string {
-	return providerConfigLegacy
+func ProviderBlockLegacy(preferredSystem string) string {
+	tmpl, err := template.New("provider-block").Parse(providerConfigLegacy)
+	if err != nil {
+		panic("could not parse template" + err.Error())
+	}
+
+	var out bytes.Buffer
+	if err := tmpl.Execute(&out, preferredSystem); err != nil {
+		panic("could not execute template" + err.Error())
+	}
+
+	return out.String()
 }
 
 // Returns a provider block for mixed usage of the new and old providers in accedptance testing
-func ProviderBlockMixed() string {
-	return providerConfig + providerConfigLegacyProviderBlockOnly
+func ProviderBlockMixed(preferredSystem string) string {
+	tmpl, err := template.New("provider-block").Parse(providerConfig + providerConfigLegacyProviderBlockOnly)
+	if err != nil {
+		panic("could not parse template" + err.Error())
+	}
+
+	var out bytes.Buffer
+	if err := tmpl.Execute(&out, preferredSystem); err != nil {
+		panic("could not execute template" + err.Error())
+	}
+
+	return out.String()
 }
