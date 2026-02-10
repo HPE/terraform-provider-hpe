@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 // Test update of mutable attributes
@@ -22,7 +23,8 @@ func TestAccMorpheusPolicyUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "-updated"
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -120,7 +122,8 @@ func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 
@@ -242,7 +245,8 @@ func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 
@@ -357,7 +361,8 @@ func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 

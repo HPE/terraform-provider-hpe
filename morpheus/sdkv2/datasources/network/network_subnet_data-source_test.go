@@ -11,6 +11,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsnetwork "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusDataSourceNetworkSubnetExampleOk(t *testing.T) {
@@ -22,7 +23,8 @@ func TestAccMorpheusDataSourceNetworkSubnetExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := "VM Network"
 

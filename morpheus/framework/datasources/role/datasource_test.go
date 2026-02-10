@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -29,6 +30,7 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -54,7 +56,8 @@ func TestAccMorpheusFindRoleById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	resourceConfig := `
 resource "hpe_morpheus_role" "test" {
@@ -109,7 +112,8 @@ func TestAccMorpheusFindRoleByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	resourceConfig := `
 resource "hpe_morpheus_role" "test" {
@@ -164,7 +168,8 @@ func TestAccMorpheusFindRoleVerifyAttributes(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	resourceConfig := `
 resource "hpe_morpheus_role" "test_user" {

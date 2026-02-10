@@ -263,14 +263,16 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 
 	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlock(testSystem)
-	params := systemoverride.GetParameters(testSystem,
+	params := systemoverride.GetParameters(
+		testSystem,
 		systemoverride.SystemTestParameters{
 			Name: "zodiac",
 			Params: map[string]string{
 				"operationalWorkflowId":   "90",
 				"operationalWorkflowName": "Hello World",
 			},
-		}, systemoverride.SystemTestParameters{
+		},
+		systemoverride.SystemTestParameters{
 			Name: "feature",
 			Params: map[string]string{
 				"operationalWorkflowId":   "3143",

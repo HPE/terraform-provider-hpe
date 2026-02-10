@@ -12,6 +12,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optiontype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusOptionTypeRadioListExampleOk(t *testing.T) {
@@ -25,7 +26,8 @@ func TestAccMorpheusOptionTypeRadioListExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to mismatch in api call and tf schema")
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

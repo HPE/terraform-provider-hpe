@@ -14,10 +14,12 @@ import (
 
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -41,7 +43,8 @@ func TestAccMorpheusServicePlanRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -129,7 +132,8 @@ func TestAccMorpheusServicePlanAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
@@ -360,7 +364,8 @@ func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)

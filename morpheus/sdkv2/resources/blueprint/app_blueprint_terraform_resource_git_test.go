@@ -12,6 +12,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
@@ -25,7 +26,8 @@ func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to missing git infrastructure in test environment")
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

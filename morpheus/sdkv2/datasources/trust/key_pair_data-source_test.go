@@ -14,9 +14,11 @@ import (
 	dstrust "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/trust"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/trust"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 
 	testhelpers.WriteMergedResults()
@@ -35,7 +37,8 @@ func TestAccMorpheusDataSourceKeyPairExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to bug in terraform code")
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

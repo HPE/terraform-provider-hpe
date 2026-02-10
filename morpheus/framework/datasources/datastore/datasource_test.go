@@ -17,6 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -31,6 +32,7 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -110,7 +112,8 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
 		"Name", name,
@@ -150,7 +153,8 @@ func TestAccMorpheusFindDatastoreNoResourcePermissionsById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm_no_resource_permissions.tf.tmpl",
 		"Name", name,
@@ -189,7 +193,8 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
 		"Name", name,
@@ -227,7 +232,8 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	config := providerConfig + `
       data "hpe_morpheus_datastore" "test" {

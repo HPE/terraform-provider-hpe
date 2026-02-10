@@ -10,6 +10,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
@@ -23,7 +24,8 @@ func TestAccMorpheusTaskRestartExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	resourceConfig, err := task.RenderTaskRestartConfig(t, map[string]string{
 		"Name": name,

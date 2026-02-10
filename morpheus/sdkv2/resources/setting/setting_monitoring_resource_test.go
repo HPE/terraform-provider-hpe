@@ -12,6 +12,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusSettingMonitoringExampleOk(t *testing.T) {
@@ -26,7 +27,8 @@ func TestAccMorpheusSettingMonitoringExampleOk(t *testing.T) {
 	t.Skip("Skipping due to missing infrastructure in test environment")
 	// "serviceNow.integration":"Integration not found for id '1'"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

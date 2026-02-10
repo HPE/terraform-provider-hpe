@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -55,7 +56,8 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 	environmentID := fmt.Sprintf("%d", environment.ID)
 	environmentName := environment.Name
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
 	if err != nil {
@@ -106,7 +108,8 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 	environmentID := fmt.Sprintf("%d", environment.ID)
 	environmentName := environment.Name
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-name.tf.tmpl",
 		"Name", environmentName)
@@ -146,7 +149,8 @@ func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	config := providerConfig + `
       data "hpe_morpheus_environment" "test" {
         name = "______"

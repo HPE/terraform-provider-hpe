@@ -8,6 +8,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -18,6 +19,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -54,7 +56,8 @@ func TestAccMorpheusRoleUserRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -129,7 +132,8 @@ func TestAccMorpheusRoleTenantRequiredAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -206,7 +210,8 @@ func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -328,7 +333,8 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -392,7 +398,8 @@ func TestAccMorpheusRolePermissionsDefaultAccessPermissionsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -501,8 +508,9 @@ func TestAccMorpheusRoleExampleLegacyProviderOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfigLegacy := testhelpers.ProviderBlockLegacy()
-	providerConfigMixed := testhelpers.ProviderBlockMixed()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfigLegacy := testhelpers.ProviderBlockLegacy(testSystem)
+	providerConfigMixed := testhelpers.ProviderBlockMixed(testSystem)
 
 	// for setting up all of the required legacy resources to be tested
 	resourceConfigLegacy := `
@@ -642,7 +650,8 @@ func TestAccMorpheusRoleAllPermissionsUserRoleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -928,7 +937,8 @@ func TestAccMorpheusRoleTenantAllPermissionsOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

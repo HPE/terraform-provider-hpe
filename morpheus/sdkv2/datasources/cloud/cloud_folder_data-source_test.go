@@ -11,6 +11,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dscloud "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusDataSourceCloudFolderExampleOk(t *testing.T) {
@@ -24,7 +25,8 @@ func TestAccMorpheusDataSourceCloudFolderExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to missing infrastructure in test environment")
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	var dependenciesConfig string
 

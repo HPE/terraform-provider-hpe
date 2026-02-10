@@ -10,6 +10,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/template"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
@@ -21,7 +22,8 @@ func TestAccMorpheusSpecTemplateTerraformResourceUrlExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

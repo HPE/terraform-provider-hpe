@@ -19,10 +19,12 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -50,7 +52,8 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 	instanceTypeID := "9"
@@ -107,7 +110,8 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	updatedName := name + "-updated"
 
@@ -247,7 +251,8 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
@@ -386,7 +391,8 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlock(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
