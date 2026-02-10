@@ -1,10 +1,9 @@
 package task_test
 
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task"
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "90" IfOperationalWorkflowName "Test 1" ElseOperationalWorkflowId "91" ElseOperationalWorkflowName "Test 2"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task" operationalWorkflowId "90" operationalWorkflowName "Test 1"
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -78,9 +77,6 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	fmt.Println(providerConfig + resourceConfig)
-	fmt.Println(params)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

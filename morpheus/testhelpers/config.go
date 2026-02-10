@@ -28,7 +28,7 @@ const providerConfig = providerVariables + `
 
 provider "hpe" {
     morpheus {
-        url = var.testacc_morpheus_url
+        url = var.testacc_morpheus_{{.}}_url
         access_token    = var.testacc_morpheus_{{.}}_access_token
         username = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_username : null
         password = var.testacc_morpheus_{{.}}_access_token == null ? var.testacc_morpheus_{{.}}_password : null

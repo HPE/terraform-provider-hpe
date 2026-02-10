@@ -10,10 +10,10 @@ resource "hpe_morpheus_task" "example_task" {
         return false;
         EOT
         if_operational_workflow_id   = {{ .IfOperationalWorkflowId }}
-        if_operational_workflow_name = {{ .IfOperationalWorkflowName }}
+        if_operational_workflow_name = "{{ .IfOperationalWorkflowName }}"
 
         else_operational_workflow_id   = {{ .ElseOperationalWorkflowId }}
-        else_operational_workflow_name = {{ .ElseOperationalWorkflowName }}
+        else_operational_workflow_name = "{{ .ElseOperationalWorkflowName }}"
     }
 
     execute_target = "local"
