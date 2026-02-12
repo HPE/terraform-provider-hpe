@@ -1,3 +1,4 @@
 data "hpe_morpheus_ansible_tower_job_template" "example" {
-  name = {{.Name}}
+  ansible_tower_integration_id = {{.AnsibleTowerIntegrationId}}
+  name                         = {{.Name}}
 }

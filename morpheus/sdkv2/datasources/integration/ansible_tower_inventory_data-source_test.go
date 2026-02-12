@@ -41,7 +41,8 @@ func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 	var dependenciesConfig string
 
 	datasourceConfig, err := dsintegration.RenderAnsibleTowerInventoryConfig(t, map[string]string{
-		"Name": name,
+		"Name":                      name,
+		"AnsibleTowerIntegrationId": "1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -54,6 +55,11 @@ func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 			"data.hpe_morpheus_ansible_tower_inventory.example",
 			"name",
 			"Demo Inventory",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_ansible_tower_inventory.example",
+			"ansible_tower_integration_id",
+			"1",
 		),
 	}
 

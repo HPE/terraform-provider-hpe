@@ -19,7 +19,8 @@ func RenderAnsibleTowerJobTemplateConfig(t *testing.T, overrides map[string]stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "\"Demo Job Template\"",
+		"Name":                      "\"Demo Job Template\"",
+		"AnsibleTowerIntegrationId": "1",
 	}
 
 	// Apply overrides to defaults
