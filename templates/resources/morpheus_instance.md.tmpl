@@ -12,7 +12,10 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware and BMaaS instances are supported. Some general issues<br>
+-> Currently HVM, VMware and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
+Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
@@ -39,9 +42,9 @@ When creating an instance with network bonding and/or LAGs we cannot reconcile t
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
 
--> The following examples all have the following settings in their `config` blocks:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `noAgent` is set to `false`<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `createUser` is set to `true`<br><br>
+-> Some of the examples below have the following settings in their `config` blocks:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `no_agent` in static config (equivalent to `noAgent` in dynamic config) is set to `true`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to `false`<br><br>
 These settings can be changed as required.
 
 ## HVM Instance
