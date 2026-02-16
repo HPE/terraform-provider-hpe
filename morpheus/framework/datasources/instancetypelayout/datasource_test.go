@@ -260,7 +260,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -329,7 +329,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutWithIdAndName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -362,7 +362,7 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
+func TestAccMorpheusFindInstanceTypeLayoutWithIdAndVersion(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
