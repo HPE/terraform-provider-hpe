@@ -68,12 +68,12 @@ func ProviderBlockLegacy() string {
 	return providerConfigLegacy
 }
 
-// Returns a provider block for mixed usage of the new and old providers in accedptance testing
+// Returns a provider block for mixed usage of the new and old providers in acceptance testing
 func ProviderBlockMixed() string {
 	return providerConfig + providerConfigLegacyProviderBlockOnly
 }
 
-// Returns a provider block that can be used for acceptance testing, with the preferred system (either "morpheus" or "hpe") as a parameter to fill in the variables
+// Returns a provider block for tests, using the preferred system as a parameter for configuration
 func ProviderBlockForServer(preferredSystem string) string {
 	tmpl, err := template.New("provider-block").Parse(providerConfig)
 	if err != nil {
@@ -88,7 +88,7 @@ func ProviderBlockForServer(preferredSystem string) string {
 	return out.String()
 }
 
-// Returns a provider block for the legacy morpheus provider that can be used for acceptance testing, with the preferred system (either "morpheus" or "hpe") as a parameter to fill in the variables
+// Returns a provider block for legacy provider tests, using the preferred system for configuration
 func ProviderBlockLegacyForServer(preferredSystem string) string {
 	tmpl, err := template.New("provider-block").Parse(providerConfigLegacy)
 	if err != nil {
@@ -103,7 +103,7 @@ func ProviderBlockLegacyForServer(preferredSystem string) string {
 	return out.String()
 }
 
-// Returns a provider block for mixed usage of the new and old providers in acceptance testing, with the preferred system (either "morpheus" or "hpe") as a parameter to fill in the variables
+// Returns a provider block for mixed new and old providers in tests, using the preferred system as a parameter
 func ProviderBlockMixedForServer(preferredSystem string) string {
 	tmpl, err := template.New("provider-block").Parse(providerConfig + providerConfigLegacyProviderBlockOnly)
 	if err != nil {
