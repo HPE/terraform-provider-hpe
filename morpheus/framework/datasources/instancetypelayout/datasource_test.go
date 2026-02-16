@@ -61,12 +61,12 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"id",
 			layoutID,
 		),
@@ -116,12 +116,12 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"id",
 			layoutID,
 		),
@@ -172,17 +172,17 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"name",
 			layoutName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"version",
 			layoutVersion,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"id",
 			layoutID,
 		),
@@ -234,7 +234,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance_type_layout.test",
+			"data.hpe_morpheus_instance_type_layout.example",
 			"sort_order",
 			"2",
 		),
@@ -245,7 +245,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig := providerConfig + `
-      data "hpe_morpheus_instance_type_layout" "test" {
+      data "hpe_morpheus_instance_type_layout" "example" {
         id = ` + layoutID + `
       }`
 
