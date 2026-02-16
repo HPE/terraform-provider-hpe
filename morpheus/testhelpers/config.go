@@ -115,7 +115,7 @@ provider "morpheus" {
 `
 
 //nolint:lll
-const providerConfigLegacyProviderBlockOnlyTemplate = `
+const providerConfigLegacyProviderBlockTemplate = `
 provider "morpheus" {
   url          = var.testacc_morpheus_{{.}}_url
   access_token = var.testacc_morpheus_{{.}}_access_token
@@ -171,7 +171,7 @@ func ProviderBlockLegacyForServer(preferredSystem string) string {
 
 // Returns a provider block for mixed new and old providers in tests, using the preferred system as a parameter
 func ProviderBlockMixedForServer(preferredSystem string) string {
-	tmpl, err := template.New("provider-block").Parse(providerConfigTemplate + providerConfigLegacyProviderBlockOnlyTemplate)
+	tmpl, err := template.New("provider-block").Parse(providerConfigTemplate + providerConfigLegacyProviderBlockTemplate)
 	if err != nil {
 		panic("could not parse template" + err.Error())
 	}
