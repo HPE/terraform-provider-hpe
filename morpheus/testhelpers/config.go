@@ -5,7 +5,73 @@ import (
 	"text/template"
 )
 
-const providerVariables = `
+//nolint:lll
+const providerConfig = `
+variable "testacc_morpheus_url" {
+  default = null
+}
+variable "testacc_morpheus_username" {
+  default = null
+}
+variable "testacc_morpheus_password" {
+  default = null
+}
+variable "testacc_morpheus_access_token" {
+  default = null
+}
+variable "testacc_morpheus_insecure" {
+  default = false
+}
+
+provider "hpe" {
+        morpheus {
+                url = var.testacc_morpheus_url
+                access_token    = var.testacc_morpheus_access_token
+                username = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
+                password = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
+                insecure = var.testacc_morpheus_insecure
+        }
+}
+`
+
+//nolint:lll
+const providerConfigLegacy = `
+variable "testacc_morpheus_url" {
+  default = null
+}
+variable "testacc_morpheus_username" {
+  default = null
+}
+variable "testacc_morpheus_password" {
+  default = null
+}
+variable "testacc_morpheus_access_token" {
+  default = null
+}
+variable "testacc_morpheus_insecure" {
+  default = false
+}
+
+provider "morpheus" {
+  url          = var.testacc_morpheus_url
+  access_token = var.testacc_morpheus_access_token
+  username     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
+  password     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
+}
+`
+
+//nolint:lll
+const providerConfigLegacyProviderBlockOnly = `
+provider "morpheus" {
+  url          = var.testacc_morpheus_url
+  access_token = var.testacc_morpheus_access_token
+  username     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_username : null
+  password     = var.testacc_morpheus_access_token == null ? var.testacc_morpheus_password : null
+}
+`
+
+// Template versions for *ForServer functions
+const providerVariablesTemplate = `
 variable "testacc_morpheus_{{.}}_url" {
   default = null
 }
@@ -24,7 +90,7 @@ variable "testacc_morpheus_{{.}}_insecure" {
 `
 
 //nolint:lll
-const providerConfig = providerVariables + `
+const providerConfigTemplate = providerVariablesTemplate + `
 
 provider "hpe" {
     morpheus {
@@ -38,7 +104,7 @@ provider "hpe" {
 `
 
 //nolint:lll
-const providerConfigLegacy = providerVariables + `
+const providerConfigLegacyTemplate = providerVariablesTemplate + `
 
 provider "morpheus" {
   url          = var.testacc_morpheus_{{.}}_url
@@ -49,7 +115,7 @@ provider "morpheus" {
 `
 
 //nolint:lll
-const providerConfigLegacyProviderBlockOnly = `
+const providerConfigLegacyProviderBlockOnlyTemplate = `
 provider "morpheus" {
   url          = var.testacc_morpheus_{{.}}_url
   access_token = var.testacc_morpheus_{{.}}_access_token
@@ -75,7 +141,7 @@ func ProviderBlockMixed() string {
 
 // Returns a provider block for tests, using the preferred system as a parameter for configuration
 func ProviderBlockForServer(preferredSystem string) string {
-	tmpl, err := template.New("provider-block").Parse(providerConfig)
+	tmpl, err := template.New("provider-block").Parse(providerConfigTemplate)
 	if err != nil {
 		panic("could not parse template" + err.Error())
 	}
@@ -90,7 +156,7 @@ func ProviderBlockForServer(preferredSystem string) string {
 
 // Returns a provider block for legacy provider tests, using the preferred system for configuration
 func ProviderBlockLegacyForServer(preferredSystem string) string {
-	tmpl, err := template.New("provider-block").Parse(providerConfigLegacy)
+	tmpl, err := template.New("provider-block").Parse(providerConfigLegacyTemplate)
 	if err != nil {
 		panic("could not parse template" + err.Error())
 	}
@@ -105,7 +171,7 @@ func ProviderBlockLegacyForServer(preferredSystem string) string {
 
 // Returns a provider block for mixed new and old providers in tests, using the preferred system as a parameter
 func ProviderBlockMixedForServer(preferredSystem string) string {
-	tmpl, err := template.New("provider-block").Parse(providerConfig + providerConfigLegacyProviderBlockOnly)
+	tmpl, err := template.New("provider-block").Parse(providerConfigTemplate + providerConfigLegacyProviderBlockOnlyTemplate)
 	if err != nil {
 		panic("could not parse template" + err.Error())
 	}
