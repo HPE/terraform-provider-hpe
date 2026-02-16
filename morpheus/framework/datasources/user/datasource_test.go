@@ -16,7 +16,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -31,7 +30,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -46,8 +44,7 @@ func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	}
 
 	username := acctest.RandomWithPrefix(t.Name())
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	userResourceConfig := `
 resource "hpe_morpheus_user" "test_user" {
@@ -108,8 +105,7 @@ func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 
 	username := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	userResourceConfig := `
 resource "hpe_morpheus_user" "test_user" {
@@ -155,8 +151,7 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_user" "test" {
@@ -225,8 +220,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_user" "test" {
@@ -271,8 +265,7 @@ func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	firstName := "TestFirst"
 	lastName := "TestLast"
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceConfig := `
 resource "hpe_morpheus_user" "test_all" {

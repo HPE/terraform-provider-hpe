@@ -16,7 +16,6 @@ import (
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -31,7 +30,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -57,8 +55,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
@@ -137,8 +134,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
@@ -215,8 +211,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_cloud" "test" {

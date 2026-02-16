@@ -19,7 +19,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -34,7 +33,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -58,8 +56,7 @@ func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -130,8 +127,7 @@ func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -202,8 +198,7 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_policy" "test" {
@@ -269,8 +264,7 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_policy" "test" {
@@ -314,8 +308,7 @@ func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	policyDescription := "Comprehensive test policy with all config fields"
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Create a single policy resource with ALL config fields combined for testing
 	resourceConfig := `
@@ -719,8 +712,7 @@ func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Create dependency resources
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")

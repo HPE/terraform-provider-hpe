@@ -17,7 +17,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -32,7 +31,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -66,8 +64,7 @@ resource "morpheus_service_plan" "test" {
 }
 `
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
+	providerConfig := testhelpers.ProviderBlockMixed()
 
 	dataSourceConfig, err := testhelpers.RenderExample(
 		t, "example-id.tf.tmpl", "Id", "morpheus_service_plan.test.id")
@@ -120,8 +117,7 @@ resource "morpheus_service_plan" "test" {
   provision_type = "` + provisionTypeCode + `"
 }
 `
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
+	providerConfig := testhelpers.ProviderBlockMixed()
 
 	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name-provision.tf.tmpl",
 		"Name", name,
@@ -172,8 +168,7 @@ func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
 		data "hpe_morpheus_service_plan" "test" {
@@ -245,8 +240,7 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
 			data "hpe_morpheus_service_plan" "test" {
@@ -284,8 +278,7 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
 			data "hpe_morpheus_service_plan" "test" {
@@ -327,8 +320,7 @@ func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resourceConfig := `
 resource "hpe_morpheus_service_plan" "test_all" {

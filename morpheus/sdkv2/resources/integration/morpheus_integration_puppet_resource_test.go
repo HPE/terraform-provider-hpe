@@ -10,7 +10,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
@@ -24,8 +23,7 @@ func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

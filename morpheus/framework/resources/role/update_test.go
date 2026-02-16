@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 // Test for updating all attributes of a user role, including permissions.
@@ -26,8 +25,7 @@ func TestAccMorpheusRoleUserUpdateAllAttrsOk(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
+	providerConfig := testhelpers.ProviderBlockMixed()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"
@@ -810,8 +808,7 @@ func TestAccMorpheusRoleTenantUpdateAllAttrsOk(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixed(testSystem)
+	providerConfig := testhelpers.ProviderBlockMixed()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"

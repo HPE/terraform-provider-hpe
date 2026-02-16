@@ -14,11 +14,9 @@ import (
 	dscypher "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/cypher"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/cypher"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 
 	testhelpers.WriteMergedResults()
@@ -41,8 +39,7 @@ func TestAccMorpheusDataSourceCypherSecretExampleOk(t *testing.T) {
 	// t.Skip("Skipping due to bug in terraform code")
 	// t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

@@ -12,7 +12,6 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsintegration "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
@@ -26,8 +25,7 @@ func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to missing infrastructure in test environment")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

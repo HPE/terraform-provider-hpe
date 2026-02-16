@@ -57,7 +57,7 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -92,7 +92,7 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -128,7 +128,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -162,7 +162,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 func TestAccProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
@@ -204,7 +204,7 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -233,7 +233,7 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expectedA := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -277,7 +277,7 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].password" must be specified when\n` +
@@ -307,7 +307,7 @@ func TestAccProviderBlockNoneSet(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +

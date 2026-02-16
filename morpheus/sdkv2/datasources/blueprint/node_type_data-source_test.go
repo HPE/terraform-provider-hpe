@@ -14,7 +14,6 @@ import (
 	dsblueprint "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusDataSourceNodeTypeExampleOk(t *testing.T) {
@@ -26,8 +25,7 @@ func TestAccMorpheusDataSourceNodeTypeExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

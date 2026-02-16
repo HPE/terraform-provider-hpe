@@ -12,7 +12,6 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsautomation "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccMorpheusDataSourcePowerScheduleExampleOk(t *testing.T) {
@@ -26,8 +25,7 @@ func TestAccMorpheusDataSourcePowerScheduleExampleOk(t *testing.T) {
 
 	t.Skip("Skipping due to missing resource implementation")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlock(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
