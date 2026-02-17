@@ -11,6 +11,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
 
@@ -55,7 +56,8 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -71,11 +73,11 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": config.StringVariable("abcdefg"),
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": config.StringVariable("abcdefg"),
+					"insecure":                              config.BoolVariable(false),
 				},
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
@@ -89,7 +91,8 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -105,11 +108,11 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     config.StringVariable("foo@test.com"),
-					"testacc_morpheus_password":     config.StringVariable("testpass"),
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     config.StringVariable("foo@test.com"),
+					"testacc_morpheus_feature_password":     config.StringVariable("testpass"),
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
@@ -124,7 +127,8 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -141,11 +145,11 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     config.StringVariable("foo@test.com"),
-					"testacc_morpheus_password":     config.StringVariable("testpass"),
-					"testacc_morpheus_access_token": config.StringVariable("abcdefg"),
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     config.StringVariable("foo@test.com"),
+					"testacc_morpheus_feature_password":     config.StringVariable("testpass"),
+					"testacc_morpheus_feature_access_token": config.StringVariable("abcdefg"),
+					"insecure":                              config.BoolVariable(false),
 				},
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
@@ -157,7 +161,8 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 
 func TestAccProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
@@ -168,11 +173,11 @@ func TestAccProviderBlockMissingURL(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          nil,
-					"testacc_morpheus_username":     config.StringVariable("foo@test.com"),
-					"testacc_morpheus_password":     config.StringVariable("testpass"),
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          nil,
+					"testacc_morpheus_feature_username":     config.StringVariable("foo@test.com"),
+					"testacc_morpheus_feature_password":     config.StringVariable("testpass"),
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig + resourceConfig,
@@ -180,11 +185,11 @@ func TestAccProviderBlockMissingURL(t *testing.T) {
 			},
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          nil,
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": config.StringVariable("abcdefg"),
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          nil,
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": config.StringVariable("abcdefg"),
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig + resourceConfig,
@@ -198,7 +203,8 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -208,11 +214,11 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig + resourceConfig,
@@ -226,7 +232,8 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expectedA := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -239,11 +246,11 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expectedA),
 				Config:             providerConfig + resourceConfig,
@@ -251,11 +258,11 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 			},
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          config.StringVariable("https://test.morpheus.com"),
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     config.StringVariable("testpass"),
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          config.StringVariable("https://test.morpheus.com"),
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     config.StringVariable("testpass"),
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expectedB),
 				Config:             providerConfig + resourceConfig,
@@ -269,7 +276,8 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].password" must be specified when\n` +
@@ -280,11 +288,11 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          nil,
-					"testacc_morpheus_username":     config.StringVariable("foo@test.com"),
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      config.BoolVariable(false),
+					"testacc_morpheus_feature_url":          nil,
+					"testacc_morpheus_feature_username":     config.StringVariable("foo@test.com"),
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              config.BoolVariable(false),
 				},
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig + resourceConfig,
@@ -298,7 +306,8 @@ func TestAccProviderBlockNoneSet(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
@@ -309,11 +318,11 @@ func TestAccProviderBlockNoneSet(t *testing.T) {
 		Steps: []testresource.TestStep{
 			{
 				ConfigVariables: config.Variables{
-					"testacc_morpheus_url":          nil,
-					"testacc_morpheus_username":     nil,
-					"testacc_morpheus_password":     nil,
-					"testacc_morpheus_access_token": nil,
-					"insecure":                      nil,
+					"testacc_morpheus_feature_url":          nil,
+					"testacc_morpheus_feature_username":     nil,
+					"testacc_morpheus_feature_password":     nil,
+					"testacc_morpheus_feature_access_token": nil,
+					"insecure":                              nil,
 				},
 				ExpectError:        regexp.MustCompile(expected),
 				Config:             providerConfig + resourceConfig,
