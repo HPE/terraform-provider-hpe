@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func init() {
@@ -35,5 +36,6 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	resource.TestMain(m)
 }
