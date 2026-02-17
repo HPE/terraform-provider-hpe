@@ -56,7 +56,7 @@ func getGroupByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+) (*sdk.GetGroups200ResponseGroup, error) {
 	g, hresp, err := apiClient.GroupsAPI.GetGroups(ctx, id).Execute()
 	if g == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for group %d", id)
@@ -71,7 +71,7 @@ func getGroupByName(
 	ctx context.Context,
 	name string,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+) (*sdk.GetGroups200ResponseGroup, error) {
 	gs, hresp, err := apiClient.GroupsAPI.ListGroups(ctx).Name(name).Execute()
 	if gs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for group %s", name)
@@ -86,7 +86,7 @@ func getGroupByName(
 	}
 
 	if len(groups) == 1 {
-		return &groups[0], nil
+		return getGroupByID(ctx, *groups[0].Id, apiClient)
 	} else if len(groups) > 1 {
 		return nil, errors.New(consts.ErrorMultipleGroups)
 	}
@@ -98,7 +98,7 @@ func getGroup(
 	ctx context.Context,
 	data GroupModel,
 	apiClient *sdk.APIClient,
-) (*sdk.ListGroups200ResponseAllOfGroupsInner, error) {
+) (*sdk.GetGroups200ResponseGroup, error) {
 	if !data.Id.IsNull() {
 		return getGroupByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {

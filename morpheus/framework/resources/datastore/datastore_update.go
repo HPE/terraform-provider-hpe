@@ -18,8 +18,9 @@ import (
 )
 
 var (
-	resourcePermissionsUpdateFunc = sdk.NewUpdateCloudDatastoresRequestDatastoreResourcePermissionsWithDefaults
-	sitesPermissionsUpdateFunc    = sdk.NewUpdateCloudDatastoresRequestDatastoreResourcePermissionsSitesInnerWithDefaults
+	resourcePermissionsUpdateFunc = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsWithDefaults
+	sitesPermissionsUpdateFunc    = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsSitesInnerWithDefaults
+	plansPermissionsUpdateFunc    = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsPlansInnerWithDefaults
 )
 
 func updateDatastore(
@@ -33,7 +34,7 @@ func updateDatastore(
 
 	name := plan.Name.ValueString()
 
-	updateDatastore := sdk.NewUpdateCloudDatastoresRequestDatastoreWithDefaults()
+	updateDatastore := sdk.NewUpdateDatastoresRequestDatastoreWithDefaults()
 	updateDatastore.AdditionalProperties = make(map[string]any)
 
 	// If the plan has unknown value for Visibility, use the state values
@@ -70,7 +71,7 @@ func updateDatastore(
 				return DatastoreModel{}, diags
 			}
 
-			var sites []sdk.UpdateCloudDatastoresRequestDatastoreResourcePermissionsSitesInner
+			var sites []sdk.UpdateDatastoresRequestDatastoreResourcePermissionsSitesInner
 			for _, groupsValue := range groupsValues {
 				site := sitesPermissionsUpdateFunc()
 				site.SetId(groupsValue.Id.ValueInt64())
@@ -90,9 +91,9 @@ func updateDatastore(
 				return DatastoreModel{}, diags
 			}
 
-			var plans []sdk.UpdateCloudDatastoresRequestDatastoreResourcePermissionsSitesInner
+			var plans []sdk.UpdateDatastoresRequestDatastoreResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
-				planItem := sitesPermissionsUpdateFunc()
+				planItem := plansPermissionsUpdateFunc()
 				planItem.SetId(plansValue.Id.ValueInt64())
 				plans = append(plans, *planItem)
 			}
@@ -112,7 +113,7 @@ func updateDatastore(
 		}
 
 		// tenantPermissions := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults()
-		tenantPermissions := sdk.NewUpdateCloudDatastoresRequestDatastoreTenantPermissionsWithDefaults()
+		tenantPermissions := sdk.NewUpdateDatastoresRequestDatastoreTenantPermissionsWithDefaults()
 		var accounts []int64
 		for _, tenantsValue := range tenantsValues {
 			accounts = append(accounts, tenantsValue.Id.ValueInt64())
@@ -121,11 +122,11 @@ func updateDatastore(
 		updateDatastore.SetTenantPermissions(*tenantPermissions)
 	}
 
-	updateDatastoreReq := sdk.NewUpdateCloudDatastoresRequestWithDefaults()
+	updateDatastoreReq := sdk.NewUpdateDatastoresRequestWithDefaults()
 	updateDatastoreReq.SetDatastore(*updateDatastore)
 
 	response, hresp, err := client.DatastoresAPI.UpdateDatastores(ctx, id).
-		UpdateCloudDatastoresRequest(*updateDatastoreReq).Execute()
+		UpdateDatastoresRequest(*updateDatastoreReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"update datastore resource",

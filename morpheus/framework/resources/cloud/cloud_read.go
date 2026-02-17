@@ -79,26 +79,19 @@ func getCloudAsState(
 	state.TenantId = convert.Int64ToType(cloud.AccountId)
 	state.Visibility = convert.StrToType(cloud.Visibility)
 
-	cfg := cloud.GetConfig()
-
-	// Move these common fields up
-	state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-	cfg.ApplianceUrl.Unset()
-	state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-	cfg.DatacenterName.Unset()
-	state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-	cfg.ExternalId.Unset()
-	state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-	cfg.InventoryLevel.Unset()
-	state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
-	cfg.ConsoleKeymap.Unset()
-
-	// Remove possibly buggy API fields
-	cfg.ConfigCmdbDiscovery = nil
-
 	switch {
 	case importing && *cloud.ZoneType.Code == standardCloud,
 		!plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+
+		cfg := cloud.GetConfig().AddClouds200ResponseAllOfZoneConfigAnyOf
+
+		// Move these common fields up
+		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
+		state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
+		state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
+		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
+		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+
 		attrTypes := make(map[string]attr.Type)
 		attrValues := make(map[string]attr.Value)
 
@@ -108,8 +101,9 @@ func getCloudAsState(
 			attrValues["certificate_provider"] = certificateProvider
 		}
 
-		if cfg.EnableNetworkTypeSelection != nil {
-			enableNetworkTypeSelection := convert.BoolToType(cfg.EnableNetworkTypeSelection)
+		if cfg.EnableNetworkTypeSelection.Get() != nil {
+			enableNetworkTypeSelection := convert.StringToBool(ctx,
+				convert.StrToType(cfg.EnableNetworkTypeSelection.Get()).ValueString())
 			attrTypes["enable_network_type_selection"] = types.BoolType
 			attrValues["enable_network_type_selection"] = enableNetworkTypeSelection
 		}
@@ -136,7 +130,33 @@ func getCloudAsState(
 		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 			state.Config = plan.Config
 		} else {
-			state.Config, err = convert.StructToDynamic(ctx, cfg)
+			cfg := cloud.GetConfig().MapmapOfStringAny
+
+			cfgValue := *cfg
+
+			// Move these common fields up
+			if v, ok := cfgValue["applianceUrl"].(string); ok {
+				state.ApplianceUrl = convert.StrToType(&v)
+				delete(cfgValue, "applianceUrl")
+			}
+			if v, ok := cfgValue["datacenterName"].(string); ok {
+				state.DataCenterName = convert.StrToType(&v)
+				delete(cfgValue, "datacenterName")
+			}
+			if v, ok := cfgValue["externalId"].(string); ok {
+				state.ExternalId = convert.StrToType(&v)
+				delete(cfgValue, "externalId")
+			}
+			if v, ok := cfgValue["inventoryLevel"].(string); ok {
+				state.ImportExistingVms = convert.StrToType(&v)
+				delete(cfgValue, "inventoryLevel")
+			}
+			if v, ok := cfgValue["consoleKeymap"].(string); ok {
+				state.KeyboardLayout = convert.StrToType(&v)
+				delete(cfgValue, "consoleKeymap")
+			}
+
+			state.Config, err = convert.MapToDynamic(ctx, cfgValue)
 			if err != nil {
 				diags.AddError(
 					"create cloud resource",

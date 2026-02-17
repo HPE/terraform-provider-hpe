@@ -45,11 +45,12 @@ func getImageAsState(
 
 	// config_azure
 	if image.GetImageType() == "azure-reference" {
-		if image.GetConfig().AzureReferenceVirtualImageConfiguration != nil {
-			state.ConfigAzure.Publisher = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Publisher)
-			state.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Offer)
-			state.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Version)
-			state.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Sku)
+		if image.GetConfig().AzureReferenceVirtualImageConfiguration3 != nil {
+			state.ConfigAzure.Publisher = convert.StrToType(
+				&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher)
+			state.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Offer)
+			state.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Version)
+			state.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Sku)
 		}
 
 		state.ConfigAzure.state = attr.ValueStateKnown
@@ -157,7 +158,7 @@ func getImageAsState(
 		ctx,
 		image.Tags,
 		func(
-			in sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigEvarsInner,
+			in sdk.GetVirtualImage200ResponseVirtualImageTagsInner,
 		) TagsValue {
 			return TagsValue{
 				Name:  convert.StrToType(in.Name),

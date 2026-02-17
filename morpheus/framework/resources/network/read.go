@@ -228,7 +228,7 @@ func getNetworkAsState(
 
 func convertResourcePermissions(
 	ctx context.Context,
-	resourcePermission *sdk.ListNetworks200ResponseAllOfNetworksInnerResourcePermission,
+	resourcePermission *sdk.GetNetwork200ResponseNetworkResourcePermission,
 ) (ResourcePermissionsValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

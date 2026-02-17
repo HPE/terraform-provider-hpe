@@ -116,8 +116,8 @@ resource "hpe_morpheus_instance" "example" {
     resourcePoolId       = "pool-62299"
     poolProviderType     = "mvm"
     nestedVirtualization = "off"
-    noAgent              = false
-    createUser           = true
+    noAgent              = true
+    createUser           = false
   }
 }
 ```

@@ -54,7 +54,7 @@ func (r *Resource) Update(
 		updateTask.SetCode(plan.Code.ValueString())
 	}
 
-	taskOptions := sdk.AddTasksRequestTaskTaskOptions{}
+	taskOptions := sdk.UpdateTasksRequestTaskTaskOptions{}
 
 	// config
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
@@ -85,7 +85,7 @@ func (r *Resource) Update(
 
 	// config_conditional_workflow
 	if !plan.ConfigConditionalWorkflow.IsNull() && !plan.ConfigConditionalWorkflow.IsUnknown() {
-		conditionalWorkflow := &sdk.ConditionalWorkflowTaskConfig{}
+		conditionalWorkflow := &sdk.ConditionalWorkflowTaskConfig3{}
 		conditionalWorkflow.ConditionalScript = plan.ConfigConditionalWorkflow.
 			ConditionalScript.ValueStringPointer()
 		conditionalWorkflow.IfOperationalWorkflowId = plan.ConfigConditionalWorkflow.
@@ -97,7 +97,7 @@ func (r *Resource) Update(
 		conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
 			ElseOperationalWorkflowName.ValueStringPointer()
 
-		taskOptions.ConditionalWorkflowTaskConfig = conditionalWorkflow
+		taskOptions.ConditionalWorkflowTaskConfig3 = conditionalWorkflow
 	}
 
 	updateTask.SetTaskOptions(taskOptions)
