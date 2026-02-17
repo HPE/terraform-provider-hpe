@@ -63,11 +63,10 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-62299"
-    poolProviderType     = "mvm"
-    nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
+  config_hvm = {
+    resource_pool_id      = "pool-62299"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
   }
 }
