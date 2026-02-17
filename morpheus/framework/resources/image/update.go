@@ -144,7 +144,7 @@ func (r *Resource) Update(
 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() {
-		storageProvider := sdk.NewAddVirtualImageRequestVirtualImageStorageProviderWithDefaults()
+		storageProvider := sdk.NewUpdateVirtualImageRequestVirtualImageStorageProviderWithDefaults()
 		storageProvider.SetId(plan.StorageProviderId.ValueInt64())
 
 		updateImage.SetStorageProvider(*storageProvider)
@@ -156,7 +156,7 @@ func (r *Resource) Update(
 	}
 
 	// tags
-	tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
+	tags, diags := convert.FromSetType(ctx, plan.Tags, updateTagMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert tags")
 		resp.Diagnostics.Append(diags...)
