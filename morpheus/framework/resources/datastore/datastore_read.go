@@ -312,7 +312,7 @@ func getDatastoreAsState(
 			ctx,
 			locations,
 			func(
-				in sdk.ListDatastores200ResponseAllOfDatastoresInnerLocationsInner,
+				in sdk.GetDatastores200ResponseAllOfDatastoreLocationsInner,
 			) LocationsValue {
 				return LocationsValue{
 					RefId:         convert.Int64ToType(in.RefId),
@@ -333,7 +333,7 @@ func getDatastoreAsState(
 			ctx,
 			datastores,
 			func(
-				in sdk.ListDatastores200ResponseAllOfDatastoresInnerDatastoresInner,
+				in sdk.GetDatastores200ResponseAllOfDatastoreDatastoresInner,
 			) DatastoresValue {
 				id64 := int64(*in.Id)
 
@@ -397,7 +397,7 @@ func populateCloudDatastoreInformation(
 		ctx,
 		tenants,
 		func(
-			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+			in sdk.GetCloudDatastores200ResponseAllOfDatastoreTenantsInner,
 		) TenantsValue {
 			return TenantsValue{
 				Id:    convert.Int64ToType(in.Id),
@@ -432,7 +432,7 @@ func populateCloudDatastoreInformation(
 		ctx,
 		sites,
 		func(
-			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+			in sdk.GetCloudDatastores200ResponseAllOfDatastoreResourcePermissionSitesInner,
 		) GroupsValue {
 			return GroupsValue{
 				Id:    convert.Int64ToType(in.Id),
@@ -494,7 +494,7 @@ func populateClusterDatastoreInformation(
 		ctx,
 		tenants,
 		func(
-			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner,
+			in sdk.GetClusterDatastore200ResponseDatastoreTenantsInner,
 		) TenantsValue {
 			return TenantsValue{
 				Id:    convert.Int64ToType(in.Id),
@@ -529,7 +529,7 @@ func populateClusterDatastoreInformation(
 		ctx,
 		sites,
 		func(
-			in sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner,
+			in sdk.GetClusterDatastore200ResponseDatastoreResourcePermissionsSitesInner,
 		) GroupsValue {
 			return GroupsValue{
 				Id:    convert.Int64ToType(in.Id),

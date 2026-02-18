@@ -87,8 +87,8 @@ func getTaskAsState(
 	}
 
 	// config_conditional_workflow_task
-	if task.TaskOptions.ConditionalWorkflowTaskConfig != nil && typeCode == "conditionalWorkflow" {
-		config := task.TaskOptions.ConditionalWorkflowTaskConfig
+	if task.TaskOptions.ConditionalWorkflowTaskConfig2 != nil && typeCode == "conditionalWorkflow" {
+		config := task.TaskOptions.ConditionalWorkflowTaskConfig2
 
 		if config.ConditionalScript == nil {
 			state.ConfigConditionalWorkflow.ConditionalScript = customtypes.NewTrimmedStringNull()

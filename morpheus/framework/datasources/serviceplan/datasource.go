@@ -94,7 +94,7 @@ func getServicePlanByName(
 	}
 
 	var matchingProvisionTypes []sdk.
-		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
+		ListProvisionTypes200ResponseAllOfProvisionTypesInner
 	for _, pt := range pTypes.GetProvisionTypes() {
 		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)

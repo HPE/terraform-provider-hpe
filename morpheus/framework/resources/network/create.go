@@ -178,7 +178,7 @@ func (r *Resource) Create(
 	if !plan.NetworkDomainId.IsNull() &&
 		!plan.NetworkDomainId.IsUnknown() {
 		networkDomain := sdk.
-			NewListNetworks200ResponseAllOfNetworksInnerNetworkDomain()
+			NewCreateNetworksRequestNetworkNetworkDomain()
 		networkDomain.SetId(plan.NetworkDomainId.ValueInt64())
 		createNetwork.SetNetworkDomain(*networkDomain)
 	}
@@ -186,7 +186,7 @@ func (r *Resource) Create(
 	if !plan.NetworkProxyId.IsNull() &&
 		!plan.NetworkProxyId.IsUnknown() {
 		networkProxy := sdk.
-			NewListNetworks200ResponseAllOfNetworksInnerNetworkProxy()
+			NewCreateNetworksRequestNetworkNetworkProxy()
 		networkProxy.SetId(plan.NetworkProxyId.ValueInt64())
 		createNetwork.SetNetworkProxy(*networkProxy)
 	}
@@ -233,7 +233,7 @@ func (r *Resource) Create(
 		}
 	}
 
-	var tenants []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
+	var tenants []sdk.CreateNetworksRequestNetworkTenantsInner
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []types.Int64
 		diags := plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)
@@ -245,7 +245,7 @@ func (r *Resource) Create(
 		for _, idVal := range tenantIDs {
 			if !idVal.IsNull() {
 				tenant := sdk.
-					GetAlerts200ResponseAllOfChecksInnerAccount{}
+					CreateNetworksRequestNetworkTenantsInner{}
 				tenant.SetId(idVal.ValueInt64())
 				tenants = append(tenants, tenant)
 			}

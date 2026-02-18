@@ -23,6 +23,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
+const (
+	hvmCode    = "mvm-cluster"
+	kvmCode    = "kvm"
+	vmwareCode = "vmware"
+)
+
+type apiConfigType = sdk.GetInstance200ResponseInstanceConfig
+
 // Read implements resource.Resource.
 func (g *Resource) Read(
 	ctx context.Context,
@@ -90,18 +98,53 @@ func getInstanceAsState(
 
 	// config
 	state.Config = types.DynamicNull()
+	state.ConfigHvm = NewConfigHvmValueNull()
+	state.ConfigVmware = NewConfigVmwareValueNull()
 
-	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+	switch {
+	case plan.Name.IsNull() || plan.Name.IsUnknown():
 		// on import, always read the config from the API
-		if apiConfig, ok := instance.GetConfigOk(); ok {
-			config, cdiags := getInstanceConfig(ctx, id, apiConfig)
+		code, apiConfig, gdiags := getCodeAndConfig(id, instance)
+		diags.Append(gdiags...)
+		if diags.HasError() {
+			return state, diags
+		}
+
+		switch *code {
+		case hvmCode:
+			configHvm, cdiags := getInstanceHVMConfig(id, apiConfig)
+			diags.Append(cdiags...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.ConfigHvm = configHvm
+
+		case vmwareCode:
+			configVMware, cdiags := getInstanceVMwareConfig(id, apiConfig)
+			diags.Append(cdiags...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.ConfigVmware = configVMware
+
+		default:
+			config, cdiags := getInstanceConfigGeneric(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
 			}
 			state.Config = config
+
 		}
-	} else if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+
+	// For normal reads, use the config from the plan if it's set.
+	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+		state.ConfigHvm = plan.ConfigHvm
+
+	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
+		state.ConfigVmware = plan.ConfigVmware
+
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		state.Config = plan.Config
 	}
 
@@ -232,10 +275,292 @@ func getInstanceAsState(
 	return state, diags
 }
 
-func getInstanceConfig(
+// getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances
+func getInstanceVMwareConfig(
+	id int64,
+	apiConfig *apiConfigType,
+) (ConfigVmwareValue, diag.Diagnostics) {
+	configVmware := ConfigVmwareValue{}
+
+	// CreateUser
+	createUser, cdiags := getCreateUser(id, apiConfig)
+	if cdiags.HasError() {
+		return configVmware, cdiags
+	}
+
+	// NoAgent
+	noAgent, ndiags := getNoAgent(id, apiConfig)
+	if ndiags.HasError() {
+		return configVmware, ndiags
+	}
+
+	// NestedVirtualization
+	nestedVirtualization, ndiags := getNestedVirtualization(id, apiConfig)
+	if ndiags.HasError() {
+		return configVmware, ndiags
+	}
+
+	// ResourcePoolId
+	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
+	if rdiags.HasError() {
+		return configVmware, rdiags
+	}
+
+	// VMwareFolderId
+	folderId, fdiags := getVMwareFolderId(id, apiConfig)
+	if fdiags.HasError() {
+		return configVmware, fdiags
+	}
+
+	configVmware.CreateUser = convert.BoolToType(createUser)
+	configVmware.NoAgent = convert.BoolToType(noAgent)
+	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
+	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
+	configVmware.VmwareFolderId = convert.StrToType(folderId)
+	configVmware.state = attr.ValueStateKnown
+
+	return configVmware, diag.Diagnostics{}
+}
+
+// getInstanceHVMConfig builds the config_hvm block from the API response for hvm instances
+func getInstanceHVMConfig(
+	id int64,
+	apiConfig *apiConfigType,
+) (ConfigHvmValue, diag.Diagnostics) {
+	configHvm := ConfigHvmValue{}
+
+	// CreateUser
+	createUser, cdiags := getCreateUser(id, apiConfig)
+	if cdiags.HasError() {
+		return configHvm, cdiags
+	}
+
+	// NoAgent
+	noAgent, ndiags := getNoAgent(id, apiConfig)
+	if ndiags.HasError() {
+		return configHvm, ndiags
+	}
+
+	// NestedVirtualization
+	nestedVirtualization, ndiags := getNestedVirtualization(id, apiConfig)
+	if ndiags.HasError() {
+		return configHvm, ndiags
+	}
+
+	// ResourcePoolId
+	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
+	if rdiags.HasError() {
+		return configHvm, rdiags
+	}
+
+	// KvmHostId
+	kvmHostId, _ := apiConfig.GetKvmHostIdOk()
+
+	configHvm.CreateUser = convert.BoolToType(createUser)
+	configHvm.NoAgent = convert.BoolToType(noAgent)
+	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
+	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
+	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
+	configHvm.state = attr.ValueStateKnown
+
+	return configHvm, diag.Diagnostics{}
+}
+
+func getCreateUser(
+	id int64,
+	apiConfig *apiConfigType,
+) (*bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	createUser, ok := apiConfig.GetCreateUserOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get config createUser", id),
+		)
+
+		return nil, diags
+	}
+
+	return createUser, nil
+}
+
+func getNoAgent(
+	id int64,
+	apiConfig *apiConfigType,
+) (*bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	noAgent, ok := apiConfig.GetNoAgentOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get config noAgent", id),
+		)
+
+		return nil, diags
+
+	}
+
+	return noAgent.Bool, nil
+}
+
+func getNestedVirtualization(
+	id int64,
+	apiConfig *apiConfigType,
+) (*string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	nestedVirtualization, ok := apiConfig.GetNestedVirtualizationOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get config nestedVirtualization", id),
+		)
+
+		return nil, diags
+	}
+
+	return nestedVirtualization, nil
+}
+
+func getResourcePoolId(
+	id int64,
+	apiConfig *apiConfigType,
+) (*string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	resourcePoolId, ok := apiConfig.GetResourcePoolIdOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get config resourcePoolId", id),
+		)
+
+		return nil, diags
+	}
+
+	return resourcePoolId.String, nil
+}
+
+func getVMwareFolderId(
+	id int64,
+	apiConfig *apiConfigType,
+) (*string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	folderId, ok := apiConfig.GetVmwareFolderIdOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get config vmwareFolderId", id),
+		)
+
+		return nil, diags
+	}
+
+	return folderId, nil
+}
+
+// getCodeAndConfig returns the "code" for the instance and the config struct from the API response
+// The code is the layout provision type code for non-HVM clusters, and the cluster type code for HVM clusters.
+func getCodeAndConfig(
+	id int64,
+	instance sdk.GetInstance200ResponseInstance,
+) (*string, *apiConfigType, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Get layout first
+	layout, ok := instance.GetLayoutOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get layout", id),
+		)
+
+		return nil, nil, diags
+	}
+
+	provisionTypeCode, ok := layout.GetProvisionTypeCodeOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get layout provision type code", id),
+		)
+	}
+
+	var code string
+	switch *provisionTypeCode {
+	case kvmCode:
+		// If it's a kvm cluster, we need to check the cluster type code to see if it's actually an hvm cluster.
+		// This is because the API returns "kvm" as the provision type code for both kvm and hvm clusters,
+		// and we need to check the cluster type code to differentiate between them.
+		cluster, ok := instance.GetClusterOk()
+		if !ok {
+			code = kvmCode
+
+			break
+		}
+
+		clusterCode, cdiags := getClusterCode(id, cluster)
+		if cdiags.HasError() {
+			diags.Append(cdiags...)
+
+			return nil, nil, diags
+		}
+
+		code = *clusterCode
+
+	default:
+		code = *provisionTypeCode
+	}
+
+	apiConfig, ok := instance.GetConfigOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get instance config", id),
+		)
+
+		return nil, nil, diags
+	}
+
+	return &code, apiConfig, diags
+}
+
+// getClusterCode returns the cluster type code for an instance if the cluster information is present
+// in the API response
+func getClusterCode(
+	id int64,
+	cluster *sdk.GetInstance200ResponseInstanceCluster,
+) (*string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	clusterType, ok := cluster.GetTypeOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get cluster type", id),
+		)
+
+		return nil, diags
+	}
+
+	clusterCode, ok := clusterType.GetCodeOk()
+	if !ok {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET failed to get cluster type code", id),
+		)
+
+		return nil, diags
+
+	}
+
+	return clusterCode, diags
+}
+
+// getInstanceConfigGeneric converts the instance config from the API response to a generic dynamic config
+// for unknown instance types
+func getInstanceConfigGeneric(
 	ctx context.Context,
 	id int64,
-	apiConfig *sdk.AddInstance200ResponseAllOfOneOfInstanceConfig,
+	apiConfig *apiConfigType,
 ) (types.Dynamic, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -333,7 +658,7 @@ func getInstanceEnvVars(
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes
 func getVolumes(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -657,7 +982,7 @@ func convertAPIVolumesToStateVolumes(
 
 // getConnectionInfo builds the connection_info list
 func getConnectionInfo(
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	cInfo, ok := instance.GetConnectionInfoOk()
@@ -689,7 +1014,7 @@ func getConnectionInfo(
 // getStateInterfaces get the interfaces to be returned as state entries
 func getStateInterfaces(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
@@ -758,7 +1083,7 @@ func compareServerInstanceIntfs(
 // getStateInterfacesFromInstance build []NetworkInterfacesValue from interfaces, used on import
 func getStateInterfacesFromInstance(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -849,7 +1174,7 @@ func getInstanceInterfacesChildNetworks(
 // getStateInterfacesFromInstanceServer get the []NetworkInterfacesValue from containerDetails.server.interfaces
 func getStateInterfacesFromInstanceServer(
 	ctx context.Context,
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	// network_interfaces
 	// We are going to read network interface information from containerDetails.server.interfaces
@@ -914,7 +1239,7 @@ type processedServerInterfaces struct {
 // Process the set of interfaces in an instance
 // This function takes an "instance" input and returns processedServerInterfaces
 func getAllServerInterfaces(
-	instance sdk.AddInstance200ResponseAllOfOneOfInstance,
+	instance sdk.GetInstance200ResponseInstance,
 ) processedServerInterfaces {
 	subIntfsMap := make(map[int64][]int64)
 	isSubIntf := make(map[int64]bool)

@@ -14,18 +14,18 @@ import (
 )
 
 var (
-	permissionsFunc        = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsPlansFunc   = sdk.NewListBackupSettings200ResponseBackupSettingsDefaultScheduleWithDefaults
-	permissionsSitesFunc   = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	permissionsFunc        = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsWithDefaults
+	permissionsPlansFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults
+	permissionsSitesFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
 	tenantsFunc            = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
-	nfsConfigFunc          = sdk.NewNFSDatastoreConfigurationWithDefaults
+	nfsConfigFunc          = sdk.NewNFSDatastoreConfiguration1WithDefaults
 	alletrampHvmConfigFunc = sdk.NewAlletraMPHVMDatastoreConfiguration1WithDefaults
-	storageServerFunc      = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	storageServerFunc      = sdk.NewSaveDatastoreRequestDatastoreStorageServerWithDefaults
 )
 
 type (
-	permissionsPlans = sdk.ListBackupSettings200ResponseBackupSettingsDefaultSchedule
-	permissionsSites = sdk.GetAlerts200ResponseAllOfChecksInnerAccount
+	permissionsPlans = sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner
+	permissionsSites = sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner
 )
 
 func datastoreCreateDatastore(ctx context.Context,
@@ -78,7 +78,7 @@ func datastoreCreateDatastore(ctx context.Context,
 			nfsConfig.SetSourceVersion(plan.ConfigNfs.SourceVersion.ValueString())
 		}
 
-		createConfig.NFSDatastoreConfiguration = nfsConfig
+		createConfig.NFSDatastoreConfiguration1 = nfsConfig
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigFunc()
 
@@ -166,9 +166,9 @@ func datastoreCreateDatastore(ctx context.Context,
 		}
 
 		tenantPermissions := tenantsFunc()
-		var accounts []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
+		var accounts []sdk.SaveDatastoreRequestDatastoreTenantPermissionsAccountsInner
 		for _, tenantsValue := range tenantsValues {
-			account := sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults()
+			account := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsAccountsInnerWithDefaults()
 			account.SetId(tenantsValue.Id.ValueInt64())
 			accounts = append(accounts, *account)
 		}

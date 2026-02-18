@@ -64,12 +64,12 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_environment.test",
+			"data.hpe_morpheus_environment.example",
 			"name",
 			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_environment.test",
+			"data.hpe_morpheus_environment.example",
 			"id",
 			environmentID,
 		),
@@ -116,12 +116,12 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_environment.test",
+			"data.hpe_morpheus_environment.example",
 			"name",
 			environmentName,
 		),
 		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_environment.test",
+			"data.hpe_morpheus_environment.example",
 			"id",
 			environmentID,
 		),
