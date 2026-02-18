@@ -5,16 +5,17 @@ package instance
 import (
 	"context"
 	"fmt"
-	"strings"
-
-	morpheusvalidators "github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -27,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -46,7 +48,107 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object. Settings vary by type.",
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
-					morpheusvalidators.ValidObjectMap(),
+					validators.ValidObjectMap(),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+				},
+			},
+			"config_hvm": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"create_user": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to create a user when provisioning the instance.  The default is 'false'",
+						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
+						Default:             booldefault.StaticBool(false),
+					},
+					"kvm_host_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The id of the KVM host to use for provisioning.",
+						MarkdownDescription: "The id of the KVM host to use for provisioning.",
+					},
+					"nested_virtualization": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"no_agent": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						MarkdownDescription: "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						Default:             booldefault.StaticBool(true),
+					},
+					"resource_pool_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+					},
+				},
+				CustomType: ConfigHvmType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHvmValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration options for HVM instances.",
+				MarkdownDescription: "Configuration options for HVM instances.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_vmware")}...),
+				},
+			},
+			"config_vmware": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"create_user": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to create a user when provisioning the instance.  The default is 'false'",
+						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
+						Default:             booldefault.StaticBool(false),
+					},
+					"nested_virtualization": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+						Default: stringdefault.StaticString("off"),
+					},
+					"no_agent": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						MarkdownDescription: "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						Default:             booldefault.StaticBool(true),
+					},
+					"resource_pool_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+					},
+					"vmware_folder_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "VMware folder external ID.",
+						MarkdownDescription: "VMware folder external ID.",
+					},
+				},
+				CustomType: ConfigVmwareType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigVmwareValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration options for VMware instances.",
+				MarkdownDescription: "Configuration options for VMware instances.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm")}...),
 				},
 			},
 			"connection_info": schema.ListAttribute{
@@ -502,24 +604,1130 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceModel struct {
-	CloudId           types.Int64    `tfsdk:"cloud_id"`
-	Config            types.Dynamic  `tfsdk:"config"`
-	ConnectionInfo    types.List     `tfsdk:"connection_info"`
-	Evars             types.Set      `tfsdk:"evars"`
-	GroupId           types.Int64    `tfsdk:"group_id"`
-	Id                types.Int64    `tfsdk:"id"`
-	InstanceContext   types.String   `tfsdk:"instance_context"`
-	InstanceTypeId    types.Int64    `tfsdk:"instance_type_id"`
-	LayoutId          types.Int64    `tfsdk:"layout_id"`
-	LayoutSize        types.Int64    `tfsdk:"layout_size"`
-	Name              types.String   `tfsdk:"name"`
-	NetworkInterfaces types.List     `tfsdk:"network_interfaces"`
-	PlanId            types.Int64    `tfsdk:"plan_id"`
-	Ports             types.Set      `tfsdk:"ports"`
-	Tags              types.Set      `tfsdk:"tags"`
-	TaskSetId         types.Int64    `tfsdk:"task_set_id"`
-	Timeouts          timeouts.Value `tfsdk:"timeouts"`
-	Volumes           types.List     `tfsdk:"volumes"`
+	CloudId           types.Int64       `tfsdk:"cloud_id"`
+	Config            types.Dynamic     `tfsdk:"config"`
+	ConfigHvm         ConfigHvmValue    `tfsdk:"config_hvm"`
+	ConfigVmware      ConfigVmwareValue `tfsdk:"config_vmware"`
+	ConnectionInfo    types.List        `tfsdk:"connection_info"`
+	Evars             types.Set         `tfsdk:"evars"`
+	GroupId           types.Int64       `tfsdk:"group_id"`
+	Id                types.Int64       `tfsdk:"id"`
+	InstanceContext   types.String      `tfsdk:"instance_context"`
+	InstanceTypeId    types.Int64       `tfsdk:"instance_type_id"`
+	LayoutId          types.Int64       `tfsdk:"layout_id"`
+	LayoutSize        types.Int64       `tfsdk:"layout_size"`
+	Name              types.String      `tfsdk:"name"`
+	NetworkInterfaces types.List        `tfsdk:"network_interfaces"`
+	PlanId            types.Int64       `tfsdk:"plan_id"`
+	Ports             types.Set         `tfsdk:"ports"`
+	Tags              types.Set         `tfsdk:"tags"`
+	TaskSetId         types.Int64       `tfsdk:"task_set_id"`
+	Timeouts          timeouts.Value    `tfsdk:"timeouts"`
+	Volumes           types.List        `tfsdk:"volumes"`
+}
+
+var _ basetypes.ObjectTypable = ConfigHvmType{}
+
+type ConfigHvmType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHvmType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHvmType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHvmType) String() string {
+	return "ConfigHvmType"
+}
+
+func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHvmValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`kvm_host_id is missing from object`)
+
+		return nil, diags
+	}
+
+	kvmHostIdVal, ok := kvmHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`kvm_host_id expected to be basetypes.Int64Value, was: %T`, kvmHostIdAttribute))
+	}
+
+	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`nested_virtualization is missing from object`)
+
+		return nil, diags
+	}
+
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return nil, diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHvmValue{
+		CreateUser:           createUserVal,
+		KvmHostId:            kvmHostIdVal,
+		NestedVirtualization: nestedVirtualizationVal,
+		NoAgent:              noAgentVal,
+		ResourcePoolId:       resourcePoolIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmValueNull() ConfigHvmValue {
+	return ConfigHvmValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHvmValueUnknown() ConfigHvmValue {
+	return ConfigHvmValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHvmValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHvmValue Attribute Value",
+				"While creating a ConfigHvmValue value, a missing attribute value was detected. "+
+					"A ConfigHvmValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHvmValue Attribute Type",
+				"While creating a ConfigHvmValue value, an invalid attribute value was detected. "+
+					"A ConfigHvmValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHvmValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHvmValue Attribute Value",
+				"While creating a ConfigHvmValue value, an extra attribute value was detected. "+
+					"A ConfigHvmValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHvmValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`kvm_host_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	kvmHostIdVal, ok := kvmHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`kvm_host_id expected to be basetypes.Int64Value, was: %T`, kvmHostIdAttribute))
+	}
+
+	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`nested_virtualization is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	return ConfigHvmValue{
+		CreateUser:           createUserVal,
+		KvmHostId:            kvmHostIdVal,
+		NestedVirtualization: nestedVirtualizationVal,
+		NoAgent:              noAgentVal,
+		ResourcePoolId:       resourcePoolIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHvmValue {
+	object, diags := NewConfigHvmValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHvmValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHvmValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHvmValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHvmValueMust(ConfigHvmValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHvmType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHvmValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHvmValue{}
+
+type ConfigHvmValue struct {
+	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
+	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
+	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
+	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
+	state                attr.ValueState
+}
+
+func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 5)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.CreateUser.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user"] = val
+
+		val, err = v.KvmHostId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["kvm_host_id"] = val
+
+		val, err = v.NestedVirtualization.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["nested_virtualization"] = val
+
+		val, err = v.NoAgent.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["no_agent"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHvmValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHvmValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHvmValue) String() string {
+	return "ConfigHvmValue"
+}
+
+func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"create_user":           basetypes.BoolType{},
+		"kvm_host_id":           basetypes.Int64Type{},
+		"nested_virtualization": basetypes.StringType{},
+		"no_agent":              basetypes.BoolType{},
+		"resource_pool_id":      basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"create_user":           v.CreateUser,
+			"kvm_host_id":           v.KvmHostId,
+			"nested_virtualization": v.NestedVirtualization,
+			"no_agent":              v.NoAgent,
+			"resource_pool_id":      v.ResourcePoolId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHvmValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHvmValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.KvmHostId.Equal(other.KvmHostId) {
+		return false
+	}
+
+	if !v.NestedVirtualization.Equal(other.NestedVirtualization) {
+		return false
+	}
+
+	if !v.NoAgent.Equal(other.NoAgent) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHvmValue) Type(ctx context.Context) attr.Type {
+	return ConfigHvmType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"create_user":           basetypes.BoolType{},
+		"kvm_host_id":           basetypes.Int64Type{},
+		"nested_virtualization": basetypes.StringType{},
+		"no_agent":              basetypes.BoolType{},
+		"resource_pool_id":      basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigVmwareType{}
+
+type ConfigVmwareType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigVmwareType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigVmwareType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigVmwareType) String() string {
+	return "ConfigVmwareType"
+}
+
+func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigVmwareValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigVmwareValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`nested_virtualization is missing from object`)
+
+		return nil, diags
+	}
+
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return nil, diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	vmwareFolderIdAttribute, ok := attributes["vmware_folder_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vmware_folder_id is missing from object`)
+
+		return nil, diags
+	}
+
+	vmwareFolderIdVal, ok := vmwareFolderIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vmware_folder_id expected to be basetypes.StringValue, was: %T`, vmwareFolderIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigVmwareValue{
+		CreateUser:           createUserVal,
+		NestedVirtualization: nestedVirtualizationVal,
+		NoAgent:              noAgentVal,
+		ResourcePoolId:       resourcePoolIdVal,
+		VmwareFolderId:       vmwareFolderIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigVmwareValueNull() ConfigVmwareValue {
+	return ConfigVmwareValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigVmwareValueUnknown() ConfigVmwareValue {
+	return ConfigVmwareValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigVmwareValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigVmwareValue Attribute Value",
+				"While creating a ConfigVmwareValue value, a missing attribute value was detected. "+
+					"A ConfigVmwareValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigVmwareValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigVmwareValue Attribute Type",
+				"While creating a ConfigVmwareValue value, an invalid attribute value was detected. "+
+					"A ConfigVmwareValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigVmwareValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigVmwareValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigVmwareValue Attribute Value",
+				"While creating a ConfigVmwareValue value, an extra attribute value was detected. "+
+					"A ConfigVmwareValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigVmwareValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`nested_virtualization is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	vmwareFolderIdAttribute, ok := attributes["vmware_folder_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vmware_folder_id is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	vmwareFolderIdVal, ok := vmwareFolderIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vmware_folder_id expected to be basetypes.StringValue, was: %T`, vmwareFolderIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	return ConfigVmwareValue{
+		CreateUser:           createUserVal,
+		NestedVirtualization: nestedVirtualizationVal,
+		NoAgent:              noAgentVal,
+		ResourcePoolId:       resourcePoolIdVal,
+		VmwareFolderId:       vmwareFolderIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigVmwareValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigVmwareValue {
+	object, diags := NewConfigVmwareValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigVmwareValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigVmwareType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigVmwareValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigVmwareValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigVmwareValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigVmwareValueMust(ConfigVmwareValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigVmwareType) ValueType(ctx context.Context) attr.Value {
+	return ConfigVmwareValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigVmwareValue{}
+
+type ConfigVmwareValue struct {
+	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
+	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
+	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
+	VmwareFolderId       basetypes.StringValue `tfsdk:"vmware_folder_id"`
+	state                attr.ValueState
+}
+
+func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 5)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["vmware_folder_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.CreateUser.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user"] = val
+
+		val, err = v.NestedVirtualization.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["nested_virtualization"] = val
+
+		val, err = v.NoAgent.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["no_agent"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		val, err = v.VmwareFolderId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vmware_folder_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigVmwareValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigVmwareValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigVmwareValue) String() string {
+	return "ConfigVmwareValue"
+}
+
+func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"create_user":           basetypes.BoolType{},
+		"nested_virtualization": basetypes.StringType{},
+		"no_agent":              basetypes.BoolType{},
+		"resource_pool_id":      basetypes.StringType{},
+		"vmware_folder_id":      basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"create_user":           v.CreateUser,
+			"nested_virtualization": v.NestedVirtualization,
+			"no_agent":              v.NoAgent,
+			"resource_pool_id":      v.ResourcePoolId,
+			"vmware_folder_id":      v.VmwareFolderId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigVmwareValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigVmwareValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.NestedVirtualization.Equal(other.NestedVirtualization) {
+		return false
+	}
+
+	if !v.NoAgent.Equal(other.NoAgent) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	if !v.VmwareFolderId.Equal(other.VmwareFolderId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigVmwareValue) Type(ctx context.Context) attr.Type {
+	return ConfigVmwareType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"create_user":           basetypes.BoolType{},
+		"nested_virtualization": basetypes.StringType{},
+		"no_agent":              basetypes.BoolType{},
+		"resource_pool_id":      basetypes.StringType{},
+		"vmware_folder_id":      basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = EvarsType{}

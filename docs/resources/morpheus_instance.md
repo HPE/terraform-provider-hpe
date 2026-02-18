@@ -12,7 +12,10 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware and BMaaS instances are supported. Some general issues<br>
+-> Currently HVM, VMware and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
+Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
@@ -39,9 +42,9 @@ When creating an instance with network bonding and/or LAGs we cannot reconcile t
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
 
--> The following examples all have the following settings in their `config` blocks:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `noAgent` is set to `false`<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `createUser` is set to `true`<br><br>
+-> Some of the examples below have the following settings in their `config` blocks:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `no_agent` in static config (equivalent to `noAgent` in dynamic config) is set to `true`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to `false`<br><br>
 These settings can be changed as required.
 
 ## HVM Instance
@@ -112,12 +115,11 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-62299"
-    poolProviderType     = "mvm"
-    nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
+  config_hvm = {
+    resource_pool_id      = "pool-62299"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
   }
 }
 ```
@@ -207,12 +209,11 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-62299"
-    poolProviderType     = "mvm"
-    nestedVirtualization = "off"
-    noAgent              = false
-    createUser           = true
+  config_hvm = {
+    resource_pool_id      = "pool-62299"
+    nested_virtualization = "off"
+    no_agent              = false
+    create_user           = true
   }
 }
 ```
@@ -291,12 +292,11 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-62299"
-    poolProviderType     = "mvm"
-    nestedVirtualization = "off"
-    noAgent              = false
-    createUser           = true
+  config_hvm = {
+    resource_pool_id      = "pool-62299"
+    nested_virtualization = "off"
+    no_agent              = false
+    create_user           = true
   }
 
   timeouts = {
@@ -381,12 +381,12 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-1"
-    nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
-    vmwareFolderID       = "group-v79"
+  config_vmware = {
+    resource_pool_id      = "pool-1"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
+    vmware_folder_id      = "group-v79"
   }
 
   timeouts = {
@@ -532,6 +532,8 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 
 - `cloud_id` (Number) The Cloud ID to provision the instance onto.
 - `config` (Dynamic) Configuration object. Settings vary by type.
+- `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
+- `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
 - `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
@@ -586,6 +588,36 @@ Read-Only:
 - `name` (String) The name of the interface, e.g. 'eth0', 'eth1'
 - `primary_interface` (Boolean) Is this interface the 'primary interface'?
 
+
+
+<a id="nestedatt--config_hvm"></a>
+### Nested Schema for `config_hvm`
+
+Required:
+
+- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+
+Optional:
+
+- `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `kvm_host_id` (Number) The id of the KVM host to use for provisioning.
+- `nested_virtualization` (String) Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.
+- `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+
+
+<a id="nestedatt--config_vmware"></a>
+### Nested Schema for `config_vmware`
+
+Required:
+
+- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `vmware_folder_id` (String) VMware folder external ID.
+
+Optional:
+
+- `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `nested_virtualization` (String) Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.
+- `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
 
 
 <a id="nestedatt--evars"></a>

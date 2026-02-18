@@ -55,7 +55,8 @@ func (g *Resource) Delete(
 		return
 	}
 
-	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("true")
+	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("on").
+		RemoveVolumes("on").ReleaseEIPs("on").ReleaseFloatingIps("on")
 	_, hresp, err := deleteReq.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
