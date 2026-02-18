@@ -50,7 +50,7 @@ func TestAccMorpheusImageExampleOk(t *testing.T) {
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
-		"StorageProviderId", "196",
+		"StorageProviderId", "1",
 	)
 	if err != nil {
 		t.Fatal(err)

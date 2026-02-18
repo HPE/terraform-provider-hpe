@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	storageProvider = "196"
+	storageProvider = "1"
 	// nolint: lll
 	url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
 )
