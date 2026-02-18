@@ -7,7 +7,7 @@ resource "hpe_morpheus_image" "example_image" {
     storage_provider_id = 196
     auto_join_domain = true
     cloud_init = true
-    os_type_id = 75
+    os_type_id = 91
     ssh_username = "alpine"
     min_ram = 1
     min_disk = 20
