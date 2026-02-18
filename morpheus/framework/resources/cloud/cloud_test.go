@@ -19,11 +19,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	return
-
-	//nolint: govet
 	code := m.Run()
 	testhelpers.WriteMergedResults()
+
 	os.Exit(code)
 }
 
