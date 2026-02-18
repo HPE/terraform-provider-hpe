@@ -159,7 +159,7 @@ func setProvisionTypeInCreate(
 	}
 
 	var matchingProvisionTypes []sdk.
-		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
+		ListProvisionTypes200ResponseAllOfProvisionTypesInner
 	for _, pt := range pTypes.GetProvisionTypes() {
 		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
@@ -179,7 +179,7 @@ func setProvisionTypeInCreate(
 		return fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
-	provisionType := sdk.AddClusterLayoutsRequestLayoutProvisionType{}
+	provisionType := sdk.AddServicePlansRequestServicePlanProvisionType{}
 	provisionType.Id = *pTypeID
 	addServicePlan.ProvisionType = provisionType
 
@@ -203,7 +203,7 @@ func setProvisionTypeInUpdate(
 	}
 
 	var matchingProvisionTypes []sdk.
-		GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerProvisionType
+		ListProvisionTypes200ResponseAllOfProvisionTypesInner
 	for _, pt := range pTypes.GetProvisionTypes() {
 		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
@@ -223,7 +223,7 @@ func setProvisionTypeInUpdate(
 		return fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
-	provisionType := &sdk.AddClusterLayoutsRequestLayoutProvisionType{}
+	provisionType := &sdk.UpdateServicePlansRequestServicePlanProvisionType{}
 	provisionType.Id = *pTypeID
 	updateServicePlan.ProvisionType = provisionType
 
@@ -604,9 +604,9 @@ func (r *Resource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		var updatePricesets []sdk.AddServicePlansRequestServicePlanPriceSetsInner
+		var updatePricesets []sdk.UpdateServicePlansRequestServicePlanPriceSetsInner
 		for _, psid := range priceSetIDs {
-			updatePricesets = append(updatePricesets, sdk.AddServicePlansRequestServicePlanPriceSetsInner{
+			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{
 				Id: &psid,
 			})
 		}

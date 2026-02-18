@@ -79,8 +79,38 @@ func (g *Resource) Create(
 	}
 
 	// config
-	configMap := make(map[string]any)
-	if !plan.Config.IsNull() {
+	switch {
+	// HVM config
+	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+		// The provisionTypeCode default is "mvm" which is the code for the HVM provisioning type.
+		configHvm := sdk.NewHVMInstanceConfigurationWithDefaults()
+		configHvm.SetCreateUser(plan.ConfigHvm.CreateUser.ValueBool())
+		configHvm.SetNestedVirtualization(plan.ConfigHvm.NestedVirtualization.ValueString())
+		configHvm.SetNoAgent(plan.ConfigHvm.NoAgent.ValueBool())
+		configHvm.SetResourcePoolId(plan.ConfigHvm.ResourcePoolId.ValueString())
+		if !plan.ConfigHvm.KvmHostId.IsNull() {
+			configHvm.SetKvmHostId(plan.ConfigHvm.KvmHostId.ValueInt64())
+		}
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			HVMInstanceConfiguration: configHvm,
+		}
+
+	// VMware config
+	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
+		configVMware := sdk.NewVMWareInstanceConfiguration1WithDefaults()
+		configVMware.SetNestedVirtualization(plan.ConfigVmware.NestedVirtualization.ValueString())
+		configVMware.SetCreateUser(plan.ConfigVmware.CreateUser.ValueBool())
+		configVMware.SetNoAgent(plan.ConfigVmware.NoAgent.ValueBool())
+		configVMware.SetResourcePoolId(plan.ConfigVmware.ResourcePoolId.ValueString())
+		configVMware.SetVmwareFolderId(plan.ConfigVmware.VmwareFolderId.ValueString())
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			VMWareInstanceConfiguration1: configVMware,
+		}
+
+	// Generic config
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
@@ -92,6 +122,7 @@ func (g *Resource) Create(
 
 			return
 		}
+		configMap := make(map[string]any)
 		configDataMap, ok := configAny.(map[string]any)
 		if ok {
 			configMap = configDataMap
@@ -101,9 +132,10 @@ func (g *Resource) Create(
 				"could not parse config value",
 			)
 		}
-	}
-	reqInstance.Config = sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigConfig{
-		MapmapOfStringAny: &configMap,
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			MapmapOfStringAny: &configMap,
+		}
 	}
 
 	// evars
@@ -169,7 +201,7 @@ func (g *Resource) Create(
 	networkInterfaces, diags := convert.FromListType(
 		ctx,
 		plan.NetworkInterfaces,
-		networkInterfaceMapper(ctx),
+		createNetworkInterfaceMapper(ctx),
 	)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert network interfaces")
@@ -207,7 +239,7 @@ func (g *Resource) Create(
 	reqInstance.SetPorts(ports)
 
 	// tags
-	tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
+	tags, diags := convert.FromSetType(ctx, plan.Tags, createTagMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -222,7 +254,7 @@ func (g *Resource) Create(
 	}
 
 	// volumes
-	volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
+	volumes, diags := convert.FromListType(ctx, plan.Volumes, createVolumeMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)

@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	tenantsClusterFunc             = sdk.NewListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInnerWithDefaults
+	tenantsClusterFunc             = sdk.NewSaveClusterDatastoreRequestDatastoreTenantsInnerWithDefaults
 	resourcePermissionsClusterFunc = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsSitesClusterFunc    = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
-	datastoreTypeClusterFunc       = sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults
+	permissionsSitesClusterFunc    = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
+	datastoreTypeClusterFunc       = sdk.NewSaveClusterDatastoreRequestDatastoreDatastoreTypeWithDefaults
 	nfsConfigClusterFunc           = sdk.NewNFSDatastoreConfigurationWithDefaults
 	alletrampHvmConfigClusterFunc  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
 )
@@ -126,7 +126,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 	// Optional fields
 	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
-		storageServerConfig := sdk.NewGetAlerts200ResponseAllOfChecksInnerAccountWithDefaults()
+		storageServerConfig := sdk.NewSaveClusterDatastoreRequestDatastoreStorageServerWithDefaults()
 		storageServerConfig.SetId(plan.StorageServer.Id.ValueInt64())
 		datastoreCreate.SetStorageServer(*storageServerConfig)
 	}
@@ -151,7 +151,7 @@ func datastoreCreateCluster(ctx context.Context,
 			return 0
 		}
 
-		var tenantPermissions []sdk.ListCloudDatastores200ResponseAllOfDatastoresInnerTenantsInner
+		var tenantPermissions []sdk.SaveClusterDatastoreRequestDatastoreTenantsInner
 		for _, tenantsValue := range tenantsValues {
 			tenantPermission := tenantsClusterFunc()
 			tenantPermission.SetId(tenantsValue.Id.ValueInt64())
@@ -174,7 +174,7 @@ func datastoreCreateCluster(ctx context.Context,
 				return 0
 			}
 
-			sites := []sdk.GetAlerts200ResponseAllOfChecksInnerAccount{}
+			sites := []sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{}
 			for _, groupsValue := range groupsValues {
 				site := permissionsSitesClusterFunc()
 				site.SetId(groupsValue.Id.ValueInt64())
@@ -193,9 +193,9 @@ func datastoreCreateCluster(ctx context.Context,
 				return 0
 			}
 
-			var plans []permissionsPlans
+			var plans []sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
-				planItem := permissionsPlansFunc()
+				planItem := sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults()
 				planItem.SetId(plansValue.Id.ValueInt64())
 				planItem.SetCode(plansValue.Code.ValueString())
 				planItem.SetName(plansValue.Name.ValueString())

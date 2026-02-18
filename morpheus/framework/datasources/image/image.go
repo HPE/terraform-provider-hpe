@@ -200,7 +200,7 @@ func getImageByName(
 		return diags
 	}
 
-	ma := sdk.AddVirtualImage200ResponseAllOfVirtualImage{}
+	ma := sdk.GetVirtualImage200ResponseVirtualImage{}
 	if err := ma.UnmarshalJSON(imgJSON); err != nil {
 		// it is very unlikely for this to error out, if it does it likely indicates
 		// an SDK error
@@ -217,7 +217,7 @@ func getImageByName(
 
 func parseAsData(
 	ctx context.Context,
-	image sdk.AddVirtualImage200ResponseAllOfVirtualImage,
+	image sdk.GetVirtualImage200ResponseVirtualImage,
 	data *ImageModel,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -230,11 +230,11 @@ func parseAsData(
 
 	// config_azure
 	if image.GetImageType() == "azure-reference" {
-		if image.GetConfig().AzureReferenceVirtualImageConfiguration != nil {
-			data.ConfigAzure.Publisher = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Publisher)
-			data.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Offer)
-			data.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Version)
-			data.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration.Sku)
+		if image.GetConfig().AzureReferenceVirtualImageConfiguration3 != nil {
+			data.ConfigAzure.Publisher = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher)
+			data.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Offer)
+			data.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Version)
+			data.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Sku)
 		}
 
 		data.ConfigAzure.state = attr.ValueStateKnown
@@ -320,7 +320,7 @@ func parseAsData(
 		ctx,
 		image.Tags,
 		func(
-			in sdk.AddCatalogItemTypeRequestCatalogItemTypeOneOfConfigEvarsInner,
+			in sdk.GetVirtualImage200ResponseVirtualImageTagsInner,
 		) TagsValue {
 			return TagsValue{
 				Name:  convert.StrToType(in.Name),
@@ -335,7 +335,7 @@ func parseAsData(
 	// tenants
 	tenants, d := convert.ToSetType(
 		ctx, image.Accounts,
-		func(in sdk.GetAlerts200ResponseAllOfCheckGroupsInnerInstance) TenantsValue {
+		func(in sdk.GetVirtualImage200ResponseVirtualImageAccountsInner) TenantsValue {
 			return TenantsValue{
 				Name: convert.StrToType(in.Name),
 				Id:   convert.Int64ToType(in.Id),

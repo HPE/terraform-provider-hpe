@@ -214,7 +214,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateGroup := sdk.NewAddGroupsRequestGroupWithDefaults()
+	updateGroup := sdk.NewUpdateGroupsRequestGroupWithDefaults()
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -261,10 +261,10 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	updateGroupReq := sdk.NewAddGroupsRequest(*updateGroup)
+	updateGroupReq := sdk.NewUpdateGroupsRequest(*updateGroup)
 
 	group, hresp, err := client.GroupsAPI.UpdateGroups(ctx, id).
-		AddGroupsRequest(*updateGroupReq).Execute()
+		UpdateGroupsRequest(*updateGroupReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"update group resource",

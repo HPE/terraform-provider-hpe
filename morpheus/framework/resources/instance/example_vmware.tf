@@ -68,12 +68,12 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    resourcePoolId       = "pool-1"
-    nestedVirtualization = "off"
-    noAgent              = true
-    createUser           = false
-    vmwareFolderID       = "group-v79"
+  config_vmware = {
+    resource_pool_id      = "pool-1"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
+    vmware_folder_id      = "group-v79"
   }
 
   timeouts = {

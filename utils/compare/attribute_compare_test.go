@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package compare
 
@@ -8,12 +8,16 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -29,7 +33,6 @@ const (
 	testInventoryLevel             = "level1"
 	testDatacenterName             = "datacenter1"
 	testConsoleKeymap              = "us"
-	testConfigCmdbDiscovery        = true
 	testEnableNetworkTypeSelection = true
 
 	testCertificateKey                = "certificateProvider"
@@ -38,7 +41,6 @@ const (
 	testInventoryLevelKey             = "inventoryLevel"
 	testDatacenterNameKey             = "datacenterName"
 	testConsoleKeymapKey              = "consoleKeymap"
-	testConfigCmdbDiscoveryKey        = "configCmdbDiscovery"
 	testEnableNetworkTypeSelectionKey = "enableNetworkTypeSelection"
 )
 
@@ -76,7 +78,6 @@ func createExamplePlanObjectCloudHVMCamelCase(t *testing.T) *examplePlanObject {
 	planAttrTypes := map[string]attr.Type{
 		testApplianceUrlKey:               basetypes.StringType{},
 		testCertificateKey:                basetypes.StringType{},
-		testConfigCmdbDiscoveryKey:        basetypes.BoolType{},
 		testConsoleKeymapKey:              basetypes.StringType{},
 		testDatacenterNameKey:             basetypes.StringType{},
 		testEnableNetworkTypeSelectionKey: basetypes.BoolType{},
@@ -86,7 +87,6 @@ func createExamplePlanObjectCloudHVMCamelCase(t *testing.T) *examplePlanObject {
 	planAttrValues := map[string]attr.Value{
 		testApplianceUrlKey:               basetypes.NewStringValue(testApplianceUrl),
 		testCertificateKey:                basetypes.NewStringValue(testCertificateProvider),
-		testConfigCmdbDiscoveryKey:        basetypes.NewBoolValue(testConfigCmdbDiscovery),
 		testConsoleKeymapKey:              basetypes.NewStringValue(testConsoleKeymap),
 		testDatacenterNameKey:             basetypes.NewStringValue(testDatacenterName),
 		testEnableNetworkTypeSelectionKey: basetypes.NewBoolValue(testEnableNetworkTypeSelection),
@@ -111,7 +111,6 @@ func createExamplePlanObjectCloudHVMSnakeCase(t *testing.T) *examplePlanObject {
 	planAttrTypes := map[string]attr.Type{
 		strcase.ToSnake(testApplianceUrlKey):               basetypes.StringType{},
 		strcase.ToSnake(testCertificateKey):                basetypes.StringType{},
-		strcase.ToSnake(testConfigCmdbDiscoveryKey):        basetypes.BoolType{},
 		strcase.ToSnake(testConsoleKeymapKey):              basetypes.StringType{},
 		strcase.ToSnake(testDatacenterNameKey):             basetypes.StringType{},
 		strcase.ToSnake(testEnableNetworkTypeSelectionKey): basetypes.BoolType{},
@@ -121,7 +120,6 @@ func createExamplePlanObjectCloudHVMSnakeCase(t *testing.T) *examplePlanObject {
 	planAttrValues := map[string]attr.Value{
 		strcase.ToSnake(testApplianceUrlKey):               basetypes.NewStringValue(testApplianceUrl),
 		strcase.ToSnake(testCertificateKey):                basetypes.NewStringValue(testCertificateProvider),
-		strcase.ToSnake(testConfigCmdbDiscoveryKey):        basetypes.NewBoolValue(testConfigCmdbDiscovery),
 		strcase.ToSnake(testConsoleKeymapKey):              basetypes.NewStringValue(testConsoleKeymap),
 		strcase.ToSnake(testDatacenterNameKey):             basetypes.NewStringValue(testDatacenterName),
 		strcase.ToSnake(testEnableNetworkTypeSelectionKey): basetypes.NewBoolValue(testEnableNetworkTypeSelection),
@@ -166,13 +164,13 @@ func createExamplePlanObjectGeneric(t *testing.T) *examplePlanObject {
 // createExampleFromApiCloudHVM creates an example API response for testing
 func createExampleFromApiCloudHVM(t *testing.T) *exampleFromApi {
 	// Define a sample configType
-	hvmConfig := sdk.NewListClouds200ResponseAllOfZonesInnerConfigWithDefaults()
+	enableNetworkTypeSelection := convert.BoolToStringOnOff(testEnableNetworkTypeSelection)
+	hvmConfig := sdkfuncs.NewHvmCloudConfig()
 	hvmConfig.SetCertificateProvider(testCertificateProvider)
 	hvmConfig.SetApplianceUrl(testApplianceUrl)
 	hvmConfig.SetConsoleKeymap(testConsoleKeymap)
-	hvmConfig.SetConfigCmdbDiscovery(testConfigCmdbDiscovery)
 	hvmConfig.SetDatacenterName(testDatacenterName)
-	hvmConfig.SetEnableNetworkTypeSelection(testEnableNetworkTypeSelection)
+	hvmConfig.SetEnableNetworkTypeSelection(enableNetworkTypeSelection.ValueString())
 	hvmConfig.SetExternalId(testExternalId)
 	hvmConfig.SetInventoryLevel(testInventoryLevel)
 
@@ -191,7 +189,6 @@ func createPlanKeyMapHVM() map[string]string {
 		strcase.ToSnake(testCertificateKey):                testCertificateKey,
 		strcase.ToSnake(testApplianceUrlKey):               testApplianceUrlKey,
 		strcase.ToSnake(testConsoleKeymapKey):              testConsoleKeymapKey,
-		strcase.ToSnake(testConfigCmdbDiscoveryKey):        testConfigCmdbDiscoveryKey,
 		strcase.ToSnake(testDatacenterNameKey):             testDatacenterNameKey,
 		strcase.ToSnake(testEnableNetworkTypeSelectionKey): testEnableNetworkTypeSelectionKey,
 		strcase.ToSnake(testExternalIdKey):                 testExternalIdKey,

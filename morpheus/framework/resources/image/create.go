@@ -58,11 +58,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// config_azure
 	if !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown() {
 		config := sdk.AddVirtualImageRequestVirtualImageConfig{}
-		config.AzureReferenceVirtualImageConfiguration = sdk.NewAzureReferenceVirtualImageConfigurationWithDefaults()
-		config.AzureReferenceVirtualImageConfiguration.SetPublisher(plan.ConfigAzure.Publisher.ValueString())
-		config.AzureReferenceVirtualImageConfiguration.SetOffer(plan.ConfigAzure.Offer.ValueString())
-		config.AzureReferenceVirtualImageConfiguration.SetVersion(plan.ConfigAzure.Version.ValueString())
-		config.AzureReferenceVirtualImageConfiguration.SetSku(plan.ConfigAzure.Sku.ValueString())
+		config.AzureReferenceVirtualImageConfiguration1 = sdk.NewAzureReferenceVirtualImageConfiguration1WithDefaults()
+		config.AzureReferenceVirtualImageConfiguration1.SetPublisher(plan.ConfigAzure.Publisher.ValueString())
+		config.AzureReferenceVirtualImageConfiguration1.SetOffer(plan.ConfigAzure.Offer.ValueString())
+		config.AzureReferenceVirtualImageConfiguration1.SetVersion(plan.ConfigAzure.Version.ValueString())
+		config.AzureReferenceVirtualImageConfiguration1.SetSku(plan.ConfigAzure.Sku.ValueString())
 		reqImage.VirtualImage.SetConfig(config)
 	}
 
@@ -157,7 +157,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	// tags
-	tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
+	tags, diags := convert.FromSetType(ctx, plan.Tags, createTagMapper)
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert volumes")
 		resp.Diagnostics.Append(diags...)
@@ -348,10 +348,19 @@ func checkStatusDone(status string, targetStatuses []string, errorStatuses []str
 	}
 }
 
-func tagMapper(
+func createTagMapper(
 	in TagsValue,
 ) sdk.AddVirtualImageRequestVirtualImageTagsInner {
 	return sdk.AddVirtualImageRequestVirtualImageTagsInner{
+		Name:  in.Name.ValueString(),
+		Value: in.Value.ValueString(),
+	}
+}
+
+func updateTagMapper(
+	in TagsValue,
+) sdk.UpdateVirtualImageRequestVirtualImageTagsInner {
+	return sdk.UpdateVirtualImageRequestVirtualImageTagsInner{
 		Name:  in.Name.ValueString(),
 		Value: in.Value.ValueString(),
 	}

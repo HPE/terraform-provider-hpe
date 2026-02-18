@@ -104,6 +104,7 @@ resource "hpe_morpheus_cloud" "example" {
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
+- `config_vmware` (Attributes) VSphere Cloud (see [below for nested schema](#nestedatt--config_vmware))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
 - `enabled` (Boolean) Can be used to disable the cloud
@@ -127,6 +128,31 @@ Optional:
 
 - `certificate_provider` (String) Certificate provider
 - `enable_network_type_selection` (Boolean) Whether to enable the user to select the network interface type during provisioning
+
+
+<a id="nestedatt--config_vmware"></a>
+### Nested Schema for `config_vmware`
+
+Required:
+
+- `api_url` (String) The SDK URL of the vCenter server.
+- `api_version` (String) The SDK version of the vCenter server.
+- `datacenter` (String) The vSphere datacenter to add.
+
+Optional:
+
+- `certificate_provider` (String) Certificate provider
+- `cluster` (String) The name of the vSphere cluster
+- `config_management_id` (String) The id of the configuration management integration associated with the vSphere cloud.
+- `enable_disk_type_selection` (Boolean) Whether to enable the user to select the disk type during provisioning.
+- `enable_network_type_selection` (Boolean) Whether to enable the user to select the network type during provisioning.
+- `enable_storage_type_selection` (Boolean) Whether to enable the user to select the storage type during provisioning.
+- `enable_vnc` (Boolean) Enable VNC access to the console.
+- `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
+- `resource_pool` (String) The name of the vSphere resource pool
+- `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
+- `username` (String) Username.
 
 ## Import
 
