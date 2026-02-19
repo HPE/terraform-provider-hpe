@@ -1651,6 +1651,56 @@ func (r *Resource) Read(
 		return
 	}
 
+	importing := state.Name.IsNull()
+	if importing {
+		// Convert the legacy `custom` defaultAccessLevel value to `none` on import
+		// As per API behaviour, `custom` gets treated as `none` since
+		// the change to the newer permissions model (the one we use in the provider).
+		// By doing this, we can correctly handle the importing of legacy Roles using `custom`
+		// which were previously unmanaged by Terraform.
+		const customVal = "custom"
+		var noneVal string = "none"
+		if apiState.Permissions.DefaultBlueprintAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultBlueprintAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultCatalogItemTypeAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultCatalogItemTypeAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultCloudAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultCloudAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultGroupAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultGroupAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultInstanceTypeAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultInstanceTypeAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultPersonaAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultPersonaAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultReportTypeAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultReportTypeAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultTaskAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultTaskAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultVdiPoolAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultVdiPoolAccess = convert.StrToType(&noneVal)
+		}
+
+		if apiState.Permissions.DefaultWorkflowAccess.ValueString() == customVal {
+			apiState.Permissions.DefaultWorkflowAccess = convert.StrToType(&noneVal)
+		}
+	}
+
 	// for optional behaviour on the default access levels
 	if state.Permissions.DefaultBlueprintAccess.IsNull() {
 		apiState.Permissions.DefaultBlueprintAccess = types.StringNull()
