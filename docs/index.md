@@ -141,6 +141,10 @@ In this release (v1.1.0) we have added the following resource functionality:
 
 N/A
 
+### Resolved issues
+
+- `hpe_morpheus_cluster_hks_vsphere` scale-down and destroy issues are fixed in Morpheus version 8.1 and later
+
 ### Known issues from previous releases
 
 - `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
