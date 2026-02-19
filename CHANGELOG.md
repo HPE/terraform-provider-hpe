@@ -2,7 +2,7 @@
 
 In this release (v1.1.0) we have added the following resource functionality:
 
-- hpe_morpheus_cloud supports VMware clouds
+- hpe_morpheus_cloud supports VMware clouds with static config schema for VMware cloud types
 - hpe_morpheus_instance has static config schema for VMware and HVM instances
 - hpe_morpheus_task generalised task resource with static config schema for Conditional Workflow task
 
@@ -31,8 +31,6 @@ N/A
   may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
 - `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
-- `hpe_morpheus_cluster_hks_vsphere` has issues with scale-down, which are being investigated.
-- `hpe_morpheus_cluster_hks_vsphere` destroy may not succeed, this issue is being investigated.
 
 # v1.0.0 Release Notes
 
