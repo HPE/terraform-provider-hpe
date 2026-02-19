@@ -1659,7 +1659,7 @@ func (r *Resource) Read(
 		// By doing this, we can correctly handle the importing of legacy Roles using `custom`
 		// which were previously unmanaged by Terraform.
 		const customVal = "custom"
-		var noneVal = "none"
+		noneVal := "none"
 		if apiState.Permissions.DefaultBlueprintAccess.ValueString() == customVal {
 			apiState.Permissions.DefaultBlueprintAccess = convert.StrToType(&noneVal)
 		}
