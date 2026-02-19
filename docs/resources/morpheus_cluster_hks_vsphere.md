@@ -9,6 +9,8 @@ description: |-
 
 Provides a HPE Kubernetes Service (HKS) cluster on VMware vSphere cloud
 
+-> Scale-down and destroy have issues with Morpheus versions prior to 8.1
+
 ## Notes
 
 ### What to do if worker nodes fail to provision
