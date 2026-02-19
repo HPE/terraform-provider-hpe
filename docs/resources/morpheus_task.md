@@ -67,7 +67,7 @@ resource "hpe_morpheus_task" "example_task" {
 
 ### Optional
 
-- `allow_custom_config` (Boolean) When enabled, a text area is provided at Task execution time to allow the user to pass extra variables or specify extra configuration
+- `allow_custom_config` (Boolean) When enabled, a text area is provided during manual Task execution to allow the user to pass extra variables or specify extra configuration
 - `code` (String) A unique code for the task
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `config_conditional_workflow` (Attributes) (see [below for nested schema](#nestedatt--config_conditional_workflow))
