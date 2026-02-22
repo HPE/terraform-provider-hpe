@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package convert
 
@@ -105,6 +105,10 @@ func BoolToStringOnOff(b bool) types.String {
 	default:
 		return types.StringNull()
 	}
+}
+
+func BoolTypeToStringPointerOnOff(val types.Bool) *string {
+	return BoolToStringOnOff(val.ValueBool()).ValueStringPointer()
 }
 
 func BoolToStringYesNo(b bool) types.String {

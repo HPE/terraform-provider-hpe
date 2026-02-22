@@ -87,8 +87,8 @@ func getTaskAsState(
 	}
 
 	// config_conditional_workflow_task
-	if task.TaskOptions.ConditionalWorkflowTaskConfig != nil && typeCode == "conditionalWorkflow" {
-		config := task.TaskOptions.ConditionalWorkflowTaskConfig
+	if task.TaskOptions.ConditionalWorkflowTaskConfig2 != nil && typeCode == "conditionalWorkflow" {
+		config := task.TaskOptions.ConditionalWorkflowTaskConfig2
 
 		if config.ConditionalScript == nil {
 			state.ConfigConditionalWorkflow.ConditionalScript = customtypes.NewTrimmedStringNull()
@@ -161,7 +161,12 @@ func getTaskAsState(
 	state.RetryCount = convert.Int64ToType(task.RetryCount)
 
 	// retry_delay_seconds
-	state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
+	// on import use the value from the API, otherwise use the value from the plan
+	if plan.Name.IsNull() || plan.Name.IsUnknown() {
+		state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
+	} else {
+		state.RetryDelaySeconds = plan.RetryDelaySeconds
+	}
 
 	// retryable
 	state.Retryable = convert.BoolToType(task.Retryable)

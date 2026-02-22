@@ -62,7 +62,7 @@ func getInstanceTypeLayoutByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
-) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
+) (*sdk.GetLayout200ResponseInstanceTypeLayout, error) {
 	c, hresp, err := apiClient.LibraryAPI.GetLayout(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for instance layout %d", id)
@@ -77,7 +77,7 @@ func getInstanceTypeLayoutByName(
 	ctx context.Context,
 	data InstanceTypeLayoutModel,
 	apiClient *sdk.APIClient,
-) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
+) (*sdk.GetLayout200ResponseInstanceTypeLayout, error) {
 	name := data.Name.ValueString()
 
 	// Sort by descending display order (sortOrder)
@@ -92,7 +92,7 @@ func getInstanceTypeLayoutByName(
 		return nil, fmt.Errorf("GET failed for instance layout %s", name)
 	}
 
-	var layouts []sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner
+	var layouts []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 
 	for _, l := range ls.InstanceTypeLayouts {
 		if l.GetName() == name {
@@ -103,7 +103,7 @@ func getInstanceTypeLayoutByName(
 	if !data.Version.IsNull() {
 		version := data.Version.ValueString()
 
-		var filtered []sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner
+		var filtered []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 		for _, l := range layouts {
 			if l.GetInstanceVersion() == version {
 				filtered = append(filtered, l)
@@ -115,7 +115,7 @@ func getInstanceTypeLayoutByName(
 
 	// We return the first layout which should have the highest display order (sortOrder)
 	if len(layouts) > 0 {
-		return &layouts[0], nil
+		return getInstanceTypeLayoutByID(ctx, *layouts[0].Id, apiClient)
 	}
 
 	return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
@@ -125,7 +125,7 @@ func getInstanceTypeLayout(
 	ctx context.Context,
 	data InstanceTypeLayoutModel,
 	apiClient *sdk.APIClient,
-) (*sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner, error) {
+) (*sdk.GetLayout200ResponseInstanceTypeLayout, error) {
 	if !data.Id.IsNull() {
 		return getInstanceTypeLayoutByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() {

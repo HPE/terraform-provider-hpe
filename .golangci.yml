@@ -32,7 +32,7 @@ linters:
       rules:
         - name: var-naming
           # Suppress warnings about Id "initialism" - i.e. make Id and ID valid
-          arguments: [ [ "ID", "URL", "API" ] ]
+          arguments: [ [ "ID", "URL", "API", "IDS" ] ]
   exclusions:
     generated: lax
     presets:

@@ -13,7 +13,7 @@ import (
 )
 
 func CreateInstanceTypeLayout(t *testing.T, count int64) (
-	[]sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner,
+	[]sdk.AddLayout200ResponseInstanceTypeLayout,
 	error,
 ) {
 	t.Helper()
@@ -35,7 +35,7 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 
 	itID := its.InstanceTypes[len(its.InstanceTypes)-1].Id
 
-	var layouts []sdk.GetInstanceType200ResponseInstanceTypeInstanceTypeLayoutsInner
+	var layouts []sdk.AddLayout200ResponseInstanceTypeLayout
 
 	for i := range count {
 		addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()

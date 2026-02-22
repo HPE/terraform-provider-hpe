@@ -126,7 +126,7 @@ func makeUpdateAPIcalls(
 
 	// tags
 	if !plan.Tags.IsNull() && !plan.Tags.IsUnknown() {
-		tags, diags := convert.FromSetType(ctx, plan.Tags, tagMapper)
+		tags, diags := convert.FromSetType(ctx, plan.Tags, updateTagMapper)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert tags")
 			resp.Diagnostics.Append(diags...)
@@ -154,7 +154,7 @@ func makeUpdateAPIcalls(
 	if len(state.Volumes.Elements()) != len(plan.Volumes.Elements()) {
 		resizing = true
 
-		volumes, diags := convert.FromListType(ctx, plan.Volumes, volumeMapper)
+		volumes, diags := convert.FromListType(ctx, plan.Volumes, updateVolumeMapper)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert volumes")
 			resp.Diagnostics.Append(diags...)
@@ -176,7 +176,7 @@ func makeUpdateAPIcalls(
 		networkInterfaces, diags := convert.FromListType(
 			ctx,
 			plan.NetworkInterfaces,
-			networkInterfaceMapper(ctx),
+			updateNetworkInterfaceMapper(ctx),
 		)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert network interfaces")

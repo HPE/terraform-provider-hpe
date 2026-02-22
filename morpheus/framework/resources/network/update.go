@@ -67,7 +67,7 @@ func (r *Resource) Update(
 	}
 
 	if !plan.ZonePoolId.IsNull() && !plan.ZonePoolId.IsUnknown() {
-		zonePool := sdk.NewCreateNetworksRequestNetworkZonePool()
+		zonePool := sdk.NewUpdateNetworkRequestNetworkZonePool()
 		zonePool.SetId(plan.ZonePoolId.ValueInt64())
 		network.SetZonePool(*zonePool)
 	}
@@ -159,10 +159,10 @@ func (r *Resource) Update(
 			return
 		}
 
-		var tenants []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
+		var tenants []sdk.UpdateNetworkRequestNetworkTenantsInner
 		for _, tenantID := range tenantIDs {
 			if !tenantID.IsNull() {
-				tenant := sdk.GetAlerts200ResponseAllOfChecksInnerAccount{}
+				tenant := sdk.UpdateNetworkRequestNetworkTenantsInner{}
 				tenant.SetId(tenantID.ValueInt64())
 				tenants = append(tenants, tenant)
 			}
@@ -171,13 +171,13 @@ func (r *Resource) Update(
 	}
 
 	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
-		networkDomain := sdk.NewListNetworks200ResponseAllOfNetworksInnerNetworkDomain()
+		networkDomain := sdk.NewUpdateNetworkRequestNetworkNetworkDomain()
 		networkDomain.SetId(plan.NetworkDomainId.ValueInt64())
 		network.SetNetworkDomain(*networkDomain)
 	}
 
 	if !plan.NetworkProxyId.IsNull() && !plan.NetworkProxyId.IsUnknown() {
-		networkProxy := sdk.NewListNetworks200ResponseAllOfNetworksInnerNetworkProxy()
+		networkProxy := sdk.NewUpdateNetworkRequestNetworkNetworkProxy()
 		networkProxy.SetId(plan.NetworkProxyId.ValueInt64())
 		network.SetNetworkProxy(*networkProxy)
 	}

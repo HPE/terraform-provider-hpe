@@ -249,7 +249,7 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile("datastore blah list failed"),
+				ExpectError: regexp.MustCompile("datastore blah not found"),
 			},
 		},
 	})

@@ -5,10 +5,9 @@ package task
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -30,8 +30,8 @@ func TaskResourceSchema(ctx context.Context) schema.Schema {
 			"allow_custom_config": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "When enabled, a text area is provided at Task execution time to allow the user to pass extra variables or specify extra configuration",
-				MarkdownDescription: "When enabled, a text area is provided at Task execution time to allow the user to pass extra variables or specify extra configuration",
+				Description:         "When enabled, a text area is provided during manual Task execution to allow the user to pass extra variables or specify extra configuration",
+				MarkdownDescription: "When enabled, a text area is provided during manual Task execution to allow the user to pass extra variables or specify extra configuration",
 			},
 			"code": schema.StringAttribute{
 				Optional:            true,
@@ -139,6 +139,9 @@ func TaskResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The delay, between retries.",
 				MarkdownDescription: "The delay, between retries.",
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"retryable": schema.BoolAttribute{
 				Optional:            true,
@@ -536,12 +539,14 @@ func (t ConfigConditionalWorkflowType) ValueFromTerraform(ctx context.Context, i
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -586,6 +591,7 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals := make(map[string]tftypes.Value, 5)
 
 		val, err = v.ConditionalScript.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -593,6 +599,7 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["conditional_script"] = val
 
 		val, err = v.ElseOperationalWorkflowId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -600,6 +607,7 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["else_operational_workflow_id"] = val
 
 		val, err = v.ElseOperationalWorkflowName.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -607,6 +615,7 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["else_operational_workflow_name"] = val
 
 		val, err = v.IfOperationalWorkflowId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -614,6 +623,7 @@ func (v ConfigConditionalWorkflowValue) ToTerraformValue(ctx context.Context) (t
 		vals["if_operational_workflow_id"] = val
 
 		val, err = v.IfOperationalWorkflowName.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

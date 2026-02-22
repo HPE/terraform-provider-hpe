@@ -21,6 +21,7 @@ import (
 func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
+
 	os.Exit(code)
 }
 

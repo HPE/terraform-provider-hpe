@@ -5,7 +5,6 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"maps"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,7 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
-const defaultCloudType = "standard"
+const createOperation = "create cloud resource"
 
 func (r *Resource) Create(
 	ctx context.Context,
@@ -50,54 +49,162 @@ func (r *Resource) Create(
 
 	addCloudConfig := addCloud.GetConfig()
 
-	cloudTypeCode := defaultCloudType
-
-	configAdditionalProperties := make(map[string]any)
-
-	// TODO: update the openapi spec to get SDK fields for these values
-	if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
-		configAdditionalProperties["applianceUrl"] = plan.ApplianceUrl.ValueStringPointer()
-	}
-
-	if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
-		configAdditionalProperties["datacenterName"] = plan.DataCenterName.ValueStringPointer()
-	}
-
-	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
-		configAdditionalProperties["externalId"] = plan.ExternalId.ValueStringPointer()
-	}
-
-	if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
-		configAdditionalProperties["inventoryLevel"] = plan.ImportExistingVms.ValueStringPointer()
-	}
-
-	if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
-		configAdditionalProperties["consoleKeymap"] = plan.KeyboardLayout.ValueStringPointer()
-	}
+	var cloudTypeCode string
 
 	switch {
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+		cloudTypeCode = standardCloud
+
 		config := sdkfuncs.NewHvmCloudConfig()
 
-		config.AdditionalProperties = configAdditionalProperties
+		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
+		}
 
-		if !plan.ConfigHvm.CertificateProvider.IsNull() && !plan.ConfigHvm.CertificateProvider.IsUnknown() {
+		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+			config.SetDatacenterName(plan.DataCenterName.ValueString())
+		}
+
+		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+			config.SetExternalId(plan.ExternalId.ValueString())
+		}
+
+		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+			config.SetInventoryLevel(plan.ImportExistingVms.ValueString())
+		}
+
+		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+			config.SetConsoleKeymap(plan.KeyboardLayout.ValueString())
+		}
+
+		if !plan.ConfigHvm.CertificateProvider.IsNull() &&
+			!plan.ConfigHvm.CertificateProvider.IsUnknown() {
 			config.CertificateProvider = plan.ConfigHvm.CertificateProvider.ValueStringPointer()
 		}
-		if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() && !plan.ConfigHvm.EnableNetworkTypeSelection.IsUnknown() {
-			config.EnableNetworkTypeSelection = plan.ConfigHvm.EnableNetworkTypeSelection.ValueBoolPointer()
+
+		if !plan.ConfigHvm.EnableNetworkTypeSelection.IsNull() &&
+			!plan.ConfigHvm.EnableNetworkTypeSelection.IsUnknown() {
+			config.EnableNetworkTypeSelection.Set(
+				convert.BoolTypeToStringPointerOnOff(plan.ConfigHvm.EnableNetworkTypeSelection),
+			)
 		}
 
-		addHvmConfig := sdkfuncs.AddCloudRequestHVMConfig(config)
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf2 = config
 
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = &addHvmConfig
+	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
+		cloudTypeCode = vmwareCloud
+
+		config := sdkfuncs.NewVmwareCloudConfig(
+			plan.ConfigVmware.ApiUrl.ValueString(),
+			plan.ConfigVmware.ApiVersion.ValueString(),
+			plan.ConfigVmware.Datacenter.ValueString(),
+		)
+
+		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
+		}
+
+		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+			config.SetDatacenterName(plan.DataCenterName.ValueString())
+		}
+
+		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+			config.SetExternalId(plan.ExternalId.ValueString())
+		}
+
+		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+			config.SetInventoryLevel(plan.ImportExistingVms.ValueString())
+		}
+
+		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+			config.SetConsoleKeymap(plan.KeyboardLayout.ValueString())
+		}
+
+		if !plan.ConfigVmware.CertificateProvider.IsNull() &&
+			!plan.ConfigVmware.CertificateProvider.IsUnknown() {
+			config.CertificateProvider = plan.ConfigVmware.CertificateProvider.ValueStringPointer()
+		}
+
+		if !plan.ConfigVmware.Cluster.IsNull() &&
+			!plan.ConfigVmware.Cluster.IsUnknown() {
+			config.Cluster = plan.ConfigVmware.Cluster.ValueStringPointer()
+		}
+
+		if !plan.ConfigVmware.ConfigManagementId.IsNull() &&
+			!plan.ConfigVmware.ConfigManagementId.IsUnknown() {
+			config.ConfigManagementId = plan.ConfigVmware.ConfigManagementId.ValueStringPointer()
+		}
+
+		if !plan.ConfigVmware.EnableDiskTypeSelection.IsNull() &&
+			!plan.ConfigVmware.EnableDiskTypeSelection.IsUnknown() {
+			config.EnableDiskTypeSelection.Set(
+				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableDiskTypeSelection),
+			)
+		}
+
+		if !plan.ConfigVmware.EnableNetworkTypeSelection.IsNull() &&
+			!plan.ConfigVmware.EnableNetworkTypeSelection.IsUnknown() {
+			config.EnableNetworkTypeSelection.Set(
+				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableNetworkTypeSelection),
+			)
+		}
+
+		if !plan.ConfigVmware.EnableStorageTypeSelection.IsNull() &&
+			!plan.ConfigVmware.EnableStorageTypeSelection.IsUnknown() {
+			config.EnableStorageTypeSelection.Set(
+				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableStorageTypeSelection),
+			)
+		}
+
+		if !plan.ConfigVmware.EnableVnc.IsNull() &&
+			!plan.ConfigVmware.EnableVnc.IsUnknown() {
+			config.EnableVnc.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableVnc))
+		}
+
+		if !plan.ConfigVmware.HideHostSelection.IsNull() &&
+			!plan.ConfigVmware.HideHostSelection.IsUnknown() {
+			config.HideHostSelection.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.HideHostSelection))
+		}
+
+		if !plan.ConfigVmware.Password.IsNull() &&
+			!plan.ConfigVmware.Password.IsUnknown() {
+			config.Password = plan.ConfigVmware.Password.ValueStringPointer()
+		}
+
+		if !plan.ConfigVmware.ResourcePool.IsNull() &&
+			!plan.ConfigVmware.ResourcePool.IsUnknown() {
+			config.ResourcePool = plan.ConfigVmware.ResourcePool.ValueStringPointer()
+		}
+
+		if !plan.ConfigVmware.RpcMode.IsNull() &&
+			!plan.ConfigVmware.RpcMode.IsUnknown() {
+			config.RpcMode.Set(plan.ConfigVmware.RpcMode.ValueStringPointer())
+		}
+
+		if !plan.ConfigVmware.Username.IsNull() &&
+			!plan.ConfigVmware.Username.IsUnknown() {
+			config.Username = plan.ConfigVmware.Username.ValueStringPointer()
+		}
+
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf3 = config
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		if plan.CloudTypeCode.IsNull() || plan.CloudTypeCode.IsUnknown() {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"cloud "+name+": cloud_type_code is required for generic configurations",
+			)
+
+			return
+		}
+
+		cloudTypeCode = plan.CloudTypeCode.ValueString()
+
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"create cloud resource",
+				createOperation,
 				"cloud "+name+": failed to convert config: "+
 					err.Error(),
 			)
@@ -108,14 +215,32 @@ func (r *Resource) Create(
 		configDataMap, ok := configMap.(map[string]any)
 		if !ok {
 			resp.Diagnostics.AddError(
-				"create cloud resource",
+				createOperation,
 				"cloud "+name+": config must be a valid object/map",
 			)
 
 			return
 		}
 
-		maps.Copy(configDataMap, configAdditionalProperties)
+		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+			configDataMap["applianceUrl"] = plan.ApplianceUrl.ValueString()
+		}
+
+		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+			configDataMap["datacenterName"] = plan.DataCenterName.ValueString()
+		}
+
+		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+			configDataMap["externalId"] = plan.ExternalId.ValueString()
+		}
+
+		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+			configDataMap["inventoryLevel"] = plan.ImportExistingVms.ValueString()
+		}
+
+		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+			configDataMap["consoleKeymap"] = plan.KeyboardLayout.ValueString()
+		}
 
 		addCloudConfig.MapmapOfStringAny = &configDataMap
 	}
@@ -134,39 +259,39 @@ func (r *Resource) Create(
 
 	addCloud.SetAccountId(tenantID)
 
-	if !plan.AgentInstallMode.IsNull() {
+	if !plan.AgentInstallMode.IsNull() && !plan.AgentInstallMode.IsUnknown() {
 		addCloud.SetAgentMode(plan.AgentInstallMode.ValueString())
 	}
 
-	if !plan.AutoRecoverPowerState.IsNull() {
+	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
 		addCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
 	}
 
-	if !plan.Code.IsNull() {
+	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
 		addCloud.SetCode(plan.Code.ValueString())
 	}
 
-	if !plan.CostingMode.IsNull() {
+	if !plan.CostingMode.IsNull() && !plan.CostingMode.IsUnknown() {
 		addCloud.AdditionalProperties["costingMode"] = plan.CostingMode.ValueString()
 	}
 
-	if !plan.Enabled.IsNull() {
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		addCloud.SetEnabled(plan.Enabled.ValueBool())
 	}
 
-	if !plan.ExternalId.IsNull() {
+	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
 		addCloud.AdditionalProperties["externalId"] = plan.ExternalId.ValueString()
 	}
 
-	if !plan.GuidanceMode.IsNull() {
+	if !plan.GuidanceMode.IsNull() && !plan.GuidanceMode.IsUnknown() {
 		addCloud.AdditionalProperties["guidanceMode"] = plan.GuidanceMode.ValueString()
 	}
 
-	if !plan.Labels.IsNull() {
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"create cloud resource",
+				createOperation,
 				"cloud "+name+": failed to parse label: "+err.Error(),
 			)
 
@@ -176,15 +301,15 @@ func (r *Resource) Create(
 		addCloud.SetLabels(labels)
 	}
 
-	if !plan.Location.IsNull() {
+	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
 		addCloud.SetLocation(plan.Location.ValueString())
 	}
 
-	if !plan.SecurityMode.IsNull() {
+	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
 		addCloud.SetSecurityMode(plan.SecurityMode.ValueString())
 	}
 
-	if !plan.Visibility.IsNull() {
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		addCloud.SetVisibility(plan.Visibility.ValueString())
 	}
 
@@ -193,7 +318,7 @@ func (r *Resource) Create(
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"create cloud resource",
+			createOperation,
 			"cloud "+name+": failed to create client: "+err.Error(),
 		)
 
@@ -204,7 +329,7 @@ func (r *Resource) Create(
 	cloud, hresp, err := client.CloudsAPI.AddClouds(ctx).AddCloudsRequest(*createRequest).Execute()
 	if cloud == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
-			"create cloud resource",
+			createOperation,
 			"cloud "+name+" POST failed: "+errfmt.ErrMsg(err, hresp),
 		)
 
@@ -228,7 +353,7 @@ func (r *Resource) Create(
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
-			"failed to read cloud state",
+			createOperation,
 			fmt.Sprintf("Cloud %d was created but could not be read", id),
 		)
 		taintResourceState(id)
@@ -239,7 +364,7 @@ func (r *Resource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
-			"failed to set cloud state",
+			createOperation,
 			fmt.Sprintf("Cloud %d was created but state could not be saved", id),
 		)
 		taintResourceState(id)

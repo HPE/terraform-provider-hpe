@@ -120,15 +120,15 @@ func (r *Resource) Create(
 		}
 	}
 
-	var roles []sdk.GetAlerts200ResponseAllOfChecksInnerAccount
+	var roles []sdk.AddUserRequestUserRolesInner
 	for _, roleID := range roleIDs {
-		rolevalue := sdk.GetAlerts200ResponseAllOfChecksInnerAccount{
+		rolevalue := sdk.AddUserRequestUserRolesInner{
 			Id: &roleID,
 		}
 		roles = append(roles, rolevalue)
 	}
 
-	addUser := sdk.NewAddUserTenantRequestUserWithDefaults()
+	addUser := sdk.NewAddUserRequestUserWithDefaults()
 
 	var config UserModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -184,8 +184,8 @@ func (r *Resource) Create(
 		apiAddUserReq = apiAddUserReq.AccountId(plan.TenantId.ValueInt64())
 	}
 
-	addUserReq := sdk.NewAddUserTenantRequest(*addUser)
-	user, hresp, err := apiAddUserReq.AddUserTenantRequest(*addUserReq).Execute()
+	addUserReq := sdk.NewAddUserRequest(*addUser)
+	user, hresp, err := apiAddUserReq.AddUserRequest(*addUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(

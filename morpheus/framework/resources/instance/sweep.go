@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package instance
 
@@ -125,17 +125,80 @@ func (s *instanceSweeper) Sweep(_ string) error {
 
 		log.Printf("[INFO] Sweeping instance: %s (id: %d)", *name, *id)
 
-		// Delete the instance
-		_, hresp, err = s.client.InstancesAPI.DeleteInstance(ctx, *id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
+		// Get serverId(s).  At the moment we only support a single server per instance, but we'll loop just in case
+		containers, ok := instance.GetContainerDetailsOk()
+		if !ok || containers == nil {
 			errMsg := fmt.Sprintf(
-				"failed to delete instance %s (id: %d): %s",
-				*name, *id, errfmt.ErrMsg(err, hresp),
+				"failed to delete instance %s (id: %d): failed to get container details",
+				*name, *id,
 			)
 			log.Printf("[ERROR] %s", errMsg)
 			sweepErrors = append(sweepErrors, errMsg)
 
 			continue
+		}
+
+		serverIds := make([]int64, 0)
+		for _, container := range containers {
+			server, ok := container.GetServerOk()
+			if !ok || server == nil {
+				errMsg := fmt.Sprintf(
+					"failed to delete instance %s (id: %d): failed to get server details from container",
+					*name, *id,
+				)
+				log.Printf("[ERROR] %s", errMsg)
+				sweepErrors = append(sweepErrors, errMsg)
+
+				continue
+			}
+
+			serverId, ok := server.GetIdOk()
+			if !ok || serverId == nil {
+
+				errMsg := fmt.Sprintf(
+					"failed to delete instance %s (id: %d): failed to get server ID from container",
+					*name, *id,
+				)
+				log.Printf("[ERROR] %s", errMsg)
+				sweepErrors = append(sweepErrors, errMsg)
+
+				continue
+			}
+
+			serverIds = append(serverIds, *serverId)
+		}
+
+		// Stop the server(s) if they are not already stopped, otherwise we cannot delete them
+		for _, serverId := range serverIds {
+			stopReq := s.client.HostsAPI.StopHost(ctx, serverId)
+			_, hresp, err := stopReq.Execute()
+			if err != nil || (hresp.StatusCode != http.StatusOK && hresp.StatusCode != http.StatusConflict) {
+				errMsg := fmt.Sprintf(
+					"failed to delete instance %s (id: %d): %s",
+					*name, *id, errfmt.ErrMsg(err, hresp),
+				)
+				log.Printf("[ERROR] %s", errMsg)
+				sweepErrors = append(sweepErrors, errMsg)
+
+				continue
+			}
+		}
+
+		// Delete the server(s) associated with the instance.
+		for _, serverId := range serverIds {
+			deleteServerReq := s.client.HostsAPI.RemoveHost(ctx, serverId).Force("on").
+				RemoveResources("on").RemoveInstances("on")
+			_, hresp, err := deleteServerReq.Execute()
+			if err != nil || hresp.StatusCode != http.StatusOK {
+				errMsg := fmt.Sprintf(
+					"failed to delete instance %s (id: %d): %s",
+					*name, *id, errfmt.ErrMsg(err, hresp),
+				)
+				log.Printf("[ERROR] %s", errMsg)
+				sweepErrors = append(sweepErrors, errMsg)
+
+				continue
+			}
 		}
 
 		sweptCount++
