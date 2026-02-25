@@ -16,7 +16,7 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
-->This v1.0.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+->This v1.1.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
 See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
@@ -24,7 +24,7 @@ See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider res
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v1.0.0).
+release notes for the current version (v1.1.0).
 
 ### Authentication
 
@@ -48,7 +48,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.0.0"
+      version = "= 1.1.0"
     }
   }
 }
@@ -72,7 +72,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.0.0"
+      version = "= 1.1.0"
     }
   }
 }
@@ -95,7 +95,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.0.0"
+      version = "= 1.1.0"
     }
   }
 }
@@ -131,159 +131,19 @@ That is, the attribute names are case-sensitive and must match exactly.
 
 ### New functionality
 
-In this release (v1.0.0) we have added the following resource functionality:
+In this release (v1.1.0) we have added the following resource functionality:
 
-- hpe_morpheus_app_blueprint_arm
-- hpe_morpheus_app_blueprint_cloud_formation
-- hpe_morpheus_app_blueprint_helm
-- hpe_morpheus_app_blueprint_kubernetes
-- hpe_morpheus_app_blueprint_terraform
-- hpe_morpheus_catalog_item_app_blueprint
-- hpe_morpheus_catalog_item_instance
-- hpe_morpheus_catalog_item_workflow
-- hpe_morpheus_cluster_layout
-- hpe_morpheus_cluster_hks_hvm
-- hpe_morpheus_cluster_hks_vsphere
-- hpe_morpheus_cluster_package
-- hpe_morpheus_contact
-- hpe_morpheus_credential
-- hpe_morpheus_cypher_secret
-- hpe_morpheus_cypher_tfvars
-- hpe_morpheus_datastore supports Alletra MP BMaaS datastores
-- hpe_morpheus_environment
-- hpe_morpheus_execute_schedule
-- hpe_morpheus_file_template
-- hpe_morpheus_form
-- hpe_morpheus_identity_source_active_directory
-- hpe_morpheus_identity_source_saml
-- hpe_morpheus_integration_ansible
-- hpe_morpheus_integration_ansible_tower
-- hpe_morpheus_integration_chef
-- hpe_morpheus_integration_docker_registry
-- hpe_morpheus_integration_git
-- hpe_morpheus_integration_puppet
-- hpe_morpheus_integration_servicenow
-- hpe_morpheus_integration_vro
-- hpe_morpheus_instance supports VMware and BMaaS instances
-- hpe_morpheus_instance_type
-- hpe_morpheus_instance_type_layout
-- hpe_morpheus_job_task
-- hpe_morpheus_job_workflow
-- hpe_morpheus_key_pair
-- hpe_morpheus_license
-- hpe_morpheus_network_domain
-- hpe_morpheus_node_type
-- hpe_morpheus_option_list_api
-- hpe_morpheus_option_list_manual
-- hpe_morpheus_option_list_rest
-- hpe_morpheus_option_type_checkbox
-- hpe_morpheus_option_type_hidden
-- hpe_morpheus_option_type_number
-- hpe_morpheus_option_type_password
-- hpe_morpheus_option_type_radio_list
-- hpe_morpheus_option_type_select_list
-- hpe_morpheus_option_type_text
-- hpe_morpheus_option_type_textarea
-- hpe_morpheus_option_type_typeahead
-- hpe_morpheus_policy has a comprehensive collection of static schema for the various supported policies
-- hpe_morpheus_preseed_script
-- hpe_morpheus_price
-- hpe_morpheus_price_set
-- hpe_morpheus_resource_pool_group
-- hpe_morpheus_scale_threshold
-- hpe_morpheus_script_template
-- hpe_morpheus_security_package
-- hpe_morpheus_setting_appliance
-- hpe_morpheus_setting_backup
-- hpe_morpheus_setting_guidance
-- hpe_morpheus_setting_monitoring
-- hpe_morpheus_setting_provisioning
-- hpe_morpheus_spec_template_arm
-- hpe_morpheus_spec_template_cloud_formation
-- hpe_morpheus_spec_template_helm
-- hpe_morpheus_spec_template_kubernetes
-- hpe_morpheus_spec_template_terraform
-- hpe_morpheus_task_ansible_playbook
-- hpe_morpheus_task_ansible_tower
-- hpe_morpheus_task_chef_bootstrap
-- hpe_morpheus_task_email
-- hpe_morpheus_task_groovy_script
-- hpe_morpheus_task_javascript
-- hpe_morpheus_task_library_script
-- hpe_morpheus_task_library_template
-- hpe_morpheus_task_nested_workflow
-- hpe_morpheus_task_powershell_script
-- hpe_morpheus_task_python_script
-- hpe_morpheus_task_restart
-- hpe_morpheus_task_ruby_script
-- hpe_morpheus_task_shell_script
-- hpe_morpheus_task_write_attributes
-- hpe_morpheus_tenant
-- hpe_morpheus_user_group
-- hpe_morpheus_wiki_page
-- hpe_morpheus_workflow_operational
-- hpe_morpheus_workflow_provisioning
-
-In this release (v1.0.0) we have added the following data-source functionality:
-
-- hpe_morpheus_ansible_tower_inventory
-- hpe_morpheus_ansible_tower_job_template
-- hpe_morpheus_blueprint
-- hpe_morpheus_budget
-- hpe_morpheus_catalog_item_type
-- hpe_morpheus_cloud_folder
-- hpe_morpheus_cloud_type
-- hpe_morpheus_clouds
-- hpe_morpheus_cluster_type
-- hpe_morpheus_contact
-- hpe_morpheus_credential
-- hpe_morpheus_cypher_secret
-- hpe_morpheus_environments
-- hpe_morpheus_execute_schedule
-- hpe_morpheus_file_template
-- hpe_morpheus_groups
-- hpe_morpheus_images
-- hpe_morpheus_integration
-- hpe_morpheus_integration_git
-- hpe_morpheus_instance
-- hpe_morpheus_instance_type
-- hpe_morpheus_job
-- hpe_morpheus_key_pair
-- hpe_morpheus_network_domain
-- hpe_morpheus_network_group
-- hpe_morpheus_network_subnet
-- hpe_morpheus_networks
-- hpe_morpheus_node_type
-- hpe_morpheus_option_list
-- hpe_morpheus_option_type
-- hpe_morpheus_policies
-- hpe_morpheus_power_schedule
-- hpe_morpheus_price
-- hpe_morpheus_price_set
-- hpe_morpheus_provision_type
-- hpe_morpheus_resource_pool
-- hpe_morpheus_script_template
-- hpe_morpheus_security_package
-- hpe_morpheus_servicenow_workflow
-- hpe_morpheus_spec_template
-- hpe_morpheus_storage_bucket
-- hpe_morpheus_storage_volume
-- hpe_morpheus_storage_volume_type
-- hpe_morpheus_task
-- hpe_morpheus_tasks
-- hpe_morpheus_tenant
-- hpe_morpheus_tenants
-- hpe_morpheus_user_group
-- hpe_morpheus_user_groups
-- hpe_morpheus_vdi_pool
-- hpe_morpheus_vro_workflow
-- hpe_morpheus_workflow
+- hpe_morpheus_cloud has static config schema for VMware and HVM clouds
+- hpe_morpheus_instance has static config schema for VMware and HVM instances
+- hpe_morpheus_task generalised task resource with static config schema for Conditional Workflow task
 
 ### New known issues
 
-- `hpe_morpheus_cluster_hks_vsphere` has issues with scale-down, which are being investigated.
-- `hpe_morpheus_cluster_hks_vsphere` destroy may not succeed, this issue is being investigated.
+N/A
 
+### Resolved issues
+
+- `hpe_morpheus_cluster_hks_vsphere` scale-down and destroy issues are fixed in Morpheus version 8.1 and later
 
 ### Known issues from previous releases
 

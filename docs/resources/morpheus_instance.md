@@ -25,9 +25,9 @@ These will be addressed in a future release.
 -> Some general notes:<br><br>
 When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
 `network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
-will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
-`terraform apply` will report that no changes have been made but will update the state-file to include
-the missing IP addresses.<br><br>
+will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a [refresh-only](https://developer.hashicorp.com/terraform/tutorials/state/refresh)
+`terraform plan --refresh-only` will report that one or more `network_interfaces` have changed. A subsequent
+`terraform apply --refresh-only` will update the State with the missing IP addresses.<br><br>
 `layout_size` is optional and at the moment the only supported value is `1` which is also the default.
 In other words we only support the creation of one VM per instance.  We may relax this restriction in a future release.<br><br>
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
@@ -44,7 +44,8 @@ network configuration use the `hpe_morpheus_instance` `data-source` to read back
 
 -> Some of the examples below have the following settings in their `config` blocks:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- `no_agent` in static config (equivalent to `noAgent` in dynamic config) is set to `true`<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to `false`<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  `false`<br><br>
 These settings can be changed as required.
 
 ## HVM Instance
