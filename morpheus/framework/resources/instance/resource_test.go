@@ -53,8 +53,8 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	instanceTypeID := "9"
-	resourcePool := "pool-62299"
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
 
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
@@ -78,7 +78,7 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_instance.example",
-			"config.resourcePoolId",
+			"config_hvm.resource_pool_id",
 			resourcePool,
 		),
 	}
