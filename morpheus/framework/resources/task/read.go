@@ -161,7 +161,12 @@ func getTaskAsState(
 	state.RetryCount = convert.Int64ToType(task.RetryCount)
 
 	// retry_delay_seconds
-	state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
+	retryDelaySeconds := plan.RetryDelaySeconds.ValueInt64()
+	if retryDelaySeconds != 0 && retryDelaySeconds != *task.RetryDelaySeconds {
+		state.RetryDelaySeconds = plan.RetryDelaySeconds
+	} else {
+		state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
+	}
 
 	// retryable
 	state.Retryable = convert.BoolToType(task.Retryable)
