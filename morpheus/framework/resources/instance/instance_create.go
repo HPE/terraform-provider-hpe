@@ -122,8 +122,9 @@ func (g *Resource) Create(
 
 			return
 		}
-		configMap := make(map[string]any)
-		configDataMap, ok := configAny.(map[string]any)
+		// use interface{} to satisfy SDK AdditionalProperties
+		configMap := make(map[string]interface{})
+		configDataMap, ok := configAny.(map[string]interface{})
 		if ok {
 			configMap = configDataMap
 		} else {
@@ -134,7 +135,9 @@ func (g *Resource) Create(
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
-			MapmapOfStringAny: &configMap,
+			GenericInstanceConfiguration1: &sdk.GenericInstanceConfiguration1{
+				AdditionalProperties: configMap,
+			},
 		}
 	}
 
