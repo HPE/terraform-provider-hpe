@@ -78,7 +78,8 @@ func dataSourceAnsibleTowerInventoryRead(
 	if v, ok := d.Get("ansible_tower_integration_id").(int); ok {
 		ansibleTowerIntegrationId = v
 	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("ansible_tower_integration_id", d.Get("ansible_tower_integration_id")))
+		return diag.FromErr(helpers.TypeAssertFailError("ansible_tower_integration_id",
+			d.Get("ansible_tower_integration_id")))
 	}
 
 	resp, err = client.GetOptionSource("ansibleTowerInventory", &morpheus.Request{
