@@ -86,7 +86,7 @@ func getCloudAsState(
 
 	switch {
 	case cloudType == standardCloud && (!plan.ConfigHvm.IsNull() || importing):
-		cfg := cloud.GetConfig().AddClouds200ResponseAllOfZoneConfigAnyOf
+		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf
 
 		// Move these common fields up
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
@@ -124,7 +124,7 @@ func getCloudAsState(
 		}
 
 	case cloudType == vmwareCloud && (!plan.ConfigVmware.IsNull() || importing):
-		cfg := cloud.GetConfig().AddClouds200ResponseAllOfZoneConfigAnyOf1
+		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf1
 
 		// Move these common fields up
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
