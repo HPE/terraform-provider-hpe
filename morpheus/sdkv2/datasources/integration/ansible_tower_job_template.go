@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,6 +33,11 @@ func DataSourceAnsibleTowerJobTemplate() *schema.Resource {
 				Description:   "The name of the ansible tower job template",
 				Optional:      true,
 				ConflictsWith: []string{"id"},
+			},
+			"ansible_tower_integration_id": {
+				Type:        schema.TypeInt,
+				Description: "The ID of the ansible tower integration",
+				Required:    true,
 			},
 		},
 	}
@@ -68,7 +74,18 @@ func dataSourceAnsibleTowerJobTemplateRead(
 	var resp *morpheus.Response
 	var err error
 
-	resp, err = client.GetOptionSource("ansibleTowerJobTemplate", &morpheus.Request{})
+	var ansibleTowerIntegrationId int
+	if v, ok := d.Get("ansible_tower_integration_id").(int); ok {
+		ansibleTowerIntegrationId = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("ansible_tower_integration_id", d.Get("ansible_tower_integration_id")))
+	}
+
+	resp, err = client.GetOptionSource("ansibleTowerJobTemplate", &morpheus.Request{
+		QueryParams: map[string]string{
+			"ansibleTowerIntegrationId": strconv.Itoa(ansibleTowerIntegrationId),
+		},
+	})
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)

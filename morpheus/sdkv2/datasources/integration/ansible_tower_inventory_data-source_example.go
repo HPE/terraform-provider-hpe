@@ -19,7 +19,8 @@ func RenderAnsibleTowerInventoryConfig(t *testing.T, overrides map[string]string
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "\"Demo Inventory\"",
+		"Name":                      "\"Demo Inventory\"",
+		"AnsibleTowerIntegrationId": "1",
 	}
 
 	// Apply overrides to defaults
