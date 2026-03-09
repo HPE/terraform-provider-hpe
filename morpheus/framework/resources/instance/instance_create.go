@@ -241,6 +241,25 @@ func (g *Resource) Create(
 	}
 	reqInstance.SetPorts(ports)
 
+	// service_plan_options
+	if !plan.ServicePlanOptions.IsNull() {
+		servicePlanOptions := sdk.NewServicePlanOptionsWithDefaults()
+		memory := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
+		servicePlanOptions.MaxMemory = &memory
+		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
+		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
+		servicePlanOptionsMap, err := servicePlanOptions.ToMap()
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error creating instance",
+				fmt.Sprintf("could not convert service plan options to map: %v", err),
+			)
+
+			return
+		}
+		reqInstance.ServicePlanOptions = servicePlanOptionsMap
+	}
+
 	// tags
 	tags, diags := convert.FromSetType(ctx, plan.Tags, createTagMapper)
 	if diags.HasError() {
@@ -358,9 +377,10 @@ func (g *Resource) Create(
 		return
 	}
 
-	state, diag := getInstanceAsState(ctx, instanceId, client, plan)
-	if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+	// Read the instance state
+	state, d := getInstanceAsState(ctx, instanceId, client, plan)
+	if d.HasError() {
+		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
@@ -369,6 +389,9 @@ func (g *Resource) Create(
 
 		return
 	}
+
+	// Set ServicePlanOptions in state.
+	state.ServicePlanOptions = plan.ServicePlanOptions
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
