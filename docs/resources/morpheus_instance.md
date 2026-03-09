@@ -17,9 +17,10 @@ monitoring, and eventual decommissioning.
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that allow the setting of options<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  will fail silently.<br><br>
 These will be addressed in a future release.
 
 -> Some general notes:<br><br>
@@ -35,6 +36,11 @@ If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
 `read` and `update` is 45 minutes.<br><br>
+**Update** is supported but has some limitations at the moment.  The addition and removal of volumes is supported
+during update. Existing volumes can have their size increased but not decreased.  **Do not** change the order of
+volumes in HCL.  Network interface changes will result in instance recreation.  Updates fail when removing optional
+fields or `evars`. Updates to `service_plan_options` for service plans that support the setting of options will
+fail silently.<br><br>
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
@@ -399,6 +405,104 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
+## VMware VM Instance with Service Plan Options
+
+Some Service Plans have options that must be set at the time of creation of the instance.
+
+```terraform
+data "hpe_morpheus_cloud" "vmware_cloud" {
+  name = "QA VMware"
+}
+
+data "hpe_morpheus_service_plan" "vmware_512mb" {
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "vmware"
+}
+
+data "hpe_morpheus_instance_type_layout" "vmware" {
+  name    = "VMware VM"
+  version = "22.04"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
+  instance_type_id = 9
+
+  group_id = 28
+  plan_id  = data.hpe_morpheus_service_plan.vmware_512mb.id
+
+  instance_context = "dev"
+  network_interfaces = [
+    {
+      network_id = 86657
+    }
+  ]
+
+  service_plan_options = {
+    max_cores = 2
+    max_memory = 2048
+  }
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 10
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    },
+    {
+      root_volume              = false
+      name                     = "data"
+      size                     = 10
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  tags = [
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config_vmware = {
+    resource_pool_id      = "pool-1"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
+    vmware_folder_id      = "group-v79"
+  }
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+    update = "20m"
+    read   = "10m"
+  }
+}
+```
+
+
 ## BMaaS Instance
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
@@ -541,6 +645,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
+- `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -643,6 +748,16 @@ Optional:
 - `name` (String) A name for the port.
 
 
+<a id="nestedatt--service_plan_options"></a>
+### Nested Schema for `service_plan_options`
+
+Optional:
+
+- `cores_per_socket` (Number) The number of cores per socket to use for the instance.  This is only applicable for certain service plans.
+- `max_cores` (Number) The maximum number of cores to use for the instance.  This is only applicable for certain service plans.
+- `max_memory` (Number) The maximum amount of memory (in MB) to use for the instance.  This is only applicable for certain service plans.
+
+
 <a id="nestedatt--tags"></a>
 ### Nested Schema for `tags`
 
@@ -681,6 +796,8 @@ Use /api/provision-types?code=vmware to see the available controllerTypes for vm
 - `root_volume` (Boolean) If set to false then a non-root LV will be created.
 - `size` (Number) Size of the LV to be created in GBs.  Uses default from service plan.
 - `size_id` (Number) Can be used to select pre-existing LV choices from Morpheus.
+- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`.
+Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 - `storage_type_id` (Number) Identifier for LV type
 
 Read-Only:
