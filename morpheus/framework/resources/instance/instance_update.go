@@ -469,14 +469,14 @@ func listsMatch[S attr.Value](
 
 	diags := planList.ElementsAs(ctx, &planVals, false)
 	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert list values to type %T", planVals))
+		tflog.Error(ctx, fmt.Sprintf("cannot convert plan list values to type %T", planVals))
 
 		return false, diags
 	}
 
 	diags = stateList.ElementsAs(ctx, &stateVals, false)
 	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert list values to type %T", stateVals))
+		tflog.Error(ctx, fmt.Sprintf("cannot convert state list values to type %T", stateVals))
 
 		return false, diags
 	}
