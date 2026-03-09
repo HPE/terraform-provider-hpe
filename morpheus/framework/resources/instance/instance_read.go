@@ -61,10 +61,15 @@ func (g *Resource) Read(
 		return
 	}
 
+	// servicePlanOptions is not returned by the API
+	servicePlanOptions := data.ServicePlanOptions
+
 	state, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
+
+	state.ServicePlanOptions = servicePlanOptions
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
