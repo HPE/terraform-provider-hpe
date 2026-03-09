@@ -52,11 +52,187 @@ func (r *Resource) Create(
 	var cloudTypeCode string
 
 	switch {
+	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
+		cloudTypeCode = awsCloud
+
+		config := sdkfuncs.NewAwsCloudConfig(plan.ConfigAws.Endpoint.ValueString())
+
+		// Shove common config fields into the config object if they are set in the plan
+		// even if they aren't part of the specific config struct in the SDK
+		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
+		}
+
+		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+			config.SetDatacenterName(plan.DataCenterName.ValueString())
+		}
+
+		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+			config.SetExternalId(plan.ExternalId.ValueString())
+		}
+
+		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+			config.SetInventoryLevel(plan.ImportExistingVms.ValueString())
+		}
+
+		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+			config.SetConsoleKeymap(plan.KeyboardLayout.ValueString())
+		}
+
+		if !plan.ConfigAws.AccessKey.IsNull() &&
+			!plan.ConfigAws.AccessKey.IsUnknown() {
+			config.AccessKey = plan.ConfigAws.AccessKey.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.ApiProxy.IsNull() &&
+			!plan.ConfigAws.ApiProxy.IsUnknown() {
+			config.ApiProxy.Set(plan.ConfigAws.ApiProxy.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.BypassProxy.IsNull() &&
+			!plan.ConfigAws.BypassProxy.IsUnknown() {
+			config.BypassProxyForCloud = convert.BoolTypeToStringPointerOnOff(plan.ConfigAws.BypassProxy)
+		}
+
+		if !plan.ConfigAws.ChangeManagementConfig.IsNull() &&
+			!plan.ConfigAws.ChangeManagementConfig.IsUnknown() {
+			config.ChangeManagementConfig = plan.ConfigAws.ChangeManagementConfig.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.CmdbConfig.IsNull() &&
+			!plan.ConfigAws.CmdbConfig.IsUnknown() {
+			config.CmdbConfig = plan.ConfigAws.CmdbConfig.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.CmdbDiscovery.IsNull() &&
+			!plan.ConfigAws.CmdbDiscovery.IsUnknown() {
+			config.ConfigCmdbDiscovery = convert.BoolTypeToStringPointerOnOff(plan.ConfigAws.CmdbDiscovery)
+		}
+
+		if !plan.ConfigAws.ConfigManagementId.IsNull() &&
+			!plan.ConfigAws.ConfigManagementId.IsUnknown() {
+			config.ConfigManagementId = plan.ConfigAws.ConfigManagementId.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Costing.IsNull() &&
+			!plan.ConfigAws.Costing.IsUnknown() {
+			config.Costing = plan.ConfigAws.Costing.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.CostingBucket.IsNull() &&
+			!plan.ConfigAws.CostingBucket.IsUnknown() {
+			config.CostingBucket = plan.ConfigAws.CostingBucket.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.CostingFolder.IsNull() &&
+			!plan.ConfigAws.CostingFolder.IsUnknown() {
+			config.CostingFolder.Set(plan.ConfigAws.CostingFolder.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.CostingKey.IsNull() &&
+			!plan.ConfigAws.CostingKey.IsUnknown() {
+			config.CostingKey.Set(plan.ConfigAws.CostingKey.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.CostingReportName.IsNull() &&
+			!plan.ConfigAws.CostingReportName.IsUnknown() {
+			config.CostingReportName.Set(plan.ConfigAws.CostingReportName.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.CostingSecret.IsNull() &&
+			!plan.ConfigAws.CostingSecret.IsUnknown() {
+			config.CostingSecret.Set(plan.ConfigAws.CostingSecret.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.Credentials.IsNull() &&
+			!plan.ConfigAws.Credentials.IsUnknown() {
+			config.Credentials = plan.ConfigAws.Credentials.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.DarkModeLogo.IsNull() &&
+			!plan.ConfigAws.DarkModeLogo.IsUnknown() {
+			config.DarkModeLogo.Set(plan.ConfigAws.DarkModeLogo.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.Domain.IsNull() &&
+			!plan.ConfigAws.Domain.IsUnknown() {
+			config.Domain = plan.ConfigAws.Domain.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.EbsEncryption.IsNull() &&
+			!plan.ConfigAws.EbsEncryption.IsUnknown() {
+			config.EbsEncryption = plan.ConfigAws.EbsEncryption.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Guidance.IsNull() &&
+			!plan.ConfigAws.Guidance.IsUnknown() {
+			config.Guidance = plan.ConfigAws.Guidance.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Logo.IsNull() &&
+			!plan.ConfigAws.Logo.IsUnknown() {
+			config.Logo.Set(plan.ConfigAws.Logo.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.NetworkMode.IsNull() &&
+			!plan.ConfigAws.NetworkMode.IsUnknown() {
+			config.NetworkMode.Set(plan.ConfigAws.NetworkMode.ValueStringPointer())
+		}
+
+		if !plan.ConfigAws.NoProxy.IsNull() &&
+			!plan.ConfigAws.NoProxy.IsUnknown() {
+			config.NoProxy = plan.ConfigAws.NoProxy.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Proxy.IsNull() &&
+			!plan.ConfigAws.Proxy.IsUnknown() {
+			config.Proxy = plan.ConfigAws.Proxy.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Region.IsNull() &&
+			!plan.ConfigAws.Region.IsUnknown() {
+			config.Region = plan.ConfigAws.Region.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.RoleArn.IsNull() &&
+			!plan.ConfigAws.RoleArn.IsUnknown() {
+			config.StsAssumeRole = plan.ConfigAws.RoleArn.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.SecretKey.IsNull() &&
+			!plan.ConfigAws.SecretKey.IsUnknown() {
+			config.SecretKey = plan.ConfigAws.SecretKey.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Timezone.IsNull() &&
+			!plan.ConfigAws.Timezone.IsUnknown() {
+			config.Timezone = plan.ConfigAws.Timezone.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.UserData.IsNull() &&
+			!plan.ConfigAws.UserData.IsUnknown() {
+			config.UserDataLinux = plan.ConfigAws.UserData.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.VdiGateway.IsNull() &&
+			!plan.ConfigAws.VdiGateway.IsUnknown() {
+			config.VdiGateway = plan.ConfigAws.VdiGateway.ValueStringPointer()
+		}
+
+		if !plan.ConfigAws.Vpc.IsNull() &&
+			!plan.ConfigAws.Vpc.IsUnknown() {
+			config.Vpc = plan.ConfigAws.Vpc.ValueStringPointer()
+		}
+
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf = config
+
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		cloudTypeCode = standardCloud
 
 		config := sdkfuncs.NewHvmCloudConfig()
 
+		// Shove common config fields into the config object if they are set in the plan
+		// even if they aren't part of the specific config struct in the SDK
 		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
 			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
 		}
