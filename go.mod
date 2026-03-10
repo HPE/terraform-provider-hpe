@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.30.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
-	github.com/hashicorp/terraform-plugin-mux v0.21.0
+	github.com/hashicorp/terraform-plugin-mux v0.22.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.39.0
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/iancoleman/strcase v0.3.0
