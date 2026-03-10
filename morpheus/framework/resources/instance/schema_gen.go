@@ -483,6 +483,44 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 			},
+			"service_plan_options": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"cores_per_socket": schema.Int64Attribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The number of cores per socket to use for the instance.  This is only applicable for certain service plans.",
+						MarkdownDescription: "The number of cores per socket to use for the instance.  This is only applicable for certain service plans.",
+						Validators: []validator.Int64{
+							int64validator.AtLeast(1),
+						},
+						Default: int64default.StaticInt64(1),
+					},
+					"max_cores": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The maximum number of cores to use for the instance.  This is only applicable for certain service plans.",
+						MarkdownDescription: "The maximum number of cores to use for the instance.  This is only applicable for certain service plans.",
+						Validators: []validator.Int64{
+							int64validator.AtLeast(1),
+						},
+					},
+					"max_memory": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The maximum amount of memory (in MB) to use for the instance.  This is only applicable for certain service plans.",
+						MarkdownDescription: "The maximum amount of memory (in MB) to use for the instance.  This is only applicable for certain service plans.",
+						Validators: []validator.Int64{
+							int64validator.AtLeast(1),
+						},
+					},
+				},
+				CustomType: ServicePlanOptionsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ServicePlanOptionsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Custom options for selected service plan - the supported options depend on the service plan selected",
+				MarkdownDescription: "Custom options for selected service plan - the supported options depend on the service plan selected",
+			},
 			"tags": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -518,9 +556,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
 							MarkdownDescription: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"datastore_auto_selection": schema.StringAttribute{
 							Optional:            true,
@@ -538,17 +573,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The ID of the specific datastore.",
 							MarkdownDescription: "The ID of the specific datastore.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.UseStateForUnknown(),
-							},
 						},
 						"id": schema.Int64Attribute{
 							Computed:            true,
 							Description:         "The id for the LV configuration being created.",
 							MarkdownDescription: "The id for the LV configuration being created.",
-							PlanModifiers: []planmodifier.Int64{
-								int64planmodifier.UseStateForUnknown(),
-							},
 						},
 						"name": schema.StringAttribute{
 							Optional:            true,
@@ -572,6 +601,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Description:         "Can be used to select pre-existing LV choices from Morpheus.",
 							MarkdownDescription: "Can be used to select pre-existing LV choices from Morpheus.",
 						},
+						"storage_profile": schema.StringAttribute{
+							Optional:            true,
+							Description:         "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`.\nUse `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+							MarkdownDescription: "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`.\nUse `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+						},
 						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
 							Description:         "Identifier for LV type",
@@ -588,42 +622,33 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.RequiresReplaceIf(func(_ context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
-						if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
-							return
-						}
-						if !req.StateValue.Equal(req.ConfigValue) {
-							resp.RequiresReplace = true
-						}
-					}, "require replace if volume layout has changed", "require replace if volume layout has changed"),
-				},
 			},
 		},
 	}
 }
 
 type InstanceModel struct {
-	CloudId           types.Int64       `tfsdk:"cloud_id"`
-	Config            types.Dynamic     `tfsdk:"config"`
-	ConfigHvm         ConfigHvmValue    `tfsdk:"config_hvm"`
-	ConfigVmware      ConfigVmwareValue `tfsdk:"config_vmware"`
-	ConnectionInfo    types.List        `tfsdk:"connection_info"`
-	Evars             types.Set         `tfsdk:"evars"`
-	GroupId           types.Int64       `tfsdk:"group_id"`
-	Id                types.Int64       `tfsdk:"id"`
-	InstanceContext   types.String      `tfsdk:"instance_context"`
-	InstanceTypeId    types.Int64       `tfsdk:"instance_type_id"`
-	LayoutId          types.Int64       `tfsdk:"layout_id"`
-	LayoutSize        types.Int64       `tfsdk:"layout_size"`
-	Name              types.String      `tfsdk:"name"`
-	NetworkInterfaces types.List        `tfsdk:"network_interfaces"`
-	PlanId            types.Int64       `tfsdk:"plan_id"`
-	Ports             types.Set         `tfsdk:"ports"`
-	Tags              types.Set         `tfsdk:"tags"`
-	TaskSetId         types.Int64       `tfsdk:"task_set_id"`
-	Timeouts          timeouts.Value    `tfsdk:"timeouts"`
-	Volumes           types.List        `tfsdk:"volumes"`
+	CloudId            types.Int64             `tfsdk:"cloud_id"`
+	Config             types.Dynamic           `tfsdk:"config"`
+	ConfigHvm          ConfigHvmValue          `tfsdk:"config_hvm"`
+	ConfigVmware       ConfigVmwareValue       `tfsdk:"config_vmware"`
+	ConnectionInfo     types.List              `tfsdk:"connection_info"`
+	Evars              types.Set               `tfsdk:"evars"`
+	GroupId            types.Int64             `tfsdk:"group_id"`
+	Id                 types.Int64             `tfsdk:"id"`
+	InstanceContext    types.String            `tfsdk:"instance_context"`
+	InstanceTypeId     types.Int64             `tfsdk:"instance_type_id"`
+	LayoutId           types.Int64             `tfsdk:"layout_id"`
+	LayoutSize         types.Int64             `tfsdk:"layout_size"`
+	Name               types.String            `tfsdk:"name"`
+	NetworkInterfaces  types.List              `tfsdk:"network_interfaces"`
+	PlanId             types.Int64             `tfsdk:"plan_id"`
+	Ports              types.Set               `tfsdk:"ports"`
+	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
+	Tags               types.Set               `tfsdk:"tags"`
+	TaskSetId          types.Int64             `tfsdk:"task_set_id"`
+	Timeouts           timeouts.Value          `tfsdk:"timeouts"`
+	Volumes            types.List              `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHvmType{}
@@ -4083,6 +4108,448 @@ func (v PortsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	}
 }
 
+var _ basetypes.ObjectTypable = ServicePlanOptionsType{}
+
+type ServicePlanOptionsType struct {
+	basetypes.ObjectType
+}
+
+func (t ServicePlanOptionsType) Equal(o attr.Type) bool {
+	other, ok := o.(ServicePlanOptionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ServicePlanOptionsType) String() string {
+	return "ServicePlanOptionsType"
+}
+
+func (t ServicePlanOptionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewServicePlanOptionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewServicePlanOptionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	coresPerSocketAttribute, ok := attributes["cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cores_per_socket is missing from object`)
+
+		return nil, diags
+	}
+
+	coresPerSocketVal, ok := coresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cores_per_socket expected to be basetypes.Int64Value, was: %T`, coresPerSocketAttribute))
+	}
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return nil, diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return nil, diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ServicePlanOptionsValue{
+		CoresPerSocket: coresPerSocketVal,
+		MaxCores:       maxCoresVal,
+		MaxMemory:      maxMemoryVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewServicePlanOptionsValueNull() ServicePlanOptionsValue {
+	return ServicePlanOptionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewServicePlanOptionsValueUnknown() ServicePlanOptionsValue {
+	return ServicePlanOptionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewServicePlanOptionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ServicePlanOptionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ServicePlanOptionsValue Attribute Value",
+				"While creating a ServicePlanOptionsValue value, a missing attribute value was detected. "+
+					"A ServicePlanOptionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ServicePlanOptionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ServicePlanOptionsValue Attribute Type",
+				"While creating a ServicePlanOptionsValue value, an invalid attribute value was detected. "+
+					"A ServicePlanOptionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ServicePlanOptionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ServicePlanOptionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ServicePlanOptionsValue Attribute Value",
+				"While creating a ServicePlanOptionsValue value, an extra attribute value was detected. "+
+					"A ServicePlanOptionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ServicePlanOptionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewServicePlanOptionsValueUnknown(), diags
+	}
+
+	coresPerSocketAttribute, ok := attributes["cores_per_socket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cores_per_socket is missing from object`)
+
+		return NewServicePlanOptionsValueUnknown(), diags
+	}
+
+	coresPerSocketVal, ok := coresPerSocketAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cores_per_socket expected to be basetypes.Int64Value, was: %T`, coresPerSocketAttribute))
+	}
+
+	maxCoresAttribute, ok := attributes["max_cores"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_cores is missing from object`)
+
+		return NewServicePlanOptionsValueUnknown(), diags
+	}
+
+	maxCoresVal, ok := maxCoresAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+	}
+
+	maxMemoryAttribute, ok := attributes["max_memory"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_memory is missing from object`)
+
+		return NewServicePlanOptionsValueUnknown(), diags
+	}
+
+	maxMemoryVal, ok := maxMemoryAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+	}
+
+	if diags.HasError() {
+		return NewServicePlanOptionsValueUnknown(), diags
+	}
+
+	return ServicePlanOptionsValue{
+		CoresPerSocket: coresPerSocketVal,
+		MaxCores:       maxCoresVal,
+		MaxMemory:      maxMemoryVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewServicePlanOptionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ServicePlanOptionsValue {
+	object, diags := NewServicePlanOptionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewServicePlanOptionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ServicePlanOptionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewServicePlanOptionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewServicePlanOptionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewServicePlanOptionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewServicePlanOptionsValueMust(ServicePlanOptionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ServicePlanOptionsType) ValueType(ctx context.Context) attr.Value {
+	return ServicePlanOptionsValue{}
+}
+
+var _ basetypes.ObjectValuable = ServicePlanOptionsValue{}
+
+type ServicePlanOptionsValue struct {
+	CoresPerSocket basetypes.Int64Value `tfsdk:"cores_per_socket"`
+	MaxCores       basetypes.Int64Value `tfsdk:"max_cores"`
+	MaxMemory      basetypes.Int64Value `tfsdk:"max_memory"`
+	state          attr.ValueState
+}
+
+func (v ServicePlanOptionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["cores_per_socket"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_cores"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["max_memory"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.CoresPerSocket.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cores_per_socket"] = val
+
+		val, err = v.MaxCores.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_cores"] = val
+
+		val, err = v.MaxMemory.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_memory"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ServicePlanOptionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ServicePlanOptionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ServicePlanOptionsValue) String() string {
+	return "ServicePlanOptionsValue"
+}
+
+func (v ServicePlanOptionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"cores_per_socket": basetypes.Int64Type{},
+		"max_cores":        basetypes.Int64Type{},
+		"max_memory":       basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"cores_per_socket": v.CoresPerSocket,
+			"max_cores":        v.MaxCores,
+			"max_memory":       v.MaxMemory,
+		})
+
+	return objVal, diags
+}
+
+func (v ServicePlanOptionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ServicePlanOptionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CoresPerSocket.Equal(other.CoresPerSocket) {
+		return false
+	}
+
+	if !v.MaxCores.Equal(other.MaxCores) {
+		return false
+	}
+
+	if !v.MaxMemory.Equal(other.MaxMemory) {
+		return false
+	}
+
+	return true
+}
+
+func (v ServicePlanOptionsValue) Type(ctx context.Context) attr.Type {
+	return ServicePlanOptionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ServicePlanOptionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"cores_per_socket": basetypes.Int64Type{},
+		"max_cores":        basetypes.Int64Type{},
+		"max_memory":       basetypes.Int64Type{},
+	}
+}
+
 var _ basetypes.ObjectTypable = TagsType{}
 
 type TagsType struct {
@@ -4647,6 +5114,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageTypeIdAttribute, ok := attributes["storage_type_id"]
 
 	if !ok {
@@ -4678,6 +5163,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		RootVolume:             rootVolumeVal,
 		Size:                   sizeVal,
 		SizeId:                 sizeIdVal,
+		StorageProfile:         storageProfileVal,
 		StorageTypeId:          storageTypeIdVal,
 		state:                  attr.ValueStateKnown,
 	}, diags
@@ -4890,6 +5376,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageTypeIdAttribute, ok := attributes["storage_type_id"]
 
 	if !ok {
@@ -4921,6 +5425,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		RootVolume:             rootVolumeVal,
 		Size:                   sizeVal,
 		SizeId:                 sizeIdVal,
+		StorageProfile:         storageProfileVal,
 		StorageTypeId:          storageTypeIdVal,
 		state:                  attr.ValueStateKnown,
 	}, diags
@@ -5002,12 +5507,13 @@ type VolumesValue struct {
 	RootVolume             basetypes.BoolValue   `tfsdk:"root_volume"`
 	Size                   basetypes.Int64Value  `tfsdk:"size"`
 	SizeId                 basetypes.Int64Value  `tfsdk:"size_id"`
+	StorageProfile         basetypes.StringValue `tfsdk:"storage_profile"`
 	StorageTypeId          basetypes.Int64Value  `tfsdk:"storage_type_id"`
 	state                  attr.ValueState
 }
 
 func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 9)
+	attrTypes := make(map[string]tftypes.Type, 10)
 
 	var val tftypes.Value
 	var err error
@@ -5020,13 +5526,14 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["root_volume"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["size"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["size_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["storage_profile"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 9)
+		vals := make(map[string]tftypes.Value, 10)
 
 		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
 
@@ -5092,6 +5599,14 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 		vals["size_id"] = val
 
+		val, err = v.StorageProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_profile"] = val
+
 		val, err = v.StorageTypeId.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -5138,6 +5653,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"root_volume":              basetypes.BoolType{},
 		"size":                     basetypes.Int64Type{},
 		"size_id":                  basetypes.Int64Type{},
+		"storage_profile":          basetypes.StringType{},
 		"storage_type_id":          basetypes.Int64Type{},
 	}
 
@@ -5160,6 +5676,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"root_volume":              v.RootVolume,
 			"size":                     v.Size,
 			"size_id":                  v.SizeId,
+			"storage_profile":          v.StorageProfile,
 			"storage_type_id":          v.StorageTypeId,
 		})
 
@@ -5213,6 +5730,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.StorageProfile.Equal(other.StorageProfile) {
+		return false
+	}
+
 	if !v.StorageTypeId.Equal(other.StorageTypeId) {
 		return false
 	}
@@ -5238,6 +5759,7 @@ func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"root_volume":              basetypes.BoolType{},
 		"size":                     basetypes.Int64Type{},
 		"size_id":                  basetypes.Int64Type{},
+		"storage_profile":          basetypes.StringType{},
 		"storage_type_id":          basetypes.Int64Type{},
 	}
 }

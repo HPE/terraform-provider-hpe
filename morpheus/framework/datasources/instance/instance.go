@@ -1,3 +1,5 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
 package instance
 
 import (
@@ -79,8 +81,7 @@ func (d *DataSource) Read(
 
 	if !data.Name.IsNull() {
 		name := data.Name.ValueString()
-		instanceListReq := client.InstancesAPI.ListInstances(ctx)
-		instanceListReq.Name(name)
+		instanceListReq := client.InstancesAPI.ListInstances(ctx).Name(name)
 
 		instanceListResp, httpResp, err := instanceListReq.Execute()
 		if instanceListResp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
