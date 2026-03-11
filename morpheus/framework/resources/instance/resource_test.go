@@ -79,7 +79,7 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_instance.example",
-			"config.resourcePoolId",
+			"config_hvm.resource_pool_id",
 			resourcePool,
 		),
 	}
