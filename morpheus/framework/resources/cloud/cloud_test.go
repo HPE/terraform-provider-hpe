@@ -1232,25 +1232,14 @@ func TestAccMorpheusCloudValidationRequiredAttrs(t *testing.T) {
 				Config: `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "cloud9"
-						group_id  = 1
 					}`,
 				ExpectError: regexp.MustCompile(`The argument "tenant_id" is required`),
-			},
-			{
-				// checks plan fails when GroupId is removed
-				Config: `
-					resource "hpe_morpheus_cloud" "example" {
-						name      = "cloud9"
-						tenant_id  = 1
-					}`,
-				ExpectError: regexp.MustCompile(`The argument "group_id" is required`),
 			},
 			{
 				// checks plan fails when Name is removed
 				Config: `
 					resource "hpe_morpheus_cloud" "example" {
 						tenant_id  = 1
-				    group_id = 1
 					}`,
 				ExpectError: regexp.MustCompile(`The argument "name" is required`),
 			},
