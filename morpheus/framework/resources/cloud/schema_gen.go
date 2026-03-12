@@ -460,9 +460,6 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "Specifies which Server group this cloud should be assigned to",
 				MarkdownDescription: "Specifies which Server group this cloud should be assigned to",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"guidance_mode": schema.StringAttribute{
 				Optional:            true,
