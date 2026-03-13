@@ -318,15 +318,8 @@ func resourceSettingMonitoringCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateMonitoringSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateMonitoringSettingsResult); ok {
-		result = v
-	} else {
+	if _, ok := resp.Result.(*morpheus.UpdateMonitoringSettingsResult); !ok {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
-	if result.MonitoringSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("MonitoringSettings"))
 	}
 
 	d.SetId(convert.Int64ToString(1))
@@ -597,15 +590,8 @@ func resourceSettingMonitoringUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var result *morpheus.UpdateMonitoringSettingsResult
-	if v, ok := resp.Result.(*morpheus.UpdateMonitoringSettingsResult); ok {
-		result = v
-	} else {
+	if _, ok := resp.Result.(*morpheus.UpdateMonitoringSettingsResult); !ok {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
-	}
-
-	if result.MonitoringSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("MonitoringSettings"))
 	}
 
 	d.SetId(convert.Int64ToString(1))
