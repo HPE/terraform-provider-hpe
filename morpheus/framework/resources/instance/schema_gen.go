@@ -67,15 +67,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "The id of the KVM host to use for provisioning.",
 						MarkdownDescription: "The id of the KVM host to use for provisioning.",
 					},
-					"nested_virtualization": schema.StringAttribute{
+					"nested_virtualization": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						Validators: []validator.String{
-							stringvalidator.OneOf("on", "off"),
-						},
-						Default: stringdefault.StaticString("off"),
+						Description:         "Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'",
+						Default:             booldefault.StaticBool(false),
 					},
 					"no_agent": schema.BoolAttribute{
 						Optional:            true,
@@ -111,15 +108,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
 						Default:             booldefault.StaticBool(false),
 					},
-					"nested_virtualization": schema.StringAttribute{
+					"nested_virtualization": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						Validators: []validator.String{
-							stringvalidator.OneOf("on", "off"),
-						},
-						Default: stringdefault.StaticString("off"),
+						Description:         "Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'",
+						Default:             booldefault.StaticBool(false),
 					},
 					"no_agent": schema.BoolAttribute{
 						Optional:            true,
@@ -730,12 +724,12 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		return nil, diags
 	}
 
-	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.BoolValue, was: %T`, nestedVirtualizationAttribute))
 	}
 
 	noAgentAttribute, ok := attributes["no_agent"]
@@ -897,12 +891,12 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		return NewConfigHvmValueUnknown(), diags
 	}
 
-	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.BoolValue, was: %T`, nestedVirtualizationAttribute))
 	}
 
 	noAgentAttribute, ok := attributes["no_agent"]
@@ -1025,7 +1019,7 @@ var _ basetypes.ObjectValuable = ConfigHvmValue{}
 type ConfigHvmValue struct {
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
 	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
-	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
+	NestedVirtualization basetypes.BoolValue   `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
 	state                attr.ValueState
@@ -1039,7 +1033,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["nested_virtualization"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -1121,7 +1115,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	attributeTypes := map[string]attr.Type{
 		"create_user":           basetypes.BoolType{},
 		"kvm_host_id":           basetypes.Int64Type{},
-		"nested_virtualization": basetypes.StringType{},
+		"nested_virtualization": basetypes.BoolType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
 	}
@@ -1197,7 +1191,7 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	return map[string]attr.Type{
 		"create_user":           basetypes.BoolType{},
 		"kvm_host_id":           basetypes.Int64Type{},
-		"nested_virtualization": basetypes.StringType{},
+		"nested_virtualization": basetypes.BoolType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
 	}
@@ -1264,12 +1258,12 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		return nil, diags
 	}
 
-	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.BoolValue, was: %T`, nestedVirtualizationAttribute))
 	}
 
 	noAgentAttribute, ok := attributes["no_agent"]
@@ -1431,12 +1425,12 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 		return NewConfigVmwareValueUnknown(), diags
 	}
 
-	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.StringValue)
+	nestedVirtualizationVal, ok := nestedVirtualizationAttribute.(basetypes.BoolValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`nested_virtualization expected to be basetypes.StringValue, was: %T`, nestedVirtualizationAttribute))
+			fmt.Sprintf(`nested_virtualization expected to be basetypes.BoolValue, was: %T`, nestedVirtualizationAttribute))
 	}
 
 	noAgentAttribute, ok := attributes["no_agent"]
@@ -1576,7 +1570,7 @@ var _ basetypes.ObjectValuable = ConfigVmwareValue{}
 
 type ConfigVmwareValue struct {
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
-	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
+	NestedVirtualization basetypes.BoolValue   `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
 	VmwareFolderId       basetypes.StringValue `tfsdk:"vmware_folder_id"`
@@ -1590,7 +1584,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	var err error
 
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["nested_virtualization"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["vmware_folder_id"] = basetypes.StringType{}.TerraformType(ctx)
@@ -1672,7 +1666,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 
 	attributeTypes := map[string]attr.Type{
 		"create_user":           basetypes.BoolType{},
-		"nested_virtualization": basetypes.StringType{},
+		"nested_virtualization": basetypes.BoolType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
 		"vmware_folder_id":      basetypes.StringType{},
@@ -1748,7 +1742,7 @@ func (v ConfigVmwareValue) Type(ctx context.Context) attr.Type {
 func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"create_user":           basetypes.BoolType{},
-		"nested_virtualization": basetypes.StringType{},
+		"nested_virtualization": basetypes.BoolType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
 		"vmware_folder_id":      basetypes.StringType{},

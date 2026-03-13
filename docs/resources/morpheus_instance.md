@@ -124,7 +124,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_hvm = {
     resource_pool_id      = "pool-62299"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = true
     create_user           = false
   }
@@ -218,7 +218,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_hvm = {
     resource_pool_id      = "pool-62299"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = false
     create_user           = true
   }
@@ -301,7 +301,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_hvm = {
     resource_pool_id      = "pool-62299"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = false
     create_user           = true
   }
@@ -390,7 +390,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_vmware = {
     resource_pool_id      = "pool-1"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
@@ -487,7 +487,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_vmware = {
     resource_pool_id      = "pool-1"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
@@ -707,7 +707,7 @@ Optional:
 
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
 - `kvm_host_id` (Number) The id of the KVM host to use for provisioning.
-- `nested_virtualization` (String) Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.
+- `nested_virtualization` (Boolean) Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
 
 
@@ -722,7 +722,7 @@ Required:
 Optional:
 
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
-- `nested_virtualization` (String) Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.
+- `nested_virtualization` (Boolean) Enable nested virtualization on the instance. Can be 'true' or 'false'.  The default is 'false'
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
 
 

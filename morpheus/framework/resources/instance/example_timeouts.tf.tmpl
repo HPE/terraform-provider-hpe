@@ -65,7 +65,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_hvm = {
     resource_pool_id      = "{{.ResourcePool}}"
-    nested_virtualization = "off"
+    nested_virtualization = false
     no_agent              = false
     create_user           = true
   }

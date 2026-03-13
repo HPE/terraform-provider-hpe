@@ -117,7 +117,7 @@ func getInstanceAsState(
 
 		switch *code {
 		case hvmCode:
-			configHvm, cdiags := getInstanceHVMConfig(id, apiConfig)
+			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -125,7 +125,7 @@ func getInstanceAsState(
 			state.ConfigHvm = configHvm
 
 		case vmwareCode:
-			configVMware, cdiags := getInstanceVMwareConfig(id, apiConfig)
+			configVMware, cdiags := getInstanceVMwareConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -282,6 +282,7 @@ func getInstanceAsState(
 
 // getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances
 func getInstanceVMwareConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigVmwareValue, diag.Diagnostics) {
@@ -319,7 +320,7 @@ func getInstanceVMwareConfig(
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
-	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
+	configVmware.NestedVirtualization = convert.StringToBool(ctx, *nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
 	configVmware.state = attr.ValueStateKnown
@@ -329,6 +330,7 @@ func getInstanceVMwareConfig(
 
 // getInstanceHVMConfig builds the config_hvm block from the API response for hvm instances
 func getInstanceHVMConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigHvmValue, diag.Diagnostics) {
@@ -363,7 +365,7 @@ func getInstanceHVMConfig(
 
 	configHvm.CreateUser = convert.BoolToType(createUser)
 	configHvm.NoAgent = convert.BoolToType(noAgent)
-	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
+	configHvm.NestedVirtualization = convert.StringToBool(ctx, *nestedVirtualization)
 	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
 	configHvm.state = attr.ValueStateKnown
