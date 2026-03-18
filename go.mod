@@ -1,6 +1,6 @@
 module github.com/HPE/terraform-provider-hpe
 
-go 1.25.0
+go 1.24.0
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260127104537-7d5e34cd02e9
