@@ -270,7 +270,7 @@ func parseAsData(
 		ctx,
 		instance.Controllers,
 		func(
-			in sdk.AddInstance200ResponseAllOfOneOfInstanceControllersInner,
+			in sdk.ListInstances200ResponseAllOfInstancesInnerControllersInner,
 		) ControllersValue {
 			controllersType := ControllersTypeValue{
 				Code:  convert.StrToType(in.Type.Code),
@@ -370,12 +370,22 @@ func parseAsData(
 	data.FirewallEnabled = convert.BoolToType(instance.FirewallEnabled)
 
 	// group
-	groupID := instance.Group.GetId()
-	groupName := instance.Group.GetName()
+	group := instance.Group.Get()
+	if group.Id == nil || group.Name == nil {
+		diags.AddError(
+			"missing attribute",
+			"missing group id or name",
+		)
+
+		return diags
+	}
+
+	groupID := group.Id
+	groupName := group.Name
 
 	data.Group = GroupValue{
-		Id:    convert.Int64ToType(&groupID),
-		Name:  convert.StrToType(&groupName),
+		Id:    convert.Int64ToType(groupID),
+		Name:  convert.StrToType(groupName),
 		state: attr.ValueStateKnown,
 	}
 
@@ -621,17 +631,27 @@ func parseAsData(
 	data.Tags = tags
 
 	// tenant
-	tenantID := instance.Tenant.GetId()
-	tenantName := instance.Tenant.GetName()
+	tenant := instance.Tenant.Get()
+	if tenant.Id == nil || tenant.Name == nil {
+		diags.AddError(
+			"missing attribute",
+			"missin tenant id or name",
+		)
+
+		return diags
+	}
+
+	tenantID := tenant.Id
+	tenantName := tenant.Name
 
 	data.Tenant = TenantValue{
-		Id:    convert.Int64ToType(&tenantID),
-		Name:  convert.StrToType(&tenantName),
+		Id:    convert.Int64ToType(tenantID),
+		Name:  convert.StrToType(tenantName),
 		state: attr.ValueStateKnown,
 	}
 
 	// tenant_id
-	data.TenantId = convert.Int64ToType(&tenantID)
+	data.TenantId = convert.Int64ToType(tenantID)
 
 	// user_status
 	data.UserStatus = convert.StrToType(instance.UserStatus.Get())
