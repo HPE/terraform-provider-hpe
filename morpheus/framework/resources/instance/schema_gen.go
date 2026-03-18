@@ -134,7 +134,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
 					},
 					"vmware_folder_id": schema.StringAttribute{
-						Required:            true,
+						Optional:            true,
 						Description:         "VMware folder external ID.",
 						MarkdownDescription: "VMware folder external ID.",
 					},

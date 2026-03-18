@@ -313,10 +313,7 @@ func getInstanceVMwareConfig(
 	}
 
 	// VMwareFolderId
-	folderId, fdiags := getVMwareFolderId(id, apiConfig)
-	if fdiags.HasError() {
-		return configVmware, fdiags
-	}
+	folderId, _ := apiConfig.GetVmwareFolderIdOk()
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
@@ -444,24 +441,6 @@ func getResourcePoolId(
 	}
 
 	return resourcePoolId.String, nil
-}
-
-func getVMwareFolderId(
-	id int64,
-	apiConfig *apiConfigType,
-) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	folderId, ok := apiConfig.GetVmwareFolderIdOk()
-	if !ok {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config vmwareFolderId", id),
-		)
-
-		return nil, diags
-	}
-
-	return folderId, nil
 }
 
 // getCodeAndConfig returns the "code" for the instance and the config struct from the API response
