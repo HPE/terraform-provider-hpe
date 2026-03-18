@@ -19,6 +19,7 @@ import (
 func RenderAppBlueprintTerraformHclConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"BlueprintContent": "variable \"master_username\" {\n type = string\n}\n\n" +
 			"variable \"master_password\" {\n type = string\n sensitive = true\n}\n\n" +
