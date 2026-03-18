@@ -794,8 +794,9 @@ func getPolicyAsState(
 
 	// Set Owner if present
 	state.Owner = NewOwnerValueNull()
-	if p.Owner.IsSetId() {
-		owner := p.Owner
+	owner := p.GetOwner()
+
+	if owner.Id != nil {
 		ownerAttrs := map[string]attr.Value{}
 		if owner.Id != nil {
 			ownerAttrs["id"] = types.Int64Value(*owner.Id)

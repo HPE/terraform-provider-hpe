@@ -448,7 +448,7 @@ func (r *Resource) Update(
 			)
 		}
 
-		innerUser := sdk.NewUpdateUser200ResponseAllOfUser()
+		innerUser := sdk.NewAddUser200ResponseAllOfUserWithDefaults()
 		innerUser.SetId(id)
 		user = sdk.NewUpdateUser200Response()
 		user.SetUser(*innerUser)
