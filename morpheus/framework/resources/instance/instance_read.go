@@ -117,7 +117,7 @@ func getInstanceAsState(
 
 		switch *code {
 		case hvmCode:
-			configHvm, cdiags := getInstanceHVMConfig(id, apiConfig)
+			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -125,7 +125,7 @@ func getInstanceAsState(
 			state.ConfigHvm = configHvm
 
 		case vmwareCode:
-			configVMware, cdiags := getInstanceVMwareConfig(id, apiConfig)
+			configVMware, cdiags := getInstanceVMwareConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -282,6 +282,7 @@ func getInstanceAsState(
 
 // getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances
 func getInstanceVMwareConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigVmwareValue, diag.Diagnostics) {
@@ -312,10 +313,7 @@ func getInstanceVMwareConfig(
 	}
 
 	// VMwareFolderId
-	folderId, fdiags := getVMwareFolderId(id, apiConfig)
-	if fdiags.HasError() {
-		return configVmware, fdiags
-	}
+	folderId, _ := apiConfig.GetVmwareFolderIdOk()
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
@@ -329,6 +327,7 @@ func getInstanceVMwareConfig(
 
 // getInstanceHVMConfig builds the config_hvm block from the API response for hvm instances
 func getInstanceHVMConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigHvmValue, diag.Diagnostics) {
@@ -442,24 +441,6 @@ func getResourcePoolId(
 	}
 
 	return resourcePoolId.String, nil
-}
-
-func getVMwareFolderId(
-	id int64,
-	apiConfig *apiConfigType,
-) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	folderId, ok := apiConfig.GetVmwareFolderIdOk()
-	if !ok {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config vmwareFolderId", id),
-		)
-
-		return nil, diags
-	}
-
-	return folderId, nil
 }
 
 // getCodeAndConfig returns the "code" for the instance and the config struct from the API response

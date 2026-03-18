@@ -11,9 +11,12 @@ description: |-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
--> A `config_hvm` or `config` block is required. They can be empty.
+-> A `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
 
 -> `cloud_type_code` must be set if using a generic `config` block.
+
+-> Currently, a change to the `group_id` attribute will not be applied on update.<br/>
+   We recommend managing group membership using a `group` resource.
 
 ## Example Usage (HVM)
 
@@ -91,7 +94,6 @@ resource "hpe_morpheus_cloud" "example" {
 
 ### Required
 
-- `group_id` (Number) Specifies which Server group this cloud should be assigned to
 - `name` (String) A unique name scoped to your account for the cloud
 - `tenant_id` (Number) Specifies which Tenant this cloud should be assigned to
 
@@ -110,6 +112,7 @@ resource "hpe_morpheus_cloud" "example" {
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
 - `enabled` (Boolean) Can be used to disable the cloud
 - `external_id` (String) The external id of the cloud
+- `group_id` (Number) Specifies which Server group this cloud should be assigned to
 - `guidance_mode` (String) Whether to enable guidance recommendations on the cloud (manual, off)
 - `import_existing_vms` (String) Whether to import existing virtual machines (off, basic, full)
 - `keyboard_layout` (String) The keyboard layout to use for the console

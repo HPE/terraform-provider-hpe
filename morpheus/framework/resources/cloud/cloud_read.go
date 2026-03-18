@@ -56,19 +56,19 @@ func getCloudAsState(
 		return state, diags
 	}
 
-	if len(cloud.Groups) == 0 {
-		diags.AddError(
-			readOperation,
-			fmt.Sprintf("cloud %d no associated groups", id),
-		)
-
-		return state, diags
-	}
-
 	importing := plan.Name.IsNull()
 	cloudType := *cloud.ZoneType.Code
 
-	state.GroupId = convert.Int64ToType(cloud.Groups[0].Id)
+	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
+		state.GroupId = plan.GroupId
+	} else {
+		// On import, use the first API value
+		state.GroupId = types.Int64Null()
+		if len(cloud.Groups) > 0 {
+			state.GroupId = convert.Int64ToType(cloud.Groups[0].Id)
+		}
+	}
+
 	state.AgentInstallMode = convert.StrToType(cloud.AgentMode)
 	state.AutoRecoverPowerState = convert.BoolToType(cloud.AutoRecoverPowerState)
 	if cloud.GetCode() != "standard" { // workaround an API bug

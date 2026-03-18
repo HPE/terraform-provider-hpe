@@ -45,6 +45,11 @@ func (r *Resource) Update(
 	updateCloud.AdditionalProperties = make(map[string]any)
 	updateCloud.SetName(name)
 
+	// This won't do anything with the current API.
+	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
+		updateCloud.SetGroupId(plan.GroupId.ValueInt64())
+	}
+
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
 		updateCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
 	}

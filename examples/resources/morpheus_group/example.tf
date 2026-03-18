@@ -1,6 +1,7 @@
 resource "hpe_morpheus_group" "example" {
-  name     = "TestGroup"
-  location = "here"
-  code     = "aCode"
-  labels   = ["aLabel1", "aLabel2"]
+  name      = "TestGroup"
+  location  = "here"
+  code      = "aCode"
+  labels    = ["aLabel1", "aLabel2"]
+  cloud_ids = [1]
 }
