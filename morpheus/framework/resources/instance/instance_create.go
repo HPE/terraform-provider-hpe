@@ -85,8 +85,7 @@ func (g *Resource) Create(
 		// The provisionTypeCode default is "mvm" which is the code for the HVM provisioning type.
 		configHvm := sdk.NewHVMInstanceConfigurationWithDefaults()
 		configHvm.SetCreateUser(plan.ConfigHvm.CreateUser.ValueBool())
-		configHvm.SetNestedVirtualization(
-			convert.BoolToStringOnOff(plan.ConfigHvm.NestedVirtualization.ValueBool()).ValueString())
+		configHvm.SetNestedVirtualization(plan.ConfigHvm.NestedVirtualization.ValueString())
 		configHvm.SetNoAgent(plan.ConfigHvm.NoAgent.ValueBool())
 		configHvm.SetResourcePoolId(plan.ConfigHvm.ResourcePoolId.ValueString())
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
@@ -100,8 +99,7 @@ func (g *Resource) Create(
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		configVMware := sdk.NewVMWareInstanceConfiguration1WithDefaults()
-		configVMware.SetNestedVirtualization(
-			convert.BoolToStringOnOff(plan.ConfigHvm.NestedVirtualization.ValueBool()).ValueString())
+		configVMware.SetNestedVirtualization(plan.ConfigHvm.NestedVirtualization.ValueString())
 		configVMware.SetCreateUser(plan.ConfigVmware.CreateUser.ValueBool())
 		configVMware.SetNoAgent(plan.ConfigVmware.NoAgent.ValueBool())
 		configVMware.SetResourcePoolId(plan.ConfigVmware.ResourcePoolId.ValueString())
