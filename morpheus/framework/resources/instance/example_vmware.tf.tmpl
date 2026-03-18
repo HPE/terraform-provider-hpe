@@ -70,7 +70,7 @@ resource "hpe_morpheus_instance" "example" {
 
   config_vmware = {
     resource_pool_id      = "{{.ResourcePool}}"
-    nested_virtualization = false
+    nested_virtualization = "off"
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"

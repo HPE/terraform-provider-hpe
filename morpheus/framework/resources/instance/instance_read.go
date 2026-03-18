@@ -320,7 +320,7 @@ func getInstanceVMwareConfig(
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
-	configVmware.NestedVirtualization = convert.StringToBool(ctx, *nestedVirtualization)
+	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
 	configVmware.state = attr.ValueStateKnown
@@ -365,7 +365,7 @@ func getInstanceHVMConfig(
 
 	configHvm.CreateUser = convert.BoolToType(createUser)
 	configHvm.NoAgent = convert.BoolToType(noAgent)
-	configHvm.NestedVirtualization = convert.StringToBool(ctx, *nestedVirtualization)
+	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
 	configHvm.state = attr.ValueStateKnown
