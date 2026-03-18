@@ -718,7 +718,6 @@ Optional:
 Required:
 
 - `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
-- `vmware_folder_id` (String) VMware folder external ID.
 
 Optional:
 
@@ -726,6 +725,7 @@ Optional:
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+- `vmware_folder_id` (String) VMware folder external ID.
 
 
 <a id="nestedatt--evars"></a>
