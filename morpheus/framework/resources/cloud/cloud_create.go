@@ -34,7 +34,6 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	groupID := plan.GroupId.ValueInt64()
 	tenantID := plan.TenantId.ValueInt64()
 
 	var config CloudModel
@@ -45,7 +44,10 @@ func (r *Resource) Create(
 
 	addCloud := sdk.NewAddCloudsRequestZoneWithDefaults()
 	addCloud.SetName(name)
-	addCloud.SetGroupId(groupID)
+
+	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
+		addCloud.SetGroupId(plan.GroupId.ValueInt64())
+	}
 
 	addCloudConfig := addCloud.GetConfig()
 

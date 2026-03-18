@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
@@ -47,11 +48,12 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
-		"Name", name,
-		"Location", "here",
-		"Code", code,
-		"Label", "aLabel")
+	resourceConfig, err := group.RenderGroupConfig(t,
+		map[string]string{
+			"Name": name,
+			"Code": code,
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,6 +197,7 @@ resource "hpe_morpheus_group" "test" {
   location = "here"
   code = "` + code + `"
   labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				Check:    checkFn,
 				PlanOnly: false,
@@ -207,9 +210,23 @@ resource "hpe_morpheus_group" "test" {
 	location = "here"
 	code = "` + code + `"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				Check:              checkFn,
 				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config: providerConfig + `
+# checks plan detects cloud_ids change
+resource "hpe_morpheus_group" "test" {
+	name = "` + name + `-changed"
+	location = "here"
+	code = "` + code + `"
+	labels = ["Label1", "Label2"]
+	cloud_ids = []
+}`,
+				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
 			},
 			{
@@ -220,6 +237,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here"
 	code = "` + code + `"
 	labels = ["Label1", "Label2", "env:blah"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -232,6 +250,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here"
 	code = "` + code + `"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -244,6 +263,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here"
 	code = "` + code + `-changed"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -256,6 +276,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here"
 	# code = "` + code + `-changed"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -268,6 +289,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "there"
 	code = "` + code + `"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -280,6 +302,7 @@ resource "hpe_morpheus_group" "test" {
 	# location = "here"
 	code = "` + code + `"
 	labels = ["Label1", "Label2"]
+	cloud_ids = [1]
 }`,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
@@ -292,6 +315,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here-changed"
 	code = "` + code + `-changed"
 	labels = ["Label1", "Label2", "Label3"]
+	cloud_ids = [1]
 }`,
 				Check:    checkUpdateFn,
 				PlanOnly: false,
@@ -304,6 +328,7 @@ resource "hpe_morpheus_group" "test" {
 	location = "here-changed"
 	code = "` + code + `-changed"
 	labels = ["Label1", "Label2", "Label3"]
+	cloud_ids = [1]
 }`,
 				Check:              checkUpdateFn,
 				PlanOnly:           true,

@@ -12,10 +12,11 @@ description: |-
 
 ```terraform
 resource "hpe_morpheus_group" "example" {
-  name     = "TestGroup"
-  location = "here"
-  code     = "aCode"
-  labels   = ["aLabel1", "aLabel2"]
+  name      = "TestGroup"
+  location  = "here"
+  code      = "aCode"
+  labels    = ["aLabel1", "aLabel2"]
+  cloud_ids = [1]
 }
 ```
 
@@ -28,6 +29,7 @@ resource "hpe_morpheus_group" "example" {
 
 ### Optional
 
+- `cloud_ids` (List of Number) List of cloud ids to add to the group
 - `code` (String) Optional code for use with policies
 - `labels` (Set of String) The organization labels associated with the group
 - `location` (String) Optional location for the group

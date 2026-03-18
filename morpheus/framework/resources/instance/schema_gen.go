@@ -70,10 +70,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					"nested_virtualization": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						Description:         "Enable nested virtualization on the instance. Can be a number of valid string values:\n   \"on\", \"off\", \"0\", \"1\", \"true\", \"false\", \"yes\", \"no\", \"\".  The default is \"off\".\n",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be a number of valid string values:\n   \"on\", \"off\", \"0\", \"1\", \"true\", \"false\", \"yes\", \"no\", \"\".  The default is \"off\".\n",
 						Validators: []validator.String{
-							stringvalidator.OneOf("on", "off"),
+							stringvalidator.OneOf("on", "off", "0", "1", "true", "false", "yes", "no", ""),
 						},
 						Default: stringdefault.StaticString("off"),
 					},
@@ -114,10 +114,10 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					"nested_virtualization": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
-						MarkdownDescription: "Enable nested virtualization on the instance. Can be 'on' or 'off'. The default is 'off'.",
+						Description:         "Enable nested virtualization on the instance. Can be a number of valid string values:\n   \"on\", \"off\", \"0\", \"1\", \"true\", \"false\", \"yes\", \"no\", \"\".  The default is \"off\".\n",
+						MarkdownDescription: "Enable nested virtualization on the instance. Can be a number of valid string values:\n   \"on\", \"off\", \"0\", \"1\", \"true\", \"false\", \"yes\", \"no\", \"\".  The default is \"off\".\n",
 						Validators: []validator.String{
-							stringvalidator.OneOf("on", "off"),
+							stringvalidator.OneOf("on", "off", "0", "1", "true", "false", "yes", "no", ""),
 						},
 						Default: stringdefault.StaticString("off"),
 					},
@@ -134,7 +134,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
 					},
 					"vmware_folder_id": schema.StringAttribute{
-						Required:            true,
+						Optional:            true,
 						Description:         "VMware folder external ID.",
 						MarkdownDescription: "VMware folder external ID.",
 					},

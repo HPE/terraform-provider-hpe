@@ -99,7 +99,7 @@ func (g *Resource) Create(
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		configVMware := sdk.NewVMWareInstanceConfiguration1WithDefaults()
-		configVMware.SetNestedVirtualization(plan.ConfigVmware.NestedVirtualization.ValueString())
+		configVMware.SetNestedVirtualization(plan.ConfigHvm.NestedVirtualization.ValueString())
 		configVMware.SetCreateUser(plan.ConfigVmware.CreateUser.ValueBool())
 		configVMware.SetNoAgent(plan.ConfigVmware.NoAgent.ValueBool())
 		configVMware.SetResourcePoolId(plan.ConfigVmware.ResourcePoolId.ValueString())
