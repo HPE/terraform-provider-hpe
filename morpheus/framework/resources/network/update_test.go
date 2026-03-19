@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package network_test
 
@@ -325,7 +325,7 @@ resource "hpe_morpheus_network" "foo" {
 					// Keep original name
 					"name":        config.StringVariable(uniqueName),
 					"description": config.StringVariable("Comprehensive update test"),
-					"pool_id":     config.IntegerVariable(5958),
+					"pool_id":     config.IntegerVariable(17709),
 					// Keep original CIDR
 					"cidr":                       config.StringVariable("10.50.0.0/16"),
 					"visibility":                 config.StringVariable("public"),
@@ -343,7 +343,7 @@ resource "hpe_morpheus_network" "foo" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "description", "Comprehensive update test"),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "pool_id", "5958"),
+						"hpe_morpheus_network.foo", "pool_id", "17709"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16"), // CIDR unchanged
 					resource.TestCheckResourceAttr(
