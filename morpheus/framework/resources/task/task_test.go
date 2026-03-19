@@ -1,7 +1,7 @@
 package task_test
 
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task"
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow" ElseOperationalWorkflowId "4091" ElseOperationalWorkflowName "Example Else Workflow"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task" OperationalWorkflowId "4090" OperationalWorkflowName "Example Workflow"
 
 import (
 	"os"
@@ -48,8 +48,16 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	ifOperationalWorkflowId := "140"
+	elseOperationalWorkflowId := "102"
+	ifOperationalWorkflowName := "A Failure"
+	elseOperationalWorkflowName := "A Test"
 	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
+		"IfOperationalWorkflowId", ifOperationalWorkflowId,
+		"ElseOperationalWorkflowId", elseOperationalWorkflowId,
+		"IfOperationalWorkflowName", ifOperationalWorkflowName,
+		"ElseOperationalWorkflowName", elseOperationalWorkflowName,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -69,12 +77,12 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			"90",
+			ifOperationalWorkflowId,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.else_operational_workflow_id",
-			"91",
+			elseOperationalWorkflowId,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
@@ -122,8 +130,16 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	ifOperationalWorkflowId := "140"
+	elseOperationalWorkflowId := "102"
+	ifOperationalWorkflowName := "A Failure"
+	elseOperationalWorkflowName := "A Test"
 	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
+		"IfOperationalWorkflowId", ifOperationalWorkflowId,
+		"ElseOperationalWorkflowId", elseOperationalWorkflowId,
+		"IfOperationalWorkflowName", ifOperationalWorkflowName,
+		"ElseOperationalWorkflowName", elseOperationalWorkflowName,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -143,12 +159,12 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.if_operational_workflow_id",
-			"90",
+			ifOperationalWorkflowId,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config_conditional_workflow.else_operational_workflow_id",
-			"91",
+			elseOperationalWorkflowId,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
@@ -195,11 +211,11 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 						name = "` + name + `2"
 						task_type_code = "conditionalWorkflow"
 						config_conditional_workflow = {
-							if_operational_workflow_id   = 90
-							if_operational_workflow_name = "Test 1"
+							if_operational_workflow_id   = ` + ifOperationalWorkflowId + `
+							if_operational_workflow_name = "` + ifOperationalWorkflowName + `"
 
-							else_operational_workflow_id   = 91
-							else_operational_workflow_name = "Test 2"
+							else_operational_workflow_id   = ` + elseOperationalWorkflowId + `
+							else_operational_workflow_name = "` + elseOperationalWorkflowName + `"
 						}
 
 						execute_target = "local"
@@ -215,6 +231,11 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 					resource "hpe_morpheus_task" "example_task" {
 						name = "` + name + `2"
 						task_type_code = "nestedWorkflow"
+
+						config = {
+							operationalWorkflowId   = "` + ifOperationalWorkflowId + `"
+							operationalWorkflowName = "` + ifOperationalWorkflowName + `"
+						}
 
 						execute_target = "local"
 						retryable = false
@@ -236,8 +257,12 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	operationalWorkflowId := "102"
+	operationalWorkflowName := "A Test"
 	resourceConfig, err := testhelpers.RenderExample(t, "example_generic_config.tf.tmpl",
 		"Name", name,
+		"OperationalWorkflowId", operationalWorkflowId,
+		"OperationalWorkflowName", operationalWorkflowName,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -257,12 +282,12 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config.operationalWorkflowId",
-			"90",
+			operationalWorkflowId,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task.example_task",
 			"config.operationalWorkflowName",
-			"Test 1",
+			operationalWorkflowName,
 		),
 	}
 
