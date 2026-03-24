@@ -133,6 +133,26 @@ resource "hpe_morpheus_form" "example" {
     step                     = 2
   }
 
+  option_type {
+    name                        = "tf network manager example"
+    code                        = "network-manager-input"
+    description                 = "Terraform network manager example"
+    type                        = "networkManager"
+    field_label                 = "network input"
+    field_name                  = "networkInput"
+    default_value               = "test123"
+    placeholder                 = "Select network"
+    help_block                  = "Select a network"
+    required                    = true
+    export_meta                 = true
+    display_value_on_details    = true
+    locked                      = true
+    hidden                      = false
+    exclude_from_search         = true
+    show_network_type_selection = true
+    enable_ip_mode_selection    = true
+  }
+
   field_group {
     name                 = "fg1"
     description          = "testin"
@@ -235,6 +255,7 @@ Optional:
 - `description` (String) A description of the option type to add to the field group
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
 - `exclude_from_search` (Boolean) Whether the option type should be execluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
@@ -252,10 +273,11 @@ Optional:
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
 - `show_line_numbers` (Boolean) Whether to show the line numbers for the code editor option type
+- `show_network_type_selection` (Boolean) Whether to show the network type selection
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, textArray, textarea, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -279,6 +301,7 @@ Optional:
 - `description` (String) A description of the option type to add to the form
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
 - `exclude_from_search` (Boolean) Whether the option type should be execluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label used for the option type
@@ -296,10 +319,11 @@ Optional:
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
 - `show_line_numbers` (Boolean) Whether to show the line numbers for the code editor option type
+- `show_network_type_selection` (Boolean) Whether to show the network type selection
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of lines to show for a code editor or text area option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, textArray, textarea, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
