@@ -36,7 +36,7 @@ const (
 )
 
 // TODO: Add switch case handling for these option types.
-//nolint: unused
+// nolint: unused
 const (
 	typeCloud          = "cloud"
 	typeDiskManager    = "diskManager"
