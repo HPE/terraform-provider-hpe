@@ -101,16 +101,13 @@ func ResourceForm() *schema.Resource {
 						"type": {
 							Type: schema.TypeString,
 							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-								"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-								"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-								"virtual-image, vmwFolders)",
+								"(checkbox, hidden, number, password, radio, select, text, textarea, byteSize, " +
+								"code-editor, fileContent, logoSelector, textArray, typeahead, environment)",
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-									"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-									"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup", "select",
-									"servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image", "vmwFolders",
+									"checkbox", "hidden", "number", "password", "radio", "select", "text",
+									"textarea", "byteSize", "code-editor", "fileContent", "logoSelector",
+									"textArray", "typeahead", "environment",
 								},
 								false,
 							),
@@ -375,17 +372,13 @@ func ResourceForm() *schema.Resource {
 									"type": {
 										Type: schema.TypeString,
 										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-											"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-											"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-											"virtual-image, vmwFolders)",
+											"(checkbox, hidden, number, password, radio, select, text, textarea, byteSize, " +
+											"code-editor, fileContent, logoSelector, textArray, typeahead, environment)",
 										ValidateFunc: validation.StringInSlice(
 											[]string{
-												"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-												"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-												"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup",
-												"select", "servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image",
-												"vmwFolders",
+												"checkbox", "hidden", "number", "password", "radio", "select", "text",
+												"textarea", "byteSize", "code-editor", "fileContent", "logoSelector",
+												"textArray", "typeahead", "environment",
 											},
 											false,
 										),

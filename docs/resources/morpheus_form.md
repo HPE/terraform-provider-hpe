@@ -255,7 +255,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, virtual-image, vmwFolders)
+- `type` (String) The type of option type to add to the field group (checkbox, hidden, number, password, radio, select, text, textarea, byteSize, code-editor, fileContent, logoSelector, textArray, typeahead, environment)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -299,7 +299,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of lines to show for a code editor or text area option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, virtual-image, vmwFolders)
+- `type` (String) The type of option type to add to the form (checkbox, hidden, number, password, radio, select, text, textarea, byteSize, code-editor, fileContent, logoSelector, textArray, typeahead, environment)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
