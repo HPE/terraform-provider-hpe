@@ -36,7 +36,8 @@ const (
 )
 
 // TODO: Add switch case handling for these option types.
-const ( //nolint:unused
+//nolint: unused
+const (
 	typeCloud          = "cloud"
 	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
