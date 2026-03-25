@@ -65,8 +65,8 @@ Each framework resource lives in its own package under `morpheus/framework/resou
 | File | Purpose |
 |---|---|
 | `resource.go` | CRUD implementation, `Metadata()`, `Schema()`, API-to-state mapping |
-| `<name>_resource_gen.go` | **Generated** schema and model struct (by `terraform-plugin-framework-generator`). Do not edit. |
-| `resource_test.go` | Acceptance tests |
+| `schema_gen.go` | **Generated** schema and model struct (by `terraform-plugin-framework-generator`). Do not edit. |
+| `resource_test.go` or `<name>_test.go` | Acceptance tests (larger resources may split into `create_test.go`, `update_test.go`, `import_test.go`, etc.) |
 | `sweep.go` | Test resource sweeper for cleanup |
 | `<name>_example.go` | `//go:generate` directives for rendering example `.tf` files |
 | `example.tf.tmpl` | Template for example Terraform configs used in tests and docs |
@@ -131,11 +131,4 @@ Docs are generated with `tfplugindocs`. The pipeline:
 
 ### Type Conversion Utilities
 
-`utils/convert/` provides helpers for converting between SDK types and Terraform framework types:
-- `convert.StrToType(*string) types.String`
-- `convert.BoolToType(*bool) types.Bool`
-- `convert.Int64ToType(*int64) types.Int64`
-- `convert.StrSliceToSet([]string) types.Set`
-- `convert.SetToStrSlice(types.Set) ([]string, error)`
-
-Use these consistently rather than manual conversions.
+`utils/convert/` provides helpers for converting between SDK types and Terraform framework types. Use these consistently rather than manual conversions.
