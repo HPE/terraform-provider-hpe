@@ -538,7 +538,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "Metadata tags, Array of objects having a name and value.",
 				MarkdownDescription: "Metadata tags, Array of objects having a name and value.",
 			},
