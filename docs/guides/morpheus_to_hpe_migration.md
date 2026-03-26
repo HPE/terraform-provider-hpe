@@ -86,7 +86,7 @@ The following table lists the resources that have identical schema between the M
 | morpheus_instance_type                    | hpe_morpheus_instance_type                    |
 | morpheus_ipv4_ip_pool                     | hpe_morpheus_ip_pool_ipv4                     |
 | morpheus_javascript_task                  | hpe_morpheus_task_javascript                  |
-| morpheus_key_pairs                        | hpe_morpheus_key_pair                         |
+| morpheus_key_pair                         | hpe_morpheus_key_pair                         |
 | morpheus_kubernetes_app_blueprint         | hpe_morpheus_app_blueprint_kubernetes         |
 | morpheus_kubernetes_spec_template         | hpe_morpheus_spec_template_kubernetes         |
 | morpheus_library_script_task              | hpe_morpheus_task_library_script              |
@@ -178,6 +178,10 @@ in the HPE provider and several Morpheus provider resources map to a single HPE 
 | morpheus_workflow_policy | hpe_morpheus_policy |
 | morpheus_tenant_role | hpe_morpheus_role |
 | morpheus_user_role | hpe_morpheus_role |
+| morpheus_group | hpe_morpheus_group |
+| morpheus_service_plan | hpe_morpheus_service_plan |
+| morpheus_user | hpe_morpheus_user |
+| morpheus_vro_task | hpe_morpheus_task |
 
 For these resources terraform can be used to generate the HPE resource definition.  Examples of this process for `hpe_morpheus_instance`
 are documented [here](./morpheus_instance_to_hpe_instance.md).  The configuration can be generated resource by resource or for
