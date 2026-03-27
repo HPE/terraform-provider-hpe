@@ -10,7 +10,7 @@ import the existing Morpheus resources created with the Morpheus provider into t
 on import can be found [here](https://developer.hashicorp.com/terraform/language/import).
 
 -> [tfmigrator](./tfmigrator_migration.md) has been developed in order to assist with migration. By following the documented process, this tooling should assist in porting `morpheus` resources to their corresponding `hpe` resources - including handling for modules and variables.
-Manual guides will continue available on our blog, as well as other materials to demonstrate the migration
+Manual guides will continue to be available on our blog, as well as other materials to demonstrate the migration
 process using real-world use cases.<br><br>
 The section on [Bulk Import](https://developer.hashicorp.com/terraform/language/v1.14.x/import/bulk?page=import&page=bulk) requires provider support for the `List` RPC.  The HPE provider does not currently
 support `List`, this is something that we are considering for a future release.<br><br>
