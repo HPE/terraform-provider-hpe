@@ -129,6 +129,7 @@ The following table lists the resources that have identical schema between the M
 | morpheus_typeahead_option_type            | hpe_morpheus_option_type_typeahead            |
 | morpheus_user_group                       | hpe_morpheus_user_group                       |
 | morpheus_vro_integration                  | hpe_morpheus_integration_vro                  |
+| morpheus_vro_task                         | hpe_morpheus_vro_task                         |
 | morpheus_vsphere_mks_cluster              | hpe_morpheus_cluster_hks_vsphere              |
 | morpheus_wiki_page                        | hpe_morpheus_wiki_page                        |
 | morpheus_workflow_catalog_item            | hpe_morpheus_catalog_item_workflow            |
@@ -181,7 +182,6 @@ in the HPE provider and several Morpheus provider resources map to a single HPE 
 | morpheus_group | hpe_morpheus_group |
 | morpheus_service_plan | hpe_morpheus_service_plan |
 | morpheus_user | hpe_morpheus_user |
-| morpheus_vro_task | hpe_morpheus_task |
 
 For these resources terraform can be used to generate the HPE resource definition.  Examples of this process for `hpe_morpheus_instance`
 are documented [here](./morpheus_instance_to_hpe_instance.md).  The configuration can be generated resource by resource or for
