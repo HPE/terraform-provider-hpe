@@ -140,6 +140,9 @@ func makeUpdateAPIcalls(
 			return NewServicePlanOptionsValueNull()
 		}
 		instanceUpdateRequest.SetTags(tags)
+	} else {
+		// Morpheus will only remove tags if explicitly passed an empty list
+		instanceUpdateRequest.SetTags([]sdk.UpdateInstanceRequestInstanceTagsInner{})
 	}
 
 	updateRequest.SetInstance(*instanceUpdateRequest)
