@@ -106,36 +106,8 @@ func getClusterAsState(
 
 	// handle different types of cluster configs...
 	switch {
-	case !plan.Config.IsNull() || importing:
-		state.Config = basetypes.NewDynamicNull()
-
-		cfg := cluster.GetConfig()
-		if cfg == nil {
-			diags.AddError(
-				readOperation,
-				"cluster: generic config missing from API response",
-			)
-
-			return state, diags
-		}
-
-		// Set plan config to state if it's not null.
-		// This means that on Read, we don't get clashes with
-		// additional or missing properties from the GET config block.
-		// i.e. only manage in state what we've set in the config.
-		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-			state.Config = plan.Config
-		} else {
-			// importing
-			o, err := convert.MapToDynamic(ctx, cfg)
-			if err != nil {
-				diags.AddError(populateOperation, err.Error())
-			}
-
-			state.Config = o
-		}
-
-	case !plan.ConfigHvm.IsNull():
+	case clusterTypeCodeFromName == clusterTypeCodeMVM &&
+		(!plan.ConfigHvm.IsNull() || importing):
 
 		// doesn't require replace - cpu_arch, cpu_model, dynamic_placement
 		var cpuArchVal string
@@ -175,6 +147,36 @@ func getClusterAsState(
 		}
 
 		state.ConfigHvm = configHvmVal
+	// for importing to static blocks, handle generic config last
+	case !plan.Config.IsNull() || importing:
+		state.Config = basetypes.NewDynamicNull()
+
+		cfg := cluster.GetConfig()
+		if cfg == nil {
+			diags.AddError(
+				readOperation,
+				"cluster: generic config missing from API response",
+			)
+
+			return state, diags
+		}
+
+		// Set plan config to state if it's not null.
+		// This means that on Read, we don't get clashes with
+		// additional or missing properties from the GET config block.
+		// i.e. only manage in state what we've set in the config.
+		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+			state.Config = plan.Config
+		} else {
+			// importing
+			o, err := convert.MapToDynamic(ctx, cfg)
+			if err != nil {
+				diags.AddError(populateOperation, err.Error())
+			}
+
+			state.Config = o
+		}
+
 	}
 
 	server, diags := buildReadClusterServer(ctx, plan)

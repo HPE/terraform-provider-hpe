@@ -326,32 +326,6 @@ func buildCreateClusterServer(
 
 	}
 
-	// network interfaces
-	// if !plan.Server.NetworkInterfaces.IsNull() && !plan.Server.NetworkInterfaces.IsUnknown() {
-	// 	var networkInterfaces []NetworkInterfacesValue
-	// 	diags := plan.Server.NetworkInterfaces.ElementsAs(ctx, &networkInterfaces, false)
-	// 	if diags.HasError() {
-	// 		return diags
-	// 	}
-
-	// 	var addClusterServerNetworkInterfaces []sdk.AddClusterRequestClusterServerNetworkInterfacesInner
-	// 	for _, v := range networkInterfaces {
-	// 		i := v.NetworkId.ValueInt64()
-	// 		addClusterServerNetworkInterfaces = append(
-	// 			addClusterServerNetworkInterfaces,
-	// 			sdk.AddClusterRequestClusterServerNetworkInterfacesInner{
-	// 				Network: sdk.AddClusterRequestClusterServerNetworkInterfacesInnerNetwork{
-	// 					Id: sdk.Int64AsAddClusterRequestClusterServerNetworkInterfacesInnerNetworkId(&i),
-	// 				},
-	// 				IpMode: v.IpMode.ValueStringPointer(),
-	// 			},
-	// 		)
-	// 	}
-
-	// 	server.SetNetworkInterfaces(addClusterServerNetworkInterfaces)
-
-	// }
-
 	// security groups
 	if !plan.Server.SecurityGroups.IsNull() && !plan.Server.SecurityGroups.IsUnknown() {
 		securityGroups, err := convert.SetToStrSlice(plan.Server.SecurityGroups)
@@ -374,7 +348,7 @@ func buildCreateClusterServer(
 		server.SetSshHosts(hosts)
 	}
 
-	// fix the diags erroring
+	// tags
 	if !plan.Server.Tags.IsNull() && !plan.Server.Tags.IsUnknown() {
 		var tags []TagsValue
 		diags := plan.Server.Tags.ElementsAs(ctx, &tags, false)
