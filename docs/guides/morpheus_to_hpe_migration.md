@@ -129,7 +129,7 @@ The following table lists the resources that have identical schema between the M
 | morpheus_typeahead_option_type            | hpe_morpheus_option_type_typeahead            |
 | morpheus_user_group                       | hpe_morpheus_user_group                       |
 | morpheus_vro_integration                  | hpe_morpheus_integration_vro                  |
-| morpheus_vro_task                         | hpe_morpheus_vro_task                         |
+| morpheus_vro_task                         | hpe_morpheus_task_vro                         |
 | morpheus_vsphere_mks_cluster              | hpe_morpheus_cluster_hks_vsphere              |
 | morpheus_wiki_page                        | hpe_morpheus_wiki_page                        |
 | morpheus_workflow_catalog_item            | hpe_morpheus_catalog_item_workflow            |
