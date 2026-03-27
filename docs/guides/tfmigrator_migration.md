@@ -78,6 +78,19 @@ provider "hpe" {
     password = var.morpheus_password
   }
 }
+
+variable "morpheus_url" {
+  type = string
+}
+
+variable "morpheus_username" {
+  type = string
+}
+
+variable "morpheus_password" {
+  type      = string
+  sensitive = true
+}
 ```
 
 This setup is expected to exist before migration.
@@ -114,7 +127,7 @@ tfmigrator generate \
 
 - `--provider-config` should point to wherever your HPE provider is configured for the migration context (for example, `./provider.tf` or `./main.tf`). Alternatively - create a temporary file for this step (i.e. `.provider/provider.tf`) that follows the below format:
 
-```hclå
+```hcl
 terraform {
   required_providers {
     morpheus = {
