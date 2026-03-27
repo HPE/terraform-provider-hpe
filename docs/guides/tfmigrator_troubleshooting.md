@@ -21,7 +21,7 @@ terraform {
   required_providers {
     morpheus = {
       source  = "gomorpheus/morpheus"
-      version = "0.13.1"
+      version = "0.14.1"
     }
     hpe = {
       source  = "HPE/hpe"
@@ -115,7 +115,7 @@ terraform {
   required_providers {
     morpheus = {
       source  = "gomorpheus/morpheus"
-      version = "0.13.1"
+      version = "0.14.1"
     }
     hpe = {
       source  = "HPE/hpe"

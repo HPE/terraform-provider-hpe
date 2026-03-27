@@ -55,7 +55,7 @@ terraform {
   required_providers {
     morpheus = {
       source  = "gomorpheus/morpheus"
-      version = "0.13.1"
+      version = "0.14.1"
     }
     hpe = {
       source  = "HPE/hpe"
@@ -114,12 +114,12 @@ tfmigrator generate \
 
 - `--provider-config` should point to wherever your HPE provider is configured for the migration context (for example, `./provider.tf` or `./main.tf`). Alternatively - create a temporary file for this step (i.e. `.provider/provider.tf`) that follows the below format:
 
-```hcl
+```hclå
 terraform {
   required_providers {
     morpheus = {
       source  = "gomorpheus/morpheus"
-      version = "0.13.1"
+      version = "0.14.1"
     }
     hpe = {
       source  = "HPE/hpe"
