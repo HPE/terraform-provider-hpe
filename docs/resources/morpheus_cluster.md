@@ -156,9 +156,8 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 
 ### Optional
 
-- `cluster_type_code` (String) Code of type of cluster to be created. Automatically set to the appropriate code when using a static config.
+- `cluster_type_code` (String) Code of type of cluster to be created. Automatically set to the appropriate code by the provider when using a static config.
 - `config` (Dynamic) Generic Cluster Configuration
-- `config_hks_hvm` (Attributes) Configuration for HKS cluster provisioning on a HVM cluster. (see [below for nested schema](#nestedatt--config_hks_hvm))
 - `config_hvm` (Attributes) Configuration for HVM cluster servers (see [below for nested schema](#nestedatt--config_hvm))
 - `description` (String) Description of the cluster to be created
 - `labels` (Set of String) This will set labels on the cluster as well as its servers.
@@ -191,12 +190,10 @@ It should be passed as an array of Objects with the following attributes (see [b
 - `service_plan_id` (Number) ID of the cluster server service plan.
 - `ssh_hosts` (Attributes Set) Array of Host IPs and Names. This is used in conjunction with sshUsername and sshPassword/sshKeyPair to add existing hosts such as with HPE VM clusters. (see [below for nested schema](#nestedatt--server--ssh_hosts))
 - `ssh_key_pair_id` (Number) SSH Key Pair ID.
-- `ssh_master_hosts` (Set of String) IP addresses of the master hosts.
 - `ssh_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
 - `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
 - `ssh_port` (Number) The port which the worker's SSH server is listening on.
 - `ssh_username` (String) SSH Username
-- `ssh_worker_hosts` (Set of String) IP addresses of the worker hosts.
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--server--tags))
 - `user_group_id` (Number) User Group ID for server host
 - `visibility` (String) Visibility for server host
@@ -251,23 +248,6 @@ Read-Only:
 
 - `id` (Number) The id for the LV configuration being created
 
-
-
-<a id="nestedatt--config_hks_hvm"></a>
-### Nested Schema for `config_hks_hvm`
-
-Required:
-
-- `node_count` (Number) The number of worker nodes to be provisioned. Can be updated to resize the cluster.
-- `resource_pool_id` (Number)
-
-Optional:
-
-- `create_user` (Boolean)
-- `default_repo_account` (Number) Default Repo Account is the repository to be used when pulling images.  Default behavior is to be anonymous, which does have limits on allowed image pulls from public Docker Repos.
-- `image_server` (String) Act as Image Server. Set to on to use the Default Repo Account to pull images.
-- `pod_cidr` (String)
-- `service_cidr` (String)
 
 
 <a id="nestedatt--config_hvm"></a>
