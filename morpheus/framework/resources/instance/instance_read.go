@@ -61,10 +61,15 @@ func (g *Resource) Read(
 		return
 	}
 
+	// servicePlanOptions is not returned by the API
+	servicePlanOptions := data.ServicePlanOptions
+
 	state, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
+
+	state.ServicePlanOptions = servicePlanOptions
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -112,7 +117,7 @@ func getInstanceAsState(
 
 		switch *code {
 		case hvmCode:
-			configHvm, cdiags := getInstanceHVMConfig(id, apiConfig)
+			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -120,7 +125,7 @@ func getInstanceAsState(
 			state.ConfigHvm = configHvm
 
 		case vmwareCode:
-			configVMware, cdiags := getInstanceVMwareConfig(id, apiConfig)
+			configVMware, cdiags := getInstanceVMwareConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
 				return state, diags
@@ -246,14 +251,29 @@ func getInstanceAsState(
 	state.Timeouts = plan.Timeouts
 
 	// tags
+	// we store the Name from the plan in the state, and compare the name returned from the API against
+	// the state name while allowing for capitalisation changes
+	planTagNames := make(map[string]string) // lowercase name -> plan name
+	for _, planTag := range plan.Tags.Elements() {
+		pt := planTag.(TagsValue)
+		planTagNames[strings.ToLower(pt.Name.ValueString())] = pt.Name.ValueString()
+	}
+
 	tags, d := convert.ToSetType(
 		ctx,
 		resp.GetInstance().Tags,
 		func(
 			in sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInner,
 		) TagsValue {
+			name := convert.StrToType(in.Name)
+			if in.Name != nil {
+				if planName, ok := planTagNames[strings.ToLower(*in.Name)]; ok {
+					name = types.StringValue(planName)
+				}
+			}
+
 			return TagsValue{
-				Name:  convert.StrToType(in.Name),
+				Name:  name,
 				Value: convert.StrToType(in.Value),
 				state: attr.ValueStateKnown,
 			}
@@ -277,6 +297,7 @@ func getInstanceAsState(
 
 // getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances
 func getInstanceVMwareConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigVmwareValue, diag.Diagnostics) {
@@ -307,10 +328,7 @@ func getInstanceVMwareConfig(
 	}
 
 	// VMwareFolderId
-	folderId, fdiags := getVMwareFolderId(id, apiConfig)
-	if fdiags.HasError() {
-		return configVmware, fdiags
-	}
+	folderId, _ := apiConfig.GetVmwareFolderIdOk()
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
@@ -324,6 +342,7 @@ func getInstanceVMwareConfig(
 
 // getInstanceHVMConfig builds the config_hvm block from the API response for hvm instances
 func getInstanceHVMConfig(
+	ctx context.Context,
 	id int64,
 	apiConfig *apiConfigType,
 ) (ConfigHvmValue, diag.Diagnostics) {
@@ -437,24 +456,6 @@ func getResourcePoolId(
 	}
 
 	return resourcePoolId.String, nil
-}
-
-func getVMwareFolderId(
-	id int64,
-	apiConfig *apiConfigType,
-) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	folderId, ok := apiConfig.GetVmwareFolderIdOk()
-	if !ok {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config vmwareFolderId", id),
-		)
-
-		return nil, diags
-	}
-
-	return folderId, nil
 }
 
 // getCodeAndConfig returns the "code" for the instance and the config struct from the API response

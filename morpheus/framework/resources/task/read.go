@@ -161,11 +161,11 @@ func getTaskAsState(
 	state.RetryCount = convert.Int64ToType(task.RetryCount)
 
 	// retry_delay_seconds
-	// on import use the value from the API, otherwise use the value from the plan
-	if plan.Name.IsNull() || plan.Name.IsUnknown() {
-		state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
-	} else {
+	retryDelaySeconds := plan.RetryDelaySeconds.ValueInt64()
+	if retryDelaySeconds != 0 && retryDelaySeconds != *task.RetryDelaySeconds {
 		state.RetryDelaySeconds = plan.RetryDelaySeconds
+	} else {
+		state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
 	}
 
 	// retryable

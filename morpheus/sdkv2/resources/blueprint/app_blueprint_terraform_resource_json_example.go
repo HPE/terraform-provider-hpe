@@ -19,6 +19,7 @@ import (
 func RenderAppBlueprintTerraformJSONConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"BlueprintContent": "{\"test\":\"demo123\"}",
 		"Category":         "terraformdemo",

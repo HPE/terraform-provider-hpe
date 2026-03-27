@@ -234,12 +234,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The external id of the cloud",
 			},
 			"group_id": schema.Int64Attribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "Specifies which Server group this cloud should be assigned to",
 				MarkdownDescription: "Specifies which Server group this cloud should be assigned to",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"guidance_mode": schema.StringAttribute{
 				Optional:            true,

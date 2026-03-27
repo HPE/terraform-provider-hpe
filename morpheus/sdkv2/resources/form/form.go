@@ -35,6 +35,29 @@ const (
 	valueTrue  = "true"
 )
 
+// TODO: Add switch case handling for these option types.
+// nolint: unused
+const (
+	typeCloud          = "cloud"
+	typeDiskManager    = "diskManager"
+	typeEnvironment    = "environment"
+	typeFileContent    = "fileContent"
+	typeGroup          = "group"
+	typeHTTPHeader     = "httpHeader"
+	typeInstancesInput = "instances-input"
+	typeKeyValue       = "keyValue"
+	typeLayout         = "layout"
+	typeLogoSelector   = "logoSelector"
+	typeNetworkManager = "networkManager"
+	typePlan           = "plan"
+	typePorts          = "ports"
+	typeResourcePool   = "resourcePool"
+	typeSecGroup       = "secGroup"
+	typeServersInput   = "servers-input"
+	typeVirtualImage   = "virtual-image"
+	typeVMWFolders     = "vmwFolders"
+)
+
 func ResourceForm() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus form resource",
@@ -101,13 +124,12 @@ func ResourceForm() *schema.Resource {
 						"type": {
 							Type: schema.TypeString,
 							Description: "The type of option type to add to the form " +
-								"(checkbox, hidden, number, password, radio, select, text, textarea, byteSize, " +
-								"code-editor, fileContent, logoSelector, textArray, typeahead, environment)",
+								"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+								"textArray, textarea, typeahead)",
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									"checkbox", "hidden", "number", "password", "radio", "select", "text",
-									"textarea", "byteSize", "code-editor", "fileContent", "logoSelector",
-									"textArray", "typeahead", "environment",
+									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+									typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 								},
 								false,
 							),
@@ -372,13 +394,12 @@ func ResourceForm() *schema.Resource {
 									"type": {
 										Type: schema.TypeString,
 										Description: "The type of option type to add to the field group " +
-											"(checkbox, hidden, number, password, radio, select, text, textarea, byteSize, " +
-											"code-editor, fileContent, logoSelector, textArray, typeahead, environment)",
+											"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+											"textArray, textarea, typeahead)",
 										ValidateFunc: validation.StringInSlice(
 											[]string{
-												"checkbox", "hidden", "number", "password", "radio", "select", "text",
-												"textarea", "byteSize", "code-editor", "fileContent", "logoSelector",
-												"textArray", "typeahead", "environment",
+												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+												typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 											},
 											false,
 										),

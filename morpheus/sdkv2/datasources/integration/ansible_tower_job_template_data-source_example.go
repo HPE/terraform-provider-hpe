@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_ansible_tower_job_template/data-source.tf ansible_tower_job_template_data-source.tf.tmpl Name '\"Demo Job Template\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_ansible_tower_job_template/data-source.tf ansible_tower_job_template_data-source.tf.tmpl Name '\"Demo Job Template\"' AnsibleTowerIntegrationId 1"
 
 // RenderAnsibleTowerJobTemplateConfig generates a Terraform configuration for the ansible_tower_job_template resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
@@ -19,7 +19,8 @@ func RenderAnsibleTowerJobTemplateConfig(t *testing.T, overrides map[string]stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "\"Demo Job Template\"",
+		"Name":                      "\"Demo Job Template\"",
+		"AnsibleTowerIntegrationId": "1",
 	}
 
 	// Apply overrides to defaults

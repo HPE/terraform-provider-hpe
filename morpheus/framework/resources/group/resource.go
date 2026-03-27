@@ -57,6 +57,7 @@ func getGroupAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	plan GroupModel,
 ) (GroupModel, diag.Diagnostics) {
 	var state GroupModel
 	var diags diag.Diagnostics
@@ -77,7 +78,63 @@ func getGroupAsState(
 	state.Location = convert.StrToType(g.Group.Location.Get())
 	state.Labels = convert.StrSliceToSet(g.Group.Labels)
 
+	// Use the plan to avoid sorting issues from the API
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		state.CloudIds = plan.CloudIds
+	} else {
+		// On import, use the API values
+		state.CloudIds = types.ListNull(types.Int64Type)
+
+		if len(g.Group.Zones) > 0 {
+			var cloudIds []int64
+			for _, zone := range g.Group.Zones {
+				cloudIds = append(cloudIds, *zone.Id)
+			}
+
+			// Only set the state if cloud ids are returned
+			listVal, listDiags := types.ListValueFrom(ctx, types.Int64Type, cloudIds)
+			if listDiags.HasError() {
+				diags.Append(listDiags...)
+
+				return state, diags
+			}
+
+			state.CloudIds = listVal
+		}
+	}
+
 	return state, diags
+}
+
+func updateClouds(
+	ctx context.Context,
+	client *sdk.APIClient,
+	id int64,
+	plan GroupModel,
+) error {
+	var clouds []map[string]interface{}
+
+	for _, c := range plan.CloudIds.Elements() {
+		val, ok := c.(types.Int64)
+		if !ok {
+			continue
+		}
+
+		cloud := map[string]interface{}{"id": val.ValueInt64()}
+
+		clouds = append(clouds, cloud)
+	}
+
+	reqGrp := sdk.NewUpdateGroupsZonesRequestGroup(clouds)
+
+	req := sdk.NewUpdateGroupsZonesRequest(*reqGrp)
+
+	_, hresp, err := client.GroupsAPI.UpdateGroupsZones(ctx, id).UpdateGroupsZonesRequest(*req).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return fmt.Errorf("group %d update clouds failed", id)
+	}
+
+	return nil
 }
 
 func (r *Resource) Create(
@@ -173,7 +230,18 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, pdiags := getGroupAsState(ctx, id, client)
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		if err := updateClouds(ctx, client, id, plan); err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+" update clouds failed: "+err.Error(),
+			)
+
+			return
+		}
+	}
+
+	state, pdiags := getGroupAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -293,7 +361,18 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, pdiags := getGroupAsState(ctx, newid, client)
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		if err := updateClouds(ctx, client, id, plan); err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+" update clouds failed: "+err.Error(),
+			)
+
+			return
+		}
+	}
+
+	state, pdiags := getGroupAsState(ctx, newid, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -330,7 +409,7 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, pdiags := getGroupAsState(ctx, id, client)
+	state, pdiags := getGroupAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

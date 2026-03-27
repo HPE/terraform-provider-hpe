@@ -19,6 +19,7 @@ import (
 func RenderAppBlueprintTerraformSpecConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Category":         "terraformdemo",
 		"Description":      "testing terraform",

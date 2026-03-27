@@ -170,7 +170,10 @@ func (s *instanceSweeper) Sweep(_ string) error {
 
 		// Stop the server(s) if they are not already stopped, otherwise we cannot delete them
 		for _, serverId := range serverIds {
-			stopReq := s.client.HostsAPI.StopHost(ctx, serverId)
+			stopId := sdk.UpdateHostIdParameter{
+				Int64: &serverId,
+			}
+			stopReq := s.client.HostsAPI.StopHost(ctx, stopId)
 			_, hresp, err := stopReq.Execute()
 			if err != nil || (hresp.StatusCode != http.StatusOK && hresp.StatusCode != http.StatusConflict) {
 				errMsg := fmt.Sprintf(
@@ -186,7 +189,10 @@ func (s *instanceSweeper) Sweep(_ string) error {
 
 		// Delete the server(s) associated with the instance.
 		for _, serverId := range serverIds {
-			deleteServerReq := s.client.HostsAPI.RemoveHost(ctx, serverId).Force("on").
+			updateId := sdk.UpdateHostIdParameter{
+				Int64: &serverId,
+			}
+			deleteServerReq := s.client.HostsAPI.RemoveHost(ctx, updateId).Force("on").
 				RemoveResources("on").RemoveInstances("on")
 			_, hresp, err := deleteServerReq.Execute()
 			if err != nil || hresp.StatusCode != http.StatusOK {
