@@ -9,8 +9,8 @@ To migrate resources from the Morpheus Terraform provider to the HPE Terraform p
 import the existing Morpheus resources created with the Morpheus provider into the HPE provider. HashiCorp documentation
 on import can be found [here](https://developer.hashicorp.com/terraform/language/import).
 
--> We plan to develop tooling to assist with this migration in the future; however, the process is currently manual.
-In the meantime, we intend to publish guides on our blog, as well as other materials, to demonstrate the migration
+-> [tfmigrator](./tfmigrator_migration.md) has been developed in order to assist with migration. By following the documented process, this tooling should assist in porting `morpheus` resources to their corresponding `hpe` resources - including handling for modules and variables.
+Manual guides will continue to be available on our blog, as well as other materials to demonstrate the migration
 process using real-world use cases.<br><br>
 The section on [Bulk Import](https://developer.hashicorp.com/terraform/language/v1.14.x/import/bulk?page=import&page=bulk) requires provider support for the `List` RPC.  The HPE provider does not currently
 support `List`, this is something that we are considering for a future release.<br><br>
@@ -86,7 +86,7 @@ The following table lists the resources that have identical schema between the M
 | morpheus_instance_type                    | hpe_morpheus_instance_type                    |
 | morpheus_ipv4_ip_pool                     | hpe_morpheus_ip_pool_ipv4                     |
 | morpheus_javascript_task                  | hpe_morpheus_task_javascript                  |
-| morpheus_key_pairs                        | hpe_morpheus_key_pair                         |
+| morpheus_key_pair                         | hpe_morpheus_key_pair                         |
 | morpheus_kubernetes_app_blueprint         | hpe_morpheus_app_blueprint_kubernetes         |
 | morpheus_kubernetes_spec_template         | hpe_morpheus_spec_template_kubernetes         |
 | morpheus_library_script_task              | hpe_morpheus_task_library_script              |
@@ -129,6 +129,7 @@ The following table lists the resources that have identical schema between the M
 | morpheus_typeahead_option_type            | hpe_morpheus_option_type_typeahead            |
 | morpheus_user_group                       | hpe_morpheus_user_group                       |
 | morpheus_vro_integration                  | hpe_morpheus_integration_vro                  |
+| morpheus_vro_task                         | hpe_morpheus_task_vro                         |
 | morpheus_vsphere_mks_cluster              | hpe_morpheus_cluster_hks_vsphere              |
 | morpheus_wiki_page                        | hpe_morpheus_wiki_page                        |
 | morpheus_workflow_catalog_item            | hpe_morpheus_catalog_item_workflow            |
@@ -178,6 +179,9 @@ in the HPE provider and several Morpheus provider resources map to a single HPE 
 | morpheus_workflow_policy | hpe_morpheus_policy |
 | morpheus_tenant_role | hpe_morpheus_role |
 | morpheus_user_role | hpe_morpheus_role |
+| morpheus_group | hpe_morpheus_group |
+| morpheus_service_plan | hpe_morpheus_service_plan |
+| morpheus_user | hpe_morpheus_user |
 
 For these resources terraform can be used to generate the HPE resource definition.  Examples of this process for `hpe_morpheus_instance`
 are documented [here](./morpheus_instance_to_hpe_instance.md).  The configuration can be generated resource by resource or for
