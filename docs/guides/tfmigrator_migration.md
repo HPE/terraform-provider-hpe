@@ -14,6 +14,16 @@ This document is a step-by-step guide for migrating Terraform configuration from
 
 ---
 
+## What tfmigrator Preserves
+
+- Variable references (`var.*`)
+- Expressions and interpolation
+- Core block structure where possible
+- Modules
+- Comments in the configuration (excluding inline comments from resources with different schema)
+
+---
+
 ## Command Summary
 
 `tfmigrator` migration flow is typically:
@@ -196,7 +206,7 @@ If you write to `cleaned.tf`, use that file as the `--generated` input in Step 2
 
 ```bash
 tfmigrator merge \
-  --original . \  # Will find .tf files recursively from this directory
+  --original .    # Will find .tf files recursively from this directory
 ```
 
 ### Merge flags
@@ -304,6 +314,61 @@ terraform apply
 
 ---
 
+## Module Handling
+
+As part of `generate` - `tfmigrator` adds comment annotations to generated resources if they were generated from a module:
+```hcl
+# Original module address: module.user_policy["bob.user"].morpheus_max_cores_policy.user_policy
+resource "hpe_morpheus_policy" "user_policy_module_user_policy__bob_user" {
+  associated_resource_id   = 5
+  associated_resource_type = "User"
+  config_max_cores = {
+    max_cores = "35"
+  }
+  description = "Max cores policy for user bob.user"
+  enabled     = true
+  name        = "max_cores_policy_bob.user"
+  policy_type = {
+    code = "maxCores"
+  }
+}
+```
+
+This allows it to identify which resources belong to modules on a merge and update the module accordingly.
+```
+=== Proposed Changes (Unified Diff) ===
+--- user-policy/main.tf
++++ user-policy/main.tf
+@@ -1,13 +1,19 @@
+-  resource "morpheus_max_cores_policy" "user_policy" {
++  resource "hpe_morpheus_policy" "user_policy" {
+     name = "max_cores_policy_${var.user_name}"
++    policy_type = {
++      code = "maxCores"
++    }
++    associated_resource_id   = var.user_id
++    associated_resource_type = "User"
++    config_max_cores = {
+       max_cores = var.max_cores
++    }
+     description = "Max cores policy for user ${var.user_name}"
+     enabled     = var.enabled
+-    scope       = "user"
+-    user_id     = var.user_id
+   }
+   
+-  resource "morpheus_python_script_task" "task" {
++  
++  resource "hpe_morpheus_task_python_script" "task" {
+     name                = var.task_name
+     code                = var.task_code
+     labels              = var.labels
+```
+
+-> Ensure that the module configuration (located in `./user-policy` in the above example) is included as part of what is passed into `merge` as the `--original` configuration. Note that `--original` searches for Terraform configuration files recursively so passing in `--original .` while in the working directory where all modules are available as subdirectories is generally sufficient.  
+
+---
+
 ## Common Patterns
 
 ### Using provider var files during generate
@@ -345,13 +410,3 @@ tfmigrator merge \
 ## Troubleshooting
 
 For common `generate`, `merge`, and resource-specific migration issues, see [tfmigrator Troubleshooting](./tfmigrator_troubleshooting.md).
-
----
-
-## What tfmigrator Preserves
-
-- Variable references (`var.*`)
-- Expressions and interpolation
-- Core block structure where possible
-- Modules
-- Comments in the configuration (excluding inline comments from resources with different schema)
