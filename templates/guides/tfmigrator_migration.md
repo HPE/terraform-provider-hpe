@@ -44,7 +44,7 @@ The following examples use Bash on Linux (x64).
 3. Move the binary to a directory in your PATH.
 
    ```console
-   sudo mv tfmigrator /usr/local/bin/
+   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -79,8 +79,9 @@ The following example uses Zsh (default) on macOS (Apple Silicon).
 
 4. Move the binary to a directory in your PATH.
 
+
    ```console
-   sudo mv tfmigrator /usr/local/bin/
+   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -111,7 +112,7 @@ The following examples use PowerShell on Windows (x64).
 3. Move the binary to a directory in your PATH.
 
    ```powershell
-   Move-Item tfmigrator.exe C:\Windows\System32\tfmigrator.exe
+   Move-Item migration_tool_v${RELEASE}.exe C:\Windows\System32\tfmigrator.exe
    ```
 
 4. Verify the installation.

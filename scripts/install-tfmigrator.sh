@@ -24,14 +24,10 @@ download_and_install () {
   curl -sL "$download_url" -o "$archive_name" && \
     unzip -q "$archive_name"
   
-  # Find the binary (might be named 'tfmigrator' or 'migration_tool')
-  local binary_path=""
-  if [[ -f "tfmigrator" ]]; then
-    binary_path="tfmigrator"
-  elif [[ -f "migration_tool" ]]; then
-    binary_path="migration_tool"
-  else
-    echo "Error: Could not find binary in archive"
+  # Binary is named migration_tool_v${version_number}
+  local binary_path="migration_tool_v${version_number}"
+  if [[ ! -f "$binary_path" ]]; then
+    echo "Error: Could not find binary ${binary_path} in archive"
     rm -rf "$tmp_dir"
     exit 1
   fi

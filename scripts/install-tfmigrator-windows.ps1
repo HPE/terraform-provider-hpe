@@ -50,23 +50,11 @@ catch {
 Write-Host "Extracting release files"
 Expand-Archive $archive_path -Force
 
-# Find the binary (might be named 'tfmigrator.exe' or 'migration_tool.exe')
+# Binary is named migration_tool_v${version_number}.exe
 $extract_dir = $archive_name -replace '.zip'
-$binary_path = $null
-if (Test-Path "${extract_dir}\tfmigrator.exe") {
-    $binary_path = "${extract_dir}\tfmigrator.exe"
-}
-elseif (Test-Path "${extract_dir}\migration_tool.exe") {
-    $binary_path = "${extract_dir}\migration_tool.exe"
-}
-elseif (Test-Path "tfmigrator.exe") {
-    $binary_path = "tfmigrator.exe"
-}
-elseif (Test-Path "migration_tool.exe") {
-    $binary_path = "migration_tool.exe"
-}
-else {
-    Write-Host "Error: Could not find binary in archive"
+$binary_path = "${extract_dir}\migration_tool_v${version_number}.exe"
+if (!(Test-Path $binary_path)) {
+    Write-Host "Error: Could not find binary ${binary_path} in archive"
     Set-Location "${users_pwd}"
     Remove-Item -Path "${tmp_dir}" -Recurse -Force -ErrorAction SilentlyContinue 
     Return
