@@ -137,8 +137,8 @@ The following table lists the resources that have identical schema between the M
 | morpheus_write_attributes_task            | hpe_morpheus_task_write_attributes            |
 
 For these resources we can simply copy the resource definition from the Morpheus provider config and change the resource
-type to the corresponding HPE provider resource type.  This needs to be done manually for each resource.  Then an
-import block must be added for each HPE resource to import the existing Morpheus resource.
+type to the corresponding HPE provider resource type.  Then an import block must be added for each HPE resource to
+import the existing Morpheus resource.  [tfmigrator](./tfmigrator_migration.md) handles this.
 
 ### Different Schema
 Some resources have differences in schema between the Morpheus and HPE providers.  These resources are generalised
@@ -183,7 +183,5 @@ in the HPE provider and several Morpheus provider resources map to a single HPE 
 | morpheus_service_plan | hpe_morpheus_service_plan |
 | morpheus_user | hpe_morpheus_user |
 
-For these resources terraform can be used to generate the HPE resource definition.  Examples of this process for `hpe_morpheus_instance`
-are documented [here](./morpheus_instance_to_hpe_instance.md).  The configuration can be generated resource by resource or for
-multiple resources at once depending on the number of `import` blocks that are specified.  We recommend generating, editing
-and testing the configuration(s) in a separate directory before using them in your main Terraform configuration.
+For these resources terraform can be used to generate the HPE resource definition.  This is how the process documented
+for [tfmigrator](./tfmigrator_migration.md) handles these resources.
