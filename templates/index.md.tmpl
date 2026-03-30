@@ -19,6 +19,10 @@ This provider requires 64-bit versions of the Terraform binary to work properly.
 ->This v1.2.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
+We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
+to assist with the migration from the Morpheus provider to this provider.  Please see the
+[documentation](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration) for more
+information on how to use this tool.<br><br>
 See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
 
 ## Morpheus
