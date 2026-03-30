@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
@@ -35,6 +36,7 @@ func (s SubProvider) GetResources(
 		task.NewResource,
 		instance.NewResource,
 		policy.NewResource,
+		cluster.NewResource,
 	}
 
 	return resources

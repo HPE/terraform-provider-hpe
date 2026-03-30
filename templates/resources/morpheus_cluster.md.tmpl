@@ -1,0 +1,30 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## HVM Cluster
+
+The `hvm_config` static config block can be used to provision a HVM cluster:
+
+{{tffile "examples/resources/morpheus_cluster/example_hvm.tf"}}
+
+## Generic Cluster Config using the Dynamic Config
+
+The cluster `config` block can be used to pass an arbitrary cluster server configuration to Morpheus. The values in the provider `config` block map to `server.config` in the Morpheus API payload. The values in `config` are interpreted literally - they can be thought of like a JSON blob - so if you wish to provide certain configuration options, they must be in the exact format that the API expects. For example, `create_user` in the static block would become `createUser` if provided using the dynamic `config`.
+
+When using the dynamic `config` block, the `cluster_type_code` attribute must be provided.
+
+-> It is only recommended to use the dynamic `config` block if you need to provision a cluster of a certain type that the provider does not yet support via static `config` blocks. Not all functionality that a static `config` block would provide is guaranteed when using the dynamic `config` block. If a static `config` type exists for the type of cluster you wish to provision, it is recommended that you use the static `config` instead of the dynamic `config`.
+
+Below is an example of provisioning a HVM cluster using the dynamic `config` block. Note the casing of the parameters in `config`:
+
+{{tffile "examples/resources/morpheus_cluster/example_generic_hvm.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
