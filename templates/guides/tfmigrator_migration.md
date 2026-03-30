@@ -14,6 +14,114 @@ This document is a step-by-step guide for migrating Terraform configuration from
 
 ---
 
+## Installation
+
+The latest release of tfmigrator can be found on [`https://github.com/HPE/terraform-provider-hpe/releases`](https://github.com/HPE/terraform-provider-hpe/releases). You can download the appropriate version for your operating system using a command line shell or a browser.
+
+This can be useful in environments that do not allow direct access to the Internet.
+
+### Install Scripts
+
+See [linux](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator.sh), [windows](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-windows.ps1), and [macOS](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-macos.sh) install scripts that will download the latest release of tfmigrator and install it in the appropriate location for your operating system.
+
+### Linux
+
+The following examples use Bash on Linux (x64).
+
+1. On a Linux operating system with Internet access, download tfmigrator from GitHub using the shell.
+
+   ```console
+   RELEASE=x.y.z
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_linux_amd64.zip
+   ```
+
+2. Extract the archive.
+
+   ```console
+   unzip migration_tool_${RELEASE}_linux_amd64.zip
+   ```
+
+3. Move the binary to a directory in your PATH.
+
+   ```console
+   sudo mv tfmigrator /usr/local/bin/
+   chmod +x /usr/local/bin/tfmigrator
+   ```
+
+4. Verify the installation.
+
+   ```console
+   tfmigrator --version
+   ```
+
+### macOS
+
+The following example uses Zsh (default) on macOS (Apple Silicon).
+
+1. On a macOS operating system with Internet access, install wget with [Homebrew](https://brew.sh).
+
+   ```console
+   brew install wget
+   ```
+
+2. Download tfmigrator from GitHub using the shell.
+
+   ```console
+   RELEASE=x.y.z
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_darwin_arm64.zip
+   ```
+
+3. Extract the archive.
+
+   ```console
+   unzip migration_tool_${RELEASE}_darwin_arm64.zip
+   ```
+
+4. Move the binary to a directory in your PATH.
+
+   ```console
+   sudo mv tfmigrator /usr/local/bin/
+   chmod +x /usr/local/bin/tfmigrator
+   ```
+
+5. Verify the installation.
+
+   ```console
+   tfmigrator --version
+   ```
+
+### Windows
+
+The following examples use PowerShell on Windows (x64).
+
+1. On a Windows operating system with Internet access, download tfmigrator using PowerShell.
+
+   ```powershell
+   Set-Variable -Name "RELEASE" -Value "x.y.z"
+   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_windows_amd64.zip -outfile migration_tool_${RELEASE}_windows_amd64.zip
+   ```
+
+2. Extract the archive.
+
+   ```powershell
+   Expand-Archive migration_tool_${RELEASE}_windows_amd64.zip
+   cd migration_tool_${RELEASE}_windows_amd64
+   ```
+
+3. Move the binary to a directory in your PATH.
+
+   ```powershell
+   Move-Item tfmigrator.exe C:\Windows\System32\tfmigrator.exe
+   ```
+
+4. Verify the installation.
+
+   ```powershell
+   tfmigrator --version
+   ```
+
+---
+
 ## What tfmigrator Preserves
 
 - Variable references (`var.*`)
