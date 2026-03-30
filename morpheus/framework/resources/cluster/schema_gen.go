@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
@@ -58,9 +57,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Generic Cluster Configuration",
 				MarkdownDescription: "Generic Cluster Configuration",
-				PlanModifiers: []planmodifier.Dynamic{
-					dynamicplanmodifier.RequiresReplace(),
-				},
 				Validators: []validator.Dynamic{
 					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm")}...),
 				},
@@ -120,9 +116,6 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Configuration for HVM cluster servers",
 				MarkdownDescription: "Configuration for HVM cluster servers",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.RequiresReplace(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,

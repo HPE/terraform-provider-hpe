@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
@@ -368,6 +369,359 @@ data "hpe_morpheus_service_plan" "test" {
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
 				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	updatedName := name + "-updated"
+
+	dataSourcesConfig := `
+data "hpe_morpheus_cloud" "test" {
+	name = "hvm"
+}
+
+data "hpe_morpheus_group" "test" {
+	name = "HVM"
+}
+
+data "hpe_morpheus_key_pair" "test" {
+	name = "hvmserviceuser-keypair"
+}
+
+data "hpe_morpheus_service_plan" "test" {
+	name = "Default Manual"
+	provision_type_code = "manual"
+}
+`
+
+	serverConfig := `
+	server = {
+		service_plan_id = data.hpe_morpheus_service_plan.test.id
+
+		ssh_username = "hvmserviceuser"
+		ssh_key_pair_id = data.hpe_morpheus_key_pair.test.id
+
+		ssh_hosts = [
+			{
+				name = "` + name + `-worker-1"
+				ip   = "10.118.67.20"
+			},
+			{
+				name = "` + name + `-worker-2"
+				ip   = "10.118.67.21"
+			},
+			{
+				name = "` + name + `-worker-3"
+				ip   = "10.118.67.22"
+			}
+		]
+
+		management_net_interface = "eth0"
+
+		visibility = "private"
+
+		tags = [
+			{
+				name  = "source"
+				value = "terraform"
+			},
+			{
+				name  = "environment"
+				value = "test"
+			},
+		]
+	}
+`
+
+	createConfig := providerConfig + dataSourcesConfig + `
+resource "hpe_morpheus_cluster" "test" {
+	name        = "` + name + `"
+	description = "Initial description"
+	cloud_id    = data.hpe_morpheus_cloud.test.id
+	group_id    = data.hpe_morpheus_group.test.id
+	layout_id   = 219
+
+	labels = ["terraform", "test"]
+
+	config_hvm = {
+		create_user       = false
+		dynamic_placement = false
+		cpu_arch          = "x86_64"
+		cpu_model         = "host-model"
+		power_policy      = "balanced"
+	}
+
+` + serverConfig + `
+}
+`
+
+	// Update all updatable fields in a single operation:
+	// top-level: name, description, labels
+	// config_hvm: cpu_arch, cpu_model, dynamic_placement, vcpu_placement_mode, power_policy
+	updateConfig := providerConfig + dataSourcesConfig + `
+resource "hpe_morpheus_cluster" "test" {
+	name        = "` + updatedName + `"
+	description = "Updated description"
+	cloud_id    = data.hpe_morpheus_cloud.test.id
+	group_id    = data.hpe_morpheus_group.test.id
+	layout_id   = 219
+
+	labels = ["terraform-updated", "test-updated"]
+
+	config_hvm = {
+		create_user         = false
+		dynamic_placement   = true
+		cpu_arch            = "x86_64"
+		cpu_model           = "host-passthrough"
+		power_policy        = "performance"
+		vcpu_placement_mode = "auto"
+	}
+
+` + serverConfig + `
+}
+`
+
+	resourceName := "hpe_morpheus_cluster.test"
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		// top-level fields
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Initial description"),
+		resource.TestCheckResourceAttr(resourceName, "labels.#", "2"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "terraform"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "test"),
+		// config_hvm fields
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.dynamic_placement", "false"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.cpu_arch", "x86_64"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.cpu_model", "host-model"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.power_policy", "balanced"),
+	)
+
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		// top-level fields
+		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated description"),
+		resource.TestCheckResourceAttr(resourceName, "labels.#", "2"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "terraform-updated"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "test-updated"),
+		// config_hvm fields
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.dynamic_placement", "true"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.cpu_arch", "x86_64"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.cpu_model", "host-passthrough"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.power_policy", "performance"),
+		resource.TestCheckResourceAttr(resourceName, "config_hvm.vcpu_placement_mode", "auto"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(
+				resourceName,
+				plancheck.ResourceActionUpdate,
+			),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check:  createChecks,
+			},
+			{
+				Config:           updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusClusterGenericUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	updatedName := name + "-updated"
+
+	dataSourcesConfig := `
+data "hpe_morpheus_cloud" "test" {
+	name = "hvm"
+}
+
+data "hpe_morpheus_group" "test" {
+	name = "HVM"
+}
+
+data "hpe_morpheus_key_pair" "test" {
+	name = "hvmserviceuser-keypair"
+}
+
+data "hpe_morpheus_service_plan" "test" {
+	name = "Default Manual"
+	provision_type_code = "manual"
+}
+`
+
+	serverConfig := `
+	server = {
+		service_plan_id = data.hpe_morpheus_service_plan.test.id
+
+		ssh_username = "hvmserviceuser"
+		ssh_key_pair_id = data.hpe_morpheus_key_pair.test.id
+
+		ssh_hosts = [
+			{
+				name = "` + name + `-worker-1"
+				ip   = "10.118.67.20"
+			},
+			{
+				name = "` + name + `-worker-2"
+				ip   = "10.118.67.21"
+			},
+			{
+				name = "` + name + `-worker-3"
+				ip   = "10.118.67.22"
+			}
+		]
+
+		management_net_interface = "eth0"
+
+		visibility = "private"
+
+		tags = [
+			{
+				name  = "source"
+				value = "terraform"
+			},
+			{
+				name  = "environment"
+				value = "test"
+			},
+		]
+	}
+`
+
+	createConfig := providerConfig + dataSourcesConfig + `
+resource "hpe_morpheus_cluster" "test" {
+	name              = "` + name + `"
+	description       = "Initial description"
+	cloud_id          = data.hpe_morpheus_cloud.test.id
+	group_id          = data.hpe_morpheus_group.test.id
+	layout_id         = 219
+	cluster_type_code = "mvm-cluster"
+
+	labels = ["terraform", "test"]
+
+	config = {
+		cpuArch              = "x86_64"
+		cpuModel             = "host-model"
+		dynamicPlacementMode = "off"
+		powerPolicy          = "balanced"
+	}
+
+` + serverConfig + `
+}
+`
+
+	updateConfig := providerConfig + dataSourcesConfig + `
+resource "hpe_morpheus_cluster" "test" {
+	name              = "` + updatedName + `"
+	description       = "Updated description"
+	cloud_id          = data.hpe_morpheus_cloud.test.id
+	group_id          = data.hpe_morpheus_group.test.id
+	layout_id         = 219
+	cluster_type_code = "mvm-cluster"
+
+	labels = ["terraform-updated", "test-updated"]
+
+	config = {
+		cpuArch              = "x86_64"
+		cpuModel             = "host-passthrough"
+		dynamicPlacementMode = "on"
+		powerPolicy          = "performance"
+		vcpuPlacementMode    = "auto"
+	}
+
+` + serverConfig + `
+}
+`
+
+	resourceName := "hpe_morpheus_cluster.test"
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Initial description"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_type_code", "mvm-cluster"),
+		resource.TestCheckResourceAttr(resourceName, "labels.#", "2"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "terraform"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "test"),
+		resource.TestCheckResourceAttr(resourceName, "config.cpuArch", "x86_64"),
+		resource.TestCheckResourceAttr(resourceName, "config.cpuModel", "host-model"),
+		resource.TestCheckResourceAttr(resourceName, "config.dynamicPlacementMode", "off"),
+		resource.TestCheckResourceAttr(resourceName, "config.powerPolicy", "balanced"),
+	)
+
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated description"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_type_code", "mvm-cluster"),
+		resource.TestCheckResourceAttr(resourceName, "labels.#", "2"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "terraform-updated"),
+		resource.TestCheckTypeSetElemAttr(resourceName, "labels.*", "test-updated"),
+		resource.TestCheckResourceAttr(resourceName, "config.cpuArch", "x86_64"),
+		resource.TestCheckResourceAttr(resourceName, "config.cpuModel", "host-passthrough"),
+		resource.TestCheckResourceAttr(resourceName, "config.dynamicPlacementMode", "on"),
+		resource.TestCheckResourceAttr(resourceName, "config.powerPolicy", "performance"),
+		resource.TestCheckResourceAttr(resourceName, "config.vcpuPlacementMode", "auto"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(
+				resourceName,
+				plancheck.ResourceActionUpdate,
+			),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check:  createChecks,
+			},
+			{
+				Config:           updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             updateConfig,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},
