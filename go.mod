@@ -74,5 +74,3 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/go-viper/mapstructure/v2 v2.4.0 => github.com/ZoeySimone/mapstructure/v2 v2.4.1-0.20250902104126-099f6e5a61b8

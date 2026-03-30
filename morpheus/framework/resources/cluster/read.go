@@ -130,18 +130,58 @@ func getClusterAsState(
 			powerPolicyVal = v
 		}
 
-		configHvmVal, diags := NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
-			"create_user":            plan.ConfigHvm.CreateUser,
-			"compute_interface_name": plan.ConfigHvm.ComputeInterfaceName,
-			"storage_interface_name": plan.ConfigHvm.StorageInterfaceName,
-			"overlay_interface_name": plan.ConfigHvm.OverlayInterfaceName,
-			"compute_vlans":          plan.ConfigHvm.ComputeVlans,
-			"vcpu_placement_mode":    plan.ConfigHvm.VcpuPlacementMode,
-			"dynamic_placement":      convert.StringToBool(ctx, dynamicPlacementModeVal),
-			"cpu_arch":               convert.StrToType(&cpuArchVal),
-			"cpu_model":              convert.StrToType(&cpuModelVal),
-			"power_policy":           convert.StrToType(&powerPolicyVal),
-		})
+		var configHvmVal ConfigHvmValue
+		if importing {
+
+			var computeInterfaceNameVal string
+			if v, ok := cluster.Config["computeInterfaceName"].(string); ok {
+				computeInterfaceNameVal = v
+			}
+
+			var storageInterfaceNameVal string
+			if v, ok := cluster.Config["storageInterfaceName"].(string); ok {
+				storageInterfaceNameVal = v
+			}
+
+			var overlayInterfaceNameVal string
+			if v, ok := cluster.Config["overlayInterfaceName"].(string); ok {
+				overlayInterfaceNameVal = v
+			}
+
+			var computeVlansVal string
+			if v, ok := cluster.Config["computeVlans"].(string); ok {
+				computeVlansVal = v
+			}
+
+			// read as many values as possible from API
+			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
+				// can't read createUser from config GET
+				"compute_interface_name": convert.StrToType(&computeInterfaceNameVal),
+				"storage_interface_name": convert.StrToType(&storageInterfaceNameVal),
+				"overlay_interface_name": convert.StrToType(&overlayInterfaceNameVal),
+				"compute_vlans":          convert.StrToType(&computeVlansVal),
+				// can't read vcpuPlacementMode from config GET
+				"dynamic_placement": convert.StringToBool(ctx, dynamicPlacementModeVal),
+				"cpu_arch":          convert.StrToType(&cpuArchVal),
+				"cpu_model":         convert.StrToType(&cpuModelVal),
+				"power_policy":      convert.StrToType(&powerPolicyVal),
+			})
+
+		} else {
+			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
+				"create_user":            plan.ConfigHvm.CreateUser,
+				"compute_interface_name": plan.ConfigHvm.ComputeInterfaceName,
+				"storage_interface_name": plan.ConfigHvm.StorageInterfaceName,
+				"overlay_interface_name": plan.ConfigHvm.OverlayInterfaceName,
+				"compute_vlans":          plan.ConfigHvm.ComputeVlans,
+				"vcpu_placement_mode":    plan.ConfigHvm.VcpuPlacementMode,
+				"dynamic_placement":      convert.StringToBool(ctx, dynamicPlacementModeVal),
+				"cpu_arch":               convert.StrToType(&cpuArchVal),
+				"cpu_model":              convert.StrToType(&cpuModelVal),
+				"power_policy":           convert.StrToType(&powerPolicyVal),
+			})
+		}
+
 		if diags.HasError() {
 			return state, diags
 		}
@@ -222,28 +262,35 @@ func buildReadClusterServer(
 	ctx context.Context,
 	plan ClusterModel,
 ) (ServerValue, diag.Diagnostics) {
-	return NewServerValue(ServerValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		// the requires replace properties...
-		"data_device":              plan.Server.DataDevice,
-		"hostname":                 plan.Server.Hostname,
-		"lvm_enabled":              plan.Server.LvmEnabled,
-		"name":                     plan.Server.Name,
-		"management_net_interface": plan.Server.ManagementNetInterface,
-		"network_domain":           plan.Server.NetworkDomain,
-		"network_interfaces":       plan.Server.NetworkInterfaces,
-		"security_groups":          plan.Server.SecurityGroups,
-		"service_plan_id":          plan.Server.ServicePlanId,
-		"ssh_port":                 plan.Server.SshPort,
-		"ssh_password_wo":          plan.Server.SshPasswordWo,        // write-only
-		"ssh_password_wo_version":  plan.Server.SshPasswordWoVersion, // write-only
-		"ssh_hosts":                plan.Server.SshHosts,
-		"ssh_key_pair_id":          plan.Server.SshKeyPairId,
-		"ssh_username":             plan.Server.SshUsername,
-		"tags":                     plan.Server.Tags,
-		"user_group_id":            plan.Server.UserGroupId,
-		"visibility":               plan.Server.Visibility,
-		"volumes":                  plan.Server.Volumes,
-	})
+	importing := plan.Name.IsNull()
+
+	if importing {
+		// TODO: investigate which properties we can actually set from an import, if any.
+		return NewServerValue(ServerValue{}.AttributeTypes(ctx), map[string]attr.Value{})
+	} else {
+		return NewServerValue(ServerValue{}.AttributeTypes(ctx), map[string]attr.Value{
+			// the requires replace properties...
+			"data_device":              plan.Server.DataDevice,
+			"hostname":                 plan.Server.Hostname,
+			"lvm_enabled":              plan.Server.LvmEnabled,
+			"name":                     plan.Server.Name,
+			"management_net_interface": plan.Server.ManagementNetInterface,
+			"network_domain":           plan.Server.NetworkDomain,
+			"network_interfaces":       plan.Server.NetworkInterfaces,
+			"security_groups":          plan.Server.SecurityGroups,
+			"service_plan_id":          plan.Server.ServicePlanId,
+			"ssh_port":                 plan.Server.SshPort,
+			"ssh_password_wo":          plan.Server.SshPasswordWo, // write-only
+			"ssh_password_wo_version":  plan.Server.SshPasswordWoVersion,
+			"ssh_hosts":                plan.Server.SshHosts,
+			"ssh_key_pair_id":          plan.Server.SshKeyPairId,
+			"ssh_username":             plan.Server.SshUsername,
+			"tags":                     plan.Server.Tags,
+			"user_group_id":            plan.Server.UserGroupId,
+			"visibility":               plan.Server.Visibility,
+			"volumes":                  plan.Server.Volumes,
+		})
+	}
 }
 
 // Maintains a local mapping of cluster type names to their codes
