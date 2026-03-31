@@ -1130,9 +1130,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					case typeCheckbox:
 						// convert string text to boolean
 						if optionType.DefaultValue == "true" {
-							row["default_checked"] = true
+							optionTypeRow["default_checked"] = true
 						} else {
-							row["default_checked"] = false
+							optionTypeRow["default_checked"] = false
 						}
 					case typeCodeEditor:
 						optionTypeRow["show_line_numbers"] = optionType.Config.ShowLineNumbers
