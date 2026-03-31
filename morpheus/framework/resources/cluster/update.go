@@ -141,12 +141,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	_, hresp, err := client.ClustersAPI.UpdateCluster(ctx, id).
+	_, httpResp, err := client.ClustersAPI.UpdateCluster(ctx, id).
 		UpdateClusterRequest(*updateClusterReq).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			updateOperation,
-			fmt.Sprintf("cluster %d PUT failed: ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("cluster %d PUT failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
 		return
