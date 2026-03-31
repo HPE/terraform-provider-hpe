@@ -39,6 +39,7 @@ func TestAccMorpheusClusterHVMExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// nolint:goconst
 	dataSourcesConfig := `
 data "hpe_morpheus_cloud" "test" {
 	name = "hvm"
@@ -220,6 +221,7 @@ func TestAccMorpheusClusterGenericExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// nolint:goconst
 	dataSourcesConfig := `
 data "hpe_morpheus_cloud" "test" {
 	name = "hvm"
@@ -388,6 +390,7 @@ func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	updatedName := name + "-updated"
 
+	// nolint:goconst
 	dataSourcesConfig := `
 data "hpe_morpheus_cloud" "test" {
 	name = "hvm"
@@ -566,6 +569,7 @@ func TestAccMorpheusClusterGenericUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	updatedName := name + "-updated"
 
+	// nolint:goconst
 	dataSourcesConfig := `
 data "hpe_morpheus_cloud" "test" {
 	name = "hvm"
