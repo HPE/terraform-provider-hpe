@@ -251,14 +251,29 @@ func getInstanceAsState(
 	state.Timeouts = plan.Timeouts
 
 	// tags
+	// we store the Name from the plan in the state, and compare the name returned from the API against
+	// the state name while allowing for capitalisation changes
+	planTagNames := make(map[string]string) // lowercase name -> plan name
+	for _, planTag := range plan.Tags.Elements() {
+		pt := planTag.(TagsValue)
+		planTagNames[strings.ToLower(pt.Name.ValueString())] = pt.Name.ValueString()
+	}
+
 	tags, d := convert.ToSetType(
 		ctx,
 		resp.GetInstance().Tags,
 		func(
 			in sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInner,
 		) TagsValue {
+			name := convert.StrToType(in.Name)
+			if in.Name != nil {
+				if planName, ok := planTagNames[strings.ToLower(*in.Name)]; ok {
+					name = types.StringValue(planName)
+				}
+			}
+
 			return TagsValue{
-				Name:  convert.StrToType(in.Name),
+				Name:  name,
 				Value: convert.StrToType(in.Value),
 				state: attr.ValueStateKnown,
 			}

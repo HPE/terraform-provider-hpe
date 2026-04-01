@@ -4,7 +4,6 @@ In this release (v1.2.0) we have added the following resource functionality:
 - hpe_morpheus_instance addition and removal of volumes is now supported in Update
 - hpe_morpheus_instance supports service_plan_options for use with Service Plans that accept options
 - hpe_morpheus_cloud no longer requires group_id to be set
-- hpe_morpheus_form supports more valid type values, see the docs
 - hpe_morpheus_group supports a list of cloud-ids to associate the group with
 
 ## New known issues
