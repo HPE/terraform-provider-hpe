@@ -162,6 +162,12 @@ func getInstanceAsState(
 
 	state.ConnectionInfo = cInfo
 
+	// description
+	description, ok := instance.GetDescriptionOk()
+	if ok {
+		state.Description = convert.StrToType(description)
+	}
+
 	// evars
 	// API may respond with more evars than what the user set so we need to
 	// check the /instance/{id}/envs endpoint which gives us the user specified

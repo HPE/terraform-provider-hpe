@@ -141,6 +141,11 @@ func (g *Resource) Create(
 		}
 	}
 
+	// description
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		reqInstance.Instance.SetDescription(plan.Description.ValueString())
+	}
+
 	// evars
 	evars, diags := convert.FromSetType(ctx, plan.Evars, evarMapper)
 	if diags.HasError() {
