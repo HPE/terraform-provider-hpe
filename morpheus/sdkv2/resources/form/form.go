@@ -32,6 +32,29 @@ const (
 	typeTypeahead  = "typeahead"
 )
 
+// TODO: Add switch case handling for these option types.
+// nolint: unused
+const (
+	typeCloud          = "cloud"
+	typeDiskManager    = "diskManager"
+	typeEnvironment    = "environment"
+	typeFileContent    = "fileContent"
+	typeGroup          = "group"
+	typeHTTPHeader     = "httpHeader"
+	typeInstancesInput = "instances-input"
+	typeKeyValue       = "keyValue"
+	typeLayout         = "layout"
+	typeLogoSelector   = "logoSelector"
+	typeNetworkManager = "networkManager"
+	typePlan           = "plan"
+	typePorts          = "ports"
+	typeResourcePool   = "resourcePool"
+	typeSecGroup       = "secGroup"
+	typeServersInput   = "servers-input"
+	typeVirtualImage   = "virtual-image"
+	typeVMWFolders     = "vmwFolders"
+)
+
 func ResourceForm() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus form resource",
@@ -98,16 +121,12 @@ func ResourceForm() *schema.Resource {
 						"type": {
 							Type: schema.TypeString,
 							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-								"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-								"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-								"virtual-image, vmwFolders)",
+								"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+								"textArray, textarea, typeahead)",
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-									"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-									"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup", "select",
-									"servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image", "vmwFolders",
+									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+									typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 								},
 								false,
 							),
@@ -372,17 +391,12 @@ func ResourceForm() *schema.Resource {
 									"type": {
 										Type: schema.TypeString,
 										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-											"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-											"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-											"virtual-image, vmwFolders)",
+											"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+											"textArray, textarea, typeahead)",
 										ValidateFunc: validation.StringInSlice(
 											[]string{
-												"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-												"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-												"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup",
-												"select", "servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image",
-												"vmwFolders",
+												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+												typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 											},
 											false,
 										),
