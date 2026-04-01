@@ -38,6 +38,9 @@ There are two ways to authenticate with Morpheus:
 
 With either method the URL of the Morpheus instance must be provided as `url`.
 
+Note that if authenticating with username and password a tenant can be specified by including the `SUBDOMAIN` value for the tenant as
+`tenant_subdomain` in the provider block.
+
 By default the provider will check the Morpheus server certificate and will fail if it is not valid.  This can be
 be toggled off by setting `insecure` to `true` in the provider block.
 
@@ -46,6 +49,10 @@ be toggled off by setting `insecure` to `true` in the provider block.
 #### Using a username and password
 
 {{ tffile "examples/provider/morpheus/provider-unamepasswd.tf" }}
+
+#### Using a username and password with tenant_subdomain
+
+{{ tffile "examples/provider/morpheus/provider-tenant.tf" }}
 
 #### Using an access token
 

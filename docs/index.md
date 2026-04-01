@@ -38,6 +38,9 @@ There are two ways to authenticate with Morpheus:
 
 With either method the URL of the Morpheus instance must be provided as `url`.
 
+Note that if authenticating with username and password a tenant can be specified by including the `SUBDOMAIN` value for the tenant as
+`tenant_subdomain` in the provider block.
+
 By default the provider will check the Morpheus server certificate and will fail if it is not valid.  This can be
 be toggled off by setting `insecure` to `true` in the provider block.
 
@@ -63,6 +66,31 @@ provider "hpe" {
     username = "username"
     password = "password"
     url      = "https://morpheus.example.com"
+  }
+}
+```
+
+#### Using a username and password with tenant_subdomain
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = "= 1.2.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    username         = "username"
+    password         = "password"
+    tenant_subdomain = "tenant"
+    url              = "https://morpheus.example.com"
   }
 }
 ```
@@ -393,4 +421,5 @@ Optional:
 - `access_token` (String, Sensitive) Morpheus access token for authentication
 - `insecure` (Boolean) Explicitly allow the provider to perform "insecure" SSL requests. If omitted, default value is `false`
 - `password` (String, Sensitive) Morpheus password for authentication, required if username is set
+- `tenant_subdomain` (String) Morpheus tenant subdomain used for authentication
 - `username` (String) Morpheus username for authentication, required if password is set
