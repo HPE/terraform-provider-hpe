@@ -1,10 +1,11 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package client
 
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,6 +23,7 @@ func NewLegacyClient(
 	url string,
 	username string,
 	password string,
+	tenantSubdomain string,
 	token string,
 	opts ...sdklegacy.ClientOption,
 ) *sdklegacy.Client {
@@ -43,6 +45,9 @@ func NewLegacyClient(
 			token,
 		)
 	} else {
+		if tenantSubdomain != "" {
+			username = fmt.Sprintf(`%s\\%s`, tenantSubdomain, username)
+		}
 		authRoundTripper = auth.NewCredsRoundTripper(
 			context.Background(),
 			transport,
