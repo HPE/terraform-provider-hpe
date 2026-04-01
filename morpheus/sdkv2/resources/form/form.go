@@ -30,9 +30,29 @@ const (
 	typeTextArea   = "textarea"
 	typeTextArray  = "textArray"
 	typeTypeahead  = "typeahead"
+)
 
-	valueFalse = "false"
-	valueTrue  = "true"
+// TODO: Add switch case handling for these option types.
+// nolint: unused
+const (
+	typeCloud          = "cloud"
+	typeDiskManager    = "diskManager"
+	typeEnvironment    = "environment"
+	typeFileContent    = "fileContent"
+	typeGroup          = "group"
+	typeHTTPHeader     = "httpHeader"
+	typeInstancesInput = "instances-input"
+	typeKeyValue       = "keyValue"
+	typeLayout         = "layout"
+	typeLogoSelector   = "logoSelector"
+	typeNetworkManager = "networkManager"
+	typePlan           = "plan"
+	typePorts          = "ports"
+	typeResourcePool   = "resourcePool"
+	typeSecGroup       = "secGroup"
+	typeServersInput   = "servers-input"
+	typeVirtualImage   = "virtual-image"
+	typeVMWFolders     = "vmwFolders"
 )
 
 func ResourceForm() *schema.Resource {
@@ -101,16 +121,12 @@ func ResourceForm() *schema.Resource {
 						"type": {
 							Type: schema.TypeString,
 							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-								"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-								"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-								"virtual-image, vmwFolders)",
+								"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+								"textArray, textarea, typeahead)",
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-									"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-									"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup", "select",
-									"servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image", "vmwFolders",
+									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+									typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 								},
 								false,
 							),
@@ -375,17 +391,12 @@ func ResourceForm() *schema.Resource {
 									"type": {
 										Type: schema.TypeString,
 										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, " +
-											"httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, " +
-											"ports, radio, resourcePool, secGroup, select, servers-input, text, textArray, textarea, typeahead, " +
-											"virtual-image, vmwFolders)",
+											"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
+											"textArray, textarea, typeahead)",
 										ValidateFunc: validation.StringInSlice(
 											[]string{
-												"byteSize", "checkbox", "cloud", "code-editor", "diskManager", "environment", "fileContent",
-												"group", "hidden", "httpHeader", "instances-input", "keyValue", "layout", "logoSelector",
-												"networkManager", "number", "password", "plan", "ports", "radio", "resourcePool", "secGroup",
-												"select", "servers-input", "text", "textArray", "textarea", "typeahead", "virtual-image",
-												"vmwFolders",
+												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
+												typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
 											},
 											false,
 										),
@@ -658,7 +669,7 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 				} else {
 					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
 				}
-				if defaultValue != valueTrue && defaultValue != valueFalse {
+				if defaultValue != "" {
 					return diag.Errorf(
 						"The default_value attribute cannot be set when the type attribute is set to checkbox, "+
 							"use the default_checked attribute instead for the %v checkbox resource",
@@ -818,7 +829,7 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 						} else {
 							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
 						}
-						if defaultValue != valueTrue && defaultValue != valueFalse {
+						if defaultValue != "" {
 							return diag.Errorf(
 								"The default_value attribute cannot be set when the type attribute is set to checkbox, "+
 									"use the default_checked attribute instead for the %v checkbox resource",
@@ -1133,9 +1144,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					case typeCheckbox:
 						// convert string text to boolean
 						if optionType.DefaultValue == "true" {
-							row["default_checked"] = true
+							optionTypeRow["default_checked"] = true
 						} else {
-							row["default_checked"] = false
+							optionTypeRow["default_checked"] = false
 						}
 					case typeCodeEditor:
 						optionTypeRow["show_line_numbers"] = optionType.Config.ShowLineNumbers
@@ -1248,12 +1259,11 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				} else {
 					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
 				}
-				if defaultValue != valueTrue && defaultValue != valueFalse {
+				if defaultValue != "" {
 					return diag.Errorf(
 						"The default_value attribute cannot be set when the type attribute is set to checkbox, "+
-							"use the default_checked attribute instead for the %v checkbox resource: %v",
+							"use the default_checked attribute instead for the %v checkbox resource",
 						optionTypeConfig["name"],
-						defaultValue,
 					)
 				}
 				row["defaultValue"] = optionTypeConfig["default_checked"]
@@ -1409,7 +1419,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 						} else {
 							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
 						}
-						if defaultValue != valueTrue && defaultValue != valueFalse {
+						if defaultValue != "" {
 							return diag.Errorf(
 								"The default_value attribute cannot be set when the type attribute is set to checkbox, "+
 									"use the default_checked attribute instead for the %v checkbox resource",

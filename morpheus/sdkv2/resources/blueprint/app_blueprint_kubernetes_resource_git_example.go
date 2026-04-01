@@ -18,6 +18,7 @@ import (
 func RenderAppBlueprintKubernetesGitConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Category":      "k8s",
 		"Description":   "tf example kubernetes app blueprint",

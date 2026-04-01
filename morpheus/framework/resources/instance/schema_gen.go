@@ -157,6 +157,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "List of IP addresses to use when connecting to instance",
 				MarkdownDescription: "List of IP addresses to use when connecting to instance",
 			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				Description:         "A description of the instance.",
+				MarkdownDescription: "A description of the instance.",
+			},
 			"evars": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -538,7 +543,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "Metadata tags, Array of objects having a name and value.",
 				MarkdownDescription: "Metadata tags, Array of objects having a name and value.",
 			},
@@ -633,6 +637,7 @@ type InstanceModel struct {
 	ConfigHvm          ConfigHvmValue          `tfsdk:"config_hvm"`
 	ConfigVmware       ConfigVmwareValue       `tfsdk:"config_vmware"`
 	ConnectionInfo     types.List              `tfsdk:"connection_info"`
+	Description        types.String            `tfsdk:"description"`
 	Evars              types.Set               `tfsdk:"evars"`
 	GroupId            types.Int64             `tfsdk:"group_id"`
 	Id                 types.Int64             `tfsdk:"id"`
