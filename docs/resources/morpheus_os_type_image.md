@@ -10,9 +10,6 @@ description: |-
 
 An OS type image maps a virtual image to an operating system type, optionally scoped to a specific cloud and provision type. This is used to define which virtual images are available for a given OS type during provisioning.
 
-~> When importing, the `os_type_id` attribute cannot be read back from the API
-and must be set manually in the configuration after import.
-
 ~> All attributes on this resource force recreation when changed. There is no in-place update.
 
 ## Example Usage

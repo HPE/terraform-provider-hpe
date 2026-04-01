@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -44,16 +45,22 @@ func (r *Resource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *r
 }
 
 // getOsTypeImageAsState reads the remote object and maps it to the Terraform model.
+// It fetches the os_type_image record, then looks up the associated virtual image
+// to extract the OsTypeId from virtualImage.osType.id.
 func getOsTypeImageAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (OsTypeImageModel, error) {
+) (OsTypeImageModel, diag.Diagnostics) {
 	var state OsTypeImageModel
+	var diags diag.Diagnostics
 
 	resp, hresp, err := client.LibraryAPI.GetOsTypeImage(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		return state, fmt.Errorf("GET osTypeImage %d failed: %s", id, errfmt.ErrMsg(err, hresp))
+		diags.AddError("read ostypeimage",
+			fmt.Sprintf("GET osTypeImage %d failed: %s", id, errfmt.ErrMsg(err, hresp)))
+
+		return state, diags
 	}
 
 	img := resp.GetOsTypeImage()
@@ -63,19 +70,28 @@ func getOsTypeImageAsState(
 
 	if img.Zone.IsSet() {
 		state.CloudId = types.Int64Value(img.GetZone())
-	} else {
-		state.CloudId = types.Int64Null()
 	}
 
 	if img.ProvisionType.IsSet() {
 		state.ProvisionTypeId = types.Int64Value(img.GetProvisionType())
-	} else {
-		state.ProvisionTypeId = types.Int64Null()
 	}
 
-	// OsTypeId is not returned by the GET endpoint — caller must set it.
+	// Resolve OsTypeId by fetching the virtual image and reading its osType.id.
+	viResp, viHresp, viErr := client.LibraryAPI.GetVirtualImage(ctx, *img.VirtualImageId).Execute()
+	if viErr != nil || viHresp.StatusCode != http.StatusOK {
+		diags.AddError("read ostypeimage",
+			fmt.Sprintf("GET virtualImage %d (for osTypeImage %d) failed: %s",
+				*img.VirtualImageId, id, errfmt.ErrMsg(viErr, viHresp)))
 
-	return state, nil
+		return state, diags
+	}
+
+	vi := viResp.GetVirtualImage()
+	if osType, ok := vi.GetOsTypeOk(); ok {
+		state.OsTypeId = types.Int64Value(osType.GetId())
+	}
+
+	return state, diags
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -150,15 +166,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	state, readErr := getOsTypeImageAsState(ctx, createResp.ID, client)
-	if readErr != nil {
-		resp.Diagnostics.AddWarning("create ostypeimage",
-			"created but read-back failed: "+readErr.Error())
-
+	state, diags := getOsTypeImageAsState(ctx, createResp.ID, client)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	state.OsTypeId = plan.OsTypeId
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -178,14 +190,11 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	}
 
 	id := current.Id.ValueInt64()
-	state, readErr := getOsTypeImageAsState(ctx, id, client)
-	if readErr != nil {
-		resp.Diagnostics.AddError("read ostypeimage", readErr.Error())
-
+	state, diags := getOsTypeImageAsState(ctx, id, client)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	state.OsTypeId = current.OsTypeId
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

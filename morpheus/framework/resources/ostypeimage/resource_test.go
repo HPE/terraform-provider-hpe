@@ -57,7 +57,7 @@ func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_os_type_image.example",
 			"os_type_id",
-			"1",
+			"75",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_os_type_image.example",
@@ -109,7 +109,7 @@ func TestAccMorpheusOsTypeImageRequiredAttrsOk(t *testing.T) {
 
 	resourceConfig := `
 resource "hpe_morpheus_os_type_image" "required_only" {
-  os_type_id       = 1
+  os_type_id       = 75
   virtual_image_id = 257
 }
 `
@@ -122,7 +122,7 @@ resource "hpe_morpheus_os_type_image" "required_only" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_os_type_image.required_only",
 			"os_type_id",
-			"1",
+			"75",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_os_type_image.required_only",

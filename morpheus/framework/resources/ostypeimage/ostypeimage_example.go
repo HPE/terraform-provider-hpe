@@ -17,7 +17,7 @@ func RenderOsTypeImageConfig(t *testing.T, overrides map[string]string) (string,
 	t.Helper()
 
 	defaults := map[string]string{
-		"OsTypeId":        "1",
+		"OsTypeId":        "75",
 		"VirtualImageId":  "257",
 		"CloudId":         "1",
 		"ProvisionTypeId": "22",
