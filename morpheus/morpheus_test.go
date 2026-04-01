@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package morpheus_test
 
@@ -295,6 +295,7 @@ provider "hpe" {
 		url = "http://example.com"
 		username = "test-user"
 		password = "test-password"
+		tenant_subdomain = "foo"
 		access_token = "this-is-not-a-token"
 	}
 }
@@ -303,7 +304,7 @@ resource "hpe_morpheus_fake" "foo" {
 	name = "bar"
 }
 `
-	expected := `Attribute "morpheus\[0\]\.(username|password)" cannot be specified when\n` +
+	expected := `Attribute "morpheus\[0\]\.(username|password|tenant_subdomain)" cannot be specified when\n` +
 		`"morpheus\[0\]\.access_token" is specified`
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

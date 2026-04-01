@@ -1,0 +1,20 @@
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = "= 1.2.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    username         = "username"
+    password         = "password"
+    tenant_subdomain = "tenant"
+    url              = "https://morpheus.example.com"
+  }
+}
