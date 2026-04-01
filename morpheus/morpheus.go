@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package morpheus
 
@@ -108,7 +108,12 @@ func (SubProvider) GetSchema(_ context.Context) map[string]schema.Attribute {
 			Validators: []validator.String{
 				stringvalidator.ConflictsWith(parentBlock.AtName("username")),
 				stringvalidator.ConflictsWith(parentBlock.AtName("password")),
+				stringvalidator.ConflictsWith(parentBlock.AtName("tenant_subdomain")),
 			},
+		},
+		"tenant_subdomain": schema.StringAttribute{
+			Description: "Morpheus tenant subdomain used for authentication",
+			Optional:    true,
 		},
 		"insecure": schema.BoolAttribute{
 			Description: "Explicitly allow the provider to perform " +

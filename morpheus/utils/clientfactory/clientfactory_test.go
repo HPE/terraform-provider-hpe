@@ -36,11 +36,12 @@ func TestSecureTLS(t *testing.T) {
 	defer server.Close()
 
 	m := model.SubModel{
-		URL:         types.StringValue(server.URL),
-		Username:    types.StringValue("user"),
-		Password:    types.StringValue("secret"),
-		AccessToken: types.StringValue("token"),
-		Insecure:    types.BoolValue(false),
+		URL:             types.StringValue(server.URL),
+		Username:        types.StringValue("user"),
+		Password:        types.StringValue("secret"),
+		AccessToken:     types.StringValue("token"),
+		TenantSubdomain: types.StringValue("subdomain"),
+		Insecure:        types.BoolValue(false),
 	}
 	cf := clientfactory.New(m)
 	c, err := cf.NewClient(context.Background())
@@ -68,11 +69,12 @@ func TestInsecureTLS(t *testing.T) {
 	defer server.Close()
 
 	m := model.SubModel{
-		URL:         types.StringValue(server.URL),
-		Username:    types.StringValue("user"),
-		Password:    types.StringValue("secret"),
-		AccessToken: types.StringValue("token"),
-		Insecure:    types.BoolValue(true),
+		URL:             types.StringValue(server.URL),
+		Username:        types.StringValue("user"),
+		Password:        types.StringValue("secret"),
+		AccessToken:     types.StringValue("token"),
+		TenantSubdomain: types.StringValue("subdomain"),
+		Insecure:        types.BoolValue(true),
 	}
 	cf := clientfactory.New(m)
 	c, err := cf.NewClient(context.Background())
