@@ -1665,6 +1665,18 @@ func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 		)
 	}
 
+	// to avoid constraint errors on destroy in some circumstances (for instance when running in a sub-tenant)
+	// we'll first do an update to the form to remove all option blocks and field groups before we
+	// attempt to delete the form
+	d.Set("option_type", []map[string]any{})
+	d.Set("field_group", []map[string]any{})
+
+	diagsFromUpdate := resourceFormUpdate(ctx, d, meta)
+	if diagsFromUpdate.HasError() {
+		return diag.Errorf("Error during pre-destroy update of form to remove option types and field groups: %v",
+			diagsFromUpdate)
+	}
+
 	resp, err := client.DeleteForm(convert.StringToInt64(id), req)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
