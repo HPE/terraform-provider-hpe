@@ -18,6 +18,7 @@ import (
 func RenderSettingApplianceConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"ApiAllowedOrigins":      "demo",
 		"ApplianceUrl":           "https://morpheus.test.local",

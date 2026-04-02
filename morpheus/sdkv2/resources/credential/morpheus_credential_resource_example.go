@@ -1,5 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
+//nolint: gosec
+
 package credential
 
 import (
@@ -24,6 +26,7 @@ import (
 func RenderCredentialTenantUsernameKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for tenant username keypair",
 		"Enabled":     "true",
@@ -60,6 +63,7 @@ func RenderCredentialTenantUsernameKeypairConfig(t *testing.T, overrides map[str
 func RenderCredentialClientIdSecretConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description":  "terraform credential example for client id secret",
 		"Enabled":      "true",
@@ -95,6 +99,7 @@ func RenderCredentialClientIdSecretConfig(t *testing.T, overrides map[string]str
 func RenderCredentialUsernameApiKeyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for username api key",
 		"Enabled":     "true",
@@ -130,6 +135,7 @@ func RenderCredentialUsernameApiKeyConfig(t *testing.T, overrides map[string]str
 func RenderCredentialUsernamePasswordKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for username password key pair",
 		"Enabled":     "true",
@@ -166,6 +172,7 @@ func RenderCredentialUsernamePasswordKeypairConfig(t *testing.T, overrides map[s
 func RenderCredentialAccessKeySecretConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for access key and secret key",
 		"Enabled":     "true",
@@ -201,6 +208,7 @@ func RenderCredentialAccessKeySecretConfig(t *testing.T, overrides map[string]st
 func RenderCredentialApiKeyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for api key",
 		"Enabled":     "true",
@@ -235,6 +243,7 @@ func RenderCredentialApiKeyConfig(t *testing.T, overrides map[string]string) (st
 func RenderCredentialUsernameKeypairConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for username key pair",
 		"Enabled":     "true",
@@ -270,6 +279,7 @@ func RenderCredentialUsernameKeypairConfig(t *testing.T, overrides map[string]st
 func RenderCredentialUsernamePasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform example",
 		"Enabled":     "true",
@@ -305,6 +315,7 @@ func RenderCredentialUsernamePasswordConfig(t *testing.T, overrides map[string]s
 func RenderCredentialEmailPrivateKeyConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	//nolint: gosec
 	defaults := map[string]string{
 		"Description": "terraform credential example for email private key",
 		"Enabled":     "true",

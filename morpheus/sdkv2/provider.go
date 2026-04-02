@@ -246,20 +246,15 @@ func providerSchemaMorpheus() *schema.Schema {
 					Sensitive:     true,
 					Description:   "Morpheus access token for authentication",
 					Default:       "",
-					ConflictsWith: []string{"morpheus.0.username", "morpheus.0.password"},
-					// ConflictsWith: []string{"username", "password", "tenant_subdomain"},
+					ConflictsWith: []string{"morpheus.0.username", "morpheus.0.password", "morpheus.0.tenant_subdomain"},
 				},
 
-				// TODO check if this is needed in framework and here
-				/*
-					"tenant_subdomain": {
-						Type:          schema.TypeString,
-						Optional:      true,
-						Description:   "The tenant subdomain used for authentication",
-						ConflictsWith: []string{"access_token"},
-					},
-
-				*/
+				"tenant_subdomain": {
+					Type:          schema.TypeString,
+					Optional:      true,
+					Description:   "Morpheus tenant subdomain used for authentication",
+					ConflictsWith: []string{"morpheus.0.access_token"},
+				},
 
 				"username": {
 					Type:          schema.TypeString,
@@ -308,11 +303,12 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	morpheusConfig := morph.([]interface{})[0].(map[string]interface{})
 
 	config := Config{
-		Url:         morpheusConfig["url"].(string),
-		AccessToken: morpheusConfig["access_token"].(string),
-		Username:    morpheusConfig["username"].(string),
-		Password:    morpheusConfig["password"].(string),
-		Insecure:    morpheusConfig["insecure"].(bool), //.(bool),
+		Url:             morpheusConfig["url"].(string),
+		AccessToken:     morpheusConfig["access_token"].(string),
+		Username:        morpheusConfig["username"].(string),
+		Password:        morpheusConfig["password"].(string),
+		TenantSubdomain: morpheusConfig["tenant_subdomain"].(string),
+		Insecure:        morpheusConfig["insecure"].(bool), //.(bool),
 	}
 
 	return config.Client()
