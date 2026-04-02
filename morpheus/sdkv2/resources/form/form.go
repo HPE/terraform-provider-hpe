@@ -122,7 +122,8 @@ func validateFormOptionTypes(_ context.Context, d *schema.ResourceDiff, _ any) e
 			continue
 		}
 
-		if err := validateOptionTypes(fieldGroup.GetAttr("option_type"), fmt.Sprintf("field_group[%d].option_type", index)); err != nil {
+		if err := validateOptionTypes(fieldGroup.GetAttr("option_type"),
+			fmt.Sprintf("field_group[%d].option_type", index)); err != nil {
 			return err
 		}
 	}
