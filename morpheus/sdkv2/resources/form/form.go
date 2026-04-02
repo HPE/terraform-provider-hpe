@@ -1248,8 +1248,8 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 						optionTypeRow["min_value"] = optionType.MinVal
 						optionTypeRow["max_value"] = optionType.MaxVal
 					case typeNetworkManager:
-						row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
-						row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
+						optionTypeRow["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
+						optionTypeRow["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
 					case typeRadio:
 						optionTypeRow["option_list_id"] = optionType.OptionList.ID
 					case typeSelect:
