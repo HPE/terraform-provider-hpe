@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/os_type"
+	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )

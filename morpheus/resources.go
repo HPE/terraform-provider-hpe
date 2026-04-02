@@ -14,7 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
-	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/os_type"
+	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
