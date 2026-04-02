@@ -20,18 +20,19 @@ import (
 )
 
 const (
-	typeByteSize   = "byteSize"
-	typeCheckbox   = "checkbox"
-	typeCodeEditor = "code-editor"
-	typeHidden     = "hidden"
-	typeNumber     = "number"
-	typePassword   = "password"
-	typeRadio      = "radio"
-	typeSelect     = "select"
-	typeText       = "text"
-	typeTextArea   = "textarea"
-	typeTextArray  = "textArray"
-	typeTypeahead  = "typeahead"
+	typeByteSize       = "byteSize"
+	typeCheckbox       = "checkbox"
+	typeCodeEditor     = "code-editor"
+	typeHidden         = "hidden"
+	typeNetworkManager = "networkManager"
+	typeNumber         = "number"
+	typePassword       = "password"
+	typeRadio          = "radio"
+	typeSelect         = "select"
+	typeText           = "text"
+	typeTextArea       = "textarea"
+	typeTextArray      = "textArray"
+	typeTypeahead      = "typeahead"
 )
 
 // TODO: Add switch case handling for these option types.
@@ -47,7 +48,6 @@ const (
 	typeKeyValue       = "keyValue"
 	typeLayout         = "layout"
 	typeLogoSelector   = "logoSelector"
-	typeNetworkManager = "networkManager"
 	typePlan           = "plan"
 	typePorts          = "ports"
 	typeResourcePool   = "resourcePool"
@@ -198,12 +198,12 @@ func ResourceForm() *schema.Resource {
 						"type": {
 							Type: schema.TypeString,
 							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
-								"textArray, textarea, typeahead)",
+								"(byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, " +
+								"textarea, textArray, typeahead)",
 							ValidateFunc: validation.StringInSlice(
 								[]string{
-									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
-									typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
+									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
+									typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 								},
 								false,
 							),
@@ -343,6 +343,18 @@ func ResourceForm() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
+						"show_network_type_selection": {
+							Type:        schema.TypeBool,
+							Description: "Whether to show the network type selection",
+							Optional:    true,
+							Computed:    true,
+						},
+						"enable_ip_mode_selection": {
+							Type:        schema.TypeBool,
+							Description: "Whether to enable IP Mode Selection",
+							Optional:    true,
+							Computed:    true,
+						},
 						"allow_multiple_selections": {
 							Type: schema.TypeBool,
 							Description: "Whether to allow multiple items to be selected when using a " +
@@ -468,12 +480,14 @@ func ResourceForm() *schema.Resource {
 									"type": {
 										Type: schema.TypeString,
 										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
-											"textArray, textarea, typeahead)",
+											"(byteSize, checkbox, code-editor, hidden, networkManager, number, " +
+											"password, radio, select, text, " +
+											"textarea, textArray, typeahead)",
 										ValidateFunc: validation.StringInSlice(
 											[]string{
-												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
-												typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
+												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager,
+												typeNumber, typePassword, typeRadio, typeSelect, typeText, typeTextArea,
+												typeTextArray, typeTypeahead,
 											},
 											false,
 										),
@@ -610,6 +624,18 @@ func ResourceForm() *schema.Resource {
 									"sortable": {
 										Type:        schema.TypeBool,
 										Description: "Whether the selected options can be sorted or not",
+										Optional:    true,
+										Computed:    true,
+									},
+									"show_network_type_selection": {
+										Type:        schema.TypeBool,
+										Description: "Whether to show the network type selection",
+										Optional:    true,
+										Computed:    true,
+									},
+									"enable_ip_mode_selection": {
+										Type:        schema.TypeBool,
+										Description: "Whether to enable IP Mode Selection",
 										Optional:    true,
 										Computed:    true,
 									},
@@ -768,6 +794,12 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 					configStep["step"] = optionTypeConfig["step"]
 					row["config"] = configStep
 				}
+			case typeNetworkManager:
+				config := make(map[string]any)
+				config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+				config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+				row["defaultValue"] = optionTypeConfig["default_value"]
+				row["config"] = config
 			case typeRadio:
 				row["defaultValue"] = optionTypeConfig["default_value"]
 				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
@@ -915,6 +947,12 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 							configStep["step"] = optionTypeConfig["step"]
 							row["config"] = configStep
 						}
+					case typeNetworkManager:
+						config := make(map[string]any)
+						config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+						config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+						row["defaultValue"] = optionTypeConfig["default_value"]
+						row["config"] = config
 					case typeRadio:
 						row["defaultValue"] = optionTypeConfig["default_value"]
 						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
@@ -1131,6 +1169,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				row["step"] = optionType.Config.Step
 				row["min_value"] = optionType.MinVal
 				row["max_value"] = optionType.MaxVal
+			case typeNetworkManager:
+				row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
+				row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
 			case typeRadio:
 				row["option_list_id"] = optionType.OptionList.ID
 			case typeSelect:
@@ -1206,6 +1247,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 						optionTypeRow["step"] = optionType.Config.Step
 						optionTypeRow["min_value"] = optionType.MinVal
 						optionTypeRow["max_value"] = optionType.MaxVal
+					case typeNetworkManager:
+						row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
+						row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
 					case typeRadio:
 						optionTypeRow["option_list_id"] = optionType.OptionList.ID
 					case typeSelect:
@@ -1332,6 +1376,12 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 					configStep["step"] = optionTypeConfig["step"]
 					row["config"] = configStep
 				}
+			case typeNetworkManager:
+				config := make(map[string]any)
+				config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+				config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+				row["defaultValue"] = optionTypeConfig["default_value"]
+				row["config"] = config
 			case typeRadio:
 				row["defaultValue"] = optionTypeConfig["default_value"]
 				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
@@ -1481,6 +1531,12 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 							configStep["step"] = optionTypeConfig["step"]
 							row["config"] = configStep
 						}
+					case typeNetworkManager:
+						config := make(map[string]any)
+						config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+						config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+						row["defaultValue"] = optionTypeConfig["default_value"]
+						row["config"] = config
 					case typeRadio:
 						row["defaultValue"] = optionTypeConfig["default_value"]
 						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}

@@ -140,4 +140,21 @@
   OptionType6Placeholder 'Testing 123' \
   OptionType6Required 'true' \
   OptionType6Step '2' \
-  OptionType6Type 'number'
+  OptionType6Type 'number' \
+  OptionType7Code 'network-manager-input' \
+  OptionType7DefaultValue 'test123' \
+  OptionType7Description 'Terraform network manager example' \
+  OptionType7DisplayValueOnDetails 'true' \
+  OptionType7EnableIPModeSelection 'true' \
+  OptionType7ExcludeFromSearch 'true' \
+  OptionType7ExportMeta 'true' \
+  OptionType7FieldLabel 'network input' \
+  OptionType7FieldName 'networkInput' \
+  OptionType7HelpBlock 'Select a network' \
+  OptionType7Hidden 'false' \
+  OptionType7Locked 'true' \
+  OptionType7Name 'tf network manager example' \
+  OptionType7Placeholder 'Select network' \
+  OptionType7Required 'true' \
+  OptionType7ShowNetworkTypeSelection 'true' \
+  OptionType7Type 'networkManager'
