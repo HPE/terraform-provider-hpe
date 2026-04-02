@@ -16,15 +16,19 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
-->This v1.1.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+->This v1.2.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
+We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
+to assist with the migration from the Morpheus provider to this provider.  Please see the
+[documentation](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration) for more
+information on how to use this tool.<br><br>
 See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
 
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v1.1.0).
+release notes for the current version (v1.2.0).
 
 ### Authentication
 
@@ -33,6 +37,9 @@ There are two ways to authenticate with Morpheus:
 2. Using an access_token
 
 With either method the URL of the Morpheus instance must be provided as `url`.
+
+Note that if authenticating with username and password a tenant can be specified by including the `SUBDOMAIN` value for the tenant as
+`tenant_subdomain` in the provider block.
 
 By default the provider will check the Morpheus server certificate and will fail if it is not valid.  This can be
 be toggled off by setting `insecure` to `true` in the provider block.
@@ -48,7 +55,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.1.0"
+      version = "= 1.2.0"
     }
   }
 }
@@ -63,6 +70,31 @@ provider "hpe" {
 }
 ```
 
+#### Using a username and password with tenant_subdomain
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = "= 1.2.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    username         = "username"
+    password         = "password"
+    tenant_subdomain = "tenant"
+    url              = "https://morpheus.example.com"
+  }
+}
+```
+
 #### Using an access token
 
 ```terraform
@@ -72,7 +104,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.1.0"
+      version = "= 1.2.0"
     }
   }
 }
@@ -95,7 +127,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.1.0"
+      version = "= 1.2.0"
     }
   }
 }
@@ -131,25 +163,25 @@ That is, the attribute names are case-sensitive and must match exactly.
 
 ### New functionality
 
-In this release (v1.1.0) we have added the following resource functionality:
+In this release (v1.2.0) we have added the following resource functionality:
 
-- hpe_morpheus_cloud has static config schema for VMware and HVM clouds
-- hpe_morpheus_instance has static config schema for VMware and HVM instances
-- hpe_morpheus_task generalised task resource with static config schema for Conditional Workflow task
+- hpe_morpheus_instance addition and removal of volumes is now supported in Update
+- hpe_morpheus_instance supports service_plan_options for use with Service Plans that accept options
+- hpe_morpheus_cloud no longer requires group_id to be set
+- hpe_morpheus_group supports a list of cloud-ids to associate the group with
 
 ### New known issues
 
-N/A
+- `hpe_morpheus_instance` Update of `service_plan_options` fails silently, this will be fixed in a future release
 
 ### Resolved issues
 
-- `hpe_morpheus_cluster_hks_vsphere` scale-down and destroy issues are fixed in Morpheus version 8.1 and later
+- `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
+  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
+  datastores.
 
 ### Known issues from previous releases
 
-- `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
-  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
-  datastores.  This is an API bug which is being investigated.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.
 - `hpe_morpheus_instance` updates fail when removing `evars`.
@@ -389,4 +421,5 @@ Optional:
 - `access_token` (String, Sensitive) Morpheus access token for authentication
 - `insecure` (Boolean) Explicitly allow the provider to perform "insecure" SSL requests. If omitted, default value is `false`
 - `password` (String, Sensitive) Morpheus password for authentication, required if username is set
+- `tenant_subdomain` (String) Morpheus tenant subdomain used for authentication
 - `username` (String) Morpheus username for authentication, required if password is set

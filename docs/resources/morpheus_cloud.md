@@ -11,9 +11,12 @@ description: |-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
--> A `config_hvm` or `config` block is required. They can be empty.
+-> A `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
 
 -> `cloud_type_code` must be set if using a generic `config` block.
+
+-> Currently, a change to the `group_id` attribute will not be applied on update.<br/>
+   We recommend managing group membership using a `group` resource.
 
 ## Example Usage (HVM)
 
@@ -91,7 +94,6 @@ resource "hpe_morpheus_cloud" "example" {
 
 ### Required
 
-- `group_id` (Number) Specifies which Server group this cloud should be assigned to
 - `name` (String) A unique name scoped to your account for the cloud
 - `tenant_id` (Number) Specifies which Tenant this cloud should be assigned to
 
@@ -103,12 +105,14 @@ resource "hpe_morpheus_cloud" "example" {
 - `cloud_type_code` (String) Cloud (zone) type code
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
+- `config_aws` (Attributes) Amazon Cloud (see [below for nested schema](#nestedatt--config_aws))
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) VSphere Cloud (see [below for nested schema](#nestedatt--config_vmware))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
 - `enabled` (Boolean) Can be used to disable the cloud
 - `external_id` (String) The external id of the cloud
+- `group_id` (Number) Specifies which Server group this cloud should be assigned to
 - `guidance_mode` (String) Whether to enable guidance recommendations on the cloud (manual, off)
 - `import_existing_vms` (String) Whether to import existing virtual machines (off, basic, full)
 - `keyboard_layout` (String) The keyboard layout to use for the console
@@ -120,6 +124,48 @@ resource "hpe_morpheus_cloud" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of the cloud
+
+<a id="nestedatt--config_aws"></a>
+### Nested Schema for `config_aws`
+
+Required:
+
+- `endpoint` (String) AWS endpoint
+
+Optional:
+
+- `access_key` (String) AWS access key
+- `api_proxy` (String) The API proxy to use for API calls to the cloud.
+- `backup_provider` (String) The backup provider for the cloud
+- `bypass_proxy` (Boolean) Whether to bypass the proxy for cloud API calls
+- `change_management_config` (String) The change management configuration for this cloud to use for syncing with the change management system.
+- `cmdb_config` (String) The CMDB configuration for this cloud to use for syncing with the CMDB.
+- `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
+- `config_management_id` (String) The id of the configuration management integration associated with the AWS cloud
+- `costing` (String) Whether to enable costing for this cloud or not.
+- `costing_bucket` (String) The S3 bucket to use for storing costing reports.
+- `costing_folder` (String) The folder within the S3 bucket to use for storing costing reports.
+- `costing_key` (String) The AWS access key to use for generating costing reports.
+- `costing_report_name` (String) The name of the costing report to generate.
+- `costing_secret` (String) The AWS secret key to use for generating costing reports.
+- `credentials` (String) Stored AWS credentials
+- `dark_mode_logo` (String) The logo to use for this cloud in dark mode.
+- `domain` (String) The domain to use for this cloud.
+- `ebs_encryption` (String) Determines whether to configure default EBS volume encryption or not
+- `guidance` (String) Optional guidance field if you want to put more info there
+- `logo` (String) The logo to use for this cloud.
+- `network_mode` (String) Whether to use public or private IP addresses for provisioning and managing instances in this cloud.
+- `no_proxy` (String) A comma separated list of hosts to bypass the proxy for when making API calls to the cloud.
+- `proxy` (String) The proxy to use for this cloud.
+- `region` (String) The AWS region to use for this cloud.
+- `replication_provider` (String) The replication provider for the cloud
+- `role_arn` (String) The AWS IAM role ARN to assume for authentication
+- `secret_key` (String) AWS secret key
+- `timezone` (String) The timezone to use for this cloud.
+- `user_data` (String) The user data script to use for provisioning instances in this cloud.
+- `vdi_gateway` (String) The VDI gateway for this cloud to use for provisioning virtual desktops.
+- `vpc` (String) The VPC ID for a specific VPC
+
 
 <a id="nestedatt--config_hvm"></a>
 ### Nested Schema for `config_hvm`

@@ -1,3 +1,40 @@
+# v1.2.0 Release Notes
+
+In this release (v1.2.0) we have added the following resource functionality:
+- hpe_morpheus_instance addition and removal of volumes is now supported in Update
+- hpe_morpheus_instance supports service_plan_options for use with Service Plans that accept options
+- hpe_morpheus_cloud no longer requires group_id to be set
+- hpe_morpheus_group supports a list of cloud-ids to associate the group with
+
+## New known issues
+
+- `hpe_morpheus_instance` Update of `service_plan_options` fails silently, this will be fixed in a future release
+
+## Resolved issues
+
+- `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
+  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
+  datastores.
+
+## Known issues from previous releases
+
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
+ 
 # v1.1.0 Release Notes
 
 In this release (v1.1.0) we have added the following resource functionality:

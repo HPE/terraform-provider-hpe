@@ -19,8 +19,8 @@ import (
 
 var (
 	resourcePermissionsUpdateFunc = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsWithDefaults
-	sitesPermissionsUpdateFunc    = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsSitesInnerWithDefaults
-	plansPermissionsUpdateFunc    = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsPlansInnerWithDefaults
+	sitesPermissionsUpdateFunc    = sdk.NewUpdateCloudFoldersRequestFolderResourcePermissionsSitesInnerWithDefaults
+	plansPermissionsUpdateFunc    = sdk.NewUpdateCloudFoldersRequestFolderResourcePermissionsPlansInnerWithDefaults
 )
 
 func updateDatastore(
@@ -71,7 +71,7 @@ func updateDatastore(
 				return DatastoreModel{}, diags
 			}
 
-			var sites []sdk.UpdateDatastoresRequestDatastoreResourcePermissionsSitesInner
+			var sites []sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner
 			for _, groupsValue := range groupsValues {
 				site := sitesPermissionsUpdateFunc()
 				site.SetId(groupsValue.Id.ValueInt64())
@@ -91,7 +91,7 @@ func updateDatastore(
 				return DatastoreModel{}, diags
 			}
 
-			var plans []sdk.UpdateDatastoresRequestDatastoreResourcePermissionsPlansInner
+			var plans []sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
 				planItem := plansPermissionsUpdateFunc()
 				planItem.SetId(plansValue.Id.ValueInt64())

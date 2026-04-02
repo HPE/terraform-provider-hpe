@@ -15,6 +15,13 @@ import (
 func GroupResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"cloud_ids": schema.ListAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "List of cloud ids to add to the group",
+				MarkdownDescription: "List of cloud ids to add to the group",
+			},
 			"code": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Optional code for use with policies",
@@ -31,6 +38,7 @@ func GroupResourceSchema(ctx context.Context) schema.Schema {
 			"labels": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
+				Computed:            true,
 				Description:         "The organization labels associated with the group",
 				MarkdownDescription: "The organization labels associated with the group",
 			},
@@ -49,6 +57,7 @@ func GroupResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type GroupModel struct {
+	CloudIds types.List   `tfsdk:"cloud_ids"`
 	Code     types.String `tfsdk:"code"`
 	Id       types.Int64  `tfsdk:"id"`
 	Labels   types.Set    `tfsdk:"labels"`

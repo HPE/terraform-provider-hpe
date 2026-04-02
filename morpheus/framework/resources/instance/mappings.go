@@ -104,48 +104,6 @@ func updateVolumeMapper(
 // Map Terraform network interface value into an API request struct
 func createNetworkInterfaceMapper(
 	ctx context.Context,
-) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces1 {
-	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces1 {
-		var id string
-		if !in.NetworkGroupId.IsNull() {
-			id = "networkGroup-" + in.NetworkGroupId.String()
-		}
-
-		if !in.NetworkId.IsNull() {
-			id = in.NetworkId.String()
-		}
-
-		ipPool := sdk.NewInstancesNetworkInterfaces1NetworkPoolWithDefaults()
-		if !in.IpPool.IsNull() {
-			ipPool.SetId(in.IpPool.ValueInt64())
-		}
-
-		childNetworkInterfaces, diags := convert.FromListType(
-			ctx,
-			in.ChildVirtualNetworks,
-			createChildNetworkInterfaceMapper,
-		)
-		if diags.HasError() {
-			tflog.Error(ctx, "cannot convert child virtual network interfaces")
-		}
-
-		return sdk.InstancesNetworkInterfaces1{
-			Network: sdk.
-				InstancesNetworkInterfaces1Network{
-				Id:   id,
-				Pool: ipPool,
-			},
-			IpMode:                 in.IpMode.ValueStringPointer(),
-			IpAddress:              in.IpAddress.ValueStringPointer(),
-			NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
-			NetworkInterfaces:      childNetworkInterfaces,
-		}
-	}
-}
-
-// Map Terraform network interface value into an API request struct
-func updateNetworkInterfaceMapper(
-	ctx context.Context,
 ) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 		var id string
@@ -165,7 +123,7 @@ func updateNetworkInterfaceMapper(
 		childNetworkInterfaces, diags := convert.FromListType(
 			ctx,
 			in.ChildVirtualNetworks,
-			updateChildNetworkInterfaceMapper,
+			createChildNetworkInterfaceMapper,
 		)
 		if diags.HasError() {
 			tflog.Error(ctx, "cannot convert child virtual network interfaces")
@@ -185,37 +143,50 @@ func updateNetworkInterfaceMapper(
 	}
 }
 
-// Map Child Virtual Network interface if it exists
-func createChildNetworkInterfaceMapper(
-	in ChildVirtualNetworksValue,
-) sdk.InstancesNetworkInterfaces1NetworkInterfacesInner {
-	var id string
-	if !in.NetworkGroupId.IsNull() {
-		id = "networkGroup-" + in.NetworkGroupId.String()
-	}
+// Map Terraform network interface value into an API request struct
+func updateNetworkInterfaceMapper(
+	ctx context.Context,
+) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
+	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
+		var id string
+		if !in.NetworkGroupId.IsNull() {
+			id = "networkGroup-" + in.NetworkGroupId.String()
+		}
 
-	if !in.NetworkId.IsNull() {
-		id = in.NetworkId.String()
-	}
+		if !in.NetworkId.IsNull() {
+			id = in.NetworkId.String()
+		}
 
-	ipPool := sdk.NewInstancesNetworkInterfaces1NetworkInterfacesInnerNetworkPoolWithDefaults()
-	if !in.IpPool.IsNull() {
-		ipPool.SetId(in.IpPool.ValueInt64())
-	}
+		ipPool := sdk.NewInstancesNetworkInterfaces3NetworkPoolWithDefaults()
+		if !in.IpPool.IsNull() {
+			ipPool.SetId(in.IpPool.ValueInt64())
+		}
 
-	return sdk.InstancesNetworkInterfaces1NetworkInterfacesInner{
-		Network: sdk.InstancesNetworkInterfaces1NetworkInterfacesInnerNetwork{
-			Id:   id,
-			Pool: ipPool,
-		},
-		IpMode:                 in.IpMode.ValueStringPointer(),
-		IpAddress:              in.IpAddress.ValueStringPointer(),
-		NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
+		childNetworkInterfaces, diags := convert.FromListType(
+			ctx,
+			in.ChildVirtualNetworks,
+			updateChildNetworkInterfaceMapper,
+		)
+		if diags.HasError() {
+			tflog.Error(ctx, "cannot convert child virtual network interfaces")
+		}
+
+		return sdk.InstancesNetworkInterfaces3{
+			Network: sdk.
+				InstancesNetworkInterfaces3Network{
+				Id:   id,
+				Pool: ipPool,
+			},
+			IpMode:                 in.IpMode.ValueStringPointer(),
+			IpAddress:              in.IpAddress.ValueStringPointer(),
+			NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
+			NetworkInterfaces:      childNetworkInterfaces,
+		}
 	}
 }
 
 // Map Child Virtual Network interface if it exists
-func updateChildNetworkInterfaceMapper(
+func createChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
 ) sdk.InstancesNetworkInterfaces2NetworkInterfacesInner {
 	var id string
@@ -234,6 +205,35 @@ func updateChildNetworkInterfaceMapper(
 
 	return sdk.InstancesNetworkInterfaces2NetworkInterfacesInner{
 		Network: sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetwork{
+			Id:   id,
+			Pool: ipPool,
+		},
+		IpMode:                 in.IpMode.ValueStringPointer(),
+		IpAddress:              in.IpAddress.ValueStringPointer(),
+		NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
+	}
+}
+
+// Map Child Virtual Network interface if it exists
+func updateChildNetworkInterfaceMapper(
+	in ChildVirtualNetworksValue,
+) sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
+	var id string
+	if !in.NetworkGroupId.IsNull() {
+		id = "networkGroup-" + in.NetworkGroupId.String()
+	}
+
+	if !in.NetworkId.IsNull() {
+		id = in.NetworkId.String()
+	}
+
+	ipPool := sdk.NewInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPoolWithDefaults()
+	if !in.IpPool.IsNull() {
+		ipPool.SetId(in.IpPool.ValueInt64())
+	}
+
+	return sdk.InstancesNetworkInterfaces3NetworkInterfacesInner{
+		Network: sdk.InstancesNetworkInterfaces3NetworkInterfacesInnerNetwork{
 			Id:   id,
 			Pool: ipPool,
 		},

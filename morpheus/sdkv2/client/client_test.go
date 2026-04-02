@@ -54,11 +54,12 @@ func TestLegacyClientCustomTransport(t *testing.T) {
 	defer server.Close()
 
 	testCases := []struct {
-		name     string
-		url      string
-		username string
-		password string
-		token    string
+		name            string
+		url             string
+		username        string
+		password        string
+		tenantSubdomain string
+		token           string
 	}{
 		{
 			name:     "credentials",
@@ -80,6 +81,7 @@ func TestLegacyClientCustomTransport(t *testing.T) {
 				tc.url,
 				tc.username,
 				tc.password,
+				tc.tenantSubdomain,
 				tc.token,
 				sdklegacy.SkipLogin(),
 			)

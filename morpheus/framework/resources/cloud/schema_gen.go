@@ -69,9 +69,232 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Generic Cloud Configuration",
 				MarkdownDescription: "Generic Cloud Configuration",
 				Validators: []validator.Dynamic{
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
 				},
+			},
+			"config_aws": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"access_key": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "AWS access key",
+						MarkdownDescription: "AWS access key",
+					},
+					"api_proxy": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The API proxy to use for API calls to the cloud.",
+						MarkdownDescription: "The API proxy to use for API calls to the cloud.",
+					},
+					"backup_provider": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The backup provider for the cloud",
+						MarkdownDescription: "The backup provider for the cloud",
+					},
+					"bypass_proxy": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to bypass the proxy for cloud API calls",
+						MarkdownDescription: "Whether to bypass the proxy for cloud API calls",
+					},
+					"change_management_config": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The change management configuration for this cloud to use for syncing with the change management system.",
+						MarkdownDescription: "The change management configuration for this cloud to use for syncing with the change management system.",
+					},
+					"cmdb_config": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The CMDB configuration for this cloud to use for syncing with the CMDB.",
+						MarkdownDescription: "The CMDB configuration for this cloud to use for syncing with the CMDB.",
+					},
+					"cmdb_discovery": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to enable CMDB discovery on the cloud",
+						MarkdownDescription: "Whether to enable CMDB discovery on the cloud",
+					},
+					"config_management_id": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The id of the configuration management integration associated with the AWS cloud",
+						MarkdownDescription: "The id of the configuration management integration associated with the AWS cloud",
+					},
+					"costing": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to enable costing for this cloud or not.",
+						MarkdownDescription: "Whether to enable costing for this cloud or not.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"costing",
+								"reservations",
+								"costing and reservations",
+							),
+						},
+					},
+					"costing_bucket": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The S3 bucket to use for storing costing reports.",
+						MarkdownDescription: "The S3 bucket to use for storing costing reports.",
+					},
+					"costing_folder": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The folder within the S3 bucket to use for storing costing reports.",
+						MarkdownDescription: "The folder within the S3 bucket to use for storing costing reports.",
+					},
+					"costing_key": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The AWS access key to use for generating costing reports.",
+						MarkdownDescription: "The AWS access key to use for generating costing reports.",
+					},
+					"costing_report_name": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The name of the costing report to generate.",
+						MarkdownDescription: "The name of the costing report to generate.",
+					},
+					"costing_secret": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The AWS secret key to use for generating costing reports.",
+						MarkdownDescription: "The AWS secret key to use for generating costing reports.",
+					},
+					"credentials": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Stored AWS credentials",
+						MarkdownDescription: "Stored AWS credentials",
+					},
+					"dark_mode_logo": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The logo to use for this cloud in dark mode.",
+						MarkdownDescription: "The logo to use for this cloud in dark mode.",
+					},
+					"domain": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The domain to use for this cloud.",
+						MarkdownDescription: "The domain to use for this cloud.",
+					},
+					"ebs_encryption": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Determines whether to configure default EBS volume encryption or not",
+						MarkdownDescription: "Determines whether to configure default EBS volume encryption or not",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"on",
+								"off",
+							),
+						},
+						Default: stringdefault.StaticString("on"),
+					},
+					"endpoint": schema.StringAttribute{
+						Required:            true,
+						Description:         "AWS endpoint",
+						MarkdownDescription: "AWS endpoint",
+					},
+					"guidance": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Optional guidance field if you want to put more info there",
+						MarkdownDescription: "Optional guidance field if you want to put more info there",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"off",
+								"manual",
+							),
+						},
+					},
+					"logo": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The logo to use for this cloud.",
+						MarkdownDescription: "The logo to use for this cloud.",
+					},
+					"network_mode": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to use public or private IP addresses for provisioning and managing instances in this cloud.",
+						MarkdownDescription: "Whether to use public or private IP addresses for provisioning and managing instances in this cloud.",
+					},
+					"no_proxy": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "A comma separated list of hosts to bypass the proxy for when making API calls to the cloud.",
+						MarkdownDescription: "A comma separated list of hosts to bypass the proxy for when making API calls to the cloud.",
+					},
+					"proxy": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The proxy to use for this cloud.",
+						MarkdownDescription: "The proxy to use for this cloud.",
+					},
+					"region": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The AWS region to use for this cloud.",
+						MarkdownDescription: "The AWS region to use for this cloud.",
+					},
+					"replication_provider": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The replication provider for the cloud",
+						MarkdownDescription: "The replication provider for the cloud",
+					},
+					"role_arn": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The AWS IAM role ARN to assume for authentication",
+						MarkdownDescription: "The AWS IAM role ARN to assume for authentication",
+					},
+					"secret_key": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "AWS secret key",
+						MarkdownDescription: "AWS secret key",
+					},
+					"timezone": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The timezone to use for this cloud.",
+						MarkdownDescription: "The timezone to use for this cloud.",
+					},
+					"user_data": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The user data script to use for provisioning instances in this cloud.",
+						MarkdownDescription: "The user data script to use for provisioning instances in this cloud.",
+					},
+					"vdi_gateway": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The VDI gateway for this cloud to use for provisioning virtual desktops.",
+						MarkdownDescription: "The VDI gateway for this cloud to use for provisioning virtual desktops.",
+					},
+					"vpc": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The VPC ID for a specific VPC",
+						MarkdownDescription: "The VPC ID for a specific VPC",
+					},
+				},
+				CustomType: ConfigAwsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAwsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Amazon Cloud",
+				MarkdownDescription: "Amazon Cloud",
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -234,12 +457,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The external id of the cloud",
 			},
 			"group_id": schema.Int64Attribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "Specifies which Server group this cloud should be assigned to",
 				MarkdownDescription: "Specifies which Server group this cloud should be assigned to",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
 			},
 			"guidance_mode": schema.StringAttribute{
 				Optional:            true,
@@ -334,6 +554,7 @@ type CloudModel struct {
 	CloudTypeCode         types.String      `tfsdk:"cloud_type_code"`
 	Code                  types.String      `tfsdk:"code"`
 	Config                types.Dynamic     `tfsdk:"config"`
+	ConfigAws             ConfigAwsValue    `tfsdk:"config_aws"`
 	ConfigHvm             ConfigHvmValue    `tfsdk:"config_hvm"`
 	ConfigVmware          ConfigVmwareValue `tfsdk:"config_vmware"`
 	CostingMode           types.String      `tfsdk:"costing_mode"`
@@ -351,6 +572,2043 @@ type CloudModel struct {
 	SecurityMode          types.String      `tfsdk:"security_mode"`
 	TenantId              types.Int64       `tfsdk:"tenant_id"`
 	Visibility            types.String      `tfsdk:"visibility"`
+}
+
+var _ basetypes.ObjectTypable = ConfigAwsType{}
+
+type ConfigAwsType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAwsType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAwsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAwsType) String() string {
+	return "ConfigAwsType"
+}
+
+func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAwsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAwsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	accessKeyAttribute, ok := attributes["access_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access_key is missing from object`)
+
+		return nil, diags
+	}
+
+	accessKeyVal, ok := accessKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute))
+	}
+
+	apiProxyAttribute, ok := attributes["api_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`api_proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	apiProxyVal, ok := apiProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute))
+	}
+
+	backupProviderAttribute, ok := attributes["backup_provider"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`backup_provider is missing from object`)
+
+		return nil, diags
+	}
+
+	backupProviderVal, ok := backupProviderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute))
+	}
+
+	bypassProxyAttribute, ok := attributes["bypass_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`bypass_proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	bypassProxyVal, ok := bypassProxyAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute))
+	}
+
+	changeManagementConfigAttribute, ok := attributes["change_management_config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`change_management_config is missing from object`)
+
+		return nil, diags
+	}
+
+	changeManagementConfigVal, ok := changeManagementConfigAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute))
+	}
+
+	cmdbConfigAttribute, ok := attributes["cmdb_config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_config is missing from object`)
+
+		return nil, diags
+	}
+
+	cmdbConfigVal, ok := cmdbConfigAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return nil, diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	configManagementIdAttribute, ok := attributes["config_management_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`config_management_id is missing from object`)
+
+		return nil, diags
+	}
+
+	configManagementIdVal, ok := configManagementIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
+	}
+
+	costingAttribute, ok := attributes["costing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing is missing from object`)
+
+		return nil, diags
+	}
+
+	costingVal, ok := costingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute))
+	}
+
+	costingBucketAttribute, ok := attributes["costing_bucket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_bucket is missing from object`)
+
+		return nil, diags
+	}
+
+	costingBucketVal, ok := costingBucketAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute))
+	}
+
+	costingFolderAttribute, ok := attributes["costing_folder"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_folder is missing from object`)
+
+		return nil, diags
+	}
+
+	costingFolderVal, ok := costingFolderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute))
+	}
+
+	costingKeyAttribute, ok := attributes["costing_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_key is missing from object`)
+
+		return nil, diags
+	}
+
+	costingKeyVal, ok := costingKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute))
+	}
+
+	costingReportNameAttribute, ok := attributes["costing_report_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_report_name is missing from object`)
+
+		return nil, diags
+	}
+
+	costingReportNameVal, ok := costingReportNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute))
+	}
+
+	costingSecretAttribute, ok := attributes["costing_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_secret is missing from object`)
+
+		return nil, diags
+	}
+
+	costingSecretVal, ok := costingSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute))
+	}
+
+	credentialsAttribute, ok := attributes["credentials"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`credentials is missing from object`)
+
+		return nil, diags
+	}
+
+	credentialsVal, ok := credentialsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute))
+	}
+
+	darkModeLogoAttribute, ok := attributes["dark_mode_logo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dark_mode_logo is missing from object`)
+
+		return nil, diags
+	}
+
+	darkModeLogoVal, ok := darkModeLogoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute))
+	}
+
+	domainAttribute, ok := attributes["domain"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`domain is missing from object`)
+
+		return nil, diags
+	}
+
+	domainVal, ok := domainAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute))
+	}
+
+	ebsEncryptionAttribute, ok := attributes["ebs_encryption"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ebs_encryption is missing from object`)
+
+		return nil, diags
+	}
+
+	ebsEncryptionVal, ok := ebsEncryptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute))
+	}
+
+	endpointAttribute, ok := attributes["endpoint"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`endpoint is missing from object`)
+
+		return nil, diags
+	}
+
+	endpointVal, ok := endpointAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute))
+	}
+
+	guidanceAttribute, ok := attributes["guidance"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`guidance is missing from object`)
+
+		return nil, diags
+	}
+
+	guidanceVal, ok := guidanceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute))
+	}
+
+	logoAttribute, ok := attributes["logo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`logo is missing from object`)
+
+		return nil, diags
+	}
+
+	logoVal, ok := logoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute))
+	}
+
+	networkModeAttribute, ok := attributes["network_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_mode is missing from object`)
+
+		return nil, diags
+	}
+
+	networkModeVal, ok := networkModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute))
+	}
+
+	noProxyAttribute, ok := attributes["no_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	noProxyVal, ok := noProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
+	}
+
+	proxyAttribute, ok := attributes["proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`proxy is missing from object`)
+
+		return nil, diags
+	}
+
+	proxyVal, ok := proxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
+	}
+
+	regionAttribute, ok := attributes["region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`region is missing from object`)
+
+		return nil, diags
+	}
+
+	regionVal, ok := regionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute))
+	}
+
+	replicationProviderAttribute, ok := attributes["replication_provider"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`replication_provider is missing from object`)
+
+		return nil, diags
+	}
+
+	replicationProviderVal, ok := replicationProviderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute))
+	}
+
+	roleArnAttribute, ok := attributes["role_arn"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role_arn is missing from object`)
+
+		return nil, diags
+	}
+
+	roleArnVal, ok := roleArnAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute))
+	}
+
+	secretKeyAttribute, ok := attributes["secret_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`secret_key is missing from object`)
+
+		return nil, diags
+	}
+
+	secretKeyVal, ok := secretKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute))
+	}
+
+	timezoneAttribute, ok := attributes["timezone"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`timezone is missing from object`)
+
+		return nil, diags
+	}
+
+	timezoneVal, ok := timezoneAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute))
+	}
+
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return nil, diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
+	vdiGatewayAttribute, ok := attributes["vdi_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vdi_gateway is missing from object`)
+
+		return nil, diags
+	}
+
+	vdiGatewayVal, ok := vdiGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute))
+	}
+
+	vpcAttribute, ok := attributes["vpc"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vpc is missing from object`)
+
+		return nil, diags
+	}
+
+	vpcVal, ok := vpcAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAwsValue{
+		AccessKey:              accessKeyVal,
+		ApiProxy:               apiProxyVal,
+		BackupProvider:         backupProviderVal,
+		BypassProxy:            bypassProxyVal,
+		ChangeManagementConfig: changeManagementConfigVal,
+		CmdbConfig:             cmdbConfigVal,
+		CmdbDiscovery:          cmdbDiscoveryVal,
+		ConfigManagementId:     configManagementIdVal,
+		Costing:                costingVal,
+		CostingBucket:          costingBucketVal,
+		CostingFolder:          costingFolderVal,
+		CostingKey:             costingKeyVal,
+		CostingReportName:      costingReportNameVal,
+		CostingSecret:          costingSecretVal,
+		Credentials:            credentialsVal,
+		DarkModeLogo:           darkModeLogoVal,
+		Domain:                 domainVal,
+		EbsEncryption:          ebsEncryptionVal,
+		Endpoint:               endpointVal,
+		Guidance:               guidanceVal,
+		Logo:                   logoVal,
+		NetworkMode:            networkModeVal,
+		NoProxy:                noProxyVal,
+		Proxy:                  proxyVal,
+		Region:                 regionVal,
+		ReplicationProvider:    replicationProviderVal,
+		RoleArn:                roleArnVal,
+		SecretKey:              secretKeyVal,
+		Timezone:               timezoneVal,
+		UserData:               userDataVal,
+		VdiGateway:             vdiGatewayVal,
+		Vpc:                    vpcVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAwsValueNull() ConfigAwsValue {
+	return ConfigAwsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAwsValueUnknown() ConfigAwsValue {
+	return ConfigAwsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAwsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAwsValue Attribute Value",
+				"While creating a ConfigAwsValue value, a missing attribute value was detected. "+
+					"A ConfigAwsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAwsValue Attribute Type",
+				"While creating a ConfigAwsValue value, an invalid attribute value was detected. "+
+					"A ConfigAwsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAwsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAwsValue Attribute Value",
+				"While creating a ConfigAwsValue value, an extra attribute value was detected. "+
+					"A ConfigAwsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAwsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	accessKeyAttribute, ok := attributes["access_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`access_key is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	accessKeyVal, ok := accessKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute))
+	}
+
+	apiProxyAttribute, ok := attributes["api_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`api_proxy is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	apiProxyVal, ok := apiProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute))
+	}
+
+	backupProviderAttribute, ok := attributes["backup_provider"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`backup_provider is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	backupProviderVal, ok := backupProviderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute))
+	}
+
+	bypassProxyAttribute, ok := attributes["bypass_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`bypass_proxy is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	bypassProxyVal, ok := bypassProxyAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute))
+	}
+
+	changeManagementConfigAttribute, ok := attributes["change_management_config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`change_management_config is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	changeManagementConfigVal, ok := changeManagementConfigAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute))
+	}
+
+	cmdbConfigAttribute, ok := attributes["cmdb_config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_config is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	cmdbConfigVal, ok := cmdbConfigAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	configManagementIdAttribute, ok := attributes["config_management_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`config_management_id is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	configManagementIdVal, ok := configManagementIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
+	}
+
+	costingAttribute, ok := attributes["costing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingVal, ok := costingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute))
+	}
+
+	costingBucketAttribute, ok := attributes["costing_bucket"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_bucket is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingBucketVal, ok := costingBucketAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute))
+	}
+
+	costingFolderAttribute, ok := attributes["costing_folder"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_folder is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingFolderVal, ok := costingFolderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute))
+	}
+
+	costingKeyAttribute, ok := attributes["costing_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_key is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingKeyVal, ok := costingKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute))
+	}
+
+	costingReportNameAttribute, ok := attributes["costing_report_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_report_name is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingReportNameVal, ok := costingReportNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute))
+	}
+
+	costingSecretAttribute, ok := attributes["costing_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`costing_secret is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	costingSecretVal, ok := costingSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute))
+	}
+
+	credentialsAttribute, ok := attributes["credentials"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`credentials is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	credentialsVal, ok := credentialsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute))
+	}
+
+	darkModeLogoAttribute, ok := attributes["dark_mode_logo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dark_mode_logo is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	darkModeLogoVal, ok := darkModeLogoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute))
+	}
+
+	domainAttribute, ok := attributes["domain"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`domain is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	domainVal, ok := domainAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute))
+	}
+
+	ebsEncryptionAttribute, ok := attributes["ebs_encryption"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ebs_encryption is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	ebsEncryptionVal, ok := ebsEncryptionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute))
+	}
+
+	endpointAttribute, ok := attributes["endpoint"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`endpoint is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	endpointVal, ok := endpointAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute))
+	}
+
+	guidanceAttribute, ok := attributes["guidance"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`guidance is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	guidanceVal, ok := guidanceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute))
+	}
+
+	logoAttribute, ok := attributes["logo"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`logo is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	logoVal, ok := logoAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute))
+	}
+
+	networkModeAttribute, ok := attributes["network_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`network_mode is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	networkModeVal, ok := networkModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute))
+	}
+
+	noProxyAttribute, ok := attributes["no_proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_proxy is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	noProxyVal, ok := noProxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
+	}
+
+	proxyAttribute, ok := attributes["proxy"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`proxy is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	proxyVal, ok := proxyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
+	}
+
+	regionAttribute, ok := attributes["region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`region is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	regionVal, ok := regionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute))
+	}
+
+	replicationProviderAttribute, ok := attributes["replication_provider"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`replication_provider is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	replicationProviderVal, ok := replicationProviderAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute))
+	}
+
+	roleArnAttribute, ok := attributes["role_arn"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role_arn is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	roleArnVal, ok := roleArnAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute))
+	}
+
+	secretKeyAttribute, ok := attributes["secret_key"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`secret_key is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	secretKeyVal, ok := secretKeyAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute))
+	}
+
+	timezoneAttribute, ok := attributes["timezone"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`timezone is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	timezoneVal, ok := timezoneAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute))
+	}
+
+	userDataAttribute, ok := attributes["user_data"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`user_data is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	userDataVal, ok := userDataAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
+	}
+
+	vdiGatewayAttribute, ok := attributes["vdi_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vdi_gateway is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	vdiGatewayVal, ok := vdiGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute))
+	}
+
+	vpcAttribute, ok := attributes["vpc"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vpc is missing from object`)
+
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	vpcVal, ok := vpcAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAwsValueUnknown(), diags
+	}
+
+	return ConfigAwsValue{
+		AccessKey:              accessKeyVal,
+		ApiProxy:               apiProxyVal,
+		BackupProvider:         backupProviderVal,
+		BypassProxy:            bypassProxyVal,
+		ChangeManagementConfig: changeManagementConfigVal,
+		CmdbConfig:             cmdbConfigVal,
+		CmdbDiscovery:          cmdbDiscoveryVal,
+		ConfigManagementId:     configManagementIdVal,
+		Costing:                costingVal,
+		CostingBucket:          costingBucketVal,
+		CostingFolder:          costingFolderVal,
+		CostingKey:             costingKeyVal,
+		CostingReportName:      costingReportNameVal,
+		CostingSecret:          costingSecretVal,
+		Credentials:            credentialsVal,
+		DarkModeLogo:           darkModeLogoVal,
+		Domain:                 domainVal,
+		EbsEncryption:          ebsEncryptionVal,
+		Endpoint:               endpointVal,
+		Guidance:               guidanceVal,
+		Logo:                   logoVal,
+		NetworkMode:            networkModeVal,
+		NoProxy:                noProxyVal,
+		Proxy:                  proxyVal,
+		Region:                 regionVal,
+		ReplicationProvider:    replicationProviderVal,
+		RoleArn:                roleArnVal,
+		SecretKey:              secretKeyVal,
+		Timezone:               timezoneVal,
+		UserData:               userDataVal,
+		VdiGateway:             vdiGatewayVal,
+		Vpc:                    vpcVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAwsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAwsValue {
+	object, diags := NewConfigAwsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAwsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAwsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAwsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAwsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAwsValueMust(ConfigAwsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAwsType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAwsValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAwsValue{}
+
+type ConfigAwsValue struct {
+	AccessKey              basetypes.StringValue `tfsdk:"access_key"`
+	ApiProxy               basetypes.StringValue `tfsdk:"api_proxy"`
+	BackupProvider         basetypes.StringValue `tfsdk:"backup_provider"`
+	BypassProxy            basetypes.BoolValue   `tfsdk:"bypass_proxy"`
+	ChangeManagementConfig basetypes.StringValue `tfsdk:"change_management_config"`
+	CmdbConfig             basetypes.StringValue `tfsdk:"cmdb_config"`
+	CmdbDiscovery          basetypes.BoolValue   `tfsdk:"cmdb_discovery"`
+	ConfigManagementId     basetypes.StringValue `tfsdk:"config_management_id"`
+	Costing                basetypes.StringValue `tfsdk:"costing"`
+	CostingBucket          basetypes.StringValue `tfsdk:"costing_bucket"`
+	CostingFolder          basetypes.StringValue `tfsdk:"costing_folder"`
+	CostingKey             basetypes.StringValue `tfsdk:"costing_key"`
+	CostingReportName      basetypes.StringValue `tfsdk:"costing_report_name"`
+	CostingSecret          basetypes.StringValue `tfsdk:"costing_secret"`
+	Credentials            basetypes.StringValue `tfsdk:"credentials"`
+	DarkModeLogo           basetypes.StringValue `tfsdk:"dark_mode_logo"`
+	Domain                 basetypes.StringValue `tfsdk:"domain"`
+	EbsEncryption          basetypes.StringValue `tfsdk:"ebs_encryption"`
+	Endpoint               basetypes.StringValue `tfsdk:"endpoint"`
+	Guidance               basetypes.StringValue `tfsdk:"guidance"`
+	Logo                   basetypes.StringValue `tfsdk:"logo"`
+	NetworkMode            basetypes.StringValue `tfsdk:"network_mode"`
+	NoProxy                basetypes.StringValue `tfsdk:"no_proxy"`
+	Proxy                  basetypes.StringValue `tfsdk:"proxy"`
+	Region                 basetypes.StringValue `tfsdk:"region"`
+	ReplicationProvider    basetypes.StringValue `tfsdk:"replication_provider"`
+	RoleArn                basetypes.StringValue `tfsdk:"role_arn"`
+	SecretKey              basetypes.StringValue `tfsdk:"secret_key"`
+	Timezone               basetypes.StringValue `tfsdk:"timezone"`
+	UserData               basetypes.StringValue `tfsdk:"user_data"`
+	VdiGateway             basetypes.StringValue `tfsdk:"vdi_gateway"`
+	Vpc                    basetypes.StringValue `tfsdk:"vpc"`
+	state                  attr.ValueState
+}
+
+func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 32)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["access_key"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["api_proxy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["backup_provider"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["bypass_proxy"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["change_management_config"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cmdb_config"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cmdb_discovery"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["config_management_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing_bucket"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing_folder"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing_key"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing_report_name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["costing_secret"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["credentials"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dark_mode_logo"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["domain"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["ebs_encryption"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["endpoint"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["guidance"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["logo"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["network_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["no_proxy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["proxy"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["region"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["replication_provider"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["role_arn"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["secret_key"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["timezone"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["user_data"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["vdi_gateway"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["vpc"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 32)
+
+		val, err = v.AccessKey.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["access_key"] = val
+
+		val, err = v.ApiProxy.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["api_proxy"] = val
+
+		val, err = v.BackupProvider.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["backup_provider"] = val
+
+		val, err = v.BypassProxy.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["bypass_proxy"] = val
+
+		val, err = v.ChangeManagementConfig.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["change_management_config"] = val
+
+		val, err = v.CmdbConfig.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cmdb_config"] = val
+
+		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cmdb_discovery"] = val
+
+		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["config_management_id"] = val
+
+		val, err = v.Costing.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing"] = val
+
+		val, err = v.CostingBucket.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing_bucket"] = val
+
+		val, err = v.CostingFolder.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing_folder"] = val
+
+		val, err = v.CostingKey.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing_key"] = val
+
+		val, err = v.CostingReportName.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing_report_name"] = val
+
+		val, err = v.CostingSecret.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["costing_secret"] = val
+
+		val, err = v.Credentials.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["credentials"] = val
+
+		val, err = v.DarkModeLogo.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dark_mode_logo"] = val
+
+		val, err = v.Domain.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["domain"] = val
+
+		val, err = v.EbsEncryption.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ebs_encryption"] = val
+
+		val, err = v.Endpoint.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["endpoint"] = val
+
+		val, err = v.Guidance.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["guidance"] = val
+
+		val, err = v.Logo.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["logo"] = val
+
+		val, err = v.NetworkMode.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["network_mode"] = val
+
+		val, err = v.NoProxy.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["no_proxy"] = val
+
+		val, err = v.Proxy.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["proxy"] = val
+
+		val, err = v.Region.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["region"] = val
+
+		val, err = v.ReplicationProvider.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["replication_provider"] = val
+
+		val, err = v.RoleArn.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["role_arn"] = val
+
+		val, err = v.SecretKey.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["secret_key"] = val
+
+		val, err = v.Timezone.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["timezone"] = val
+
+		val, err = v.UserData.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["user_data"] = val
+
+		val, err = v.VdiGateway.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vdi_gateway"] = val
+
+		val, err = v.Vpc.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vpc"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAwsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAwsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAwsValue) String() string {
+	return "ConfigAwsValue"
+}
+
+func (v ConfigAwsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"access_key":               basetypes.StringType{},
+		"api_proxy":                basetypes.StringType{},
+		"backup_provider":          basetypes.StringType{},
+		"bypass_proxy":             basetypes.BoolType{},
+		"change_management_config": basetypes.StringType{},
+		"cmdb_config":              basetypes.StringType{},
+		"cmdb_discovery":           basetypes.BoolType{},
+		"config_management_id":     basetypes.StringType{},
+		"costing":                  basetypes.StringType{},
+		"costing_bucket":           basetypes.StringType{},
+		"costing_folder":           basetypes.StringType{},
+		"costing_key":              basetypes.StringType{},
+		"costing_report_name":      basetypes.StringType{},
+		"costing_secret":           basetypes.StringType{},
+		"credentials":              basetypes.StringType{},
+		"dark_mode_logo":           basetypes.StringType{},
+		"domain":                   basetypes.StringType{},
+		"ebs_encryption":           basetypes.StringType{},
+		"endpoint":                 basetypes.StringType{},
+		"guidance":                 basetypes.StringType{},
+		"logo":                     basetypes.StringType{},
+		"network_mode":             basetypes.StringType{},
+		"no_proxy":                 basetypes.StringType{},
+		"proxy":                    basetypes.StringType{},
+		"region":                   basetypes.StringType{},
+		"replication_provider":     basetypes.StringType{},
+		"role_arn":                 basetypes.StringType{},
+		"secret_key":               basetypes.StringType{},
+		"timezone":                 basetypes.StringType{},
+		"user_data":                basetypes.StringType{},
+		"vdi_gateway":              basetypes.StringType{},
+		"vpc":                      basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"access_key":               v.AccessKey,
+			"api_proxy":                v.ApiProxy,
+			"backup_provider":          v.BackupProvider,
+			"bypass_proxy":             v.BypassProxy,
+			"change_management_config": v.ChangeManagementConfig,
+			"cmdb_config":              v.CmdbConfig,
+			"cmdb_discovery":           v.CmdbDiscovery,
+			"config_management_id":     v.ConfigManagementId,
+			"costing":                  v.Costing,
+			"costing_bucket":           v.CostingBucket,
+			"costing_folder":           v.CostingFolder,
+			"costing_key":              v.CostingKey,
+			"costing_report_name":      v.CostingReportName,
+			"costing_secret":           v.CostingSecret,
+			"credentials":              v.Credentials,
+			"dark_mode_logo":           v.DarkModeLogo,
+			"domain":                   v.Domain,
+			"ebs_encryption":           v.EbsEncryption,
+			"endpoint":                 v.Endpoint,
+			"guidance":                 v.Guidance,
+			"logo":                     v.Logo,
+			"network_mode":             v.NetworkMode,
+			"no_proxy":                 v.NoProxy,
+			"proxy":                    v.Proxy,
+			"region":                   v.Region,
+			"replication_provider":     v.ReplicationProvider,
+			"role_arn":                 v.RoleArn,
+			"secret_key":               v.SecretKey,
+			"timezone":                 v.Timezone,
+			"user_data":                v.UserData,
+			"vdi_gateway":              v.VdiGateway,
+			"vpc":                      v.Vpc,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAwsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAwsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AccessKey.Equal(other.AccessKey) {
+		return false
+	}
+
+	if !v.ApiProxy.Equal(other.ApiProxy) {
+		return false
+	}
+
+	if !v.BackupProvider.Equal(other.BackupProvider) {
+		return false
+	}
+
+	if !v.BypassProxy.Equal(other.BypassProxy) {
+		return false
+	}
+
+	if !v.ChangeManagementConfig.Equal(other.ChangeManagementConfig) {
+		return false
+	}
+
+	if !v.CmdbConfig.Equal(other.CmdbConfig) {
+		return false
+	}
+
+	if !v.CmdbDiscovery.Equal(other.CmdbDiscovery) {
+		return false
+	}
+
+	if !v.ConfigManagementId.Equal(other.ConfigManagementId) {
+		return false
+	}
+
+	if !v.Costing.Equal(other.Costing) {
+		return false
+	}
+
+	if !v.CostingBucket.Equal(other.CostingBucket) {
+		return false
+	}
+
+	if !v.CostingFolder.Equal(other.CostingFolder) {
+		return false
+	}
+
+	if !v.CostingKey.Equal(other.CostingKey) {
+		return false
+	}
+
+	if !v.CostingReportName.Equal(other.CostingReportName) {
+		return false
+	}
+
+	if !v.CostingSecret.Equal(other.CostingSecret) {
+		return false
+	}
+
+	if !v.Credentials.Equal(other.Credentials) {
+		return false
+	}
+
+	if !v.DarkModeLogo.Equal(other.DarkModeLogo) {
+		return false
+	}
+
+	if !v.Domain.Equal(other.Domain) {
+		return false
+	}
+
+	if !v.EbsEncryption.Equal(other.EbsEncryption) {
+		return false
+	}
+
+	if !v.Endpoint.Equal(other.Endpoint) {
+		return false
+	}
+
+	if !v.Guidance.Equal(other.Guidance) {
+		return false
+	}
+
+	if !v.Logo.Equal(other.Logo) {
+		return false
+	}
+
+	if !v.NetworkMode.Equal(other.NetworkMode) {
+		return false
+	}
+
+	if !v.NoProxy.Equal(other.NoProxy) {
+		return false
+	}
+
+	if !v.Proxy.Equal(other.Proxy) {
+		return false
+	}
+
+	if !v.Region.Equal(other.Region) {
+		return false
+	}
+
+	if !v.ReplicationProvider.Equal(other.ReplicationProvider) {
+		return false
+	}
+
+	if !v.RoleArn.Equal(other.RoleArn) {
+		return false
+	}
+
+	if !v.SecretKey.Equal(other.SecretKey) {
+		return false
+	}
+
+	if !v.Timezone.Equal(other.Timezone) {
+		return false
+	}
+
+	if !v.UserData.Equal(other.UserData) {
+		return false
+	}
+
+	if !v.VdiGateway.Equal(other.VdiGateway) {
+		return false
+	}
+
+	if !v.Vpc.Equal(other.Vpc) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAwsValue) Type(ctx context.Context) attr.Type {
+	return ConfigAwsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"access_key":               basetypes.StringType{},
+		"api_proxy":                basetypes.StringType{},
+		"backup_provider":          basetypes.StringType{},
+		"bypass_proxy":             basetypes.BoolType{},
+		"change_management_config": basetypes.StringType{},
+		"cmdb_config":              basetypes.StringType{},
+		"cmdb_discovery":           basetypes.BoolType{},
+		"config_management_id":     basetypes.StringType{},
+		"costing":                  basetypes.StringType{},
+		"costing_bucket":           basetypes.StringType{},
+		"costing_folder":           basetypes.StringType{},
+		"costing_key":              basetypes.StringType{},
+		"costing_report_name":      basetypes.StringType{},
+		"costing_secret":           basetypes.StringType{},
+		"credentials":              basetypes.StringType{},
+		"dark_mode_logo":           basetypes.StringType{},
+		"domain":                   basetypes.StringType{},
+		"ebs_encryption":           basetypes.StringType{},
+		"endpoint":                 basetypes.StringType{},
+		"guidance":                 basetypes.StringType{},
+		"logo":                     basetypes.StringType{},
+		"network_mode":             basetypes.StringType{},
+		"no_proxy":                 basetypes.StringType{},
+		"proxy":                    basetypes.StringType{},
+		"region":                   basetypes.StringType{},
+		"replication_provider":     basetypes.StringType{},
+		"role_arn":                 basetypes.StringType{},
+		"secret_key":               basetypes.StringType{},
+		"timezone":                 basetypes.StringType{},
+		"user_data":                basetypes.StringType{},
+		"vdi_gateway":              basetypes.StringType{},
+		"vpc":                      basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = ConfigHvmType{}
@@ -586,12 +2844,14 @@ func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -630,6 +2890,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -637,6 +2898,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["certificate_provider"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1463,12 +3725,14 @@ func (t ConfigVmwareType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1533,6 +3797,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 15)
 
 		val, err = v.ApiUrl.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1540,6 +3805,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_url"] = val
 
 		val, err = v.ApiVersion.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1547,6 +3813,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_version"] = val
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1554,6 +3821,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["certificate_provider"] = val
 
 		val, err = v.Cluster.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1561,6 +3829,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["cluster"] = val
 
 		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1568,6 +3837,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["config_management_id"] = val
 
 		val, err = v.Datacenter.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1575,6 +3845,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["datacenter"] = val
 
 		val, err = v.EnableDiskTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1582,6 +3853,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_disk_type_selection"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1589,6 +3861,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_network_type_selection"] = val
 
 		val, err = v.EnableStorageTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1596,6 +3869,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_storage_type_selection"] = val
 
 		val, err = v.EnableVnc.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1603,6 +3877,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_vnc"] = val
 
 		val, err = v.HideHostSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1610,6 +3885,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["hide_host_selection"] = val
 
 		val, err = v.Password.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1617,6 +3893,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["password"] = val
 
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1624,6 +3901,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["resource_pool"] = val
 
 		val, err = v.RpcMode.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1631,6 +3909,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["rpc_mode"] = val
 
 		val, err = v.Username.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

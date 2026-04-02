@@ -98,7 +98,7 @@ func (g *Resource) Create(
 
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
-		configVMware := sdk.NewVMWareInstanceConfiguration1WithDefaults()
+		configVMware := sdk.NewVMWareInstanceConfiguration2WithDefaults()
 		configVMware.SetNestedVirtualization(plan.ConfigVmware.NestedVirtualization.ValueString())
 		configVMware.SetCreateUser(plan.ConfigVmware.CreateUser.ValueBool())
 		configVMware.SetNoAgent(plan.ConfigVmware.NoAgent.ValueBool())
@@ -106,7 +106,7 @@ func (g *Resource) Create(
 		configVMware.SetVmwareFolderId(plan.ConfigVmware.VmwareFolderId.ValueString())
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
-			VMWareInstanceConfiguration1: configVMware,
+			VMWareInstanceConfiguration2: configVMware,
 		}
 
 	// Generic config
@@ -122,8 +122,9 @@ func (g *Resource) Create(
 
 			return
 		}
-		configMap := make(map[string]any)
-		configDataMap, ok := configAny.(map[string]any)
+		// use interface{} to satisfy SDK AdditionalProperties
+		configMap := make(map[string]interface{})
+		configDataMap, ok := configAny.(map[string]interface{})
 		if ok {
 			configMap = configDataMap
 		} else {
@@ -134,8 +135,15 @@ func (g *Resource) Create(
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
-			MapmapOfStringAny: &configMap,
+			GenericInstanceConfiguration2: &sdk.GenericInstanceConfiguration2{
+				AdditionalProperties: configMap,
+			},
 		}
+	}
+
+	// description
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		reqInstance.Instance.SetDescription(plan.Description.ValueString())
 	}
 
 	// evars
@@ -237,6 +245,25 @@ func (g *Resource) Create(
 		return
 	}
 	reqInstance.SetPorts(ports)
+
+	// service_plan_options
+	if !plan.ServicePlanOptions.IsNull() {
+		servicePlanOptions := sdk.NewServicePlanOptionsWithDefaults()
+		memory := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
+		servicePlanOptions.MaxMemory = &memory
+		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
+		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
+		servicePlanOptionsMap, err := servicePlanOptions.ToMap()
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error creating instance",
+				fmt.Sprintf("could not convert service plan options to map: %v", err),
+			)
+
+			return
+		}
+		reqInstance.ServicePlanOptions = servicePlanOptionsMap
+	}
 
 	// tags
 	tags, diags := convert.FromSetType(ctx, plan.Tags, createTagMapper)
@@ -355,9 +382,10 @@ func (g *Resource) Create(
 		return
 	}
 
-	state, diag := getInstanceAsState(ctx, instanceId, client, plan)
-	if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+	// Read the instance state
+	state, d := getInstanceAsState(ctx, instanceId, client, plan)
+	if d.HasError() {
+		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(
 			"failed to read instance state",
 			fmt.Sprintf("Instance %d was created but could not be read", instanceId),
@@ -366,6 +394,9 @@ func (g *Resource) Create(
 
 		return
 	}
+
+	// Set ServicePlanOptions in state.
+	state.ServicePlanOptions = plan.ServicePlanOptions
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
