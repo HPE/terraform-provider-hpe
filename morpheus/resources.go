@@ -39,6 +39,7 @@ func (s SubProvider) GetResources(
 		instance.NewResource,
 		policy.NewResource,
 		cluster.NewResource,
+		ostypeimage.NewResource,
 	}
 
 	return resources
