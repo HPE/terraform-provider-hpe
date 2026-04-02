@@ -32,7 +32,7 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to error in resource code")
+	// t.Skip("Skipping due to error in resource code")
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -866,6 +866,108 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 			"hpe_morpheus_form.example",
 			"option_type6_type",
 			"number",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_code",
+			"network-manager-input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_default_value",
+			"test123",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_description",
+			"Terraform network manager example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_display_value_on_details",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_enable_ip_mode_selection",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_exclude_from_search",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_export_meta",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_field_label",
+			"network input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_field_name",
+			"networkInput",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_help_block",
+			"Select a network",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_hidden",
+			"false",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_locked",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_name",
+			"tf network manager example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_placeholder",
+			"Select network",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_required",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_show_network_type_selection",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type7_type",
+			"networkManager",
 		),
 	}
 
