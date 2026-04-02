@@ -193,14 +193,12 @@ data "hpe_morpheus_service_plan" "test" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config: providerConfig + dataSourcesConfig + resourceConfig,
+				Check:  checkFn,
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},
@@ -279,7 +277,7 @@ data "hpe_morpheus_service_plan" "test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_generic_hvm",
 			"description",
-			"A test generic cluster",
+			"A HVM cluster created with a dynamic config",
 		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_cluster.example_generic_hvm",
@@ -363,14 +361,12 @@ data "hpe_morpheus_service_plan" "test" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config: providerConfig + dataSourcesConfig + resourceConfig,
+				Check:  checkFn,
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},
