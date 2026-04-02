@@ -23,8 +23,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"category": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The category of the osType.\n",
-				MarkdownDescription: "The category of the osType.\n",
+				Description:         "The category of the osType.",
+				MarkdownDescription: "The category of the osType.",
 			},
 			"cloud_init_version": schema.StringAttribute{
 				Optional:            true,
@@ -43,8 +43,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The description of the osType. \n",
-				MarkdownDescription: "The description of the osType. \n",
+				Description:         "The description of the osType.",
+				MarkdownDescription: "The description of the osType.",
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
@@ -60,30 +60,30 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the osType.\n",
-				MarkdownDescription: "The name of the osType.\n",
+				Description:         "The name of the osType.",
+				MarkdownDescription: "The name of the osType.",
 			},
 			"os_codename": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The osCodename of the osType.\n",
-				MarkdownDescription: "The osCodename of the osType.\n",
+				Description:         "The osCodename of the osType.",
+				MarkdownDescription: "The osCodename of the osType.",
 			},
 			"os_family": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The family of the osType.\n",
-				MarkdownDescription: "The family of the osType.\n",
+				Description:         "The family of the osType.",
+				MarkdownDescription: "The family of the osType.",
 			},
 			"os_name": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The osName of the osType.\n",
-				MarkdownDescription: "The osName of the osType.\n",
+				Description:         "The osName of the osType.",
+				MarkdownDescription: "The osName of the osType.",
 			},
 			"os_version": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The osVersion of the osType.\n",
-				MarkdownDescription: "The osVersion of the osType.\n",
+				Description:         "The osVersion of the osType.",
+				MarkdownDescription: "The osVersion of the osType.",
 			},
 			"platform": schema.StringAttribute{
 				Required:            true,
@@ -92,8 +92,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"vendor": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The vendor of the osType.\n",
-				MarkdownDescription: "The vendor of the osType.\n",
+				Description:         "The vendor of the osType.",
+				MarkdownDescription: "The vendor of the osType.",
 			},
 		},
 	}
