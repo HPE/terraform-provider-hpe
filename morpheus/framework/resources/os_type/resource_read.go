@@ -63,6 +63,7 @@ func getOsTypeAsState(
 	osType := osTypeResp.GetOsType()
 
 	state.Id = convert.Int64ToType(osType.Id)
+	state.Code = convert.StrToType(osType.Code)
 	state.BitCount = convert.Int64ToType(osType.BitCount)
 	state.Category = convert.StrToType(osType.Category.Get())
 	state.CloudInitVersion = convert.StrToType(osType.CloudInitVersion)

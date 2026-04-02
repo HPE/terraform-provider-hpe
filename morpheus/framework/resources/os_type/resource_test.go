@@ -123,10 +123,9 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ResourceName:            "hpe_morpheus_os_type.example",
-				ImportStateVerifyIgnore: []string{"code"},
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_os_type.example",
 			},
 		},
 	})
@@ -297,10 +296,9 @@ resource "hpe_morpheus_os_type" "example_required" {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ResourceName:            "hpe_morpheus_os_type.example_required",
-				ImportStateVerifyIgnore: []string{"code"},
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_os_type.example_required",
 			},
 		},
 	})
