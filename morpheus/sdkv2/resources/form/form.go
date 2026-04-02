@@ -770,10 +770,10 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 				}
 			case typeRadio:
 				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 			case typeSelect:
 				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 				config := make(map[string]any)
 				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 				config["sortable"] = optionTypeConfig["sortable"]
@@ -800,7 +800,7 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
 				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 				row["config"] = config
 			case typeHidden:
 				row["defaultValue"] = optionTypeConfig["default_value"]
@@ -917,10 +917,10 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 						}
 					case typeRadio:
 						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 					case typeSelect:
 						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 						config := make(map[string]any)
 						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 						config["sortable"] = optionTypeConfig["sortable"]
@@ -947,7 +947,7 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
 						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 						row["config"] = config
 					case typeHidden:
 						row["defaultValue"] = optionTypeConfig["default_value"]
@@ -1334,10 +1334,10 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				}
 			case typeRadio:
 				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 			case typeSelect:
 				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 				config := make(map[string]any)
 				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 				config["sortable"] = optionTypeConfig["sortable"]
@@ -1364,7 +1364,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
 				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = optionTypeConfig["option_list_id"]
+				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 				row["config"] = config
 			case typeHidden:
 				row["defaultValue"] = optionTypeConfig["default_value"]
@@ -1483,10 +1483,10 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 						}
 					case typeRadio:
 						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 					case typeSelect:
 						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 						config := make(map[string]any)
 						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 						config["sortable"] = optionTypeConfig["sortable"]
@@ -1513,7 +1513,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
 						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = optionTypeConfig["option_list_id"]
+						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 						row["config"] = config
 					case typeHidden:
 						row["defaultValue"] = optionTypeConfig["default_value"]
