@@ -67,6 +67,7 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 		return nil
 	}
 
+	// Perform validation specific to option type selected
 	switch optionTypeValue.AsString() {
 	case typeCheckbox:
 		defaultValue := optionType.GetAttr("default_value")
@@ -75,7 +76,8 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 		}
 
 		if !defaultValue.IsNull() {
-			return fmt.Errorf("default_value cannot be configured for checkbox inputs at %s[%d]; use default_checked instead", path, index)
+			return fmt.Errorf("default_value cannot be configured for checkbox inputs at %s[%d];"+
+				"use default_checked instead", path, index)
 		}
 	}
 
