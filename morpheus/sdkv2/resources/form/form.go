@@ -1673,9 +1673,8 @@ func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	diagsFromUpdate := resourceFormUpdate(ctx, d, meta)
 	if diagsFromUpdate.HasError() {
-		logStr := fmt.Sprintf("Error during pre-destroy update of form to remove option types and field groups: %s",
+		logStr := fmt.Sprintf("Error during pre-destroy update of form to remove option types and field groups: %v",
 			diagsFromUpdate)
-		log.Printf(logStr)
 
 		return diag.Errorf(logStr)
 	}
