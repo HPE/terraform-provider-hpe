@@ -160,7 +160,7 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 - `config` (Dynamic) Generic Cluster Configuration
 - `config_hvm` (Attributes) Configuration for HVM cluster servers (see [below for nested schema](#nestedatt--config_hvm))
 - `description` (String) Description of the cluster to be created
-- `labels` (Set of String) This will set labels on the cluster as well as its servers.
+- `labels` (Set of String) Array of strings (keywords).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `workflow_id` (Number) Optional Workflow Id desired to be run
 
