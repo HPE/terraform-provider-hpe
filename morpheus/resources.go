@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
@@ -32,6 +33,7 @@ func (s SubProvider) GetResources(
 		image.NewResource,
 		network.NewResource,
 		ostype.NewResource,
+		ostypeimage.NewResource,
 		user.NewResource,
 		role.NewResource,
 		serviceplan.NewResource,

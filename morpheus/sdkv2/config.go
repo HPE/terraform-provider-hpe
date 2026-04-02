@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package morpheus
 
@@ -15,15 +15,14 @@ import (
 // Config is the configuration structure used to instantiate the Morpheus
 // provider.  Only Url and AccessToken are required.
 type Config struct {
-	Url          string
-	AccessToken  string
-	RefreshToken string // optional and unused
-	Username     string
-	Password     string
-	ClientId     string
-	// TODO need to decide if we want to keep tenant subdomain here
-	// TenantSubdomain string
-	Insecure bool
+	Url             string
+	AccessToken     string
+	RefreshToken    string // optional and unused
+	Username        string
+	Password        string
+	ClientId        string
+	TenantSubdomain string
+	Insecure        bool
 
 	client *sdklegacy.Client
 }
@@ -38,6 +37,7 @@ func (c *Config) Client() (*sdklegacy.Client, diag.Diagnostics) {
 			c.Username,
 			c.Password,
 			c.AccessToken,
+			c.TenantSubdomain,
 			sdklegacy.SkipLogin(),
 			sdklegacy.WithDebug(httptrace.IsEnabled()),
 			sdklegacy.WithInsecure(c.Insecure),
