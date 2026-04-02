@@ -885,8 +885,9 @@ func getPolicyByID(
 	}
 
 	// Handle Owner
-	if policy.Owner.IsSetId() {
-		owner := policy.Owner
+	owner := policy.GetOwner()
+
+	if owner.Id != nil {
 		ownerValue, ownerDiags := NewOwnerValue(
 			OwnerValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{

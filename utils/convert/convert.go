@@ -85,9 +85,9 @@ func BoolToType(b *bool) types.Bool {
 
 func StringToBool(ctx context.Context, s string) types.Bool {
 	switch strings.ToLower(s) {
-	case "on", "true", "yes":
+	case "on", "true", "yes", "1":
 		return types.BoolValue(true)
-	case "off", "false", "no":
+	case "off", "false", "no", "0":
 		return types.BoolValue(false)
 	default:
 		tflog.Debug(ctx, fmt.Sprintf("converting string to BoolNull: %s", s))

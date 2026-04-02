@@ -1,0 +1,27 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+An OS type image maps a virtual image to an operating system type, optionally scoped to a specific cloud and provision type. This is used to define which virtual images are available for a given OS type during provisioning.
+
+~> All attributes on this resource force recreation when changed. There is no in-place update.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_os_type_image/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+OS type images can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_os_type_image.example 123
+```

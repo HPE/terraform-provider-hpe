@@ -53,6 +53,19 @@ func (r *Resource) Schema(
 	resp.Schema = UserResourceSchema(ctx)
 }
 
+func getUser(
+	ctx context.Context,
+	id int64,
+	client *sdk.APIClient,
+) (*sdk.GetUser200Response, error) {
+	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("user %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
+	}
+
+	return u, nil
+}
+
 // populate user resource model with current API values
 func getUserAsState(
 	ctx context.Context,
@@ -391,18 +404,54 @@ func (r *Resource) Update(
 	}
 
 	id := plan.Id.ValueInt64()
+
+	originalUserState, err := getUser(ctx, id, client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			fmt.Sprintf("user %d: failed to read from api", id),
+		)
+
+		return
+	}
+
 	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
 
 	updateUserReq := sdk.NewUpdateUserRequest(*updateUser)
 	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
-		)
+		if hresp.StatusCode != http.StatusInternalServerError {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
+			)
 
-		return
+			return
+		}
+
+		// Work around an API bug
+		newUserState, err := getUser(ctx, id, client)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %d: failed to read from api", id),
+			)
+
+			return
+		}
+
+		if !newUserState.GetUser().LastUpdated.After(*originalUserState.GetUser().LastUpdated) {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %d: resource was not updated", id),
+			)
+		}
+
+		innerUser := sdk.NewAddUser200ResponseAllOfUserWithDefaults()
+		innerUser.SetId(id)
+		user = sdk.NewUpdateUser200Response()
+		user.SetUser(*innerUser)
 	}
 
 	if user.GetUser().Id == nil {

@@ -55,6 +55,11 @@ func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 			"name",
 			"Demo Inventory",
 		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_ansible_tower_inventory.example",
+			"ansible_tower_integration_id",
+			"1",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)

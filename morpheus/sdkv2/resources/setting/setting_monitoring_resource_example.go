@@ -50,7 +50,7 @@ func RenderSettingMonitoringConfig(t *testing.T, overrides map[string]string) (s
 		return "", fmt.Errorf("unable to get current file path")
 	}
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "setting_monitoring_resource.tf.tmpl")
+	templatePath := filepath.Join(dir, "setting_monitoring_resource_test.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

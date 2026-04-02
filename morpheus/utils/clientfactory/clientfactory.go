@@ -5,6 +5,7 @@ package clientfactory
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -50,6 +51,7 @@ func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
 			cf.model.URL.ValueString(),
 			cf.model.Username.ValueString(),
 			cf.model.Password.ValueString(),
+			cf.model.TenantSubdomain.ValueString(),
 			cf.model.AccessToken.ValueString(),
 			options...,
 		)
@@ -97,6 +99,7 @@ func NewAPIClient(
 	url,
 	username string,
 	password string,
+	tenantSubdomain string,
 	token string,
 	opts ...ClientOption,
 ) *sdk.APIClient {
@@ -133,6 +136,9 @@ func NewAPIClient(
 				token,
 			)
 		} else {
+			if tenantSubdomain != "" {
+				username = fmt.Sprintf(`%s\\%s`, tenantSubdomain, username)
+			}
 			authRoundTripper = auth.NewCredsRoundTripper(
 				context.Background(),
 				transport,

@@ -17,17 +17,18 @@ monitoring, and eventual decommissioning.
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is not supported during updates.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that allow the setting of options<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  will fail silently.<br><br>
 These will be addressed in a future release.
 
 -> Some general notes:<br><br>
 When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
 `network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
-will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a
-`terraform apply` will report that no changes have been made but will update the state-file to include
-the missing IP addresses.<br><br>
+will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a [refresh-only](https://developer.hashicorp.com/terraform/tutorials/state/refresh)
+`terraform plan --refresh-only` will report that one or more `network_interfaces` have changed. A subsequent
+`terraform apply --refresh-only` will update the State with the missing IP addresses.<br><br>
 `layout_size` is optional and at the moment the only supported value is `1` which is also the default.
 In other words we only support the creation of one VM per instance.  We may relax this restriction in a future release.<br><br>
 We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
@@ -35,6 +36,11 @@ If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
 `read` and `update` is 45 minutes.<br><br>
+**Update** is supported but has some limitations at the moment.  The addition and removal of volumes is supported
+during update. Existing volumes can have their size increased but not decreased.  **Do not** change the order of
+volumes in HCL.  Network interface changes will result in instance recreation.  Updates fail when removing optional
+fields or `evars`. Updates to `service_plan_options` for service plans that support the setting of options will
+fail silently.<br><br>
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
@@ -44,7 +50,8 @@ network configuration use the `hpe_morpheus_instance` `data-source` to read back
 
 -> Some of the examples below have the following settings in their `config` blocks:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- `no_agent` in static config (equivalent to `noAgent` in dynamic config) is set to `true`<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to `false`<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  `false`<br><br>
 These settings can be changed as required.
 
 ## HVM Instance
@@ -71,6 +78,13 @@ will be made.  The default timeout for `create`, `delete`, `read` and `update` i
 ## VMware VM Instance
 
 {{ tffile "morpheus/framework/resources/instance/example_vmware.tf" }}
+
+## VMware VM Instance with Service Plan Options
+
+Some Service Plans have options that must be set at the time of creation of the instance.
+
+{{ tffile "morpheus/framework/resources/instance/example_vmware_sp_options.tf" }}
+
 
 ## BMaaS Instance
 
