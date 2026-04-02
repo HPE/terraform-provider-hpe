@@ -9,4 +9,9 @@ var (
 	NewAwsCloudConfig    = sdk.NewAddCloudsRequestZoneConfigAnyOf
 	NewHvmCloudConfig    = sdk.NewAddCloudsRequestZoneConfigAnyOf2
 	NewVmwareCloudConfig = sdk.NewAddCloudsRequestZoneConfigAnyOf3
+
+	// Cluster
+	NewHvmClusterServerConfig = sdk.NewAddClusterRequestClusterServerConfigAnyOfOneOf6
+	// nolint:lll
+	NewHvmClusterServerConfigAsAnyOf = sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6AsAddClusterRequestClusterServerConfigAnyOf
 )

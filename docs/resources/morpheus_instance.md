@@ -639,6 +639,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
+- `description` (String) A description of the instance.
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
 - `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.

@@ -51,6 +51,7 @@ func NewSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 		url,
 		username,
 		password,
+		"",
 		token,
 		opts...,
 	)

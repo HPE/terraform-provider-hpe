@@ -113,10 +113,10 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.DisplayName = plan.Name.ValueStringPointer()
 	}
 
-	// TODO: DESCRIPTION IS MISSING FROM THE SCHEMA??
-	// if !plan.Description.IsNull() {
-	// 	instanceUpdateRequest.Description = plan.Description.ValueStringPointer()
-	// }
+	// description
+	if !plan.Description.IsNull() {
+		instanceUpdateRequest.Description = plan.Description.ValueStringPointer()
+	}
 
 	// instance_context
 	if !plan.InstanceContext.IsNull() && !plan.InstanceContext.IsUnknown() {
@@ -140,6 +140,9 @@ func makeUpdateAPIcalls(
 			return NewServicePlanOptionsValueNull()
 		}
 		instanceUpdateRequest.SetTags(tags)
+	} else {
+		// Morpheus will only remove tags if explicitly passed an empty list
+		instanceUpdateRequest.SetTags([]sdk.UpdateInstanceRequestInstanceTagsInner{})
 	}
 
 	updateRequest.SetInstance(*instanceUpdateRequest)
@@ -417,8 +420,10 @@ func isAPIUpdateNeeded(plan, state InstanceModel) bool {
 		return true
 	}
 
-	// TODO add description here
 	// description
+	if plan.Description != state.Description {
+		return true
+	}
 
 	// instance_context
 	if !plan.InstanceContext.Equal(state.InstanceContext) {
