@@ -280,3 +280,10 @@ Optional:
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
+## Update limitations
+
+~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
+
+## Import
+
+~> Import is currently not supported for the `hpe_morpheus_cluster` resource.
