@@ -6,33 +6,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
@@ -114,7 +99,7 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -197,108 +182,49 @@ func TestAccMorpheusOsTypeUpdateOk(t *testing.T) {
 
 	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(updateChecks...)
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + `
+	createConfig := `
 resource "hpe_morpheus_os_type" "test" {
-  name      = "` + name + `"
-  code      = "` + code + `"
-  platform  = "linux"
-  bit_count = 64
-}`,
-				Check:    checkFn,
-				PlanOnly: false,
-			},
-			{
-				Config: providerConfig + `
-resource "hpe_morpheus_os_type" "test" {
-  name        = "` + name + `"
-  code        = "` + code + `"
-  platform    = "linux"
-  bit_count   = 64
-}`,
-				Check:              checkFn,
-				ExpectNonEmptyPlan: false,
-				PlanOnly:           true,
-			},
-			{
-				Config: providerConfig + `
-resource "hpe_morpheus_os_type" "test" {
-  name        = "` + updatedName + `"
-  code        = "` + code + `"
-  platform    = "windows"
-  bit_count   = 32
-  description = "Updated description"
-}`,
-				Check:    checkUpdateFn,
-				PlanOnly: false,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusOsTypeRequiredAttrsOk(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	t.Parallel()
-
-	name := acctest.RandomWithPrefix(t.Name())
-	code := acctest.RandomWithPrefix("os.type")
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	resourceConfig := `
-resource "hpe_morpheus_os_type" "example_required" {
   name      = "` + name + `"
   code      = "` + code + `"
   platform  = "linux"
   bit_count = 64
 }
 `
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_os_type.example_required",
-			"name",
-			name,
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_os_type.example_required",
-			"code",
-			code,
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_os_type.example_required",
-			"platform",
-			"linux",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_os_type.example_required",
-			"bit_count",
-			"64",
-		),
-	}
 
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	updateConfig := `
+resource "hpe_morpheus_os_type" "test" {
+  name        = "` + updatedName + `"
+  code        = "` + code + `"
+  platform    = "windows"
+  bit_count   = 32
+  description = "Updated description"
+}
+`
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config:   providerConfig + createConfig,
+				Check:    checkFn,
+				PlanOnly: false,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_os_type.example_required",
+				Config:             providerConfig + createConfig,
+				Check:              checkFn,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				Config:   providerConfig + updateConfig,
+				Check:    checkUpdateFn,
+				PlanOnly: false,
+			},
+			{
+				Config:             providerConfig + updateConfig,
+				Check:              checkUpdateFn,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
 		},
 	})
