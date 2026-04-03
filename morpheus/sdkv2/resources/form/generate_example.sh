@@ -174,6 +174,27 @@
   OptionType8Placeholder 'Select cloud' \
   OptionType8Required 'true' \
   OptionType8Type 'cloud' \
+  OptionType9Code 'layout-input' \
+  OptionType9CloudFieldType 'value' \
+  OptionType9CloudId '1' \
+  OptionType9DefaultValue '' \
+  OptionType9Description 'Terraform layout example' \
+  OptionType9DisplayValueOnDetails 'true' \
+  OptionType9ExcludeFromSearch 'true' \
+  OptionType9ExportMeta 'true' \
+  OptionType9FieldLabel 'layout input' \
+  OptionType9FieldName 'layoutInput' \
+  OptionType9GroupFieldType 'value' \
+  OptionType9GroupId '1' \
+  OptionType9HelpBlock 'Select a layout' \
+  OptionType9Hidden 'false' \
+  OptionType9InstanceTypeCode 'apache' \
+  OptionType9InstanceTypeFieldType 'value' \
+  OptionType9Locked 'true' \
+  OptionType9Name 'tf layout example' \
+  OptionType9Placeholder 'Select layout' \
+  OptionType9Required 'true' \
+  OptionType9Type 'layout' \
   OptionType10AllowReadOnly 'true' \
   OptionType10Code 'group-input' \
   OptionType10DefaultValue 'test123' \
