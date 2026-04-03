@@ -135,6 +135,14 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search         = true
     show_network_type_selection = true
     enable_ip_mode_selection    = true
+    group_field_type            = "value"
+    group_id                    = "1"
+    cloud_field_type            = "value"
+    cloud_id                    = "1"
+    pool_field_type             = "value"
+    pool_id                     = "1"
+    layout_field_type           = "value"
+    layout_id                   = "1"
   }
 
   option_type {
