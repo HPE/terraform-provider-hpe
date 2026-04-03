@@ -1359,6 +1359,144 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 			"option_type10_type",
 			"group",
 		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_cloud_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_cloud_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_code",
+			"plan-input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_description",
+			"Terraform plan example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_display_value_on_details",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_exclude_from_search",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_export_meta",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_field_label",
+			"plan input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_field_name",
+			"planInput",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_group_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_group_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_help_block",
+			"Select a plan",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_hidden",
+			"false",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_layout_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_layout_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_locked",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_name",
+			"tf plan example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_placeholder",
+			"Select plan",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_pool_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_pool_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_required",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_show_pricing",
+			"false",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type12_type",
+			"plan",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
