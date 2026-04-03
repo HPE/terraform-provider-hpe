@@ -156,6 +156,25 @@ resource "hpe_morpheus_form" "example" {
     filter_from_resource     = true
   }
 
+  option_type {
+    name                     = "tf group example"
+    code                     = "group-input"
+    description              = "Terraform group example"
+    type                     = "group"
+    field_label              = "group input"
+    field_name               = "groupInput"
+    default_value            = "test123"
+    placeholder              = "Select group"
+    help_block               = "Select a group"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    allow_read_only          = true
+  }
+
   field_group {
     name                 = "fg1"
     description          = "testin"

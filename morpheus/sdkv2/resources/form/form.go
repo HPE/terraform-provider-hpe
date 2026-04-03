@@ -25,6 +25,7 @@ const (
 	typeCheckbox       = "checkbox"
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
+	typeGroup          = "group"
 	typeHidden         = "hidden"
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
@@ -43,7 +44,6 @@ const (
 	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
-	typeGroup          = "group"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
 	typeKeyValue       = "keyValue"
@@ -154,6 +154,11 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config := make(map[string]any)
 		config["filterResource"] = optionTypeConfig["filter_from_resource"]
 		row["config"] = config
+	case typeGroup:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -251,6 +256,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
+	case typeGroup:
+		row["allow_read_only"] = optionType.Config.AllowReadonly
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
@@ -398,11 +405,11 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, " +
+						"(byteSize, checkbox, cloud, code-editor, group, hidden, networkManager, number, password, radio, " +
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeNetworkManager, typeNumber,
 							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
@@ -560,6 +567,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"filter_from_resource": {
 					Type:        schema.TypeBool,
 					Description: "Whether to filter out resources that are not associated with this option",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_read_only": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow read only instances of this type",
 					Optional:    true,
 					Computed:    true,
 				},
