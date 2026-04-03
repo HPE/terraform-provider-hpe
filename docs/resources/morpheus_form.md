@@ -172,6 +172,31 @@ resource "hpe_morpheus_form" "example" {
     filter_from_resource     = true
   }
 
+  option_type {
+    name                     = "tf layout example"
+    code                     = "layout-input"
+    description              = "Terraform layout example"
+    type                     = "layout"
+    field_label              = "layout input"
+    field_name               = "layoutInput"
+    default_value            = ""
+    placeholder              = "Select layout"
+    help_block               = "Select a layout"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    group_field_type         = "value"
+    group_id                 = "1"
+    cloud_field_type         = "value"
+    cloud_id                 = "1"
+    instance_type_field_type = "value"
+    instance_type_code       = "apache"
+    layout_field_type        = "field"
+  }
+
   field_group {
     name                 = "fg1"
     description          = "testin"
@@ -264,6 +289,9 @@ Optional:
 - `allow_duplicates` (Boolean) Whether duplicate selections are allowed
 - `allow_multiple_selections` (Boolean) Whether to allow multiple items to be selected when using a select list or type ahead option type
 - `allow_password_peek` (Boolean) Whether the value of the password option type can be revealed by the user to ensure they correctly entered the password
+- `cloud_field` (String) The field code used to determine the cloud for a layout option type
+- `cloud_field_type` (String) How the cloud is specified for a layout option type (field or value)
+- `cloud_id` (String) The cloud ID to filter layouts by for a layout option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
@@ -280,8 +308,17 @@ Optional:
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the field group
 - `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
+- `group_field` (String) The field code used to determine the group for a layout option type
+- `group_field_type` (String) How the group is specified for a layout option type (field or value)
+- `group_id` (String) The group ID to filter layouts by for a layout option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
+- `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
+- `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
+- `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
+- `layout_field` (String) The field code used to determine the layout for a layout option type
+- `layout_field_type` (String) How the layout value is specified for a layout option type (field or value)
+- `layout_id` (String) The layout ID to set as the default for a layout option type
 - `lock_display` (Boolean) Whether to lock the display or not
 - `locked` (Boolean) Whether the option type is locked or not
 - `max_value` (Number) The maximum value that can be provided for a number option type
@@ -289,6 +326,9 @@ Optional:
 - `name` (String) The name of the option type to add to the field group
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
+- `plan_field` (String) The field code used to determine the plan for a layout option type
+- `plan_field_type` (String) How the plan is specified for a layout option type (field or value)
+- `plan_id` (String) The plan ID to filter layouts by for a layout option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
@@ -297,7 +337,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -311,6 +351,9 @@ Optional:
 - `allow_duplicates` (Boolean) Whether duplicate selections are allowed
 - `allow_multiple_selections` (Boolean) Whether to allow multiple items to be selected when using a select list or type ahead option type
 - `allow_password_peek` (Boolean) Whether the value of the password option type can be revealed by the user to ensure they correctly entered the password
+- `cloud_field` (String) The field code used to determine the cloud for a layout option type
+- `cloud_field_type` (String) How the cloud is specified for a layout option type (field or value)
+- `cloud_id` (String) The cloud ID to filter layouts by for a layout option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
@@ -327,8 +370,17 @@ Optional:
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the form
 - `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
+- `group_field` (String) The field code used to determine the group for a layout option type
+- `group_field_type` (String) How the group is specified for a layout option type (field or value)
+- `group_id` (String) The group ID to filter layouts by for a layout option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
+- `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
+- `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
+- `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
+- `layout_field` (String) The field code used to determine the layout for a layout option type
+- `layout_field_type` (String) How the layout value is specified for a layout option type (field or value)
+- `layout_id` (String) The layout ID to set as the default for a layout option type
 - `lock_display` (Boolean) Whether to lock the display or not
 - `locked` (Boolean) Whether the option type is locked or not
 - `max_value` (Number) The maximum value that can be provided for a number option type
@@ -336,6 +388,9 @@ Optional:
 - `name` (String) The name of the option type to add to the form
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
+- `plan_field` (String) The field code used to determine the plan for a layout option type
+- `plan_field_type` (String) How the plan is specified for a layout option type (field or value)
+- `plan_id` (String) The plan ID to filter layouts by for a layout option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
@@ -344,7 +399,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 

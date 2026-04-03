@@ -26,6 +26,7 @@ const (
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeHidden         = "hidden"
+	typeLayout         = "layout"
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
 	typePassword       = "password"
@@ -47,7 +48,6 @@ const (
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
 	typeKeyValue       = "keyValue"
-	typeLayout         = "layout"
 	typeLogoSelector   = "logoSelector"
 	typePlan           = "plan"
 	typePorts          = "ports"
@@ -154,6 +154,25 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config := make(map[string]any)
 		config["filterResource"] = optionTypeConfig["filter_from_resource"]
 		row["config"] = config
+	case typeLayout:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
+		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
+		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -248,6 +267,22 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		}
 	case typeCloud:
 		row["filter_from_resource"] = optionType.Config.FilterResource
+	case typeLayout:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
+		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
+		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -398,11 +433,11 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, " +
+						"(byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, " +
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeHidden, typeLayout, typeNetworkManager, typeNumber,
 							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
@@ -560,6 +595,101 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"filter_from_resource": {
 					Type:        schema.TypeBool,
 					Description: "Whether to filter out resources that are not associated with this option",
+					Optional:    true,
+					Computed:    true,
+				},
+				"group_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the group is specified for a layout option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"group_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the group for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"group_id": {
+					Type:        schema.TypeString,
+					Description: "The group ID to filter layouts by for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"cloud_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the cloud is specified for a layout option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"cloud_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the cloud for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"cloud_id": {
+					Type:        schema.TypeString,
+					Description: "The cloud ID to filter layouts by for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"instance_type_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the instance type is specified for a layout option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"instance_type_field_code": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the instance type for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"instance_type_code": {
+					Type:        schema.TypeString,
+					Description: "The instance type code to filter layouts by for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the plan is specified for a layout option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"plan_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the plan for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_id": {
+					Type:        schema.TypeString,
+					Description: "The plan ID to filter layouts by for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the layout value is specified for a layout option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"layout_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the layout for a layout option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_id": {
+					Type:        schema.TypeString,
+					Description: "The layout ID to set as the default for a layout option type",
 					Optional:    true,
 					Computed:    true,
 				},
