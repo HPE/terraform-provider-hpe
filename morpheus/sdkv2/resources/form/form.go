@@ -23,6 +23,7 @@ import (
 const (
 	typeByteSize       = "byteSize"
 	typeCheckbox       = "checkbox"
+	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeHidden         = "hidden"
 	typeNetworkManager = "networkManager"
@@ -39,7 +40,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeCloud          = "cloud"
 	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
@@ -149,6 +149,11 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["config"] = config
 	case typeCheckbox:
 		row["defaultValue"] = optionTypeConfig["default_checked"]
+	case typeCloud:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["filterResource"] = optionTypeConfig["filter_from_resource"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -241,6 +246,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		} else {
 			row["default_checked"] = false
 		}
+	case typeCloud:
+		row["filter_from_resource"] = optionType.Config.FilterResource
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -391,11 +398,11 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, " +
+						"(byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, " +
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
 							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
@@ -547,6 +554,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"enable_ip_mode_selection": {
 					Type:        schema.TypeBool,
 					Description: "Whether to enable IP Mode Selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"filter_from_resource": {
+					Type:        schema.TypeBool,
+					Description: "Whether to filter out resources that are not associated with this option",
 					Optional:    true,
 					Computed:    true,
 				},

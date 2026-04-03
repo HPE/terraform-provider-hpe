@@ -157,4 +157,20 @@
   OptionType7Placeholder 'Select network' \
   OptionType7Required 'true' \
   OptionType7ShowNetworkTypeSelection 'true' \
-  OptionType7Type 'networkManager'
+  OptionType7Type 'networkManager' \
+  OptionType8Code 'cloud-input' \
+  OptionType8DefaultValue 'test123' \
+  OptionType8Description 'Terraform cloud example' \
+  OptionType8DisplayValueOnDetails 'true' \
+  OptionType8ExcludeFromSearch 'true' \
+  OptionType8ExportMeta 'true' \
+  OptionType8FieldLabel 'cloud input' \
+  OptionType8FieldName 'cloudInput' \
+  OptionType8FilterFromResource 'true' \
+  OptionType8HelpBlock 'Select a cloud' \
+  OptionType8Hidden 'false' \
+  OptionType8Locked 'true' \
+  OptionType8Name 'tf cloud example' \
+  OptionType8Placeholder 'Select cloud' \
+  OptionType8Required 'true' \
+  OptionType8Type 'cloud'
