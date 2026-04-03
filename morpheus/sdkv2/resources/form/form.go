@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -308,252 +309,7 @@ func ResourceForm() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"option_type": {
-				Type:        schema.TypeList,
-				Description: "Form option type",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"code": {
-							Type:        schema.TypeString,
-							Description: "The code of the option type to add to the form",
-							Optional:    true,
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "The name of the option type to add to the form",
-							Optional:    true,
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Description: "A description of the option type to add to the form",
-							Optional:    true,
-						},
-						"field_name": {
-							Type:        schema.TypeString,
-							Description: "The name of the option type field to add to the form",
-							Optional:    true,
-						},
-						"type": {
-							Type: schema.TypeString,
-							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, " +
-								"textarea, textArray, typeahead)",
-							ValidateFunc: validation.StringInSlice(
-								[]string{
-									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
-									typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
-								},
-								false,
-							),
-							Optional: true,
-						},
-						"option_list_id": {
-							Type:        schema.TypeInt,
-							Description: "The id of the option list for option types such as a typeahead or select list",
-							Optional:    true,
-							Computed:    true,
-						},
-						"field_label": {
-							Type:        schema.TypeString,
-							Description: "The label used for the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"default_value": {
-							Type:        schema.TypeString,
-							Description: "The default value of the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"default_checked": {
-							Type:        schema.TypeBool,
-							Description: "Whether the checkbox option type is checked by default",
-							Optional:    true,
-							Computed:    true,
-						},
-						"placeholder": {
-							Type:        schema.TypeString,
-							Description: "The placeholder text used for the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"help_block": {
-							Type:        schema.TypeString,
-							Description: "The help message displayed below the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"required": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type is required or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"export_meta": {
-							Type:        schema.TypeBool,
-							Description: "Whether to export the option type as a tag",
-							Optional:    true,
-							Computed:    true,
-						},
-						"display_value_on_details": {
-							Type:        schema.TypeBool,
-							Description: "Display the selected value of the option type on the associated resource's details page",
-							Optional:    true,
-							Computed:    true,
-						},
-						"locked": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type is locked or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"hidden": {
-							Type:        schema.TypeBool,
-							Description: "Whether to display the option type to the user",
-							Optional:    true,
-							Computed:    true,
-						},
-						"exclude_from_search": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type should be execluded from search or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"allow_password_peek": {
-							Type: schema.TypeBool,
-							Description: "Whether the value of the password option type can be revealed by " +
-								"the user to ensure they correctly entered the password",
-							Optional: true,
-							Computed: true,
-						},
-						"min_value": {
-							Type:        schema.TypeInt,
-							Description: "The minimum number that can be selected for a number option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"max_value": {
-							Type:        schema.TypeInt,
-							Description: "The maximum value that can be provided for a number option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"step": {
-							Type:        schema.TypeInt,
-							Description: "The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)",
-							Optional:    true,
-							Computed:    true,
-						},
-						"text_rows": {
-							Type:        schema.TypeInt,
-							Description: "The number of lines to show for a code editor or text area option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"display": {
-							Type:         schema.TypeString,
-							Description:  "The memory or storage value to use (GB or MB)",
-							ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
-							Optional:     true,
-							Computed:     true,
-						},
-						"lock_display": {
-							Type:        schema.TypeBool,
-							Description: "Whether to lock the display or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"code_language": {
-							Type:        schema.TypeString,
-							Description: "The coding language used for highlighting code syntax",
-							Optional:    true,
-							Computed:    true,
-						},
-						"show_line_numbers": {
-							Type:        schema.TypeBool,
-							Description: "Whether to show the line numbers for the code editor option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"sortable": {
-							Type:        schema.TypeBool,
-							Description: "Whether the selected options can be sorted or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"show_network_type_selection": {
-							Type:        schema.TypeBool,
-							Description: "Whether to show the network type selection",
-							Optional:    true,
-							Computed:    true,
-						},
-						"enable_ip_mode_selection": {
-							Type:        schema.TypeBool,
-							Description: "Whether to enable IP Mode Selection",
-							Optional:    true,
-							Computed:    true,
-						},
-						"allow_multiple_selections": {
-							Type: schema.TypeBool,
-							Description: "Whether to allow multiple items to be selected when using a " +
-								"select list or type ahead option type",
-							Optional: true,
-							Computed: true,
-						},
-						"remove_select_option": {
-							Type: schema.TypeBool,
-							Description: "For Select List-type Inputs. When marked, the Input will default to " +
-								"the first item in the list rather than to an empty selection",
-							Optional: true,
-							Computed: true,
-						},
-						"allow_duplicates": {
-							Type:        schema.TypeBool,
-							Description: "Whether duplicate selections are allowed",
-							Optional:    true,
-							Computed:    true,
-						},
-						"custom_data": {
-							Type:        schema.TypeString,
-							Description: "Custom JSON data payload to pass (Must be a JSON string)",
-							Optional:    true,
-							Computed:    true,
-						},
-						"dependent_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to trigger the reloading of the field",
-							Optional:    true,
-							Computed:    true,
-						},
-						"delimiter": {
-							Type:        schema.TypeString,
-							Description: "The delimiter used to separate text array input values",
-							Optional:    true,
-							Computed:    true,
-						},
-						"visibility_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to trigger the visibility of the field",
-							Optional:    true,
-							Computed:    true,
-						},
-						"verify_pattern": {
-							Type:        schema.TypeString,
-							Description: "The regex pattern used to validate the entered text",
-							Optional:    true,
-							Computed:    true,
-						},
-						"require_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to determine whether the field is required or not",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
+			"option_type": optionTypeSchema("form"),
 			"field_group": {
 				Type:        schema.TypeList,
 				Description: "Field group to add to the form",
@@ -589,261 +345,268 @@ func ResourceForm() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
-						"option_type": {
-							Type:        schema.TypeList,
-							Description: "Field group option type",
-							Optional:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:        schema.TypeString,
-										Description: "The code of the option type to add to the field group",
-										Optional:    true,
-										Computed:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "The name of the option type to add to the field group",
-										Optional:    true,
-									},
-									"description": {
-										Type:        schema.TypeString,
-										Description: "A description of the option type to add to the field group",
-										Optional:    true,
-										Computed:    true,
-									},
-									"field_name": {
-										Type:        schema.TypeString,
-										Description: "The field name of the option type to add to the field group",
-										Optional:    true,
-									},
-									"type": {
-										Type: schema.TypeString,
-										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, code-editor, hidden, networkManager, number, " +
-											"password, radio, select, text, " +
-											"textarea, textArray, typeahead)",
-										ValidateFunc: validation.StringInSlice(
-											[]string{
-												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager,
-												typeNumber, typePassword, typeRadio, typeSelect, typeText, typeTextArea,
-												typeTextArray, typeTypeahead,
-											},
-											false,
-										),
-										Optional: true,
-									},
-									"option_list_id": {
-										Type:        schema.TypeInt,
-										Description: "The id of the option list for option types such as a typeahead or select list",
-										Optional:    true,
-										Computed:    true,
-									},
-									"field_label": {
-										Type:        schema.TypeString,
-										Description: "The label of the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"default_value": {
-										Type:        schema.TypeString,
-										Description: "The default value of the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"default_checked": {
-										Type:        schema.TypeBool,
-										Description: "Whether the checkbox option type is checked by default",
-										Optional:    true,
-										Computed:    true,
-									},
-									"placeholder": {
-										Type:        schema.TypeString,
-										Description: "The placeholder text for the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"help_block": {
-										Type:        schema.TypeString,
-										Description: "The help block text for the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"required": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is required or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"export_meta": {
-										Type:        schema.TypeBool,
-										Description: "Whether to export the option type as a tag",
-										Optional:    true,
-										Default:     false,
-									},
-									"display_value_on_details": {
-										Type:        schema.TypeBool,
-										Description: "Display the selected value of the option type on the associated resource's details page",
-										Optional:    true,
-										Default:     false,
-									},
-									"locked": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is locked or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"hidden": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is hidden or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"exclude_from_search": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type should be execluded from search or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"allow_password_peek": {
-										Type: schema.TypeBool,
-										Description: "Whether the value of the password option type can be revealed by " +
-											"the user to ensure they correctly entered the password",
-										Optional: true,
-										Computed: true,
-									},
-									"min_value": {
-										Type:        schema.TypeInt,
-										Description: "The minimum number that can be selected for a number option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"max_value": {
-										Type:        schema.TypeInt,
-										Description: "The maximum value that can be provided for a number option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"step": {
-										Type:        schema.TypeInt,
-										Description: "The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)",
-										Optional:    true,
-										Computed:    true,
-									},
-									"text_rows": {
-										Type:        schema.TypeInt,
-										Description: "The number of rows to display for a text area",
-										Optional:    true,
-										Computed:    true,
-									},
-									"display": {
-										Type:         schema.TypeString,
-										Description:  "The memory or storage value to use (GB or MB)",
-										ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
-										Optional:     true,
-										Computed:     true,
-									},
-									"lock_display": {
-										Type:        schema.TypeBool,
-										Description: "Whether to lock the display or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"code_language": {
-										Type:        schema.TypeString,
-										Description: "The coding language used for highlighting code syntax",
-										Optional:    true,
-										Computed:    true,
-									},
-									"show_line_numbers": {
-										Type:        schema.TypeBool,
-										Description: "Whether to show the line numbers for the code editor option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"sortable": {
-										Type:        schema.TypeBool,
-										Description: "Whether the selected options can be sorted or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"show_network_type_selection": {
-										Type:        schema.TypeBool,
-										Description: "Whether to show the network type selection",
-										Optional:    true,
-										Computed:    true,
-									},
-									"enable_ip_mode_selection": {
-										Type:        schema.TypeBool,
-										Description: "Whether to enable IP Mode Selection",
-										Optional:    true,
-										Computed:    true,
-									},
-									"allow_multiple_selections": {
-										Type: schema.TypeBool,
-										Description: "Whether to allow multiple items to be selected when using a " +
-											"select list or type ahead option type",
-										Optional: true,
-										Computed: true,
-									},
-									"remove_select_option": {
-										Type: schema.TypeBool,
-										Description: "For Select List-type Inputs. When marked, the Input will default to " +
-											"the first item in the list rather than to an empty selection",
-										Optional: true,
-										Computed: true,
-									},
-									"allow_duplicates": {
-										Type:        schema.TypeBool,
-										Description: "Whether duplicate selections are allowed",
-										Optional:    true,
-										Computed:    true,
-									},
-									"custom_data": {
-										Type:        schema.TypeString,
-										Description: "Custom JSON data payload to pass (Must be a JSON string)",
-										Optional:    true,
-										Computed:    true,
-									},
-									"dependent_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to trigger the reloading of the field",
-										Optional:    true,
-										Computed:    true,
-									},
-									"delimiter": {
-										Type:        schema.TypeString,
-										Description: "The delimiter used to separate text array input values",
-										Optional:    true,
-										Computed:    true,
-									},
-									"visibility_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to trigger the visibility of the field",
-										Optional:    true,
-										Computed:    true,
-									},
-									"verify_pattern": {
-										Type:        schema.TypeString,
-										Description: "The regex pattern used to validate the entered text",
-										Optional:    true,
-										Computed:    true,
-									},
-									"require_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to determine whether the field is required or not",
-										Optional:    true,
-										Computed:    true,
-									},
-								},
-							},
-						},
+						"option_type": optionTypeSchema("field group"),
 					},
 				},
 			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
+// optionTypeSchema returns the "option_type" schema block parameterized by context (e.g. "form" or "field group").
+func optionTypeSchema(parent string) *schema.Schema {
+	desc := fmt.Sprintf("%s option type", strings.Title(parent)) //nolint: staticcheck
+
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: desc,
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"code": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The code of the option type to add to the %s", parent),
+					Optional:    true,
+					Computed:    true,
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The name of the option type to add to the %s", parent),
+					Optional:    true,
+				},
+				"description": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("A description of the option type to add to the %s", parent),
+					Optional:    true,
+					Computed:    true,
+				},
+				"field_name": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The field name of the option type to add to the %s", parent),
+					Optional:    true,
+				},
+				"type": {
+					Type: schema.TypeString,
+					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
+						"(byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, " +
+						"select, text, textarea, textArray, typeahead)",
+					ValidateFunc: validation.StringInSlice(
+						[]string{
+							typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNetworkManager, typeNumber,
+							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
+						},
+						false,
+					),
+					Optional: true,
+				},
+				"option_list_id": {
+					Type:        schema.TypeInt,
+					Description: "The id of the option list for option types such as a typeahead or select list",
+					Optional:    true,
+					Computed:    true,
+				},
+				"field_label": {
+					Type:        schema.TypeString,
+					Description: "The label of the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"default_value": {
+					Type:        schema.TypeString,
+					Description: "The default value of the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"default_checked": {
+					Type:        schema.TypeBool,
+					Description: "Whether the checkbox option type is checked by default",
+					Optional:    true,
+					Computed:    true,
+				},
+				"placeholder": {
+					Type:        schema.TypeString,
+					Description: "The placeholder text for the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"help_block": {
+					Type:        schema.TypeString,
+					Description: "The help block text for the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"required": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is required or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"export_meta": {
+					Type:        schema.TypeBool,
+					Description: "Whether to export the option type as a tag",
+					Optional:    true,
+					Computed:    true,
+				},
+				"display_value_on_details": {
+					Type: schema.TypeBool,
+					Description: "Display the selected value of the option type on the associated " +
+						"resource's details page",
+					Optional: true,
+					Computed: true,
+				},
+				"locked": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is locked or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"hidden": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is hidden or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"exclude_from_search": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type should be excluded from search or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_password_peek": {
+					Type: schema.TypeBool,
+					Description: "Whether the value of the password option type can be revealed by " +
+						"the user to ensure they correctly entered the password",
+					Optional: true,
+					Computed: true,
+				},
+				"min_value": {
+					Type:        schema.TypeInt,
+					Description: "The minimum number that can be selected for a number option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"max_value": {
+					Type:        schema.TypeInt,
+					Description: "The maximum value that can be provided for a number option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"step": {
+					Type: schema.TypeInt,
+					Description: "The incrementation number used for the number option type " +
+						"(i.e. - 5s, 10s, 100s, etc.)",
+					Optional: true,
+					Computed: true,
+				},
+				"text_rows": {
+					Type:        schema.TypeInt,
+					Description: "The number of rows to display for a text area or code editor option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"display": {
+					Type:         schema.TypeString,
+					Description:  "The memory or storage value to use (GB or MB)",
+					ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"lock_display": {
+					Type:        schema.TypeBool,
+					Description: "Whether to lock the display or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"code_language": {
+					Type:        schema.TypeString,
+					Description: "The coding language used for highlighting code syntax",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_line_numbers": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show the line numbers for the code editor option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"sortable": {
+					Type:        schema.TypeBool,
+					Description: "Whether the selected options can be sorted or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_network_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show the network type selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_ip_mode_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to enable IP Mode Selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_multiple_selections": {
+					Type: schema.TypeBool,
+					Description: "Whether to allow multiple items to be selected when using a " +
+						"select list or type ahead option type",
+					Optional: true,
+					Computed: true,
+				},
+				"remove_select_option": {
+					Type: schema.TypeBool,
+					Description: "For Select List-type Inputs. When marked, the Input will default " +
+						"to the first item in the list rather than to an empty selection",
+					Optional: true,
+					Computed: true,
+				},
+				"allow_duplicates": {
+					Type:        schema.TypeBool,
+					Description: "Whether duplicate selections are allowed",
+					Optional:    true,
+					Computed:    true,
+				},
+				"custom_data": {
+					Type:        schema.TypeString,
+					Description: "Custom JSON data payload to pass (Must be a JSON string)",
+					Optional:    true,
+					Computed:    true,
+				},
+				"dependent_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to trigger the reloading of the field",
+					Optional:    true,
+					Computed:    true,
+				},
+				"delimiter": {
+					Type:        schema.TypeString,
+					Description: "The delimiter used to separate text array input values",
+					Optional:    true,
+					Computed:    true,
+				},
+				"visibility_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to trigger the visibility of the field",
+					Optional:    true,
+					Computed:    true,
+				},
+				"verify_pattern": {
+					Type:        schema.TypeString,
+					Description: "The regex pattern used to validate the entered text",
+					Optional:    true,
+					Computed:    true,
+				},
+				"require_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to determine whether the field is required or not",
+					Optional:    true,
+					Computed:    true,
+				},
+			},
 		},
 	}
 }

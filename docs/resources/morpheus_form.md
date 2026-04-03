@@ -234,7 +234,7 @@ Optional:
 - `collapsed_by_default` (Boolean) Whether the field group is collapsed by default
 - `collapsible` (Boolean) Whether the field group can be collapsed
 - `description` (String) A description of the field group
-- `option_type` (Block List) Field group option type (see [below for nested schema](#nestedblock--field_group--option_type))
+- `option_type` (Block List) Field Group option type (see [below for nested schema](#nestedblock--field_group--option_type))
 - `visibility_field` (String) The field or code used to trigger the visibility of the field group
 
 <a id="nestedblock--field_group--option_type"></a>
@@ -256,7 +256,7 @@ Optional:
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
-- `exclude_from_search` (Boolean) Whether the option type should be execluded from search or not
+- `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the field group
@@ -276,7 +276,7 @@ Optional:
 - `show_network_type_selection` (Boolean) Whether to show the network type selection
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
-- `text_rows` (Number) The number of rows to display for a text area
+- `text_rows` (Number) The number of rows to display for a text area or code editor option type
 - `type` (String) The type of option type to add to the field group (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
@@ -302,19 +302,19 @@ Optional:
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
-- `exclude_from_search` (Boolean) Whether the option type should be execluded from search or not
+- `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
-- `field_label` (String) The label used for the option type
-- `field_name` (String) The name of the option type field to add to the form
-- `help_block` (String) The help message displayed below the option type
-- `hidden` (Boolean) Whether to display the option type to the user
+- `field_label` (String) The label of the option type
+- `field_name` (String) The field name of the option type to add to the form
+- `help_block` (String) The help block text for the option type
+- `hidden` (Boolean) Whether the option type is hidden or not
 - `lock_display` (Boolean) Whether to lock the display or not
 - `locked` (Boolean) Whether the option type is locked or not
 - `max_value` (Number) The maximum value that can be provided for a number option type
 - `min_value` (Number) The minimum number that can be selected for a number option type
 - `name` (String) The name of the option type to add to the form
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
-- `placeholder` (String) The placeholder text used for the option type
+- `placeholder` (String) The placeholder text for the option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
@@ -322,7 +322,7 @@ Optional:
 - `show_network_type_selection` (Boolean) Whether to show the network type selection
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
-- `text_rows` (Number) The number of lines to show for a code editor or text area option type
+- `text_rows` (Number) The number of rows to display for a text area or code editor option type
 - `type` (String) The type of option type to add to the form (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
