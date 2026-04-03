@@ -131,6 +131,146 @@ func validateFormOptionTypes(_ context.Context, d *schema.ResourceDiff, _ any) e
 	return nil
 }
 
+func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string]any) diag.Diagnostics {
+	// Evaluate the option type selected
+	switch optionTypeConfig["type"] {
+	case typeByteSize:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["display"] = optionTypeConfig["display"]
+		config["lockDisplay"] = optionTypeConfig["lock_display"]
+		row["config"] = config
+	case typeCodeEditor:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["lang"] = optionTypeConfig["code_language"]
+		config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
+		row["config"] = config
+	case typeCheckbox:
+		row["defaultValue"] = optionTypeConfig["default_checked"]
+	case typeNumber:
+		var defaultValue string
+		if v, ok := optionTypeConfig["default_value"].(string); ok {
+			defaultValue = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
+		}
+
+		number, err := strconv.Atoi(defaultValue)
+		if err != nil {
+			return diag.Errorf(
+				"The default_value attribute must be a number string when the type attribute is set to number",
+			)
+		}
+
+		row["defaultValue"] = number
+		row["minVal"] = optionTypeConfig["min_value"]
+		row["maxVal"] = optionTypeConfig["max_value"]
+
+		var step int
+		if v, ok := optionTypeConfig["step"].(int); ok {
+			step = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
+		}
+
+		if step > 0 {
+			configStep := make(map[string]any)
+			configStep["step"] = optionTypeConfig["step"]
+			row["config"] = configStep
+		}
+	case typeNetworkManager:
+		config := make(map[string]any)
+		config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+		config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["config"] = config
+	case typeRadio:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+	case typeSelect:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+		config := make(map[string]any)
+		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
+		config["sortable"] = optionTypeConfig["sortable"]
+		row["config"] = config
+		row["noBlank"] = optionTypeConfig["remove_select_option"]
+	case typePassword:
+		config := make(map[string]any)
+		config["canPeek"] = optionTypeConfig["allow_password_peek"]
+		row["config"] = config
+	case typeTextArray:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["separator"] = optionTypeConfig["delimiter"]
+		row["config"] = config
+	case typeTextArea:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["rows"] = optionTypeConfig["text_rows"]
+		row["config"] = config
+	case typeTypeahead:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["sortable"] = optionTypeConfig["sortable"]
+		config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
+		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
+		config["customData"] = optionTypeConfig["custom_data"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+		row["config"] = config
+	case typeHidden:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeText:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+	}
+
+	return nil
+}
+
+func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, logHidden bool) {
+	switch optionType.Type {
+	case typeByteSize:
+		row["display"] = optionType.Config.Display
+		row["lock_display"] = optionType.Config.LockDisplay
+	case typeCheckbox:
+		// convert string text to boolean
+		if optionType.DefaultValue == "true" {
+			row["default_checked"] = true
+		} else {
+			row["default_checked"] = false
+		}
+	case typeCodeEditor:
+		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
+		row["code_language"] = optionType.Config.Lang
+	case typeNumber:
+		row["step"] = optionType.Config.Step
+		row["min_value"] = optionType.MinVal
+		row["max_value"] = optionType.MaxVal
+	case typeNetworkManager:
+		row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
+		row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
+	case typeRadio:
+		row["option_list_id"] = optionType.OptionList.ID
+	case typeSelect:
+		row["option_list_id"] = optionType.OptionList.ID
+	case typeTextArea:
+		row["text_rows"] = optionType.Config.Rows
+	case typeHidden:
+		if logHidden {
+			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
+		}
+	case typeTextArray:
+		row["delimiter"] = optionType.Config.Separator
+	case typeTypeahead:
+		row["sortable"] = optionType.Config.Sortable
+		row["allow_duplicates"] = optionType.Config.AllowDuplicates
+		row["custom_data"] = optionType.Config.CustomData
+		row["allow_multiple_selections"] = optionType.Config.MultiSelect
+		row["option_list_id"] = optionType.OptionList.ID
+	}
+}
+
 func ResourceForm() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus form resource",
@@ -751,93 +891,8 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 			row["fieldLabel"] = optionTypeConfig["field_label"]
 			row["placeHolder"] = optionTypeConfig["placeholder"]
 			row["helpBlock"] = optionTypeConfig["help_block"]
-			// Evaluate the option type selected
-			switch optionTypeConfig["type"] {
-			case typeByteSize:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["display"] = optionTypeConfig["display"]
-				config["lockDisplay"] = optionTypeConfig["lock_display"]
-				row["config"] = config
-			case typeCodeEditor:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["lang"] = optionTypeConfig["code_language"]
-				config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-				row["config"] = config
-			case typeCheckbox:
-				row["defaultValue"] = optionTypeConfig["default_checked"]
-			case typeNumber:
-				var defaultValue string
-				if v, ok := optionTypeConfig["default_value"].(string); ok {
-					defaultValue = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-				}
-				number, err := strconv.Atoi(defaultValue)
-				if err != nil {
-					return diag.Errorf(
-						"The default_value attribute must be a number string when the type attribute is set to number",
-					)
-				}
-				row["defaultValue"] = number
-				row["minVal"] = optionTypeConfig["min_value"]
-				row["maxVal"] = optionTypeConfig["max_value"]
-				var step int
-				if v, ok := optionTypeConfig["step"].(int); ok {
-					step = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-				}
-				if step > 0 {
-					configStep := make(map[string]any)
-					configStep["step"] = optionTypeConfig["step"]
-					row["config"] = configStep
-				}
-			case typeNetworkManager:
-				config := make(map[string]any)
-				config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
-				config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["config"] = config
-			case typeRadio:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-			case typeSelect:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				config := make(map[string]any)
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["sortable"] = optionTypeConfig["sortable"]
-				row["config"] = config
-				row["noBlank"] = optionTypeConfig["remove_select_option"]
-			case typePassword:
-				config := make(map[string]any)
-				config["canPeek"] = optionTypeConfig["allow_password_peek"]
-				row["config"] = config
-			case typeTextArray:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["separator"] = optionTypeConfig["delimiter"]
-				row["config"] = config
-			case typeTextArea:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["rows"] = optionTypeConfig["text_rows"]
-				row["config"] = config
-			case typeTypeahead:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["sortable"] = optionTypeConfig["sortable"]
-				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				row["config"] = config
-			case typeHidden:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-			case typeText:
-				row["defaultValue"] = optionTypeConfig["default_value"]
+			if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+				return diags
 			}
 			row["required"] = optionTypeConfig["required"]
 			row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -904,93 +959,8 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 					row["fieldLabel"] = optionTypeConfig["field_label"]
 					row["placeHolder"] = optionTypeConfig["placeholder"]
 					row["helpBlock"] = optionTypeConfig["help_block"]
-					// Evaluate the option type selected
-					switch optionTypeConfig["type"] {
-					case typeByteSize:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["display"] = optionTypeConfig["display"]
-						config["lockDisplay"] = optionTypeConfig["lock_display"]
-						row["config"] = config
-					case typeCodeEditor:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["lang"] = optionTypeConfig["code_language"]
-						config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-						row["config"] = config
-					case typeCheckbox:
-						row["defaultValue"] = optionTypeConfig["default_checked"]
-					case typeNumber:
-						var defaultValue string
-						if v, ok := optionTypeConfig["default_value"].(string); ok {
-							defaultValue = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-						}
-						number, err := strconv.Atoi(defaultValue)
-						if err != nil {
-							return diag.Errorf(
-								"The default_value attribute must be a number string when the type attribute is set to number",
-							)
-						}
-						row["defaultValue"] = number
-						row["minVal"] = optionTypeConfig["min_value"]
-						row["maxVal"] = optionTypeConfig["max_value"]
-						var step int
-						if v, ok := optionTypeConfig["step"].(int); ok {
-							step = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-						}
-						if step > 0 {
-							configStep := make(map[string]any)
-							configStep["step"] = optionTypeConfig["step"]
-							row["config"] = configStep
-						}
-					case typeNetworkManager:
-						config := make(map[string]any)
-						config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
-						config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["config"] = config
-					case typeRadio:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-					case typeSelect:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						config := make(map[string]any)
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["sortable"] = optionTypeConfig["sortable"]
-						row["config"] = config
-						row["noBlank"] = optionTypeConfig["remove_select_option"]
-					case typePassword:
-						config := make(map[string]any)
-						config["canPeek"] = optionTypeConfig["allow_password_peek"]
-						row["config"] = config
-					case typeTextArray:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["separator"] = optionTypeConfig["delimiter"]
-						row["config"] = config
-					case typeTextArea:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["rows"] = optionTypeConfig["text_rows"]
-						row["config"] = config
-					case typeTypeahead:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["sortable"] = optionTypeConfig["sortable"]
-						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						row["config"] = config
-					case typeHidden:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-					case typeText:
-						row["defaultValue"] = optionTypeConfig["default_value"]
+					if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+						return diags
 					}
 					row["required"] = optionTypeConfig["required"]
 					row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -1151,44 +1121,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		// optionTypeList := d.Get("option_type").([]any)
 		for _, optionType := range form.Options {
 			row := make(map[string]any)
-			switch optionType.Type {
-			case typeByteSize:
-				row["display"] = optionType.Config.Display
-				row["lock_display"] = optionType.Config.LockDisplay
-			case typeCheckbox:
-				// convert string text to boolean
-				if optionType.DefaultValue == "true" {
-					row["default_checked"] = true
-				} else {
-					row["default_checked"] = false
-				}
-			case typeCodeEditor:
-				row["show_line_numbers"] = optionType.Config.ShowLineNumbers
-				row["code_language"] = optionType.Config.Lang
-			case typeNumber:
-				row["step"] = optionType.Config.Step
-				row["min_value"] = optionType.MinVal
-				row["max_value"] = optionType.MaxVal
-			case typeNetworkManager:
-				row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
-				row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
-			case typeRadio:
-				row["option_list_id"] = optionType.OptionList.ID
-			case typeSelect:
-				row["option_list_id"] = optionType.OptionList.ID
-			case typeTextArea:
-				row["text_rows"] = optionType.Config.Rows
-			case typeHidden:
-				log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
-			case typeTextArray:
-				row["delimiter"] = optionType.Config.Separator
-			case typeTypeahead:
-				row["sortable"] = optionType.Config.Sortable
-				row["allow_duplicates"] = optionType.Config.AllowDuplicates
-				row["custom_data"] = optionType.Config.CustomData
-				row["allow_multiple_selections"] = optionType.Config.MultiSelect
-				row["option_list_id"] = optionType.OptionList.ID
-			}
+			applyReadOptionTypeByType(row, optionType, true)
 			row["remove_select_option"] = optionType.NoBlank
 			row["name"] = optionType.Name
 			row["description"] = optionType.Description
@@ -1229,42 +1162,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				for _, optionType := range fieldGroup.Options {
 					optionTypeRow := make(map[string]any)
 					// Check if the input uses an existing input or not
-					switch optionType.Type {
-					case typeByteSize:
-						optionTypeRow["display"] = optionType.Config.Display
-						optionTypeRow["lock_display"] = optionType.Config.LockDisplay
-					case typeCheckbox:
-						// convert string text to boolean
-						if optionType.DefaultValue == "true" {
-							optionTypeRow["default_checked"] = true
-						} else {
-							optionTypeRow["default_checked"] = false
-						}
-					case typeCodeEditor:
-						optionTypeRow["show_line_numbers"] = optionType.Config.ShowLineNumbers
-						optionTypeRow["code_language"] = optionType.Config.Lang
-					case typeNumber:
-						optionTypeRow["step"] = optionType.Config.Step
-						optionTypeRow["min_value"] = optionType.MinVal
-						optionTypeRow["max_value"] = optionType.MaxVal
-					case typeNetworkManager:
-						row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
-						row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
-					case typeRadio:
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					case typeSelect:
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					case typeTextArea:
-						optionTypeRow["text_rows"] = optionType.Config.Rows
-					case typeTextArray:
-						optionTypeRow["delimiter"] = optionType.Config.Separator
-					case typeTypeahead:
-						optionTypeRow["sortable"] = optionType.Config.Sortable
-						optionTypeRow["allow_duplicates"] = optionType.Config.AllowDuplicates
-						optionTypeRow["custom_data"] = optionType.Config.CustomData
-						optionTypeRow["allow_multiple_selections"] = optionType.Config.MultiSelect
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					}
+					applyReadOptionTypeByType(optionTypeRow, optionType, false)
 					optionTypeRow["remove_select_option"] = optionType.NoBlank
 					optionTypeRow["name"] = optionType.Name
 					optionTypeRow["description"] = optionType.Description
@@ -1333,93 +1231,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			row["fieldLabel"] = optionTypeConfig["field_label"]
 			row["placeHolder"] = optionTypeConfig["placeholder"]
 			row["helpBlock"] = optionTypeConfig["help_block"]
-			// Evaluate the option type selected
-			switch optionTypeConfig["type"] {
-			case typeByteSize:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["display"] = optionTypeConfig["display"]
-				config["lockDisplay"] = optionTypeConfig["lock_display"]
-				row["config"] = config
-			case typeCodeEditor:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["lang"] = optionTypeConfig["code_language"]
-				config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-				row["config"] = config
-			case typeCheckbox:
-				row["defaultValue"] = optionTypeConfig["default_checked"]
-			case typeNumber:
-				var defaultValue string
-				if v, ok := optionTypeConfig["default_value"].(string); ok {
-					defaultValue = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-				}
-				number, err := strconv.Atoi(defaultValue)
-				if err != nil {
-					return diag.Errorf(
-						"The default_value attribute must be a number string when the type attribute is set to number",
-					)
-				}
-				row["defaultValue"] = number
-				row["minVal"] = optionTypeConfig["min_value"]
-				row["maxVal"] = optionTypeConfig["max_value"]
-				var step int
-				if v, ok := optionTypeConfig["step"].(int); ok {
-					step = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-				}
-				if step > 0 {
-					configStep := make(map[string]any)
-					configStep["step"] = optionTypeConfig["step"]
-					row["config"] = configStep
-				}
-			case typeNetworkManager:
-				config := make(map[string]any)
-				config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
-				config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["config"] = config
-			case typeRadio:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-			case typeSelect:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				config := make(map[string]any)
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["sortable"] = optionTypeConfig["sortable"]
-				row["config"] = config
-				row["noBlank"] = optionTypeConfig["remove_select_option"]
-			case typePassword:
-				config := make(map[string]any)
-				config["canPeek"] = optionTypeConfig["allow_password_peek"]
-				row["config"] = config
-			case typeTextArray:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["separator"] = optionTypeConfig["delimiter"]
-				row["config"] = config
-			case typeTextArea:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["rows"] = optionTypeConfig["text_rows"]
-				row["config"] = config
-			case typeTypeahead:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["sortable"] = optionTypeConfig["sortable"]
-				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				row["config"] = config
-			case typeHidden:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-			case typeText:
-				row["defaultValue"] = optionTypeConfig["default_value"]
+			if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+				return diags
 			}
 			row["required"] = optionTypeConfig["required"]
 			row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -1486,95 +1299,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 					row["fieldLabel"] = optionTypeConfig["field_label"]
 					row["placeHolder"] = optionTypeConfig["placeholder"]
 					row["helpBlock"] = optionTypeConfig["help_block"]
-					// Evaluate the option type selected
-					switch optionTypeConfig["type"] {
-					case typeByteSize:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["display"] = optionTypeConfig["display"]
-						config["lockDisplay"] = optionTypeConfig["lock_display"]
-						row["config"] = config
-					case typeCodeEditor:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["lang"] = optionTypeConfig["code_language"]
-						config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-						row["config"] = config
-					case typeCheckbox:
-						row["defaultValue"] = optionTypeConfig["default_checked"]
-					case typeNumber:
-						var defaultValue string
-						if v, ok := optionTypeConfig["default_value"].(string); ok {
-							defaultValue = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-						}
-						number, err := strconv.Atoi(defaultValue)
-						if err != nil {
-							return diag.Errorf(
-								"The default_value attribute must be a number string when the type attribute is set to number",
-							)
-						}
-						row["defaultValue"] = number
-						row["minVal"] = optionTypeConfig["min_value"]
-						row["maxVal"] = optionTypeConfig["max_value"]
-
-						var step int
-						if v, ok := optionTypeConfig["step"].(int); ok {
-							step = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-						}
-
-						if step > 0 {
-							configStep := make(map[string]any)
-							configStep["step"] = optionTypeConfig["step"]
-							row["config"] = configStep
-						}
-					case typeNetworkManager:
-						config := make(map[string]any)
-						config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
-						config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["config"] = config
-					case typeRadio:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-					case typeSelect:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						config := make(map[string]any)
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["sortable"] = optionTypeConfig["sortable"]
-						row["config"] = config
-						row["noBlank"] = optionTypeConfig["remove_select_option"]
-					case typePassword:
-						config := make(map[string]any)
-						config["canPeek"] = optionTypeConfig["allow_password_peek"]
-						row["config"] = config
-					case typeTextArray:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["separator"] = optionTypeConfig["delimiter"]
-						row["config"] = config
-					case typeTextArea:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["rows"] = optionTypeConfig["text_rows"]
-						row["config"] = config
-					case typeTypeahead:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["sortable"] = optionTypeConfig["sortable"]
-						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						row["config"] = config
-					case typeHidden:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-					case typeText:
-						row["defaultValue"] = optionTypeConfig["default_value"]
+					if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+						return diags
 					}
 					row["required"] = optionTypeConfig["required"]
 					row["exportMeta"] = optionTypeConfig["export_meta"]
