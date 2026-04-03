@@ -141,6 +141,8 @@
   OptionType6Required 'true' \
   OptionType6Step '2' \
   OptionType6Type 'number' \
+  OptionType7CloudFieldType 'value' \
+  OptionType7CloudId '1' \
   OptionType7Code 'network-manager-input' \
   OptionType7DefaultValue 'test123' \
   OptionType7Description 'Terraform network manager example' \
@@ -150,11 +152,17 @@
   OptionType7ExportMeta 'true' \
   OptionType7FieldLabel 'network input' \
   OptionType7FieldName 'networkInput' \
+  OptionType7GroupFieldType 'value' \
+  OptionType7GroupId '1' \
   OptionType7HelpBlock 'Select a network' \
   OptionType7Hidden 'false' \
+  OptionType7LayoutFieldType 'value' \
+  OptionType7LayoutId '1' \
   OptionType7Locked 'true' \
   OptionType7Name 'tf network manager example' \
   OptionType7Placeholder 'Select network' \
+  OptionType7PoolFieldType 'value' \
+  OptionType7PoolId '1' \
   OptionType7Required 'true' \
   OptionType7ShowNetworkTypeSelection 'true' \
   OptionType7Type 'networkManager' \
@@ -173,4 +181,41 @@
   OptionType8Name 'tf cloud example' \
   OptionType8Placeholder 'Select cloud' \
   OptionType8Required 'true' \
-  OptionType8Type 'cloud'
+  OptionType8Type 'cloud' \
+  OptionType9Code 'layout-input' \
+  OptionType9CloudFieldType 'value' \
+  OptionType9CloudId '1' \
+  OptionType9DefaultValue '' \
+  OptionType9Description 'Terraform layout example' \
+  OptionType9DisplayValueOnDetails 'true' \
+  OptionType9ExcludeFromSearch 'true' \
+  OptionType9ExportMeta 'true' \
+  OptionType9FieldLabel 'layout input' \
+  OptionType9FieldName 'layoutInput' \
+  OptionType9GroupFieldType 'value' \
+  OptionType9GroupId '1' \
+  OptionType9HelpBlock 'Select a layout' \
+  OptionType9Hidden 'false' \
+  OptionType9InstanceTypeCode 'apache' \
+  OptionType9InstanceTypeFieldType 'value' \
+  OptionType9Locked 'true' \
+  OptionType9Name 'tf layout example' \
+  OptionType9Placeholder 'Select layout' \
+  OptionType9Required 'true' \
+  OptionType9Type 'layout' \
+  OptionType10AllowReadOnly 'true' \
+  OptionType10Code 'group-input' \
+  OptionType10DefaultValue 'test123' \
+  OptionType10Description 'Terraform group example' \
+  OptionType10DisplayValueOnDetails 'true' \
+  OptionType10ExcludeFromSearch 'true' \
+  OptionType10ExportMeta 'true' \
+  OptionType10FieldLabel 'group input' \
+  OptionType10FieldName 'groupInput' \
+  OptionType10HelpBlock 'Select a group' \
+  OptionType10Hidden 'false' \
+  OptionType10Locked 'true' \
+  OptionType10Name 'tf group example' \
+  OptionType10Placeholder 'Select group' \
+  OptionType10Required 'true' \
+  OptionType10Type 'group'

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 // Test creating a policy with required attributes only
@@ -21,7 +22,8 @@ func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -101,7 +103,8 @@ func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockMixedForServer(testSystem)
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
@@ -580,7 +583,8 @@ func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Create dependency resources
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -815,7 +819,8 @@ func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockMixedForServer(testSystem)
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
