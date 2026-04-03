@@ -81,15 +81,18 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 				"use default_checked instead", path, index)
 		}
 	case typeLayout:
-		if err := validateLayoutFieldTypePair(optionType, path, index, "group_field_type", "group_field", "group_id"); err != nil {
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
 			return err
 		}
 
-		if err := validateLayoutFieldTypePair(optionType, path, index, "cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
 
-		if err := validateLayoutFieldTypePair(optionType, path, index, "instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
 			return err
 		}
 	}
@@ -99,7 +102,8 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 // validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
 // based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
-func validateLayoutFieldTypePair(optionType cty.Value, path string, index int, fieldTypeAttr, fieldAttr, valueAttr string) error {
+func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
+	fieldTypeAttr, fieldAttr, valueAttr string) error {
 	fieldType := optionType.GetAttr(fieldTypeAttr)
 	if !fieldType.IsKnown() || fieldType.IsNull() {
 		return nil
@@ -681,7 +685,7 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
-					"allow_multiple_selections": {
+				"allow_multiple_selections": {
 					Type: schema.TypeBool,
 					Description: "Whether to allow multiple items to be selected when using a " +
 						"select list or type ahead option type",
