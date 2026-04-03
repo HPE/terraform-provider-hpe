@@ -167,6 +167,7 @@
   OptionType7ShowNetworkTypeSelection 'true' \
   OptionType7Type 'networkManager' \
   OptionType8Code 'cloud-input' \
+  OptionType8CloudType '4' \
   OptionType8DefaultValue 'test123' \
   OptionType8Description 'Terraform cloud example' \
   OptionType8DisplayValueOnDetails 'true' \
@@ -175,8 +176,12 @@
   OptionType8FieldLabel 'cloud input' \
   OptionType8FieldName 'cloudInput' \
   OptionType8FilterFromResource 'true' \
+  OptionType8GroupFieldType 'value' \
+  OptionType8GroupId '1' \
   OptionType8HelpBlock 'Select a cloud' \
   OptionType8Hidden 'false' \
+  OptionType8InstanceTypeCode 'apache' \
+  OptionType8InstanceTypeFieldType 'value' \
   OptionType8Locked 'true' \
   OptionType8Name 'tf cloud example' \
   OptionType8Placeholder 'Select cloud' \

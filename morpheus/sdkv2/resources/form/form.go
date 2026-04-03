@@ -80,6 +80,18 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			return fmt.Errorf("default_value cannot be configured for checkbox inputs at %s[%d];"+
 				"use default_checked instead", path, index)
 		}
+
+	case typeCloud:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+
 	case typeLayout:
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"group_field_type", "group_field", "group_id"); err != nil {
@@ -216,6 +228,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeCloud:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
+		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
+		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+		config["cloudType"] = optionTypeConfig["cloud_type"]
 		config["filterResource"] = optionTypeConfig["filter_from_resource"]
 		row["config"] = config
 	case typeLayout:
@@ -342,6 +361,13 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		}
 	case typeCloud:
 		row["filter_from_resource"] = optionType.Config.FilterResource
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
+		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
+		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+		row["cloud_type"] = optionType.Config.CloudType
 	case typeLayout:
 		row["group_field_type"] = optionType.Config.GroupFieldType
 		row["group_field"] = optionType.Config.GroupField
@@ -719,6 +745,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
+				"cloud_type": {
+					Type:        schema.TypeString,
+					Description: "The id of the cloud type to set for a cloud option type",
+					Optional:    true,
+					Computed:    true,
+				},
 				"pool_field_type": {
 					Type:         schema.TypeString,
 					Description:  "How the pool is specified for a networkManager option type (field or value)",
@@ -740,20 +772,20 @@ func optionTypeSchema(parent string) *schema.Schema {
 				},
 				"instance_type_field_type": {
 					Type:         schema.TypeString,
-					Description:  "How the instance type is specified for a layout option type (field or value)",
+					Description:  "How the instance type is specified for an option type (field or value)",
 					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
 					Optional:     true,
 					Computed:     true,
 				},
 				"instance_type_field_code": {
 					Type:        schema.TypeString,
-					Description: "The field code used to determine the instance type for a layout option type",
+					Description: "The field code used to determine the instance type for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
 				"instance_type_code": {
 					Type:        schema.TypeString,
-					Description: "The instance type code to filter layouts by for a layout option type",
+					Description: "The instance type code to filter layouts by for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
