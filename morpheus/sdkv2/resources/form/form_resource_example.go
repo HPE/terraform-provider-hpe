@@ -167,7 +167,7 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 		"OptionType7ExportMeta":                      "true",
 		"OptionType7FieldLabel":                      "network input",
 		"OptionType7FieldName":                       "networkInput",
-		"OptionType7GroupFieldType":                   "value",
+		"OptionType7GroupFieldType":                  "value",
 		"OptionType7GroupId":                         "1",
 		"OptionType7HelpBlock":                       "Select a network",
 		"OptionType7Hidden":                          "false",
