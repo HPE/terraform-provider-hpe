@@ -178,6 +178,11 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = false
     exclude_from_search      = true
     filter_from_resource     = true
+    group_field_type         = "value"
+    group_id                 = "1"
+    instance_type_field_type = "value"
+    instance_type_code       = "apache"
+    cloud_type               = "4"
   }
 
   option_type {
@@ -319,6 +324,7 @@ Optional:
 - `cloud_field` (String) The field code used to determine the cloud for an option type
 - `cloud_field_type` (String) How the cloud is specified for an option type (field or value)
 - `cloud_id` (String) The cloud ID to filter layouts by for an option type
+- `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
@@ -340,9 +346,9 @@ Optional:
 - `group_id` (String) The group ID to filter layouts by for an option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
-- `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
-- `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
-- `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
+- `instance_type_code` (String) The instance type code to filter layouts by for an option type
+- `instance_type_field_code` (String) The field code used to determine the instance type for an option type
+- `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
 - `layout_field` (String) The field code used to determine the layout for an option type
 - `layout_field_type` (String) How the layout is specified for an option type (field or value)
 - `layout_id` (String) The layout ID to filter by for an option type
@@ -382,6 +388,7 @@ Optional:
 - `cloud_field` (String) The field code used to determine the cloud for an option type
 - `cloud_field_type` (String) How the cloud is specified for an option type (field or value)
 - `cloud_id` (String) The cloud ID to filter layouts by for an option type
+- `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
@@ -403,9 +410,9 @@ Optional:
 - `group_id` (String) The group ID to filter layouts by for an option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
-- `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
-- `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
-- `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
+- `instance_type_code` (String) The instance type code to filter layouts by for an option type
+- `instance_type_field_code` (String) The field code used to determine the instance type for an option type
+- `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
 - `layout_field` (String) The field code used to determine the layout for an option type
 - `layout_field_type` (String) How the layout is specified for an option type (field or value)
 - `layout_id` (String) The layout ID to filter by for an option type

@@ -1026,6 +1026,12 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
+			"option_type8_cloud_type",
+			"4",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
 			"option_type8_default_value",
 			"test123",
 		),
@@ -1074,6 +1080,18 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
+			"option_type8_group_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type8_group_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
 			"option_type8_help_block",
 			"Select a cloud",
 		),
@@ -1082,6 +1100,18 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 			"hpe_morpheus_form.example",
 			"option_type8_hidden",
 			"false",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type8_instance_type_code",
+			"apache",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type8_instance_type_field_type",
+			"value",
 		),
 
 		resource.TestCheckResourceAttr(

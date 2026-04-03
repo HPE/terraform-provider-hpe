@@ -162,6 +162,11 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = false
     exclude_from_search      = true
     filter_from_resource     = true
+    group_field_type         = "value"
+    group_id                 = "1"
+    instance_type_field_type = "value"
+    instance_type_code       = "apache"
+    cloud_type               = "4"
   }
 
   option_type {
