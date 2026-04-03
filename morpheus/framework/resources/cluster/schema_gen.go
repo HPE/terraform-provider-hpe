@@ -68,6 +68,9 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"compute_vlans": schema.StringAttribute{
 						Optional: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 					},
 					"cpu_arch": schema.StringAttribute{
 						Required: true,
@@ -77,6 +80,9 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"create_user": schema.BoolAttribute{
 						Optional: true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.RequiresReplace(),
+						},
 					},
 					"dynamic_placement": schema.BoolAttribute{
 						Optional:            true,
@@ -141,8 +147,8 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 			"labels": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Description:         "This will set labels on the cluster as well as its servers.",
-				MarkdownDescription: "This will set labels on the cluster as well as its servers.",
+				Description:         "Array of strings (keywords).",
+				MarkdownDescription: "Array of strings (keywords).",
 			},
 			"layout_id": schema.Int64Attribute{
 				Required:            true,
