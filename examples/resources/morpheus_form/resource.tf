@@ -155,7 +155,7 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     filter_from_resource     = true
   }
-  
+
   option_type {
     name                     = "tf layout example"
     code                     = "layout-input"
