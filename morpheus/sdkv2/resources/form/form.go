@@ -475,8 +475,8 @@ func optionTypeSchema(parent string) *schema.Schema {
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeLayout, typeNetworkManager, typeNumber,
-							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeLayout, typeNetworkManager,
+							typeNumber, typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
 					),

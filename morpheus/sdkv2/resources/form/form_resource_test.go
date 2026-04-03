@@ -1065,8 +1065,8 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 			"option_type8_type",
 			"cloud",
 		),
-    
-    resource.TestCheckResourceAttr(
+
+		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
 			"option_type9_cloud_field_type",
 			"value",
