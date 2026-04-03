@@ -18,10 +18,12 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -49,7 +51,8 @@ func TestAccMorpheusImageDatasourceById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	imageResourceConfig := `
 resource "hpe_morpheus_image" "test_image" {
@@ -102,7 +105,8 @@ func TestAccMorpheusImageDatasourceByIdExisting(t *testing.T) {
 	name := "AlmaLinux 9"
 	imageType := "azure-reference"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-id.tf.tmpl", "Id", id)
@@ -146,7 +150,8 @@ func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	imageResourceConfig := `
 resource "hpe_morpheus_image" "test_image" {
@@ -198,7 +203,8 @@ func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	imageType := "iso"
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	imageResourceConfig := `
 resource "hpe_morpheus_image" "test_image" {
@@ -246,7 +252,8 @@ func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig := `
 data "hpe_morpheus_image" "test" {
@@ -272,7 +279,8 @@ func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig := `
 data "hpe_morpheus_image" "test" {
