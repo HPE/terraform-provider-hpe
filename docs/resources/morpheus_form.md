@@ -210,6 +210,33 @@ resource "hpe_morpheus_form" "example" {
   }
 
   option_type {
+    name                     = "tf plan example"
+    code                     = "plan-input"
+    description              = "Terraform plan example"
+    type                     = "plan"
+    field_label              = "plan input"
+    field_name               = "planInput"
+    default_value            = ""
+    placeholder              = "Select plan"
+    help_block               = "Select a plan"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    show_pricing             = false
+    group_field_type         = "value"
+    group_id                 = "1"
+    cloud_field_type         = "value"
+    cloud_id                 = "1"
+    layout_field_type        = "value"
+    layout_id                = "1"
+    pool_field_type          = "value"
+    pool_id                  = "1"
+  }
+
+  option_type {
     name                     = "tf group example"
     code                     = "group-input"
     description              = "Terraform group example"
@@ -333,6 +360,7 @@ Optional:
 - `delimiter` (String) The delimiter used to separate text array input values
 - `dependent_field` (String) The field or code used to trigger the reloading of the field
 - `description` (String) A description of the option type to add to the field group
+- `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
@@ -359,18 +387,19 @@ Optional:
 - `name` (String) The name of the option type to add to the field group
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
-- `pool_field` (String) The field code used to determine the pool for a networkManager option type
-- `pool_field_type` (String) How the pool is specified for a networkManager option type (field or value)
-- `pool_id` (String) The pool ID to filter by for a networkManager option type
+- `pool_field` (String) The field code used to determine the resource pool for an option type
+- `pool_field_type` (String) How the resource pool is specified for an option type (field or value)
+- `pool_id` (String) The resource pool ID to filter by for an option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
 - `show_line_numbers` (Boolean) Whether to show the line numbers for the code editor option type
 - `show_network_type_selection` (Boolean) Whether to show the network type selection
+- `show_pricing` (Boolean) Whether to show pricing information for a plan option type
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -397,6 +426,7 @@ Optional:
 - `delimiter` (String) The delimiter used to separate text array input values
 - `dependent_field` (String) The field or code used to trigger the reloading of the field
 - `description` (String) A description of the option type to add to the form
+- `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
@@ -423,18 +453,19 @@ Optional:
 - `name` (String) The name of the option type to add to the form
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
-- `pool_field` (String) The field code used to determine the pool for a networkManager option type
-- `pool_field_type` (String) How the pool is specified for a networkManager option type (field or value)
-- `pool_id` (String) The pool ID to filter by for a networkManager option type
+- `pool_field` (String) The field code used to determine the resource pool for an option type
+- `pool_field_type` (String) How the resource pool is specified for an option type (field or value)
+- `pool_id` (String) The resource pool ID to filter by for an option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
 - `show_line_numbers` (Boolean) Whether to show the line numbers for the code editor option type
 - `show_network_type_selection` (Boolean) Whether to show the network type selection
+- `show_pricing` (Boolean) Whether to show pricing information for a plan option type
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 

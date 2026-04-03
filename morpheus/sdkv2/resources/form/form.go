@@ -31,6 +31,7 @@ const (
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
 	typePassword       = "password"
+	typePlan           = "plan"
 	typeRadio          = "radio"
 	typeSelect         = "select"
 	typeText           = "text"
@@ -49,7 +50,6 @@ const (
 	typeInstancesInput = "instances-input"
 	typeKeyValue       = "keyValue"
 	typeLogoSelector   = "logoSelector"
-	typePlan           = "plan"
 	typePorts          = "ports"
 	typeResourcePool   = "resourcePool"
 	typeSecGroup       = "secGroup"
@@ -126,6 +126,26 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+	case typePlan:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
 			return err
 		}
 	}
@@ -249,6 +269,24 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+		row["config"] = config
+	case typePlan:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["showPricing"] = optionTypeConfig["show_pricing"]
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["diskField"] = optionTypeConfig["disk_field"]
 		row["config"] = config
 	case typeGroup:
 		row["defaultValue"] = optionTypeConfig["default_value"]
@@ -378,6 +416,21 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
 		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
 		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+	case typePlan:
+		row["show_pricing"] = optionType.Config.ShowPricing
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
+		row["disk_field"] = optionType.Config.DiskField
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -542,12 +595,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, " +
+						"(byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, " +
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeLayout, typeNetworkManager,
-							typeNumber, typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
+							typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
 					),
@@ -753,20 +806,20 @@ func optionTypeSchema(parent string) *schema.Schema {
 				},
 				"pool_field_type": {
 					Type:         schema.TypeString,
-					Description:  "How the pool is specified for a networkManager option type (field or value)",
+					Description:  "How the resource pool is specified for an option type (field or value)",
 					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
 					Optional:     true,
 					Computed:     true,
 				},
 				"pool_field": {
 					Type:        schema.TypeString,
-					Description: "The field code used to determine the pool for a networkManager option type",
+					Description: "The field code used to determine the resource pool for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
 				"pool_id": {
 					Type:        schema.TypeString,
-					Description: "The pool ID to filter by for a networkManager option type",
+					Description: "The resource pool ID to filter by for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
@@ -792,6 +845,18 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"allow_read_only": {
 					Type:        schema.TypeBool,
 					Description: "Whether to allow read only instances of this type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_pricing": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show pricing information for a plan option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"disk_field": {
+					Type:        schema.TypeString,
+					Description: "The field code referencing the disk manager option type to associate with a plan option type",
 					Optional:    true,
 					Computed:    true,
 				},

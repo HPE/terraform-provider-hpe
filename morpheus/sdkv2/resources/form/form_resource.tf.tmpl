@@ -192,6 +192,33 @@ resource "hpe_morpheus_form" "example" {
     instance_type_field_type = "{{.OptionType9InstanceTypeFieldType}}"
     instance_type_code       = "{{.OptionType9InstanceTypeCode}}"
   }
+
+  option_type {
+    name                     = "{{.OptionType12Name}}"
+    code                     = "{{.OptionType12Code}}"
+    description              = "{{.OptionType12Description}}"
+    type                     = "{{.OptionType12Type}}"
+    field_label              = "{{.OptionType12FieldLabel}}"
+    field_name               = "{{.OptionType12FieldName}}"
+    default_value            = "{{.OptionType12DefaultValue}}"
+    placeholder              = "{{.OptionType12Placeholder}}"
+    help_block               = "{{.OptionType12HelpBlock}}"
+    required                 = {{.OptionType12Required}}
+    export_meta              = {{.OptionType12ExportMeta}}
+    display_value_on_details = {{.OptionType12DisplayValueOnDetails}}
+    locked                   = {{.OptionType12Locked}}
+    hidden                   = {{.OptionType12Hidden}}
+    exclude_from_search      = {{.OptionType12ExcludeFromSearch}}
+    show_pricing             = {{.OptionType12ShowPricing}}
+    group_field_type         = "{{.OptionType12GroupFieldType}}"
+    group_id                 = "{{.OptionType12GroupId}}"
+    cloud_field_type         = "{{.OptionType12CloudFieldType}}"
+    cloud_id                 = "{{.OptionType12CloudId}}"
+    layout_field_type        = "{{.OptionType12LayoutFieldType}}"
+    layout_id                = "{{.OptionType12LayoutId}}"
+    pool_field_type          = "{{.OptionType12PoolFieldType}}"
+    pool_id                  = "{{.OptionType12PoolId}}"
+  }
   
   option_type {
     name                     = "{{.OptionType10Name}}"
