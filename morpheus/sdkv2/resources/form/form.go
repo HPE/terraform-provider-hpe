@@ -103,7 +103,8 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 // validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
 // based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
 func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
-	fieldTypeAttr, fieldAttr, valueAttr string) error {
+	fieldTypeAttr, fieldAttr, valueAttr string,
+) error {
 	fieldType := optionType.GetAttr(fieldTypeAttr)
 	if !fieldType.IsKnown() || fieldType.IsNull() {
 		return nil
@@ -208,7 +209,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
-    row["config"] = config
+		row["config"] = config
 	case typeGroup:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
@@ -689,7 +690,7 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"instance_type_code": {
 					Type:        schema.TypeString,
 					Description: "The instance type code to filter layouts by for a layout option type",
-          Optional:    true,
+					Optional:    true,
 					Computed:    true,
 				},
 				"allow_read_only": {
