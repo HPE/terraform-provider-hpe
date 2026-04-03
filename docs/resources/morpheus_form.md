@@ -171,7 +171,7 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     filter_from_resource     = true
   }
-
+  
   option_type {
     name                     = "tf layout example"
     code                     = "layout-input"
@@ -194,6 +194,25 @@ resource "hpe_morpheus_form" "example" {
     cloud_id                 = "1"
     instance_type_field_type = "value"
     instance_type_code       = "apache"
+  }
+
+  option_type {
+    name                     = "tf group example"
+    code                     = "group-input"
+    description              = "Terraform group example"
+    type                     = "group"
+    field_label              = "group input"
+    field_name               = "groupInput"
+    default_value            = "test123"
+    placeholder              = "Select group"
+    help_block               = "Select a group"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    allow_read_only          = true
   }
 
   field_group {
@@ -288,6 +307,7 @@ Optional:
 - `allow_duplicates` (Boolean) Whether duplicate selections are allowed
 - `allow_multiple_selections` (Boolean) Whether to allow multiple items to be selected when using a select list or type ahead option type
 - `allow_password_peek` (Boolean) Whether the value of the password option type can be revealed by the user to ensure they correctly entered the password
+- `allow_read_only` (Boolean) Whether to allow read only instances of this type
 - `cloud_field` (String) The field code used to determine the cloud for a layout option type
 - `cloud_field_type` (String) How the cloud is specified for a layout option type (field or value)
 - `cloud_id` (String) The cloud ID to filter layouts by for a layout option type
@@ -330,7 +350,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -344,6 +364,7 @@ Optional:
 - `allow_duplicates` (Boolean) Whether duplicate selections are allowed
 - `allow_multiple_selections` (Boolean) Whether to allow multiple items to be selected when using a select list or type ahead option type
 - `allow_password_peek` (Boolean) Whether the value of the password option type can be revealed by the user to ensure they correctly entered the password
+- `allow_read_only` (Boolean) Whether to allow read only instances of this type
 - `cloud_field` (String) The field code used to determine the cloud for a layout option type
 - `cloud_field_type` (String) How the cloud is specified for a layout option type (field or value)
 - `cloud_id` (String) The cloud ID to filter layouts by for a layout option type
@@ -386,7 +407,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 

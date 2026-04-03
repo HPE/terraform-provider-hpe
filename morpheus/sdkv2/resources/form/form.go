@@ -25,6 +25,7 @@ const (
 	typeCheckbox       = "checkbox"
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
+	typeGroup          = "group"
 	typeHidden         = "hidden"
 	typeLayout         = "layout"
 	typeNetworkManager = "networkManager"
@@ -44,7 +45,6 @@ const (
 	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
-	typeGroup          = "group"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
 	typeKeyValue       = "keyValue"
@@ -208,6 +208,11 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+    row["config"] = config
+	case typeGroup:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
 		row["config"] = config
 	case typeNumber:
 		var defaultValue string
@@ -316,6 +321,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
+	case typeGroup:
+		row["allow_read_only"] = optionType.Config.AllowReadonly
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
@@ -463,11 +470,11 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, hidden, layout, networkManager, number, password, radio, " +
+						"(byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, radio, " +
 						"select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeHidden, typeLayout, typeNetworkManager, typeNumber,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeLayout, typeNetworkManager, typeNumber,
 							typePassword, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
 						},
 						false,
@@ -682,6 +689,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"instance_type_code": {
 					Type:        schema.TypeString,
 					Description: "The instance type code to filter layouts by for a layout option type",
+          Optional:    true,
+					Computed:    true,
+				},
+				"allow_read_only": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow read only instances of this type",
 					Optional:    true,
 					Computed:    true,
 				},

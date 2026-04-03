@@ -155,7 +155,7 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     filter_from_resource     = true
   }
-
+  
   option_type {
     name                     = "tf layout example"
     code                     = "layout-input"
@@ -178,6 +178,25 @@ resource "hpe_morpheus_form" "example" {
     cloud_id                 = "1"
     instance_type_field_type = "value"
     instance_type_code       = "apache"
+  }
+
+  option_type {
+    name                     = "tf group example"
+    code                     = "group-input"
+    description              = "Terraform group example"
+    type                     = "group"
+    field_label              = "group input"
+    field_name               = "groupInput"
+    default_value            = "test123"
+    placeholder              = "Select group"
+    help_block               = "Select a group"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    allow_read_only          = true
   }
 
   field_group {

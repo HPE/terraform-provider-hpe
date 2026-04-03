@@ -210,6 +210,22 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 		"OptionType9Placeholder":                     "Select layout",
 		"OptionType9Required":                        "true",
 		"OptionType9Type":                            "layout",
+		"OptionType10AllowReadOnly":                  "true",
+		"OptionType10Code":                           "group-input",
+		"OptionType10DefaultValue":                   "test123",
+		"OptionType10Description":                    "Terraform group example",
+		"OptionType10DisplayValueOnDetails":          "true",
+		"OptionType10ExcludeFromSearch":              "true",
+		"OptionType10ExportMeta":                     "true",
+		"OptionType10FieldLabel":                     "group input",
+		"OptionType10FieldName":                      "groupInput",
+		"OptionType10HelpBlock":                      "Select a group",
+		"OptionType10Hidden":                         "false",
+		"OptionType10Locked":                         "true",
+		"OptionType10Name":                           "tf group example",
+		"OptionType10Placeholder":                    "Select group",
+		"OptionType10Required":                       "true",
+		"OptionType10Type":                           "group",
 	}
 
 	// Apply overrides to defaults
