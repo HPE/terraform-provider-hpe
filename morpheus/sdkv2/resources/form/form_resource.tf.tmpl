@@ -194,6 +194,25 @@ resource "hpe_morpheus_form" "example" {
   }
 
   option_type {
+    name                     = "{{.OptionType10Name}}"
+    code                     = "{{.OptionType10Code}}"
+    description              = "{{.OptionType10Description}}"
+    type                     = "{{.OptionType10Type}}"
+    field_label              = "{{.OptionType10FieldLabel}}"
+    field_name               = "{{.OptionType10FieldName}}"
+    default_value            = "{{.OptionType10DefaultValue}}"
+    placeholder              = "{{.OptionType10Placeholder}}"
+    help_block               = "{{.OptionType10HelpBlock}}"
+    required                 = {{.OptionType10Required}}
+    export_meta              = {{.OptionType10ExportMeta}}
+    display_value_on_details = {{.OptionType10DisplayValueOnDetails}}
+    locked                   = {{.OptionType10Locked}}
+    hidden                   = {{.OptionType10Hidden}}
+    exclude_from_search      = {{.OptionType10ExcludeFromSearch}}
+    allow_read_only          = {{.OptionType10AllowReadOnly}}
+  }
+
+  option_type {
     name                     = "{{.OptionType12Name}}"
     code                     = "{{.OptionType12Code}}"
     description              = "{{.OptionType12Description}}"
@@ -218,25 +237,6 @@ resource "hpe_morpheus_form" "example" {
     layout_id                = "{{.OptionType12LayoutId}}"
     pool_field_type          = "{{.OptionType12PoolFieldType}}"
     pool_id                  = "{{.OptionType12PoolId}}"
-  }
-  
-  option_type {
-    name                     = "{{.OptionType10Name}}"
-    code                     = "{{.OptionType10Code}}"
-    description              = "{{.OptionType10Description}}"
-    type                     = "{{.OptionType10Type}}"
-    field_label              = "{{.OptionType10FieldLabel}}"
-    field_name               = "{{.OptionType10FieldName}}"
-    default_value            = "{{.OptionType10DefaultValue}}"
-    placeholder              = "{{.OptionType10Placeholder}}"
-    help_block               = "{{.OptionType10HelpBlock}}"
-    required                 = {{.OptionType10Required}}
-    export_meta              = {{.OptionType10ExportMeta}}
-    display_value_on_details = {{.OptionType10DisplayValueOnDetails}}
-    locked                   = {{.OptionType10Locked}}
-    hidden                   = {{.OptionType10Hidden}}
-    exclude_from_search      = {{.OptionType10ExcludeFromSearch}}
-    allow_read_only          = {{.OptionType10AllowReadOnly}}
   }
 
   field_group {
