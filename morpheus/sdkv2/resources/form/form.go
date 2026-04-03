@@ -25,6 +25,7 @@ const (
 	typeCheckbox       = "checkbox"
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
+	typeDiskManager    = "diskManager"
 	typeGroup          = "group"
 	typeHidden         = "hidden"
 	typeLayout         = "layout"
@@ -43,7 +44,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
 	typeHTTPHeader     = "httpHeader"
@@ -146,6 +146,26 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+	case typeDiskManager:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
 			return err
 		}
 	}
@@ -287,6 +307,28 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["poolField"] = optionTypeConfig["pool_field"]
 		config["poolId"] = optionTypeConfig["pool_id"]
 		config["diskField"] = optionTypeConfig["disk_field"]
+		row["config"] = config
+	case typeDiskManager:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["enableDiskTypeSelection"] = optionTypeConfig["enable_disk_type_selection"]
+		config["enableStorageTypeSelection"] = optionTypeConfig["enable_storage_type_selection"]
+		config["enableDatastoreSelection"] = optionTypeConfig["enable_datastore_selection"]
 		row["config"] = config
 	case typeGroup:
 		row["defaultValue"] = optionTypeConfig["default_value"]
@@ -431,6 +473,25 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["pool_field"] = optionType.Config.PoolField
 		row["pool_id"] = optionType.Config.PoolId
 		row["disk_field"] = optionType.Config.DiskField
+	case typeDiskManager:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
+		row["enable_disk_type_selection"] = optionType.Config.EnableDiskTypeSelection
+		row["enable_storage_type_selection"] = optionType.Config.EnableStorageTypeSelection
+		row["enable_datastore_selection"] = optionType.Config.EnableDatastoreSelection
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -595,12 +656,13 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, " +
+						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, " +
 						"radio, select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeGroup, typeHidden, typeLayout, typeNetworkManager,
-							typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea, typeTextArray, typeTypeahead,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager, typeGroup, typeHidden, typeLayout,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea,
+							typeTextArray, typeTypeahead,
 						},
 						false,
 					),
@@ -857,6 +919,24 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"disk_field": {
 					Type:        schema.TypeString,
 					Description: "The field code referencing the disk manager option type to associate with a plan option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_disk_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a disk type for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_storage_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a storage type for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_datastore_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a datastore for a diskManager option type",
 					Optional:    true,
 					Computed:    true,
 				},

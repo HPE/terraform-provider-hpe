@@ -229,6 +229,35 @@ resource "hpe_morpheus_form" "example" {
   }
 
   option_type {
+    name                          = "tf disk manager example"
+    code                          = "disk-manager-input"
+    description                   = "Terraform disk manager example"
+    type                          = "diskManager"
+    field_label                   = "disk manager input"
+    field_name                    = "diskManagerInput"
+    help_block                    = "Configure disks"
+    required                      = true
+    export_meta                   = true
+    display_value_on_details      = true
+    locked                        = true
+    hidden                        = false
+    exclude_from_search           = true
+    group_field_type              = "value"
+    group_id                      = "1"
+    cloud_field_type              = "value"
+    cloud_id                      = "1"
+    plan_field_type               = "value"
+    plan_id                       = "1"
+    layout_field_type             = "value"
+    layout_id                     = "1"
+    pool_field_type               = "value"
+    pool_id                       = "1"
+    enable_disk_type_selection    = true
+    enable_storage_type_selection = true
+    enable_datastore_selection    = true
+  }
+
+  option_type {
     name                     = "tf plan example"
     code                     = "plan-input"
     description              = "Terraform plan example"
@@ -363,7 +392,10 @@ Optional:
 - `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_datastore_selection` (Boolean) Whether to allow users to select a datastore for a diskManager option type
+- `enable_disk_type_selection` (Boolean) Whether to allow users to select a disk type for a diskManager option type
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
+- `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
@@ -399,7 +431,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -429,7 +461,10 @@ Optional:
 - `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_datastore_selection` (Boolean) Whether to allow users to select a datastore for a diskManager option type
+- `enable_disk_type_selection` (Boolean) Whether to allow users to select a disk type for a diskManager option type
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
+- `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
@@ -465,7 +500,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
