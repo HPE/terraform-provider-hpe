@@ -95,6 +95,27 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
 			return err
 		}
+
+	case typeNetworkManager:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -248,6 +269,18 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		}
 	case typeNetworkManager:
 		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
 		config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
 		config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
 		row["defaultValue"] = optionTypeConfig["default_value"]
@@ -329,6 +362,18 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["min_value"] = optionType.MinVal
 		row["max_value"] = optionType.MaxVal
 	case typeNetworkManager:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
 		row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
 		row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
 	case typeRadio:
@@ -638,39 +683,58 @@ func optionTypeSchema(parent string) *schema.Schema {
 				},
 				"group_field_type": {
 					Type:         schema.TypeString,
-					Description:  "How the group is specified for a layout option type (field or value)",
+					Description:  "How the group is specified for an option type (field or value)",
 					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
 					Optional:     true,
 					Computed:     true,
 				},
 				"group_field": {
 					Type:        schema.TypeString,
-					Description: "The field code used to determine the group for a layout option type",
+					Description: "The field code used to determine the group for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
 				"group_id": {
 					Type:        schema.TypeString,
-					Description: "The group ID to filter layouts by for a layout option type",
+					Description: "The group ID to filter layouts by for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
 				"cloud_field_type": {
 					Type:         schema.TypeString,
-					Description:  "How the cloud is specified for a layout option type (field or value)",
+					Description:  "How the cloud is specified for an option type (field or value)",
 					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
 					Optional:     true,
 					Computed:     true,
 				},
 				"cloud_field": {
 					Type:        schema.TypeString,
-					Description: "The field code used to determine the cloud for a layout option type",
+					Description: "The field code used to determine the cloud for an option type",
 					Optional:    true,
 					Computed:    true,
 				},
 				"cloud_id": {
 					Type:        schema.TypeString,
-					Description: "The cloud ID to filter layouts by for a layout option type",
+					Description: "The cloud ID to filter layouts by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"pool_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the pool is specified for a networkManager option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"pool_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the pool for a networkManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"pool_id": {
+					Type:        schema.TypeString,
+					Description: "The pool ID to filter by for a networkManager option type",
 					Optional:    true,
 					Computed:    true,
 				},
@@ -696,6 +760,25 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"allow_read_only": {
 					Type:        schema.TypeBool,
 					Description: "Whether to allow read only instances of this type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the layout is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"layout_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the layout for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_id": {
+					Type:        schema.TypeString,
+					Description: "The layout ID to filter by for an option type",
 					Optional:    true,
 					Computed:    true,
 				},

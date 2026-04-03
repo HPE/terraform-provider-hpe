@@ -141,6 +141,8 @@
   OptionType6Required 'true' \
   OptionType6Step '2' \
   OptionType6Type 'number' \
+  OptionType7CloudFieldType 'value' \
+  OptionType7CloudId '1' \
   OptionType7Code 'network-manager-input' \
   OptionType7DefaultValue 'test123' \
   OptionType7Description 'Terraform network manager example' \
@@ -150,11 +152,17 @@
   OptionType7ExportMeta 'true' \
   OptionType7FieldLabel 'network input' \
   OptionType7FieldName 'networkInput' \
+  OptionType7GroupFieldType 'value' \
+  OptionType7GroupId '1' \
   OptionType7HelpBlock 'Select a network' \
   OptionType7Hidden 'false' \
+  OptionType7LayoutFieldType 'value' \
+  OptionType7LayoutId '1' \
   OptionType7Locked 'true' \
   OptionType7Name 'tf network manager example' \
   OptionType7Placeholder 'Select network' \
+  OptionType7PoolFieldType 'value' \
+  OptionType7PoolId '1' \
   OptionType7Required 'true' \
   OptionType7ShowNetworkTypeSelection 'true' \
   OptionType7Type 'networkManager' \
