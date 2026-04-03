@@ -153,6 +153,25 @@ resource "hpe_morpheus_form" "example" {
     enable_ip_mode_selection    = true
   }
 
+  option_type {
+    name                     = "tf cloud example"
+    code                     = "cloud-input"
+    description              = "Terraform cloud example"
+    type                     = "cloud"
+    field_label              = "cloud input"
+    field_name               = "cloudInput"
+    default_value            = "test123"
+    placeholder              = "Select cloud"
+    help_block               = "Select a cloud"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    filter_from_resource     = true
+  }
+
   field_group {
     name                 = "fg1"
     description          = "testin"
@@ -260,6 +279,7 @@ Optional:
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the field group
+- `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
 - `lock_display` (Boolean) Whether to lock the display or not
@@ -277,7 +297,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -306,6 +326,7 @@ Optional:
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the form
+- `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
 - `lock_display` (Boolean) Whether to lock the display or not
@@ -323,7 +344,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, hidden, networkManager, number, password, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
