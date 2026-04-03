@@ -194,7 +194,6 @@ resource "hpe_morpheus_form" "example" {
     cloud_id                 = "1"
     instance_type_field_type = "value"
     instance_type_code       = "apache"
-    layout_field_type        = "field"
   }
 
   field_group {
@@ -316,9 +315,6 @@ Optional:
 - `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
 - `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
-- `layout_field` (String) The field code used to determine the layout for a layout option type
-- `layout_field_type` (String) How the layout value is specified for a layout option type (field or value)
-- `layout_id` (String) The layout ID to set as the default for a layout option type
 - `lock_display` (Boolean) Whether to lock the display or not
 - `locked` (Boolean) Whether the option type is locked or not
 - `max_value` (Number) The maximum value that can be provided for a number option type
@@ -326,9 +322,6 @@ Optional:
 - `name` (String) The name of the option type to add to the field group
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
-- `plan_field` (String) The field code used to determine the plan for a layout option type
-- `plan_field_type` (String) How the plan is specified for a layout option type (field or value)
-- `plan_id` (String) The plan ID to filter layouts by for a layout option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not
@@ -378,9 +371,6 @@ Optional:
 - `instance_type_code` (String) The instance type code to filter layouts by for a layout option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for a layout option type
 - `instance_type_field_type` (String) How the instance type is specified for a layout option type (field or value)
-- `layout_field` (String) The field code used to determine the layout for a layout option type
-- `layout_field_type` (String) How the layout value is specified for a layout option type (field or value)
-- `layout_id` (String) The layout ID to set as the default for a layout option type
 - `lock_display` (Boolean) Whether to lock the display or not
 - `locked` (Boolean) Whether the option type is locked or not
 - `max_value` (Number) The maximum value that can be provided for a number option type
@@ -388,9 +378,6 @@ Optional:
 - `name` (String) The name of the option type to add to the form
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
-- `plan_field` (String) The field code used to determine the plan for a layout option type
-- `plan_field_type` (String) How the plan is specified for a layout option type (field or value)
-- `plan_id` (String) The plan ID to filter layouts by for a layout option type
 - `remove_select_option` (Boolean) For Select List-type Inputs. When marked, the Input will default to the first item in the list rather than to an empty selection
 - `require_field` (String) The field or code used to determine whether the field is required or not
 - `required` (Boolean) Whether the option type is required or not

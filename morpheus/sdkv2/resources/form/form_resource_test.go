@@ -1158,12 +1158,6 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
-			"option_type9_layout_field_type",
-			"field",
-		),
-
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_form.example",
 			"option_type9_locked",
 			"true",
 		),

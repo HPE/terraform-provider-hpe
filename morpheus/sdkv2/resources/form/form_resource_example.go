@@ -205,7 +205,6 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 		"OptionType9Hidden":                          "false",
 		"OptionType9InstanceTypeCode":                "apache",
 		"OptionType9InstanceTypeFieldType":           "value",
-		"OptionType9LayoutFieldType":                 "field",
 		"OptionType9Locked":                          "true",
 		"OptionType9Name":                            "tf layout example",
 		"OptionType9Placeholder":                     "Select layout",

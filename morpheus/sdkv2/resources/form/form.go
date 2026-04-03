@@ -80,6 +80,44 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			return fmt.Errorf("default_value cannot be configured for checkbox inputs at %s[%d];"+
 				"use default_checked instead", path, index)
 		}
+	case typeLayout:
+		if err := validateLayoutFieldTypePair(optionType, path, index, "group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index, "cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index, "instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
+// based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
+func validateLayoutFieldTypePair(optionType cty.Value, path string, index int, fieldTypeAttr, fieldAttr, valueAttr string) error {
+	fieldType := optionType.GetAttr(fieldTypeAttr)
+	if !fieldType.IsKnown() || fieldType.IsNull() {
+		return nil
+	}
+
+	switch fieldType.AsString() {
+	case "field":
+		valueField := optionType.GetAttr(valueAttr)
+		if valueField.IsKnown() && !valueField.IsNull() && valueField.AsString() != "" {
+			return fmt.Errorf("%s cannot be set when %s is 'field' at %s[%d]; use %s instead",
+				valueAttr, fieldTypeAttr, path, index, fieldAttr)
+		}
+	case "value":
+		fieldField := optionType.GetAttr(fieldAttr)
+		if fieldField.IsKnown() && !fieldField.IsNull() && fieldField.AsString() != "" {
+			return fmt.Errorf("%s cannot be set when %s is 'value' at %s[%d]; use %s instead",
+				fieldAttr, fieldTypeAttr, path, index, valueAttr)
+		}
 	}
 
 	return nil
@@ -166,12 +204,6 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
-		config["planFieldType"] = optionTypeConfig["plan_field_type"]
-		config["planField"] = optionTypeConfig["plan_field"]
-		config["planId"] = optionTypeConfig["plan_id"]
-		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
-		config["layoutField"] = optionTypeConfig["layout_field"]
-		config["layoutId"] = optionTypeConfig["layout_id"]
 		row["config"] = config
 	case typeNumber:
 		var defaultValue string
@@ -277,12 +309,6 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
 		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
 		row["instance_type_code"] = optionType.Config.InstanceTypeCode
-		row["plan_field_type"] = optionType.Config.PlanFieldType
-		row["plan_field"] = optionType.Config.PlanField
-		row["plan_id"] = optionType.Config.PlanId
-		row["layout_field_type"] = optionType.Config.LayoutFieldType
-		row["layout_field"] = optionType.Config.LayoutField
-		row["layout_id"] = optionType.Config.LayoutId
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -655,45 +681,7 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
-				"plan_field_type": {
-					Type:         schema.TypeString,
-					Description:  "How the plan is specified for a layout option type (field or value)",
-					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
-					Optional:     true,
-					Computed:     true,
-				},
-				"plan_field": {
-					Type:        schema.TypeString,
-					Description: "The field code used to determine the plan for a layout option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"plan_id": {
-					Type:        schema.TypeString,
-					Description: "The plan ID to filter layouts by for a layout option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"layout_field_type": {
-					Type:         schema.TypeString,
-					Description:  "How the layout value is specified for a layout option type (field or value)",
-					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
-					Optional:     true,
-					Computed:     true,
-				},
-				"layout_field": {
-					Type:        schema.TypeString,
-					Description: "The field code used to determine the layout for a layout option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"layout_id": {
-					Type:        schema.TypeString,
-					Description: "The layout ID to set as the default for a layout option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"allow_multiple_selections": {
+					"allow_multiple_selections": {
 					Type: schema.TypeBool,
 					Description: "Whether to allow multiple items to be selected when using a " +
 						"select list or type ahead option type",

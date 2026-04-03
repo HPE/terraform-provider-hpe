@@ -178,8 +178,6 @@ resource "hpe_morpheus_form" "example" {
     cloud_id                 = "1"
     instance_type_field_type = "value"
     instance_type_code       = "apache"
-    layout_field_type        = "field"
-    layout_field                 = "hello"
   }
 
   field_group {
