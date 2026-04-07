@@ -664,8 +664,8 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, " +
-						"radio, select, text, textarea, textArray, typeahead)",
+						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number," +
+						" password, plan, radio, select, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager, typeGroup, typeHidden, typeLayout,
