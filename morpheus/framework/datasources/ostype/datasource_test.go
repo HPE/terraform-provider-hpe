@@ -49,15 +49,61 @@ func TestAccMorpheusFindOsTypeByName(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	checks := osTypeChecks()
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindOsTypeById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-id.tf.tmpl",
+		"Id", "1",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_os_type.example",
-			"name",
-			"Debian 12 64-bit",
+			"id",
+			"1",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_os_type.example",
-			"id",
+			"name",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_os_type.example",
+			"code",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_os_type.example",
+			"platform",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_os_type.example",
+			"bit_count",
 		),
 	}
 
@@ -176,4 +222,27 @@ func TestAccMorpheusFindOsTypeBothSearchAttrs(t *testing.T) {
 			},
 		},
 	})
+}
+
+func osTypeChecks() []resource.TestCheckFunc {
+	ds := "data.hpe_morpheus_os_type.example"
+
+	return []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(ds, "name", "Debian 12 64-bit"),
+		resource.TestCheckResourceAttrSet(ds, "id"),
+		resource.TestCheckResourceAttrSet(ds, "bit_count"),
+		resource.TestCheckResourceAttrSet(ds, "category"),
+		resource.TestCheckResourceAttrSet(ds, "cloud_init_version"),
+		resource.TestCheckResourceAttrSet(ds, "code"),
+		resource.TestCheckResourceAttrSet(ds, "description"),
+		resource.TestCheckResourceAttrSet(ds, "images.#"),
+		resource.TestCheckResourceAttrSet(ds, "install_agent"),
+		resource.TestCheckResourceAttrSet(ds, "os_codename"),
+		resource.TestCheckResourceAttrSet(ds, "os_family"),
+		resource.TestCheckResourceAttrSet(ds, "os_name"),
+		resource.TestCheckResourceAttrSet(ds, "os_version"),
+		resource.TestCheckResourceAttrSet(ds, "owner"),
+		resource.TestCheckResourceAttrSet(ds, "platform"),
+		resource.TestCheckResourceAttrSet(ds, "vendor"),
+	}
 }

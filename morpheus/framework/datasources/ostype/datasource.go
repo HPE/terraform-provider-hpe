@@ -9,9 +9,7 @@ import (
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
@@ -59,46 +57,13 @@ func (d *DataSource) Schema(
 	resp.Schema = OsTypeDataSourceSchema(ctx)
 }
 
-func mapImages(
-	ctx context.Context,
-	images []sdk.GetOsType200ResponseOsTypeImagesInner,
-) (types.Set, error) {
-	if len(images) == 0 {
-		return types.SetNull(ImagesValue{}.Type(ctx)), nil
-	}
-
-	var vals []attr.Value
-
-	for _, img := range images {
-		v := ImagesValue{
-			Account:          convert.Int64ToType(img.Account.Get()),
-			ComputeZoneType:  convert.Int64ToType(img.ComputeZoneType.Get()),
-			Id:               convert.Int64ToType(img.Id),
-			ProvisionType:    convert.Int64ToType(img.ProvisionType.Get()),
-			VirtualImageId:   convert.Int64ToType(img.VirtualImageId),
-			VirtualImageName: convert.StrToType(img.VirtualImageName),
-			Zone:             convert.Int64ToType(img.Zone.Get()),
-			state:            attr.ValueStateKnown,
-		}
-
-		vals = append(vals, v)
-	}
-
-	set, diags := types.SetValue(ImagesValue{}.Type(ctx), vals)
-	if diags.HasError() {
-		return types.SetNull(ImagesValue{}.Type(ctx)), fmt.Errorf("error creating images set")
-	}
-
-	return set, nil
-}
-
 func osTypeAsState(
 	ctx context.Context,
 	osType *sdk.GetOsType200ResponseOsType,
 ) (OsTypeModel, error) {
-	images, err := mapImages(ctx, osType.Images)
-	if err != nil {
-		return OsTypeModel{}, err
+	images, diags := convert.ToSetType(ctx, osType.Images, mapImage)
+	if diags.HasError() {
+		return OsTypeModel{}, fmt.Errorf("error creating images set")
 	}
 
 	return OsTypeModel{
@@ -165,13 +130,13 @@ func getOsTypeByName(
 
 func getOsType(
 	ctx context.Context,
-	data *OsTypeModel,
+	config *OsTypeModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetOsType200ResponseOsType, error) {
-	if !data.Id.IsNull() {
-		return getOsTypeByID(ctx, data.Id.ValueInt64(), apiClient)
-	} else if !data.Name.IsNull() {
-		return getOsTypeByName(ctx, data.Name.ValueString(), apiClient)
+	if !config.Id.IsNull() {
+		return getOsTypeByID(ctx, config.Id.ValueInt64(), apiClient)
+	} else if !config.Name.IsNull() {
+		return getOsTypeByName(ctx, config.Name.ValueString(), apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -183,10 +148,10 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var data OsTypeModel
+	var config OsTypeModel
 
 	// Read config
-	diags := req.Config.Get(ctx, &data)
+	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -202,7 +167,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	osType, err := getOsType(ctx, &data, apiClient)
+	osType, err := getOsType(ctx, &config, apiClient)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
