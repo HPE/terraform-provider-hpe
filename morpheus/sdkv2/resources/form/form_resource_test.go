@@ -1362,6 +1362,174 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
+			"option_type11_cloud_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_cloud_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_code",
+			"disk-manager-input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_description",
+			"Terraform disk manager example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_display_value_on_details",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_enable_datastore_selection",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_enable_disk_type_selection",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_enable_storage_type_selection",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_exclude_from_search",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_export_meta",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_field_label",
+			"disk manager input",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_field_name",
+			"diskManagerInput",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_group_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_group_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_help_block",
+			"Configure disks",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_hidden",
+			"false",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_layout_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_layout_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_locked",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_name",
+			"tf disk manager example",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_plan_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_plan_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_pool_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_pool_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_virtual_image_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_image_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_required",
+			"true",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_type",
+			"diskManager",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
 			"option_type12_cloud_field_type",
 			"value",
 		),

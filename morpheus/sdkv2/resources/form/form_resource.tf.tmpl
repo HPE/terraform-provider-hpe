@@ -213,6 +213,37 @@ resource "hpe_morpheus_form" "example" {
   }
 
   option_type {
+    name                          = "{{.OptionType11Name}}"
+    code                          = "{{.OptionType11Code}}"
+    description                   = "{{.OptionType11Description}}"
+    type                          = "{{.OptionType11Type}}"
+    field_label                   = "{{.OptionType11FieldLabel}}"
+    field_name                    = "{{.OptionType11FieldName}}"
+    help_block                    = "{{.OptionType11HelpBlock}}"
+    required                      = {{.OptionType11Required}}
+    export_meta                   = {{.OptionType11ExportMeta}}
+    display_value_on_details      = {{.OptionType11DisplayValueOnDetails}}
+    locked                        = {{.OptionType11Locked}}
+    hidden                        = {{.OptionType11Hidden}}
+    exclude_from_search           = {{.OptionType11ExcludeFromSearch}}
+    group_field_type              = "{{.OptionType11GroupFieldType}}"
+    group_id                      = "{{.OptionType11GroupId}}"
+    cloud_field_type              = "{{.OptionType11CloudFieldType}}"
+    cloud_id                      = "{{.OptionType11CloudId}}"
+    plan_field_type               = "{{.OptionType11PlanFieldType}}"
+    plan_id                       = "{{.OptionType11PlanId}}"
+    layout_field_type             = "{{.OptionType11LayoutFieldType}}"
+    layout_id                     = "{{.OptionType11LayoutId}}"
+    pool_field_type               = "{{.OptionType11PoolFieldType}}"
+    pool_id                       = "{{.OptionType11PoolId}}"
+    virtual_image_field_type      = "{{.OptionType11VirtualImageFieldType}}"
+    image_id                      = "{{.OptionType11ImageId}}"
+    enable_disk_type_selection    = {{.OptionType11EnableDiskTypeSelection}}
+    enable_storage_type_selection = {{.OptionType11EnableStorageTypeSelection}}
+    enable_datastore_selection    = {{.OptionType11EnableDatastoreSelection}}
+  }
+
+  option_type {
     name                     = "{{.OptionType12Name}}"
     code                     = "{{.OptionType12Code}}"
     description              = "{{.OptionType12Description}}"

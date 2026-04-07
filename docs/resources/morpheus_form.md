@@ -229,6 +229,37 @@ resource "hpe_morpheus_form" "example" {
   }
 
   option_type {
+    name                          = "tf disk manager example"
+    code                          = "disk-manager-input"
+    description                   = "Terraform disk manager example"
+    type                          = "diskManager"
+    field_label                   = "disk manager input"
+    field_name                    = "diskManagerInput"
+    help_block                    = "Configure disks"
+    required                      = true
+    export_meta                   = true
+    display_value_on_details      = true
+    locked                        = true
+    hidden                        = false
+    exclude_from_search           = true
+    group_field_type              = "value"
+    group_id                      = "1"
+    cloud_field_type              = "value"
+    cloud_id                      = "1"
+    plan_field_type               = "value"
+    plan_id                       = "1"
+    layout_field_type             = "value"
+    layout_id                     = "1"
+    pool_field_type               = "value"
+    pool_id                       = "1"
+    virtual_image_field_type      = "value"
+    image_id                      = "1"
+    enable_disk_type_selection    = true
+    enable_storage_type_selection = true
+    enable_datastore_selection    = true
+  }
+
+  option_type {
     name                     = "tf plan example"
     code                     = "plan-input"
     description              = "Terraform plan example"
@@ -354,6 +385,7 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
+- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -363,7 +395,10 @@ Optional:
 - `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_datastore_selection` (Boolean) Whether to allow users to select a datastore for a diskManager option type
+- `enable_disk_type_selection` (Boolean) Whether to allow users to select a disk type for a diskManager option type
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
+- `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
@@ -374,6 +409,8 @@ Optional:
 - `group_id` (String) The group ID to filter layouts by for an option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
+- `image_field` (String) The field code used to determine the virtual image for a diskManager option type
+- `image_id` (String) The virtual image ID for a diskManager option type
 - `instance_type_code` (String) The instance type code to filter layouts by for an option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for an option type
 - `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
@@ -387,6 +424,9 @@ Optional:
 - `name` (String) The name of the option type to add to the field group
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
+- `plan_field` (String) The field code used to determine the service plan for an option type
+- `plan_field_type` (String) How the service plan is specified for an option type (field or value)
+- `plan_id` (String) The service plan ID to filter by for an option type
 - `pool_field` (String) The field code used to determine the resource pool for an option type
 - `pool_field_type` (String) How the resource pool is specified for an option type (field or value)
 - `pool_id` (String) The resource pool ID to filter by for an option type
@@ -399,8 +439,9 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
 
@@ -420,6 +461,7 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
+- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -429,7 +471,10 @@ Optional:
 - `disk_field` (String) The field code referencing the disk manager option type to associate with a plan option type
 - `display` (String) The memory or storage value to use (GB or MB)
 - `display_value_on_details` (Boolean) Display the selected value of the option type on the associated resource's details page
+- `enable_datastore_selection` (Boolean) Whether to allow users to select a datastore for a diskManager option type
+- `enable_disk_type_selection` (Boolean) Whether to allow users to select a disk type for a diskManager option type
 - `enable_ip_mode_selection` (Boolean) Whether to enable IP Mode Selection
+- `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
 - `field_label` (String) The label of the option type
@@ -440,6 +485,8 @@ Optional:
 - `group_id` (String) The group ID to filter layouts by for an option type
 - `help_block` (String) The help block text for the option type
 - `hidden` (Boolean) Whether the option type is hidden or not
+- `image_field` (String) The field code used to determine the virtual image for a diskManager option type
+- `image_id` (String) The virtual image ID for a diskManager option type
 - `instance_type_code` (String) The instance type code to filter layouts by for an option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for an option type
 - `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
@@ -453,6 +500,9 @@ Optional:
 - `name` (String) The name of the option type to add to the form
 - `option_list_id` (Number) The id of the option list for option types such as a typeahead or select list
 - `placeholder` (String) The placeholder text for the option type
+- `plan_field` (String) The field code used to determine the service plan for an option type
+- `plan_field_type` (String) How the service plan is specified for an option type (field or value)
+- `plan_id` (String) The service plan ID to filter by for an option type
 - `pool_field` (String) The field code used to determine the resource pool for an option type
 - `pool_field_type` (String) How the resource pool is specified for an option type (field or value)
 - `pool_id` (String) The resource pool ID to filter by for an option type
@@ -465,8 +515,9 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
 ## Import
