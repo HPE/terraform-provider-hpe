@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 var (
@@ -27,7 +28,8 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
 	checks := []resource.TestCheckFunc{
@@ -221,7 +223,8 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
 	checks := []resource.TestCheckFunc{

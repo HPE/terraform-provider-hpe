@@ -135,6 +135,14 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search         = {{.OptionType7ExcludeFromSearch}}
     show_network_type_selection = {{.OptionType7ShowNetworkTypeSelection}}
     enable_ip_mode_selection    = {{.OptionType7EnableIPModeSelection}}
+    group_field_type            = "{{.OptionType7GroupFieldType}}"
+    group_id                    = "{{.OptionType7GroupId}}"
+    cloud_field_type            = "{{.OptionType7CloudFieldType}}"
+    cloud_id                    = "{{.OptionType7CloudId}}"
+    pool_field_type             = "{{.OptionType7PoolFieldType}}"
+    pool_id                     = "{{.OptionType7PoolId}}"
+    layout_field_type           = "{{.OptionType7LayoutFieldType}}"
+    layout_id                   = "{{.OptionType7LayoutId}}"
   }
 
   option_type {
@@ -152,8 +160,83 @@ resource "hpe_morpheus_form" "example" {
     display_value_on_details = {{.OptionType8DisplayValueOnDetails}}
     locked                   = {{.OptionType8Locked}}
     hidden                   = {{.OptionType8Hidden}}
-    exclude_from_search      = {{.OptionType8ExcludeFromSearch}}
-    filter_from_resource     = {{.OptionType8FilterFromResource}}
+    exclude_from_search          = {{.OptionType8ExcludeFromSearch}}
+    filter_from_resource         = {{.OptionType8FilterFromResource}}
+    group_field_type             = "{{.OptionType8GroupFieldType}}"
+    group_id                     = "{{.OptionType8GroupId}}"
+    instance_type_field_type     = "{{.OptionType8InstanceTypeFieldType}}"
+    instance_type_code           = "{{.OptionType8InstanceTypeCode}}"
+    cloud_type                   = "{{.OptionType8CloudType}}"
+  }
+
+  option_type {
+    name                     = "{{.OptionType9Name}}"
+    code                     = "{{.OptionType9Code}}"
+    description              = "{{.OptionType9Description}}"
+    type                     = "{{.OptionType9Type}}"
+    field_label              = "{{.OptionType9FieldLabel}}"
+    field_name               = "{{.OptionType9FieldName}}"
+    default_value            = "{{.OptionType9DefaultValue}}"
+    placeholder              = "{{.OptionType9Placeholder}}"
+    help_block               = "{{.OptionType9HelpBlock}}"
+    required                 = {{.OptionType9Required}}
+    export_meta              = {{.OptionType9ExportMeta}}
+    display_value_on_details = {{.OptionType9DisplayValueOnDetails}}
+    locked                   = {{.OptionType9Locked}}
+    hidden                   = {{.OptionType9Hidden}}
+    exclude_from_search      = {{.OptionType9ExcludeFromSearch}}
+    group_field_type         = "{{.OptionType9GroupFieldType}}"
+    group_id                 = "{{.OptionType9GroupId}}"
+    cloud_field_type         = "{{.OptionType9CloudFieldType}}"
+    cloud_id                 = "{{.OptionType9CloudId}}"
+    instance_type_field_type = "{{.OptionType9InstanceTypeFieldType}}"
+    instance_type_code       = "{{.OptionType9InstanceTypeCode}}"
+  }
+
+  option_type {
+    name                     = "{{.OptionType10Name}}"
+    code                     = "{{.OptionType10Code}}"
+    description              = "{{.OptionType10Description}}"
+    type                     = "{{.OptionType10Type}}"
+    field_label              = "{{.OptionType10FieldLabel}}"
+    field_name               = "{{.OptionType10FieldName}}"
+    default_value            = "{{.OptionType10DefaultValue}}"
+    placeholder              = "{{.OptionType10Placeholder}}"
+    help_block               = "{{.OptionType10HelpBlock}}"
+    required                 = {{.OptionType10Required}}
+    export_meta              = {{.OptionType10ExportMeta}}
+    display_value_on_details = {{.OptionType10DisplayValueOnDetails}}
+    locked                   = {{.OptionType10Locked}}
+    hidden                   = {{.OptionType10Hidden}}
+    exclude_from_search      = {{.OptionType10ExcludeFromSearch}}
+    allow_read_only          = {{.OptionType10AllowReadOnly}}
+  }
+
+  option_type {
+    name                     = "{{.OptionType12Name}}"
+    code                     = "{{.OptionType12Code}}"
+    description              = "{{.OptionType12Description}}"
+    type                     = "{{.OptionType12Type}}"
+    field_label              = "{{.OptionType12FieldLabel}}"
+    field_name               = "{{.OptionType12FieldName}}"
+    default_value            = "{{.OptionType12DefaultValue}}"
+    placeholder              = "{{.OptionType12Placeholder}}"
+    help_block               = "{{.OptionType12HelpBlock}}"
+    required                 = {{.OptionType12Required}}
+    export_meta              = {{.OptionType12ExportMeta}}
+    display_value_on_details = {{.OptionType12DisplayValueOnDetails}}
+    locked                   = {{.OptionType12Locked}}
+    hidden                   = {{.OptionType12Hidden}}
+    exclude_from_search      = {{.OptionType12ExcludeFromSearch}}
+    show_pricing             = {{.OptionType12ShowPricing}}
+    group_field_type         = "{{.OptionType12GroupFieldType}}"
+    group_id                 = "{{.OptionType12GroupId}}"
+    cloud_field_type         = "{{.OptionType12CloudFieldType}}"
+    cloud_id                 = "{{.OptionType12CloudId}}"
+    layout_field_type        = "{{.OptionType12LayoutFieldType}}"
+    layout_id                = "{{.OptionType12LayoutId}}"
+    pool_field_type          = "{{.OptionType12PoolFieldType}}"
+    pool_id                  = "{{.OptionType12PoolId}}"
   }
 
   field_group {
