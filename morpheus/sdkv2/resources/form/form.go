@@ -168,6 +168,16 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			"layout_field_type", "layout_field", "layout_id"); err != nil {
 			return err
 		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"virtual_image_field_type", "image_field", "image_id"); err != nil {
+			return err
+		}
 	}
 
 	return nil
