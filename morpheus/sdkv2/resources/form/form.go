@@ -311,7 +311,6 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeDiskManager:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
-		config["defaultValue"] = optionTypeConfig["config_default_value"]
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
 		config["groupField"] = optionTypeConfig["group_field"]
 		config["groupId"] = optionTypeConfig["group_id"]
@@ -499,7 +498,6 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["enable_disk_type_selection"] = optionType.Config.EnableDiskTypeSelection
 		row["enable_storage_type_selection"] = optionType.Config.EnableStorageTypeSelection
 		row["enable_datastore_selection"] = optionType.Config.EnableDatastoreSelection
-		row["config_default_value"] = optionType.Config.DefaultValue
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
