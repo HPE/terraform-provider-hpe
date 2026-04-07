@@ -1506,6 +1506,18 @@ func TestAccMorpheusFormExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_form.example",
+			"option_type11_virtual_image_field_type",
+			"value",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
+			"option_type11_image_id",
+			"1",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_form.example",
 			"option_type11_required",
 			"true",
 		),

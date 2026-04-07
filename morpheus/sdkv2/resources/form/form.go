@@ -311,6 +311,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeDiskManager:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["config_default_value"]
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
 		config["groupField"] = optionTypeConfig["group_field"]
 		config["groupId"] = optionTypeConfig["group_id"]
@@ -326,6 +327,9 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
 		config["poolField"] = optionTypeConfig["pool_field"]
 		config["poolId"] = optionTypeConfig["pool_id"]
+		config["virtualImageFieldType"] = optionTypeConfig["virtual_image_field_type"]
+		config["imageField"] = optionTypeConfig["image_field"]
+		config["imageId"] = optionTypeConfig["image_id"]
 		config["enableDiskTypeSelection"] = optionTypeConfig["enable_disk_type_selection"]
 		config["enableStorageTypeSelection"] = optionTypeConfig["enable_storage_type_selection"]
 		config["enableDatastoreSelection"] = optionTypeConfig["enable_datastore_selection"]
@@ -489,9 +493,13 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["pool_field_type"] = optionType.Config.PoolFieldType
 		row["pool_field"] = optionType.Config.PoolField
 		row["pool_id"] = optionType.Config.PoolId
+		row["virtual_image_field_type"] = optionType.Config.VirtualImageFieldType
+		row["image_field"] = optionType.Config.ImageField
+		row["image_id"] = optionType.Config.ImageId
 		row["enable_disk_type_selection"] = optionType.Config.EnableDiskTypeSelection
 		row["enable_storage_type_selection"] = optionType.Config.EnableStorageTypeSelection
 		row["enable_datastore_selection"] = optionType.Config.EnableDatastoreSelection
+		row["config_default_value"] = optionType.Config.DefaultValue
 	case typeCodeEditor:
 		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
 		row["code_language"] = optionType.Config.Lang
@@ -922,6 +930,31 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
+				"config_default_value": {
+					Type:        schema.TypeString,
+					Description: "The default disk configuration JSON for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the service plan is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"plan_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the service plan for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_id": {
+					Type:        schema.TypeString,
+					Description: "The service plan ID to filter by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
 				"enable_disk_type_selection": {
 					Type:        schema.TypeBool,
 					Description: "Whether to allow users to select a disk type for a diskManager option type",
@@ -937,6 +970,25 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"enable_datastore_selection": {
 					Type:        schema.TypeBool,
 					Description: "Whether to allow users to select a datastore for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"virtual_image_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the virtual image is specified for a diskManager option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"image_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the virtual image for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"image_id": {
+					Type:        schema.TypeString,
+					Description: "The virtual image ID for a diskManager option type",
 					Optional:    true,
 					Computed:    true,
 				},

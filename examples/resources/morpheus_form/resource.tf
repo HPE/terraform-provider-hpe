@@ -236,6 +236,8 @@ resource "hpe_morpheus_form" "example" {
     layout_id                     = "1"
     pool_field_type               = "value"
     pool_id                       = "1"
+    virtual_image_field_type      = "value"
+    image_id                      = "1"
     enable_disk_type_selection    = true
     enable_storage_type_selection = true
     enable_datastore_selection    = true

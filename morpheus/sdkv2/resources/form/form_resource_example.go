@@ -265,6 +265,8 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 		"OptionType11PoolId":                         "1",
 		"OptionType11Required":                       "true",
 		"OptionType11Type":                           "diskManager",
+		"OptionType11VirtualImageFieldType":          "value",
+		"OptionType11ImageId":                        "1",
 		"OptionType12CloudFieldType":                 "value",
 		"OptionType12CloudId":                        "1",
 		"OptionType12Code":                           "plan-input",
