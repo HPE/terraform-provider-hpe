@@ -23,6 +23,7 @@ import (
 const (
 	typeByteSize       = "byteSize"
 	typeCheckbox       = "checkbox"
+	typeEnvironment    = "environment"
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeDiskManager    = "diskManager"
@@ -44,7 +45,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
@@ -431,6 +431,8 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["customData"] = optionTypeConfig["custom_data"]
 		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 		row["config"] = config
+	case typeEnvironment:
+		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
@@ -673,10 +675,11 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
 						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number," +
-						" password, plan, radio, select, text, textarea, textArray, typeahead)",
+						" password, plan, radio, select, text, textarea, textArray, typeahead) environment: environment selector",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager, typeGroup, typeHidden, typeLayout,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
+							typeEnvironment, typeGroup, typeHidden, typeLayout,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
 						},
