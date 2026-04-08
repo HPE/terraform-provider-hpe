@@ -65,21 +65,21 @@ func osTypeAsState(
 ) (OsTypeModel, error) {
 	images, diags := convert.ToSetType(ctx, osType.Images,
 		func(img sdk.GetOsType200ResponseOsTypeImagesInner) ImagesValue {
-		v, _ := NewImagesValue(
-			ImagesValue{}.AttributeTypes(ctx),
-			map[string]attr.Value{
-				"account":            convert.Int64ToType(img.Account.Get()),
-				"compute_zone_type":  convert.Int64ToType(img.ComputeZoneType.Get()),
-				"id":                 convert.Int64ToType(img.Id),
-				"provision_type":     convert.Int64ToType(img.ProvisionType.Get()),
-				"virtual_image_id":   convert.Int64ToType(img.VirtualImageId),
-				"virtual_image_name": convert.StrToType(img.VirtualImageName),
-				"zone":               convert.Int64ToType(img.Zone.Get()),
-			},
-		)
+			v, _ := NewImagesValue(
+				ImagesValue{}.AttributeTypes(ctx),
+				map[string]attr.Value{
+					"account":            convert.Int64ToType(img.Account.Get()),
+					"compute_zone_type":  convert.Int64ToType(img.ComputeZoneType.Get()),
+					"id":                 convert.Int64ToType(img.Id),
+					"provision_type":     convert.Int64ToType(img.ProvisionType.Get()),
+					"virtual_image_id":   convert.Int64ToType(img.VirtualImageId),
+					"virtual_image_name": convert.StrToType(img.VirtualImageName),
+					"zone":               convert.Int64ToType(img.Zone.Get()),
+				},
+			)
 
-		return v
-	})
+			return v
+		})
 	if diags.HasError() {
 		return OsTypeModel{}, fmt.Errorf("error creating images set")
 	}
