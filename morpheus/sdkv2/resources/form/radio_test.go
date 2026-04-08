@@ -33,6 +33,7 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 		"Code":           code,
 		"OptionTypeCode": optTypeCode,
 		"OptionTypeName": optTypeName,
+		"OptionListName": name + " option list",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +65,10 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.option_list_id", "1"),
+					resource.TestCheckResourceAttrPair(
+						"hpe_morpheus_form.example", "option_type.0.option_list_id",
+						"hpe_morpheus_option_list_manual.example", "id",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Testing 123"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
