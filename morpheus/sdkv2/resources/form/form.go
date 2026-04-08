@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,35 +21,35 @@ import (
 )
 
 const (
-	typeByteSize   = "byteSize"
-	typeCheckbox   = "checkbox"
-	typeCodeEditor = "code-editor"
-	typeHidden     = "hidden"
-	typeNumber     = "number"
-	typePassword   = "password"
-	typeRadio      = "radio"
-	typeSelect     = "select"
-	typeText       = "text"
-	typeTextArea   = "textarea"
-	typeTextArray  = "textArray"
-	typeTypeahead  = "typeahead"
+	typeByteSize       = "byteSize"
+	typeCheckbox       = "checkbox"
+	typeCloud          = "cloud"
+	typeCodeEditor     = "code-editor"
+	typeDiskManager    = "diskManager"
+	typeGroup          = "group"
+	typeHidden         = "hidden"
+	typeLayout         = "layout"
+	typeNetworkManager = "networkManager"
+	typeNumber         = "number"
+	typePassword       = "password"
+	typePlan           = "plan"
+	typeRadio          = "radio"
+	typeSelect         = "select"
+	typeText           = "text"
+	typeTextArea       = "textarea"
+	typeTextArray      = "textArray"
+	typeTypeahead      = "typeahead"
 )
 
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeCloud          = "cloud"
-	typeDiskManager    = "diskManager"
 	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
-	typeGroup          = "group"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
 	typeKeyValue       = "keyValue"
-	typeLayout         = "layout"
 	typeLogoSelector   = "logoSelector"
-	typeNetworkManager = "networkManager"
-	typePlan           = "plan"
 	typePorts          = "ports"
 	typeResourcePool   = "resourcePool"
 	typeSecGroup       = "secGroup"
@@ -78,6 +79,132 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 		if !defaultValue.IsNull() {
 			return fmt.Errorf("default_value cannot be configured for checkbox inputs at %s[%d];"+
 				"use default_checked instead", path, index)
+		}
+
+	case typeCloud:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+
+	case typeLayout:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+
+	case typeNetworkManager:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+	case typePlan:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+	case typeDiskManager:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"pool_field_type", "pool_field", "pool_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"virtual_image_field_type", "image_field", "image_id"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
+// based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
+func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
+	fieldTypeAttr, fieldAttr, valueAttr string,
+) error {
+	fieldType := optionType.GetAttr(fieldTypeAttr)
+	if !fieldType.IsKnown() || fieldType.IsNull() {
+		return nil
+	}
+
+	switch fieldType.AsString() {
+	case "field":
+		valueField := optionType.GetAttr(valueAttr)
+		if valueField.IsKnown() && !valueField.IsNull() && valueField.AsString() != "" {
+			return fmt.Errorf("%s cannot be set when %s is 'field' at %s[%d]; use %s instead",
+				valueAttr, fieldTypeAttr, path, index, fieldAttr)
+		}
+	case "value":
+		fieldField := optionType.GetAttr(fieldAttr)
+		if fieldField.IsKnown() && !fieldField.IsNull() && fieldField.AsString() != "" {
+			return fmt.Errorf("%s cannot be set when %s is 'value' at %s[%d]; use %s instead",
+				fieldAttr, fieldTypeAttr, path, index, valueAttr)
 		}
 	}
 
@@ -131,6 +258,301 @@ func validateFormOptionTypes(_ context.Context, d *schema.ResourceDiff, _ any) e
 	return nil
 }
 
+func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string]any) diag.Diagnostics {
+	// Evaluate the option type selected
+	switch optionTypeConfig["type"] {
+	case typeByteSize:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["display"] = optionTypeConfig["display"]
+		config["lockDisplay"] = optionTypeConfig["lock_display"]
+		row["config"] = config
+	case typeCodeEditor:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["lang"] = optionTypeConfig["code_language"]
+		config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
+		row["config"] = config
+	case typeCheckbox:
+		row["defaultValue"] = optionTypeConfig["default_checked"]
+	case typeCloud:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
+		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
+		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+		config["cloudType"] = optionTypeConfig["cloud_type"]
+		config["filterResource"] = optionTypeConfig["filter_from_resource"]
+		row["config"] = config
+	case typeLayout:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
+		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
+		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
+		row["config"] = config
+	case typePlan:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["showPricing"] = optionTypeConfig["show_pricing"]
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["diskField"] = optionTypeConfig["disk_field"]
+		row["config"] = config
+	case typeDiskManager:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["virtualImageFieldType"] = optionTypeConfig["virtual_image_field_type"]
+		config["imageField"] = optionTypeConfig["image_field"]
+		config["imageId"] = optionTypeConfig["image_id"]
+		config["enableDiskTypeSelection"] = optionTypeConfig["enable_disk_type_selection"]
+		config["enableStorageTypeSelection"] = optionTypeConfig["enable_storage_type_selection"]
+		config["enableDatastoreSelection"] = optionTypeConfig["enable_datastore_selection"]
+		row["config"] = config
+	case typeGroup:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
+		row["config"] = config
+	case typeNumber:
+		var defaultValue string
+		if v, ok := optionTypeConfig["default_value"].(string); ok {
+			defaultValue = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
+		}
+
+		number, err := strconv.Atoi(defaultValue)
+		if err != nil {
+			return diag.Errorf(
+				"The default_value attribute must be a number string when the type attribute is set to number",
+			)
+		}
+
+		row["defaultValue"] = number
+		row["minVal"] = optionTypeConfig["min_value"]
+		row["maxVal"] = optionTypeConfig["max_value"]
+
+		var step int
+		if v, ok := optionTypeConfig["step"].(int); ok {
+			step = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
+		}
+
+		if step > 0 {
+			configStep := make(map[string]any)
+			configStep["step"] = optionTypeConfig["step"]
+			row["config"] = configStep
+		}
+	case typeNetworkManager:
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["poolFieldType"] = optionTypeConfig["pool_field_type"]
+		config["poolField"] = optionTypeConfig["pool_field"]
+		config["poolId"] = optionTypeConfig["pool_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		config["showNetworkTypeSelection"] = optionTypeConfig["show_network_type_selection"] // boolean
+		config["enableIPModeSelection"] = optionTypeConfig["enable_ip_mode_selection"]       // boolean
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["config"] = config
+	case typeRadio:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+	case typeSelect:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+		config := make(map[string]any)
+		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
+		config["sortable"] = optionTypeConfig["sortable"]
+		row["config"] = config
+		row["noBlank"] = optionTypeConfig["remove_select_option"]
+	case typePassword:
+		config := make(map[string]any)
+		config["canPeek"] = optionTypeConfig["allow_password_peek"]
+		row["config"] = config
+	case typeTextArray:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["separator"] = optionTypeConfig["delimiter"]
+		row["config"] = config
+	case typeTextArea:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["rows"] = optionTypeConfig["text_rows"]
+		row["config"] = config
+	case typeTypeahead:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["sortable"] = optionTypeConfig["sortable"]
+		config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
+		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
+		config["customData"] = optionTypeConfig["custom_data"]
+		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
+		row["config"] = config
+	case typeHidden:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeText:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+	}
+
+	return nil
+}
+
+func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, logHidden bool) {
+	switch optionType.Type {
+	case typeByteSize:
+		row["display"] = optionType.Config.Display
+		row["lock_display"] = optionType.Config.LockDisplay
+	case typeCheckbox:
+		// convert string text to boolean
+		if optionType.DefaultValue == "true" {
+			row["default_checked"] = true
+		} else {
+			row["default_checked"] = false
+		}
+	case typeCloud:
+		row["filter_from_resource"] = optionType.Config.FilterResource
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
+		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
+		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+		row["cloud_type"] = optionType.Config.CloudType
+	case typeLayout:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
+		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
+		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+	case typePlan:
+		row["show_pricing"] = optionType.Config.ShowPricing
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
+		row["disk_field"] = optionType.Config.DiskField
+	case typeDiskManager:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
+		row["virtual_image_field_type"] = optionType.Config.VirtualImageFieldType
+		row["image_field"] = optionType.Config.ImageField
+		row["image_id"] = optionType.Config.ImageId
+		row["enable_disk_type_selection"] = optionType.Config.EnableDiskTypeSelection
+		row["enable_storage_type_selection"] = optionType.Config.EnableStorageTypeSelection
+		row["enable_datastore_selection"] = optionType.Config.EnableDatastoreSelection
+	case typeCodeEditor:
+		row["show_line_numbers"] = optionType.Config.ShowLineNumbers
+		row["code_language"] = optionType.Config.Lang
+	case typeGroup:
+		row["allow_read_only"] = optionType.Config.AllowReadonly
+	case typeNumber:
+		row["step"] = optionType.Config.Step
+		row["min_value"] = optionType.MinVal
+		row["max_value"] = optionType.MaxVal
+	case typeNetworkManager:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+		row["pool_field_type"] = optionType.Config.PoolFieldType
+		row["pool_field"] = optionType.Config.PoolField
+		row["pool_id"] = optionType.Config.PoolId
+		row["show_network_type_selection"] = optionType.Config.ShowNetworkTypeSelection
+		row["enable_ip_mode_selection"] = optionType.Config.EnableIPModeSelection
+	case typeRadio:
+		row["option_list_id"] = optionType.OptionList.ID
+	case typeSelect:
+		row["option_list_id"] = optionType.OptionList.ID
+	case typeTextArea:
+		row["text_rows"] = optionType.Config.Rows
+	case typeHidden:
+		if logHidden {
+			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
+		}
+	case typeTextArray:
+		row["delimiter"] = optionType.Config.Separator
+	case typeTypeahead:
+		row["sortable"] = optionType.Config.Sortable
+		row["allow_duplicates"] = optionType.Config.AllowDuplicates
+		row["custom_data"] = optionType.Config.CustomData
+		row["allow_multiple_selections"] = optionType.Config.MultiSelect
+		row["option_list_id"] = optionType.OptionList.ID
+	}
+}
+
 func ResourceForm() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Provides a Morpheus form resource",
@@ -168,240 +590,7 @@ func ResourceForm() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"option_type": {
-				Type:        schema.TypeList,
-				Description: "Form option type",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"code": {
-							Type:        schema.TypeString,
-							Description: "The code of the option type to add to the form",
-							Optional:    true,
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "The name of the option type to add to the form",
-							Optional:    true,
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Description: "A description of the option type to add to the form",
-							Optional:    true,
-						},
-						"field_name": {
-							Type:        schema.TypeString,
-							Description: "The name of the option type field to add to the form",
-							Optional:    true,
-						},
-						"type": {
-							Type: schema.TypeString,
-							Description: "The type of option type to add to the form " +
-								"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
-								"textArray, textarea, typeahead)",
-							ValidateFunc: validation.StringInSlice(
-								[]string{
-									typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
-									typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
-								},
-								false,
-							),
-							Optional: true,
-						},
-						"option_list_id": {
-							Type:        schema.TypeInt,
-							Description: "The id of the option list for option types such as a typeahead or select list",
-							Optional:    true,
-							Computed:    true,
-						},
-						"field_label": {
-							Type:        schema.TypeString,
-							Description: "The label used for the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"default_value": {
-							Type:        schema.TypeString,
-							Description: "The default value of the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"default_checked": {
-							Type:        schema.TypeBool,
-							Description: "Whether the checkbox option type is checked by default",
-							Optional:    true,
-							Computed:    true,
-						},
-						"placeholder": {
-							Type:        schema.TypeString,
-							Description: "The placeholder text used for the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"help_block": {
-							Type:        schema.TypeString,
-							Description: "The help message displayed below the option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"required": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type is required or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"export_meta": {
-							Type:        schema.TypeBool,
-							Description: "Whether to export the option type as a tag",
-							Optional:    true,
-							Computed:    true,
-						},
-						"display_value_on_details": {
-							Type:        schema.TypeBool,
-							Description: "Display the selected value of the option type on the associated resource's details page",
-							Optional:    true,
-							Computed:    true,
-						},
-						"locked": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type is locked or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"hidden": {
-							Type:        schema.TypeBool,
-							Description: "Whether to display the option type to the user",
-							Optional:    true,
-							Computed:    true,
-						},
-						"exclude_from_search": {
-							Type:        schema.TypeBool,
-							Description: "Whether the option type should be execluded from search or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"allow_password_peek": {
-							Type: schema.TypeBool,
-							Description: "Whether the value of the password option type can be revealed by " +
-								"the user to ensure they correctly entered the password",
-							Optional: true,
-							Computed: true,
-						},
-						"min_value": {
-							Type:        schema.TypeInt,
-							Description: "The minimum number that can be selected for a number option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"max_value": {
-							Type:        schema.TypeInt,
-							Description: "The maximum value that can be provided for a number option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"step": {
-							Type:        schema.TypeInt,
-							Description: "The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)",
-							Optional:    true,
-							Computed:    true,
-						},
-						"text_rows": {
-							Type:        schema.TypeInt,
-							Description: "The number of lines to show for a code editor or text area option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"display": {
-							Type:         schema.TypeString,
-							Description:  "The memory or storage value to use (GB or MB)",
-							ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
-							Optional:     true,
-							Computed:     true,
-						},
-						"lock_display": {
-							Type:        schema.TypeBool,
-							Description: "Whether to lock the display or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"code_language": {
-							Type:        schema.TypeString,
-							Description: "The coding language used for highlighting code syntax",
-							Optional:    true,
-							Computed:    true,
-						},
-						"show_line_numbers": {
-							Type:        schema.TypeBool,
-							Description: "Whether to show the line numbers for the code editor option type",
-							Optional:    true,
-							Computed:    true,
-						},
-						"sortable": {
-							Type:        schema.TypeBool,
-							Description: "Whether the selected options can be sorted or not",
-							Optional:    true,
-							Computed:    true,
-						},
-						"allow_multiple_selections": {
-							Type: schema.TypeBool,
-							Description: "Whether to allow multiple items to be selected when using a " +
-								"select list or type ahead option type",
-							Optional: true,
-							Computed: true,
-						},
-						"remove_select_option": {
-							Type: schema.TypeBool,
-							Description: "For Select List-type Inputs. When marked, the Input will default to " +
-								"the first item in the list rather than to an empty selection",
-							Optional: true,
-							Computed: true,
-						},
-						"allow_duplicates": {
-							Type:        schema.TypeBool,
-							Description: "Whether duplicate selections are allowed",
-							Optional:    true,
-							Computed:    true,
-						},
-						"custom_data": {
-							Type:        schema.TypeString,
-							Description: "Custom JSON data payload to pass (Must be a JSON string)",
-							Optional:    true,
-							Computed:    true,
-						},
-						"dependent_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to trigger the reloading of the field",
-							Optional:    true,
-							Computed:    true,
-						},
-						"delimiter": {
-							Type:        schema.TypeString,
-							Description: "The delimiter used to separate text array input values",
-							Optional:    true,
-							Computed:    true,
-						},
-						"visibility_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to trigger the visibility of the field",
-							Optional:    true,
-							Computed:    true,
-						},
-						"verify_pattern": {
-							Type:        schema.TypeString,
-							Description: "The regex pattern used to validate the entered text",
-							Optional:    true,
-							Computed:    true,
-						},
-						"require_field": {
-							Type:        schema.TypeString,
-							Description: "The field or code used to determine whether the field is required or not",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
+			"option_type": optionTypeSchema("form"),
 			"field_group": {
 				Type:        schema.TypeList,
 				Description: "Field group to add to the form",
@@ -437,247 +626,456 @@ func ResourceForm() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
-						"option_type": {
-							Type:        schema.TypeList,
-							Description: "Field group option type",
-							Optional:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:        schema.TypeString,
-										Description: "The code of the option type to add to the field group",
-										Optional:    true,
-										Computed:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "The name of the option type to add to the field group",
-										Optional:    true,
-									},
-									"description": {
-										Type:        schema.TypeString,
-										Description: "A description of the option type to add to the field group",
-										Optional:    true,
-										Computed:    true,
-									},
-									"field_name": {
-										Type:        schema.TypeString,
-										Description: "The field name of the option type to add to the field group",
-										Optional:    true,
-									},
-									"type": {
-										Type: schema.TypeString,
-										Description: "The type of option type to add to the field group " +
-											"(byteSize, checkbox, code-editor, hidden, number, password, radio, select, text, " +
-											"textArray, textarea, typeahead)",
-										ValidateFunc: validation.StringInSlice(
-											[]string{
-												typeByteSize, typeCheckbox, typeCodeEditor, typeHidden, typeNumber, typePassword,
-												typeRadio, typeSelect, typeText, typeTextArray, typeTextArea, typeTypeahead,
-											},
-											false,
-										),
-										Optional: true,
-									},
-									"option_list_id": {
-										Type:        schema.TypeInt,
-										Description: "The id of the option list for option types such as a typeahead or select list",
-										Optional:    true,
-										Computed:    true,
-									},
-									"field_label": {
-										Type:        schema.TypeString,
-										Description: "The label of the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"default_value": {
-										Type:        schema.TypeString,
-										Description: "The default value of the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"default_checked": {
-										Type:        schema.TypeBool,
-										Description: "Whether the checkbox option type is checked by default",
-										Optional:    true,
-										Computed:    true,
-									},
-									"placeholder": {
-										Type:        schema.TypeString,
-										Description: "The placeholder text for the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"help_block": {
-										Type:        schema.TypeString,
-										Description: "The help block text for the option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"required": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is required or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"export_meta": {
-										Type:        schema.TypeBool,
-										Description: "Whether to export the option type as a tag",
-										Optional:    true,
-										Default:     false,
-									},
-									"display_value_on_details": {
-										Type:        schema.TypeBool,
-										Description: "Display the selected value of the option type on the associated resource's details page",
-										Optional:    true,
-										Default:     false,
-									},
-									"locked": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is locked or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"hidden": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type is hidden or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"exclude_from_search": {
-										Type:        schema.TypeBool,
-										Description: "Whether the option type should be execluded from search or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"allow_password_peek": {
-										Type: schema.TypeBool,
-										Description: "Whether the value of the password option type can be revealed by " +
-											"the user to ensure they correctly entered the password",
-										Optional: true,
-										Computed: true,
-									},
-									"min_value": {
-										Type:        schema.TypeInt,
-										Description: "The minimum number that can be selected for a number option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"max_value": {
-										Type:        schema.TypeInt,
-										Description: "The maximum value that can be provided for a number option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"step": {
-										Type:        schema.TypeInt,
-										Description: "The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)",
-										Optional:    true,
-										Computed:    true,
-									},
-									"text_rows": {
-										Type:        schema.TypeInt,
-										Description: "The number of rows to display for a text area",
-										Optional:    true,
-										Computed:    true,
-									},
-									"display": {
-										Type:         schema.TypeString,
-										Description:  "The memory or storage value to use (GB or MB)",
-										ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
-										Optional:     true,
-										Computed:     true,
-									},
-									"lock_display": {
-										Type:        schema.TypeBool,
-										Description: "Whether to lock the display or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"code_language": {
-										Type:        schema.TypeString,
-										Description: "The coding language used for highlighting code syntax",
-										Optional:    true,
-										Computed:    true,
-									},
-									"show_line_numbers": {
-										Type:        schema.TypeBool,
-										Description: "Whether to show the line numbers for the code editor option type",
-										Optional:    true,
-										Computed:    true,
-									},
-									"sortable": {
-										Type:        schema.TypeBool,
-										Description: "Whether the selected options can be sorted or not",
-										Optional:    true,
-										Computed:    true,
-									},
-									"allow_multiple_selections": {
-										Type: schema.TypeBool,
-										Description: "Whether to allow multiple items to be selected when using a " +
-											"select list or type ahead option type",
-										Optional: true,
-										Computed: true,
-									},
-									"remove_select_option": {
-										Type: schema.TypeBool,
-										Description: "For Select List-type Inputs. When marked, the Input will default to " +
-											"the first item in the list rather than to an empty selection",
-										Optional: true,
-										Computed: true,
-									},
-									"allow_duplicates": {
-										Type:        schema.TypeBool,
-										Description: "Whether duplicate selections are allowed",
-										Optional:    true,
-										Computed:    true,
-									},
-									"custom_data": {
-										Type:        schema.TypeString,
-										Description: "Custom JSON data payload to pass (Must be a JSON string)",
-										Optional:    true,
-										Computed:    true,
-									},
-									"dependent_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to trigger the reloading of the field",
-										Optional:    true,
-										Computed:    true,
-									},
-									"delimiter": {
-										Type:        schema.TypeString,
-										Description: "The delimiter used to separate text array input values",
-										Optional:    true,
-										Computed:    true,
-									},
-									"visibility_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to trigger the visibility of the field",
-										Optional:    true,
-										Computed:    true,
-									},
-									"verify_pattern": {
-										Type:        schema.TypeString,
-										Description: "The regex pattern used to validate the entered text",
-										Optional:    true,
-										Computed:    true,
-									},
-									"require_field": {
-										Type:        schema.TypeString,
-										Description: "The field or code used to determine whether the field is required or not",
-										Optional:    true,
-										Computed:    true,
-									},
-								},
-							},
-						},
+						"option_type": optionTypeSchema("field group"),
 					},
 				},
 			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
+// optionTypeSchema returns the "option_type" schema block parameterized by context (e.g. "form" or "field group").
+func optionTypeSchema(parent string) *schema.Schema {
+	desc := fmt.Sprintf("%s option type", strings.Title(parent)) //nolint: staticcheck
+
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: desc,
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"code": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The code of the option type to add to the %s", parent),
+					Optional:    true,
+					Computed:    true,
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The name of the option type to add to the %s", parent),
+					Optional:    true,
+				},
+				"description": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("A description of the option type to add to the %s", parent),
+					Optional:    true,
+					Computed:    true,
+				},
+				"field_name": {
+					Type:        schema.TypeString,
+					Description: fmt.Sprintf("The field name of the option type to add to the %s", parent),
+					Optional:    true,
+				},
+				"type": {
+					Type: schema.TypeString,
+					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
+						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number," +
+						" password, plan, radio, select, text, textarea, textArray, typeahead)",
+					ValidateFunc: validation.StringInSlice(
+						[]string{
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager, typeGroup, typeHidden, typeLayout,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea,
+							typeTextArray, typeTypeahead,
+						},
+						false,
+					),
+					Optional: true,
+				},
+				"option_list_id": {
+					Type:        schema.TypeInt,
+					Description: "The id of the option list for option types such as a typeahead or select list",
+					Optional:    true,
+					Computed:    true,
+				},
+				"field_label": {
+					Type:        schema.TypeString,
+					Description: "The label of the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"default_value": {
+					Type:        schema.TypeString,
+					Description: "The default value of the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"default_checked": {
+					Type:        schema.TypeBool,
+					Description: "Whether the checkbox option type is checked by default",
+					Optional:    true,
+					Computed:    true,
+				},
+				"placeholder": {
+					Type:        schema.TypeString,
+					Description: "The placeholder text for the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"help_block": {
+					Type:        schema.TypeString,
+					Description: "The help block text for the option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"required": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is required or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"export_meta": {
+					Type:        schema.TypeBool,
+					Description: "Whether to export the option type as a tag",
+					Optional:    true,
+					Computed:    true,
+				},
+				"display_value_on_details": {
+					Type: schema.TypeBool,
+					Description: "Display the selected value of the option type on the associated " +
+						"resource's details page",
+					Optional: true,
+					Computed: true,
+				},
+				"locked": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is locked or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"hidden": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type is hidden or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"exclude_from_search": {
+					Type:        schema.TypeBool,
+					Description: "Whether the option type should be excluded from search or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_password_peek": {
+					Type: schema.TypeBool,
+					Description: "Whether the value of the password option type can be revealed by " +
+						"the user to ensure they correctly entered the password",
+					Optional: true,
+					Computed: true,
+				},
+				"min_value": {
+					Type:        schema.TypeInt,
+					Description: "The minimum number that can be selected for a number option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"max_value": {
+					Type:        schema.TypeInt,
+					Description: "The maximum value that can be provided for a number option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"step": {
+					Type: schema.TypeInt,
+					Description: "The incrementation number used for the number option type " +
+						"(i.e. - 5s, 10s, 100s, etc.)",
+					Optional: true,
+					Computed: true,
+				},
+				"text_rows": {
+					Type:        schema.TypeInt,
+					Description: "The number of rows to display for a text area or code editor option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"display": {
+					Type:         schema.TypeString,
+					Description:  "The memory or storage value to use (GB or MB)",
+					ValidateFunc: validation.StringInSlice([]string{"GB", "MB"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"lock_display": {
+					Type:        schema.TypeBool,
+					Description: "Whether to lock the display or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"code_language": {
+					Type:        schema.TypeString,
+					Description: "The coding language used for highlighting code syntax",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_line_numbers": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show the line numbers for the code editor option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"sortable": {
+					Type:        schema.TypeBool,
+					Description: "Whether the selected options can be sorted or not",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_network_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show the network type selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_ip_mode_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to enable IP Mode Selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"filter_from_resource": {
+					Type:        schema.TypeBool,
+					Description: "Whether to filter out resources that are not associated with this option",
+					Optional:    true,
+					Computed:    true,
+				},
+				"group_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the group is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"group_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the group for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"group_id": {
+					Type:        schema.TypeString,
+					Description: "The group ID to filter layouts by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"cloud_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the cloud is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"cloud_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the cloud for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"cloud_id": {
+					Type:        schema.TypeString,
+					Description: "The cloud ID to filter layouts by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"cloud_type": {
+					Type:        schema.TypeString,
+					Description: "The id of the cloud type to set for a cloud option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"pool_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the resource pool is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"pool_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the resource pool for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"pool_id": {
+					Type:        schema.TypeString,
+					Description: "The resource pool ID to filter by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"instance_type_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the instance type is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"instance_type_field_code": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the instance type for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"instance_type_code": {
+					Type:        schema.TypeString,
+					Description: "The instance type code to filter layouts by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_read_only": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow read only instances of this type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"show_pricing": {
+					Type:        schema.TypeBool,
+					Description: "Whether to show pricing information for a plan option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"disk_field": {
+					Type:        schema.TypeString,
+					Description: "The field code referencing the disk manager option type to associate with a plan option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"config_default_value": {
+					Type:        schema.TypeString,
+					Description: "The default disk configuration JSON for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the service plan is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"plan_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the service plan for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"plan_id": {
+					Type:        schema.TypeString,
+					Description: "The service plan ID to filter by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_disk_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a disk type for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_storage_type_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a storage type for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"enable_datastore_selection": {
+					Type:        schema.TypeBool,
+					Description: "Whether to allow users to select a datastore for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"virtual_image_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the virtual image is specified for a diskManager option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"image_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the virtual image for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"image_id": {
+					Type:        schema.TypeString,
+					Description: "The virtual image ID for a diskManager option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the layout is specified for an option type (field or value)",
+					ValidateFunc: validation.StringInSlice([]string{"field", "value"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"layout_field": {
+					Type:        schema.TypeString,
+					Description: "The field code used to determine the layout for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"layout_id": {
+					Type:        schema.TypeString,
+					Description: "The layout ID to filter by for an option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"allow_multiple_selections": {
+					Type: schema.TypeBool,
+					Description: "Whether to allow multiple items to be selected when using a " +
+						"select list or type ahead option type",
+					Optional: true,
+					Computed: true,
+				},
+				"remove_select_option": {
+					Type: schema.TypeBool,
+					Description: "For Select List-type Inputs. When marked, the Input will default " +
+						"to the first item in the list rather than to an empty selection",
+					Optional: true,
+					Computed: true,
+				},
+				"allow_duplicates": {
+					Type:        schema.TypeBool,
+					Description: "Whether duplicate selections are allowed",
+					Optional:    true,
+					Computed:    true,
+				},
+				"custom_data": {
+					Type:        schema.TypeString,
+					Description: "Custom JSON data payload to pass (Must be a JSON string)",
+					Optional:    true,
+					Computed:    true,
+				},
+				"dependent_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to trigger the reloading of the field",
+					Optional:    true,
+					Computed:    true,
+				},
+				"delimiter": {
+					Type:        schema.TypeString,
+					Description: "The delimiter used to separate text array input values",
+					Optional:    true,
+					Computed:    true,
+				},
+				"visibility_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to trigger the visibility of the field",
+					Optional:    true,
+					Computed:    true,
+				},
+				"verify_pattern": {
+					Type:        schema.TypeString,
+					Description: "The regex pattern used to validate the entered text",
+					Optional:    true,
+					Computed:    true,
+				},
+				"require_field": {
+					Type:        schema.TypeString,
+					Description: "The field or code used to determine whether the field is required or not",
+					Optional:    true,
+					Computed:    true,
+				},
+			},
 		},
 	}
 }
@@ -725,87 +1123,8 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 			row["fieldLabel"] = optionTypeConfig["field_label"]
 			row["placeHolder"] = optionTypeConfig["placeholder"]
 			row["helpBlock"] = optionTypeConfig["help_block"]
-			// Evaluate the option type selected
-			switch optionTypeConfig["type"] {
-			case typeByteSize:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["display"] = optionTypeConfig["display"]
-				config["lockDisplay"] = optionTypeConfig["lock_display"]
-				row["config"] = config
-			case typeCodeEditor:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["lang"] = optionTypeConfig["code_language"]
-				config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-				row["config"] = config
-			case typeCheckbox:
-				row["defaultValue"] = optionTypeConfig["default_checked"]
-			case typeNumber:
-				var defaultValue string
-				if v, ok := optionTypeConfig["default_value"].(string); ok {
-					defaultValue = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-				}
-				number, err := strconv.Atoi(defaultValue)
-				if err != nil {
-					return diag.Errorf(
-						"The default_value attribute must be a number string when the type attribute is set to number",
-					)
-				}
-				row["defaultValue"] = number
-				row["minVal"] = optionTypeConfig["min_value"]
-				row["maxVal"] = optionTypeConfig["max_value"]
-				var step int
-				if v, ok := optionTypeConfig["step"].(int); ok {
-					step = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-				}
-				if step > 0 {
-					configStep := make(map[string]any)
-					configStep["step"] = optionTypeConfig["step"]
-					row["config"] = configStep
-				}
-			case typeRadio:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-			case typeSelect:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				config := make(map[string]any)
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["sortable"] = optionTypeConfig["sortable"]
-				row["config"] = config
-				row["noBlank"] = optionTypeConfig["remove_select_option"]
-			case typePassword:
-				config := make(map[string]any)
-				config["canPeek"] = optionTypeConfig["allow_password_peek"]
-				row["config"] = config
-			case typeTextArray:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["separator"] = optionTypeConfig["delimiter"]
-				row["config"] = config
-			case typeTextArea:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["rows"] = optionTypeConfig["text_rows"]
-				row["config"] = config
-			case typeTypeahead:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["sortable"] = optionTypeConfig["sortable"]
-				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				row["config"] = config
-			case typeHidden:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-			case typeText:
-				row["defaultValue"] = optionTypeConfig["default_value"]
+			if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+				return diags
 			}
 			row["required"] = optionTypeConfig["required"]
 			row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -872,87 +1191,8 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 					row["fieldLabel"] = optionTypeConfig["field_label"]
 					row["placeHolder"] = optionTypeConfig["placeholder"]
 					row["helpBlock"] = optionTypeConfig["help_block"]
-					// Evaluate the option type selected
-					switch optionTypeConfig["type"] {
-					case typeByteSize:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["display"] = optionTypeConfig["display"]
-						config["lockDisplay"] = optionTypeConfig["lock_display"]
-						row["config"] = config
-					case typeCodeEditor:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["lang"] = optionTypeConfig["code_language"]
-						config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-						row["config"] = config
-					case typeCheckbox:
-						row["defaultValue"] = optionTypeConfig["default_checked"]
-					case typeNumber:
-						var defaultValue string
-						if v, ok := optionTypeConfig["default_value"].(string); ok {
-							defaultValue = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-						}
-						number, err := strconv.Atoi(defaultValue)
-						if err != nil {
-							return diag.Errorf(
-								"The default_value attribute must be a number string when the type attribute is set to number",
-							)
-						}
-						row["defaultValue"] = number
-						row["minVal"] = optionTypeConfig["min_value"]
-						row["maxVal"] = optionTypeConfig["max_value"]
-						var step int
-						if v, ok := optionTypeConfig["step"].(int); ok {
-							step = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-						}
-						if step > 0 {
-							configStep := make(map[string]any)
-							configStep["step"] = optionTypeConfig["step"]
-							row["config"] = configStep
-						}
-					case typeRadio:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-					case typeSelect:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						config := make(map[string]any)
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["sortable"] = optionTypeConfig["sortable"]
-						row["config"] = config
-						row["noBlank"] = optionTypeConfig["remove_select_option"]
-					case typePassword:
-						config := make(map[string]any)
-						config["canPeek"] = optionTypeConfig["allow_password_peek"]
-						row["config"] = config
-					case typeTextArray:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["separator"] = optionTypeConfig["delimiter"]
-						row["config"] = config
-					case typeTextArea:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["rows"] = optionTypeConfig["text_rows"]
-						row["config"] = config
-					case typeTypeahead:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["sortable"] = optionTypeConfig["sortable"]
-						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						row["config"] = config
-					case typeHidden:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-					case typeText:
-						row["defaultValue"] = optionTypeConfig["default_value"]
+					if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+						return diags
 					}
 					row["required"] = optionTypeConfig["required"]
 					row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -1113,41 +1353,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		// optionTypeList := d.Get("option_type").([]any)
 		for _, optionType := range form.Options {
 			row := make(map[string]any)
-			switch optionType.Type {
-			case typeByteSize:
-				row["display"] = optionType.Config.Display
-				row["lock_display"] = optionType.Config.LockDisplay
-			case typeCheckbox:
-				// convert string text to boolean
-				if optionType.DefaultValue == "true" {
-					row["default_checked"] = true
-				} else {
-					row["default_checked"] = false
-				}
-			case typeCodeEditor:
-				row["show_line_numbers"] = optionType.Config.ShowLineNumbers
-				row["code_language"] = optionType.Config.Lang
-			case typeNumber:
-				row["step"] = optionType.Config.Step
-				row["min_value"] = optionType.MinVal
-				row["max_value"] = optionType.MaxVal
-			case typeRadio:
-				row["option_list_id"] = optionType.OptionList.ID
-			case typeSelect:
-				row["option_list_id"] = optionType.OptionList.ID
-			case typeTextArea:
-				row["text_rows"] = optionType.Config.Rows
-			case typeHidden:
-				log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
-			case typeTextArray:
-				row["delimiter"] = optionType.Config.Separator
-			case typeTypeahead:
-				row["sortable"] = optionType.Config.Sortable
-				row["allow_duplicates"] = optionType.Config.AllowDuplicates
-				row["custom_data"] = optionType.Config.CustomData
-				row["allow_multiple_selections"] = optionType.Config.MultiSelect
-				row["option_list_id"] = optionType.OptionList.ID
-			}
+			applyReadOptionTypeByType(row, optionType, true)
 			row["remove_select_option"] = optionType.NoBlank
 			row["name"] = optionType.Name
 			row["description"] = optionType.Description
@@ -1188,39 +1394,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				for _, optionType := range fieldGroup.Options {
 					optionTypeRow := make(map[string]any)
 					// Check if the input uses an existing input or not
-					switch optionType.Type {
-					case typeByteSize:
-						optionTypeRow["display"] = optionType.Config.Display
-						optionTypeRow["lock_display"] = optionType.Config.LockDisplay
-					case typeCheckbox:
-						// convert string text to boolean
-						if optionType.DefaultValue == "true" {
-							optionTypeRow["default_checked"] = true
-						} else {
-							optionTypeRow["default_checked"] = false
-						}
-					case typeCodeEditor:
-						optionTypeRow["show_line_numbers"] = optionType.Config.ShowLineNumbers
-						optionTypeRow["code_language"] = optionType.Config.Lang
-					case typeNumber:
-						optionTypeRow["step"] = optionType.Config.Step
-						optionTypeRow["min_value"] = optionType.MinVal
-						optionTypeRow["max_value"] = optionType.MaxVal
-					case typeRadio:
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					case typeSelect:
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					case typeTextArea:
-						optionTypeRow["text_rows"] = optionType.Config.Rows
-					case typeTextArray:
-						optionTypeRow["delimiter"] = optionType.Config.Separator
-					case typeTypeahead:
-						optionTypeRow["sortable"] = optionType.Config.Sortable
-						optionTypeRow["allow_duplicates"] = optionType.Config.AllowDuplicates
-						optionTypeRow["custom_data"] = optionType.Config.CustomData
-						optionTypeRow["allow_multiple_selections"] = optionType.Config.MultiSelect
-						optionTypeRow["option_list_id"] = optionType.OptionList.ID
-					}
+					applyReadOptionTypeByType(optionTypeRow, optionType, false)
 					optionTypeRow["remove_select_option"] = optionType.NoBlank
 					optionTypeRow["name"] = optionType.Name
 					optionTypeRow["description"] = optionType.Description
@@ -1289,87 +1463,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			row["fieldLabel"] = optionTypeConfig["field_label"]
 			row["placeHolder"] = optionTypeConfig["placeholder"]
 			row["helpBlock"] = optionTypeConfig["help_block"]
-			// Evaluate the option type selected
-			switch optionTypeConfig["type"] {
-			case typeByteSize:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["display"] = optionTypeConfig["display"]
-				config["lockDisplay"] = optionTypeConfig["lock_display"]
-				row["config"] = config
-			case typeCodeEditor:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["lang"] = optionTypeConfig["code_language"]
-				config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-				row["config"] = config
-			case typeCheckbox:
-				row["defaultValue"] = optionTypeConfig["default_checked"]
-			case typeNumber:
-				var defaultValue string
-				if v, ok := optionTypeConfig["default_value"].(string); ok {
-					defaultValue = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-				}
-				number, err := strconv.Atoi(defaultValue)
-				if err != nil {
-					return diag.Errorf(
-						"The default_value attribute must be a number string when the type attribute is set to number",
-					)
-				}
-				row["defaultValue"] = number
-				row["minVal"] = optionTypeConfig["min_value"]
-				row["maxVal"] = optionTypeConfig["max_value"]
-				var step int
-				if v, ok := optionTypeConfig["step"].(int); ok {
-					step = v
-				} else {
-					return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-				}
-				if step > 0 {
-					configStep := make(map[string]any)
-					configStep["step"] = optionTypeConfig["step"]
-					row["config"] = configStep
-				}
-			case typeRadio:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-			case typeSelect:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				config := make(map[string]any)
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["sortable"] = optionTypeConfig["sortable"]
-				row["config"] = config
-				row["noBlank"] = optionTypeConfig["remove_select_option"]
-			case typePassword:
-				config := make(map[string]any)
-				config["canPeek"] = optionTypeConfig["allow_password_peek"]
-				row["config"] = config
-			case typeTextArray:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["separator"] = optionTypeConfig["delimiter"]
-				row["config"] = config
-			case typeTextArea:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["rows"] = optionTypeConfig["text_rows"]
-				row["config"] = config
-			case typeTypeahead:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-				config := make(map[string]any)
-				config["sortable"] = optionTypeConfig["sortable"]
-				config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-				config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-				config["customData"] = optionTypeConfig["custom_data"]
-				row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-				row["config"] = config
-			case typeHidden:
-				row["defaultValue"] = optionTypeConfig["default_value"]
-			case typeText:
-				row["defaultValue"] = optionTypeConfig["default_value"]
+			if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+				return diags
 			}
 			row["required"] = optionTypeConfig["required"]
 			row["exportMeta"] = optionTypeConfig["export_meta"]
@@ -1436,89 +1531,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 					row["fieldLabel"] = optionTypeConfig["field_label"]
 					row["placeHolder"] = optionTypeConfig["placeholder"]
 					row["helpBlock"] = optionTypeConfig["help_block"]
-					// Evaluate the option type selected
-					switch optionTypeConfig["type"] {
-					case typeByteSize:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["display"] = optionTypeConfig["display"]
-						config["lockDisplay"] = optionTypeConfig["lock_display"]
-						row["config"] = config
-					case typeCodeEditor:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["lang"] = optionTypeConfig["code_language"]
-						config["showLineNumbers"] = optionTypeConfig["show_line_numbers"]
-						row["config"] = config
-					case typeCheckbox:
-						row["defaultValue"] = optionTypeConfig["default_checked"]
-					case typeNumber:
-						var defaultValue string
-						if v, ok := optionTypeConfig["default_value"].(string); ok {
-							defaultValue = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("default_value", optionTypeConfig["default_value"]))
-						}
-						number, err := strconv.Atoi(defaultValue)
-						if err != nil {
-							return diag.Errorf(
-								"The default_value attribute must be a number string when the type attribute is set to number",
-							)
-						}
-						row["defaultValue"] = number
-						row["minVal"] = optionTypeConfig["min_value"]
-						row["maxVal"] = optionTypeConfig["max_value"]
-
-						var step int
-						if v, ok := optionTypeConfig["step"].(int); ok {
-							step = v
-						} else {
-							return diag.FromErr(helpers.TypeAssertFailError("step", optionTypeConfig["step"]))
-						}
-
-						if step > 0 {
-							configStep := make(map[string]any)
-							configStep["step"] = optionTypeConfig["step"]
-							row["config"] = configStep
-						}
-					case typeRadio:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-					case typeSelect:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						config := make(map[string]any)
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["sortable"] = optionTypeConfig["sortable"]
-						row["config"] = config
-						row["noBlank"] = optionTypeConfig["remove_select_option"]
-					case typePassword:
-						config := make(map[string]any)
-						config["canPeek"] = optionTypeConfig["allow_password_peek"]
-						row["config"] = config
-					case typeTextArray:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["separator"] = optionTypeConfig["delimiter"]
-						row["config"] = config
-					case typeTextArea:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["rows"] = optionTypeConfig["text_rows"]
-						row["config"] = config
-					case typeTypeahead:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-						config := make(map[string]any)
-						config["sortable"] = optionTypeConfig["sortable"]
-						config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
-						config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
-						config["customData"] = optionTypeConfig["custom_data"]
-						row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
-						row["config"] = config
-					case typeHidden:
-						row["defaultValue"] = optionTypeConfig["default_value"]
-					case typeText:
-						row["defaultValue"] = optionTypeConfig["default_value"]
+					if diags := applyOptionTypeConfigByType(row, optionTypeConfig); diags.HasError() {
+						return diags
 					}
 					row["required"] = optionTypeConfig["required"]
 					row["exportMeta"] = optionTypeConfig["export_meta"]

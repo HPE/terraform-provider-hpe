@@ -8,6 +8,11 @@ description: |-
 
 {{ .Description | trimspace }}
 
+The `hpe_morpheus_cluster` resource is used to provision and manage various cluster types in HPE Morpheus.
+
+-> Currently HVM clusters are supported.  We have static `config` schemas for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+
 ## HVM Cluster
 
 The `hvm_config` static config block can be used to provision a HVM cluster:
@@ -28,3 +33,10 @@ Below is an example of provisioning a HVM cluster using the dynamic `config` blo
 
 {{ .SchemaMarkdown | trimspace }}
 
+## Update limitations
+
+~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
+
+## Import
+
+~> Import is currently not supported for the `hpe_morpheus_cluster` resource.
