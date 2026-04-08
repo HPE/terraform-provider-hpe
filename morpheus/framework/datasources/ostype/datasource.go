@@ -63,7 +63,8 @@ func osTypeAsState(
 	ctx context.Context,
 	osType *sdk.GetOsType200ResponseOsType,
 ) (OsTypeModel, error) {
-	images, diags := convert.ToSetType(ctx, osType.Images, func(img sdk.GetOsType200ResponseOsTypeImagesInner) ImagesValue {
+	images, diags := convert.ToSetType(ctx, osType.Images,
+		func(img sdk.GetOsType200ResponseOsTypeImagesInner) ImagesValue {
 		v, _ := NewImagesValue(
 			ImagesValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
