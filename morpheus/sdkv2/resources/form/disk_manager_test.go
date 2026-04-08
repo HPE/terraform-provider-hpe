@@ -17,6 +17,10 @@ import (
 func TestAccMorpheusFormDiskManagerOk(t *testing.T) {
 	t.Parallel()
 
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
 	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
