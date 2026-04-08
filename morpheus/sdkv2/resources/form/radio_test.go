@@ -18,15 +18,18 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	code := toCode(name)
+	optTypeCode := code + "-ot"
+	optTypeName := name + " option type"
 
-	resourceConfig, err := form.RenderRadioConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := form.RenderRadioConfig(t, map[string]string{
+		"Name":           name,
+		"Code":           code,
+		"OptionTypeCode": optTypeCode,
+		"OptionTypeName": optTypeName,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,24 +41,28 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", "demo"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "radio"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "radio-input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "Demo123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform radio example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_label", "Radio Test"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_name", "radioTest"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_help_block", "Select an option"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_hidden", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_locked", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_name", "tf radio example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_option_list_id", "1"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_placeholder", "Testing 123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_required", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "radio"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "Demo123"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.description",
+						"Terraform radio example",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.display_value_on_details", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.exclude_from_search", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "Radio Test"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "radioTest"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Select an option"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.option_list_id", "1"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Testing 123"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{

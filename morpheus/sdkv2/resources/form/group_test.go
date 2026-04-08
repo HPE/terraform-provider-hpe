@@ -18,15 +18,18 @@ func TestAccMorpheusFormGroupOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	code := toCode(name)
+	optTypeCode := code + "-ot"
+	optTypeName := name + " option type"
 
-	resourceConfig, err := form.RenderGroupConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := form.RenderGroupConfig(t, map[string]string{
+		"Name":           name,
+		"Code":           code,
+		"OptionTypeCode": optTypeCode,
+		"OptionTypeName": optTypeName,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,24 +41,28 @@ func TestAccMorpheusFormGroupOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", "demo"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "group"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_allow_read_only", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "group-input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "test123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform group example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_label", "group input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_name", "groupInput"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_help_block", "Select a group"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_hidden", "false"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_locked", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_name", "tf group example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_placeholder", "Select group"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_required", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "group"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.allow_read_only", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "test123"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.description",
+						"Terraform group example",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.display_value_on_details", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.exclude_from_search", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "group input"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "groupInput"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Select a group"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "false"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Select group"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{

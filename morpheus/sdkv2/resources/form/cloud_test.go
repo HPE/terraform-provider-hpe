@@ -18,15 +18,18 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	code := toCode(name)
+	optTypeCode := code + "-ot"
+	optTypeName := name + " option type"
 
-	resourceConfig, err := form.RenderCloudConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := form.RenderCloudConfig(t, map[string]string{
+		"Name":           name,
+		"Code":           code,
+		"OptionTypeCode": optTypeCode,
+		"OptionTypeName": optTypeName,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,29 +41,33 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", "demo"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "cloud"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "cloud-input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_type", "4"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "test123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform cloud example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_label", "cloud input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_name", "cloudInput"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_filter_from_resource", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_group_field_type", "value"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_group_id", "1"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_help_block", "Select a cloud"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_hidden", "false"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_instance_type_code", "apache"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_instance_type_field_type", "value"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_locked", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_name", "tf cloud example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_placeholder", "Select cloud"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_required", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "cloud"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_type", "4"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "test123"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.description",
+						"Terraform cloud example",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.display_value_on_details", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.exclude_from_search", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "cloud input"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "cloudInput"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.filter_from_resource", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.group_field_type", "value"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.group_id", "1"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Select a cloud"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "false"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.instance_type_code", "apache"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.instance_type_field_type", "value"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Select cloud"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{

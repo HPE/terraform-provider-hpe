@@ -18,15 +18,18 @@ func TestAccMorpheusFormLayoutOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	code := toCode(name)
+	optTypeCode := code + "-ot"
+	optTypeName := name + " option type"
 
-	resourceConfig, err := form.RenderLayoutConfig(t, map[string]string{"Name": name})
+	resourceConfig, err := form.RenderLayoutConfig(t, map[string]string{
+		"Name":           name,
+		"Code":           code,
+		"OptionTypeCode": optTypeCode,
+		"OptionTypeName": optTypeName,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,32 +41,32 @@ func TestAccMorpheusFormLayoutOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", "demo"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "layout"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "layout-input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_field_type", "value"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_id", "1"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "layout"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_field_type", "value"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_id", "1"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
-						"option_type1_description",
+						"option_type.0.description",
 						"Terraform layout example",
 					),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_label", "layout input"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_field_name", "layoutInput"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_group_field_type", "value"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_group_id", "1"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_help_block", "Select a layout"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_hidden", "false"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_instance_type_code", "apache"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_instance_type_field_type", "value"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_locked", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_name", "tf layout example"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_placeholder", "Select layout"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_required", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.display_value_on_details", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.exclude_from_search", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "layout input"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "layoutInput"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.group_field_type", "value"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.group_id", "1"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Select a layout"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "false"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.instance_type_code", "apache"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.instance_type_field_type", "value"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Select layout"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{
