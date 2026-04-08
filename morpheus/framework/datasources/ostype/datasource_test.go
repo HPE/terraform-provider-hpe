@@ -43,7 +43,7 @@ func TestAccMorpheusFindOsTypeByName(t *testing.T) {
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-name.tf.tmpl",
-		"Name", "Debian 12 64-bit",
+		"Name", "debian 12 64-bit",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -144,7 +144,7 @@ func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	expected := ostype.ErrorNoOsTypeFound
+	expected := regexp.MustCompile(`no os type found`)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -152,7 +152,7 @@ func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile(expected),
+				ExpectError: expected,
 			},
 		},
 	})
@@ -228,21 +228,21 @@ func osTypeChecks() []resource.TestCheckFunc {
 	ds := "data.hpe_morpheus_os_type.example"
 
 	return []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(ds, "name", "Debian 12 64-bit"),
 		resource.TestCheckResourceAttrSet(ds, "id"),
-		resource.TestCheckResourceAttrSet(ds, "bit_count"),
-		resource.TestCheckResourceAttrSet(ds, "category"),
-		resource.TestCheckResourceAttrSet(ds, "cloud_init_version"),
-		resource.TestCheckResourceAttrSet(ds, "code"),
-		resource.TestCheckResourceAttrSet(ds, "description"),
+		resource.TestCheckResourceAttr(ds, "name", "debian 12 64-bit"),
+		resource.TestCheckResourceAttr(ds, "code", "debian.12.64"),
+		resource.TestCheckResourceAttr(ds, "platform", "linux"),
+		resource.TestCheckResourceAttr(ds, "category", "debian"),
+		resource.TestCheckResourceAttr(ds, "vendor", "debian"),
+		resource.TestCheckResourceAttr(ds, "os_name", "debian"),
+		resource.TestCheckResourceAttr(ds, "os_version", "12"),
+		resource.TestCheckResourceAttr(ds, "os_family", "debian"),
+		resource.TestCheckResourceAttr(ds, "bit_count", "64"),
+		resource.TestCheckResourceAttr(ds, "install_agent", "true"),
+		resource.TestCheckResourceAttr(ds, "owner", "System"),
+		resource.TestCheckNoResourceAttr(ds, "description"),
+		resource.TestCheckNoResourceAttr(ds, "cloud_init_version"),
+		resource.TestCheckNoResourceAttr(ds, "os_codename"),
 		resource.TestCheckResourceAttrSet(ds, "images.#"),
-		resource.TestCheckResourceAttrSet(ds, "install_agent"),
-		resource.TestCheckResourceAttrSet(ds, "os_codename"),
-		resource.TestCheckResourceAttrSet(ds, "os_family"),
-		resource.TestCheckResourceAttrSet(ds, "os_name"),
-		resource.TestCheckResourceAttrSet(ds, "os_version"),
-		resource.TestCheckResourceAttrSet(ds, "owner"),
-		resource.TestCheckResourceAttrSet(ds, "platform"),
-		resource.TestCheckResourceAttrSet(ds, "vendor"),
 	}
 }

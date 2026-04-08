@@ -10,6 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
@@ -66,6 +67,19 @@ func osTypeAsState(
 		return OsTypeModel{}, fmt.Errorf("error creating images set")
 	}
 
+	var owner types.String
+	if osType.Owner != nil {
+		if osType.Owner.String != nil {
+			owner = types.StringValue(*osType.Owner.String)
+		} else if osType.Owner.GetOsType200ResponseOsTypeOwnerOneOf != nil {
+			owner = convert.StrToType(osType.Owner.GetOsType200ResponseOsTypeOwnerOneOf.Name)
+		} else {
+			owner = types.StringNull()
+		}
+	} else {
+		owner = types.StringNull()
+	}
+
 	return OsTypeModel{
 		BitCount:         convert.Int64ToType(osType.BitCount),
 		Category:         convert.StrToType(osType.Category.Get()),
@@ -80,7 +94,7 @@ func osTypeAsState(
 		OsFamily:         convert.StrToType(osType.OsFamily.Get()),
 		OsName:           convert.StrToType(osType.OsName.Get()),
 		OsVersion:        convert.StrToType(osType.OsVersion.Get()),
-		Owner:            convert.StrToType(osType.Owner.Get()),
+		Owner:            owner,
 		Platform:         convert.StrToType(osType.Platform),
 		Vendor:           convert.StrToType(osType.Vendor.Get()),
 	}, nil
