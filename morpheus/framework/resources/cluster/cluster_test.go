@@ -33,8 +33,6 @@ func TestAccMorpheusClusterHVMExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -193,14 +191,12 @@ data "hpe_morpheus_service_plan" "test" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config: providerConfig + dataSourcesConfig + resourceConfig,
+				Check:  checkFn,
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},
@@ -214,8 +210,6 @@ func TestAccMorpheusClusterGenericExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -279,7 +273,7 @@ data "hpe_morpheus_service_plan" "test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_generic_hvm",
 			"description",
-			"A test generic cluster",
+			"A HVM cluster created with a dynamic config",
 		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_cluster.example_generic_hvm",
@@ -363,14 +357,12 @@ data "hpe_morpheus_service_plan" "test" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           false,
+				Config: providerConfig + dataSourcesConfig + resourceConfig,
+				Check:  checkFn,
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
 		},
@@ -383,8 +375,6 @@ func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())

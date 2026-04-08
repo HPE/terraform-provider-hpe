@@ -8,6 +8,11 @@ description: |-
 
 
 
+The `hpe_morpheus_cluster` resource is used to provision and manage various cluster types in HPE Morpheus.
+
+-> Currently HVM clusters are supported.  We have static `config` schemas for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+
 ## HVM Cluster
 
 The `hvm_config` static config block can be used to provision a HVM cluster:
@@ -160,7 +165,7 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 - `config` (Dynamic) Generic Cluster Configuration
 - `config_hvm` (Attributes) Configuration for HVM cluster servers (see [below for nested schema](#nestedatt--config_hvm))
 - `description` (String) Description of the cluster to be created
-- `labels` (Set of String) This will set labels on the cluster as well as its servers.
+- `labels` (Set of String) Array of strings (keywords).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `workflow_id` (Number) Optional Workflow Id desired to be run
 
@@ -280,3 +285,10 @@ Optional:
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
+## Update limitations
+
+~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
+
+## Import
+
+~> Import is currently not supported for the `hpe_morpheus_cluster` resource.
