@@ -43,7 +43,11 @@ func TestAccMorpheusFormHiddenOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "hidden"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "hidden-input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "test"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform hidden input example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform hidden input example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),

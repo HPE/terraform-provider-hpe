@@ -43,7 +43,11 @@ func TestAccMorpheusFormCheckboxOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "checkbox"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "checkbox-input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_checked", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform checkbox example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform checkbox example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),

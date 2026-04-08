@@ -43,7 +43,11 @@ func TestAccMorpheusFormNumberOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "number"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "number-input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "4"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform number example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform number example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),

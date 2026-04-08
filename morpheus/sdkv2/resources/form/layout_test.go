@@ -44,7 +44,11 @@ func TestAccMorpheusFormLayoutOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "layout-input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_field_type", "value"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_id", "1"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform layout example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform layout example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),

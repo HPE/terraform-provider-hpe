@@ -43,7 +43,11 @@ func TestAccMorpheusFormSelectOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_type", "select"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_code", "select-input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "test123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform select example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform select example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_export_meta", "true"),

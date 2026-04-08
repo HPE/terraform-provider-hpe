@@ -45,7 +45,11 @@ func TestAccMorpheusFormNetworkManagerOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_field_type", "value"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_cloud_id", "1"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_default_value", "test123"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_description", "Terraform network manager example"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type1_description",
+						"Terraform network manager example",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_display_value_on_details", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_enable_ip_mode_selection", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type1_exclude_from_search", "true"),
