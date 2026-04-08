@@ -19,7 +19,7 @@ $RENDER \
   OptionTypeDefaultValue 'test123' \
   OptionTypePlaceholder 'Testing 123' \
   OptionTypeHelpBlock 'Select an option' \
-  OptionListName 'tf example select option list' \
+  OptionTypeOptionListId '1' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -43,7 +43,7 @@ $RENDER \
   OptionTypeDefaultValue 'Demo123' \
   OptionTypePlaceholder 'Testing 123' \
   OptionTypeHelpBlock 'Select an option' \
-  OptionListName 'tf radio example option list' \
+  OptionTypeOptionListId '1' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \

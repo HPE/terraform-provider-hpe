@@ -3,6 +3,7 @@
 package form_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -28,12 +29,20 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 	optTypeCode := code + "-ot"
 	optTypeName := name + " option type"
 
+	optionListConfig := fmt.Sprintf(`
+resource "hpe_morpheus_option_list_manual" "example" {
+  name    = %q
+  dataset = "[{\"name\": \"Level 1\",\"value\":\"level1\"},{\"name\": \"Level 2\",\"value\":\"level2\"}]"
+  real_time = true
+}
+`, name+" option list")
+
 	resourceConfig, err := form.RenderRadioConfig(t, map[string]string{
-		"Name":           name,
-		"Code":           code,
-		"OptionTypeCode": optTypeCode,
-		"OptionTypeName": optTypeName,
-		"OptionListName": name + " option list",
+		"Name":                   name,
+		"Code":                   code,
+		"OptionTypeCode":         optTypeCode,
+		"OptionTypeName":         optTypeName,
+		"OptionTypeOptionListId": "hpe_morpheus_option_list_manual.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +52,7 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + optionListConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
@@ -74,7 +83,7 @@ func TestAccMorpheusFormRadioOk(t *testing.T) {
 				),
 			},
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + optionListConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
