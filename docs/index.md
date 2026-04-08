@@ -201,6 +201,15 @@ In this release (v1.2.0) we have added the following resource functionality:
 - `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
 
+## Automatic version checking
+
+As of v1.3.0, the provider will perform automatic version checking.
+
+If the version currently installed is less than the latest version available on the registry, the provider will
+display a message notifying the user that a new version is available.
+
+To suppress this message, upgrade to the latest version or set the environment variable `HPE_IGNORE_VERSION_CHECK`.
+
 ## Morpheus Provider Mapping
 
 The tables below show the mapping of the Morpheus provider resources and data sources to the corresponding
