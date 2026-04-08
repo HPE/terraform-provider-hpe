@@ -374,3 +374,26 @@ $RENDER \
   FieldGroup2OptionTypeLocked 'true' \
   FieldGroup2OptionTypeHidden 'false' \
   FieldGroup2OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_environment.tf \
+  form_environment.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf environment example' \
+  OptionTypeCode 'environment-input' \
+  OptionTypeDescription 'Terraform environment example' \
+  OptionTypeType 'environment' \
+  OptionTypeFieldLabel 'Environment' \
+  OptionTypeFieldName 'environment' \
+  OptionTypeDefaultValue 'staging' \
+  OptionTypePlaceholder '' \
+  OptionTypeHelpBlock 'Select an environment' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'

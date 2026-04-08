@@ -962,3 +962,47 @@ func RenderFieldGroupsConfig(t *testing.T, overrides map[string]string) (string,
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "environment-input",
+		"OptionTypeDefaultValue":          "staging",
+		"OptionTypeDescription":           "Terraform environment example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Environment",
+		"OptionTypeFieldName":             "environment",
+		"OptionTypeHelpBlock":             "Select an environment",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf environment example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "environment",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_environment.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
