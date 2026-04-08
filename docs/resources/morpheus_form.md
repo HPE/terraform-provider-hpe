@@ -13,6 +13,8 @@ and all inputs or option types must be defined in the form.
 
 ## Example Usage
 
+### Select
+
 ```terraform
 resource "hpe_morpheus_form" "example" {
   name        = "demo"
@@ -38,6 +40,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Radio
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf radio example"
@@ -57,6 +70,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Text
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf text example"
@@ -75,6 +99,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Checkbox
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf checkbox example"
@@ -93,6 +128,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Hidden
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf hidden input example"
@@ -111,6 +157,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Number
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf number input example"
@@ -132,6 +189,17 @@ resource "hpe_morpheus_form" "example" {
     max_value                = 44
     step                     = 2
   }
+}
+```
+
+### Network Manager
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                        = "tf network manager example"
@@ -160,6 +228,17 @@ resource "hpe_morpheus_form" "example" {
     layout_field_type           = "value"
     layout_id                   = "1"
   }
+}
+```
+
+### Cloud
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf cloud example"
@@ -184,6 +263,17 @@ resource "hpe_morpheus_form" "example" {
     instance_type_code       = "apache"
     cloud_type               = "4"
   }
+}
+```
+
+### Layout
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf layout example"
@@ -208,6 +298,17 @@ resource "hpe_morpheus_form" "example" {
     instance_type_field_type = "value"
     instance_type_code       = "apache"
   }
+}
+```
+
+### Group
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf group example"
@@ -227,6 +328,17 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     allow_read_only          = true
   }
+}
+```
+
+### Disk Manager
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                          = "tf disk manager example"
@@ -258,6 +370,17 @@ resource "hpe_morpheus_form" "example" {
     enable_storage_type_selection = true
     enable_datastore_selection    = true
   }
+}
+```
+
+### Plan
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf plan example"
@@ -285,6 +408,17 @@ resource "hpe_morpheus_form" "example" {
     pool_field_type          = "value"
     pool_id                  = "1"
   }
+}
+```
+
+### Field Groups
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   field_group {
     name                 = "fg1"
