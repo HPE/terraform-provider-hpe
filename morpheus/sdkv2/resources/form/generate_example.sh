@@ -4,6 +4,28 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_file_content.tf \
+  form_file_content.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf fileContent example' \
+  OptionTypeCode 'fileContent' \
+  OptionTypeDescription 'Terraform fileContent example' \
+  OptionTypeType 'fileContent' \
+  OptionTypeFieldLabel 'FileContent' \
+  OptionTypeFieldName 'fileContent' \
+  OptionTypeHelpBlock 'Set fileContent' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypePlaceholder 'testing123' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_select.tf \
   form_select.tf.tmpl \
   Name 'demo' \

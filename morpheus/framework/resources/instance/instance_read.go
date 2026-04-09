@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	awsCode    = "amazon"
 	hvmCode    = "mvm-cluster"
 	kvmCode    = "kvm"
 	vmwareCode = "vmware"
@@ -116,6 +117,14 @@ func getInstanceAsState(
 		}
 
 		switch *code {
+		case awsCode:
+			configAws, cdiags := getInstanceAWSConfig(ctx, id, apiConfig)
+			diags = append(diags, cdiags...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.ConfigAws = configAws
+
 		case hvmCode:
 			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
@@ -143,6 +152,9 @@ func getInstanceAsState(
 		}
 
 	// For normal reads, use the config from the plan if it's set.
+	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
+		state.ConfigAws = plan.ConfigAws
+
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		state.ConfigHvm = plan.ConfigHvm
 
@@ -389,6 +401,94 @@ func getInstanceHVMConfig(
 	configHvm.state = attr.ValueStateKnown
 
 	return configHvm, diag.Diagnostics{}
+}
+
+// getInstanceAWSConfig builds the config_asw block from the API response for aws instances
+func getInstanceAWSConfig(
+	ctx context.Context,
+	id int64,
+	apiConfig *apiConfigType,
+) (ConfigAwsValue, diag.Diagnostics) {
+	configAws := ConfigAwsValue{}
+
+	// CreateUser
+	createUser, cdiags := getCreateUser(id, apiConfig)
+	if cdiags.HasError() {
+		return configAws, cdiags
+	}
+
+	// NoAgent
+	noAgent, ndiags := getNoAgent(id, apiConfig)
+	if ndiags.HasError() {
+		return configAws, ndiags
+	}
+
+	// ResourcePoolId
+	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
+	if rdiags.HasError() {
+		return configAws, rdiags
+	}
+
+	// isEC2
+	isEC2, _ := apiConfig.GetIsEC2Ok()
+
+	// PublicIpType
+	publicIpType, _ := apiConfig.GetPublicIpTypeOk()
+
+	// InstanceProfile
+	instanceProfile, _ := apiConfig.GetInstanceProfileOk()
+
+	// KmsKeyId
+	kmsKeyId, _ := apiConfig.GetKmsKeyIdOk()
+
+	// AvailabilityId
+	availabilityId, _ := apiConfig.GetAvailabilityIdOk()
+
+	// SecGroups
+	secGroupsList := types.ListNull(SecurityGroupsValue{}.Type(ctx))
+	var sd diag.Diagnostics
+	if secGroups, ok := apiConfig.GetSecurityGroupsOk(); ok {
+		secGroupsList, sd = convert.ToListType(
+			ctx,
+			secGroups,
+			func(
+				in sdk.AddInstance200ResponseAllOfOneOfInstanceConfigSecurityGroupsInner,
+			) SecurityGroupsValue {
+				v := SecurityGroupsValue{}
+				v.Id = convert.StrToType(in.Id)
+				v.state = attr.ValueStateKnown
+
+				return v
+			},
+		)
+
+		if sd.HasError() {
+			return configAws, sd
+		}
+	}
+
+	configAws.CreateUser = convert.BoolToType(createUser)
+	configAws.NoAgent = convert.BoolToType(noAgent)
+	configAws.ResourcePoolId = convert.StrToType(resourcePoolId)
+	configAws.SecurityGroups = secGroupsList
+	configAws.IsEc2 = convert.StringToBool(ctx, *isEC2)
+	configAws.PublicIpType = convert.StrToType(publicIpType)
+	// These next three can have a value of "" which corresponds to null
+	configAws.KmsKeyId = basetypes.NewStringNull()
+	if kmsKeyId != nil && *kmsKeyId != "" {
+		configAws.KmsKeyId = convert.StrToType(kmsKeyId)
+	}
+	configAws.AvailabilityZoneId = basetypes.NewStringNull()
+	if availabilityId != nil && *availabilityId != "" {
+		configAws.AvailabilityZoneId = convert.StrToType(availabilityId)
+	}
+	configAws.InstanceProfile = basetypes.NewStringNull()
+	if instanceProfile != nil && *instanceProfile != "" {
+		configAws.InstanceProfile = convert.StrToType(instanceProfile)
+	}
+	configAws.state = attr.ValueStateKnown
+
+	return configAws, diag.Diagnostics{}
 }
 
 func getCreateUser(

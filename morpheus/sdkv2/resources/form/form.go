@@ -27,6 +27,7 @@ const (
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeDiskManager    = "diskManager"
+	typeFileContent    = "fileContent"
 	typeGroup          = "group"
 	typeHidden         = "hidden"
 	typeInstancesInput = "instances-input"
@@ -49,7 +50,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeFileContent  = "fileContent"
 	typeHTTPHeader   = "httpHeader"
 	typeKeyValue     = "keyValue"
 	typeLogoSelector = "logoSelector"
@@ -768,14 +768,15 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, instances-input, " +
+						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
+						" instances-input," +
 						" layout, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, select," +
 						" servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeGroup, typeInstancesInput, typeHidden, typeLayout,
+							typeEnvironment, typeFileContent, typeGroup, typeInstancesInput, typeHidden, typeLayout,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSelect,
 							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
