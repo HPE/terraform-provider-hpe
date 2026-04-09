@@ -36,6 +36,7 @@ const (
 	typeNumber         = "number"
 	typePassword       = "password"
 	typePlan           = "plan"
+	typePorts          = "ports"
 	typeRadio          = "radio"
 	typeResourcePool   = "resourcePool"
 	typeSelect         = "select"
@@ -52,7 +53,6 @@ const (
 	typeHTTPHeader   = "httpHeader"
 	typeKeyValue     = "keyValue"
 	typeLogoSelector = "logoSelector"
-	typePorts        = "ports"
 	typeSecGroup     = "secGroup"
 	typeVirtualImage = "virtual-image"
 	typeVMWFolders   = "vmwFolders"
@@ -409,6 +409,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["layoutField"] = optionTypeConfig["layout_field"]
 		config["layoutId"] = optionTypeConfig["layout_id"]
 		row["config"] = config
+	case typePorts:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -597,6 +604,11 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["layout_field_type"] = optionType.Config.LayoutFieldType
 		row["layout_field"] = optionType.Config.LayoutField
 		row["layout_id"] = optionType.Config.LayoutId
+	case typePorts:
+		row["default_value"] = optionType.Config.DefaultValue
+		row["group_field"] = optionType.Config.GroupField
+		row["cloud_field"] = optionType.Config.CloudField
+		row["layout_field"] = optionType.Config.LayoutField
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
@@ -759,12 +771,13 @@ func optionTypeSchema(parent string) *schema.Schema {
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
 						" instances-input," +
 						" layout, networkManager," +
-						" number, password, plan, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)",
+						" number, password, plan, ports, radio, resourcePool, select," +
+						" servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeFileContent, typeGroup, typeInstancesInput, typeHidden, typeLayout,
-							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeResourcePool, typeSelect,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSelect,
 							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
 						},
@@ -1023,12 +1036,6 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"disk_field": {
 					Type:        schema.TypeString,
 					Description: "The field code referencing the disk manager option type to associate with a plan option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"config_default_value": {
-					Type:        schema.TypeString,
-					Description: "The default disk configuration JSON for a diskManager option type",
 					Optional:    true,
 					Computed:    true,
 				},

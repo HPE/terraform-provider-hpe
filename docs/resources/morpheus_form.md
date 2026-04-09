@@ -593,6 +593,37 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
+### Ports
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf ports example"
+    code                     = "ports-input"
+    description              = "Terraform ports example"
+    type                     = "ports"
+    field_label              = "Exposed Ports"
+    field_name               = "ports"
+    default_value            = ""
+    help_block               = "Configure exposed ports"
+    group_field              = "myGroup"
+    cloud_field              = "myCloud"
+    layout_field             = "myLayout"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
 ### Instances Input
 
 ```terraform
@@ -672,7 +703,6 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
-- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -726,7 +756,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
@@ -748,7 +778,6 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
-- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -802,7 +831,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
