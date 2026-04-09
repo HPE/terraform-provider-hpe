@@ -3,6 +3,7 @@
 package form_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -28,11 +29,20 @@ func TestAccMorpheusFormSelectOk(t *testing.T) {
 	optTypeCode := code + "-ot"
 	optTypeName := name + " option type"
 
+	optionListConfig := fmt.Sprintf(`
+resource "hpe_morpheus_option_list_manual" "example" {
+  name    = %q
+  dataset = "[{\"name\": \"Level 1\",\"value\":\"level1\"},{\"name\": \"Level 2\",\"value\":\"level2\"}]"
+  real_time = true
+}
+`, name+" option list")
+
 	resourceConfig, err := form.RenderSelectConfig(t, map[string]string{
-		"Name":           name,
-		"Code":           code,
-		"OptionTypeCode": optTypeCode,
-		"OptionTypeName": optTypeName,
+		"Name":                   name,
+		"Code":                   code,
+		"OptionTypeCode":         optTypeCode,
+		"OptionTypeName":         optTypeName,
+		"OptionTypeOptionListId": "hpe_morpheus_option_list_manual.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +52,7 @@ func TestAccMorpheusFormSelectOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + optionListConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
@@ -64,13 +74,16 @@ func TestAccMorpheusFormSelectOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.option_list_id", "1"),
+					resource.TestCheckResourceAttrPair(
+						"hpe_morpheus_form.example", "option_type.0.option_list_id",
+						"hpe_morpheus_option_list_manual.example", "id",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Testing 123"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + optionListConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
