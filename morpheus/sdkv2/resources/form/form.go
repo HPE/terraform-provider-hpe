@@ -45,6 +45,7 @@ const (
 	typeTextArea       = "textarea"
 	typeTextArray      = "textArray"
 	typeTypeahead      = "typeahead"
+	typeVMWFolders     = "vmwFolders"
 )
 
 // TODO: Add switch case handling for these option types.
@@ -55,7 +56,6 @@ const (
 	typeLogoSelector = "logoSelector"
 	typeSecGroup     = "secGroup"
 	typeVirtualImage = "virtual-image"
-	typeVMWFolders   = "vmwFolders"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -207,6 +207,22 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 	case typeServersInput:
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+	case typeVMWFolders:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
 			return err
 		}
 	}
@@ -505,6 +521,19 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeVMWFolders:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		row["config"] = config
 	}
 
 	return nil
@@ -646,6 +675,16 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["custom_data"] = optionType.Config.CustomData
 		row["allow_multiple_selections"] = optionType.Config.MultiSelect
 		row["option_list_id"] = optionType.OptionList.ID
+	case typeVMWFolders:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
 	}
 }
 
@@ -772,14 +811,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 						" instances-input," +
 						" layout, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, select," +
-						" servers-input, text, textarea, textArray, typeahead)",
+						" servers-input, text, textarea, textArray, typeahead, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeFileContent, typeGroup, typeInstancesInput, typeHidden, typeLayout,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSelect,
 							typeServersInput, typeText, typeTextArea,
-							typeTextArray, typeTypeahead,
+							typeTextArray, typeTypeahead, typeVMWFolders,
 						},
 						false,
 					),

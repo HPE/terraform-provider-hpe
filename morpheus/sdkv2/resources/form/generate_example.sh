@@ -4,6 +4,35 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_vmw_folders.tf \
+  form_vmw_folders.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf vmwFolders example' \
+  OptionTypeCode 'vmw-folders-input' \
+  OptionTypeDescription 'Terraform vmwFolders example' \
+  OptionTypeType 'vmwFolders' \
+  OptionTypeFieldLabel 'VmwFolders' \
+  OptionTypeFieldName 'vmwFolders' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a vmwFolder' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePlanFieldType 'value' \
+  OptionTypePlanId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_file_content.tf \
   form_file_content.tf.tmpl \
   Name 'demo' \
