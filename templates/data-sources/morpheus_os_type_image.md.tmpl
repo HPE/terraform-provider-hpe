@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Looks up an OS type image by matching a virtual image name within a given OS type. This is useful for finding the image mapping ID needed when provisioning instances for a specific operating system.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_os_type_image/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
