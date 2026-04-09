@@ -12,8 +12,9 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+-> Currently HVM, VMware, AWS and BMaaS instances are supported.  We have static `config` schema for the following:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
@@ -85,6 +86,9 @@ Some Service Plans have options that must be set at the time of creation of the 
 
 {{ tffile "morpheus/framework/resources/instance/example_vmware_sp_options.tf" }}
 
+## AWS Instance
+
+{{ tffile "morpheus/framework/resources/instance/example_aws.tf" }}
 
 ## BMaaS Instance
 
