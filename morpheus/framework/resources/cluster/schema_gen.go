@@ -79,10 +79,14 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 						Required: true,
 					},
 					"create_user": schema.BoolAttribute{
-						Optional: true,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to create a user on the cluster's workers. The default is 'false'.",
+						MarkdownDescription: "Whether to create a user on the cluster's workers. The default is 'false'.",
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 						},
+						Default: booldefault.StaticBool(false),
 					},
 					"dynamic_placement": schema.BoolAttribute{
 						Optional:            true,
