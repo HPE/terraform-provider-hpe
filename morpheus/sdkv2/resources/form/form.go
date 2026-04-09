@@ -39,6 +39,7 @@ const (
 	typePorts          = "ports"
 	typeRadio          = "radio"
 	typeResourcePool   = "resourcePool"
+	typeSecGroup       = "secGroup"
 	typeSelect         = "select"
 	typeServersInput   = "servers-input"
 	typeText           = "text"
@@ -53,7 +54,6 @@ const (
 	typeHTTPHeader   = "httpHeader"
 	typeKeyValue     = "keyValue"
 	typeLogoSelector = "logoSelector"
-	typeSecGroup     = "secGroup"
 	typeVirtualImage = "virtual-image"
 	typeVMWFolders   = "vmwFolders"
 )
@@ -202,6 +202,11 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+	case typeSecGroup:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
 	case typeServersInput:
@@ -409,6 +414,14 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["layoutField"] = optionTypeConfig["layout_field"]
 		config["layoutId"] = optionTypeConfig["layout_id"]
 		row["config"] = config
+	case typeSecGroup:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["resourcePoolField"] = optionTypeConfig["pool_field"]
+		row["config"] = config
 	case typePorts:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
@@ -604,6 +617,11 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["layout_field_type"] = optionType.Config.LayoutFieldType
 		row["layout_field"] = optionType.Config.LayoutField
 		row["layout_id"] = optionType.Config.LayoutId
+	case typeSecGroup:
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["pool_field"] = optionType.Config.ResourcePoolField
 	case typePorts:
 		row["default_value"] = optionType.Config.DefaultValue
 		row["group_field"] = optionType.Config.GroupField
@@ -771,13 +789,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
 						" instances-input," +
 						" layout, networkManager," +
-						" number, password, plan, ports, radio, resourcePool, select," +
+						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
 						" servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeFileContent, typeGroup, typeInstancesInput, typeHidden, typeLayout,
-							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSelect,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
+							typeSelect,
 							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
 						},
