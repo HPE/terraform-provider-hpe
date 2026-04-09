@@ -80,6 +80,42 @@ func (g *Resource) Create(
 
 	// config
 	switch {
+	// AWS config
+	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
+		configAWS := sdk.NewAmazonInstanceConfiguration2()
+		configAWS.SetNoAgent(plan.ConfigAws.NoAgent.ValueBool())
+		configAWS.SetResourcePoolId(plan.ConfigAws.ResourcePoolId.ValueString())
+		configAWS.SetIsEC2(convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString())
+		configAWS.SetKmsKeyId(plan.ConfigAws.KmsKeyId.ValueString())
+		configAWS.SetInstanceProfile(plan.ConfigAws.InstanceProfile.ValueString())
+		configAWS.SetPublicIpType(plan.ConfigAws.PublicIpType.ValueString())
+		configAWS.SetAvailabilityId(plan.ConfigAws.AvailabilityZoneId.ValueString())
+		// Security Groups
+		if !plan.ConfigAws.SecurityGroups.IsNull() && !plan.ConfigAws.SecurityGroups.IsUnknown() {
+			securityGroups, diags := convert.FromListType(
+				ctx,
+				plan.ConfigAws.SecurityGroups,
+				func(in SecurityGroupsValue) sdk.AddInstanceRequestSecurityGroupsInner {
+					id := in.Id.ValueString()
+
+					return sdk.AddInstanceRequestSecurityGroupsInner{
+						Id: &id,
+					}
+				},
+			)
+			if diags.HasError() {
+				tflog.Error(ctx, "cannot convert AWS security groups")
+				resp.Diagnostics.Append(diags...)
+
+				return
+			}
+			reqInstance.SetSecurityGroups(securityGroups)
+		}
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			AmazonInstanceConfiguration2: configAWS,
+		}
+
 	// HVM config
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		// The provisionTypeCode default is "mvm" which is the code for the HVM provisioning type.
