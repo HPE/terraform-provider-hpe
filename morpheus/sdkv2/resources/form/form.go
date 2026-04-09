@@ -29,6 +29,7 @@ const (
 	typeDiskManager    = "diskManager"
 	typeGroup          = "group"
 	typeHidden         = "hidden"
+	typeInstancesInput = "instances-input"
 	typeLayout         = "layout"
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
@@ -47,15 +48,14 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeFileContent    = "fileContent"
-	typeHTTPHeader     = "httpHeader"
-	typeInstancesInput = "instances-input"
-	typeKeyValue       = "keyValue"
-	typeLogoSelector   = "logoSelector"
-	typePorts          = "ports"
-	typeSecGroup       = "secGroup"
-	typeVirtualImage   = "virtual-image"
-	typeVMWFolders     = "vmwFolders"
+	typeFileContent  = "fileContent"
+	typeHTTPHeader   = "httpHeader"
+	typeKeyValue     = "keyValue"
+	typeLogoSelector = "logoSelector"
+	typePorts        = "ports"
+	typeSecGroup     = "secGroup"
+	typeVirtualImage = "virtual-image"
+	typeVMWFolders   = "vmwFolders"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -89,6 +89,12 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+
+	case typeInstancesInput:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
 
@@ -325,6 +331,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
 		row["config"] = config
+	case typeInstancesInput:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		row["config"] = config
 	case typePlan:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
@@ -521,6 +534,10 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
 		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
 		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+	case typeInstancesInput:
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
 	case typePlan:
 		row["show_pricing"] = optionType.Config.ShowPricing
 		row["group_field_type"] = optionType.Config.GroupFieldType
@@ -739,12 +756,13 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager," +
+						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, instances-input, " +
+						" layout, networkManager," +
 						" number, password, plan, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeGroup, typeHidden, typeLayout,
+							typeEnvironment, typeGroup, typeInstancesInput, typeHidden, typeLayout,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeResourcePool, typeSelect,
 							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
