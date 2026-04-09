@@ -1006,3 +1006,48 @@ func RenderEnvironmentConfig(t *testing.T, overrides map[string]string) (string,
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderServersInputConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "servers-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform servers-input example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Server",
+		"OptionTypeFieldName":             "server",
+		"OptionTypeHelpBlock":             "Select a server",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf servers-input example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "servers-input",
+		"OptionTypeCloudFieldType":        "value",
+		"OptionTypeCloudId":               "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_servers_input.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}

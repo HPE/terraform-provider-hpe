@@ -397,3 +397,27 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_servers_input.tf \
+  form_servers_input.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf servers-input example' \
+  OptionTypeCode 'servers-input' \
+  OptionTypeDescription 'Terraform servers-input example' \
+  OptionTypeType 'servers-input' \
+  OptionTypeFieldLabel 'Server' \
+  OptionTypeFieldName 'server' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a server' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
