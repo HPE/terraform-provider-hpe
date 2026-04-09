@@ -1,0 +1,149 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+// Package ostypeimage implements a data source for os_type_image
+package ostypeimage
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+)
+
+const summary = "read os_type_image data source"
+
+// Ensure the implementation satisfies the expected interfaces.
+var _ datasource.DataSource = &DataSource{}
+
+// NewDataSource is a helper function to simplify the provider implementation.
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
+}
+
+// DataSource is the data source implementation.
+type DataSource struct {
+	configure.DataSourceWithMorpheusConfigure
+	datasource.DataSource
+}
+
+// Metadata returns the data source type name.
+func (d *DataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
+	resp.TypeName = req.ProviderTypeName + "_morpheus_os_type_image"
+}
+
+// Schema defines the schema for the data source.
+func (d *DataSource) Schema(
+	ctx context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
+	resp.Schema = OsTypeImageDataSourceSchema(ctx)
+}
+
+// Read refreshes the Terraform state with the latest data.
+func (d *DataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
+	var data OsTypeImageModel
+
+	diags := req.Config.Get(ctx, &data)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := d.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(summary, "could not create sdk client")
+
+		return
+	}
+
+	osTypeID := data.OsTypeId.ValueInt64()
+
+	osTypeResp, httpResp, err := client.LibraryAPI.GetOsType(ctx, osTypeID).Execute()
+	if osTypeResp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			summary,
+			fmt.Sprintf("GET os_type %d failed: %s", osTypeID, errfmt.ErrMsg(err, httpResp)),
+		)
+
+		return
+	}
+
+	osType := osTypeResp.GetOsType()
+
+	virtualImageName := data.VirtualImageName.ValueString()
+
+	var matchedImageID int64
+	for _, img := range osType.GetImages() {
+		tflog.Info(ctx, fmt.Sprintf("checking image %d with name '%s'", img.GetId(), img.GetVirtualImageName()))
+		if img.GetVirtualImageName() == virtualImageName {
+			matchedImageID = img.GetId()
+
+			break
+		}
+	}
+
+	if matchedImageID == 0 {
+		resp.Diagnostics.AddError(
+			summary,
+			fmt.Sprintf(
+				"no image with name '%s' found on os_type %d",
+				virtualImageName, osTypeID,
+			),
+		)
+
+		return
+	}
+
+	imgResp, imgHTTPResp, imgErr := client.LibraryAPI.GetOsTypeImage(ctx, matchedImageID).Execute()
+	if imgResp == nil || imgErr != nil || imgHTTPResp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			summary,
+			fmt.Sprintf("GET os_type_image %d failed: %s",
+				matchedImageID, errfmt.ErrMsg(imgErr, imgHTTPResp)),
+		)
+
+		return
+	}
+
+	img := imgResp.GetOsTypeImage()
+
+	data.Id = convert.Int64ToType(img.Id)
+	data.VirtualImageId = convert.Int64ToType(img.VirtualImageId)
+	data.VirtualImageName = types.StringValue(virtualImageName)
+	data.OsTypeId = types.Int64Value(osTypeID)
+
+	if img.Zone.IsSet() {
+		data.CloudId = types.Int64Value(img.GetZone())
+	}
+
+	if img.ComputeZoneType.IsSet() {
+		data.ComputeCloudTypeId = types.Int64Value(img.GetComputeZoneType())
+	}
+
+	if img.ProvisionType.IsSet() {
+		data.ProvisionTypeId = types.Int64Value(img.GetProvisionType())
+	}
+
+	if img.Account.IsSet() {
+		data.TenantId = types.Int64Value(img.GetAccount())
+	}
+
+	diags = resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(diags...)
+}
