@@ -12,8 +12,9 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+-> Currently HVM, VMware, AWS and BMaaS instances are supported.  We have static `config` schema for the following:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
@@ -502,6 +503,91 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
+## AWS Instance
+
+```terraform
+data "hpe_morpheus_cloud" "aws_cloud" {
+  name = "QA Amazon"
+}
+
+data "hpe_morpheus_instance_type_layout" "aws" {
+  name    = "Amazon VM"
+  version = "22.04"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.aws_cloud.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.aws.id
+  instance_type_id = 9
+
+  group_id = 28
+  plan_id  = 622
+
+  instance_context = "dev"
+  network_interfaces = [
+    {
+      network_id = 28
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 100
+      storage_type_id          = 23
+      datastore_auto_selection = "auto"
+    },
+    {
+      root_volume              = false
+      name                     = "data"
+      size                     = 100
+      storage_type_id          = 23
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  tags = [
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config_aws = {
+    resource_pool_id      = "pool-12284"
+    no_agent              = true
+    create_user           = false
+    security_groups = [
+      { id = "sg-4eaf812b" },
+    ]
+  }
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+    update = "20m"
+    read   = "10m"
+  }
+}
+```
 
 ## BMaaS Instance
 
@@ -637,6 +723,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 
 - `cloud_id` (Number) The Cloud ID to provision the instance onto.
 - `config` (Dynamic) Configuration object. Settings vary by type.
+- `config_aws` (Attributes) Configuration options for AWS instances. (see [below for nested schema](#nestedatt--config_aws))
 - `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `description` (String) A description of the instance.
@@ -694,6 +781,33 @@ Read-Only:
 
 - `name` (String) The name of the interface, e.g. 'eth0', 'eth1'
 - `primary_interface` (Boolean) Is this interface the 'primary interface'?
+
+
+
+<a id="nestedatt--config_aws"></a>
+### Nested Schema for `config_aws`
+
+Required:
+
+- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `security_groups` (Attributes List) a list of objects containing the ids of the AWS security groups to assign the instance to. (see [below for nested schema](#nestedatt--config_aws--security_groups))
+
+Optional:
+
+- `availability_zone_id` (String) The id of the AWS zone to provision the instance in.
+- `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `instance_profile` (String) The AWS IAM Profile to use for provisioning.
+- `is_ec2` (Boolean) Whether this instance is an EC2 instance.  The default is 'false'.
+- `kms_key_id` (String) The AWS KMS Key ID to use for provisioning.
+- `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+- `public_ip_type` (String) The type of public IP to associate with the instance.
+
+<a id="nestedatt--config_aws--security_groups"></a>
+### Nested Schema for `config_aws.security_groups`
+
+Required:
+
+- `id` (String) id of the AWS security group to assign the instance to.
 
 
 
