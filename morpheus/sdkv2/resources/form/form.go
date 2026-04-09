@@ -23,6 +23,7 @@ import (
 const (
 	typeByteSize       = "byteSize"
 	typeCheckbox       = "checkbox"
+	typeEnvironment    = "environment"
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeDiskManager    = "diskManager"
@@ -35,6 +36,7 @@ const (
 	typePlan           = "plan"
 	typeRadio          = "radio"
 	typeSelect         = "select"
+	typeServersInput   = "servers-input"
 	typeText           = "text"
 	typeTextArea       = "textarea"
 	typeTextArray      = "textArray"
@@ -44,7 +46,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeEnvironment    = "environment"
 	typeFileContent    = "fileContent"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
@@ -53,7 +54,6 @@ const (
 	typePorts          = "ports"
 	typeResourcePool   = "resourcePool"
 	typeSecGroup       = "secGroup"
-	typeServersInput   = "servers-input"
 	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
 )
@@ -176,6 +176,11 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"virtual_image_field_type", "image_field", "image_id"); err != nil {
+			return err
+		}
+	case typeServersInput:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
 	}
@@ -348,6 +353,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config := make(map[string]any)
 		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
 		row["config"] = config
+	case typeServersInput:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -431,6 +443,8 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["customData"] = optionTypeConfig["custom_data"]
 		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 		row["config"] = config
+	case typeEnvironment:
+		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
@@ -513,6 +527,10 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["code_language"] = optionType.Config.Lang
 	case typeGroup:
 		row["allow_read_only"] = optionType.Config.AllowReadonly
+	case typeServersInput:
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
@@ -672,12 +690,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number," +
-						" password, plan, radio, select, text, textarea, textArray, typeahead)",
+						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager," +
+						" number, password, plan, radio, select, servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
-							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager, typeGroup, typeHidden, typeLayout,
-							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect, typeText, typeTextArea,
+							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
+							typeEnvironment, typeGroup, typeHidden, typeLayout,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect,
+							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
 						},
 						false,

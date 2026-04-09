@@ -13,6 +13,8 @@ and all inputs or option types must be defined in the form.
 
 ## Example Usage
 
+### Select
+
 ```terraform
 resource "hpe_morpheus_form" "example" {
   name        = "demo"
@@ -38,6 +40,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Radio
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf radio example"
@@ -57,6 +70,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Text
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf text example"
@@ -75,6 +99,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Checkbox
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf checkbox example"
@@ -93,6 +128,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Hidden
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf hidden input example"
@@ -111,6 +157,17 @@ resource "hpe_morpheus_form" "example" {
     hidden                   = true
     exclude_from_search      = true
   }
+}
+```
+
+### Number
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf number input example"
@@ -132,6 +189,17 @@ resource "hpe_morpheus_form" "example" {
     max_value                = 44
     step                     = 2
   }
+}
+```
+
+### Network Manager
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                        = "tf network manager example"
@@ -160,6 +228,17 @@ resource "hpe_morpheus_form" "example" {
     layout_field_type           = "value"
     layout_id                   = "1"
   }
+}
+```
+
+### Cloud
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf cloud example"
@@ -184,6 +263,17 @@ resource "hpe_morpheus_form" "example" {
     instance_type_code       = "apache"
     cloud_type               = "4"
   }
+}
+```
+
+### Layout
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf layout example"
@@ -208,6 +298,17 @@ resource "hpe_morpheus_form" "example" {
     instance_type_field_type = "value"
     instance_type_code       = "apache"
   }
+}
+```
+
+### Group
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf group example"
@@ -227,6 +328,17 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     allow_read_only          = true
   }
+}
+```
+
+### Disk Manager
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                          = "tf disk manager example"
@@ -258,6 +370,17 @@ resource "hpe_morpheus_form" "example" {
     enable_storage_type_selection = true
     enable_datastore_selection    = true
   }
+}
+```
+
+### Plan
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   option_type {
     name                     = "tf plan example"
@@ -285,6 +408,17 @@ resource "hpe_morpheus_form" "example" {
     pool_field_type          = "value"
     pool_id                  = "1"
   }
+}
+```
+
+### Field Groups
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
 
   field_group {
     name                 = "fg1"
@@ -332,6 +466,65 @@ resource "hpe_morpheus_form" "example" {
       hidden                   = false
       exclude_from_search      = true
     }
+  }
+}
+```
+
+### Environment
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf environment example"
+    code                     = "environment-input"
+    description              = "Terraform environment example"
+    type                     = "environment"
+    field_label              = "Environment"
+    field_name               = "environment"
+    default_value            = "staging"
+    placeholder              = ""
+    help_block               = "Select an environment"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
+### Servers Input
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf servers-input example"
+    code                     = "servers-input"
+    description              = "Terraform servers-input example"
+    type                     = "servers-input"
+    field_label              = "Server"
+    field_name               = "server"
+    default_value            = ""
+    help_block               = "Select a server"
+    cloud_field_type         = "value"
+    cloud_id                 = 1
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
   }
 }
 ```
@@ -439,7 +632,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager, number, password, plan, radio, select, servers-input, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
@@ -515,7 +708,7 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, group, hidden, layout, networkManager, number, password, plan, radio, select, text, textarea, textArray, typeahead)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager, number, password, plan, radio, select, servers-input, text, textarea, textArray, typeahead)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
