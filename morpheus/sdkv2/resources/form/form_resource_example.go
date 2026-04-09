@@ -361,7 +361,6 @@ func RenderFileContentConfig(t *testing.T, overrides map[string]string) (string,
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
 
-
 func RenderSelectConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
