@@ -451,3 +451,27 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_instances_input.tf \
+  form_instances_input.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf instances-input example' \
+  OptionTypeCode 'instances-input' \
+  OptionTypeDescription 'Terraform instances-input example' \
+  OptionTypeType 'instances-input' \
+  OptionTypeFieldLabel 'Instance' \
+  OptionTypeFieldName 'instance' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select an instance' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
