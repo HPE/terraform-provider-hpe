@@ -35,6 +35,7 @@ const (
 	typePassword       = "password"
 	typePlan           = "plan"
 	typeRadio          = "radio"
+	typeResourcePool   = "resourcePool"
 	typeSelect         = "select"
 	typeServersInput   = "servers-input"
 	typeText           = "text"
@@ -52,7 +53,6 @@ const (
 	typeKeyValue       = "keyValue"
 	typeLogoSelector   = "logoSelector"
 	typePorts          = "ports"
-	typeResourcePool   = "resourcePool"
 	typeSecGroup       = "secGroup"
 	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
@@ -176,6 +176,26 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"virtual_image_field_type", "image_field", "image_id"); err != nil {
+			return err
+		}
+	case typeResourcePool:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
 			return err
 		}
 	case typeServersInput:
@@ -360,6 +380,22 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["cloudField"] = optionTypeConfig["cloud_field"]
 		config["cloudId"] = optionTypeConfig["cloud_id"]
 		row["config"] = config
+	case typeResourcePool:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		row["config"] = config
 	case typeNumber:
 		var defaultValue string
 		if v, ok := optionTypeConfig["default_value"].(string); ok {
@@ -531,6 +567,19 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["cloud_field_type"] = optionType.Config.CloudFieldType
 		row["cloud_field"] = optionType.Config.CloudField
 		row["cloud_id"] = optionType.Config.CloudId
+	case typeResourcePool:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
@@ -691,12 +740,12 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager," +
-						" number, password, plan, radio, select, servers-input, text, textarea, textArray, typeahead)",
+						" number, password, plan, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeGroup, typeHidden, typeLayout,
-							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeResourcePool, typeSelect,
 							typeServersInput, typeText, typeTextArea,
 							typeTextArray, typeTypeahead,
 						},
