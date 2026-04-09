@@ -30,7 +30,7 @@ data "hpe_morpheus_os_type_image" "example" {
 ### Read-Only
 
 - `cloud_id` (Number) The cloud that is attached to the os type image
-- `compute_cloud_type_id` (Number) The cloud type of the os type image
+- `cloud_type_id` (Number) The cloud type of the os type image
 - `id` (Number) Morpheus ID of the os type image
 - `provision_type_id` (Number) The Provision Type of the os type image
 - `tenant_id` (Number) The tenant associated with the os type image
