@@ -475,3 +475,28 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_ports.tf \
+  form_ports.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf ports example' \
+  OptionTypeCode 'ports-input' \
+  OptionTypeDescription 'Terraform ports example' \
+  OptionTypeType 'ports' \
+  OptionTypeFieldLabel 'Exposed Ports' \
+  OptionTypeFieldName 'ports' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Configure exposed ports' \
+  OptionTypeGroupField 'myGroup' \
+  OptionTypeCloudField 'myCloud' \
+  OptionTypeLayoutField 'myLayout' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'

@@ -1147,3 +1147,49 @@ func RenderInstancesInputConfig(t *testing.T, overrides map[string]string) (stri
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderPortsConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "ports-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform ports example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Exposed Ports",
+		"OptionTypeFieldName":             "ports",
+		"OptionTypeHelpBlock":             "Configure exposed ports",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf ports example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "ports",
+		"OptionTypeGroupField":            "myGroup",
+		"OptionTypeCloudField":            "myCloud",
+		"OptionTypeLayoutField":           "myLayout",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_ports.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
