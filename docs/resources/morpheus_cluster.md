@@ -268,7 +268,7 @@ Optional:
 
 - `compute_interface_name` (String)
 - `compute_vlans` (String)
-- `create_user` (Boolean)
+- `create_user` (Boolean) Whether to create a user on the cluster's workers. The default is 'false'.
 - `dynamic_placement` (Boolean) When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
 - `overlay_interface_name` (String)
 - `storage_interface_name` (String)
