@@ -68,13 +68,13 @@ func osTypeAsState(
 			v, _ := NewImagesValue(
 				ImagesValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
-					"account":            convert.Int64ToType(img.Account.Get()),
-					"compute_zone_type":  convert.Int64ToType(img.ComputeZoneType.Get()),
+					"tenant_id":          convert.Int64ToType(img.Account.Get()),
+					"cloud_type_id":      convert.Int64ToType(img.ComputeZoneType.Get()),
 					"id":                 convert.Int64ToType(img.Id),
-					"provision_type":     convert.Int64ToType(img.ProvisionType.Get()),
+					"provision_type_id":  convert.Int64ToType(img.ProvisionType.Get()),
 					"virtual_image_id":   convert.Int64ToType(img.VirtualImageId),
 					"virtual_image_name": convert.StrToType(img.VirtualImageName),
-					"zone":               convert.Int64ToType(img.Zone.Get()),
+					"cloud_id":           convert.Int64ToType(img.Zone.Get()),
 				},
 			)
 

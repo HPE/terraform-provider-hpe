@@ -43,7 +43,7 @@ data "hpe_morpheus_os_type" "example" {
 - `os_family` (String) The family of the OS type
 - `os_name` (String) The OS name of the OS type
 - `os_version` (String) The OS version of the OS type
-- `owner` (String) The owner  of the OS type
+- `owner` (String) The owner of the OS type
 - `platform` (String) The platform of the OS type (e.g. linux, windows)
 - `vendor` (String) The vendor of the OS type
 
@@ -52,10 +52,10 @@ data "hpe_morpheus_os_type" "example" {
 
 Read-Only:
 
-- `account` (Number)
-- `compute_zone_type` (Number)
+- `cloud_id` (Number)
+- `cloud_type_id` (Number)
 - `id` (Number)
-- `provision_type` (Number)
+- `provision_type_id` (Number)
+- `tenant_id` (Number)
 - `virtual_image_id` (Number)
 - `virtual_image_name` (String)
-- `zone` (Number)

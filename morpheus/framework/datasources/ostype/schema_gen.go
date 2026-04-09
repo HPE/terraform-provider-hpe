@@ -5,8 +5,6 @@ package ostype
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -60,25 +59,25 @@ func OsTypeDataSourceSchema(ctx context.Context) schema.Schema {
 			"images": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"account": schema.Int64Attribute{
+						"cloud_id": schema.Int64Attribute{
 							Computed: true,
 						},
-						"compute_zone_type": schema.Int64Attribute{
+						"cloud_type_id": schema.Int64Attribute{
 							Computed: true,
 						},
 						"id": schema.Int64Attribute{
 							Computed: true,
 						},
-						"provision_type": schema.Int64Attribute{
+						"provision_type_id": schema.Int64Attribute{
+							Computed: true,
+						},
+						"tenant_id": schema.Int64Attribute{
 							Computed: true,
 						},
 						"virtual_image_id": schema.Int64Attribute{
 							Computed: true,
 						},
 						"virtual_image_name": schema.StringAttribute{
-							Computed: true,
-						},
-						"zone": schema.Int64Attribute{
 							Computed: true,
 						},
 					},
@@ -126,8 +125,8 @@ func OsTypeDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"owner": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The owner  of the OS type",
-				MarkdownDescription: "The owner  of the OS type",
+				Description:         "The owner of the OS type",
+				MarkdownDescription: "The owner of the OS type",
 			},
 			"platform": schema.StringAttribute{
 				Computed:            true,
@@ -195,40 +194,40 @@ func (t ImagesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 
 	attributes := in.Attributes()
 
-	accountAttribute, ok := attributes["account"]
+	cloudIdAttribute, ok := attributes["cloud_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`account is missing from object`)
+			`cloud_id is missing from object`)
 
 		return nil, diags
 	}
 
-	accountVal, ok := accountAttribute.(basetypes.Int64Value)
+	cloudIdVal, ok := cloudIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`account expected to be basetypes.Int64Value, was: %T`, accountAttribute))
+			fmt.Sprintf(`cloud_id expected to be basetypes.Int64Value, was: %T`, cloudIdAttribute))
 	}
 
-	computeZoneTypeAttribute, ok := attributes["compute_zone_type"]
+	cloudTypeIdAttribute, ok := attributes["cloud_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`compute_zone_type is missing from object`)
+			`cloud_type_id is missing from object`)
 
 		return nil, diags
 	}
 
-	computeZoneTypeVal, ok := computeZoneTypeAttribute.(basetypes.Int64Value)
+	cloudTypeIdVal, ok := cloudTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`compute_zone_type expected to be basetypes.Int64Value, was: %T`, computeZoneTypeAttribute))
+			fmt.Sprintf(`cloud_type_id expected to be basetypes.Int64Value, was: %T`, cloudTypeIdAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -249,22 +248,40 @@ func (t ImagesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	provisionTypeAttribute, ok := attributes["provision_type"]
+	provisionTypeIdAttribute, ok := attributes["provision_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`provision_type is missing from object`)
+			`provision_type_id is missing from object`)
 
 		return nil, diags
 	}
 
-	provisionTypeVal, ok := provisionTypeAttribute.(basetypes.Int64Value)
+	provisionTypeIdVal, ok := provisionTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`provision_type expected to be basetypes.Int64Value, was: %T`, provisionTypeAttribute))
+			fmt.Sprintf(`provision_type_id expected to be basetypes.Int64Value, was: %T`, provisionTypeIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return nil, diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.Int64Value, was: %T`, tenantIdAttribute))
 	}
 
 	virtualImageIdAttribute, ok := attributes["virtual_image_id"]
@@ -303,36 +320,18 @@ func (t ImagesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 			fmt.Sprintf(`virtual_image_name expected to be basetypes.StringValue, was: %T`, virtualImageNameAttribute))
 	}
 
-	zoneAttribute, ok := attributes["zone"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`zone is missing from object`)
-
-		return nil, diags
-	}
-
-	zoneVal, ok := zoneAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`zone expected to be basetypes.Int64Value, was: %T`, zoneAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ImagesValue{
-		Account:          accountVal,
-		ComputeZoneType:  computeZoneTypeVal,
+		CloudId:          cloudIdVal,
+		CloudTypeId:      cloudTypeIdVal,
 		Id:               idVal,
-		ProvisionType:    provisionTypeVal,
+		ProvisionTypeId:  provisionTypeIdVal,
+		TenantId:         tenantIdVal,
 		VirtualImageId:   virtualImageIdVal,
 		VirtualImageName: virtualImageNameVal,
-		Zone:             zoneVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -400,40 +399,40 @@ func NewImagesValue(attributeTypes map[string]attr.Type, attributes map[string]a
 		return NewImagesValueUnknown(), diags
 	}
 
-	accountAttribute, ok := attributes["account"]
+	cloudIdAttribute, ok := attributes["cloud_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`account is missing from object`)
+			`cloud_id is missing from object`)
 
 		return NewImagesValueUnknown(), diags
 	}
 
-	accountVal, ok := accountAttribute.(basetypes.Int64Value)
+	cloudIdVal, ok := cloudIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`account expected to be basetypes.Int64Value, was: %T`, accountAttribute))
+			fmt.Sprintf(`cloud_id expected to be basetypes.Int64Value, was: %T`, cloudIdAttribute))
 	}
 
-	computeZoneTypeAttribute, ok := attributes["compute_zone_type"]
+	cloudTypeIdAttribute, ok := attributes["cloud_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`compute_zone_type is missing from object`)
+			`cloud_type_id is missing from object`)
 
 		return NewImagesValueUnknown(), diags
 	}
 
-	computeZoneTypeVal, ok := computeZoneTypeAttribute.(basetypes.Int64Value)
+	cloudTypeIdVal, ok := cloudTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`compute_zone_type expected to be basetypes.Int64Value, was: %T`, computeZoneTypeAttribute))
+			fmt.Sprintf(`cloud_type_id expected to be basetypes.Int64Value, was: %T`, cloudTypeIdAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -454,22 +453,40 @@ func NewImagesValue(attributeTypes map[string]attr.Type, attributes map[string]a
 			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
-	provisionTypeAttribute, ok := attributes["provision_type"]
+	provisionTypeIdAttribute, ok := attributes["provision_type_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`provision_type is missing from object`)
+			`provision_type_id is missing from object`)
 
 		return NewImagesValueUnknown(), diags
 	}
 
-	provisionTypeVal, ok := provisionTypeAttribute.(basetypes.Int64Value)
+	provisionTypeIdVal, ok := provisionTypeIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`provision_type expected to be basetypes.Int64Value, was: %T`, provisionTypeAttribute))
+			fmt.Sprintf(`provision_type_id expected to be basetypes.Int64Value, was: %T`, provisionTypeIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return NewImagesValueUnknown(), diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.Int64Value, was: %T`, tenantIdAttribute))
 	}
 
 	virtualImageIdAttribute, ok := attributes["virtual_image_id"]
@@ -508,36 +525,18 @@ func NewImagesValue(attributeTypes map[string]attr.Type, attributes map[string]a
 			fmt.Sprintf(`virtual_image_name expected to be basetypes.StringValue, was: %T`, virtualImageNameAttribute))
 	}
 
-	zoneAttribute, ok := attributes["zone"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`zone is missing from object`)
-
-		return NewImagesValueUnknown(), diags
-	}
-
-	zoneVal, ok := zoneAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`zone expected to be basetypes.Int64Value, was: %T`, zoneAttribute))
-	}
-
 	if diags.HasError() {
 		return NewImagesValueUnknown(), diags
 	}
 
 	return ImagesValue{
-		Account:          accountVal,
-		ComputeZoneType:  computeZoneTypeVal,
+		CloudId:          cloudIdVal,
+		CloudTypeId:      cloudTypeIdVal,
 		Id:               idVal,
-		ProvisionType:    provisionTypeVal,
+		ProvisionTypeId:  provisionTypeIdVal,
+		TenantId:         tenantIdVal,
 		VirtualImageId:   virtualImageIdVal,
 		VirtualImageName: virtualImageNameVal,
-		Zone:             zoneVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -610,13 +609,13 @@ func (t ImagesType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ImagesValue{}
 
 type ImagesValue struct {
-	Account          basetypes.Int64Value  `tfsdk:"account"`
-	ComputeZoneType  basetypes.Int64Value  `tfsdk:"compute_zone_type"`
+	CloudId          basetypes.Int64Value  `tfsdk:"cloud_id"`
+	CloudTypeId      basetypes.Int64Value  `tfsdk:"cloud_type_id"`
 	Id               basetypes.Int64Value  `tfsdk:"id"`
-	ProvisionType    basetypes.Int64Value  `tfsdk:"provision_type"`
+	ProvisionTypeId  basetypes.Int64Value  `tfsdk:"provision_type_id"`
+	TenantId         basetypes.Int64Value  `tfsdk:"tenant_id"`
 	VirtualImageId   basetypes.Int64Value  `tfsdk:"virtual_image_id"`
 	VirtualImageName basetypes.StringValue `tfsdk:"virtual_image_name"`
-	Zone             basetypes.Int64Value  `tfsdk:"zone"`
 	state            attr.ValueState
 }
 
@@ -626,13 +625,13 @@ func (v ImagesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	var val tftypes.Value
 	var err error
 
-	attrTypes["account"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["compute_zone_type"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["cloud_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["cloud_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["provision_type"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["provision_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["tenant_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["virtual_image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["virtual_image_name"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["zone"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
@@ -640,21 +639,21 @@ func (v ImagesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	case attr.ValueStateKnown:
 		vals := make(map[string]tftypes.Value, 7)
 
-		val, err = v.Account.ToTerraformValue(ctx)
+		val, err = v.CloudId.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["account"] = val
+		vals["cloud_id"] = val
 
-		val, err = v.ComputeZoneType.ToTerraformValue(ctx)
+		val, err = v.CloudTypeId.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["compute_zone_type"] = val
+		vals["cloud_type_id"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
 
@@ -664,13 +663,21 @@ func (v ImagesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 
 		vals["id"] = val
 
-		val, err = v.ProvisionType.ToTerraformValue(ctx)
+		val, err = v.ProvisionTypeId.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["provision_type"] = val
+		vals["provision_type_id"] = val
+
+		val, err = v.TenantId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tenant_id"] = val
 
 		val, err = v.VirtualImageId.ToTerraformValue(ctx)
 
@@ -687,14 +694,6 @@ func (v ImagesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		}
 
 		vals["virtual_image_name"] = val
-
-		val, err = v.Zone.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["zone"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -726,13 +725,13 @@ func (v ImagesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"account":            basetypes.Int64Type{},
-		"compute_zone_type":  basetypes.Int64Type{},
+		"cloud_id":           basetypes.Int64Type{},
+		"cloud_type_id":      basetypes.Int64Type{},
 		"id":                 basetypes.Int64Type{},
-		"provision_type":     basetypes.Int64Type{},
+		"provision_type_id":  basetypes.Int64Type{},
+		"tenant_id":          basetypes.Int64Type{},
 		"virtual_image_id":   basetypes.Int64Type{},
 		"virtual_image_name": basetypes.StringType{},
-		"zone":               basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -746,13 +745,13 @@ func (v ImagesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"account":            v.Account,
-			"compute_zone_type":  v.ComputeZoneType,
+			"cloud_id":           v.CloudId,
+			"cloud_type_id":      v.CloudTypeId,
 			"id":                 v.Id,
-			"provision_type":     v.ProvisionType,
+			"provision_type_id":  v.ProvisionTypeId,
+			"tenant_id":          v.TenantId,
 			"virtual_image_id":   v.VirtualImageId,
 			"virtual_image_name": v.VirtualImageName,
-			"zone":               v.Zone,
 		})
 
 	return objVal, diags
@@ -773,11 +772,11 @@ func (v ImagesValue) Equal(o attr.Value) bool {
 		return true
 	}
 
-	if !v.Account.Equal(other.Account) {
+	if !v.CloudId.Equal(other.CloudId) {
 		return false
 	}
 
-	if !v.ComputeZoneType.Equal(other.ComputeZoneType) {
+	if !v.CloudTypeId.Equal(other.CloudTypeId) {
 		return false
 	}
 
@@ -785,7 +784,11 @@ func (v ImagesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.ProvisionType.Equal(other.ProvisionType) {
+	if !v.ProvisionTypeId.Equal(other.ProvisionTypeId) {
+		return false
+	}
+
+	if !v.TenantId.Equal(other.TenantId) {
 		return false
 	}
 
@@ -794,10 +797,6 @@ func (v ImagesValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.VirtualImageName.Equal(other.VirtualImageName) {
-		return false
-	}
-
-	if !v.Zone.Equal(other.Zone) {
 		return false
 	}
 
@@ -814,12 +813,12 @@ func (v ImagesValue) Type(ctx context.Context) attr.Type {
 
 func (v ImagesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"account":            basetypes.Int64Type{},
-		"compute_zone_type":  basetypes.Int64Type{},
+		"cloud_id":           basetypes.Int64Type{},
+		"cloud_type_id":      basetypes.Int64Type{},
 		"id":                 basetypes.Int64Type{},
-		"provision_type":     basetypes.Int64Type{},
+		"provision_type_id":  basetypes.Int64Type{},
+		"tenant_id":          basetypes.Int64Type{},
 		"virtual_image_id":   basetypes.Int64Type{},
 		"virtual_image_name": basetypes.StringType{},
-		"zone":               basetypes.Int64Type{},
 	}
 }
