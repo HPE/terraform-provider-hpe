@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/resources/hpe_morpheus_os_type/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+OS types can be imported using the `id`, e.g.
+
+```bash
+terraform import hpe_morpheus_os_type.example 123
+```

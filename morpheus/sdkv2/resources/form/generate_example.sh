@@ -4,6 +4,57 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_vmw_folders.tf \
+  form_vmw_folders.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf vmwFolders example' \
+  OptionTypeCode 'vmw-folders-input' \
+  OptionTypeDescription 'Terraform vmwFolders example' \
+  OptionTypeType 'vmwFolders' \
+  OptionTypeFieldLabel 'VmwFolders' \
+  OptionTypeFieldName 'vmwFolders' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a vmwFolder' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePlanFieldType 'value' \
+  OptionTypePlanId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_file_content.tf \
+  form_file_content.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf fileContent example' \
+  OptionTypeCode 'fileContent' \
+  OptionTypeDescription 'Terraform fileContent example' \
+  OptionTypeType 'fileContent' \
+  OptionTypeFieldLabel 'FileContent' \
+  OptionTypeFieldName 'fileContent' \
+  OptionTypeHelpBlock 'Set fileContent' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypePlaceholder 'testing123' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_select.tf \
   form_select.tf.tmpl \
   Name 'demo' \
@@ -469,6 +520,31 @@ $RENDER \
   OptionTypeHelpBlock 'Select an instance' \
   OptionTypeCloudFieldType 'value' \
   OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_ports.tf \
+  form_ports.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf ports example' \
+  OptionTypeCode 'ports-input' \
+  OptionTypeDescription 'Terraform ports example' \
+  OptionTypeType 'ports' \
+  OptionTypeFieldLabel 'Exposed Ports' \
+  OptionTypeFieldName 'ports' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Configure exposed ports' \
+  OptionTypeGroupField 'myGroup' \
+  OptionTypeCloudField 'myCloud' \
+  OptionTypeLayoutField 'myLayout' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \

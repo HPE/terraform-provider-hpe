@@ -318,6 +318,98 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 	)
 }
 
+func RenderVmwFoldersConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "vmw-folders-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform vmwFolders example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "VmwFolders",
+		"OptionTypeFieldName":             "vmwFolders",
+		"OptionTypeHelpBlock":             "Select a vmwFolder",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf vmwFolders example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "vmwFolders",
+		"OptionTypeGroupFieldType":        "value",
+		"OptionTypeGroupId":               "1",
+		"OptionTypeCloudFieldType":        "value",
+		"OptionTypeCloudId":               "1",
+		"OptionTypePlanFieldType":         "value",
+		"OptionTypePlanId":                "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_vmw_folders.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderFileContentConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "fileContent",
+		"OptionTypeDescription":           "Terraform fileContent example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "FileContent",
+		"OptionTypeFieldName":             "fileContent",
+		"OptionTypeHelpBlock":             "Set fileContent",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf fileContent example",
+		"OptionTypePlaceholder":           "testing123",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "fileContent",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_file_content.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
 func RenderSelectConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
@@ -1144,6 +1236,52 @@ func RenderInstancesInputConfig(t *testing.T, overrides map[string]string) (stri
 	}
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "form_servers_input.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderPortsConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "ports-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform ports example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Exposed Ports",
+		"OptionTypeFieldName":             "ports",
+		"OptionTypeHelpBlock":             "Configure exposed ports",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf ports example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "ports",
+		"OptionTypeGroupField":            "myGroup",
+		"OptionTypeCloudField":            "myCloud",
+		"OptionTypeLayoutField":           "myLayout",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_ports.tf.tmpl")
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
