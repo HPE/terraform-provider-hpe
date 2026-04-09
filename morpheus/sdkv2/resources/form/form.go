@@ -410,8 +410,8 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["layoutId"] = optionTypeConfig["layout_id"]
 		row["config"] = config
 	case typePorts:
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
-		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["groupField"] = optionTypeConfig["group_field"]
 		config["cloudField"] = optionTypeConfig["cloud_field"]
 		config["layoutField"] = optionTypeConfig["layout_field"]
@@ -1036,12 +1036,6 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"disk_field": {
 					Type:        schema.TypeString,
 					Description: "The field code referencing the disk manager option type to associate with a plan option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"config_default_value": {
-					Type:        schema.TypeString,
-					Description: "The default disk configuration JSON for a diskManager option type",
 					Optional:    true,
 					Computed:    true,
 				},

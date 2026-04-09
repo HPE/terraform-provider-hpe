@@ -703,7 +703,6 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
-- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -779,7 +778,6 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
-- `config_default_value` (String) The default disk configuration JSON for a diskManager option type
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
