@@ -421,3 +421,33 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_resource_pool.tf \
+  form_resource_pool.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf resourcePool example' \
+  OptionTypeCode 'resource-pool-input' \
+  OptionTypeDescription 'Terraform resourcePool example' \
+  OptionTypeType 'resourcePool' \
+  OptionTypeFieldLabel 'Resource Pool' \
+  OptionTypeFieldName 'resourcePool' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a resource pool' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePlanFieldType 'value' \
+  OptionTypePlanId '1' \
+  OptionTypeLayoutFieldType 'value' \
+  OptionTypeLayoutId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'

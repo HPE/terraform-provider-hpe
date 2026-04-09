@@ -1051,3 +1051,54 @@ func RenderServersInputConfig(t *testing.T, overrides map[string]string) (string
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderResourcePoolConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "resource-pool-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform resourcePool example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Resource Pool",
+		"OptionTypeFieldName":             "resourcePool",
+		"OptionTypeHelpBlock":             "Select a resource pool",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf resourcePool example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "resourcePool",
+		"OptionTypeGroupFieldType":        "value",
+		"OptionTypeGroupId":               "1",
+		"OptionTypeCloudFieldType":        "value",
+		"OptionTypeCloudId":               "1",
+		"OptionTypePlanFieldType":         "value",
+		"OptionTypePlanId":                "1",
+		"OptionTypeLayoutFieldType":       "value",
+		"OptionTypeLayoutId":              "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_resource_pool.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
