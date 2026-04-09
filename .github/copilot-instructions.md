@@ -64,7 +64,7 @@ Each framework resource lives in its own package under `morpheus/framework/resou
 
 | File | Purpose |
 |---|---|
-| `resource.go` | CRUD implementation, `Metadata()`, `Schema()`. When this file exceeds 250 lines, split CRUD operations into separate files: `resource_create.go`, `resource_read.go`, `resource_update.go`, `resource_delete.go`. Keep `resource.go` for `Metadata()`, `Schema()`, and shared helpers. |
+| `resource.go` | CRUD implementation, `Metadata()`, `Schema()`. When this file exceeds 250 lines, split CRUD operations into separate files: `create.go`, `read.go`, `update.go`, `delete.go`. Keep `resource.go` for `Metadata()`, `Schema()`, and shared helpers. |
 | `schema_gen.go` | **Generated** schema and model struct (by `terraform-plugin-framework-generator`). Do not edit. |
 | `resource_test.go` or `<name>_test.go` | Acceptance tests (larger resources may split into `create_test.go`, `update_test.go`, `import_test.go`, etc.) |
 | `sweep.go` | Test resource sweeper for cleanup |
