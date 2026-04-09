@@ -4,9 +4,9 @@ package ostypeimage
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func OsTypeImageDataSourceSchema(ctx context.Context) schema.Schema {
@@ -17,7 +17,7 @@ func OsTypeImageDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The cloud that is attached to the os type image",
 				MarkdownDescription: "The cloud that is attached to the os type image",
 			},
-			"compute_cloud_type_id": schema.Int64Attribute{
+			"cloud_type_id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The cloud type of the os type image",
 				MarkdownDescription: "The cloud type of the os type image",
@@ -57,12 +57,12 @@ func OsTypeImageDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type OsTypeImageModel struct {
-	CloudId            types.Int64  `tfsdk:"cloud_id"`
-	ComputeCloudTypeId types.Int64  `tfsdk:"compute_cloud_type_id"`
-	Id                 types.Int64  `tfsdk:"id"`
-	OsTypeId           types.Int64  `tfsdk:"os_type_id"`
-	ProvisionTypeId    types.Int64  `tfsdk:"provision_type_id"`
-	TenantId           types.Int64  `tfsdk:"tenant_id"`
-	VirtualImageId     types.Int64  `tfsdk:"virtual_image_id"`
-	VirtualImageName   types.String `tfsdk:"virtual_image_name"`
+	CloudId          types.Int64  `tfsdk:"cloud_id"`
+	CloudTypeId      types.Int64  `tfsdk:"cloud_type_id"`
+	Id               types.Int64  `tfsdk:"id"`
+	OsTypeId         types.Int64  `tfsdk:"os_type_id"`
+	ProvisionTypeId  types.Int64  `tfsdk:"provision_type_id"`
+	TenantId         types.Int64  `tfsdk:"tenant_id"`
+	VirtualImageId   types.Int64  `tfsdk:"virtual_image_id"`
+	VirtualImageName types.String `tfsdk:"virtual_image_name"`
 }

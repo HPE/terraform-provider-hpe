@@ -133,7 +133,7 @@ func (d *DataSource) Read(
 	}
 
 	if img.ComputeZoneType.IsSet() {
-		data.ComputeCloudTypeId = types.Int64Value(img.GetComputeZoneType())
+		data.CloudTypeId = types.Int64Value(img.GetComputeZoneType())
 	}
 
 	if img.ProvisionType.IsSet() {
