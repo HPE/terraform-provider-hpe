@@ -4,7 +4,6 @@ package ostype
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -34,8 +33,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"code": schema.StringAttribute{
 				Required:            true,
-				Description:         "The code Morpheus uses as an internal identifier",
-				MarkdownDescription: "The code Morpheus uses as an internal identifier",
+				Description:         "The code Morpheus uses as an internal identifier.",
+				MarkdownDescription: "The code Morpheus uses as an internal identifier.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -71,8 +70,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 			"os_family": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The family of the osType.",
-				MarkdownDescription: "The family of the osType.",
+				Description:         "The osFamily of the osType.",
+				MarkdownDescription: "The osFamily of the osType.",
 			},
 			"os_name": schema.StringAttribute{
 				Optional:            true,
@@ -85,10 +84,15 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The osVersion of the osType.",
 				MarkdownDescription: "The osVersion of the osType.",
 			},
+			"owner": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The owner of the osType.",
+				MarkdownDescription: "The owner of the osType.",
+			},
 			"platform": schema.StringAttribute{
 				Required:            true,
-				Description:         "The platform of the OS type (e.g. linux, windows)",
-				MarkdownDescription: "The platform of the OS type (e.g. linux, windows)",
+				Description:         "The platform of the osType (e.g. linux, windows).",
+				MarkdownDescription: "The platform of the osType (e.g. linux, windows).",
 			},
 			"vendor": schema.StringAttribute{
 				Optional:            true,
@@ -112,6 +116,7 @@ type OsTypeModel struct {
 	OsFamily         types.String `tfsdk:"os_family"`
 	OsName           types.String `tfsdk:"os_name"`
 	OsVersion        types.String `tfsdk:"os_version"`
+	Owner            types.String `tfsdk:"owner"`
 	Platform         types.String `tfsdk:"platform"`
 	Vendor           types.String `tfsdk:"vendor"`
 }

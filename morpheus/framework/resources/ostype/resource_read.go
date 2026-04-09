@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -76,6 +77,19 @@ func getOsTypeAsState(
 	state.OsVersion = convert.StrToType(osType.OsVersion.Get())
 	state.Platform = convert.StrToType(osType.Platform)
 	state.Vendor = convert.StrToType(osType.Vendor.Get())
+
+	// owner is a oneOf (string | object with name); extract as string
+	if osType.Owner != nil {
+		if osType.Owner.String != nil {
+			state.Owner = types.StringValue(*osType.Owner.String)
+		} else if osType.Owner.GetOsType200ResponseOsTypeOwnerOneOf != nil {
+			state.Owner = convert.StrToType(osType.Owner.GetOsType200ResponseOsTypeOwnerOneOf.Name)
+		} else {
+			state.Owner = types.StringNull()
+		}
+	} else {
+		state.Owner = types.StringNull()
+	}
 
 	// code is not returned in the GET response; preserve from prior state
 	state.Code = prior.Code
