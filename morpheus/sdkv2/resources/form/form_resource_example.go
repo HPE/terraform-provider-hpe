@@ -1374,3 +1374,47 @@ func RenderPortsConfig(t *testing.T, overrides map[string]string) (string, error
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderLogoSelectorConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "logo-selector-input",
+		"OptionTypeDefaultValue":          "identicon",
+		"OptionTypeDescription":           "Terraform logo selector example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Select Logo",
+		"OptionTypeFieldName":             "logoSelector",
+		"OptionTypeHelpBlock":             "Select or upload a logo",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf logo selector example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "logoSelector",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_logo_selector.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
