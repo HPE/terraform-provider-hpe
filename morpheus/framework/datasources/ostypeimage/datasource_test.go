@@ -60,6 +60,11 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_os_type_image.example",
+			"tenant_id",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_os_type_image.example",
 			"os_type_id",
 			"65",
 		),

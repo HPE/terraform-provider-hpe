@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -88,17 +87,21 @@ func (d *DataSource) Read(
 
 	virtualImageName := data.VirtualImageName.ValueString()
 
-	var matchedImageID int64
+	// Prefer images with a tenant_id (custom images) over system images,
+	// if multiple images have the same virtual_image_name
+	var matchedSystemImageID int64
+	var matchedTenantImageID int64
 	for _, img := range osType.GetImages() {
-		tflog.Info(ctx, fmt.Sprintf("checking image %d with name '%s'", img.GetId(), img.GetVirtualImageName()))
-		if img.GetVirtualImageName() == virtualImageName {
-			matchedImageID = img.GetId()
+		if img.GetVirtualImageName() == virtualImageName && img.GetAccount() > 0 {
+			matchedTenantImageID = img.GetId()
 
 			break
+		} else if img.GetVirtualImageName() == virtualImageName {
+			matchedSystemImageID = img.GetId()
 		}
 	}
 
-	if matchedImageID == 0 {
+	if matchedSystemImageID == 0 && matchedTenantImageID == 0 {
 		resp.Diagnostics.AddError(
 			summary,
 			fmt.Sprintf(
@@ -110,12 +113,17 @@ func (d *DataSource) Read(
 		return
 	}
 
-	imgResp, imgHTTPResp, imgErr := client.LibraryAPI.GetOsTypeImage(ctx, matchedImageID).Execute()
+	preferredImageID := matchedSystemImageID
+	if matchedTenantImageID > 0 {
+		preferredImageID = matchedTenantImageID
+	}
+
+	imgResp, imgHTTPResp, imgErr := client.LibraryAPI.GetOsTypeImage(ctx, preferredImageID).Execute()
 	if imgResp == nil || imgErr != nil || imgHTTPResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			summary,
 			fmt.Sprintf("GET os_type_image %d failed: %s",
-				matchedImageID, errfmt.ErrMsg(imgErr, imgHTTPResp)),
+				matchedSystemImageID, errfmt.ErrMsg(imgErr, imgHTTPResp)),
 		)
 
 		return
