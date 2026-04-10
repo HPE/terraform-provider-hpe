@@ -32,7 +32,9 @@ const (
 	typeHidden         = "hidden"
 	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
+	typeKeyValue       = "keyValue"
 	typeLayout         = "layout"
+	typeLogoSelector   = "logoSelector"
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
 	typePassword       = "password"
@@ -49,13 +51,6 @@ const (
 	typeTypeahead      = "typeahead"
 	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
-	typeLogoSelector   = "logoSelector"
-)
-
-// TODO: Add switch case handling for these option types.
-// nolint: unused
-const (
-	typeKeyValue = "keyValue"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -423,6 +418,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config := make(map[string]any)
 		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
 		row["config"] = config
+	case typeKeyValue:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["asObject"] = optionTypeConfig["convert_to_object"]
+		config["keyPlaceholder"] = optionTypeConfig["key_placeholder"]
+		config["valuePlaceholder"] = optionTypeConfig["value_placeholder"]
+		row["config"] = config
 	case typeServersInput:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
@@ -656,6 +658,10 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["code_language"] = optionType.Config.Lang
 	case typeGroup:
 		row["allow_read_only"] = optionType.Config.AllowReadonly
+	case typeKeyValue:
+		row["convert_to_object"] = optionType.Config.AsObject
+		row["key_placeholder"] = optionType.Config.KeyPlaceholder
+		row["value_placeholder"] = optionType.Config.ValuePlaceholder
 	case typeServersInput:
 		row["cloud_field_type"] = optionType.Config.CloudFieldType
 		row["cloud_field"] = optionType.Config.CloudField
@@ -862,14 +868,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
 						" httpHeader, instances-input," +
-						" layout, logoSelector, networkManager," +
+						" keyValue, layout, logoSelector, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
 						" servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden, typeLayout,
-							typeLogoSelector,
+							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden,
+							typeKeyValue, typeLayout, typeLogoSelector,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
 							typeSelect,
 							typeServersInput, typeText, typeTextArea,
@@ -1018,6 +1024,24 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"show_network_type_selection": {
 					Type:        schema.TypeBool,
 					Description: "Whether to show the network type selection",
+					Optional:    true,
+					Computed:    true,
+				},
+				"convert_to_object": {
+					Type:        schema.TypeBool,
+					Description: "Whether to convert the key-value option to an object",
+					Optional:    true,
+					Computed:    true,
+				},
+				"key_placeholder": {
+					Type:        schema.TypeString,
+					Description: "The key placeholder text for the key-value type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"value_placeholder": {
+					Type:        schema.TypeString,
+					Description: "The value placeholder text for the key-value type",
 					Optional:    true,
 					Computed:    true,
 				},
