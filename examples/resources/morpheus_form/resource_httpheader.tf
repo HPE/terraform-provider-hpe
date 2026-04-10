@@ -11,6 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "httpHeader"
     field_label              = "HTTP Headers"
     field_name               = "httpHeaders"
+    default_value            = jsonencode([{ name = "header1", value = "value1", masked = false }])
     help_block               = "Configure HTTP headers"
     required                 = true
     export_meta              = true

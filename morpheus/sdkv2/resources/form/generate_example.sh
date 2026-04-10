@@ -591,6 +591,7 @@ $RENDER \
   OptionTypeType 'httpHeader' \
   OptionTypeFieldLabel 'HTTP Headers' \
   OptionTypeFieldName 'httpHeaders' \
+  OptionTypeDefaultValue '[{ name = "header1", value = "value1", masked = false }]' \
   OptionTypeHelpBlock 'Configure HTTP headers' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \

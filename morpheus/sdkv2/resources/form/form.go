@@ -533,7 +533,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHTTPHeader:
-		// HTTP header does not have a default value field
+		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeVMWFolders:
