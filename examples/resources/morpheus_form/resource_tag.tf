@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "tag"
     field_label              = "Tags"
     field_name               = "tags"
-    default_value            = ""
+    default_value            = jsonencode([{ name = "Sample Name", value = "Sample Value" }])
     help_block               = "Configure tags"
     group_field_type         = "value"
     group_id                 = 1

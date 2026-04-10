@@ -591,7 +591,7 @@ $RENDER \
   OptionTypeType 'tag' \
   OptionTypeFieldLabel 'Tags' \
   OptionTypeFieldName 'tags' \
-  OptionTypeDefaultValue '' \
+  OptionTypeDefaultValue 'jsonencode([{ name = "Sample Name", value = "Sample Value" }])' \
   OptionTypeHelpBlock 'Configure tags' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \

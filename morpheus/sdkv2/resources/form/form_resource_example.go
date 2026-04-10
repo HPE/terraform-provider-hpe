@@ -1384,7 +1384,7 @@ func RenderTagConfig(t *testing.T, overrides map[string]string) (string, error) 
 		"Labels":                          "[\"terraform\", \"demo\"]",
 		"Name":                            "demo",
 		"OptionTypeCode":                  "tag-input",
-		"OptionTypeDefaultValue":          "",
+		"OptionTypeDefaultValue":          `jsonencode([{ name = "Sample Name", value = "Sample Value" }])`,
 		"OptionTypeDescription":           "Terraform tag example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
