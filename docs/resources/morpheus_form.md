@@ -245,7 +245,6 @@ resource "hpe_morpheus_form" "example" {
     locked                   = true
     hidden                   = false
     exclude_from_search      = true
-    custom_data              = jsonencode([{ name = "header1", value = "value1", masked = false }])
   }
 }
 ```

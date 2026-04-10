@@ -592,7 +592,6 @@ $RENDER \
   OptionTypeFieldLabel 'HTTP Headers' \
   OptionTypeFieldName 'httpHeaders' \
   OptionTypeHelpBlock 'Configure HTTP headers' \
-  OptionTypeCustomData 'jsonencode([{ name = "header1", value = "value1", masked = false }])' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \

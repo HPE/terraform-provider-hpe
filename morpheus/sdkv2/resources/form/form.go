@@ -533,9 +533,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHTTPHeader:
-		config := make(map[string]any)
-		config["customData"] = optionTypeConfig["custom_data"]
-		row["config"] = config
+		// HTTP header does not have a default value field
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeVMWFolders:
@@ -690,7 +688,7 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
 		}
 	case typeHTTPHeader:
-		row["custom_data"] = optionType.Config.CustomData
+		// HTTP header does not have a default value field
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
