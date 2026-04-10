@@ -4,6 +4,31 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_key_value.tf \
+  form_key_value.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf keyValue example' \
+  OptionTypeCode 'keyValue-input' \
+  OptionTypeDescription 'Terraform keyValue example' \
+  OptionTypeType 'keyValue' \
+  OptionTypeFieldLabel 'KeyValue' \
+  OptionTypeFieldName 'keyValue' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a key-value pair' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeConvertToObject 'true' \
+  OptionTypeKeyPlaceholder 'Key123' \
+  OptionTypeValuePlaceholder 'Value123'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_virtual_image.tf \
   form_virtual_image.tf.tmpl \
   Name 'demo' \
