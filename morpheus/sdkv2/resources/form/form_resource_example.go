@@ -1195,6 +1195,52 @@ func RenderResourcePoolConfig(t *testing.T, overrides map[string]string) (string
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
 
+func RenderSecGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "sec-group-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform secGroup example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Security Groups",
+		"OptionTypeFieldName":             "securityGroups",
+		"OptionTypeHelpBlock":             "Select security groups",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf secGroup example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "secGroup",
+		"OptionTypeCloudFieldType":        "value",
+		"OptionTypeCloudId":               "1",
+		"OptionTypePoolField":             "resourcePool",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_sec_group.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
 func RenderInstancesInputConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 

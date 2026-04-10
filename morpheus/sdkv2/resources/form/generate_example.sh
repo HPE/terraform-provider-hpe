@@ -503,6 +503,32 @@ $RENDER \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
 
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_sec_group.tf \
+  form_sec_group.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf secGroup example' \
+  OptionTypeCode 'sec-group-input' \
+  OptionTypeDescription 'Terraform secGroup example' \
+  OptionTypeType 'secGroup' \
+  OptionTypeFieldLabel 'Security Groups' \
+  OptionTypeFieldName 'securityGroups' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select security groups' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePoolField 'resourcePool'
+
 $RENDER \
   -out examples/resources/morpheus_form/resource_instances_input.tf \
   form_instances_input.tf.tmpl \
