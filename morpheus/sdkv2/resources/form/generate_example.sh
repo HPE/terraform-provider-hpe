@@ -623,3 +623,26 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_logo_selector.tf \
+  form_logo_selector.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf logo selector example' \
+  OptionTypeCode 'logo-selector-input' \
+  OptionTypeDescription 'Terraform logo selector example' \
+  OptionTypeType 'logoSelector' \
+  OptionTypeFieldLabel 'Select Logo' \
+  OptionTypeFieldName 'logoSelector' \
+  OptionTypeDefaultValue 'identicon' \
+  OptionTypePlaceholder '' \
+  OptionTypeHelpBlock 'Select or upload a logo' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'

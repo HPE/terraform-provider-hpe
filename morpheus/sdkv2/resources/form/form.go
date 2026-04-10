@@ -49,13 +49,13 @@ const (
 	typeTypeahead      = "typeahead"
 	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
+	typeLogoSelector   = "logoSelector"
 )
 
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeKeyValue     = "keyValue"
-	typeLogoSelector = "logoSelector"
+	typeKeyValue = "keyValue"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -550,6 +550,8 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHTTPHeader:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeLogoSelector:
+		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeVirtualImage:
@@ -711,7 +713,7 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
 		}
 	case typeHTTPHeader:
-		// HTTP header does not have a default value field
+		// HTTP header default value is stored in the top-level field
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
@@ -734,6 +736,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["plan_field_type"] = optionType.Config.PlanFieldType
 		row["plan_field"] = optionType.Config.PlanField
 		row["plan_id"] = optionType.Config.PlanId
+	case typeLogoSelector:
+		// Logo selector default value is stored in the top-level field
 	}
 }
 
@@ -858,13 +862,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
 						" httpHeader, instances-input," +
-						" layout, networkManager," +
+						" layout, logoSelector, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
 						" servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden, typeLayout,
+							typeLogoSelector,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
 							typeSelect,
 							typeServersInput, typeText, typeTextArea,
