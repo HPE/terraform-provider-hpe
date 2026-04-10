@@ -117,6 +117,7 @@ func (p *hpeProvider) Configure(
 						err.Error(),
 					),
 				)
+
 				return
 			}
 
@@ -137,6 +138,7 @@ func (p *hpeProvider) Configure(
 						err.Error(),
 					),
 				)
+
 				return
 			}
 

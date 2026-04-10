@@ -87,8 +87,7 @@ func TestGetProviderVersionMock(t *testing.T) {
 
 	server := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, mockResp)
-
+			fmt.Fprint(w, mockResp)
 		}))
 	defer server.Close()
 

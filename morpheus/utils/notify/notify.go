@@ -64,6 +64,7 @@ type registryProvider struct {
 // Notifier is enabled by default, unless we set IGNORE_VERSION_CHECK
 func IsEnabled() bool {
 	_, isSet := os.LookupEnv(envHPEIgnoreVersionCheck)
+
 	return !isSet
 }
 
