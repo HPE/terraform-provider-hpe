@@ -4,6 +4,30 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_virtual_image.tf \
+  form_virtual_image.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf virtual-image example' \
+  OptionTypeCode 'virtual-image' \
+  OptionTypeDescription 'Terraform virtual-image example' \
+  OptionTypeType 'virtual-image' \
+  OptionTypeFieldLabel 'Virtual Image' \
+  OptionTypeFieldName 'virtual-image' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a virtual image' \
+  OptionTypeCloudFieldType 'id' \
+  OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_vmw_folders.tf \
   form_vmw_folders.tf.tmpl \
   Name 'demo' \

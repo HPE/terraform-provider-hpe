@@ -318,6 +318,51 @@ func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error)
 	)
 }
 
+func RenderVirtualImageConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "virtual-image",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform virtual-image example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Virtual Image",
+		"OptionTypeFieldName":             "virtual-image",
+		"OptionTypeHelpBlock":             "Select a virtual image",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf virtual-image example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "virtual-image",
+		"OptionTypeCloudFieldType":        "id",
+		"OptionTypeCloudId":               "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_virtual_image.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
 func RenderVmwFoldersConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 

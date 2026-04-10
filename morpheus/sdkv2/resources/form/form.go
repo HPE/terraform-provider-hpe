@@ -47,6 +47,7 @@ const (
 	typeTextArea       = "textarea"
 	typeTextArray      = "textArray"
 	typeTypeahead      = "typeahead"
+	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
 	typeLogoSelector   = "logoSelector"
 )
@@ -55,7 +56,6 @@ const (
 // nolint: unused
 const (
 	typeKeyValue     = "keyValue"
-	typeVirtualImage = "virtual-image"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -215,6 +215,13 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			return err
 		}
 
+	case typeVirtualImage:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"virtual_image_cloud_field_type", "virtual_image_cloud",
+			"virtual_image_cloud_id"); err != nil {
+			return err
+		}
+
 	case typeVMWFolders:
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"group_field_type", "group_field", "group_id"); err != nil {
@@ -237,6 +244,7 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 // validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
 // based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
+// except for virtual-image ("cloud" → use fieldAttr, "id" → use valueAttr).
 func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
 	fieldTypeAttr, fieldAttr, valueAttr string,
 ) error {
@@ -245,18 +253,26 @@ func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
 		return nil
 	}
 
+	field := "field"
+	value := "value"
+	// virtual-image is a special case where the fieldType can be "cloud" or "id" instead of "field" or "value"
+	if fieldTypeAttr == "virtual_image_cloud_field_type" {
+		field = "cloud"
+		value = "id"
+	}
+
 	switch fieldType.AsString() {
-	case "field":
+	case field:
 		valueField := optionType.GetAttr(valueAttr)
 		if valueField.IsKnown() && !valueField.IsNull() && valueField.AsString() != "" {
-			return fmt.Errorf("%s cannot be set when %s is 'field' at %s[%d]; use %s instead",
-				valueAttr, fieldTypeAttr, path, index, fieldAttr)
+			return fmt.Errorf("%s cannot be set when %s is '%s' at %s[%d]; use %s instead",
+				valueAttr, fieldTypeAttr, field, path, index, fieldAttr)
 		}
-	case "value":
+	case value:
 		fieldField := optionType.GetAttr(fieldAttr)
 		if fieldField.IsKnown() && !fieldField.IsNull() && fieldField.AsString() != "" {
-			return fmt.Errorf("%s cannot be set when %s is 'value' at %s[%d]; use %s instead",
-				fieldAttr, fieldTypeAttr, path, index, valueAttr)
+			return fmt.Errorf("%s cannot be set when %s is '%s' at %s[%d]; use %s instead",
+				fieldAttr, fieldTypeAttr, value, path, index, valueAttr)
 		}
 	}
 
@@ -538,6 +554,13 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeVirtualImage:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["virtual_image_cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["virtual_image_cloud"]
+		config["cloudId"] = optionTypeConfig["virtual_image_cloud_id"]
+		row["config"] = config
 	case typeVMWFolders:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
@@ -699,6 +722,10 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["custom_data"] = optionType.Config.CustomData
 		row["allow_multiple_selections"] = optionType.Config.MultiSelect
 		row["option_list_id"] = optionType.OptionList.ID
+	case typeVirtualImage:
+		row["virtual_image_cloud_field_type"] = optionType.Config.CloudFieldType
+		row["virtual_image_cloud"] = optionType.Config.CloudField
+		row["virtual_image_cloud_id"] = optionType.Config.CloudId
 	case typeVMWFolders:
 		row["group_field_type"] = optionType.Config.GroupFieldType
 		row["group_field"] = optionType.Config.GroupField
@@ -837,14 +864,16 @@ func optionTypeSchema(parent string) *schema.Schema {
 						" httpHeader, instances-input," +
 						" layout, logoSelector, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
-						" servers-input, text, textarea, textArray, typeahead, vmwFolders)",
+						" servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden,
-							typeLayout, typeLogoSelector, typeNetworkManager, typeNumber, typePassword, typePlan, typePorts,
-							typeRadio, typeResourcePool, typeSecGroup, typeSelect, typeServersInput, typeText, typeTextArea,
-							typeTextArray, typeTypeahead, typeVMWFolders,
+							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden, typeLayout,
+              typeLogoSelector,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
+							typeSelect,
+							typeServersInput, typeText, typeTextArea,
+							typeTextArray, typeTypeahead, typeVirtualImage, typeVMWFolders,
 						},
 						false,
 					),
@@ -1045,6 +1074,25 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"cloud_type": {
 					Type:        schema.TypeString,
 					Description: "The id of the cloud type to set for a cloud option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"virtual_image_cloud_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the cloud is specified for a virtual-image option type (cloud or id)",
+					ValidateFunc: validation.StringInSlice([]string{"cloud", "id"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"virtual_image_cloud": {
+					Type:        schema.TypeString,
+					Description: "The cloud code used to determine the cloud for a virtual-image option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"virtual_image_cloud_id": {
+					Type:        schema.TypeString,
+					Description: "The cloud ID used to determine the cloud for a virtual-image option type",
 					Optional:    true,
 					Computed:    true,
 				},
