@@ -55,7 +55,7 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeKeyValue     = "keyValue"
+	typeKeyValue = "keyValue"
 )
 
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
@@ -713,7 +713,7 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
 		}
 	case typeHTTPHeader:
-		// HTTP header does not have a default value field
+		// HTTP header default value is stored in the top-level field
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
@@ -869,7 +869,7 @@ func optionTypeSchema(parent string) *schema.Schema {
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
 							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden, typeLayout,
-              typeLogoSelector,
+							typeLogoSelector,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
 							typeSelect,
 							typeServersInput, typeText, typeTextArea,
