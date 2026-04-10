@@ -632,6 +632,49 @@ func RenderHiddenConfig(t *testing.T, overrides map[string]string) (string, erro
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
 
+func RenderHTTPHeaderConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "httpheader-input",
+		"OptionTypeCustomData":            "jsonencode([{ name = \"header1\", value = \"value1\", masked = false }])",
+		"OptionTypeDescription":           "Terraform HTTP header input example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "HTTP Headers",
+		"OptionTypeFieldName":             "httpHeaders",
+		"OptionTypeHelpBlock":             "Configure HTTP headers",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf httpheader example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "httpHeader",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_httpheader.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
 func RenderNumberConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 

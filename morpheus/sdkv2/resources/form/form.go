@@ -30,6 +30,7 @@ const (
 	typeFileContent    = "fileContent"
 	typeGroup          = "group"
 	typeHidden         = "hidden"
+	typeHTTPHeader     = "httpHeader"
 	typeInstancesInput = "instances-input"
 	typeLayout         = "layout"
 	typeNetworkManager = "networkManager"
@@ -52,7 +53,6 @@ const (
 // TODO: Add switch case handling for these option types.
 // nolint: unused
 const (
-	typeHTTPHeader   = "httpHeader"
 	typeKeyValue     = "keyValue"
 	typeLogoSelector = "logoSelector"
 	typeVirtualImage = "virtual-image"
@@ -532,6 +532,10 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeHTTPHeader:
+		config := make(map[string]any)
+		config["customData"] = optionTypeConfig["custom_data"]
+		row["config"] = config
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeVMWFolders:
@@ -685,6 +689,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		if logHidden {
 			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
 		}
+	case typeHTTPHeader:
+		row["custom_data"] = optionType.Config.CustomData
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
@@ -826,14 +832,14 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
 						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
-						" instances-input," +
+						" httpHeader, instances-input," +
 						" layout, networkManager," +
 						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
 						" servers-input, text, textarea, textArray, typeahead, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeFileContent, typeGroup, typeInstancesInput, typeHidden, typeLayout,
+							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden, typeLayout,
 							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
 							typeSelect,
 							typeServersInput, typeText, typeTextArea,
