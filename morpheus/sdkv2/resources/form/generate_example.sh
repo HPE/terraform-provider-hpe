@@ -577,3 +577,25 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_httpheader.tf \
+  form_httpheader.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf httpheader example' \
+  OptionTypeCode 'httpheader-input' \
+  OptionTypeDescription 'Terraform HTTP header input example' \
+  OptionTypeType 'httpHeader' \
+  OptionTypeFieldLabel 'HTTP Headers' \
+  OptionTypeFieldName 'httpHeaders' \
+  OptionTypeDefaultValue '[{ name = "header1", value = "value1", masked = false }]' \
+  OptionTypeHelpBlock 'Configure HTTP headers' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
