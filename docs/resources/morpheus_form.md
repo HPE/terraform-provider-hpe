@@ -13,6 +13,36 @@ and all inputs or option types must be defined in the form.
 
 ## Example Usage
 
+### Virtual Image
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                           = "tf virtual-image example"
+    code                           = "virtual-image"
+    description                    = "Terraform virtual-image example"
+    type                           = "virtual-image"
+    field_label                    = "Virtual Image"
+    field_name                     = "virtual-image"
+    default_value                  = ""
+    help_block                     = "Select a virtual image"
+    virtual_image_cloud_field_type = "id"
+    virtual_image_cloud_id         = 1
+    required                       = true
+    export_meta                    = true
+    display_value_on_details       = true
+    locked                         = true
+    hidden                         = false
+    exclude_from_search            = true
+  }
+}
+```
+
 ### VmwFolders
 
 ```terraform
@@ -849,8 +879,11 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_cloud` (String) The cloud code used to determine the cloud for a virtual-image option type
+- `virtual_image_cloud_field_type` (String) How the cloud is specified for a virtual-image option type (cloud or id)
+- `virtual_image_cloud_id` (String) The cloud ID used to determine the cloud for a virtual-image option type
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -924,8 +957,11 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_cloud` (String) The cloud code used to determine the cloud for a virtual-image option type
+- `virtual_image_cloud_field_type` (String) How the cloud is specified for a virtual-image option type (cloud or id)
+- `virtual_image_cloud_id` (String) The cloud ID used to determine the cloud for a virtual-image option type
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
