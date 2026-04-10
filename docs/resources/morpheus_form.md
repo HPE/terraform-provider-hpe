@@ -13,6 +13,40 @@ and all inputs or option types must be defined in the form.
 
 ## Example Usage
 
+### VmwFolders
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf vmwFolders example"
+    code                     = "vmw-folders-input"
+    description              = "Terraform vmwFolders example"
+    type                     = "vmwFolders"
+    field_label              = "VmwFolders"
+    field_name               = "vmwFolders"
+    default_value            = ""
+    help_block               = "Select a vmwFolder"
+    group_field_type         = "value"
+    group_id                 = 1
+    cloud_field_type         = "value"
+    cloud_id                 = 1
+    plan_field_type          = "value"
+    plan_id                  = 1
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
 ### FileContent
 
 ```terraform
@@ -787,7 +821,11 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
+<<<<<<< secgroup-ot
 - `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead)
+=======
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+>>>>>>> dev-1.3
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
@@ -862,7 +900,11 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
+<<<<<<< secgroup-ot
 - `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead)
+=======
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+>>>>>>> dev-1.3
 - `verify_pattern` (String) The regex pattern used to validate the entered text
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
