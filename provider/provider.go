@@ -101,8 +101,8 @@ func (p *hpeProvider) Configure(
 	resp *provider.ConfigureResponse,
 ) {
 	var wg sync.WaitGroup
-	// check version if not running on dev
-	if p.version != "dev" && notify.IsEnabled() && notify.TryDial() == nil {
+	// check version if not running on dev or test (accepance test builds)
+	if p.version != "dev" && p.version != "test" && notify.IsEnabled() && notify.TryDial() == nil {
 		// Do this in a separate goroutine while the rest of the Configure method runs.
 		wg.Add(1)
 		go func() {
