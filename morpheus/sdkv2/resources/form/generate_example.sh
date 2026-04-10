@@ -467,6 +467,13 @@ $RENDER \
   OptionTypePlanId '1' \
   OptionTypeLayoutFieldType 'value' \
   OptionTypeLayoutId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
 
 $RENDER \
   -out examples/resources/morpheus_form/resource_sec_group.tf \
@@ -492,12 +499,6 @@ $RENDER \
   OptionTypeCloudFieldType 'value' \
   OptionTypeCloudId '1' \
   OptionTypePoolField 'resourcePool'
-  OptionTypeRequired 'true' \
-  OptionTypeExportMeta 'true' \
-  OptionTypeDisplayValueOnDetails 'true' \
-  OptionTypeLocked 'true' \
-  OptionTypeHidden 'false' \
-  OptionTypeExcludeFromSearch 'true'
 
 $RENDER \
   -out examples/resources/morpheus_form/resource_instances_input.tf \
