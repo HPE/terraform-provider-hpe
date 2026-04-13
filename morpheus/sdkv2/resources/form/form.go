@@ -781,7 +781,6 @@ func ResourceForm() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "The organization labels associated with the form",
 				Optional:    true,
-				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"option_type": optionTypeSchema("form"),
@@ -1786,6 +1785,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 
+	// labels are optional
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -1797,10 +1797,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				}
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("labels", d.Get("labels")))
+			return diag.FromErr(helpers.TypeAssertFailError("labels set assertion", d.Get("labels")))
 		}
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("labels", d.Get("labels")))
 	}
 
 	var name string
