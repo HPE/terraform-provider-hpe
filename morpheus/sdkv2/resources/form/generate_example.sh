@@ -579,6 +579,32 @@ $RENDER \
   OptionTypePoolField 'resourcePool'
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_tag.tf \
+  form_tag.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf tag example' \
+  OptionTypeCode 'tag-input' \
+  OptionTypeDescription 'Terraform tag example' \
+  OptionTypeType 'tag' \
+  OptionTypeFieldLabel 'Tags' \
+  OptionTypeFieldName 'tags' \
+  OptionTypeDefaultValue 'jsonencode([{ name = "Sample Name", value = "Sample Value" }])' \
+  OptionTypeHelpBlock 'Configure tags' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_instances_input.tf \
   form_instances_input.tf.tmpl \
   Name 'demo' \
