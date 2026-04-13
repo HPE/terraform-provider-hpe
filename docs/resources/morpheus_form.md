@@ -13,6 +13,67 @@ and all inputs or option types must be defined in the form.
 
 ## Example Usage
 
+### Key Value
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf keyValue example"
+    code                     = "keyValue-input"
+    description              = "Terraform keyValue example"
+    type                     = "keyValue"
+    field_label              = "KeyValue"
+    field_name               = "keyValue"
+    default_value            = ""
+    help_block               = "Select a key-value pair"
+    convert_to_object        = "true"
+    key_placeholder          = "Key123"
+    value_placeholder        = "Value123"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
+### Virtual Image
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                           = "tf virtual-image example"
+    code                           = "virtual-image"
+    description                    = "Terraform virtual-image example"
+    type                           = "virtual-image"
+    field_label                    = "Virtual Image"
+    field_name                     = "virtual-image"
+    default_value                  = ""
+    help_block                     = "Select a virtual image"
+    virtual_image_cloud_field_type = "id"
+    virtual_image_cloud_id         = 1
+    required                       = true
+    export_meta                    = true
+    display_value_on_details       = true
+    locked                         = true
+    hidden                         = false
+    exclude_from_search            = true
+  }
+}
+```
+
 ### VmwFolders
 
 ```terraform
@@ -217,6 +278,63 @@ resource "hpe_morpheus_form" "example" {
     display_value_on_details = true
     locked                   = true
     hidden                   = true
+    exclude_from_search      = true
+  }
+}
+```
+
+### Logo Selector
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf logo selector example"
+    code                     = "logo-selector-input"
+    description              = "Terraform logo selector example"
+    type                     = "logoSelector"
+    field_label              = "Select Logo"
+    field_name               = "logoSelector"
+    default_value            = "identicon"
+    placeholder              = ""
+    help_block               = "Select or upload a logo"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
+### HTTPHeader
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf httpheader example"
+    code                     = "httpheader-input"
+    description              = "Terraform HTTP header input example"
+    type                     = "httpHeader"
+    field_label              = "HTTP Headers"
+    field_name               = "httpHeaders"
+    default_value            = jsonencode([{ name = "header1", value = "value1", masked = false }])
+    help_block               = "Configure HTTP headers"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
     exclude_from_search      = true
   }
 }
@@ -627,6 +745,37 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
+### SecGroup
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf secGroup example"
+    code                     = "sec-group-input"
+    description              = "Terraform secGroup example"
+    type                     = "secGroup"
+    field_label              = "Security Groups"
+    field_name               = "securityGroups"
+    default_value            = ""
+    help_block               = "Select security groups"
+    cloud_field_type         = "value"
+    cloud_id                 = 1
+    pool_field               = "resourcePool"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
 ### Ports
 
 ```terraform
@@ -737,6 +886,7 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the field group
 - `code_language` (String) The coding language used for highlighting code syntax
+- `convert_to_object` (Boolean) Whether to convert the key-value option to an object
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -765,6 +915,7 @@ Optional:
 - `instance_type_code` (String) The instance type code to filter layouts by for an option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for an option type
 - `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
+- `key_placeholder` (String) The key placeholder text for the key-value type
 - `layout_field` (String) The field code used to determine the layout for an option type
 - `layout_field_type` (String) How the layout is specified for an option type (field or value)
 - `layout_id` (String) The layout ID to filter by for an option type
@@ -790,8 +941,12 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+- `type` (String) The type of option type to add to the field group (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)
+- `value_placeholder` (String) The value placeholder text for the key-value type
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_cloud` (String) The cloud code used to determine the cloud for a virtual-image option type
+- `virtual_image_cloud_field_type` (String) How the cloud is specified for a virtual-image option type (cloud or id)
+- `virtual_image_cloud_id` (String) The cloud ID used to determine the cloud for a virtual-image option type
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
@@ -812,6 +967,7 @@ Optional:
 - `cloud_type` (String) The id of the cloud type to set for a cloud option type
 - `code` (String) The code of the option type to add to the form
 - `code_language` (String) The coding language used for highlighting code syntax
+- `convert_to_object` (Boolean) Whether to convert the key-value option to an object
 - `custom_data` (String) Custom JSON data payload to pass (Must be a JSON string)
 - `default_checked` (Boolean) Whether the checkbox option type is checked by default
 - `default_value` (String) The default value of the option type
@@ -840,6 +996,7 @@ Optional:
 - `instance_type_code` (String) The instance type code to filter layouts by for an option type
 - `instance_type_field_code` (String) The field code used to determine the instance type for an option type
 - `instance_type_field_type` (String) How the instance type is specified for an option type (field or value)
+- `key_placeholder` (String) The key placeholder text for the key-value type
 - `layout_field` (String) The field code used to determine the layout for an option type
 - `layout_field_type` (String) How the layout is specified for an option type (field or value)
 - `layout_id` (String) The layout ID to filter by for an option type
@@ -865,8 +1022,12 @@ Optional:
 - `sortable` (Boolean) Whether the selected options can be sorted or not
 - `step` (Number) The incrementation number used for the number option type (i.e. - 5s, 10s, 100s, etc.)
 - `text_rows` (Number) The number of rows to display for a text area or code editor option type
-- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, instances-input, layout, networkManager, number, password, plan, ports, radio, resourcePool, select, servers-input, text, textarea, textArray, typeahead, vmwFolders)
+- `type` (String) The type of option type to add to the form (byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden, httpHeader, instances-input, keyValue, layout, logoSelector, networkManager, number, password, plan, ports, radio, resourcePool, secGroup, select, servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)
+- `value_placeholder` (String) The value placeholder text for the key-value type
 - `verify_pattern` (String) The regex pattern used to validate the entered text
+- `virtual_image_cloud` (String) The cloud code used to determine the cloud for a virtual-image option type
+- `virtual_image_cloud_field_type` (String) How the cloud is specified for a virtual-image option type (cloud or id)
+- `virtual_image_cloud_id` (String) The cloud ID used to determine the cloud for a virtual-image option type
 - `virtual_image_field_type` (String) How the virtual image is specified for a diskManager option type (field or value)
 - `visibility_field` (String) The field or code used to trigger the visibility of the field
 
