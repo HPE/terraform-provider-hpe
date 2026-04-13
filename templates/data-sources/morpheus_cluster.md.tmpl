@@ -1,0 +1,19 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+`hpe_morpheus_cluster` data source provides details about an existing Morpheus cluster by `id` or `name`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_cluster/example-id.tf" }}
+
+{{ tffile "examples/data-sources/morpheus_cluster/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
