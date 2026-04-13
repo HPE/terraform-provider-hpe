@@ -61,7 +61,7 @@ type registryProvider struct {
 	LogoUrl     string `json:"logo_url"`
 }
 
-// Notifier is enabled by default, unless we set IGNORE_VERSION_CHECK
+// Notifier is enabled by default, unless we set HPE_IGNORE_VERSION_CHECK
 func IsEnabled() bool {
 	_, isSet := os.LookupEnv(envHPEIgnoreVersionCheck)
 
