@@ -4,6 +4,106 @@
 RENDER=../../../../bin/render
 
 $RENDER \
+  -out examples/resources/morpheus_form/resource_key_value.tf \
+  form_key_value.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf keyValue example' \
+  OptionTypeCode 'keyValue-input' \
+  OptionTypeDescription 'Terraform keyValue example' \
+  OptionTypeType 'keyValue' \
+  OptionTypeFieldLabel 'KeyValue' \
+  OptionTypeFieldName 'keyValue' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a key-value pair' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeConvertToObject 'true' \
+  OptionTypeKeyPlaceholder 'Key123' \
+  OptionTypeValuePlaceholder 'Value123'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_virtual_image.tf \
+  form_virtual_image.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf virtual-image example' \
+  OptionTypeCode 'virtual-image' \
+  OptionTypeDescription 'Terraform virtual-image example' \
+  OptionTypeType 'virtual-image' \
+  OptionTypeFieldLabel 'Virtual Image' \
+  OptionTypeFieldName 'virtual-image' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a virtual image' \
+  OptionTypeCloudFieldType 'id' \
+  OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_vmw_folders.tf \
+  form_vmw_folders.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf vmwFolders example' \
+  OptionTypeCode 'vmw-folders-input' \
+  OptionTypeDescription 'Terraform vmwFolders example' \
+  OptionTypeType 'vmwFolders' \
+  OptionTypeFieldLabel 'VmwFolders' \
+  OptionTypeFieldName 'vmwFolders' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a vmwFolder' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePlanFieldType 'value' \
+  OptionTypePlanId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_file_content.tf \
+  form_file_content.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf fileContent example' \
+  OptionTypeCode 'fileContent' \
+  OptionTypeDescription 'Terraform fileContent example' \
+  OptionTypeType 'fileContent' \
+  OptionTypeFieldLabel 'FileContent' \
+  OptionTypeFieldName 'fileContent' \
+  OptionTypeHelpBlock 'Set fileContent' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypePlaceholder 'testing123' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
   -out examples/resources/morpheus_form/resource_select.tf \
   form_select.tf.tmpl \
   Name 'demo' \
@@ -415,6 +515,182 @@ $RENDER \
   OptionTypeHelpBlock 'Select a server' \
   OptionTypeCloudFieldType 'value' \
   OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_resource_pool.tf \
+  form_resource_pool.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf resourcePool example' \
+  OptionTypeCode 'resource-pool-input' \
+  OptionTypeDescription 'Terraform resourcePool example' \
+  OptionTypeType 'resourcePool' \
+  OptionTypeFieldLabel 'Resource Pool' \
+  OptionTypeFieldName 'resourcePool' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select a resource pool' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePlanFieldType 'value' \
+  OptionTypePlanId '1' \
+  OptionTypeLayoutFieldType 'value' \
+  OptionTypeLayoutId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_sec_group.tf \
+  form_sec_group.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf secGroup example' \
+  OptionTypeCode 'sec-group-input' \
+  OptionTypeDescription 'Terraform secGroup example' \
+  OptionTypeType 'secGroup' \
+  OptionTypeFieldLabel 'Security Groups' \
+  OptionTypeFieldName 'securityGroups' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select security groups' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypePoolField 'resourcePool'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_tag.tf \
+  form_tag.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf tag example' \
+  OptionTypeCode 'tag-input' \
+  OptionTypeDescription 'Terraform tag example' \
+  OptionTypeType 'tag' \
+  OptionTypeFieldLabel 'Tags' \
+  OptionTypeFieldName 'tags' \
+  OptionTypeDefaultValue 'jsonencode([{ name = "Sample Name", value = "Sample Value" }])' \
+  OptionTypeHelpBlock 'Configure tags' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeGroupFieldType 'value' \
+  OptionTypeGroupId '1' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_instances_input.tf \
+  form_instances_input.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf instances-input example' \
+  OptionTypeCode 'instances-input' \
+  OptionTypeDescription 'Terraform instances-input example' \
+  OptionTypeType 'instances-input' \
+  OptionTypeFieldLabel 'Instance' \
+  OptionTypeFieldName 'instance' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Select an instance' \
+  OptionTypeCloudFieldType 'value' \
+  OptionTypeCloudId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_ports.tf \
+  form_ports.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf ports example' \
+  OptionTypeCode 'ports-input' \
+  OptionTypeDescription 'Terraform ports example' \
+  OptionTypeType 'ports' \
+  OptionTypeFieldLabel 'Exposed Ports' \
+  OptionTypeFieldName 'ports' \
+  OptionTypeDefaultValue '' \
+  OptionTypeHelpBlock 'Configure exposed ports' \
+  OptionTypeGroupField 'myGroup' \
+  OptionTypeCloudField 'myCloud' \
+  OptionTypeLayoutField 'myLayout' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_httpheader.tf \
+  form_httpheader.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf httpheader example' \
+  OptionTypeCode 'httpheader-input' \
+  OptionTypeDescription 'Terraform HTTP header input example' \
+  OptionTypeType 'httpHeader' \
+  OptionTypeFieldLabel 'HTTP Headers' \
+  OptionTypeFieldName 'httpHeaders' \
+  OptionTypeDefaultValue '[{ name = "header1", value = "value1", masked = false }]' \
+  OptionTypeHelpBlock 'Configure HTTP headers' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_logo_selector.tf \
+  form_logo_selector.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf logo selector example' \
+  OptionTypeCode 'logo-selector-input' \
+  OptionTypeDescription 'Terraform logo selector example' \
+  OptionTypeType 'logoSelector' \
+  OptionTypeFieldLabel 'Select Logo' \
+  OptionTypeFieldName 'logoSelector' \
+  OptionTypeDefaultValue 'identicon' \
+  OptionTypePlaceholder '' \
+  OptionTypeHelpBlock 'Select or upload a logo' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \

@@ -27,33 +27,29 @@ const (
 	typeCloud          = "cloud"
 	typeCodeEditor     = "code-editor"
 	typeDiskManager    = "diskManager"
+	typeFileContent    = "fileContent"
 	typeGroup          = "group"
 	typeHidden         = "hidden"
+	typeHTTPHeader     = "httpHeader"
+	typeInstancesInput = "instances-input"
+	typeKeyValue       = "keyValue"
 	typeLayout         = "layout"
+	typeLogoSelector   = "logoSelector"
 	typeNetworkManager = "networkManager"
 	typeNumber         = "number"
 	typePassword       = "password"
 	typePlan           = "plan"
+	typePorts          = "ports"
 	typeRadio          = "radio"
+	typeResourcePool   = "resourcePool"
+	typeSecGroup       = "secGroup"
 	typeSelect         = "select"
 	typeServersInput   = "servers-input"
+	typeTag            = "tag"
 	typeText           = "text"
 	typeTextArea       = "textarea"
 	typeTextArray      = "textArray"
 	typeTypeahead      = "typeahead"
-)
-
-// TODO: Add switch case handling for these option types.
-// nolint: unused
-const (
-	typeFileContent    = "fileContent"
-	typeHTTPHeader     = "httpHeader"
-	typeInstancesInput = "instances-input"
-	typeKeyValue       = "keyValue"
-	typeLogoSelector   = "logoSelector"
-	typePorts          = "ports"
-	typeResourcePool   = "resourcePool"
-	typeSecGroup       = "secGroup"
 	typeVirtualImage   = "virtual-image"
 	typeVMWFolders     = "vmwFolders"
 )
@@ -89,6 +85,12 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"instance_type_field_type", "instance_type_field_code", "instance_type_code"); err != nil {
+			return err
+		}
+
+	case typeInstancesInput:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
 
@@ -178,9 +180,67 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			"virtual_image_field_type", "image_field", "image_id"); err != nil {
 			return err
 		}
+	case typeResourcePool:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"layout_field_type", "layout_field", "layout_id"); err != nil {
+			return err
+		}
+	case typeSecGroup:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+	case typeTag:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
 	case typeServersInput:
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+	case typeVirtualImage:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"virtual_image_cloud_field_type", "virtual_image_cloud",
+			"virtual_image_cloud_id"); err != nil {
+			return err
+		}
+
+	case typeVMWFolders:
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"group_field_type", "group_field", "group_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
+			return err
+		}
+
+		if err := validateLayoutFieldTypePair(optionType, path, index,
+			"plan_field_type", "plan_field", "plan_id"); err != nil {
 			return err
 		}
 	}
@@ -190,6 +250,7 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 
 // validateLayoutFieldTypePair enforces that only the appropriate sub-field is set
 // based on the value of fieldTypeAttr ("field" → use fieldAttr, "value" → use valueAttr).
+// except for virtual-image ("cloud" → use fieldAttr, "id" → use valueAttr).
 func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
 	fieldTypeAttr, fieldAttr, valueAttr string,
 ) error {
@@ -198,18 +259,26 @@ func validateLayoutFieldTypePair(optionType cty.Value, path string, index int,
 		return nil
 	}
 
+	field := "field"
+	value := "value"
+	// virtual-image is a special case where the fieldType can be "cloud" or "id" instead of "field" or "value"
+	if fieldTypeAttr == "virtual_image_cloud_field_type" {
+		field = "cloud"
+		value = "id"
+	}
+
 	switch fieldType.AsString() {
-	case "field":
+	case field:
 		valueField := optionType.GetAttr(valueAttr)
 		if valueField.IsKnown() && !valueField.IsNull() && valueField.AsString() != "" {
-			return fmt.Errorf("%s cannot be set when %s is 'field' at %s[%d]; use %s instead",
-				valueAttr, fieldTypeAttr, path, index, fieldAttr)
+			return fmt.Errorf("%s cannot be set when %s is '%s' at %s[%d]; use %s instead",
+				valueAttr, fieldTypeAttr, field, path, index, fieldAttr)
 		}
-	case "value":
+	case value:
 		fieldField := optionType.GetAttr(fieldAttr)
 		if fieldField.IsKnown() && !fieldField.IsNull() && fieldField.AsString() != "" {
-			return fmt.Errorf("%s cannot be set when %s is 'value' at %s[%d]; use %s instead",
-				fieldAttr, fieldTypeAttr, path, index, valueAttr)
+			return fmt.Errorf("%s cannot be set when %s is '%s' at %s[%d]; use %s instead",
+				fieldAttr, fieldTypeAttr, value, path, index, valueAttr)
 		}
 	}
 
@@ -305,9 +374,16 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
 		config["instanceTypeCode"] = optionTypeConfig["instance_type_code"]
 		row["config"] = config
-	case typePlan:
+	case typeInstancesInput:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		row["config"] = config
+	case typePlan:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["showPricing"] = optionTypeConfig["show_pricing"]
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
 		config["groupField"] = optionTypeConfig["group_field"]
@@ -322,10 +398,11 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["poolField"] = optionTypeConfig["pool_field"]
 		config["poolId"] = optionTypeConfig["pool_id"]
 		config["diskField"] = optionTypeConfig["disk_field"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		row["config"] = config
 	case typeDiskManager:
-		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
 		config["groupField"] = optionTypeConfig["group_field"]
 		config["groupId"] = optionTypeConfig["group_id"]
@@ -347,11 +424,20 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["enableDiskTypeSelection"] = optionTypeConfig["enable_disk_type_selection"]
 		config["enableStorageTypeSelection"] = optionTypeConfig["enable_storage_type_selection"]
 		config["enableDatastoreSelection"] = optionTypeConfig["enable_datastore_selection"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		row["config"] = config
 	case typeGroup:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
 		config["allowReadonly"] = optionTypeConfig["allow_read_only"]
+		row["config"] = config
+	case typeKeyValue:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
+		config["asObject"] = optionTypeConfig["convert_to_object"]
+		config["keyPlaceholder"] = optionTypeConfig["key_placeholder"]
+		config["valuePlaceholder"] = optionTypeConfig["value_placeholder"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		row["config"] = config
 	case typeServersInput:
 		row["defaultValue"] = optionTypeConfig["default_value"]
@@ -359,6 +445,50 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
 		config["cloudField"] = optionTypeConfig["cloud_field"]
 		config["cloudId"] = optionTypeConfig["cloud_id"]
+		row["config"] = config
+	case typeResourcePool:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		config["layoutFieldType"] = optionTypeConfig["layout_field_type"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		config["layoutId"] = optionTypeConfig["layout_id"]
+		row["config"] = config
+	case typeSecGroup:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["resourcePoolField"] = optionTypeConfig["pool_field"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["config"] = config
+	case typeTag:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["config"] = config
+	case typePorts:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["layoutField"] = optionTypeConfig["layout_field"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		row["config"] = config
 	case typeNumber:
 		var defaultValue string
@@ -393,6 +523,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		}
 	case typeNetworkManager:
 		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
 		config["groupField"] = optionTypeConfig["group_field"]
 		config["groupId"] = optionTypeConfig["group_id"]
@@ -416,6 +547,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		row["optionList"] = map[string]any{"id": optionTypeConfig["option_list_id"]}
 		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
 		config["sortable"] = optionTypeConfig["sortable"]
 		row["config"] = config
@@ -437,6 +569,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 	case typeTypeahead:
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
 		config["sortable"] = optionTypeConfig["sortable"]
 		config["allowDuplicates"] = optionTypeConfig["allow_duplicates"]
 		config["multiSelect"] = optionTypeConfig["allow_multiple_selections"]
@@ -447,8 +580,35 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 	case typeHidden:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeHTTPHeader:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeLogoSelector:
+		config := make(map[string]any)
+		config["defaultValue"] = optionTypeConfig["default_value"]
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		row["config"] = config
 	case typeText:
 		row["defaultValue"] = optionTypeConfig["default_value"]
+	case typeVirtualImage:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["cloudFieldType"] = optionTypeConfig["virtual_image_cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["virtual_image_cloud"]
+		config["cloudId"] = optionTypeConfig["virtual_image_cloud_id"]
+		row["config"] = config
+	case typeVMWFolders:
+		row["defaultValue"] = optionTypeConfig["default_value"]
+		config := make(map[string]any)
+		config["groupFieldType"] = optionTypeConfig["group_field_type"]
+		config["groupField"] = optionTypeConfig["group_field"]
+		config["groupId"] = optionTypeConfig["group_id"]
+		config["cloudFieldType"] = optionTypeConfig["cloud_field_type"]
+		config["cloudField"] = optionTypeConfig["cloud_field"]
+		config["cloudId"] = optionTypeConfig["cloud_id"]
+		config["planFieldType"] = optionTypeConfig["plan_field_type"]
+		config["planField"] = optionTypeConfig["plan_field"]
+		config["planId"] = optionTypeConfig["plan_id"]
+		row["config"] = config
 	}
 
 	return nil
@@ -485,6 +645,10 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
 		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
 		row["instance_type_code"] = optionType.Config.InstanceTypeCode
+	case typeInstancesInput:
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
 	case typePlan:
 		row["show_pricing"] = optionType.Config.ShowPricing
 		row["group_field_type"] = optionType.Config.GroupFieldType
@@ -527,15 +691,52 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["code_language"] = optionType.Config.Lang
 	case typeGroup:
 		row["allow_read_only"] = optionType.Config.AllowReadonly
+	case typeKeyValue:
+		row["convert_to_object"] = optionType.Config.AsObject
+		row["key_placeholder"] = optionType.Config.KeyPlaceholder
+		row["value_placeholder"] = optionType.Config.ValuePlaceholder
 	case typeServersInput:
 		row["cloud_field_type"] = optionType.Config.CloudFieldType
 		row["cloud_field"] = optionType.Config.CloudField
 		row["cloud_id"] = optionType.Config.CloudId
+	case typeResourcePool:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+		row["layout_field_type"] = optionType.Config.LayoutFieldType
+		row["layout_field"] = optionType.Config.LayoutField
+		row["layout_id"] = optionType.Config.LayoutId
+	case typeSecGroup:
+		row["default_value"] = optionType.Config.DefaultValue
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["pool_field"] = optionType.Config.ResourcePoolField
+	case typeTag:
+		row["default_value"] = optionType.Config.DefaultValue
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+	case typePorts:
+		row["default_value"] = optionType.Config.DefaultValue
+		row["group_field"] = optionType.Config.GroupField
+		row["cloud_field"] = optionType.Config.CloudField
+		row["layout_field"] = optionType.Config.LayoutField
 	case typeNumber:
 		row["step"] = optionType.Config.Step
 		row["min_value"] = optionType.MinVal
 		row["max_value"] = optionType.MaxVal
 	case typeNetworkManager:
+		row["default_value"] = optionType.Config.DefaultValue
 		row["group_field_type"] = optionType.Config.GroupFieldType
 		row["group_field"] = optionType.Config.GroupField
 		row["group_id"] = optionType.Config.GroupId
@@ -560,14 +761,33 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		if logHidden {
 			log.Printf("HIDDEN DEFAULT: %v", optionType.DefaultValue)
 		}
+	case typeHTTPHeader:
+		// HTTP header default value is stored in the top-level field
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
+		row["default_value"] = optionType.Config.DefaultValue
 		row["sortable"] = optionType.Config.Sortable
 		row["allow_duplicates"] = optionType.Config.AllowDuplicates
 		row["custom_data"] = optionType.Config.CustomData
 		row["allow_multiple_selections"] = optionType.Config.MultiSelect
 		row["option_list_id"] = optionType.OptionList.ID
+	case typeVirtualImage:
+		row["virtual_image_cloud_field_type"] = optionType.Config.CloudFieldType
+		row["virtual_image_cloud"] = optionType.Config.CloudField
+		row["virtual_image_cloud_id"] = optionType.Config.CloudId
+	case typeVMWFolders:
+		row["group_field_type"] = optionType.Config.GroupFieldType
+		row["group_field"] = optionType.Config.GroupField
+		row["group_id"] = optionType.Config.GroupId
+		row["cloud_field_type"] = optionType.Config.CloudFieldType
+		row["cloud_field"] = optionType.Config.CloudField
+		row["cloud_id"] = optionType.Config.CloudId
+		row["plan_field_type"] = optionType.Config.PlanFieldType
+		row["plan_field"] = optionType.Config.PlanField
+		row["plan_id"] = optionType.Config.PlanId
+	case typeLogoSelector:
+		row["default_value"] = optionType.Config.DefaultValue
 	}
 }
 
@@ -605,7 +825,6 @@ func ResourceForm() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "The organization labels associated with the form",
 				Optional:    true,
-				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"option_type": optionTypeSchema("form"),
@@ -690,15 +909,21 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"type": {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf("The type of option type to add to the %s ", parent) +
-						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, group, hidden, layout, networkManager," +
-						" number, password, plan, radio, select, servers-input, text, textarea, textArray, typeahead)",
+						"(byteSize, checkbox, cloud, code-editor, diskManager, environment, fileContent, group, hidden," +
+						" httpHeader, instances-input," +
+						" keyValue, layout, logoSelector, networkManager," +
+						" number, password, plan, ports, radio, resourcePool, secGroup, select," +
+						" servers-input, text, textarea, textArray, typeahead, virtual-image, vmwFolders)",
 					ValidateFunc: validation.StringInSlice(
 						[]string{
 							typeByteSize, typeCheckbox, typeCloud, typeCodeEditor, typeDiskManager,
-							typeEnvironment, typeGroup, typeHidden, typeLayout,
-							typeNetworkManager, typeNumber, typePassword, typePlan, typeRadio, typeSelect,
+							typeEnvironment, typeFileContent, typeGroup, typeHTTPHeader, typeInstancesInput, typeHidden,
+							typeKeyValue, typeLayout, typeLogoSelector,
+							typeNetworkManager, typeNumber, typePassword, typePlan, typePorts, typeRadio, typeResourcePool, typeSecGroup,
+							typeTag,
+							typeSelect,
 							typeServersInput, typeText, typeTextArea,
-							typeTextArray, typeTypeahead,
+							typeTextArray, typeTypeahead, typeVirtualImage, typeVMWFolders,
 						},
 						false,
 					),
@@ -846,6 +1071,24 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
+				"convert_to_object": {
+					Type:        schema.TypeBool,
+					Description: "Whether to convert the key-value option to an object",
+					Optional:    true,
+					Computed:    true,
+				},
+				"key_placeholder": {
+					Type:        schema.TypeString,
+					Description: "The key placeholder text for the key-value type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"value_placeholder": {
+					Type:        schema.TypeString,
+					Description: "The value placeholder text for the key-value type",
+					Optional:    true,
+					Computed:    true,
+				},
 				"enable_ip_mode_selection": {
 					Type:        schema.TypeBool,
 					Description: "Whether to enable IP Mode Selection",
@@ -902,6 +1145,25 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Optional:    true,
 					Computed:    true,
 				},
+				"virtual_image_cloud_field_type": {
+					Type:         schema.TypeString,
+					Description:  "How the cloud is specified for a virtual-image option type (cloud or id)",
+					ValidateFunc: validation.StringInSlice([]string{"cloud", "id"}, false),
+					Optional:     true,
+					Computed:     true,
+				},
+				"virtual_image_cloud": {
+					Type:        schema.TypeString,
+					Description: "The cloud code used to determine the cloud for a virtual-image option type",
+					Optional:    true,
+					Computed:    true,
+				},
+				"virtual_image_cloud_id": {
+					Type:        schema.TypeString,
+					Description: "The cloud ID used to determine the cloud for a virtual-image option type",
+					Optional:    true,
+					Computed:    true,
+				},
 				"pool_field_type": {
 					Type:         schema.TypeString,
 					Description:  "How the resource pool is specified for an option type (field or value)",
@@ -955,12 +1217,6 @@ func optionTypeSchema(parent string) *schema.Schema {
 				"disk_field": {
 					Type:        schema.TypeString,
 					Description: "The field code referencing the disk manager option type to associate with a plan option type",
-					Optional:    true,
-					Computed:    true,
-				},
-				"config_default_value": {
-					Type:        schema.TypeString,
-					Description: "The default disk configuration JSON for a diskManager option type",
 					Optional:    true,
 					Computed:    true,
 				},
@@ -1381,7 +1637,13 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			row["type"] = optionType.Type
 			row["field_label"] = optionType.FieldLabel
 			row["field_name"] = optionType.FieldName
-			row["default_value"] = optionType.DefaultValue
+			defaultValue := optionType.DefaultValue
+			if configDefault, ok := row["default_value"]; ok {
+				if configDefaultValue, ok := configDefault.(string); ok && configDefaultValue != "" {
+					defaultValue = configDefaultValue
+				}
+			}
+			row["default_value"] = defaultValue
 			row["placeholder"] = optionType.PlaceHolder
 			row["help_block"] = optionType.HelpBlock
 			row["required"] = optionType.Required
@@ -1422,7 +1684,13 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					optionTypeRow["type"] = optionType.Type
 					optionTypeRow["field_label"] = optionType.FieldLabel
 					optionTypeRow["field_name"] = optionType.FieldName
-					optionTypeRow["default_value"] = optionType.DefaultValue
+					defaultValue := optionType.DefaultValue
+					if configDefault, ok := optionTypeRow["default_value"]; ok {
+						if configDefaultValue, ok := configDefault.(string); ok && configDefaultValue != "" {
+							defaultValue = configDefaultValue
+						}
+					}
+					optionTypeRow["default_value"] = defaultValue
 					optionTypeRow["placeholder"] = optionType.PlaceHolder
 					optionTypeRow["help_block"] = optionType.HelpBlock
 					optionTypeRow["required"] = optionType.Required
@@ -1574,6 +1842,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 
+	// labels are optional
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -1585,10 +1854,8 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				}
 			}
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("labels", d.Get("labels")))
+			return diag.FromErr(helpers.TypeAssertFailError("labels set assertion", d.Get("labels")))
 		}
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("labels", d.Get("labels")))
 	}
 
 	var name string
