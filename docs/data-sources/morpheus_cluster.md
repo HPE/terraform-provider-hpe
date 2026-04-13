@@ -34,10 +34,233 @@ data "hpe_morpheus_cluster" "example" {
 
 ### Read-Only
 
-- `cloud_id` (Number) The Cloud ID of the cluster.
+- `auto_recover_power_state` (Boolean) Automatically Power on VMs
+- `category` (String)
+- `cloud` (Attributes) (see [below for nested schema](#nestedatt--cloud))
+- `code` (String)
+- `config` (Dynamic)
+- `containers_count` (Number)
+- `created_by` (Attributes) (see [below for nested schema](#nestedatt--created_by))
+- `datacenter_id` (String)
+- `date_created` (String)
+- `deployments_count` (Number)
 - `description` (String)
-- `group_id` (Number) The Group ID of the cluster.
+- `enable_internal_dns` (Boolean)
+- `enabled` (Boolean)
+- `external_id` (String)
+- `group` (Attributes) (see [below for nested schema](#nestedatt--group))
+- `integrations` (Attributes Set) (see [below for nested schema](#nestedatt--integrations))
+- `internal_id` (String)
+- `inventory_level` (String)
+- `jobs_count` (Number)
 - `labels` (Set of String)
-- `layout_id` (Number) The Layout ID of the cluster.
+- `last_sync` (String)
+- `last_sync_duration` (Number)
+- `last_updated` (String)
+- `layout` (Attributes) (see [below for nested schema](#nestedatt--layout))
+- `location` (String)
+- `managed` (Boolean)
+- `namespaces_count` (Number)
+- `next_run_date` (String)
+- `owner` (Attributes) (see [below for nested schema](#nestedatt--owner))
+- `permissions` (Attributes) (see [below for nested schema](#nestedatt--permissions))
+- `pods_count` (Number)
+- `provision_complete` (Boolean) Changes from false to true once provisioning is finished.
+- `search_domains` (String)
+- `servers` (Attributes Set) (see [below for nested schema](#nestedatt--servers))
+- `service_access` (String)
+- `service_access_hash` (String)
+- `service_cert` (String)
+- `service_cert_hash` (String)
+- `service_entry` (String)
+- `service_host` (String)
+- `service_hostname` (String)
+- `service_password` (String)
+- `service_password_hash` (String)
+- `service_path` (String)
+- `service_port` (Number)
+- `service_token` (String)
+- `service_token_hash` (String)
 - `service_url` (String)
+- `service_username` (String)
+- `service_version` (String)
+- `services_count` (Number)
+- `status` (String)
+- `status_date` (String)
+- `status_message` (String)
+- `tenants` (Attributes Set) (see [below for nested schema](#nestedatt--tenants))
+- `type` (Attributes) (see [below for nested schema](#nestedatt--type))
+- `use_agent` (String) Use the Agent to relay communications for the Kubernetes API instead of direct.
+- `user_group` (String)
 - `uuid` (String)
+- `visibility` (String)
+- `volumes_count` (Number)
+- `worker_stats` (Attributes) (see [below for nested schema](#nestedatt--worker_stats))
+- `workers_count` (Number)
+
+<a id="nestedatt--cloud"></a>
+### Nested Schema for `cloud`
+
+Read-Only:
+
+- `cloud_type` (Attributes) (see [below for nested schema](#nestedatt--cloud--cloud_type))
+- `id` (Number)
+- `name` (String)
+
+<a id="nestedatt--cloud--cloud_type"></a>
+### Nested Schema for `cloud.cloud_type`
+
+Read-Only:
+
+- `id` (Number)
+
+
+
+<a id="nestedatt--created_by"></a>
+### Nested Schema for `created_by`
+
+Read-Only:
+
+- `id` (Number)
+- `username` (String)
+
+
+<a id="nestedatt--group"></a>
+### Nested Schema for `group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--integrations"></a>
+### Nested Schema for `integrations`
+
+
+<a id="nestedatt--layout"></a>
+### Nested Schema for `layout`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+- `provision_type_code` (String)
+
+
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--permissions"></a>
+### Nested Schema for `permissions`
+
+Read-Only:
+
+- `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--permissions--resource_permissions))
+- `resource_pool` (Attributes) (see [below for nested schema](#nestedatt--permissions--resource_pool))
+
+<a id="nestedatt--permissions--resource_permissions"></a>
+### Nested Schema for `permissions.resource_permissions`
+
+Read-Only:
+
+- `all` (Boolean)
+- `all_plans` (Boolean)
+- `can_manage` (Boolean)
+- `default_store` (Boolean)
+- `default_target` (Boolean)
+- `groups` (Attributes Set) (see [below for nested schema](#nestedatt--permissions--resource_permissions--groups))
+- `plans` (Attributes Set) (see [below for nested schema](#nestedatt--permissions--resource_permissions--plans))
+- `tenant` (Attributes) (see [below for nested schema](#nestedatt--permissions--resource_permissions--tenant))
+
+<a id="nestedatt--permissions--resource_permissions--groups"></a>
+### Nested Schema for `permissions.resource_permissions.groups`
+
+
+<a id="nestedatt--permissions--resource_permissions--plans"></a>
+### Nested Schema for `permissions.resource_permissions.plans`
+
+
+<a id="nestedatt--permissions--resource_permissions--tenant"></a>
+### Nested Schema for `permissions.resource_permissions.tenant`
+
+Read-Only:
+
+- `id` (Number)
+
+
+
+<a id="nestedatt--permissions--resource_pool"></a>
+### Nested Schema for `permissions.resource_pool`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+- `visibility` (String)
+
+
+
+<a id="nestedatt--servers"></a>
+### Nested Schema for `servers`
+
+Read-Only:
+
+- `compute_server_type` (Attributes) (see [below for nested schema](#nestedatt--servers--compute_server_type))
+- `id` (Number)
+- `name` (String)
+- `type_set` (Attributes) (see [below for nested schema](#nestedatt--servers--type_set))
+
+<a id="nestedatt--servers--compute_server_type"></a>
+### Nested Schema for `servers.compute_server_type`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `node_type` (String)
+
+
+<a id="nestedatt--servers--type_set"></a>
+### Nested Schema for `servers.type_set`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `name` (String)
+
+
+
+<a id="nestedatt--tenants"></a>
+### Nested Schema for `tenants`
+
+
+<a id="nestedatt--type"></a>
+### Nested Schema for `type`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--worker_stats"></a>
+### Nested Schema for `worker_stats`
+
+Read-Only:
+
+- `cpu_usage` (Number)
+- `cpu_usage_avg` (Number)
+- `cpu_usage_peak` (Number)
+- `max_memory` (Number)
+- `max_storage` (Number)
+- `used_cpu` (Number)
+- `used_memory` (Number)
+- `used_storage` (Number)
