@@ -11,7 +11,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
-	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
@@ -34,7 +33,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusFindClusterByID(t *testing.T) {
+func TestAccMorpheusFindClusterById(t *testing.T) {
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
@@ -48,19 +47,28 @@ func TestAccMorpheusFindClusterByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// We can't test all the possible schema attributes with this type of cluster.
+	// We'll just check that what was required to create it was read correctly,
+	// as well as some config properties.
 	checkFn := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_cluster.example", "id", "1"),
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "name"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "description"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "service_url"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "uuid"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.cloud_type.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.provision_type_code"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.cpuArch"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.cpuModel"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.dynamicPlacementMode"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.powerPolicy"),
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + dataSourceConfig,
@@ -84,19 +92,28 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// We can't test all the possible schema attributes with this type of cluster.
+	// We'll just check that what was required to create it was read correctly,
+	// as well as some config properties.
 	checkFn := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "name"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout_id"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "description"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "service_url"),
-		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "uuid"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_cluster.example", "name", "Duck"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "cloud.cloud_type.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "group.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.id"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.name"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "layout.provision_type_code"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.cpuArch"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.cpuModel"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.dynamicPlacementMode"),
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.powerPolicy"),
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + dataSourceConfig,
@@ -127,7 +144,7 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 	expected := cluster.ErrorNoClusterFound
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -153,7 +170,7 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 	expected := cluster.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -181,7 +198,7 @@ func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
 	expected := cluster.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
