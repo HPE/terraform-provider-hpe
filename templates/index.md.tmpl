@@ -16,7 +16,7 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
-->This v1.2.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+->This v1.3.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
 We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
@@ -25,10 +25,11 @@ to assist with the migration from the Morpheus provider to this provider.  Pleas
 information on how to use this tool.<br><br>
 See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider resources and data sources to those in this provider.
 
+
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v1.2.0).
+release notes for the current version (v1.3.0).
 
 ### Authentication
 
@@ -75,6 +76,7 @@ be toggled off by setting `insecure` to `true` in the provider block.
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cluster<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_policy<br><br>
 This means that the `config` block can contain arbitrary nested attributes which
@@ -85,22 +87,31 @@ That is, the attribute names are case-sensitive and must match exactly.
 
 ### New functionality
 
-In this release (v1.2.0) we have added the following resource functionality:
+In this release (v1.3.0) we have added the following resource functionality:
 
-- hpe_morpheus_instance addition and removal of volumes is now supported in Update
-- hpe_morpheus_instance supports service_plan_options for use with Service Plans that accept options
-- hpe_morpheus_cloud no longer requires group_id to be set
-- hpe_morpheus_group supports a list of cloud-ids to associate the group with
+- hpe_morpheus_cluster a generalised cluster resource has been added with support for HVM clusters, and limited update functionality
+- hpe_morpheus_forms has comprehensive support for all option types
+- hpe_morpheus_instance has a static `config_aws` block for AWS instances
+- hpe_morpheus_instance supports Update of `network_interfaces` and `service_plan_options` for service plans that support the setting of
+  options for Morpheus versions >= 8.1.2, for earlier versions changes will force a new instance to be created
+- hpe_morpheus_load_balancer resource has been added
+- hpe_morpheus_os_type resource has been added
+- hpe_morpheus_os_type_image resource has been added
+
+In this release (v1.3.0) we have added the following data source functionality:
+
+- hpe_morpheus_cluster data source has been added
+- hpe_morpheus_load_balancer data source has been added
+- hpe_morpheus_os_type data source has been added
+- hpe_morpheus_os_type_image data source has been added
 
 ### New known issues
 
-- `hpe_morpheus_instance` Update of `service_plan_options` fails silently, this will be fixed in a future release
+N/A
 
 ### Resolved issues
 
-- `hpe_morpheus_datastore` data-source if a datastore with the specified name cannot be found (i.e. the corresponding
-  list API request fails), the error message will indicate a 403 (Forbidden) even if the user has permission to list
-  datastores.
+- `hpe_morpheus_instance` Update of `service_plan_options` fails silently
 
 ### Known issues from previous releases
 
