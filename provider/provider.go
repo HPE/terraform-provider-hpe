@@ -4,9 +4,14 @@ package provider
 
 import (
 	"context"
+	"strings"
+	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -14,7 +19,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/notify"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+
+	version "github.com/hashicorp/go-version"
 )
 
 var _ provider.Provider = &hpeProvider{}
@@ -92,6 +100,57 @@ func (p *hpeProvider) Configure(
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
 ) {
+	var wg sync.WaitGroup
+	// check version if not running on dev or test (accepance test builds)
+	if p.version != "dev" && p.version != "test" && notify.IsEnabled() && notify.TryDial() == nil {
+		// Do this in a separate goroutine while the rest of the Configure method runs.
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			localVer, err := version.NewVersion(strings.ToLower(strings.TrimPrefix(p.version, "v")))
+			if err != nil {
+				// Installed provider version is messed up, so surface an Error Diagnostic.
+				// Terraform should catch this first, though, as it doesn't allow malformed versions.
+				resp.Diagnostics.Append(
+					diag.NewErrorDiagnostic(
+						"failed to convert local version string",
+						err.Error(),
+					),
+				)
+
+				return
+			}
+
+			retry := func() (*version.Version, error) {
+				return notify.GetProviderVersion(notify.RegistryUrl)
+			}
+			// If we passed the TryDial check, we'll probably hit the API relatively quickly.
+			remoteVer, err := backoff.Retry(
+				ctx,
+				retry,
+				backoff.WithMaxElapsedTime(30*time.Second),
+			)
+			if err != nil {
+				// Continue provider execution if this fails.
+				resp.Diagnostics.Append(
+					diag.NewWarningDiagnostic(
+						"failed to fetch latest remote version",
+						err.Error(),
+					),
+				)
+
+				return
+			}
+
+			err = notify.CompareProviderVersion(localVer, remoteVer)
+			if err != nil {
+				// i.e. if localVer < remoteVer
+				resp.Diagnostics.Append(diag.NewWarningDiagnostic("Outdated provider version", err.Error()))
+			}
+		}()
+
+	}
+
 	f := func(ctx context.Context, c tfsdk.Config, name string) func(any) {
 		return func(target any) {
 			c.GetAttribute(ctx, path.Root(name), target)
@@ -112,6 +171,7 @@ func (p *hpeProvider) Configure(
 
 	resp.ResourceData = d
 	resp.DataSourceData = d
+	wg.Wait()
 }
 
 func (p *hpeProvider) Resources(
