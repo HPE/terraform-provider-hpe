@@ -11,6 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                          = "diskManager"
     field_label                   = "disk manager input"
     field_name                    = "diskManagerInput"
+    default_value                 = jsonencode([{ rootVolume = true, name = "root", size = 10, sizeBytes = 10737418240, minStorage = 0, displayOrder = 0, storageType = 1, datastoreId = "52" }, { rootVolume = false, name = "data-1", size = 20, sizeBytes = 21474836480, minStorage = 0, displayOrder = 1, datastoreId = "autoCluster", storageType = 1 }])
     help_block                    = "Configure disks"
     required                      = true
     export_meta                   = true

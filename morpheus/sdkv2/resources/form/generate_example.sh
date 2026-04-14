@@ -16,7 +16,7 @@ $RENDER \
   OptionTypeType 'keyValue' \
   OptionTypeFieldLabel 'KeyValue' \
   OptionTypeFieldName 'keyValue' \
-  OptionTypeDefaultValue '' \
+  OptionTypeDefaultValue 'jsonencode([{ key = "a", value = "b" }, { key = "c", value = "d" }])' \
   OptionTypeHelpBlock 'Select a key-value pair' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
@@ -116,7 +116,7 @@ $RENDER \
   OptionTypeType 'select' \
   OptionTypeFieldLabel 'Select Test' \
   OptionTypeFieldName 'selectTest' \
-  OptionTypeDefaultValue 'test123' \
+  OptionTypeDefaultValue '"level1"' \
   OptionTypePlaceholder 'Testing 123' \
   OptionTypeHelpBlock 'Select an option' \
   OptionTypeOptionListId '1' \
@@ -259,7 +259,7 @@ $RENDER \
   OptionTypeType 'networkManager' \
   OptionTypeFieldLabel 'network input' \
   OptionTypeFieldName 'networkInput' \
-  OptionTypeDefaultValue 'test123' \
+  OptionTypeDefaultValue 'jsonencode([{ primaryInterface = true, displayOrder = 0, ipMode = "", ipAddress = "", networkInterfaceTypeId = "4", network = { id = "network-216", pool = "{id: \"\"}" } }, { primaryInterface = false, displayOrder = 1, ipMode = "dhcp", ipAddress = "", networkInterfaceTypeId = 4, network = { id = "network-216", pool = "{id: \"\"}" } }])' \
   OptionTypePlaceholder 'Select network' \
   OptionTypeHelpBlock 'Select a network' \
   OptionTypeRequired 'true' \
@@ -374,6 +374,7 @@ $RENDER \
   OptionTypeType 'diskManager' \
   OptionTypeFieldLabel 'disk manager input' \
   OptionTypeFieldName 'diskManagerInput' \
+  OptionTypeDefaultValue 'jsonencode([{ rootVolume = true, name = "root", size = 10, sizeBytes = 10737418240, minStorage = 0, displayOrder = 0, storageType = 1, datastoreId = "52" }, { rootVolume = false, name = "data-1", size = 20, sizeBytes = 21474836480, minStorage = 0, displayOrder = 1, datastoreId = "autoCluster", storageType = 1 }])' \
   OptionTypeHelpBlock 'Configure disks' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
@@ -410,7 +411,7 @@ $RENDER \
   OptionTypeType 'plan' \
   OptionTypeFieldLabel 'plan input' \
   OptionTypeFieldName 'planInput' \
-  OptionTypeDefaultValue '' \
+  OptionTypeDefaultValue 'jsonencode({ id = 1088, maxMemory = 8589934592, maxCores = "4", coresPerSocket = "2" })' \
   OptionTypePlaceholder 'Select plan' \
   OptionTypeHelpBlock 'Select a plan' \
   OptionTypeRequired 'true' \
@@ -566,7 +567,7 @@ $RENDER \
   OptionTypeType 'secGroup' \
   OptionTypeFieldLabel 'Security Groups' \
   OptionTypeFieldName 'securityGroups' \
-  OptionTypeDefaultValue '' \
+  OptionTypeDefaultValue 'jsonencode([{ id = "sec-group-default" }])' \
   OptionTypeHelpBlock 'Select security groups' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
@@ -641,7 +642,7 @@ $RENDER \
   OptionTypeType 'ports' \
   OptionTypeFieldLabel 'Exposed Ports' \
   OptionTypeFieldName 'ports' \
-  OptionTypeDefaultValue '' \
+  OptionTypeDefaultValue 'jsonencode([{ name = "standard", externalPort = "80", loadBalanceProtocol = "HTTP" }, { name = "ssl-title", externalPort = "443", loadBalanceProtocol = "HTTPS" }, { name = "tcp", externalPort = "40", loadBalanceProtocol = "TCP" }])' \
   OptionTypeHelpBlock 'Configure exposed ports' \
   OptionTypeGroupField 'myGroup' \
   OptionTypeCloudField 'myCloud' \
@@ -688,7 +689,7 @@ $RENDER \
   OptionTypeType 'logoSelector' \
   OptionTypeFieldLabel 'Select Logo' \
   OptionTypeFieldName 'logoSelector' \
-  OptionTypeDefaultValue 'identicon' \
+  OptionTypeDefaultValue 'jsonencode({ value = "identicon", settings = { type = "identicon", iconLabel = "example" } })' \
   OptionTypePlaceholder '' \
   OptionTypeHelpBlock 'Select or upload a logo' \
   OptionTypeRequired 'true' \

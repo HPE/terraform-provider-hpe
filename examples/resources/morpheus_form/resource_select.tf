@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "select"
     field_label              = "Select Test"
     field_name               = "selectTest"
-    default_value            = "test123"
+    default_value            = "level1"
     placeholder              = "Testing 123"
     help_block               = "Select an option"
     option_list_id           = 1
