@@ -1,0 +1,16 @@
+resource "hpe_morpheus_network_dhcp_server" "example" {
+  network_server_id = {{.NetworkServerId}}
+  name              = "{{.Name}}"
+  server_ip_address = "{{.ServerIpAddress}}"
+  lease_time        = {{.LeaseTime}}
+
+  config = {
+    "edgeCluster" = "{{.EdgeCluster}}"
+    {{- if ne .ActiveEdgeNode ""}}
+    "preferredEdgeNode1" = "{{.ActiveEdgeNode}}"
+    {{- end}}
+    {{- if ne .StandbyEdgeNode ""}}
+    "preferredEdgeNode2" = "{{.StandbyEdgeNode}}"
+    {{- end}}
+  }
+}
