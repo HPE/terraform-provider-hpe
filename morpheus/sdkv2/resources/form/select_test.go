@@ -59,7 +59,7 @@ resource "hpe_morpheus_option_list_manual" "example" {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "select"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "test123"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "level1"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"option_type.0.description",

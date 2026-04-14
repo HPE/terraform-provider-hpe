@@ -56,7 +56,7 @@ func TestAccMorpheusFormLogoSelectorOk(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"option_type.0.default_value",
-						"identicon",
+						"{\"settings\":{\"iconLabel\":\"example\",\"type\":\"identicon\"},\"value\":\"identicon\"}",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",

@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "plan"
     field_label              = "plan input"
     field_name               = "planInput"
-    default_value            = ""
+    default_value            = jsonencode({ id = 1088, maxMemory = 8589934592, maxCores = "4", coresPerSocket = "2" })
     placeholder              = "Select plan"
     help_block               = "Select a plan"
     required                 = true

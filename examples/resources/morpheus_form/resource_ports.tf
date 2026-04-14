@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "ports"
     field_label              = "Exposed Ports"
     field_name               = "ports"
-    default_value            = ""
+    default_value            = jsonencode([{ name = "standard", externalPort = "80", loadBalanceProtocol = "HTTP" }, { name = "ssl-title", externalPort = "443", loadBalanceProtocol = "HTTPS" }, { name = "tcp", externalPort = "40", loadBalanceProtocol = "TCP" }])
     help_block               = "Configure exposed ports"
     group_field              = "myGroup"
     cloud_field              = "myCloud"
