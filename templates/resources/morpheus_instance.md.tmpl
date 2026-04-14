@@ -13,15 +13,13 @@ Morpheus oversees its entire lifecycle, from initial provisioning to scaling,
 monitoring, and eventual decommissioning.
 
 -> Currently HVM, VMware, AWS and BMaaS instances are supported.  We have static `config` schema for the following:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that allow the setting of options<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  will fail silently.<br><br>
 These will be addressed in a future release.
 
 -> Some general notes:<br><br>
@@ -37,11 +35,16 @@ If the `timeouts` settings are changed in HCL an
 `Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
 the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
 `read` and `update` is 45 minutes.<br><br>
-**Update** is supported but has some limitations at the moment.  The addition and removal of volumes is supported
-during update. Existing volumes can have their size increased but not decreased.  **Do not** change the order of
-volumes in HCL.  Network interface changes will result in instance recreation.  Updates fail when removing optional
-fields or `evars`. Updates to `service_plan_options` for service plans that support the setting of options will
-fail silently.<br><br>
+**Update** is supported but note the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- **Do not** change the order of volumes or network_interfaces in HCL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is supported<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Existing volumes can have their size increased but not decreased<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Network interface update is supported for Morpheus versions >= 8.1.2, for earlier<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  versions network_interfaces changes will force a new instance to be created.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; are supported for Morpheus versions >= 8.1.2, for earlier versions updates<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; will force a new instance to be created<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields or `evars`<br><br>
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>

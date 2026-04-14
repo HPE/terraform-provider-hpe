@@ -1145,23 +1145,30 @@ func getStateInterfaces(
 		return nil, diags
 	}
 
-	// Compare intfsFromServer against intfsFromIntance, to see if the "shapes" are the same
-	if compareServerInstanceIntfs(intfsFromServer, intfsFromInstance) {
+	// Get []NetworkInterfacesValue from the plan
+	var intfsFromPlan []NetworkInterfacesValue
+	pd := plan.NetworkInterfaces.ElementsAs(ctx, &intfsFromPlan, false)
+	if pd.HasError() {
+		return nil, pd
+	}
+
+	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same
+	if compareServerPlanIntfs(intfsFromServer, intfsFromPlan) {
 		return intfsFromServer, diags
 	}
 
-	// "Shape" isn't the same, return intfsFromInstance
-	return intfsFromInstance, diags
+	// "Shape" isn't the same, return intfsFromPlan
+	return intfsFromPlan, diags
 }
 
-// compareServerInstanceIntfs compares the []NetworkInterfacesValues from instance.containerDetails.server.interfaces
-// and instance.interfaces to see if they are the same shape
+// compareServerPlanIntfs compares the []NetworkInterfacesValues from instance.containerDetails.server.interfaces
+// and plan see if they are the same shape
 // Returns true if they are, false otherwise
-func compareServerInstanceIntfs(
-	intfsFromServer, intfsFromInstance []NetworkInterfacesValue,
+func compareServerPlanIntfs(
+	intfsFromServer, intfsFromPlan []NetworkInterfacesValue,
 ) bool {
 	// Check length of lists first
-	if len(intfsFromServer) != len(intfsFromInstance) {
+	if len(intfsFromServer) != len(intfsFromPlan) {
 		return false
 	}
 
@@ -1171,15 +1178,15 @@ func compareServerInstanceIntfs(
 		serverSubIntfs = append(serverSubIntfs, len(serverIntf.ChildVirtualNetworks.Elements()))
 	}
 
-	// Get list of lengths of child interfaces for instance.interfaces list
-	instanceSubIntfs := make([]int, 0, len(intfsFromInstance))
-	for _, instanceIntf := range intfsFromInstance {
-		instanceSubIntfs = append(instanceSubIntfs, len(instanceIntf.ChildVirtualNetworks.Elements()))
+	// Get list of lengths of child interfaces for plan list
+	planSubIntfs := make([]int, 0, len(intfsFromPlan))
+	for _, planIntf := range intfsFromPlan {
+		planSubIntfs = append(planSubIntfs, len(planIntf.ChildVirtualNetworks.Elements()))
 	}
 
 	// Compare lengths of child interfaces for "server" and "instance" lists
 	for i := range serverSubIntfs {
-		if serverSubIntfs[i] != instanceSubIntfs[i] {
+		if serverSubIntfs[i] != planSubIntfs[i] {
 			return false
 		}
 	}
@@ -1206,6 +1213,7 @@ func getStateInterfacesFromInstance(
 	var ifaces []NetworkInterfacesValue
 	for _, instIntf := range instIntfs {
 		ifaceVal := NetworkInterfacesValue{}
+		ifaceVal.Id = types.Int64Null()
 		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
 		ifaceVal.PrimaryInterface = types.BoolNull()
@@ -1256,6 +1264,7 @@ func getInstanceInterfacesChildNetworks(
 	children := make([]ChildVirtualNetworksValue, 0)
 	for _, instIntf := range nets {
 		ifaceVal := ChildVirtualNetworksValue{}
+		ifaceVal.Id = types.Int64Null()
 		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
 		ifaceVal.PrimaryInterface = types.BoolNull()
@@ -1301,7 +1310,7 @@ func getStateInterfacesFromInstanceServer(
 			continue
 		}
 		ifaceVal := NetworkInterfacesValue{}
-
+		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
@@ -1462,6 +1471,7 @@ func getChildNetworks(
 	for _, subIntf := range subIntfMap[*id] {
 		ifaceVal := ChildVirtualNetworksValue{}
 		iface := serverIntfsMap[subIntf]
+		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
