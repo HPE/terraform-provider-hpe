@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/notify"
+	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	"github.com/cenkalti/backoff/v5"
 	version "github.com/hashicorp/go-version"
