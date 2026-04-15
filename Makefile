@@ -18,10 +18,11 @@ test:
 	env TF_ACC=1 \
 	go test -short -v -cover -count 1 -timeout 10m ./...
 
-# For use in GitHub Actions
-testgha:
-	cd utils && \
-	go test -v -count 1 -timeout 10m ./...
+unit-tests:
+	# exclude the framework and sdkv2 packages and the
+	# terraform-provider-hpe/morpheus package (but NOT its subpackages)
+	pkgs=$$(go list ./... | grep -Ev 'sdkv2/(resources|datasources)|framework/(resources|datasources)|terraform-provider-hpe/morpheus$$'); \
+	go test -v -count=1 -short -skip "TestAcc*" $$pkgs
 
 testacc:
 	cd morpheus/framework && \
