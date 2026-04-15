@@ -755,6 +755,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["option_list_id"] = optionType.OptionList.ID
 	case typeSelect:
 		row["option_list_id"] = optionType.OptionList.ID
+		row["allow_multiple_selections"] = optionType.Config.MultiSelect
+		row["sortable"] = optionType.Config.Sortable
 	case typeTextArea:
 		row["text_rows"] = optionType.Config.Rows
 	case typeHidden:
