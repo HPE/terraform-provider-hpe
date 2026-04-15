@@ -19,8 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/notify"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	version "github.com/hashicorp/go-version"
 )
