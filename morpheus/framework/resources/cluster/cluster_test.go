@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
@@ -27,6 +28,8 @@ func TestMain(m *testing.M) {
 
 // Tests that our HVM example file template used for docs is a valid config
 func TestAccMorpheusClusterHVMExampleOk(t *testing.T) {
+	skip.SkipByDefault(t)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -205,6 +208,8 @@ data "hpe_morpheus_service_plan" "test" {
 
 // Tests that our generic example file template used for docs is a valid config
 func TestAccMorpheusClusterGenericExampleOk(t *testing.T) {
+	skip.SkipByDefault(t)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -370,6 +375,8 @@ data "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
+	skip.SkipByDefault(t)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -549,6 +556,8 @@ resource "hpe_morpheus_cluster" "test" {
 }
 
 func TestAccMorpheusClusterGenericUpdateOk(t *testing.T) {
+	skip.SkipByDefault(t)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
