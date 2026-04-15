@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "secGroup"
     field_label              = "Security Groups"
     field_name               = "securityGroups"
-    default_value            = ""
+    default_value            = jsonencode([{ id = "sec-group-default" }])
     help_block               = "Select security groups"
     cloud_field_type         = "value"
     cloud_id                 = 1

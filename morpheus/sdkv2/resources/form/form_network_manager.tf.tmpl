@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                        = "{{.OptionTypeType}}"
     field_label                 = "{{.OptionTypeFieldLabel}}"
     field_name                  = "{{.OptionTypeFieldName}}"
-    default_value               = "{{.OptionTypeDefaultValue}}"
+    default_value               = {{.OptionTypeDefaultValue}}
     placeholder                 = "{{.OptionTypePlaceholder}}"
     help_block                  = "{{.OptionTypeHelpBlock}}"
     required                    = {{.OptionTypeRequired}}

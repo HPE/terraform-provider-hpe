@@ -327,7 +327,7 @@ func RenderKeyValueConfig(t *testing.T, overrides map[string]string) (string, er
 		"Labels":                          "[\"terraform\", \"demo\"]",
 		"Name":                            "demo",
 		"OptionTypeCode":                  "keyValue-input",
-		"OptionTypeDefaultValue":          "",
+		"OptionTypeDefaultValue":          `jsonencode([{ key = "a", value = "b" }, { key = "c", value = "d" }])`,
 		"OptionTypeDescription":           "Terraform keyValue example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
@@ -510,7 +510,7 @@ func RenderSelectConfig(t *testing.T, overrides map[string]string) (string, erro
 		"Labels":                          "[\"terraform\", \"demo\"]",
 		"Name":                            "demo",
 		"OptionTypeCode":                  "select-input",
-		"OptionTypeDefaultValue":          "test123",
+		"OptionTypeDefaultValue":          `"level1"`,
 		"OptionTypeDescription":           "Terraform select example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
@@ -817,14 +817,18 @@ func RenderNetworkManagerConfig(t *testing.T, overrides map[string]string) (stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Code":                               "demo",
-		"Description":                        "demo",
-		"Labels":                             "[\"terraform\", \"demo\"]",
-		"Name":                               "demo",
-		"OptionTypeCode":                     "network-manager-input",
-		"OptionTypeCloudFieldType":           "value",
-		"OptionTypeCloudId":                  "1",
-		"OptionTypeDefaultValue":             "test123",
+		"Code":                     "demo",
+		"Description":              "demo",
+		"Labels":                   "[\"terraform\", \"demo\"]",
+		"Name":                     "demo",
+		"OptionTypeCode":           "network-manager-input",
+		"OptionTypeCloudFieldType": "value",
+		"OptionTypeCloudId":        "1",
+		"OptionTypeDefaultValue": `jsonencode([{ primaryInterface = true, displayOrder = 0, ipMode = "",` +
+			`ipAddress = "", networkInterfaceTypeId = "4",` +
+			`network = { id = "network-216", pool = "{id: \"\"}" } },` +
+			`{ primaryInterface = false, displayOrder = 1, ipMode = "dhcp", ipAddress = "",` +
+			`networkInterfaceTypeId = 4, network = { id = "network-216", pool = "{id: \"\"}" } }])`,
 		"OptionTypeDescription":              "Terraform network manager example",
 		"OptionTypeDisplayValueOnDetails":    "true",
 		"OptionTypeEnableIPModeSelection":    "true",
@@ -1016,13 +1020,17 @@ func RenderDiskManagerConfig(t *testing.T, overrides map[string]string) (string,
 	t.Helper()
 
 	defaults := map[string]string{
-		"Code":                                 "demo",
-		"Description":                          "demo",
-		"Labels":                               "[\"terraform\", \"demo\"]",
-		"Name":                                 "demo",
-		"OptionTypeCloudFieldType":             "value",
-		"OptionTypeCloudId":                    "1",
-		"OptionTypeCode":                       "disk-manager-input",
+		"Code":                     "demo",
+		"Description":              "demo",
+		"Labels":                   "[\"terraform\", \"demo\"]",
+		"Name":                     "demo",
+		"OptionTypeCloudFieldType": "value",
+		"OptionTypeCloudId":        "1",
+		"OptionTypeCode":           "disk-manager-input",
+		"OptionTypeDefaultValue": `jsonencode([{ rootVolume = true, name = "root", size = 10,` +
+			`sizeBytes = 10737418240, minStorage = 0, displayOrder = 0, storageType = 1, datastoreId = "52" },` +
+			`{ rootVolume = false, name = "data-1", size = 20, sizeBytes = 21474836480,` +
+			`minStorage = 0, displayOrder = 1, datastoreId = "autoCluster", storageType = 1 }])`,
 		"OptionTypeDescription":                "Terraform disk manager example",
 		"OptionTypeDisplayValueOnDetails":      "true",
 		"OptionTypeEnableDatastoreSelection":   "true",
@@ -1073,14 +1081,15 @@ func RenderPlanConfig(t *testing.T, overrides map[string]string) (string, error)
 	t.Helper()
 
 	defaults := map[string]string{
-		"Code":                            "demo",
-		"Description":                     "demo",
-		"Labels":                          "[\"terraform\", \"demo\"]",
-		"Name":                            "demo",
-		"OptionTypeCloudFieldType":        "value",
-		"OptionTypeCloudId":               "1",
-		"OptionTypeCode":                  "plan-input",
-		"OptionTypeDefaultValue":          "",
+		"Code":                     "demo",
+		"Description":              "demo",
+		"Labels":                   "[\"terraform\", \"demo\"]",
+		"Name":                     "demo",
+		"OptionTypeCloudFieldType": "value",
+		"OptionTypeCloudId":        "1",
+		"OptionTypeCode":           "plan-input",
+		"OptionTypeDefaultValue": `jsonencode({ id = 1088, maxMemory = 8589934592,` +
+			`maxCores = "4", coresPerSocket = "2" })`,
 		"OptionTypeDescription":           "Terraform plan example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
@@ -1338,7 +1347,7 @@ func RenderSecGroupConfig(t *testing.T, overrides map[string]string) (string, er
 		"Labels":                          "[\"terraform\", \"demo\"]",
 		"Name":                            "demo",
 		"OptionTypeCode":                  "sec-group-input",
-		"OptionTypeDefaultValue":          "",
+		"OptionTypeDefaultValue":          `jsonencode([{ id = "sec-group-default" }])`,
 		"OptionTypeDescription":           "Terraform secGroup example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
@@ -1371,6 +1380,53 @@ func RenderSecGroupConfig(t *testing.T, overrides map[string]string) (string, er
 	}
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "form_sec_group.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTagConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "tag-input",
+		"OptionTypeDefaultValue":          `jsonencode([{ name = "Sample Name", value = "Sample Value" }])`,
+		"OptionTypeDescription":           "Terraform tag example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Tags",
+		"OptionTypeFieldName":             "tags",
+		"OptionTypeHelpBlock":             "Configure tags",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf tag example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "tag",
+		"OptionTypeGroupFieldType":        "value",
+		"OptionTypeGroupId":               "1",
+		"OptionTypeCloudFieldType":        "value",
+		"OptionTypeCloudId":               "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_tag.tf.tmpl")
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
@@ -1424,12 +1480,14 @@ func RenderPortsConfig(t *testing.T, overrides map[string]string) (string, error
 	t.Helper()
 
 	defaults := map[string]string{
-		"Code":                            "demo",
-		"Description":                     "demo",
-		"Labels":                          "[\"terraform\", \"demo\"]",
-		"Name":                            "demo",
-		"OptionTypeCode":                  "ports-input",
-		"OptionTypeDefaultValue":          "",
+		"Code":           "demo",
+		"Description":    "demo",
+		"Labels":         "[\"terraform\", \"demo\"]",
+		"Name":           "demo",
+		"OptionTypeCode": "ports-input",
+		"OptionTypeDefaultValue": `jsonencode([{ name = "standard", externalPort = "80", loadBalanceProtocol = "HTTP" },` +
+			`{ name = "ssl-title", externalPort = "443", loadBalanceProtocol = "HTTPS" },` +
+			`{ name = "tcp", externalPort = "40", loadBalanceProtocol = "TCP" }])`,
 		"OptionTypeDescription":           "Terraform ports example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",
@@ -1470,12 +1528,13 @@ func RenderLogoSelectorConfig(t *testing.T, overrides map[string]string) (string
 	t.Helper()
 
 	defaults := map[string]string{
-		"Code":                            "demo",
-		"Description":                     "demo",
-		"Labels":                          "[\"terraform\", \"demo\"]",
-		"Name":                            "demo",
-		"OptionTypeCode":                  "logo-selector-input",
-		"OptionTypeDefaultValue":          "identicon",
+		"Code":           "demo",
+		"Description":    "demo",
+		"Labels":         "[\"terraform\", \"demo\"]",
+		"Name":           "demo",
+		"OptionTypeCode": "logo-selector-input",
+		"OptionTypeDefaultValue": `jsonencode({ value = "identicon",` +
+			`settings = { type = "identicon", iconLabel = "example" } })`,
 		"OptionTypeDescription":           "Terraform logo selector example",
 		"OptionTypeDisplayValueOnDetails": "true",
 		"OptionTypeExcludeFromSearch":     "true",

@@ -3,7 +3,6 @@
 package form_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -15,7 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-func TestAccMorpheusFormSelectOk(t *testing.T) {
+func TestAccMorpheusFormTagOk(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {
@@ -29,20 +28,11 @@ func TestAccMorpheusFormSelectOk(t *testing.T) {
 	optTypeCode := code + "-ot"
 	optTypeName := name + " option type"
 
-	optionListConfig := fmt.Sprintf(`
-resource "hpe_morpheus_option_list_manual" "example" {
-  name    = %q
-  dataset = "[{\"name\": \"Level 1\",\"value\":\"level1\"},{\"name\": \"Level 2\",\"value\":\"level2\"}]"
-  real_time = true
-}
-`, name+" option list")
-
-	resourceConfig, err := form.RenderSelectConfig(t, map[string]string{
-		"Name":                   name,
-		"Code":                   code,
-		"OptionTypeCode":         optTypeCode,
-		"OptionTypeName":         optTypeName,
-		"OptionTypeOptionListId": "hpe_morpheus_option_list_manual.example.id",
+	resourceConfig, err := form.RenderTagConfig(t, map[string]string{
+		"Name":           name,
+		"Code":           code,
+		"OptionTypeCode": optTypeCode,
+		"OptionTypeName": optTypeName,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -52,38 +42,52 @@ resource "hpe_morpheus_option_list_manual" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + optionListConfig + resourceConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "description", "demo"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "select"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.type", "tag"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "level1"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"option_type.0.description",
-						"Terraform select example",
+						"Terraform tag example",
 					),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.display_value_on_details", "true"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.display_value_on_details",
+						"true",
+					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.exclude_from_search", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "Select Test"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "selectTest"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Select an option"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "true"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "Tags"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "tags"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.help_block",
+						"Configure tags",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "false"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.group_field_type",
+						"value",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.group_id", "1"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_form.example",
+						"option_type.0.cloud_field_type",
+						"value",
+					),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_id", "1"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.name", optTypeName),
-					resource.TestCheckResourceAttrPair(
-						"hpe_morpheus_form.example", "option_type.0.option_list_id",
-						"hpe_morpheus_option_list_manual.example", "id",
-					),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.placeholder", "Testing 123"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.required", "true"),
 				),
 			},
 			{
-				Config:             providerConfig + optionListConfig + resourceConfig,
+				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

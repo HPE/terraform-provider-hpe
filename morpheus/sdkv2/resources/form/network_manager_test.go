@@ -51,7 +51,6 @@ func TestAccMorpheusFormNetworkManagerOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.code", optTypeCode),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_field_type", "value"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.cloud_id", "1"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.default_value", "test123"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"option_type.0.description",

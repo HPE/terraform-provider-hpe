@@ -29,7 +29,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "keyValue"
     field_label              = "KeyValue"
     field_name               = "keyValue"
-    default_value            = ""
+    default_value            = jsonencode([{ key = "a", value = "b" }, { key = "c", value = "d" }])
     help_block               = "Select a key-value pair"
     convert_to_object        = "true"
     key_placeholder          = "Key123"
@@ -152,7 +152,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "select"
     field_label              = "Select Test"
     field_name               = "selectTest"
-    default_value            = "test123"
+    default_value            = "level1"
     placeholder              = "Testing 123"
     help_block               = "Select an option"
     option_list_id           = 1
@@ -293,13 +293,14 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name                     = "tf logo selector example"
-    code                     = "logo-selector-input"
-    description              = "Terraform logo selector example"
-    type                     = "logoSelector"
-    field_label              = "Select Logo"
-    field_name               = "logoSelector"
-    default_value            = "identicon"
+    name        = "tf logo selector example"
+    code        = "logo-selector-input"
+    description = "Terraform logo selector example"
+    type        = "logoSelector"
+    field_label = "Select Logo"
+    field_name  = "logoSelector"
+    // For just a logo without a label: jsonencode({ value = "/assets/branding/140x40/resource.svg" })
+    default_value            = jsonencode({ value = "identicon", settings = { type = "identicon", iconLabel = "example" } })
     placeholder              = ""
     help_block               = "Select or upload a logo"
     required                 = true
@@ -388,7 +389,7 @@ resource "hpe_morpheus_form" "example" {
     type                        = "networkManager"
     field_label                 = "network input"
     field_name                  = "networkInput"
-    default_value               = "test123"
+    default_value               = jsonencode([{ primaryInterface = true, displayOrder = 0, ipMode = "", ipAddress = "", networkInterfaceTypeId = "4", network = { id = "network-216", pool = "{id: \"\"}" } }, { primaryInterface = false, displayOrder = 1, ipMode = "dhcp", ipAddress = "", networkInterfaceTypeId = 4, network = { id = "network-216", pool = "{id: \"\"}" } }])
     placeholder                 = "Select network"
     help_block                  = "Select a network"
     required                    = true
@@ -527,6 +528,7 @@ resource "hpe_morpheus_form" "example" {
     type                          = "diskManager"
     field_label                   = "disk manager input"
     field_name                    = "diskManagerInput"
+    default_value                 = jsonencode([{ rootVolume = true, name = "root", size = 10, sizeBytes = 10737418240, minStorage = 0, displayOrder = 0, storageType = 1, datastoreId = "52" }, { rootVolume = false, name = "data-1", size = 20, sizeBytes = 21474836480, minStorage = 0, displayOrder = 1, datastoreId = "autoCluster", storageType = 1 }])
     help_block                    = "Configure disks"
     required                      = true
     export_meta                   = true
@@ -569,7 +571,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "plan"
     field_label              = "plan input"
     field_name               = "planInput"
-    default_value            = ""
+    default_value            = jsonencode({ id = 1088, maxMemory = 8589934592, maxCores = "4", coresPerSocket = "2" })
     placeholder              = "Select plan"
     help_block               = "Select a plan"
     required                 = true
@@ -761,11 +763,43 @@ resource "hpe_morpheus_form" "example" {
     type                     = "secGroup"
     field_label              = "Security Groups"
     field_name               = "securityGroups"
-    default_value            = ""
+    default_value            = jsonencode([{ id = "sec-group-default" }])
     help_block               = "Select security groups"
     cloud_field_type         = "value"
     cloud_id                 = 1
     pool_field               = "resourcePool"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+  }
+}
+```
+
+### Tag
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf tag example"
+    code                     = "tag-input"
+    description              = "Terraform tag example"
+    type                     = "tag"
+    field_label              = "Tags"
+    field_name               = "tags"
+    default_value            = jsonencode([{ name = "Sample Name", value = "Sample Value" }])
+    help_block               = "Configure tags"
+    group_field_type         = "value"
+    group_id                 = 1
+    cloud_field_type         = "value"
+    cloud_id                 = 1
     required                 = true
     export_meta              = true
     display_value_on_details = true
@@ -792,7 +826,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "ports"
     field_label              = "Exposed Ports"
     field_name               = "ports"
-    default_value            = ""
+    default_value            = jsonencode([{ name = "standard", externalPort = "80", loadBalanceProtocol = "HTTP" }, { name = "ssl-title", externalPort = "443", loadBalanceProtocol = "HTTPS" }, { name = "tcp", externalPort = "40", loadBalanceProtocol = "TCP" }])
     help_block               = "Configure exposed ports"
     group_field              = "myGroup"
     cloud_field              = "myCloud"

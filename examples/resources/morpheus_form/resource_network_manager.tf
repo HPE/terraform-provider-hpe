@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                        = "networkManager"
     field_label                 = "network input"
     field_name                  = "networkInput"
-    default_value               = "test123"
+    default_value               = jsonencode([{ primaryInterface = true, displayOrder = 0, ipMode = "", ipAddress = "", networkInterfaceTypeId = "4", network = { id = "network-216", pool = "{id: \"\"}" } }, { primaryInterface = false, displayOrder = 1, ipMode = "dhcp", ipAddress = "", networkInterfaceTypeId = 4, network = { id = "network-216", pool = "{id: \"\"}" } }])
     placeholder                 = "Select network"
     help_block                  = "Select a network"
     required                    = true

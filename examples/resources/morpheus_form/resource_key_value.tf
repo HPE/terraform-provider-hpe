@@ -11,7 +11,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "keyValue"
     field_label              = "KeyValue"
     field_name               = "keyValue"
-    default_value            = ""
+    default_value            = jsonencode([{ key = "a", value = "b" }, { key = "c", value = "d" }])
     help_block               = "Select a key-value pair"
     convert_to_object        = "true"
     key_placeholder          = "Key123"
