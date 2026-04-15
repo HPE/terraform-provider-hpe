@@ -56,7 +56,30 @@ func (r *Resource) Update(
 		dhcpServerMap["leaseTime"] = plan.LeaseTime.ValueInt64()
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+	switch {
+	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
+		configMap := map[string]interface{}{}
+
+		if !plan.ConfigNsx.EdgeCluster.IsNull() &&
+			!plan.ConfigNsx.EdgeCluster.IsUnknown() {
+			configMap["edgeCluster"] = plan.ConfigNsx.EdgeCluster.ValueString()
+		}
+
+		if !plan.ConfigNsx.ActiveEdgeNode.IsNull() &&
+			!plan.ConfigNsx.ActiveEdgeNode.IsUnknown() {
+			configMap["preferredEdgeNode1"] = plan.ConfigNsx.
+				ActiveEdgeNode.ValueString()
+		}
+
+		if !plan.ConfigNsx.StandbyEdgeNode.IsNull() &&
+			!plan.ConfigNsx.StandbyEdgeNode.IsUnknown() {
+			configMap["preferredEdgeNode2"] = plan.ConfigNsx.
+				StandbyEdgeNode.ValueString()
+		}
+
+		dhcpServerMap["config"] = configMap
+
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {

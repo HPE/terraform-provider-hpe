@@ -4,13 +4,13 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
   server_ip_address = "{{.ServerIpAddress}}"
   lease_time        = {{.LeaseTime}}
 
-  config = {
-    "edgeCluster" = "{{.EdgeCluster}}"
+  config_nsx = {
+    edge_cluster = "{{.EdgeCluster}}"
     {{- if ne .ActiveEdgeNode ""}}
-    "preferredEdgeNode1" = "{{.ActiveEdgeNode}}"
+    active_edge_node = "{{.ActiveEdgeNode}}"
     {{- end}}
     {{- if ne .StandbyEdgeNode ""}}
-    "preferredEdgeNode2" = "{{.StandbyEdgeNode}}"
+    standby_edge_node = "{{.StandbyEdgeNode}}"
     {{- end}}
   }
 }

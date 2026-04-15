@@ -51,7 +51,34 @@ func (r *Resource) Create(
 		dhcpServer.SetLeaseTime(plan.LeaseTime.ValueInt64())
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+	switch {
+	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
+		nsxConfig := sdk.NewNSXDHCPServerConfiguration()
+
+		if !plan.ConfigNsx.EdgeCluster.IsNull() &&
+			!plan.ConfigNsx.EdgeCluster.IsUnknown() {
+			nsxConfig.SetEdgeCluster(plan.ConfigNsx.EdgeCluster.ValueString())
+		}
+
+		if !plan.ConfigNsx.ActiveEdgeNode.IsNull() &&
+			!plan.ConfigNsx.ActiveEdgeNode.IsUnknown() {
+			nsxConfig.SetPreferredEdgeNode1(
+				plan.ConfigNsx.ActiveEdgeNode.ValueString(),
+			)
+		}
+
+		if !plan.ConfigNsx.StandbyEdgeNode.IsNull() &&
+			!plan.ConfigNsx.StandbyEdgeNode.IsUnknown() {
+			nsxConfig.SetPreferredEdgeNode2(
+				plan.ConfigNsx.StandbyEdgeNode.ValueString(),
+			)
+		}
+
+		dhcpServer.SetConfig(sdk.CreateNetworkDhcpServerRequestNetworkDhcpServerConfig{
+			NSXDHCPServerConfiguration: nsxConfig,
+		})
+
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {

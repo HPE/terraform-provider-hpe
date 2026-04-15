@@ -60,7 +60,7 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network_dhcp_server.example",
-			"config.edgeCluster",
+			"config_nsx.edge_cluster",
 			"qa-edge-cluster-01",
 		),
 		resource.TestCheckResourceAttrSet(

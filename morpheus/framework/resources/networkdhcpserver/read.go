@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -60,6 +61,37 @@ func getNetworkDhcpServerAsState(
 	state.NetworkServerId = plan.NetworkServerId
 
 	state.Config = types.DynamicNull()
+	state.ConfigNsx = NewConfigNsxValueNull()
+
+	cfg := dhcpServer.GetConfig()
+
+	if !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown() {
+		edgeCluster := types.StringNull()
+		activeEdgeNode := types.StringNull()
+		standbyEdgeNode := types.StringNull()
+
+		if nsxCfg := cfg.NSXDHCPServerConfiguration; nsxCfg != nil {
+			edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
+			activeEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode1.Get())
+			standbyEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode2.Get())
+		}
+
+		nsxValue, nsxDiags := NewConfigNsxValue(
+			ConfigNsxValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"edge_cluster":      edgeCluster,
+				"active_edge_node":  activeEdgeNode,
+				"standby_edge_node": standbyEdgeNode,
+			},
+		)
+		if nsxDiags.HasError() {
+			diags.Append(nsxDiags...)
+
+			return state, diags
+		}
+
+		state.ConfigNsx = nsxValue
+	}
 
 	// success is not part of the GET response; set to null.
 	state.Success = types.BoolNull()
@@ -102,6 +134,10 @@ func (r *Resource) Read(
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		state.Config = plan.Config
+	}
+
+	if !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown() {
+		state.ConfigNsx = plan.ConfigNsx
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
