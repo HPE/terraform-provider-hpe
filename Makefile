@@ -18,6 +18,11 @@ test:
 	env TF_ACC=1 \
 	go test -short -v -cover -count 1 -timeout 10m ./...
 
+# For use in GitHub Actions
+testgha:
+	cd utils && \
+	go test -v -count 1 -timeout 10m ./...
+
 testacc:
 	cd morpheus/framework && \
 	env TF_ACC=1 \
