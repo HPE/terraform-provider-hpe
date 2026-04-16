@@ -1,6 +1,6 @@
 # v1.3.0 Release Notes
 
-In this release (v1.3.0) we have added a Warning if the provider version is less than the latest version available on the registry.
+In this release (v1.3.0) we have added a notifier which issues a Warning if the provider version is less than the latest version available on the registry.
 This can be suppressed by upgrading to the latest version or setting the environment variable `HPE_IGNORE_VERSION_CHECK`.
 
 In this release (v1.3.0) we have added the following resource functionality:
