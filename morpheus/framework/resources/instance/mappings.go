@@ -162,6 +162,11 @@ func updateNetworkInterfaceMapper(
 			ipPool.SetId(in.IpPool.ValueInt64())
 		}
 
+		var intfIdPtr *int64
+		if !in.Id.IsNull() && !in.Id.IsUnknown() {
+			intfIdPtr = in.Id.ValueInt64Pointer()
+		}
+
 		childNetworkInterfaces, diags := convert.FromListType(
 			ctx,
 			in.ChildVirtualNetworks,
@@ -177,6 +182,7 @@ func updateNetworkInterfaceMapper(
 				Id:   id,
 				Pool: ipPool,
 			},
+			Id:                     intfIdPtr,
 			IpMode:                 in.IpMode.ValueStringPointer(),
 			IpAddress:              in.IpAddress.ValueStringPointer(),
 			NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
@@ -227,6 +233,11 @@ func updateChildNetworkInterfaceMapper(
 		id = in.NetworkId.String()
 	}
 
+	var intfIdPtr *int64
+	if !in.Id.IsNull() && !in.Id.IsUnknown() {
+		intfIdPtr = in.Id.ValueInt64Pointer()
+	}
+
 	ipPool := sdk.NewInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPoolWithDefaults()
 	if !in.IpPool.IsNull() {
 		ipPool.SetId(in.IpPool.ValueInt64())
@@ -237,6 +248,7 @@ func updateChildNetworkInterfaceMapper(
 			Id:   id,
 			Pool: ipPool,
 		},
+		Id:                     intfIdPtr,
 		IpMode:                 in.IpMode.ValueStringPointer(),
 		IpAddress:              in.IpAddress.ValueStringPointer(),
 		NetworkInterfaceTypeId: in.NetworkTypeId.ValueInt64Pointer(),
