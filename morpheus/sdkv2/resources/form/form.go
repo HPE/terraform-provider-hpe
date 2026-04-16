@@ -1642,13 +1642,11 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			row["type"] = optionType.Type
 			row["field_label"] = optionType.FieldLabel
 			row["field_name"] = optionType.FieldName
-			if optionType.Type != typePassword {
-				// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
-				if optionType.Config.DefaultValue != "" {
-					row["default_value"] = optionType.Config.DefaultValue
-				} else {
-					row["default_value"] = optionType.DefaultValue
-				}
+			// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
+			if optionType.Config.DefaultValue != "" {
+				row["default_value"] = optionType.Config.DefaultValue
+			} else {
+				row["default_value"] = optionType.DefaultValue
 			}
 			row["placeholder"] = optionType.PlaceHolder
 			row["help_block"] = optionType.HelpBlock
@@ -1690,13 +1688,11 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					optionTypeRow["type"] = optionType.Type
 					optionTypeRow["field_label"] = optionType.FieldLabel
 					optionTypeRow["field_name"] = optionType.FieldName
-					if optionType.Type != typePassword {
-						// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
-						if optionType.Config.DefaultValue != "" {
-							optionTypeRow["default_value"] = optionType.Config.DefaultValue
-						} else {
-							optionTypeRow["default_value"] = optionType.DefaultValue
-						}
+					// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
+					if optionType.Config.DefaultValue != "" {
+						optionTypeRow["default_value"] = optionType.Config.DefaultValue
+					} else {
+						optionTypeRow["default_value"] = optionType.DefaultValue
 					}
 					optionTypeRow["placeholder"] = optionType.PlaceHolder
 					optionTypeRow["help_block"] = optionType.HelpBlock
