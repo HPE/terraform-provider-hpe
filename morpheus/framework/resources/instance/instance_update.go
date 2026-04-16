@@ -25,11 +25,6 @@ var (
 		"running",
 	}
 
-	UpdateStoppedOrRunningTargetStatus = []string{
-		"stopped",
-		"running",
-	}
-
 	UpdateErrorStatuses = []string{
 		"denied",
 		"cancelled",
