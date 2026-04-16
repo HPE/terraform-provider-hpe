@@ -33,27 +33,19 @@ func getLoadBalancerAsState(
 
 	data := lb.GetLoadBalancer()
 
-	isHAProxy := data.Type != nil && data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
+	if data.Cloud == nil {
+		return state, fmt.Errorf("load balancer %d cloud id not found", id)
+	}
+
+	if data.Type == nil {
+		return state, fmt.Errorf("load balancer %d type not found", id)
+	}
 
 	state.Id = convert.Int64ToType(data.Id)
 	state.Name = convert.StrToType(data.Name)
 	state.Description = convert.StrToType(data.Description)
 	state.Visibility = convert.StrToType(data.Visibility)
-
-	switch {
-	case isHAProxy:
-		state.TypeCode = types.StringNull()
-	default:
-		if data.Type != nil {
-			state.TypeCode = types.StringValue(*data.Type.Code)
-		}
-	}
-
-	if data.Cloud != nil {
-		state.CloudId = convert.Int64ToType(data.Cloud.Id)
-	} else {
-		state.CloudId = types.Int64Null()
-	}
+	state.CloudId = convert.Int64ToType(data.Cloud.Id)
 
 	// The API does not return group or network_server_id on load balancers,
 	// so these must be preserved from plan/state. After import they will be null.
@@ -63,18 +55,25 @@ func getLoadBalancerAsState(
 	// Set config based on the load balancer type.
 	// For HAProxy LBs, parse the API config map into the typed config_haproxy attribute.
 	// For other types, leave both null — the caller preserves config from the plan.
+	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
+
 	switch {
-	case isHAProxy:
+	case isHAProxy && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
+		state.TypeCode = types.StringNull()
+
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}
 
 		state.ConfigHaproxy = haproxyCfg
-		state.Config = types.DynamicNull()
 	default:
-		state.Config = types.DynamicNull()
-		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.TypeCode = types.StringValue(*data.Type.Code)
+
+		state.Config, err = convert.MapToDynamic(ctx, data.GetConfig())
+		if err != nil {
+			return state, fmt.Errorf("failed to convert generic config: %w", err)
+		}
 	}
 
 	// Tenants

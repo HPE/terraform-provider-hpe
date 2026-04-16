@@ -69,3 +69,53 @@ func TestAccMorpheusLoadBalancerHAProxyExampleOk(t *testing.T) {
 		},
 	})
 }
+
+func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow acceptance test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+	// This resource only allows name to be 32 characters maximum.
+	name = name[0:16] + name[len(name)-16:]
+
+	config, err := loadbalancer.RenderLoadBalancerHAProxyGenericConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %s", err)
+	}
+
+	resourceName := "hpe_morpheus_load_balancer.haproxy_generic"
+	config = testhelpers.ProviderBlock() + config
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_code", "haproxyContainer"),
+					resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"config",
+					"config_haproxy",
+					"group_id",
+					"cloud_id",
+					"network_server_id",
+					"type_code",
+				},
+			},
+		},
+	})
+}
