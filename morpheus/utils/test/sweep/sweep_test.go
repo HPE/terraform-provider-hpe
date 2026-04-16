@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package sweep
 
@@ -11,6 +11,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
@@ -28,6 +29,7 @@ func init() {
 	}
 
 	// Register sweepers that use the centralized client
+	loadbalancer.NewLoadBalancerSweeper(client)
 	policy.NewPolicySweeper(client)
 	datastore.NewDatastoreSweeper(client)
 	instance.NewInstanceSweeper(client)
