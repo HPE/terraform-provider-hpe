@@ -84,12 +84,11 @@ func (r *Resource) Update(
 		return
 	}
 
-	newState, _, diags := getLoadBalancerAsState(ctx, id, client, plan)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
+	newState, err := getLoadBalancerAsState(ctx, id, client, plan)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"update load balancer resource",
-			fmt.Sprintf("load balancer %d: failed to read from api", id),
+			fmt.Sprintf("load balancer %d: failed to read from api: %s", id, err),
 		)
 
 		return

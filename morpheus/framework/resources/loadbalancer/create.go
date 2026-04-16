@@ -121,12 +121,11 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, _, pdiags := getLoadBalancerAsState(ctx, id, client, plan)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	state, err := getLoadBalancerAsState(ctx, id, client, plan)
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"failed to read load balancer state",
-			fmt.Sprintf("Load balancer %d was created but could not be read", id),
+			fmt.Sprintf("Load balancer %d was created but could not be read: %s", id, err),
 		)
 		taintResourceState(id)
 

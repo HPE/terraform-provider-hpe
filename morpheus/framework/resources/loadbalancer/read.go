@@ -9,7 +9,6 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -17,34 +16,19 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
-// isNotFound returns true when the HTTP response indicates the resource
-// no longer exists on the server (404 Not Found).
-func isNotFound(hresp *http.Response) bool {
-	return hresp != nil && hresp.StatusCode == http.StatusNotFound
-}
-
 func getLoadBalancerAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
 	plan LoadBalancerModel,
-) (LoadBalancerModel, bool, diag.Diagnostics) {
+) (LoadBalancerModel, error) {
 	var state LoadBalancerModel
-	var diags diag.Diagnostics
 
 	lb, hresp, err := client.LoadBalancersAPI.GetLoadBalancer(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		if isNotFound(hresp) {
-			return state, true, diags
-		}
-
-		diags.AddError(
-			"populate load balancer resource",
-			fmt.Sprintf("load balancer %d GET failed: ", id)+
-				errfmt.ErrMsg(err, hresp),
+		return state, fmt.Errorf(
+			"load balancer %d GET failed: %s", id, errfmt.ErrMsg(err, hresp),
 		)
-
-		return state, false, diags
 	}
 
 	data := lb.GetLoadBalancer()
@@ -60,12 +44,12 @@ func getLoadBalancerAsState(
 	case isHAProxy:
 		state.TypeCode = types.StringNull()
 	default:
-		if data.Type != nil && data.Type.Code != nil {
+		if data.Type != nil {
 			state.TypeCode = types.StringValue(*data.Type.Code)
 		}
 	}
 
-	if data.Cloud != nil && data.Cloud.Id != nil {
+	if data.Cloud != nil {
 		state.CloudId = convert.Int64ToType(data.Cloud.Id)
 	} else {
 		state.CloudId = types.Int64Null()
@@ -81,10 +65,9 @@ func getLoadBalancerAsState(
 	// For other types, leave both null — the caller preserves config from the plan.
 	switch {
 	case isHAProxy:
-		haproxyCfg, d := parseHAProxyConfig(ctx, data.GetConfig())
-		diags.Append(d...)
-		if diags.HasError() {
-			return state, false, diags
+		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
+		if err != nil {
+			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}
 
 		state.ConfigHaproxy = haproxyCfg
@@ -95,54 +78,31 @@ func getLoadBalancerAsState(
 	}
 
 	// Tenants
-	state.Tenants = types.SetNull(TenantsType{
-		ObjectType: types.ObjectType{
-			AttrTypes: TenantsValue{}.AttributeTypes(ctx),
+	tenants, d := convert.ToSetType(
+		ctx,
+		data.Tenants,
+		func(
+			in sdk.GetLoadBalancer200ResponseLoadBalancerTenantsInner,
+		) TenantsValue {
+			return TenantsValue{
+				Id:    types.Int64Value(*in.Id),
+				Name:  types.StringValue(*in.Name),
+				state: attr.ValueStateKnown,
+			}
 		},
-	})
-	if len(data.Tenants) > 0 {
-		var tenantValues []attr.Value
-		for _, tenant := range data.Tenants {
-			tv, d := NewTenantsValue(
-				TenantsValue{}.AttributeTypes(ctx),
-				map[string]attr.Value{
-					"id":   convert.Int64ToType(tenant.Id),
-					"name": convert.StrToType(tenant.Name),
-				},
-			)
-			diags.Append(d...)
-			if diags.HasError() {
-				return state, false, diags
-			}
-
-			tenantValues = append(tenantValues, tv)
-		}
-
-		if len(tenantValues) > 0 {
-			tenantSet, d := types.SetValue(
-				TenantsType{
-					ObjectType: types.ObjectType{
-						AttrTypes: TenantsValue{}.AttributeTypes(ctx),
-					},
-				},
-				tenantValues,
-			)
-			diags.Append(d...)
-			if diags.HasError() {
-				return state, false, diags
-			}
-
-			state.Tenants = tenantSet
-		}
+	)
+	if d.HasError() {
+		return state, fmt.Errorf("failed to convert tenants: %s", d.Errors())
 	}
+
+	state.Tenants = tenants
 
 	// Resource permissions
 	resourcePermission, ok := data.GetResourcePermissionOk()
 	if ok && resourcePermission != nil {
-		perms, d := convertResourcePermissions(ctx, resourcePermission)
-		diags.Append(d...)
-		if diags.HasError() {
-			return state, false, diags
+		perms, err := convertResourcePermissions(ctx, resourcePermission)
+		if err != nil {
+			return state, fmt.Errorf("failed to convert resource permissions: %w", err)
 		}
 
 		state.Permissions = perms
@@ -150,33 +110,31 @@ func getLoadBalancerAsState(
 		state.Permissions = NewPermissionsValueNull()
 	}
 
-	return state, false, diags
+	return state, nil
 }
 
 func convertResourcePermissions(
 	ctx context.Context,
 	resourcePermission *sdk.GetLoadBalancer200ResponseLoadBalancerResourcePermission,
-) (PermissionsValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
+) (PermissionsValue, error) {
+	var groupIDValues []attr.Value
 
-	var groupValues []attr.Value
-	sites, ok := resourcePermission.GetSitesOk()
+	groups, ok := resourcePermission.GetSitesOk()
 	if ok {
-		for _, site := range sites {
-			if site.Id != nil {
-				groupValues = append(
-					groupValues, types.Int64Value(*site.Id),
+		for _, group := range groups {
+			if group.Id != nil {
+				groupIDValues = append(
+					groupIDValues, types.Int64Value(*group.Id),
 				)
 			}
 		}
 	}
 
 	var groupIDsSet attr.Value
-	if len(groupValues) > 0 {
-		s, d := types.SetValue(types.Int64Type, groupValues)
-		diags.Append(d...)
-		if diags.HasError() {
-			return PermissionsValue{}, diags
+	if len(groupIDValues) > 0 {
+		s, d := types.SetValue(types.Int64Type, groupIDValues)
+		if d.HasError() {
+			return PermissionsValue{}, fmt.Errorf("failed to build groups set: %s", d.Errors())
 		}
 
 		groupIDsSet = s
@@ -194,17 +152,17 @@ func convertResourcePermissions(
 			"groups": groupIDsSet,
 		},
 	)
-	diags.Append(d...)
+	if d.HasError() {
+		return PermissionsValue{}, fmt.Errorf("failed to build permissions value: %s", d.Errors())
+	}
 
-	return perms, diags
+	return perms, nil
 }
 
 func parseHAProxyConfig(
 	ctx context.Context,
 	configMap map[string]interface{},
-) (ConfigHaproxyValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+) (ConfigHaproxyValue, error) {
 	var planID int64
 
 	if planRaw, ok := configMap["plan"]; ok {
@@ -239,9 +197,11 @@ func parseHAProxyConfig(
 			"pool":    types.StringValue(pool),
 		},
 	)
-	diags.Append(d...)
+	if d.HasError() {
+		return ConfigHaproxyValue{}, fmt.Errorf("failed to build config_haproxy value: %s", d.Errors())
+	}
 
-	return cfg, diags
+	return cfg, nil
 }
 
 func (r *Resource) Read(
@@ -268,14 +228,10 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, notFound, diags := getLoadBalancerAsState(ctx, id, client, plan)
-	if notFound {
-		resp.State.RemoveResource(ctx)
+	state, err := getLoadBalancerAsState(ctx, id, client, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("read load balancer resource", err.Error())
 
-		return
-	}
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
 		return
 	}
 
