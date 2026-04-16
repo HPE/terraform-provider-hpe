@@ -37,7 +37,6 @@ data "hpe_morpheus_cluster" "example" {
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
 - `category` (String)
 - `cloud` (Attributes) (see [below for nested schema](#nestedatt--cloud))
-- `code` (String)
 - `config` (Dynamic)
 - `containers_count` (Number)
 - `created_by` (Attributes) (see [below for nested schema](#nestedatt--created_by))
