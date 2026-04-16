@@ -38,7 +38,6 @@ func (r *Resource) Update(
 	}
 
 	id := state.Id.ValueInt64()
-	serverId := float32(plan.NetworkServerId.ValueInt64())
 
 	dhcpServerMap := map[string]interface{}{}
 
@@ -112,9 +111,10 @@ func (r *Resource) Update(
 
 	updateReq := sdk.NewUpdateNetworkDhcpServerRequestWithDefaults()
 	updateReq.SetNetworkDhcpServer(dhcpServerMap)
+	serverID := plan.NetworkServerId.ValueInt64()
 
 	_, hresp, err := client.NetworksAPI.
-		UpdateNetworkDhcpServer(ctx, id, serverId).
+		UpdateNetworkDhcpServer(ctx, id, float32(serverID)).
 		UpdateNetworkDhcpServerRequest(*updateReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
@@ -129,7 +129,7 @@ func (r *Resource) Update(
 	}
 
 	newState, diags := getNetworkDhcpServerAsState(
-		ctx, id, serverId, client, plan,
+		ctx, id, serverID, client, plan,
 	)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
@@ -142,10 +142,6 @@ func (r *Resource) Update(
 		)
 
 		return
-	}
-
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		newState.Config = plan.Config
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)

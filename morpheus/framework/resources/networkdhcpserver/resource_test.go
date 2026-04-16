@@ -12,9 +12,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -29,7 +31,8 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -95,7 +98,8 @@ func TestAccMorpheusNetworkDhcpServerUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 

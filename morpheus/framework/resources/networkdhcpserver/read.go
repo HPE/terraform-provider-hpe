@@ -4,6 +4,7 @@ package networkdhcpserver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -20,7 +21,7 @@ import (
 func getNetworkDhcpServerAsState(
 	ctx context.Context,
 	id int64,
-	serverId float32,
+	serverID int64,
 	client *sdk.APIClient,
 	plan NetworkDhcpServerModel,
 ) (NetworkDhcpServerModel, diag.Diagnostics) {
@@ -28,7 +29,7 @@ func getNetworkDhcpServerAsState(
 	var diags diag.Diagnostics
 
 	dhcpResp, hresp, err := client.NetworksAPI.
-		GetNetworkDhcpServer(ctx, id, serverId).Execute()
+		GetNetworkDhcpServer(ctx, id, float32(serverID)).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate network dhcp server resource",
@@ -41,9 +42,16 @@ func getNetworkDhcpServerAsState(
 
 	dhcpServer := dhcpResp.GetNetworkDhcpServer()
 
-	if dhcpServer.Id != nil {
-		state.Id = types.Int64Value(int64(*dhcpServer.Id))
+	if dhcpServer.Id == nil {
+		diags.AddError(
+			"populate network dhcp server resource",
+			fmt.Sprintf("network dhcp server %d GET response missing id", id),
+		)
+
+		return state, diags
 	}
+
+	state.Id = types.Int64Value(int64(*dhcpServer.Id))
 
 	state.Name = convert.StrToType(dhcpServer.Name)
 	state.ServerIpAddress = convert.StrToType(dhcpServer.ServerIpAddress)
@@ -56,16 +64,20 @@ func getNetworkDhcpServerAsState(
 		state.LeaseTime = plan.LeaseTime
 	}
 
-	// network_server_id is a path parameter not returned by the GET
-	// response; preserve it from the plan / prior state.
-	state.NetworkServerId = plan.NetworkServerId
+	if networkServerID, ok := getNetworkServerIDFromAPI(dhcpServer); ok {
+		state.NetworkServerId = types.Int64Value(networkServerID)
+	} else {
+		// Some API versions do not include networkServer in this response.
+		state.NetworkServerId = plan.NetworkServerId
+	}
 
 	state.Config = types.DynamicNull()
 	state.ConfigNsx = NewConfigNsxValueNull()
 
 	cfg := dhcpServer.GetConfig()
 
-	if !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown() {
+	switch {
+	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
 		edgeCluster := types.StringNull()
 		activeEdgeNode := types.StringNull()
 		standbyEdgeNode := types.StringNull()
@@ -91,12 +103,48 @@ func getNetworkDhcpServerAsState(
 		}
 
 		state.ConfigNsx = nsxValue
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		state.Config = plan.Config
 	}
 
 	// success is not part of the GET response; set to null.
 	state.Success = types.BoolNull()
 
 	return state, diags
+}
+
+func getNetworkServerIDFromAPI(dhcpServer any) (int64, bool) {
+	encoded, err := json.Marshal(dhcpServer)
+	if err != nil {
+		return 0, false
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(encoded, &payload); err != nil {
+		return 0, false
+	}
+
+	networkServerRaw, ok := payload["networkServer"]
+	if !ok {
+		return 0, false
+	}
+
+	networkServerMap, ok := networkServerRaw.(map[string]any)
+	if !ok {
+		return 0, false
+	}
+
+	idRaw, ok := networkServerMap["id"]
+	if !ok {
+		return 0, false
+	}
+
+	idFloat, ok := idRaw.(float64)
+	if !ok {
+		return 0, false
+	}
+
+	return int64(idFloat), true
 }
 
 func (r *Resource) Read(
@@ -122,22 +170,14 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	serverId := float32(plan.NetworkServerId.ValueInt64())
+	serverID := plan.NetworkServerId.ValueInt64()
 
 	state, diags := getNetworkDhcpServerAsState(
-		ctx, id, serverId, client, plan,
+		ctx, id, serverID, client, plan,
 	)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
-	}
-
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
-	}
-
-	if !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown() {
-		state.ConfigNsx = plan.ConfigNsx
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

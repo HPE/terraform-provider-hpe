@@ -19,14 +19,14 @@ const testDhcpServerPrefix = "TestAccMorpheusNetworkDhcpServer"
 
 type dhcpServerSweeper struct {
 	client   *sdk.APIClient
-	serverID float32
+	serverID int64
 }
 
 // NewNetworkDhcpServerSweeper creates and registers a DHCP server sweeper.
 // The serverID identifies the network server whose DHCP servers will be swept.
 func NewNetworkDhcpServerSweeper(
 	client *sdk.APIClient,
-	serverID float32,
+	serverID int64,
 ) {
 	s := &dhcpServerSweeper{
 		client:   client,
@@ -55,7 +55,7 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 	}
 
 	resp, hresp, err := s.client.NetworksAPI.
-		GetNetworkDhcpServers(ctx, s.serverID).Execute()
+		GetNetworkDhcpServers(ctx, float32(s.serverID)).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf(
 			"failed to list network dhcp servers: %s",
@@ -106,7 +106,7 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 		)
 
 		_, hresp, err := s.client.NetworksAPI.
-			DeleteNetworkDhcpServer(ctx, id, s.serverID).Execute()
+			DeleteNetworkDhcpServer(ctx, id, float32(s.serverID)).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete network dhcp server %s (id: %d): %s",

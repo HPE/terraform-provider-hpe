@@ -40,7 +40,6 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	serverId := float32(plan.NetworkServerId.ValueInt64())
 
 	dhcpServer := sdk.
 		NewCreateNetworkDhcpServerRequestNetworkDhcpServerWithDefaults()
@@ -129,9 +128,10 @@ func (r *Resource) Create(
 
 	createReq := sdk.NewCreateNetworkDhcpServerRequestWithDefaults()
 	createReq.SetNetworkDhcpServer(*dhcpServer)
+	serverID := plan.NetworkServerId.ValueInt64()
 
 	createResp, hresp, err := client.NetworksAPI.
-		CreateNetworkDhcpServer(ctx, serverId).
+		CreateNetworkDhcpServer(ctx, float32(serverID)).
 		CreateNetworkDhcpServerRequest(*createReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
@@ -166,7 +166,7 @@ func (r *Resource) Create(
 	}
 
 	state, pdiags := getNetworkDhcpServerAsState(
-		ctx, dhcpServerID, serverId, client, plan,
+		ctx, dhcpServerID, serverID, client, plan,
 	)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
@@ -180,10 +180,6 @@ func (r *Resource) Create(
 		taintResourceState(dhcpServerID)
 
 		return
-	}
-
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		state.Config = plan.Config
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
