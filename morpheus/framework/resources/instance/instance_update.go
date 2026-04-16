@@ -9,15 +9,14 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/compare"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -329,7 +328,7 @@ func addNetworkInterfacesToResizeRequest(
 	// Also check if any child virtual network lists differ in length
 	for i := range pIntfs {
 		if i < len(sIntfs) {
-			childMatch, cdiags := listsMatch[ChildVirtualNetworksValue](
+			childMatch, cdiags := compare.ListsMatch[ChildVirtualNetworksValue](
 				ctx, pIntfs[i].ChildVirtualNetworks, sIntfs[i].ChildVirtualNetworks,
 			)
 			if cdiags.HasError() {
@@ -541,45 +540,6 @@ func createChildVirtualNetworkFromPlanAndState(
 	}
 
 	return child, different
-}
-
-// listsMatch is a generic that compares lists from plan and state to see if they are the same.
-// Returns true if they are, false otherwise.
-func listsMatch[S attr.Value](
-	ctx context.Context,
-	planList, stateList basetypes.ListValue,
-) (bool, diag.Diagnostics) {
-	var planVals, stateVals []S
-
-	diags := planList.ElementsAs(ctx, &planVals, false)
-	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert plan list values to type %T", planVals))
-
-		return false, diags
-	}
-
-	diags = stateList.ElementsAs(ctx, &stateVals, false)
-	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert state list values to type %T", stateVals))
-
-		return false, diags
-	}
-
-	// Check length of lists first
-	if len(planVals) != len(stateVals) {
-		return false, nil
-	}
-
-	// Compare each element in the lists to see if they are the same
-	for i, planVal := range planVals {
-		stateVal := stateVals[i]
-
-		if !planVal.Equal(stateVal) {
-			return false, nil
-		}
-	}
-
-	return true, nil
 }
 
 func addServicePlanOptionsToResizeRequest(
