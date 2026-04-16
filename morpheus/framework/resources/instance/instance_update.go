@@ -9,15 +9,14 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/compare"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -190,6 +189,7 @@ func makeResizeAPICalls(
 		if d.HasError() {
 			return state.ServicePlanOptions, d
 		}
+
 	}
 
 	if resizeRequest.ServicePlanOptions == nil {
@@ -297,34 +297,244 @@ func addNetworkInterfacesToResizeRequest(
 	plan, state InstanceModel,
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) diag.Diagnostics {
-	// compare state and plan network_interfaces so we only resize if required
-	// TODO: make this compare each network interface rather than just length
-	// TODO: if we're resizing network interfaces, then we need to remove the PlanModifier and RequiresReplace from Schema.
-	// TODO: and add the id of the interface to the Schema
-	// TODO: resize doesn't work for network interfaces at present, need to revisit this when the API supports it
-	intfsMatch, ndiags := listsMatch[NetworkInterfacesValue](ctx, plan.NetworkInterfaces, state.NetworkInterfaces)
-	if ndiags.HasError() {
-		tflog.Error(ctx, "cannot compare network interfaces")
+	resizing := false
 
-		return ndiags
+	var pIntfs []NetworkInterfacesValue
+	pdiags := plan.NetworkInterfaces.ElementsAs(ctx, &pIntfs, false)
+	if pdiags.HasError() {
+		tflog.Error(ctx, "cannot convert plan network interfaces")
+
+		return pdiags
 	}
 
-	if !intfsMatch {
-		networkInterfaces, idiags := convert.FromListType(
-			ctx,
-			plan.NetworkInterfaces,
-			updateNetworkInterfaceMapper(ctx),
-		)
-		if idiags.HasError() {
-			tflog.Error(ctx, "cannot convert network interfaces")
+	var sIntfs []NetworkInterfacesValue
+	sdiags := state.NetworkInterfaces.ElementsAs(ctx, &sIntfs, false)
+	if sdiags.HasError() {
+		tflog.Error(ctx, "cannot convert state network interfaces")
 
-			return idiags
+		return sdiags
+	}
+
+	// Always resize if the number of network interfaces in the plan and state are different
+	if len(pIntfs) != len(sIntfs) {
+		resizing = true
+	}
+
+	// Also check if any child virtual network lists differ in length
+	for i := range pIntfs {
+		if i < len(sIntfs) {
+			childMatch, cdiags := compare.ListsMatch[ChildVirtualNetworksValue](
+				ctx, pIntfs[i].ChildVirtualNetworks, sIntfs[i].ChildVirtualNetworks,
+			)
+			if cdiags.HasError() {
+				return cdiags
+			}
+
+			if !childMatch {
+				resizing = true
+			}
+		}
+	}
+
+	// Go through the lists of network interfaces from state and in the plan.  Assume that network interfaces
+	// are in the same order in both lists.  If the network interface in the plan is different from the network
+	// interface in the state, then we add the network interface from the plan to the list of network interfaces
+	// for the resize request.  If the network interface in the plan is the same as the network interface in the
+	// state, then we add the network interface from the state to the list of network interfaces for the resize
+	// request.
+	var intfs []NetworkInterfacesValue
+	for i, pIntf := range pIntfs {
+		if i < len(sIntfs) {
+			sIntf := sIntfs[i]
+			intfForRequest, different := createNetworkInterfaceFromPlanAndState(ctx, pIntf, sIntf)
+			// Resize if the network interface for the request is different from the network interface in the state
+			if different {
+				resizing = true
+			}
+			intfs = append(intfs, intfForRequest)
+		} else {
+			intfs = append(intfs, pIntf)
+		}
+	}
+
+	if resizing {
+		mapper := updateNetworkInterfaceMapper(ctx)
+		intfsForRequest := make([]sdk.InstancesNetworkInterfaces3, len(intfs))
+		for i, intf := range intfs {
+			intfsForRequest[i] = mapper(intf)
 		}
 
-		resizeRequest.SetNetworkInterfaces(networkInterfaces)
+		resizeRequest.SetNetworkInterfaces(intfsForRequest)
 	}
 
 	return diag.Diagnostics{}
+}
+
+func createNetworkInterfaceFromPlanAndState(
+	ctx context.Context,
+	planIntf, stateIntf NetworkInterfacesValue,
+) (NetworkInterfacesValue, bool) {
+	different := false
+	intf := stateIntf
+
+	// Always preserve the id from state
+	intf.Id = stateIntf.Id
+
+	if !planIntf.NetworkId.IsNull() && !planIntf.NetworkId.IsUnknown() {
+		if !stateIntf.NetworkId.IsNull() && !stateIntf.NetworkId.IsUnknown() &&
+			stateIntf.NetworkId.ValueInt64() != planIntf.NetworkId.ValueInt64() {
+			intf.NetworkId = planIntf.NetworkId
+			different = true
+		}
+	}
+
+	if !planIntf.NetworkGroupId.IsNull() && !planIntf.NetworkGroupId.IsUnknown() {
+		if !stateIntf.NetworkGroupId.IsNull() && !stateIntf.NetworkGroupId.IsUnknown() &&
+			stateIntf.NetworkGroupId.ValueInt64() != planIntf.NetworkGroupId.ValueInt64() {
+			intf.NetworkGroupId = planIntf.NetworkGroupId
+			different = true
+		}
+	}
+
+	if !planIntf.IpMode.IsNull() && !planIntf.IpMode.IsUnknown() {
+		if !stateIntf.IpMode.IsNull() && !stateIntf.IpMode.IsUnknown() &&
+			stateIntf.IpMode.ValueString() != planIntf.IpMode.ValueString() {
+			intf.IpMode = planIntf.IpMode
+			different = true
+		}
+	}
+
+	if !planIntf.IpAddress.IsNull() && !planIntf.IpAddress.IsUnknown() {
+		if !stateIntf.IpAddress.IsNull() && !stateIntf.IpAddress.IsUnknown() &&
+			stateIntf.IpAddress.ValueString() != planIntf.IpAddress.ValueString() {
+			intf.IpAddress = planIntf.IpAddress
+			different = true
+		}
+	}
+
+	if !planIntf.IpPool.IsNull() && !planIntf.IpPool.IsUnknown() {
+		if !stateIntf.IpPool.IsNull() && !stateIntf.IpPool.IsUnknown() &&
+			stateIntf.IpPool.ValueInt64() != planIntf.IpPool.ValueInt64() {
+			intf.IpPool = planIntf.IpPool
+			different = true
+		}
+	}
+
+	if !planIntf.NetworkTypeId.IsNull() && !planIntf.NetworkTypeId.IsUnknown() {
+		if !stateIntf.NetworkTypeId.IsNull() && !stateIntf.NetworkTypeId.IsUnknown() &&
+			stateIntf.NetworkTypeId.ValueInt64() != planIntf.NetworkTypeId.ValueInt64() {
+			intf.NetworkTypeId = planIntf.NetworkTypeId
+			different = true
+		}
+	}
+
+	// Process child virtual networks
+	var pChildren []ChildVirtualNetworksValue
+
+	pdiags := planIntf.ChildVirtualNetworks.ElementsAs(ctx, &pChildren, false)
+	if pdiags.HasError() {
+		tflog.Error(ctx, "cannot convert plan child virtual networks")
+
+		return intf, different
+	}
+
+	var sChildren []ChildVirtualNetworksValue
+
+	sdiags := stateIntf.ChildVirtualNetworks.ElementsAs(ctx, &sChildren, false)
+	if sdiags.HasError() {
+		tflog.Error(ctx, "cannot convert state child virtual networks")
+
+		return intf, different
+	}
+
+	if len(pChildren) != len(sChildren) {
+		different = true
+	}
+
+	var children []ChildVirtualNetworksValue
+	for i, pChild := range pChildren {
+		if i < len(sChildren) {
+			sChild := sChildren[i]
+			childForRequest, childDifferent := createChildVirtualNetworkFromPlanAndState(pChild, sChild)
+			if childDifferent {
+				different = true
+			}
+			children = append(children, childForRequest)
+		} else {
+			children = append(children, pChild)
+		}
+	}
+
+	if len(children) > 0 {
+		childList, cdiags := convert.ToListType(ctx, children, func(in ChildVirtualNetworksValue) ChildVirtualNetworksValue {
+			return in
+		})
+		if !cdiags.HasError() {
+			intf.ChildVirtualNetworks = childList
+		}
+	}
+
+	return intf, different
+}
+
+func createChildVirtualNetworkFromPlanAndState(
+	planChild, stateChild ChildVirtualNetworksValue,
+) (ChildVirtualNetworksValue, bool) {
+	different := false
+	child := stateChild
+
+	// Always preserve the id from state
+	child.Id = stateChild.Id
+
+	if !planChild.NetworkId.IsNull() && !planChild.NetworkId.IsUnknown() {
+		if !stateChild.NetworkId.IsNull() && !stateChild.NetworkId.IsUnknown() &&
+			stateChild.NetworkId.ValueInt64() != planChild.NetworkId.ValueInt64() {
+			child.NetworkId = planChild.NetworkId
+			different = true
+		}
+	}
+
+	if !planChild.NetworkGroupId.IsNull() && !planChild.NetworkGroupId.IsUnknown() {
+		if !stateChild.NetworkGroupId.IsNull() && !stateChild.NetworkGroupId.IsUnknown() &&
+			stateChild.NetworkGroupId.ValueInt64() != planChild.NetworkGroupId.ValueInt64() {
+			child.NetworkGroupId = planChild.NetworkGroupId
+			different = true
+		}
+	}
+
+	if !planChild.IpMode.IsNull() && !planChild.IpMode.IsUnknown() {
+		if !stateChild.IpMode.IsNull() && !stateChild.IpMode.IsUnknown() &&
+			stateChild.IpMode.ValueString() != planChild.IpMode.ValueString() {
+			child.IpMode = planChild.IpMode
+			different = true
+		}
+	}
+
+	if !planChild.IpAddress.IsNull() && !planChild.IpAddress.IsUnknown() {
+		if !stateChild.IpAddress.IsNull() && !stateChild.IpAddress.IsUnknown() &&
+			stateChild.IpAddress.ValueString() != planChild.IpAddress.ValueString() {
+			child.IpAddress = planChild.IpAddress
+			different = true
+		}
+	}
+
+	if !planChild.IpPool.IsNull() && !planChild.IpPool.IsUnknown() {
+		if !stateChild.IpPool.IsNull() && !stateChild.IpPool.IsUnknown() &&
+			stateChild.IpPool.ValueInt64() != planChild.IpPool.ValueInt64() {
+			child.IpPool = planChild.IpPool
+			different = true
+		}
+	}
+
+	if !planChild.NetworkTypeId.IsNull() && !planChild.NetworkTypeId.IsUnknown() {
+		if !stateChild.NetworkTypeId.IsNull() && !stateChild.NetworkTypeId.IsUnknown() &&
+			stateChild.NetworkTypeId.ValueInt64() != planChild.NetworkTypeId.ValueInt64() {
+			child.NetworkTypeId = planChild.NetworkTypeId
+			different = true
+		}
+	}
+
+	return child, different
 }
 
 func addServicePlanOptionsToResizeRequest(
@@ -332,21 +542,19 @@ func addServicePlanOptionsToResizeRequest(
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) {
 	// compare state and plan service_plan_options so we only resize if required
-	if !plan.ServicePlanOptions.Equal(state.ServicePlanOptions) {
-		servicePlanOptions := sdk.NewResizeInstanceRequestServicePlanOptions()
-		if !plan.ServicePlanOptions.MaxCores.IsNull() && !plan.ServicePlanOptions.MaxCores.IsUnknown() {
-			servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
-		}
-		if !plan.ServicePlanOptions.CoresPerSocket.IsNull() && !plan.ServicePlanOptions.CoresPerSocket.IsUnknown() {
-			servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
-		}
-		if !plan.ServicePlanOptions.MaxMemory.IsNull() && !plan.ServicePlanOptions.MaxMemory.IsUnknown() {
-			memoryInBytes := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
-			servicePlanOptions.MaxMemory = &memoryInBytes
-		}
-
-		resizeRequest.SetServicePlanOptions(*servicePlanOptions)
+	servicePlanOptions := sdk.NewResizeInstanceRequestServicePlanOptions()
+	if !plan.ServicePlanOptions.MaxCores.IsNull() && !plan.ServicePlanOptions.MaxCores.IsUnknown() {
+		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
 	}
+	if !plan.ServicePlanOptions.CoresPerSocket.IsNull() && !plan.ServicePlanOptions.CoresPerSocket.IsUnknown() {
+		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
+	}
+	if !plan.ServicePlanOptions.MaxMemory.IsNull() && !plan.ServicePlanOptions.MaxMemory.IsUnknown() {
+		memoryInBytes := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
+		servicePlanOptions.MaxMemory = &memoryInBytes
+	}
+
+	resizeRequest.SetServicePlanOptions(*servicePlanOptions)
 }
 
 func makeResizeRequestAndWaitForComplete(
@@ -462,43 +670,4 @@ func isAPIUpdateNeeded(plan, state InstanceModel) bool {
 
 	// For safety's sake we will return true by default
 	return true
-}
-
-// listsMatch is a generic that compares lists from plan and state to see if they are the same
-// Returns true if they are, false otherwise
-func listsMatch[S attr.Value](
-	ctx context.Context,
-	planList, stateList basetypes.ListValue,
-) (bool, diag.Diagnostics) {
-	var planVals, stateVals []S
-
-	diags := planList.ElementsAs(ctx, &planVals, false)
-	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert plan list values to type %T", planVals))
-
-		return false, diags
-	}
-
-	diags = stateList.ElementsAs(ctx, &stateVals, false)
-	if diags.HasError() {
-		tflog.Error(ctx, fmt.Sprintf("cannot convert state list values to type %T", stateVals))
-
-		return false, diags
-	}
-
-	// Check length of lists first
-	if len(planVals) != len(stateVals) {
-		return false, nil
-	}
-
-	// Compare each element in the lists to see if they are the same
-	for i, planVal := range planVals {
-		stateVal := stateVals[i]
-
-		if !planVal.Equal(stateVal) {
-			return false, nil
-		}
-	}
-
-	return true, nil
 }
