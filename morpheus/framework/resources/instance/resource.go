@@ -189,6 +189,4 @@ func (m *morpheusConstraint) checkForAttributeUpdate(
 		fmt.Sprintf("Morpheus version must be %s to allow %s updates without instance replacement",
 			m.constraint, m.mnemonic),
 	)
-
-	return
 }
