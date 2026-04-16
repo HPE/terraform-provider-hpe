@@ -32,7 +32,8 @@ func OsTypeResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The version of CloudInit being used",
 			},
 			"code": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
+				Computed:            true,
 				Description:         "The code Morpheus uses as an internal identifier.",
 				MarkdownDescription: "The code Morpheus uses as an internal identifier.",
 				PlanModifiers: []planmodifier.String{

@@ -30,12 +30,15 @@ func (r *Resource) Create(
 		return
 	}
 
-	osType := sdk.NewAddOsTypesRequestOsType(
-		plan.Name.ValueString(),
-		plan.Platform.ValueString(),
-		plan.Code.ValueString(),
-		plan.BitCount.ValueInt64(),
-	)
+	osType := sdk.NewAddOsTypesRequestOsTypeWithDefaults()
+	osType.SetName(plan.Name.ValueString())
+	osType.SetPlatform(plan.Platform.ValueString())
+	osType.SetBitCount(plan.BitCount.ValueInt64())
+
+	// code
+	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
+		osType.SetCode(plan.Code.ValueString())
+	}
 
 	// category
 	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {

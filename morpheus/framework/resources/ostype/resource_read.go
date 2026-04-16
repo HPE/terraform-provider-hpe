@@ -91,8 +91,10 @@ func getOsTypeAsState(
 		state.Owner = types.StringNull()
 	}
 
-	// code is not returned in the GET response; preserve from prior state
-	state.Code = prior.Code
+	// code may not be returned in the GET response; preserve from prior state if set
+	if !prior.Code.IsNull() && !prior.Code.IsUnknown() {
+		state.Code = prior.Code
+	}
 
 	return state, diags
 }
