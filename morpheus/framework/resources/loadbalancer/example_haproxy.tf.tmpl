@@ -1,0 +1,20 @@
+data "hpe_morpheus_cloud" "example" {
+  name = "{{.CloudName}}"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "{{.GroupName}}"
+}
+
+resource "hpe_morpheus_load_balancer" "haproxy" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  cloud_id    = data.hpe_morpheus_cloud.example.id
+  group_id    = data.hpe_morpheus_group.example.id
+  visibility  = "{{.Visibility}}"
+
+  config_haproxy = {
+    plan_id = {{.PlanId}}
+    pool    = "{{.Pool}}"
+  }
+}
