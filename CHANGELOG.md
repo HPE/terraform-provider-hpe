@@ -1,3 +1,53 @@
+# v1.3.0 Release Notes
+
+In this release (v1.3.0) we have added a notifier which issues a Warning if the provider version is less than the latest version available on the registry.
+This can be suppressed by upgrading to the latest version or setting the environment variable `HPE_IGNORE_VERSION_CHECK`.
+
+In this release (v1.3.0) we have added the following resource functionality:
+
+- hpe_morpheus_cluster a generalised cluster resource has been added with support for HVM clusters, and limited update functionality
+- hpe_morpheus_forms has comprehensive support for all option types
+- hpe_morpheus_instance has a static `config_aws` block for AWS instances
+- hpe_morpheus_instance supports Update of `network_interfaces` and `service_plan_options` for service plans that support the setting of
+  options for Morpheus versions >= 8.1.2, for earlier versions changes will force a new instance to be created
+- hpe_morpheus_load_balancer resource has been added
+- hpe_morpheus_os_type resource has been added
+- hpe_morpheus_os_type_image resource has been added
+
+In this release (v1.3.0) we have added the following data source functionality:
+
+- hpe_morpheus_cluster data source has been added
+- hpe_morpheus_load_balancer data source has been added
+- hpe_morpheus_os_type data source has been added
+- hpe_morpheus_os_type_image data source has been added
+
+## New known issues
+
+N/A
+
+## Resolved issues
+
+- `hpe_morpheus_instance` Update of `service_plan_options` fails silently
+
+## Known issues from previous releases
+
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
+
 # v1.2.0 Release Notes
 
 In this release (v1.2.0) we have added the following resource functionality:
