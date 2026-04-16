@@ -713,13 +713,11 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["layout_field"] = optionType.Config.LayoutField
 		row["layout_id"] = optionType.Config.LayoutId
 	case typeSecGroup:
-		row["default_value"] = optionType.Config.DefaultValue
 		row["cloud_field_type"] = optionType.Config.CloudFieldType
 		row["cloud_field"] = optionType.Config.CloudField
 		row["cloud_id"] = optionType.Config.CloudId
 		row["pool_field"] = optionType.Config.ResourcePoolField
 	case typeTag:
-		row["default_value"] = optionType.Config.DefaultValue
 		row["group_field_type"] = optionType.Config.GroupFieldType
 		row["group_field"] = optionType.Config.GroupField
 		row["group_id"] = optionType.Config.GroupId
@@ -727,7 +725,6 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["cloud_field"] = optionType.Config.CloudField
 		row["cloud_id"] = optionType.Config.CloudId
 	case typePorts:
-		row["default_value"] = optionType.Config.DefaultValue
 		row["group_field"] = optionType.Config.GroupField
 		row["cloud_field"] = optionType.Config.CloudField
 		row["layout_field"] = optionType.Config.LayoutField
@@ -736,7 +733,6 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["min_value"] = optionType.MinVal
 		row["max_value"] = optionType.MaxVal
 	case typeNetworkManager:
-		row["default_value"] = optionType.Config.DefaultValue
 		row["group_field_type"] = optionType.Config.GroupFieldType
 		row["group_field"] = optionType.Config.GroupField
 		row["group_id"] = optionType.Config.GroupId
@@ -757,6 +753,8 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["option_list_id"] = optionType.OptionList.ID
 		row["allow_multiple_selections"] = optionType.Config.MultiSelect
 		row["sortable"] = optionType.Config.Sortable
+	case typePassword:
+		row["allow_password_peek"] = optionType.Config.CanPeek
 	case typeTextArea:
 		row["text_rows"] = optionType.Config.Rows
 	case typeHidden:
@@ -768,7 +766,6 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 	case typeTextArray:
 		row["delimiter"] = optionType.Config.Separator
 	case typeTypeahead:
-		row["default_value"] = optionType.Config.DefaultValue
 		row["sortable"] = optionType.Config.Sortable
 		row["allow_duplicates"] = optionType.Config.AllowDuplicates
 		row["custom_data"] = optionType.Config.CustomData
@@ -789,7 +786,7 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 		row["plan_field"] = optionType.Config.PlanField
 		row["plan_id"] = optionType.Config.PlanId
 	case typeLogoSelector:
-		row["default_value"] = optionType.Config.DefaultValue
+		// Logo selector default value is handled by the read function
 	}
 }
 
@@ -1639,13 +1636,12 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			row["type"] = optionType.Type
 			row["field_label"] = optionType.FieldLabel
 			row["field_name"] = optionType.FieldName
-			defaultValue := optionType.DefaultValue
-			if configDefault, ok := row["default_value"]; ok {
-				if configDefaultValue, ok := configDefault.(string); ok && configDefaultValue != "" {
-					defaultValue = configDefaultValue
-				}
+			// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
+			if optionType.Config.DefaultValue != "" {
+				row["default_value"] = optionType.Config.DefaultValue
+			} else {
+				row["default_value"] = optionType.DefaultValue
 			}
-			row["default_value"] = defaultValue
 			row["placeholder"] = optionType.PlaceHolder
 			row["help_block"] = optionType.HelpBlock
 			row["required"] = optionType.Required
@@ -1686,13 +1682,12 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					optionTypeRow["type"] = optionType.Type
 					optionTypeRow["field_label"] = optionType.FieldLabel
 					optionTypeRow["field_name"] = optionType.FieldName
-					defaultValue := optionType.DefaultValue
-					if configDefault, ok := optionTypeRow["default_value"]; ok {
-						if configDefaultValue, ok := configDefault.(string); ok && configDefaultValue != "" {
-							defaultValue = configDefaultValue
-						}
+					// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
+					if optionType.Config.DefaultValue != "" {
+						optionTypeRow["default_value"] = optionType.Config.DefaultValue
+					} else {
+						optionTypeRow["default_value"] = optionType.DefaultValue
 					}
-					optionTypeRow["default_value"] = defaultValue
 					optionTypeRow["placeholder"] = optionType.PlaceHolder
 					optionTypeRow["help_block"] = optionType.HelpBlock
 					optionTypeRow["required"] = optionType.Required
