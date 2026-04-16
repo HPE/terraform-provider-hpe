@@ -16,23 +16,13 @@ lint:
 
 test:
 	env TF_ACC=1 \
-	go test -short -v -cover -count 1 -timeout 10m ./...
+	go test -v -cover -count 1 -timeout 60m ./...
 
 unit-tests:
 	# exclude the framework and sdkv2 packages and the
 	# terraform-provider-hpe/morpheus package (but NOT its subpackages)
 	pkgs=$$(go list ./... | grep -Ev 'sdkv2/(resources|datasources)|framework/(resources|datasources)|terraform-provider-hpe/morpheus$$'); \
 	go test -v -count=1 -short -skip "TestAcc*" $$pkgs
-
-testacc:
-	cd morpheus/framework && \
-	env TF_ACC=1 \
-	go test -v -cover -count 1 -timeout 60m ./...
-
-testsdkv2:
-	cd morpheus/sdkv2 && \
-	env TF_ACC=1 \
-	go test -v -cover -count 1 -timeout 60m ./...
 
 collect-test-results:
 	./scripts/collect-test-results.bash
