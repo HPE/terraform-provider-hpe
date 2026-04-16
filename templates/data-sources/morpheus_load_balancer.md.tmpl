@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_load_balancer/example-id.tf" }}
+
+{{ tffile "examples/data-sources/morpheus_load_balancer/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
