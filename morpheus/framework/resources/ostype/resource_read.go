@@ -34,7 +34,7 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diag := getOsTypeAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, diag := getOsTypeAsState(ctx, data.Id.ValueInt64(), client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -46,7 +46,6 @@ func getOsTypeAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-	prior OsTypeModel,
 ) (OsTypeModel, diag.Diagnostics) {
 	var state OsTypeModel
 	var diags diag.Diagnostics
@@ -90,9 +89,6 @@ func getOsTypeAsState(
 	} else {
 		state.Owner = types.StringNull()
 	}
-
-	// code is not returned in the GET response; preserve from prior state
-	state.Code = prior.Code
 
 	return state, diags
 }
