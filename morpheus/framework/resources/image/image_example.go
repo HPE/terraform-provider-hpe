@@ -19,6 +19,7 @@ func RenderImageConfig(t *testing.T, overrides map[string]string) (string, error
 	defaults := map[string]string{
 		"Name":              "Alpine Example Image",
 		"StorageProviderId": "196",
+		"OsTypeId":          "75",
 	}
 
 	for key, value := range overrides {
