@@ -140,9 +140,6 @@ func resourceTaskLibraryScriptCreate(ctx context.Context, d *schema.ResourceData
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	var scriptTemplateId string
 	if scriptTemplateIdValue, ok := d.Get("script_template_id").(string); ok {
@@ -376,9 +373,6 @@ func resourceTaskLibraryScriptUpdate(ctx context.Context, d *schema.ResourceData
 		visibility = visibilityValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
 	}
 
 	var scriptTemplateId string
