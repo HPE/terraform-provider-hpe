@@ -1568,3 +1568,279 @@ func RenderLogoSelectorConfig(t *testing.T, overrides map[string]string) (string
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }
+
+func RenderByteSizeConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "bytesize-input",
+		"OptionTypeDefaultValue":          "GB",
+		"OptionTypeDescription":           "Terraform byteSize example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeDisplay":               "GB",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Byte Size",
+		"OptionTypeFieldName":             "byteSize",
+		"OptionTypeHelpBlock":             "Select byte size display",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeLockDisplay":           "false",
+		"OptionTypeName":                  "tf byteSize example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "byteSize",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_bytesize.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderCodeEditorConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "code-editor-input",
+		"OptionTypeCodeLanguage":          "bash",
+		"OptionTypeDefaultValue":          "echo \"hello world\"",
+		"OptionTypeDescription":           "Terraform code-editor example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Code Editor",
+		"OptionTypeFieldName":             "codeEditor",
+		"OptionTypeHelpBlock":             "Enter code",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf code-editor example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeShowLineNumbers":       "true",
+		"OptionTypeTextRows":              "10",
+		"OptionTypeType":                  "code-editor",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_code_editor.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderPasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeAllowPasswordPeek":     "true",
+		"OptionTypeCode":                  "password-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform password example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Password",
+		"OptionTypeFieldName":             "password",
+		"OptionTypeHelpBlock":             "Enter a secure password",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf password example",
+		"OptionTypePlaceholder":           "Enter password",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "password",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_password.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTextAreaConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "textarea-input",
+		"OptionTypeDefaultValue":          "Sample text",
+		"OptionTypeDescription":           "Terraform textarea example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Text Area",
+		"OptionTypeFieldName":             "textArea",
+		"OptionTypeHelpBlock":             "Enter multiple lines of text",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf textarea example",
+		"OptionTypePlaceholder":           "Enter text",
+		"OptionTypeRequired":              "true",
+		"OptionTypeTextRows":              "5",
+		"OptionTypeType":                  "textarea",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_textarea.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTextArrayConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "text-array-input",
+		"OptionTypeDefaultValue":          "jsonencode([\"item1\", \"item2\", \"item3\"])",
+		"OptionTypeDelimiter":             ",",
+		"OptionTypeDescription":           "Terraform textArray example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Text Array",
+		"OptionTypeFieldName":             "textArray",
+		"OptionTypeHelpBlock":             "Enter comma-separated values",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf textArray example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "textArray",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_text_array.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTypeaheadConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                              "demo",
+		"Description":                       "demo",
+		"Labels":                            "[\"terraform\", \"demo\"]",
+		"Name":                              "demo",
+		"OptionTypeAllowDuplicates":         "false",
+		"OptionTypeAllowMultipleSelections": "false",
+		"OptionTypeCode":                    "typeahead-input",
+		"OptionTypeCustomData":              "{}",
+		"OptionTypeDefaultValue":            "test",
+		"OptionTypeDescription":             "Terraform typeahead example",
+		"OptionTypeDisplayValueOnDetails":   "true",
+		"OptionTypeExcludeFromSearch":       "true",
+		"OptionTypeExportMeta":              "true",
+		"OptionTypeFieldLabel":              "Typeahead",
+		"OptionTypeFieldName":               "typeahead",
+		"OptionTypeHelpBlock":               "Select an option from the list",
+		"OptionTypeHidden":                  "false",
+		"OptionTypeLocked":                  "true",
+		"OptionTypeName":                    "tf typeahead example",
+		"OptionTypeOptionListId":            "1",
+		"OptionTypePlaceholder":             "Search...",
+		"OptionTypeRequired":                "true",
+		"OptionTypeSortable":                "true",
+		"OptionTypeType":                    "typeahead",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_typeahead.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}

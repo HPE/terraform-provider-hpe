@@ -871,6 +871,192 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
+### Byte Size
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf byteSize example"
+    code                     = "bytesize-input"
+    description              = "Terraform byteSize example"
+    type                     = "byteSize"
+    field_label              = "Byte Size"
+    field_name               = "byteSize"
+    default_value            = "GB"
+    placeholder              = ""
+    help_block               = "Select byte size display"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    display                  = "GB"
+    lock_display             = false
+  }
+}
+```
+
+### Code Editor
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf code-editor example"
+    code                     = "code-editor-input"
+    description              = "Terraform code-editor example"
+    type                     = "code-editor"
+    field_label              = "Code Editor"
+    field_name               = "codeEditor"
+    default_value            = "echo hello world"
+    placeholder              = ""
+    help_block               = "Enter code"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    show_line_numbers        = true
+    code_language            = "bash"
+    text_rows                = 10
+  }
+}
+```
+
+### Password
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf password example"
+    code                     = "password-input"
+    description              = "Terraform password example"
+    type                     = "password"
+    field_label              = "Password"
+    field_name               = "password"
+    default_value            = ""
+    placeholder              = "Enter password"
+    help_block               = "Enter a secure password"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    allow_password_peek      = true
+  }
+}
+```
+
+### Textarea
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf textarea example"
+    code                     = "textarea-input"
+    description              = "Terraform textarea example"
+    type                     = "textarea"
+    field_label              = "Text Area"
+    field_name               = "textArea"
+    default_value            = "Sample text"
+    placeholder              = "Enter text"
+    help_block               = "Enter multiple lines of text"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    text_rows                = 5
+  }
+}
+```
+
+### Text Array
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                     = "tf textArray example"
+    code                     = "text-array-input"
+    description              = "Terraform textArray example"
+    type                     = "textArray"
+    field_label              = "Text Array"
+    field_name               = "textArray"
+    default_value            = jsonencode(["item1", "item2", "item3"])
+    help_block               = "Enter comma-separated values"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    delimiter                = ","
+  }
+}
+```
+
+### Typeahead
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo"
+  code        = "demo"
+  description = "demo"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name                      = "tf typeahead example"
+    code                      = "typeahead-input"
+    description               = "Terraform typeahead example"
+    type                      = "typeahead"
+    field_label               = "Typeahead"
+    field_name                = "typeahead"
+    default_value             = "test"
+    placeholder               = "Search..."
+    help_block                = "Select an option from the list"
+    option_list_id            = 1
+    required                  = true
+    export_meta               = true
+    display_value_on_details  = true
+    locked                    = true
+    hidden                    = false
+    exclude_from_search       = true
+    sortable                  = true
+    allow_duplicates          = false
+    custom_data               = "{}"
+    allow_multiple_selections = false
+  }
+}
+```
+
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
