@@ -6,15 +6,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
@@ -22,18 +20,6 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 // Tests that our example file template used for docs is a valid config
@@ -46,15 +32,25 @@ func TestAccMorpheusImageExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	datasourceConfig := `
+data "hpe_morpheus_os_type" "test" {
+	name = "linux"
+}
+
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+`
+
 	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
 		"Name", name,
-		"StorageProviderId", "196",
-		"OsTypeId", "75",
+		"StorageProviderId", "data.hpe_morpheus_storage_bucket.test.id",
+		"OsTypeId", "data.hpe_morpheus_os_type.test.id",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -81,22 +77,28 @@ apk add --no-cache bash`,
 			"hpe_morpheus_image.example_image",
 			"ssh_password_wo",
 		),
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_image.example_image",
+			"os_type_id",
+			"data.hpe_morpheus_os_type.test",
+			"id",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + datasourceConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
 			},
 			{
 				// Check that a post-apply plan detects no changes
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + datasourceConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           true,
