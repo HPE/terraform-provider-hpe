@@ -946,24 +946,6 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Description: "The default value of the option type",
 					Optional:    true,
 					Computed:    true,
-					// Password default values are write-only: the API never returns them.
-					// Suppress all diffs on this field for password option types so the
-					// value isn't perpetually re-applied after every refresh.
-					DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						if d.Get(strings.TrimSuffix(k, "default_value")+"type") != typePassword {
-							return false
-						}
-
-						// Allow diff when password_rotation_version changes
-						baseKey := strings.TrimSuffix(k, "default_value")
-						oldVersion, newVersion := d.GetChange(baseKey + "password_rotation_version")
-						if oldVersion != newVersion {
-							return false
-						}
-
-						// Suppress diff if version hasn't changed (refresh-only drift)
-						return true
-					},
 				},
 				"default_checked": {
 					Type:        schema.TypeBool,
@@ -1026,12 +1008,6 @@ func optionTypeSchema(parent string) *schema.Schema {
 						"the user to ensure they correctly entered the password",
 					Optional: true,
 					Computed: true,
-				},
-				"password_rotation_version": {
-					Type: schema.TypeInt,
-					Description: "Terraform-only password rotation trigger for password option types; " +
-						"increment to force re-sending default_value for write-only password fields",
-					Optional: true,
 				},
 				"min_value": {
 					Type:        schema.TypeInt,
@@ -1649,14 +1625,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Option Types
 	var optionTypes []map[string]any
-	var priorOptionTypes []any
-	if v, ok := d.Get("option_type").([]any); ok {
-		priorOptionTypes = v
-	}
-
 	if len(form.Options) != 0 {
 		// optionTypeList := d.Get("option_type").([]any)
-		for optionTypeIndex, optionType := range form.Options {
+		for _, optionType := range form.Options {
 			row := make(map[string]any)
 			applyReadOptionTypeByType(row, optionType, true)
 			row["remove_select_option"] = optionType.NoBlank
@@ -1684,13 +1655,6 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			row["visibility_field"] = optionType.VisibleOnCode
 			row["verify_pattern"] = optionType.VerifyPattern
 			row["require_field"] = optionType.RequireOnCode
-			if optionType.Type == typePassword && optionTypeIndex < len(priorOptionTypes) {
-				if priorOptionType, ok := priorOptionTypes[optionTypeIndex].(map[string]any); ok {
-					if priorRotationVersion, exists := priorOptionType["password_rotation_version"]; exists {
-						row["password_rotation_version"] = priorRotationVersion
-					}
-				}
-			}
 			optionTypes = append(optionTypes, row)
 		}
 	}
@@ -1698,31 +1662,17 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Field Groups
 	var fieldGroups []map[string]any
-	var priorFieldGroups []any
-	if v, ok := d.Get("field_group").([]any); ok {
-		priorFieldGroups = v
-	}
-
 	if len(form.FieldGroups) != 0 {
-		for fieldGroupIndex, fieldGroup := range form.FieldGroups {
+		for _, fieldGroup := range form.FieldGroups {
 			row := make(map[string]any)
 			row["name"] = fieldGroup.Name
 			row["description"] = fieldGroup.Description
 			row["collapsible"] = fieldGroup.Collapsible
 			row["collapsed_by_default"] = fieldGroup.DefaultCollapsed
 			row["visibility_field"] = fieldGroup.VisibleOnCode
-			var priorFieldGroupOptionTypes []any
-			if fieldGroupIndex < len(priorFieldGroups) {
-				if priorFieldGroup, ok := priorFieldGroups[fieldGroupIndex].(map[string]any); ok {
-					if priorOptions, ok := priorFieldGroup["option_type"].([]any); ok {
-						priorFieldGroupOptionTypes = priorOptions
-					}
-				}
-			}
-
 			var fgOptionTypes []map[string]any
 			if len(fieldGroup.Options) != 0 {
-				for optionTypeIndex, optionType := range fieldGroup.Options {
+				for _, optionType := range fieldGroup.Options {
 					optionTypeRow := make(map[string]any)
 					// Check if the input uses an existing input or not
 					applyReadOptionTypeByType(optionTypeRow, optionType, false)
@@ -1751,13 +1701,6 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 					optionTypeRow["visibility_field"] = optionType.VisibleOnCode
 					optionTypeRow["verify_pattern"] = optionType.VerifyPattern
 					optionTypeRow["require_field"] = optionType.RequireOnCode
-					if optionType.Type == typePassword && optionTypeIndex < len(priorFieldGroupOptionTypes) {
-						if priorOptionType, ok := priorFieldGroupOptionTypes[optionTypeIndex].(map[string]any); ok {
-							if priorRotationVersion, exists := priorOptionType["password_rotation_version"]; exists {
-								optionTypeRow["password_rotation_version"] = priorRotationVersion
-							}
-						}
-					}
 					fgOptionTypes = append(fgOptionTypes, optionTypeRow)
 				}
 			}
