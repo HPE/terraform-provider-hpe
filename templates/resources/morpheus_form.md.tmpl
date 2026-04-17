@@ -12,76 +12,116 @@ description: |-
 and all inputs or option types must be defined in the form.
 
 ## Example Usage
+- [Field Groups](#field-groups)
 
-### Key Value
+#### Basic
+- [Checkbox (checkbox)](#checkbox-checkbox)
+- [Hidden (hidden)](#hidden-hidden)
+- [Number (number)](#number-number)
+- [Password (password)](#password-password)
+- [Radio (radio)](#radio-radio)
+- [Select List (select)](#select-select)
+- [Text (text)](#text-text)
+- [TextArea (textarea)](#textarea-textarea)
+
+#### Advanced
+- [Byte Size (byteSize)](#byte-size-bytesize)
+- [Code Editor (code-editor)](#code-editor-code-editor)
+- [File Content (fileContent)](#file-content-filecontent)
+- [Icon Picker (logoSelector)](#logo-selector-logoselector)
+- [Key Value (keyValue)](#key-value-keyvalue)
+- [Text Array (textArray)](#text-array-textarray)
+- [Typeahead (typeahead)](#typeahead-typeahead)
+
+#### Provisioning:
+- [Cloud (cloud)](#cloud-cloud)
+- [Disks (diskManager)](#disk-manager-diskmanager)
+- [Environment (environment)](#environment-environment)
+- [Exposed Ports (ports)](#ports-ports)
+- [Group (group)](#group-group)
+- [Instances (instances-input)](#instances-input-instances-input)
+- [Layout (layout)](#layout-layout)
+- [Networks (networkManager)](#network-manager-networkmanager)
+- [Plan (plan)](#plan-plan)
+- [Resource Pool (resourcePool)](#resource-pool-resourcepool)
+- [Security Groups (secGroup)](#security-group-secgroup)
+- [Servers (servers-input)](#servers-input-servers-input)
+- [Tags (tag)](#tag-tag)
+- [Virtual Image (virtual-image)](#virtual-image-virtual-image)
+- [VMWare Folders (vmwFolders)](#vmw-folders-vmwfolders)
+
+#### HTTP
+- [Headers (httpHeader)](#http-header-httpheader)
+
+### Key Value (keyValue)
 
 {{tffile "examples/resources/morpheus_form/resource_key_value.tf"}}
 
-### Virtual Image
+### Virtual Image (virtual-image)
 
 {{tffile "examples/resources/morpheus_form/resource_virtual_image.tf"}}
 
-### VmwFolders
+### VMW Folders (vmwFolders)
 
 {{tffile "examples/resources/morpheus_form/resource_vmw_folders.tf"}}
 
-### FileContent
+### File Content (fileContent)
 
 {{tffile "examples/resources/morpheus_form/resource_file_content.tf"}}
 
-### Select
+### Select (select)
 
 {{tffile "examples/resources/morpheus_form/resource_select.tf"}}
 
-### Radio
+### Radio (radio)
 
 {{tffile "examples/resources/morpheus_form/resource_radio.tf"}}
 
-### Text
+### Text (text)
 
 {{tffile "examples/resources/morpheus_form/resource_text.tf"}}
 
-### Checkbox
+### Checkbox (checkbox)
 
 {{tffile "examples/resources/morpheus_form/resource_checkbox.tf"}}
 
-### Hidden
+### Hidden (hidden)
 
 {{tffile "examples/resources/morpheus_form/resource_hidden.tf"}}
 
-### Logo Selector
+### Logo Selector (logoSelector)
 
 {{tffile "examples/resources/morpheus_form/resource_logo_selector.tf"}}
 
-### HTTPHeader
+### HTTP Header (httpHeader)
 
 {{tffile "examples/resources/morpheus_form/resource_httpheader.tf"}}
 
-### Number
+### Number (number)
 
 {{tffile "examples/resources/morpheus_form/resource_number.tf"}}
 
-### Network Manager
+### Network Manager (networkManager)
 
 {{tffile "examples/resources/morpheus_form/resource_network_manager.tf"}}
 
-### Cloud
+### Cloud (cloud)
 
 {{tffile "examples/resources/morpheus_form/resource_cloud.tf"}}
 
-### Layout
+### Layout (layout)
 
 {{tffile "examples/resources/morpheus_form/resource_layout.tf"}}
 
-### Group
+### Group (group)
 
 {{tffile "examples/resources/morpheus_form/resource_group.tf"}}
 
-### Disk Manager
+### Disk Manager (diskManager)
 
 {{tffile "examples/resources/morpheus_form/resource_disk_manager.tf"}}
 
-### Plan
+### Plan (plan)
 
 {{tffile "examples/resources/morpheus_form/resource_plan.tf"}}
 
@@ -89,55 +129,55 @@ and all inputs or option types must be defined in the form.
 
 {{tffile "examples/resources/morpheus_form/resource_field_groups.tf"}}
 
-### Environment
+### Environment (environment)
 
 {{tffile "examples/resources/morpheus_form/resource_environment.tf"}}
 
-### Servers Input
+### Servers Input (servers-input)
 
 {{tffile "examples/resources/morpheus_form/resource_servers_input.tf"}}
 
-### Resource Pool
+### Resource Pool (resourcePool)
 
 {{tffile "examples/resources/morpheus_form/resource_resource_pool.tf"}}
 
-### SecGroup
+### Security Group (secGroup)
 
 {{tffile "examples/resources/morpheus_form/resource_sec_group.tf"}}
 
-### Tag
+### Tag (tag)
 
 {{tffile "examples/resources/morpheus_form/resource_tag.tf"}}
 
-### Ports
+### Ports (ports)
 
 {{tffile "examples/resources/morpheus_form/resource_ports.tf"}}
 
-### Instances Input
+### Instances Input (instances-input)
 
 {{tffile "examples/resources/morpheus_form/resource_instances_input.tf"}}
 
-### Byte Size
+### Byte Size (byteSize)
 
 {{tffile "examples/resources/morpheus_form/resource_bytesize.tf"}}
 
-### Code Editor
+### Code Editor (code-editor)
 
 {{tffile "examples/resources/morpheus_form/resource_code_editor.tf"}}
 
-### Password
+### Password (password)
 
 {{tffile "examples/resources/morpheus_form/resource_password.tf"}}
 
-### Textarea
+### Textarea (textarea)
 
 {{tffile "examples/resources/morpheus_form/resource_textarea.tf"}}
 
-### Text Array
+### Text Array (textArray)
 
 {{tffile "examples/resources/morpheus_form/resource_text_array.tf"}}
 
-### Typeahead
+### Typeahead (typeahead)
 
 {{tffile "examples/resources/morpheus_form/resource_typeahead.tf"}}
 

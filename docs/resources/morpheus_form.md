@@ -12,8 +12,48 @@ Provides a Morpheus form resource
 and all inputs or option types must be defined in the form.
 
 ## Example Usage
+- [Field Groups](#field-groups)
 
-### Key Value
+#### Basic
+- [Checkbox (checkbox)](#checkbox-checkbox)
+- [Hidden (hidden)](#hidden-hidden)
+- [Number (number)](#number-number)
+- [Password (password)](#password-password)
+- [Radio (radio)](#radio-radio)
+- [Select List (select)](#select-select)
+- [Text (text)](#text-text)
+- [TextArea (textarea)](#textarea-textarea)
+
+#### Advanced
+- [Byte Size (byteSize)](#byte-size-bytesize)
+- [Code Editor (code-editor)](#code-editor-code-editor)
+- [File Content (fileContent)](#file-content-filecontent)
+- [Icon Picker (logoSelector)](#logo-selector-logoselector)
+- [Key Value (keyValue)](#key-value-keyvalue)
+- [Text Array (textArray)](#text-array-textarray)
+- [Typeahead (typeahead)](#typeahead-typeahead)
+
+#### Provisioning:
+- [Cloud (cloud)](#cloud-cloud)
+- [Disks (diskManager)](#disk-manager-diskmanager)
+- [Environment (environment)](#environment-environment)
+- [Exposed Ports (ports)](#ports-ports)
+- [Group (group)](#group-group)
+- [Instances (instances-input)](#instances-input-instances-input)
+- [Layout (layout)](#layout-layout)
+- [Networks (networkManager)](#network-manager-networkmanager)
+- [Plan (plan)](#plan-plan)
+- [Resource Pool (resourcePool)](#resource-pool-resourcepool)
+- [Security Groups (secGroup)](#security-group-secgroup)
+- [Servers (servers-input)](#servers-input-servers-input)
+- [Tags (tag)](#tag-tag)
+- [Virtual Image (virtual-image)](#virtual-image-virtual-image)
+- [VMWare Folders (vmwFolders)](#vmw-folders-vmwfolders)
+
+#### HTTP
+- [Headers (httpHeader)](#http-header-httpheader)
+
+### Key Value (keyValue)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -44,7 +84,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Virtual Image
+### Virtual Image (virtual-image)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -74,7 +114,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### VmwFolders
+### VMW Folders (vmwFolders)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -108,7 +148,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### FileContent
+### File Content (fileContent)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -136,7 +176,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Select
+### Select (select)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -166,7 +206,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Radio
+### Radio (radio)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -196,7 +236,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Text
+### Text (text)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -225,7 +265,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Checkbox
+### Checkbox (checkbox)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -254,7 +294,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Hidden
+### Hidden (hidden)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -283,7 +323,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Logo Selector
+### Logo Selector (logoSelector)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -313,7 +353,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### HTTPHeader
+### HTTP Header (httpHeader)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -341,7 +381,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Number
+### Number (number)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -373,7 +413,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Network Manager
+### Network Manager (networkManager)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -412,7 +452,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Cloud
+### Cloud (cloud)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -447,7 +487,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Layout
+### Layout (layout)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -482,7 +522,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Group
+### Group (group)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -512,7 +552,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Disk Manager
+### Disk Manager (diskManager)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -555,7 +595,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Plan
+### Plan (plan)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -652,7 +692,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Environment
+### Environment (environment)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -681,7 +721,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Servers Input
+### Servers Input (servers-input)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -711,7 +751,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Resource Pool
+### Resource Pool (resourcePool)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -747,7 +787,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### SecGroup
+### Security Group (secGroup)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -778,7 +818,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Tag
+### Tag (tag)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -810,7 +850,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Ports
+### Ports (ports)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -841,7 +881,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Instances Input
+### Instances Input (instances-input)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -871,7 +911,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Byte Size
+### Byte Size (byteSize)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -902,7 +942,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Code Editor
+### Code Editor (code-editor)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -934,7 +974,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Password
+### Password (password)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -964,7 +1004,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Textarea
+### Textarea (textarea)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -994,7 +1034,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Text Array
+### Text Array (textArray)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
@@ -1023,7 +1063,7 @@ resource "hpe_morpheus_form" "example" {
 }
 ```
 
-### Typeahead
+### Typeahead (typeahead)
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
