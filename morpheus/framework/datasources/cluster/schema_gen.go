@@ -59,9 +59,6 @@ func ClusterDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"code": schema.StringAttribute{
-				Computed: true,
-			},
 			"config": schema.DynamicAttribute{
 				Computed: true,
 			},
@@ -524,7 +521,6 @@ type ClusterModel struct {
 	AutoRecoverPowerState types.Bool       `tfsdk:"auto_recover_power_state"`
 	Category              types.String     `tfsdk:"category"`
 	Cloud                 CloudValue       `tfsdk:"cloud"`
-	Code                  types.String     `tfsdk:"code"`
 	Config                types.Dynamic    `tfsdk:"config"`
 	ContainersCount       types.Int64      `tfsdk:"containers_count"`
 	CreatedBy             CreatedByValue   `tfsdk:"created_by"`

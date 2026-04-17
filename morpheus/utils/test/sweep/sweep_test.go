@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
@@ -32,6 +33,7 @@ func init() {
 	loadbalancer.NewLoadBalancerSweeper(client)
 	policy.NewPolicySweeper(client)
 	datastore.NewDatastoreSweeper(client)
+	cluster.NewClusterSweeper(client)
 	instance.NewInstanceSweeper(client)
 	network.NewNetworkSweeper(client)
 	user.NewUserSweeper(client)
