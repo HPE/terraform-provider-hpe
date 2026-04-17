@@ -1581,7 +1581,7 @@ func RenderByteSizeConfig(t *testing.T, overrides map[string]string) (string, er
 		"OptionTypeDefaultValue":          "GB",
 		"OptionTypeDescription":           "Terraform byteSize example",
 		"OptionTypeDisplayValueOnDetails": "true",
-		"OptionTypeDisplay":               "GB",
+		"OptionTypeDisplay":               "48318382080",
 		"OptionTypeExcludeFromSearch":     "true",
 		"OptionTypeExportMeta":            "true",
 		"OptionTypeFieldLabel":            "Byte Size",

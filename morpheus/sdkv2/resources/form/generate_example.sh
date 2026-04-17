@@ -712,7 +712,7 @@ $RENDER \
   OptionTypeType 'byteSize' \
   OptionTypeFieldLabel 'Byte Size' \
   OptionTypeFieldName 'byteSize' \
-  OptionTypeDefaultValue 'GB' \
+  OptionTypeDefaultValue '48318382080' \
   OptionTypePlaceholder '' \
   OptionTypeHelpBlock 'Select byte size display' \
   OptionTypeRequired 'true' \
