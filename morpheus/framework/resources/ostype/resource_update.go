@@ -113,7 +113,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getOsTypeAsState(ctx, id, client, plan)
+	state, diag := getOsTypeAsState(ctx, id, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
