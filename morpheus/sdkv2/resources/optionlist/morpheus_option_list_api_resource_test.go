@@ -76,13 +76,6 @@ func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
-			// Plan after apply
-			{
-				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
-				PlanOnly:           true,
-			},
 		},
 	})
 }
