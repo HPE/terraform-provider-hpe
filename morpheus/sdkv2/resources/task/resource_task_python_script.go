@@ -308,10 +308,6 @@ func resourceTaskPythonScriptCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -323,6 +319,7 @@ func resourceTaskPythonScriptCreate(ctx context.Context, d *schema.ResourceData,
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -461,8 +458,11 @@ func resourceTaskPythonScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	taskOptions["pythonArgs"] = d.Get("command_arguments")
 	taskOptions["pythonBinary"] = d.Get("python_binary")
 
-	if visibilityValue, ok := d.Get("visibility").(string); ok && visibilityValue != "" {
-		taskOptions["visibility"] = visibilityValue
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
 	taskType := make(map[string]any)
@@ -486,6 +486,7 @@ func resourceTaskPythonScriptUpdate(ctx context.Context, d *schema.ResourceData,
 				"taskOptions":       taskOptions,
 				"resultType":        d.Get("result_type"),
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         d.Get("retryable"),
 				"retryCount":        d.Get("retry_count"),
 				"retryDelaySeconds": d.Get("retry_delay_seconds"),

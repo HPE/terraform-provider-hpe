@@ -300,6 +300,13 @@ func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -316,6 +323,7 @@ func resourceTaskEmailCreate(ctx context.Context, d *schema.ResourceData, meta a
 				},
 				"file":              contentConfig,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -602,9 +610,6 @@ func resourceTaskEmailUpdate(ctx context.Context, d *schema.ResourceData, meta a
 		"emailSubject":      subject,
 		"emailSkipTemplate": skipWrappedEmailTemplate,
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -618,6 +623,7 @@ func resourceTaskEmailUpdate(ctx context.Context, d *schema.ResourceData, meta a
 				"taskOptions":       taskOptions,
 				"file":              contentConfig,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

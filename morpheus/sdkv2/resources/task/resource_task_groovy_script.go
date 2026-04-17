@@ -238,9 +238,6 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	var retryable bool
 	if retryableValue, ok := d.Get("retryable").(bool); ok {
@@ -498,9 +495,6 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 		visibility = visibilityValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
 	}
 
 	var retryable bool

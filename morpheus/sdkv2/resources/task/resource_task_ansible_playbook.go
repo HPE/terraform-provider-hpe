@@ -242,9 +242,6 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	var retryCount int
 	if retryCountValue, ok := d.Get("retry_count").(int); ok {
@@ -269,6 +266,7 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -494,9 +492,6 @@ func resourceTaskAnsiblePlaybookUpdate(ctx context.Context, d *schema.ResourceDa
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	var executeTarget string
 	if executeTargetValue, ok := d.Get("execute_target").(string); ok {
@@ -528,6 +523,7 @@ func resourceTaskAnsiblePlaybookUpdate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

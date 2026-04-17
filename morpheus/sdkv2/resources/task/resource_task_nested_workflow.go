@@ -192,10 +192,6 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -205,6 +201,7 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -408,10 +405,6 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -421,6 +414,7 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

@@ -196,10 +196,6 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -210,6 +206,7 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -412,10 +409,6 @@ func resourceTaskJavaScriptUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -426,6 +419,7 @@ func resourceTaskJavaScriptUpdate(ctx context.Context, d *schema.ResourceData, m
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

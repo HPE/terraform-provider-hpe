@@ -96,15 +96,13 @@ func ResourceTaskVRO() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the vRO workflow task",
 				Optional:    true,
 				Default:     false,
-			},
-			"visibility": {
+			}, "visibility": {
 				Type:         schema.TypeString,
 				Description:  "The visibility of the task (private or public)",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
 				Computed:     true,
-			},
-		},
+			}},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -229,10 +227,6 @@ func resourceTaskVROCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -243,6 +237,7 @@ func resourceTaskVROCreate(ctx context.Context, d *schema.ResourceData, meta any
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -472,10 +467,6 @@ func resourceTaskVROUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -486,6 +477,7 @@ func resourceTaskVROUpdate(ctx context.Context, d *schema.ResourceData, meta any
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

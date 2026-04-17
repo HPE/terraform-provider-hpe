@@ -180,10 +180,6 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -193,6 +189,7 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -389,10 +386,6 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -402,6 +395,7 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

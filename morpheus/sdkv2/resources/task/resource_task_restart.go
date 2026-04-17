@@ -162,11 +162,6 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	taskOptions := map[string]any{}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -175,11 +170,11 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 				"labels":            labelsPayload,
 				"taskType":          taskType,
 				"executeTarget":     "resource",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
 				"allowCustomConfig": allowCustomConfig,
-				"taskOptions":       taskOptions,
 			},
 		},
 	}
@@ -359,11 +354,6 @@ func resourceTaskRestartUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	taskOptions := map[string]any{}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -372,11 +362,11 @@ func resourceTaskRestartUpdate(ctx context.Context, d *schema.ResourceData, meta
 				"labels":            labelsPayload,
 				"taskType":          taskType,
 				"executeTarget":     "resource",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
 				"allowCustomConfig": allowCustomConfig,
-				"taskOptions":       taskOptions,
 			},
 		},
 	}

@@ -306,9 +306,6 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
@@ -611,14 +608,6 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 			taskOptions["password"] = remoteTargetPassword
 		}
 	}
-	if d.HasChange("visibility") {
-		if visibility, ok := d.Get("visibility").(string); ok {
-			taskOptions["visibility"] = visibility
-		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-		}
-	}
-
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
