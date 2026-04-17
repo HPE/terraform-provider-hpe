@@ -13,311 +13,6 @@ import (
 
 //go:generate ./generate_example.sh
 
-// RenderFormConfig generates a Terraform configuration for the tenant resource.
-// It accepts optional overrides for field values. Default values are used if not overridden.
-func RenderFormConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Code":                                       "demo",
-		"Description":                                "demo",
-		"FieldGroup1CollapsedByDefault":              "true",
-		"FieldGroup1Collapsible":                     "true",
-		"FieldGroup1Description":                     "testin",
-		"FieldGroup1Name":                            "fg1",
-		"FieldGroup1OptionTypeCode":                  "test-input",
-		"FieldGroup1OptionTypeDefaultValue":          "Demo123",
-		"FieldGroup1OptionTypeDescription":           "Terraform text input example",
-		"FieldGroup1OptionTypeDisplayValueOnDetails": "true",
-		"FieldGroup1OptionTypeExcludeFromSearch":     "true",
-		"FieldGroup1OptionTypeExportMeta":            "true",
-		"FieldGroup1OptionTypeFieldLabel":            "Testin",
-		"FieldGroup1OptionTypeFieldName":             "test",
-		"FieldGroup1OptionTypeHelpBlock":             "Is this working now",
-		"FieldGroup1OptionTypeHidden":                "false",
-		"FieldGroup1OptionTypeLocked":                "true",
-		"FieldGroup1OptionTypeName":                  "tf field group 1 text input example",
-		"FieldGroup1OptionTypePlaceholder":           "Testing 123",
-		"FieldGroup1OptionTypeRequired":              "true",
-		"FieldGroup1OptionTypeType":                  "text",
-		"FieldGroup2CollapsedByDefault":              "true",
-		"FieldGroup2Collapsible":                     "true",
-		"FieldGroup2Description":                     "testin",
-		"FieldGroup2Name":                            "fg2",
-		"FieldGroup2OptionTypeCode":                  "test-input",
-		"FieldGroup2OptionTypeDefaultValue":          "Demo123",
-		"FieldGroup2OptionTypeDescription":           "Terraform text input example",
-		"FieldGroup2OptionTypeDisplayValueOnDetails": "true",
-		"FieldGroup2OptionTypeExcludeFromSearch":     "true",
-		"FieldGroup2OptionTypeExportMeta":            "true",
-		"FieldGroup2OptionTypeFieldLabel":            "Testin",
-		"FieldGroup2OptionTypeFieldName":             "test",
-		"FieldGroup2OptionTypeHelpBlock":             "Is this working now",
-		"FieldGroup2OptionTypeHidden":                "false",
-		"FieldGroup2OptionTypeLocked":                "true",
-		"FieldGroup2OptionTypeName":                  "tf field group 2 text input example",
-		"FieldGroup2OptionTypePlaceholder":           "Testing 123",
-		"FieldGroup2OptionTypeRequired":              "true",
-		"FieldGroup2OptionTypeType":                  "text",
-		"Labels":                                     "[\"terraform\", \"demo\"]",
-		"Name":                                       "demo",
-		"OptionType1Code":                            "select-input",
-		"OptionType1DefaultValue":                    "test123",
-		"OptionType1Description":                     "Terraform select example",
-		"OptionType1DisplayValueOnDetails":           "true",
-		"OptionType1ExcludeFromSearch":               "true",
-		"OptionType1ExportMeta":                      "true",
-		"OptionType1FieldLabel":                      "Select Test",
-		"OptionType1FieldName":                       "selectTest",
-		"OptionType1HelpBlock":                       "Select an option",
-		"OptionType1Hidden":                          "true",
-		"OptionType1Locked":                          "true",
-		"OptionType1Name":                            "tf example select",
-		"OptionType1OptionListId":                    "1",
-		"OptionType1Placeholder":                     "Testing 123",
-		"OptionType1Required":                        "true",
-		"OptionType1Type":                            "select",
-		"OptionType2Code":                            "radio-input",
-		"OptionType2DefaultValue":                    "Demo123",
-		"OptionType2Description":                     "Terraform radio example",
-		"OptionType2DisplayValueOnDetails":           "true",
-		"OptionType2ExcludeFromSearch":               "true",
-		"OptionType2ExportMeta":                      "true",
-		"OptionType2FieldLabel":                      "Radio Test",
-		"OptionType2FieldName":                       "radioTest",
-		"OptionType2HelpBlock":                       "Select an option",
-		"OptionType2Hidden":                          "true",
-		"OptionType2Locked":                          "true",
-		"OptionType2Name":                            "tf radio example",
-		"OptionType2OptionListId":                    "1",
-		"OptionType2Placeholder":                     "Testing 123",
-		"OptionType2Required":                        "true",
-		"OptionType2Type":                            "radio",
-		"OptionType3Code":                            "test-input",
-		"OptionType3DefaultValue":                    "Demo123",
-		"OptionType3Description":                     "Terraform text example",
-		"OptionType3DisplayValueOnDetails":           "true",
-		"OptionType3ExcludeFromSearch":               "true",
-		"OptionType3ExportMeta":                      "true",
-		"OptionType3FieldLabel":                      "Testin",
-		"OptionType3FieldName":                       "test",
-		"OptionType3HelpBlock":                       "Is this working now",
-		"OptionType3Hidden":                          "true",
-		"OptionType3Locked":                          "true",
-		"OptionType3Name":                            "tf text example",
-		"OptionType3Placeholder":                     "Testing 123",
-		"OptionType3Required":                        "true",
-		"OptionType3Type":                            "text",
-		"OptionType4Code":                            "checkbox-input",
-		"OptionType4DefaultChecked":                  "true",
-		"OptionType4Description":                     "Terraform checkbox example",
-		"OptionType4DisplayValueOnDetails":           "true",
-		"OptionType4ExcludeFromSearch":               "true",
-		"OptionType4ExportMeta":                      "true",
-		"OptionType4FieldLabel":                      "checkbox input",
-		"OptionType4FieldName":                       "checkboxInput",
-		"OptionType4HelpBlock":                       "Is this working now",
-		"OptionType4Hidden":                          "true",
-		"OptionType4Locked":                          "true",
-		"OptionType4Name":                            "tf checkbox example",
-		"OptionType4Placeholder":                     "Testing 123",
-		"OptionType4Required":                        "true",
-		"OptionType4Type":                            "checkbox",
-		"OptionType5Code":                            "hidden-input",
-		"OptionType5DefaultValue":                    "test",
-		"OptionType5Description":                     "Terraform hidden input example",
-		"OptionType5DisplayValueOnDetails":           "true",
-		"OptionType5ExcludeFromSearch":               "true",
-		"OptionType5ExportMeta":                      "true",
-		"OptionType5FieldLabel":                      "hidden input",
-		"OptionType5FieldName":                       "hiddenInput",
-		"OptionType5HelpBlock":                       "Is this working now",
-		"OptionType5Hidden":                          "true",
-		"OptionType5Locked":                          "true",
-		"OptionType5Name":                            "tf hidden input example",
-		"OptionType5Placeholder":                     "Testing 123",
-		"OptionType5Required":                        "true",
-		"OptionType5Type":                            "hidden",
-		"OptionType6Code":                            "number-input",
-		"OptionType6DefaultValue":                    "4",
-		"OptionType6Description":                     "Terraform number example",
-		"OptionType6DisplayValueOnDetails":           "true",
-		"OptionType6ExcludeFromSearch":               "true",
-		"OptionType6ExportMeta":                      "true",
-		"OptionType6FieldLabel":                      "number input",
-		"OptionType6FieldName":                       "numberInput",
-		"OptionType6HelpBlock":                       "Is this working now",
-		"OptionType6Hidden":                          "true",
-		"OptionType6Locked":                          "true",
-		"OptionType6MaxValue":                        "44",
-		"OptionType6MinValue":                        "3",
-		"OptionType6Name":                            "tf number input example",
-		"OptionType6Placeholder":                     "Testing 123",
-		"OptionType6Required":                        "true",
-		"OptionType6Step":                            "2",
-		"OptionType6Type":                            "number",
-		"OptionType7Code":                            "network-manager-input",
-		"OptionType7CloudFieldType":                  "value",
-		"OptionType7CloudId":                         "1",
-		"OptionType7DefaultValue":                    "test123",
-		"OptionType7Description":                     "Terraform network manager example",
-		"OptionType7DisplayValueOnDetails":           "true",
-		"OptionType7EnableIPModeSelection":           "true",
-		"OptionType7ExcludeFromSearch":               "true",
-		"OptionType7ExportMeta":                      "true",
-		"OptionType7FieldLabel":                      "network input",
-		"OptionType7FieldName":                       "networkInput",
-		"OptionType7GroupFieldType":                  "value",
-		"OptionType7GroupId":                         "1",
-		"OptionType7HelpBlock":                       "Select a network",
-		"OptionType7Hidden":                          "false",
-		"OptionType7LayoutFieldType":                 "value",
-		"OptionType7LayoutId":                        "1",
-		"OptionType7Locked":                          "true",
-		"OptionType7Name":                            "tf network manager example",
-		"OptionType7Placeholder":                     "Select network",
-		"OptionType7PoolFieldType":                   "value",
-		"OptionType7PoolId":                          "1",
-		"OptionType7Required":                        "true",
-		"OptionType7ShowNetworkTypeSelection":        "true",
-		"OptionType7Type":                            "networkManager",
-		"OptionType8Code":                            "cloud-input",
-		"OptionType8CloudType":                       "4",
-		"OptionType8DefaultValue":                    "test123",
-		"OptionType8Description":                     "Terraform cloud example",
-		"OptionType8DisplayValueOnDetails":           "true",
-		"OptionType8ExcludeFromSearch":               "true",
-		"OptionType8ExportMeta":                      "true",
-		"OptionType8FieldLabel":                      "cloud input",
-		"OptionType8FieldName":                       "cloudInput",
-		"OptionType8FilterFromResource":              "true",
-		"OptionType8GroupFieldType":                  "value",
-		"OptionType8GroupId":                         "1",
-		"OptionType8HelpBlock":                       "Select a cloud",
-		"OptionType8Hidden":                          "false",
-		"OptionType8InstanceTypeCode":                "apache",
-		"OptionType8InstanceTypeFieldType":           "value",
-		"OptionType8Locked":                          "true",
-		"OptionType8Name":                            "tf cloud example",
-		"OptionType8Placeholder":                     "Select cloud",
-		"OptionType8Required":                        "true",
-		"OptionType8Type":                            "cloud",
-		"OptionType9Code":                            "layout-input",
-		"OptionType9CloudFieldType":                  "value",
-		"OptionType9CloudId":                         "1",
-		"OptionType9DefaultValue":                    "",
-		"OptionType9Description":                     "Terraform layout example",
-		"OptionType9DisplayValueOnDetails":           "true",
-		"OptionType9ExcludeFromSearch":               "true",
-		"OptionType9ExportMeta":                      "true",
-		"OptionType9FieldLabel":                      "layout input",
-		"OptionType9FieldName":                       "layoutInput",
-		"OptionType9GroupFieldType":                  "value",
-		"OptionType9GroupId":                         "1",
-		"OptionType9HelpBlock":                       "Select a layout",
-		"OptionType9Hidden":                          "false",
-		"OptionType9InstanceTypeCode":                "apache",
-		"OptionType9InstanceTypeFieldType":           "value",
-		"OptionType9Locked":                          "true",
-		"OptionType9Name":                            "tf layout example",
-		"OptionType9Placeholder":                     "Select layout",
-		"OptionType9Required":                        "true",
-		"OptionType9Type":                            "layout",
-		"OptionType10AllowReadOnly":                  "true",
-		"OptionType10Code":                           "group-input",
-		"OptionType10DefaultValue":                   "test123",
-		"OptionType10Description":                    "Terraform group example",
-		"OptionType10DisplayValueOnDetails":          "true",
-		"OptionType10ExcludeFromSearch":              "true",
-		"OptionType10ExportMeta":                     "true",
-		"OptionType10FieldLabel":                     "group input",
-		"OptionType10FieldName":                      "groupInput",
-		"OptionType10HelpBlock":                      "Select a group",
-		"OptionType10Hidden":                         "false",
-		"OptionType10Locked":                         "true",
-		"OptionType10Name":                           "tf group example",
-		"OptionType10Placeholder":                    "Select group",
-		"OptionType10Required":                       "true",
-		"OptionType10Type":                           "group",
-		"OptionType11CloudFieldType":                 "value",
-		"OptionType11CloudId":                        "1",
-		"OptionType11Code":                           "disk-manager-input",
-		"OptionType11Description":                    "Terraform disk manager example",
-		"OptionType11DisplayValueOnDetails":          "true",
-		"OptionType11EnableDatastoreSelection":       "true",
-		"OptionType11EnableDiskTypeSelection":        "true",
-		"OptionType11EnableStorageTypeSelection":     "true",
-		"OptionType11ExcludeFromSearch":              "true",
-		"OptionType11ExportMeta":                     "true",
-		"OptionType11FieldLabel":                     "disk manager input",
-		"OptionType11FieldName":                      "diskManagerInput",
-		"OptionType11GroupFieldType":                 "value",
-		"OptionType11GroupId":                        "1",
-		"OptionType11HelpBlock":                      "Configure disks",
-		"OptionType11Hidden":                         "false",
-		"OptionType11LayoutFieldType":                "value",
-		"OptionType11LayoutId":                       "1",
-		"OptionType11Locked":                         "true",
-		"OptionType11Name":                           "tf disk manager example",
-		"OptionType11PlanFieldType":                  "value",
-		"OptionType11PlanId":                         "1",
-		"OptionType11PoolFieldType":                  "value",
-		"OptionType11PoolId":                         "1",
-		"OptionType11Required":                       "true",
-		"OptionType11Type":                           "diskManager",
-		"OptionType11VirtualImageFieldType":          "value",
-		"OptionType11ImageId":                        "1",
-		"OptionType12CloudFieldType":                 "value",
-		"OptionType12CloudId":                        "1",
-		"OptionType12Code":                           "plan-input",
-		"OptionType12DefaultValue":                   "",
-		"OptionType12Description":                    "Terraform plan example",
-		"OptionType12DisplayValueOnDetails":          "true",
-		"OptionType12ExcludeFromSearch":              "true",
-		"OptionType12ExportMeta":                     "true",
-		"OptionType12FieldLabel":                     "plan input",
-		"OptionType12FieldName":                      "planInput",
-		"OptionType12GroupFieldType":                 "value",
-		"OptionType12GroupId":                        "1",
-		"OptionType12HelpBlock":                      "Select a plan",
-		"OptionType12Hidden":                         "false",
-		"OptionType12LayoutFieldType":                "value",
-		"OptionType12LayoutId":                       "1",
-		"OptionType12Locked":                         "true",
-		"OptionType12Name":                           "tf plan example",
-		"OptionType12Placeholder":                    "Select plan",
-		"OptionType12PoolFieldType":                  "value",
-		"OptionType12PoolId":                         "1",
-		"OptionType12Required":                       "true",
-		"OptionType12ShowPricing":                    "false",
-		"OptionType12Type":                           "plan",
-	}
-
-	// Apply overrides to defaults
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	// Get the directory where this source file is located
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return "", fmt.Errorf("unable to get current file path")
-	}
-	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "form_resource.tf.tmpl")
-
-	return testhelpers.RenderExample(
-		t,
-		templatePath,
-		args...,
-	)
-}
-
 func RenderKeyValueConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
@@ -607,7 +302,7 @@ func RenderTextConfig(t *testing.T, overrides map[string]string) (string, error)
 		"OptionTypeExportMeta":            "true",
 		"OptionTypeFieldLabel":            "Testin",
 		"OptionTypeFieldName":             "test",
-		"OptionTypeHelpBlock":             "Is this working now",
+		"OptionTypeHelpBlock":             "Help block example",
 		"OptionTypeHidden":                "true",
 		"OptionTypeLocked":                "true",
 		"OptionTypeName":                  "tf text example",
@@ -651,7 +346,7 @@ func RenderCheckboxConfig(t *testing.T, overrides map[string]string) (string, er
 		"OptionTypeExportMeta":            "true",
 		"OptionTypeFieldLabel":            "checkbox input",
 		"OptionTypeFieldName":             "checkboxInput",
-		"OptionTypeHelpBlock":             "Is this working now",
+		"OptionTypeHelpBlock":             "Help block example",
 		"OptionTypeHidden":                "true",
 		"OptionTypeLocked":                "true",
 		"OptionTypeName":                  "tf checkbox example",
@@ -695,7 +390,7 @@ func RenderHiddenConfig(t *testing.T, overrides map[string]string) (string, erro
 		"OptionTypeExportMeta":            "true",
 		"OptionTypeFieldLabel":            "hidden input",
 		"OptionTypeFieldName":             "hiddenInput",
-		"OptionTypeHelpBlock":             "Is this working now",
+		"OptionTypeHelpBlock":             "Help block example",
 		"OptionTypeHidden":                "true",
 		"OptionTypeLocked":                "true",
 		"OptionTypeName":                  "tf hidden input example",
@@ -782,7 +477,7 @@ func RenderNumberConfig(t *testing.T, overrides map[string]string) (string, erro
 		"OptionTypeExportMeta":            "true",
 		"OptionTypeFieldLabel":            "number input",
 		"OptionTypeFieldName":             "numberInput",
-		"OptionTypeHelpBlock":             "Is this working now",
+		"OptionTypeHelpBlock":             "Help block example",
 		"OptionTypeHidden":                "true",
 		"OptionTypeLocked":                "true",
 		"OptionTypeMaxValue":              "44",
@@ -1147,9 +842,9 @@ func RenderFieldGroupsConfig(t *testing.T, overrides map[string]string) (string,
 		"FieldGroup1OptionTypeDisplayValueOnDetails": "true",
 		"FieldGroup1OptionTypeExcludeFromSearch":     "true",
 		"FieldGroup1OptionTypeExportMeta":            "true",
-		"FieldGroup1OptionTypeFieldLabel":            "Testin",
-		"FieldGroup1OptionTypeFieldName":             "test",
-		"FieldGroup1OptionTypeHelpBlock":             "Is this working now",
+		"FieldGroup1OptionTypeFieldLabel":            "Testing 1",
+		"FieldGroup1OptionTypeFieldName":             "test1",
+		"FieldGroup1OptionTypeHelpBlock":             "Help block example",
 		"FieldGroup1OptionTypeHidden":                "false",
 		"FieldGroup1OptionTypeLocked":                "true",
 		"FieldGroup1OptionTypeName":                  "tf field group 1 text input example",
@@ -1166,9 +861,9 @@ func RenderFieldGroupsConfig(t *testing.T, overrides map[string]string) (string,
 		"FieldGroup2OptionTypeDisplayValueOnDetails": "true",
 		"FieldGroup2OptionTypeExcludeFromSearch":     "true",
 		"FieldGroup2OptionTypeExportMeta":            "true",
-		"FieldGroup2OptionTypeFieldLabel":            "Testin",
-		"FieldGroup2OptionTypeFieldName":             "test",
-		"FieldGroup2OptionTypeHelpBlock":             "Is this working now",
+		"FieldGroup2OptionTypeFieldLabel":            "Testing 2",
+		"FieldGroup2OptionTypeFieldName":             "test2",
+		"FieldGroup2OptionTypeHelpBlock":             "Help block example",
 		"FieldGroup2OptionTypeHidden":                "false",
 		"FieldGroup2OptionTypeLocked":                "true",
 		"FieldGroup2OptionTypeName":                  "tf field group 2 text input example",
@@ -1565,6 +1260,281 @@ func RenderLogoSelectorConfig(t *testing.T, overrides map[string]string) (string
 	}
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "form_logo_selector.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderByteSizeConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "bytesize-input",
+		"OptionTypeDefaultValue":          "GB",
+		"OptionTypeDescription":           "Terraform byteSize example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeDisplay":               "48318382080",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Byte Size",
+		"OptionTypeFieldName":             "byteSize",
+		"OptionTypeHelpBlock":             "Select byte size display",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeLockDisplay":           "false",
+		"OptionTypeName":                  "tf byteSize example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "byteSize",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_bytesize.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderCodeEditorConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "code-editor-input",
+		"OptionTypeCodeLanguage":          "bash",
+		"OptionTypeDefaultValue":          "echo \"hello world\"",
+		"OptionTypeDescription":           "Terraform code-editor example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Code Editor",
+		"OptionTypeFieldName":             "codeEditor",
+		"OptionTypeHelpBlock":             "Enter code",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf code-editor example",
+		"OptionTypePlaceholder":           "",
+		"OptionTypeRequired":              "true",
+		"OptionTypeShowLineNumbers":       "true",
+		"OptionTypeType":                  "code-editor",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_code_editor.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderPasswordConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeAllowPasswordPeek":     "true",
+		"OptionTypeCode":                  "password-input",
+		"OptionTypeDefaultValue":          "",
+		"OptionTypeDescription":           "Terraform password example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Password",
+		"OptionTypeFieldName":             "password",
+		"OptionTypeHelpBlock":             "Enter a secure password",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf password example",
+		"OptionTypePlaceholder":           "Enter password",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "password",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_password.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTextAreaConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "textarea-input",
+		"OptionTypeDefaultValue":          "Sample text",
+		"OptionTypeDescription":           "Terraform textarea example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Text Area",
+		"OptionTypeFieldName":             "textArea",
+		"OptionTypeHelpBlock":             "Enter multiple lines of text",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf textarea example",
+		"OptionTypePlaceholder":           "Enter text",
+		"OptionTypeRequired":              "true",
+		"OptionTypeTextRows":              "5",
+		"OptionTypeType":                  "textarea",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_textarea.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTextArrayConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                            "demo",
+		"Description":                     "demo",
+		"Labels":                          "[\"terraform\", \"demo\"]",
+		"Name":                            "demo",
+		"OptionTypeCode":                  "text-array-input",
+		"OptionTypeDefaultValue":          "jsonencode([\"item1\", \"item2\", \"item3\"])",
+		"OptionTypeDelimiter":             ",",
+		"OptionTypeDescription":           "Terraform textArray example",
+		"OptionTypeDisplayValueOnDetails": "true",
+		"OptionTypeExcludeFromSearch":     "true",
+		"OptionTypeExportMeta":            "true",
+		"OptionTypeFieldLabel":            "Text Array",
+		"OptionTypeFieldName":             "textArray",
+		"OptionTypeHelpBlock":             "Enter comma-separated values",
+		"OptionTypeHidden":                "false",
+		"OptionTypeLocked":                "true",
+		"OptionTypeName":                  "tf textArray example",
+		"OptionTypeRequired":              "true",
+		"OptionTypeType":                  "textArray",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_text_array.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
+
+func RenderTypeaheadConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Code":                              "demo",
+		"Description":                       "demo",
+		"Labels":                            "[\"terraform\", \"demo\"]",
+		"Name":                              "demo",
+		"OptionTypeAllowDuplicates":         "false",
+		"OptionTypeAllowMultipleSelections": "false",
+		"OptionTypeCode":                    "typeahead-input",
+		"OptionTypeCustomData":              "{}",
+		"OptionTypeDefaultValue":            "test",
+		"OptionTypeDescription":             "Terraform typeahead example",
+		"OptionTypeDisplayValueOnDetails":   "true",
+		"OptionTypeExcludeFromSearch":       "true",
+		"OptionTypeExportMeta":              "true",
+		"OptionTypeFieldLabel":              "Typeahead",
+		"OptionTypeFieldName":               "typeahead",
+		"OptionTypeHelpBlock":               "Select an option from the list",
+		"OptionTypeHidden":                  "false",
+		"OptionTypeLocked":                  "true",
+		"OptionTypeName":                    "tf typeahead example",
+		"OptionTypeOptionListId":            "1",
+		"OptionTypePlaceholder":             "Search...",
+		"OptionTypeRequired":                "true",
+		"OptionTypeSortable":                "true",
+		"OptionTypeType":                    "typeahead",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "form_typeahead.tf.tmpl")
 
 	return testhelpers.RenderExample(t, templatePath, args...)
 }

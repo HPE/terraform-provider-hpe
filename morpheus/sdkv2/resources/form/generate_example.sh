@@ -166,7 +166,7 @@ $RENDER \
   OptionTypeFieldName 'test' \
   OptionTypeDefaultValue 'Demo123' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -189,7 +189,7 @@ $RENDER \
   OptionTypeFieldName 'checkboxInput' \
   OptionTypeDefaultChecked 'true' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -212,7 +212,7 @@ $RENDER \
   OptionTypeFieldName 'hiddenInput' \
   OptionTypeDefaultValue 'test' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -235,7 +235,7 @@ $RENDER \
   OptionTypeFieldName 'numberInput' \
   OptionTypeDefaultValue '4' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -442,14 +442,14 @@ $RENDER \
   FieldGroup1Collapsible 'true' \
   FieldGroup1CollapsedByDefault 'true' \
   FieldGroup1OptionTypeName 'tf field group 1 text input example' \
-  FieldGroup1OptionTypeCode 'test-input' \
+  FieldGroup1OptionTypeCode 'test-input-1' \
   FieldGroup1OptionTypeDescription 'Terraform text input example' \
   FieldGroup1OptionTypeType 'text' \
-  FieldGroup1OptionTypeFieldLabel 'Testin' \
-  FieldGroup1OptionTypeFieldName 'test' \
+  FieldGroup1OptionTypeFieldLabel 'Testing 1' \
+  FieldGroup1OptionTypeFieldName 'test1' \
   FieldGroup1OptionTypeDefaultValue 'Demo123' \
   FieldGroup1OptionTypePlaceholder 'Testing 123' \
-  FieldGroup1OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup1OptionTypeHelpBlock 'Help block example' \
   FieldGroup1OptionTypeRequired 'true' \
   FieldGroup1OptionTypeExportMeta 'true' \
   FieldGroup1OptionTypeDisplayValueOnDetails 'true' \
@@ -461,14 +461,14 @@ $RENDER \
   FieldGroup2Collapsible 'true' \
   FieldGroup2CollapsedByDefault 'true' \
   FieldGroup2OptionTypeName 'tf field group 2 text input example' \
-  FieldGroup2OptionTypeCode 'test-input' \
+  FieldGroup2OptionTypeCode 'test-input-2' \
   FieldGroup2OptionTypeDescription 'Terraform text input example' \
   FieldGroup2OptionTypeType 'text' \
-  FieldGroup2OptionTypeFieldLabel 'Testin' \
-  FieldGroup2OptionTypeFieldName 'test' \
+  FieldGroup2OptionTypeFieldLabel 'Testing 2' \
+  FieldGroup2OptionTypeFieldName 'test2' \
   FieldGroup2OptionTypeDefaultValue 'Demo123' \
   FieldGroup2OptionTypePlaceholder 'Testing 123' \
-  FieldGroup2OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup2OptionTypeHelpBlock 'Help block example' \
   FieldGroup2OptionTypeRequired 'true' \
   FieldGroup2OptionTypeExportMeta 'true' \
   FieldGroup2OptionTypeDisplayValueOnDetails 'true' \
@@ -698,3 +698,152 @@ $RENDER \
   OptionTypeLocked 'true' \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_bytesize.tf \
+  form_bytesize.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf byteSize example' \
+  OptionTypeCode 'bytesize-input' \
+  OptionTypeDescription 'Terraform byteSize example' \
+  OptionTypeType 'byteSize' \
+  OptionTypeFieldLabel 'Byte Size' \
+  OptionTypeFieldName 'byteSize' \
+  OptionTypeDefaultValue '48318382080' \
+  OptionTypePlaceholder '' \
+  OptionTypeHelpBlock 'Select byte size display' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeDisplay 'GB' \
+  OptionTypeLockDisplay 'false'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_code_editor.tf \
+  form_code_editor.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf code-editor example' \
+  OptionTypeCode 'code-editor-input' \
+  OptionTypeDescription 'Terraform code-editor example' \
+  OptionTypeType 'code-editor' \
+  OptionTypeFieldLabel 'Code Editor' \
+  OptionTypeFieldName 'codeEditor' \
+  OptionTypeDefaultValue 'echo hello world' \
+  OptionTypePlaceholder '' \
+  OptionTypeHelpBlock 'Enter code' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeShowLineNumbers 'true' \
+  OptionTypeCodeLanguage 'bash'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_password.tf \
+  form_password.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf password example' \
+  OptionTypeCode 'password-input' \
+  OptionTypeDescription 'Terraform password example' \
+  OptionTypeType 'password' \
+  OptionTypeFieldLabel 'Password' \
+  OptionTypeFieldName 'password' \
+  OptionTypeDefaultValue '' \
+  OptionTypePlaceholder 'Enter password' \
+  OptionTypeHelpBlock 'Enter a secure password' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeAllowPasswordPeek 'true'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_textarea.tf \
+  form_textarea.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf textarea example' \
+  OptionTypeCode 'textarea-input' \
+  OptionTypeDescription 'Terraform textarea example' \
+  OptionTypeType 'textarea' \
+  OptionTypeFieldLabel 'Text Area' \
+  OptionTypeFieldName 'textArea' \
+  OptionTypeDefaultValue 'Sample text' \
+  OptionTypePlaceholder 'Enter text' \
+  OptionTypeHelpBlock 'Enter multiple lines of text' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeTextRows '5'
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_text_array.tf \
+  form_text_array.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf textArray example' \
+  OptionTypeCode 'text-array-input' \
+  OptionTypeDescription 'Terraform textArray example' \
+  OptionTypeType 'textArray' \
+  OptionTypeFieldLabel 'Text Array' \
+  OptionTypeFieldName 'textArray' \
+  OptionTypeDefaultValue 'jsonencode(["item1", "item2", "item3"])' \
+  OptionTypeHelpBlock 'Enter comma-separated values' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeDelimiter ','
+
+$RENDER \
+  -out examples/resources/morpheus_form/resource_typeahead.tf \
+  form_typeahead.tf.tmpl \
+  Name 'demo' \
+  Code 'demo' \
+  Description 'demo' \
+  Labels '["terraform", "demo"]' \
+  OptionTypeName 'tf typeahead example' \
+  OptionTypeCode 'typeahead-input' \
+  OptionTypeDescription 'Terraform typeahead example' \
+  OptionTypeType 'typeahead' \
+  OptionTypeFieldLabel 'Typeahead' \
+  OptionTypeFieldName 'typeahead' \
+  OptionTypeDefaultValue 'test' \
+  OptionTypePlaceholder 'Search...' \
+  OptionTypeHelpBlock 'Select an option from the list' \
+  OptionTypeOptionListId '1' \
+  OptionTypeRequired 'true' \
+  OptionTypeExportMeta 'true' \
+  OptionTypeDisplayValueOnDetails 'true' \
+  OptionTypeLocked 'true' \
+  OptionTypeHidden 'false' \
+  OptionTypeExcludeFromSearch 'true' \
+  OptionTypeSortable 'true' \
+  OptionTypeAllowDuplicates 'false' \
+  OptionTypeCustomData '{}' \
+  OptionTypeAllowMultipleSelections 'false'
