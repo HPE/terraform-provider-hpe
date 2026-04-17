@@ -109,6 +109,13 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 				Default:      "local",
 				Optional:     true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
+			},
 			"remote_target_host": {
 				Type:        schema.TypeString,
 				Description: "The hostname or ip address of the remote target",
@@ -293,6 +300,16 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 		taskOptions["password"] = remoteTargetPassword
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
+	}
+
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -368,6 +385,7 @@ func resourceTaskPowerShellScriptCreate(ctx context.Context, d *schema.ResourceD
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -486,6 +504,7 @@ func resourceTaskPowerShellScriptRead(ctx context.Context, d *schema.ResourceDat
 	d.Set("retry_count", powerShellScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", powerShellScriptTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", powerShellScriptTask.AllowCustomConfig)
+	d.Set("visibility", powerShellScriptTask.Visibility)
 
 	return diags
 }
@@ -592,6 +611,13 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 			taskOptions["password"] = remoteTargetPassword
 		}
 	}
+	if d.HasChange("visibility") {
+		if visibility, ok := d.Get("visibility").(string); ok {
+			taskOptions["visibility"] = visibility
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+		}
+	}
 
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
@@ -627,6 +653,13 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 		executeTarget = executeTargetValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("execute_target", d.Get("execute_target")))
+	}
+
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
 	var retryable bool
@@ -668,6 +701,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

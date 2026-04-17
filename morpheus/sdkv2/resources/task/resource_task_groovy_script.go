@@ -94,6 +94,13 @@ func ResourceTaskGroovyScript() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
+			},
 			"retryable": {
 				Type:        schema.TypeBool,
 				Description: "Whether to retry the task if there is a failure",
@@ -194,6 +201,8 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	taskType := make(map[string]any)
 	taskType["code"] = "groovyTask"
 
+	taskOptions := make(map[string]any)
+
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -221,6 +230,16 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 		resultType = resultTypeValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("result_type", d.Get("result_type")))
+	}
+
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
 	}
 
 	var retryable bool
@@ -259,8 +278,10 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 				"labels":            labelsPayload,
 				"file":              sourceOptions,
 				"taskType":          taskType,
+				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -368,6 +389,7 @@ func resourceTaskGroovyScriptRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("retry_count", groovyScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", groovyScriptTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", groovyScriptTask.AllowCustomConfig)
+	d.Set("visibility", groovyScriptTask.Visibility)
 
 	return diags
 }
@@ -440,6 +462,8 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	taskType := make(map[string]any)
 	taskType["code"] = "groovyTask"
 
+	taskOptions := make(map[string]any)
+
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -467,6 +491,16 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 		resultType = resultTypeValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("result_type", d.Get("result_type")))
+	}
+
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
 	}
 
 	var retryable bool
@@ -505,8 +539,10 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 				"labels":            labelsPayload,
 				"file":              sourceOptions,
 				"taskType":          taskType,
+				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
