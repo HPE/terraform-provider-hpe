@@ -51,6 +51,7 @@ resource "hpe_morpheus_task_ansible_playbook" "example" {
 - `retryable` (Boolean) Whether to retry the task if there is a failure
 - `skip_tags` (String) The tags to skip during execution of the ansible playbook
 - `tags` (String) The tags to specify during execution of the ansible playbook
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 
