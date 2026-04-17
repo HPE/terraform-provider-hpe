@@ -553,6 +553,7 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["config"] = config
 		row["noBlank"] = optionTypeConfig["remove_select_option"]
 	case typePassword:
+		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
 		config["canPeek"] = optionTypeConfig["allow_password_peek"]
 		row["config"] = config
