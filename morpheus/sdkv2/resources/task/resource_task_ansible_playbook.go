@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceTaskAnsiblePlaybook() *schema.Resource {
@@ -106,6 +107,13 @@ func ResourceTaskAnsiblePlaybook() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the ansible playbook",
 				Optional:    true,
 				Default:     false,
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -228,6 +236,13 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	var retryCount int
 	if retryCountValue, ok := d.Get("retry_count").(int); ok {
 		retryCount = retryCountValue
@@ -251,6 +266,7 @@ func resourceTaskAnsiblePlaybookCreate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -359,6 +375,7 @@ func resourceTaskAnsiblePlaybookRead(ctx context.Context, d *schema.ResourceData
 	d.Set("retry_count", ansiblePlaybookTask.RetryCount)
 	d.Set("retry_delay_seconds", ansiblePlaybookTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", ansiblePlaybookTask.AllowCustomConfig)
+	d.Set("visibility", ansiblePlaybookTask.Visibility)
 
 	return diags
 }
@@ -469,6 +486,13 @@ func resourceTaskAnsiblePlaybookUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	var executeTarget string
 	if executeTargetValue, ok := d.Get("execute_target").(string); ok {
 		executeTarget = executeTargetValue
@@ -499,6 +523,7 @@ func resourceTaskAnsiblePlaybookUpdate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

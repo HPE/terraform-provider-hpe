@@ -93,6 +93,7 @@ resource "hpe_morpheus_task_email" "tfexample_email_git" {
 - `skip_wrapped_email_template` (Boolean) Whether to ignore the Morpheus-styled email template
 - `source` (String) Choose local to draft or paste the email directly into the Task. Choose Repository or URL to bring in a template from a Git repository or another outside source (local, repository, url)
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 
