@@ -605,12 +605,6 @@ func resourceTaskEmailUpdate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	taskOptions := map[string]any{
-		"emailAddress":      emailAddress,
-		"emailSubject":      subject,
-		"emailSkipTemplate": skipWrappedEmailTemplate,
-	}
-
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -620,7 +614,11 @@ func resourceTaskEmailUpdate(ctx context.Context, d *schema.ResourceData, meta a
 				"taskType": map[string]any{
 					"code": "email",
 				},
-				"taskOptions":       taskOptions,
+				"taskOptions": map[string]any{
+					"emailAddress":      emailAddress,
+					"emailSubject":      subject,
+					"emailSkipTemplate": skipWrappedEmailTemplate,
+				},
 				"file":              contentConfig,
 				"executeTarget":     "local",
 				"visibility":        visibility,

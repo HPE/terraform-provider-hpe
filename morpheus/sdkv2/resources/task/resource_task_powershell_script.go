@@ -593,6 +593,7 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 			taskOptions["host"] = remoteTargetHost
 		}
 	}
+
 	if d.HasChange("remote_target_port") {
 		if remoteTargetPort, ok := d.Get("remote_target_port").(string); ok {
 			taskOptions["port"] = remoteTargetPort

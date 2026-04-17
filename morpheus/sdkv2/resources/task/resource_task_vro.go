@@ -96,13 +96,15 @@ func ResourceTaskVRO() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the vRO workflow task",
 				Optional:    true,
 				Default:     false,
-			}, "visibility": {
+			},
+			"visibility": {
 				Type:         schema.TypeString,
 				Description:  "The visibility of the task (private or public)",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
 				Computed:     true,
-			}},
+			},
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

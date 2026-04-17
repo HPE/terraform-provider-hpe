@@ -201,8 +201,6 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 	taskType := make(map[string]any)
 	taskType["code"] = "groovyTask"
 
-	taskOptions := make(map[string]any)
-
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -275,7 +273,6 @@ func resourceTaskGroovyScriptCreate(ctx context.Context, d *schema.ResourceData,
 				"labels":            labelsPayload,
 				"file":              sourceOptions,
 				"taskType":          taskType,
-				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
 				"visibility":        visibility,
@@ -459,8 +456,6 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	taskType := make(map[string]any)
 	taskType["code"] = "groovyTask"
 
-	taskOptions := make(map[string]any)
-
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {
@@ -533,7 +528,6 @@ func resourceTaskGroovyScriptUpdate(ctx context.Context, d *schema.ResourceData,
 				"labels":            labelsPayload,
 				"file":              sourceOptions,
 				"taskType":          taskType,
-				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     "local",
 				"visibility":        visibility,
