@@ -108,7 +108,7 @@ func TestAccMorpheusOptionListRestExampleOk(t *testing.T) {
 			{
 				Config:             providerConfig + resourceConfig,
 				Check:              checkFn,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
