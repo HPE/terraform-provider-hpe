@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceTaskRestart() *schema.Resource {
@@ -68,6 +69,13 @@ func ResourceTaskRestart() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the restart task",
 				Optional:    true,
 				Computed:    true,
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -147,6 +155,13 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -155,6 +170,7 @@ func resourceTaskRestartCreate(ctx context.Context, d *schema.ResourceData, meta
 				"labels":            labelsPayload,
 				"taskType":          taskType,
 				"executeTarget":     "resource",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -256,6 +272,7 @@ func resourceTaskRestartRead(ctx context.Context, d *schema.ResourceData, meta a
 	d.Set("retry_count", restartTask.RetryCount)
 	d.Set("retry_delay_seconds", restartTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", restartTask.AllowCustomConfig)
+	d.Set("visibility", restartTask.Visibility)
 
 	return diags
 }
@@ -330,6 +347,13 @@ func resourceTaskRestartUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -338,6 +362,7 @@ func resourceTaskRestartUpdate(ctx context.Context, d *schema.ResourceData, meta
 				"labels":            labelsPayload,
 				"taskType":          taskType,
 				"executeTarget":     "resource",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
