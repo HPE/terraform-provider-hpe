@@ -87,6 +87,13 @@ func ResourceTaskJavaScript() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -180,6 +187,17 @@ func resourceTaskJavaScriptCreate(ctx context.Context, d *schema.ResourceData, m
 		retryDelaySeconds = retryDelaySecondsValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("retry_delay_seconds", d.Get("retry_delay_seconds")))
+	}
+
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
 	}
 
 	req := &morpheus.Request{
@@ -295,6 +313,7 @@ func resourceTaskJavaScriptRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("retry_count", javascriptTask.RetryCount)
 	d.Set("retry_delay_seconds", javascriptTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", javascriptTask.AllowCustomConfig)
+	d.Set("visibility", javascriptTask.Visibility)
 
 	return diags
 }
@@ -384,6 +403,17 @@ func resourceTaskJavaScriptUpdate(ctx context.Context, d *schema.ResourceData, m
 		retryDelaySeconds = retryDelaySecondsValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("retry_delay_seconds", d.Get("retry_delay_seconds")))
+	}
+
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
 	}
 
 	req := &morpheus.Request{

@@ -135,6 +135,13 @@ func ResourceTaskPythonScript() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -294,6 +301,17 @@ func resourceTaskPythonScriptCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
+	if visibility != "" {
+		taskOptions["visibility"] = visibility
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -409,6 +427,7 @@ func resourceTaskPythonScriptRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("retry_count", pythonScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", pythonScriptTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", pythonScriptTask.AllowCustomConfig)
+	d.Set("visibility", pythonScriptTask.Visibility)
 
 	return diags
 }
@@ -441,6 +460,10 @@ func resourceTaskPythonScriptUpdate(ctx context.Context, d *schema.ResourceData,
 	taskOptions["pythonAdditionalPackages"] = d.Get("additional_packages")
 	taskOptions["pythonArgs"] = d.Get("command_arguments")
 	taskOptions["pythonBinary"] = d.Get("python_binary")
+
+	if visibilityValue, ok := d.Get("visibility").(string); ok && visibilityValue != "" {
+		taskOptions["visibility"] = visibilityValue
+	}
 
 	taskType := make(map[string]any)
 	taskType["code"] = "jythonTask"
