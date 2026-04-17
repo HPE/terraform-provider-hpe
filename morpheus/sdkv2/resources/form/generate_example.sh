@@ -747,8 +747,7 @@ $RENDER \
   OptionTypeHidden 'false' \
   OptionTypeExcludeFromSearch 'true' \
   OptionTypeShowLineNumbers 'true' \
-  OptionTypeCodeLanguage 'bash' \
-  OptionTypeTextRows '10'
+  OptionTypeCodeLanguage 'bash'
 
 $RENDER \
   -out examples/resources/morpheus_form/resource_password.tf \

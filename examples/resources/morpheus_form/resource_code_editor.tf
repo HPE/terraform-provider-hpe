@@ -22,6 +22,5 @@ resource "hpe_morpheus_form" "example" {
     exclude_from_search      = true
     show_line_numbers        = true
     code_language            = "bash"
-    text_rows                = 10
   }
 }

@@ -1639,7 +1639,6 @@ func RenderCodeEditorConfig(t *testing.T, overrides map[string]string) (string, 
 		"OptionTypePlaceholder":           "",
 		"OptionTypeRequired":              "true",
 		"OptionTypeShowLineNumbers":       "true",
-		"OptionTypeTextRows":              "10",
 		"OptionTypeType":                  "code-editor",
 	}
 
