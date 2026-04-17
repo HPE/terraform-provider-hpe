@@ -124,8 +124,8 @@ func TestAccMorpheusFormFieldGroupsOk(t *testing.T) {
 						"true",
 					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.export_meta", "true"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.field_label", "Testin"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.field_name", "test"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.field_label", "Testin 2"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.field_name", "test2"),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"field_group.1.option_type.0.help_block",

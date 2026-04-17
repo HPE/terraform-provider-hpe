@@ -11,11 +11,11 @@ resource "hpe_morpheus_form" "example" {
     collapsed_by_default = true
     option_type {
       name                     = "tf field group 1 text input example"
-      code                     = "test-input"
+      code                     = "test-input-1"
       description              = "Terraform text input example"
       type                     = "text"
-      field_label              = "Testin"
-      field_name               = "test"
+      field_label              = "Testing 1"
+      field_name               = "test1"
       default_value            = "Demo123"
       placeholder              = "Testing 123"
       help_block               = "Help block example"
@@ -35,11 +35,11 @@ resource "hpe_morpheus_form" "example" {
     collapsed_by_default = true
     option_type {
       name                     = "tf field group 2 text input example"
-      code                     = "test-input"
+      code                     = "test-input-2"
       description              = "Terraform text input example"
       type                     = "text"
-      field_label              = "Testin"
-      field_name               = "test"
+      field_label              = "Testing 2"
+      field_name               = "test2"
       default_value            = "Demo123"
       placeholder              = "Testing 123"
       help_block               = "Help block example"

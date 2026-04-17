@@ -442,11 +442,11 @@ $RENDER \
   FieldGroup1Collapsible 'true' \
   FieldGroup1CollapsedByDefault 'true' \
   FieldGroup1OptionTypeName 'tf field group 1 text input example' \
-  FieldGroup1OptionTypeCode 'test-input' \
+  FieldGroup1OptionTypeCode 'test-input-1' \
   FieldGroup1OptionTypeDescription 'Terraform text input example' \
   FieldGroup1OptionTypeType 'text' \
-  FieldGroup1OptionTypeFieldLabel 'Testin' \
-  FieldGroup1OptionTypeFieldName 'test' \
+  FieldGroup1OptionTypeFieldLabel 'Testing 1' \
+  FieldGroup1OptionTypeFieldName 'test1' \
   FieldGroup1OptionTypeDefaultValue 'Demo123' \
   FieldGroup1OptionTypePlaceholder 'Testing 123' \
   FieldGroup1OptionTypeHelpBlock 'Help block example' \
@@ -461,11 +461,11 @@ $RENDER \
   FieldGroup2Collapsible 'true' \
   FieldGroup2CollapsedByDefault 'true' \
   FieldGroup2OptionTypeName 'tf field group 2 text input example' \
-  FieldGroup2OptionTypeCode 'test-input' \
+  FieldGroup2OptionTypeCode 'test-input-2' \
   FieldGroup2OptionTypeDescription 'Terraform text input example' \
   FieldGroup2OptionTypeType 'text' \
-  FieldGroup2OptionTypeFieldLabel 'Testin' \
-  FieldGroup2OptionTypeFieldName 'test' \
+  FieldGroup2OptionTypeFieldLabel 'Testing 2' \
+  FieldGroup2OptionTypeFieldName 'test2' \
   FieldGroup2OptionTypeDefaultValue 'Demo123' \
   FieldGroup2OptionTypePlaceholder 'Testing 123' \
   FieldGroup2OptionTypeHelpBlock 'Help block example' \
