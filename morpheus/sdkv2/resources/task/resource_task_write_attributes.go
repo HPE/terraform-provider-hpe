@@ -173,6 +173,13 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -182,6 +189,7 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -286,6 +294,7 @@ func resourceTaskWriteAttributesRead(ctx context.Context, d *schema.ResourceData
 	d.Set("retry_count", writeAttributesTask.RetryCount)
 	d.Set("retry_delay_seconds", writeAttributesTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", writeAttributesTask.AllowCustomConfig)
+	d.Set("visibility", writeAttributesTask.Visibility)
 
 	return diags
 }
@@ -370,6 +379,13 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -379,6 +395,7 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

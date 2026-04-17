@@ -85,6 +85,7 @@ resource "hpe_morpheus_task_ruby_script" "tfexample_ruby_git" {
 - `script_content` (String) The content of the ruby script. Used when the local source type is specified
 - `script_path` (String) The path of the ruby script, either the url or the path in the repository
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 

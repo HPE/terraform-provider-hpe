@@ -140,9 +140,6 @@ func resourceTaskLibraryTemplateCreate(ctx context.Context, d *schema.ResourceDa
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
-	}
 
 	var fileTemplateId string
 	if fileTemplateIdValue, ok := d.Get("file_template_id").(string); ok {
@@ -376,9 +373,6 @@ func resourceTaskLibraryTemplateUpdate(ctx context.Context, d *schema.ResourceDa
 		visibility = visibilityValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
 	}
 
 	var fileTemplateId string
