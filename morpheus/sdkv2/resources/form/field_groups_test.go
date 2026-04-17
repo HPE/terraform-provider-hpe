@@ -82,7 +82,7 @@ func TestAccMorpheusFormFieldGroupsOk(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"field_group.0.option_type.0.help_block",
-						"Is this working now",
+						"Help block example",
 					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.0.option_type.0.hidden", "false"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.0.option_type.0.locked", "true"),
@@ -129,7 +129,7 @@ func TestAccMorpheusFormFieldGroupsOk(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_form.example",
 						"field_group.1.option_type.0.help_block",
-						"Is this working now",
+						"Help block example",
 					),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.hidden", "false"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "field_group.1.option_type.0.locked", "true"),

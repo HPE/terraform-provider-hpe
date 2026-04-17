@@ -254,7 +254,7 @@ resource "hpe_morpheus_form" "example" {
     field_name               = "test"
     default_value            = "Demo123"
     placeholder              = "Testing 123"
-    help_block               = "Is this working now"
+    help_block               = "Help block example"
     required                 = true
     export_meta              = true
     display_value_on_details = true
@@ -283,7 +283,7 @@ resource "hpe_morpheus_form" "example" {
     field_name               = "checkboxInput"
     default_checked          = true
     placeholder              = "Testing 123"
-    help_block               = "Is this working now"
+    help_block               = "Help block example"
     required                 = true
     export_meta              = true
     display_value_on_details = true
@@ -312,7 +312,7 @@ resource "hpe_morpheus_form" "example" {
     field_name               = "hiddenInput"
     default_value            = "test"
     placeholder              = "Testing 123"
-    help_block               = "Is this working now"
+    help_block               = "Help block example"
     required                 = true
     export_meta              = true
     display_value_on_details = true
@@ -399,7 +399,7 @@ resource "hpe_morpheus_form" "example" {
     field_name               = "numberInput"
     default_value            = "4"
     placeholder              = "Testing 123"
-    help_block               = "Is this working now"
+    help_block               = "Help block example"
     required                 = true
     export_meta              = true
     display_value_on_details = true
@@ -656,7 +656,7 @@ resource "hpe_morpheus_form" "example" {
       field_name               = "test"
       default_value            = "Demo123"
       placeholder              = "Testing 123"
-      help_block               = "Is this working now"
+      help_block               = "Help block example"
       required                 = true
       export_meta              = true
       display_value_on_details = true
@@ -680,7 +680,7 @@ resource "hpe_morpheus_form" "example" {
       field_name               = "test"
       default_value            = "Demo123"
       placeholder              = "Testing 123"
-      help_block               = "Is this working now"
+      help_block               = "Help block example"
       required                 = true
       export_meta              = true
       display_value_on_details = true

@@ -166,7 +166,7 @@ $RENDER \
   OptionTypeFieldName 'test' \
   OptionTypeDefaultValue 'Demo123' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -189,7 +189,7 @@ $RENDER \
   OptionTypeFieldName 'checkboxInput' \
   OptionTypeDefaultChecked 'true' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -212,7 +212,7 @@ $RENDER \
   OptionTypeFieldName 'hiddenInput' \
   OptionTypeDefaultValue 'test' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -235,7 +235,7 @@ $RENDER \
   OptionTypeFieldName 'numberInput' \
   OptionTypeDefaultValue '4' \
   OptionTypePlaceholder 'Testing 123' \
-  OptionTypeHelpBlock 'Is this working now' \
+  OptionTypeHelpBlock 'Help block example' \
   OptionTypeRequired 'true' \
   OptionTypeExportMeta 'true' \
   OptionTypeDisplayValueOnDetails 'true' \
@@ -449,7 +449,7 @@ $RENDER \
   FieldGroup1OptionTypeFieldName 'test' \
   FieldGroup1OptionTypeDefaultValue 'Demo123' \
   FieldGroup1OptionTypePlaceholder 'Testing 123' \
-  FieldGroup1OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup1OptionTypeHelpBlock 'Help block example' \
   FieldGroup1OptionTypeRequired 'true' \
   FieldGroup1OptionTypeExportMeta 'true' \
   FieldGroup1OptionTypeDisplayValueOnDetails 'true' \
@@ -468,7 +468,7 @@ $RENDER \
   FieldGroup2OptionTypeFieldName 'test' \
   FieldGroup2OptionTypeDefaultValue 'Demo123' \
   FieldGroup2OptionTypePlaceholder 'Testing 123' \
-  FieldGroup2OptionTypeHelpBlock 'Is this working now' \
+  FieldGroup2OptionTypeHelpBlock 'Help block example' \
   FieldGroup2OptionTypeRequired 'true' \
   FieldGroup2OptionTypeExportMeta 'true' \
   FieldGroup2OptionTypeDisplayValueOnDetails 'true' \
