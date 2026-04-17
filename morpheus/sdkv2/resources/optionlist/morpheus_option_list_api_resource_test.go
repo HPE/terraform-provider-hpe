@@ -73,7 +73,7 @@ func TestAccMorpheusOptionListApiExampleOk(t *testing.T) {
 			// Apply - Note: translation_script formatting causes persistent drift
 			{
 				Config:             providerConfig + resourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 		},
