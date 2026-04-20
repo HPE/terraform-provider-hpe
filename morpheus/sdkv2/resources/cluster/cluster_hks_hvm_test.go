@@ -12,6 +12,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestAccClusterHKSHVMExampleOk(t *testing.T) {
@@ -23,12 +24,16 @@ func TestAccClusterHKSHVMExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := cluster.RenderClusterHKSHVMConfig(t, map[string]string{
-		"Name": name,
+		"Name":                               name,
+		"WorkflowId":                         "null",
+		"ServerStorageDataVolumeDatastoreId": "1",
+		"ServerStorageRootVolumeDatastoreId": "1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +120,7 @@ func TestAccClusterHKSHVMExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_hvm.example",
 			"server.0.storage_volume.0.datastore_id",
-			"9",
+			"1",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_hvm.example",
