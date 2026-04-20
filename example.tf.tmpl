@@ -1,0 +1,72 @@
+data "hpe_morpheus_cloud" "vme_cloud" {
+  name = "{{.CloudName}}"
+}
+
+data "hpe_morpheus_service_plan" "vme_512mb" {
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "kvm"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "{{.Name}}"
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
+  layout_id        = {{.LayoutId}}                                 # Single KVM VM
+  instance_type_id = {{.InstanceType}}                  # (HVM) mvm-cluster
+
+  group_id = 1
+  plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+
+  instance_context = "{{.InstanceContext}}"
+  network_interfaces = [
+    {
+      network_id = {{.NetworkId}}
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume     = true
+      name            = "root"
+      size            = 10
+      storage_type_id = 1
+      datastore_id    = {{.DatastoreId}}
+    },
+    {
+      root_volume     = false
+      name            = "data"
+      size            = 10
+      storage_type_id = 1
+      datastore_id    = {{.DatastoreId}}
+    }
+  ]
+
+  tags = [{{if .MultipleTags}}
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "acctest"
+      value = "true"
+    },
+    {
+      name  = "hpe_morpheus_instance"
+      value = "true"
+    },
+    {
+      name  = "sweepable"
+      value = "true"
+    },{{end}}
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config_hvm = {
+    resource_pool_id      = "{{.ResourcePool}}"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
+  }
+}

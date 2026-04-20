@@ -1,0 +1,251 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+package instance_test
+
+import (
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+)
+
+func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+// Tests that our example file template used for docs is a valid config
+func TestAccMorpheusInstanceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":         name,
+		"InstanceType": instanceTypeID,
+		"ResourcePool": resourcePool,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"instance_type_id",
+			instanceTypeID,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_hvm.resource_pool_id",
+			resourcePool,
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusInstanceUpdateName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+	updatedName := name + "-updated"
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updatedResourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": updatedName,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"name",
+						name,
+					),
+				),
+			},
+			{
+				Config: providerConfig + updatedResourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"name",
+						updatedName,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":            name,
+		"InstanceContext": "dev",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updatedResourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":            name,
+		"InstanceContext": "production",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"instance_context",
+						"dev",
+					),
+				),
+			},
+			{
+				Config: providerConfig + updatedResourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"instance_context",
+						"production",
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updatedResourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":         name,
+		"MultipleTags": "true",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"tags.#",
+						"1",
+					),
+				),
+			},
+			{
+				Config: providerConfig + updatedResourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_instance.example",
+						"tags.#",
+						"5",
+					),
+				),
+			},
+		},
+	})
+}
