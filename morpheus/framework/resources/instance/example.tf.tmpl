@@ -1,5 +1,5 @@
 data "hpe_morpheus_cloud" "vme_cloud" {
-  name = "HPE Alletra VME"
+  name = "{{.CloudName}}"
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
@@ -9,17 +9,17 @@ data "hpe_morpheus_service_plan" "vme_512mb" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "{{.Name}}"
-  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
-  layout_id        = 5385                                 # Single KVM VM
-  instance_type_id = {{.InstanceType}}                  # (HVM) mvm-cluster
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id 
+  layout_id        = {{.LayoutId}} # Single KVM VM
+  instance_type_id = {{.InstanceType}} # (HVM) mvm-cluster
 
   group_id = 1
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
-  instance_context = "dev"
+  instance_context = "{{.InstanceContext}}"
   network_interfaces = [
     {
-      network_id = 103481
+      network_id = {{.NetworkId}}
     }
   ]
 
@@ -29,18 +29,18 @@ resource "hpe_morpheus_instance" "example" {
       name            = "root"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = {{.DatastoreId}}
     },
     {
       root_volume     = false
       name            = "data"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = {{.DatastoreId}}
     }
   ]
 
-  tags = [
+  tags = [{{if .MultipleTags}}
     {
       name  = "terraform"
       value = "true"
@@ -56,7 +56,7 @@ resource "hpe_morpheus_instance" "example" {
     {
       name  = "sweepable"
       value = "true"
-    },
+    },{{end}}
     {
       name  = "managed_by"
       value = "terraform"
