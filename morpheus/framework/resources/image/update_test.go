@@ -15,10 +15,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
-var (
-	// nolint: lll
-	url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
-)
+// nolint: lll
+var url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
 
 func TestAccMorpheusImageUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
