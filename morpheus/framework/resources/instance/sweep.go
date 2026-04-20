@@ -5,14 +5,11 @@ package instance
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
-	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
 // Instances whose name begins with this string will be eligible for deletion
@@ -49,175 +46,83 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 	return true
 }
 
-// instanceSweeper handles cleanup of test instances
-type instanceSweeper struct {
-	client *sdk.APIClient
-}
-
-// NewInstanceSweeper creates and registers an instance sweeper
-func NewInstanceSweeper(client *sdk.APIClient) {
-	s := &instanceSweeper{
-		client: client,
-	}
-
-	resource.AddTestSweepers(
+func init() {
+	testhelpers.RegisterAPISweeper(
 		"hpe_morpheus_instance",
-		&resource.Sweeper{
-			Name: "hpe_morpheus_instance",
-			F:    s.Sweep,
-		})
+		testInstancePrefix,
+		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
+			return client.InstancesAPI.ListInstances(ctx).Phrase(prefix).Execute()
+		},
+		"GetInstances",
+		func(ctx context.Context, client *sdk.APIClient, id int64, item any) (*http.Response, error) {
+			instance := item.(sdk.Instance)
+			serverIDs, err := getServerIDs(instance)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, serverID := range serverIDs {
+				stopID := sdk.UpdateHostIdParameter{Int64: &serverID}
+				_, hresp, err := client.HostsAPI.StopHost(ctx, stopID).Execute()
+				if err != nil || (hresp.StatusCode != http.StatusOK && hresp.StatusCode != http.StatusConflict) {
+					return hresp, err
+				}
+			}
+
+			for _, serverID := range serverIDs {
+				deleteID := sdk.UpdateHostIdParameter{Int64: &serverID}
+				_, hresp, err := client.HostsAPI.RemoveHost(ctx, deleteID).Force("on").
+					RemoveResources("on").RemoveInstances("on").Execute()
+				if err != nil || hresp.StatusCode != http.StatusOK {
+					return hresp, err
+				}
+			}
+
+			return &http.Response{StatusCode: http.StatusOK}, nil
+		},
+		testhelpers.WithFilter(func(ctx context.Context, client *sdk.APIClient, item any) (bool, string, error) {
+			instance := item.(sdk.Instance)
+			id, ok := instance.GetIdOk()
+			if !ok || id == nil {
+				return false, "id", nil
+			}
+
+			instanceDetail, hresp, err := client.InstancesAPI.GetInstance(ctx, *id).Execute()
+			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
+				return false, "failed to get details", nil
+			}
+
+			detail := instanceDetail.GetInstance()
+			tags, ok := detail.GetTagsOk()
+			if !ok || !hasRequiredTags(tags) {
+				return false, "tags", nil
+			}
+
+			return true, "", nil
+		}),
+	)
 }
 
-// Sweep cleans up test instances
-func (s *instanceSweeper) Sweep(_ string) error {
-	ctx := context.Background()
-
-	if s.client == nil {
-		log.Printf("[INFO] No client provided, skipping instance sweep")
-
-		return nil
+func getServerIDs(instance sdk.Instance) ([]int64, error) {
+	containers, ok := instance.GetContainerDetailsOk()
+	if !ok || containers == nil {
+		return nil, fmt.Errorf("failed to get container details")
 	}
 
-	instances, hresp, err := s.client.InstancesAPI.ListInstances(ctx).
-		Phrase(testInstancePrefix).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list instances: %s", errfmt.ErrMsg(err, hresp))
+	serverIDs := make([]int64, 0, len(containers))
+	for _, container := range containers {
+		server, ok := container.GetServerOk()
+		if !ok || server == nil {
+			return nil, fmt.Errorf("failed to get server details from container")
+		}
+
+		serverID, ok := server.GetIdOk()
+		if !ok || serverID == nil {
+			return nil, fmt.Errorf("failed to get server ID from container")
+		}
+
+		serverIDs = append(serverIDs, *serverID)
 	}
 
-	instanceList := instances.GetInstances()
-	var sweptCount int
-	var sweepErrors []string
-
-	for _, instance := range instanceList {
-		name, ok := instance.GetNameOk()
-		if !ok || name == nil {
-			continue
-		}
-
-		if !strings.HasPrefix(*name, testInstancePrefix) {
-			log.Printf("[INFO] Skipping instance (name): %s", *name)
-
-			continue
-		}
-
-		id, ok := instance.GetIdOk()
-		if !ok || id == nil {
-			log.Printf("[INFO] Skipping instance (id): %s", *name)
-
-			continue
-		}
-
-		// Get instance details to check tags
-		instanceDetail, hresp, err := s.client.InstancesAPI.GetInstance(ctx, *id).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			log.Printf("[INFO] Skipping instance (failed to get details): %s", *name)
-
-			continue
-		}
-
-		inst := instanceDetail.GetInstance()
-		tags, ok := inst.GetTagsOk()
-		if !ok || !hasRequiredTags(tags) {
-			log.Printf("[INFO] Skipping instance (tags): %s", *name)
-
-			continue
-		}
-
-		log.Printf("[INFO] Sweeping instance: %s (id: %d)", *name, *id)
-
-		// Get serverId(s).  At the moment we only support a single server per instance, but we'll loop just in case
-		containers, ok := instance.GetContainerDetailsOk()
-		if !ok || containers == nil {
-			errMsg := fmt.Sprintf(
-				"failed to delete instance %s (id: %d): failed to get container details",
-				*name, *id,
-			)
-			log.Printf("[ERROR] %s", errMsg)
-			sweepErrors = append(sweepErrors, errMsg)
-
-			continue
-		}
-
-		serverIds := make([]int64, 0)
-		for _, container := range containers {
-			server, ok := container.GetServerOk()
-			if !ok || server == nil {
-				errMsg := fmt.Sprintf(
-					"failed to delete instance %s (id: %d): failed to get server details from container",
-					*name, *id,
-				)
-				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
-
-				continue
-			}
-
-			serverId, ok := server.GetIdOk()
-			if !ok || serverId == nil {
-
-				errMsg := fmt.Sprintf(
-					"failed to delete instance %s (id: %d): failed to get server ID from container",
-					*name, *id,
-				)
-				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
-
-				continue
-			}
-
-			serverIds = append(serverIds, *serverId)
-		}
-
-		// Stop the server(s) if they are not already stopped, otherwise we cannot delete them
-		for _, serverId := range serverIds {
-			stopId := sdk.UpdateHostIdParameter{
-				Int64: &serverId,
-			}
-			stopReq := s.client.HostsAPI.StopHost(ctx, stopId)
-			_, hresp, err := stopReq.Execute()
-			if err != nil || (hresp.StatusCode != http.StatusOK && hresp.StatusCode != http.StatusConflict) {
-				errMsg := fmt.Sprintf(
-					"failed to delete instance %s (id: %d): %s",
-					*name, *id, errfmt.ErrMsg(err, hresp),
-				)
-				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
-
-				continue
-			}
-		}
-
-		// Delete the server(s) associated with the instance.
-		for _, serverId := range serverIds {
-			updateId := sdk.UpdateHostIdParameter{
-				Int64: &serverId,
-			}
-			deleteServerReq := s.client.HostsAPI.RemoveHost(ctx, updateId).Force("on").
-				RemoveResources("on").RemoveInstances("on")
-			_, hresp, err := deleteServerReq.Execute()
-			if err != nil || hresp.StatusCode != http.StatusOK {
-				errMsg := fmt.Sprintf(
-					"failed to delete instance %s (id: %d): %s",
-					*name, *id, errfmt.ErrMsg(err, hresp),
-				)
-				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
-
-				continue
-			}
-		}
-
-		sweptCount++
-	}
-
-	log.Printf(
-		"[INFO] Instance sweep completed. Instances swept: %d, errors: %d",
-		sweptCount, len(sweepErrors),
-	)
-
-	if len(sweepErrors) > 0 {
-		return fmt.Errorf("%s", strings.Join(sweepErrors, "\n"))
-	}
-
-	return nil
+	return serverIDs, nil
 }

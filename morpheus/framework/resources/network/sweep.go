@@ -4,15 +4,11 @@ package network
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"net/http"
-	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
 // Networks whose name begins with this string will be eligible for deletion
@@ -45,95 +41,26 @@ func hasRequiredLabels(labels []string) bool {
 	return true
 }
 
-// networkSweeper handles cleanup of test networks
-type networkSweeper struct {
-	client *sdk.APIClient
-}
-
-// NewNetworkSweeper creates and registers a network sweeper
-func NewNetworkSweeper(client *sdk.APIClient) {
-	s := &networkSweeper{
-		client: client,
-	}
-
-	resource.AddTestSweepers(
+func init() {
+	testhelpers.RegisterAPISweeper(
 		"hpe_morpheus_network",
-		&resource.Sweeper{
-			Name: "hpe_morpheus_network",
-			F:    s.Sweep,
-		})
-}
-
-// Sweep cleans up test networks
-func (s *networkSweeper) Sweep(_ string) error {
-	ctx := context.Background()
-
-	if s.client == nil {
-		log.Printf("[INFO] No client provided, skipping network sweep")
-
-		return nil
-	}
-
-	networks, hresp, err := s.client.NetworksAPI.ListNetworks(ctx).
-		Phrase(testNetworkPrefix).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list networks: %s", errfmt.ErrMsg(err, hresp))
-	}
-
-	networkList := networks.GetNetworks()
-	var sweptCount int
-	var sweepErrors []string
-
-	for _, network := range networkList {
-		name, ok := network.GetNameOk()
-		if !ok || name == nil {
-			continue
-		}
-
-		if strings.HasPrefix(*name, testNetworkPrefix) {
+		testNetworkPrefix,
+		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
+			return client.NetworksAPI.ListNetworks(ctx).Phrase(prefix).Execute()
+		},
+		"GetNetworks",
+		func(ctx context.Context, client *sdk.APIClient, id int64, _ any) (*http.Response, error) {
+			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
+			return hresp, err
+		},
+		testhelpers.WithFilter(func(_ context.Context, _ *sdk.APIClient, item any) (bool, string, error) {
+			network := item.(sdk.Network)
 			labels, ok := network.GetLabelsOk()
 			if !ok || !hasRequiredLabels(labels) {
-				log.Printf("[INFO] Skipping network (labels): %s", *name)
-
-				continue
+				return false, "labels", nil
 			}
 
-			id, ok := network.GetIdOk()
-			if !ok || id == nil {
-				log.Printf("[INFO] Skipping network (id): %s", *name)
-
-				continue
-			}
-
-			log.Printf("[INFO] Sweeping network: %s (id: %d)", *name, *id)
-
-			// Delete the network
-			_, hresp, err := s.client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
-			if err != nil || hresp.StatusCode != http.StatusOK {
-				errMsg := fmt.Sprintf(
-					"failed to delete network %s (id: %d): %s",
-					*name, *id, errfmt.ErrMsg(err, hresp),
-				)
-				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
-
-				continue
-			}
-
-			sweptCount++
-		} else {
-			log.Printf("[INFO] Skipping network (name): %s", *name)
-		}
-	}
-
-	log.Printf(
-		"[INFO] Network sweep completed. Networks swept: %d, errors: %d",
-		sweptCount, len(sweepErrors),
+			return true, "", nil
+		}),
 	)
-
-	if len(sweepErrors) > 0 {
-		return fmt.Errorf("%s", strings.Join(sweepErrors, "\n"))
-	}
-
-	return nil
 }
