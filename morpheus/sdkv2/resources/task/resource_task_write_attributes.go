@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceTaskWriteAttributes() *schema.Resource {
@@ -84,6 +85,13 @@ func ResourceTaskWriteAttributes() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the write attributes task",
 				Optional:    true,
 				Computed:    true,
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Computed:     true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
