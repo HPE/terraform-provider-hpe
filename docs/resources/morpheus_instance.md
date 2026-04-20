@@ -62,7 +62,7 @@ These settings can be changed as required.
 
 ```terraform
 data "hpe_morpheus_cloud" "vme_cloud" {
-  name = "HPE Alletra VME"
+  name = "MyCloud"
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
@@ -72,9 +72,9 @@ data "hpe_morpheus_service_plan" "vme_512mb" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "TestInstance"
-  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
-  layout_id        = 5385                                 # Single KVM VM
-  instance_type_id = 9                  # (HVM) mvm-cluster
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id 
+  layout_id        = 644 # Single KVM VM
+  instance_type_id = 9 # (HVM) mvm-cluster
 
   group_id = 1
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
@@ -82,7 +82,7 @@ resource "hpe_morpheus_instance" "example" {
   instance_context = "dev"
   network_interfaces = [
     {
-      network_id = 103481
+      network_id = 755
     }
   ]
 
@@ -92,14 +92,14 @@ resource "hpe_morpheus_instance" "example" {
       name            = "root"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = 555
     },
     {
       root_volume     = false
       name            = "data"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = 555
     }
   ]
 
@@ -127,7 +127,7 @@ resource "hpe_morpheus_instance" "example" {
   ]
 
   config_hvm = {
-    resource_pool_id      = "pool-62299"
+    resource_pool_id      = "pool-700"
     nested_virtualization = "off"
     no_agent              = true
     create_user           = false
