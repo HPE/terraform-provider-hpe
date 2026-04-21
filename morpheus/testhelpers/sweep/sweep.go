@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"slices"
-	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,41 +18,39 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, item T) (bool, string, error)
+// typedSweepList returns all candidate resources that could be swept.
+type typedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
 
-type TypedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
+// typedResourceCheck decides whether a listed item is a test resource.
+type typedResourceCheck[T any] func(item T) bool
 
-type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
+// typedSweepDelete deletes a resource item selected for sweeping.
+type typedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
 
-type TypedResourceCheck[T any] func(item T) bool
+// typedSweepOption configures optional sweep behavior.
+type typedSweepOption[T any] func(*typedSweepConfig[T])
 
-type TypedSweepOption[T any] func(*typedSweepConfig[T])
+// typedSweepFilter applies additional checks before delete is attempted.
+type typedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, item T) (bool, string, error)
 
 type typedSweepConfig[T any] struct {
-	filter             TypedSweepFilter[T]
+	filter             typedSweepFilter[T]
 	ignoreListStatuses []int
 }
 
-func RegisterSweeper(resourceName string, sweep func() error) {
-	resource.AddTestSweepers(
-		resourceName,
-		&resource.Sweeper{
-			Name: resourceName,
-			F: func(_ string) (retErr error) {
-				defer RecoverSweepPanic(resourceName, &retErr)
-
-				return sweep()
-			},
-		},
-	)
-}
-
+// RegisterTypedAPISweeper registers a typed sweeper with an explicit contract:
+//   - listResource: list all resources that could be swept.
+//   - isTestResource: decide if a listed item is a test resource.
+//   - deleteResource: delete a matched test resource.
+//
+// Optional behavior can be added via options (for example, additional filters or
+// ignored list status codes).
 func RegisterTypedAPISweeper[T any](
 	resourceName string,
-	listResource TypedSweepList[T],
-	isTestResource TypedResourceCheck[T],
-	deleteResource TypedSweepDelete[T],
-	options ...TypedSweepOption[T],
+	listResource typedSweepList[T],
+	isTestResource typedResourceCheck[T],
+	deleteResource typedSweepDelete[T],
+	options ...typedSweepOption[T],
 ) {
 	config := typedSweepConfig[T]{}
 
@@ -61,10 +58,10 @@ func RegisterTypedAPISweeper[T any](
 		option(&config)
 	}
 
-	RegisterSweeper(resourceName, func() error {
+	registerSweeper(resourceName, func() error {
 		ctx := context.Background()
 
-		client, err := NewSweepClient(ctx)
+		client, err := newSweepClient(ctx)
 		if err != nil {
 			log.Printf("[WARN] Cannot create sweep client: %v", err)
 
@@ -88,6 +85,7 @@ func RegisterTypedAPISweeper[T any](
 
 		var sweptCount int
 		var sweepErr error
+		errCount := 0
 
 		for _, item := range items {
 			if !isTestResource(item) {
@@ -100,6 +98,7 @@ func RegisterTypedAPISweeper[T any](
 					errMsg := fmt.Sprintf("failed to evaluate filter for %s: %s", resourceName, err)
 					log.Printf("[ERROR] %s", errMsg)
 					sweepErr = errors.Join(sweepErr, errors.New(errMsg))
+					errCount++
 
 					continue
 				}
@@ -118,16 +117,12 @@ func RegisterTypedAPISweeper[T any](
 				errMsg := fmt.Sprintf("failed to delete %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
 				log.Printf("[ERROR] %s", errMsg)
 				sweepErr = errors.Join(sweepErr, errors.New(errMsg))
+				errCount++
 
 				continue
 			}
 
 			sweptCount++
-		}
-
-		errCount := 0
-		if sweepErr != nil {
-			errCount = len(strings.Split(sweepErr.Error(), "\n"))
 		}
 
 		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, errCount)
@@ -136,19 +131,36 @@ func RegisterTypedAPISweeper[T any](
 	})
 }
 
-func WithFilter[T any](filter TypedSweepFilter[T]) TypedSweepOption[T] {
+func registerSweeper(resourceName string, sweep func() error) {
+	resource.AddTestSweepers(
+		resourceName,
+		&resource.Sweeper{
+			Name: resourceName,
+			F: func(_ string) (retErr error) {
+				defer recoverSweepPanic(resourceName, &retErr)
+
+				return sweep()
+			},
+		},
+	)
+}
+
+// WithFilter adds an optional post-check before deleteResource is called.
+func WithFilter[T any](filter typedSweepFilter[T]) typedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.filter = filter
 	}
 }
 
-func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
+// WithIgnoreListStatuses treats listed HTTP status codes from listResource as
+// non-fatal and returns success for the sweep.
+func WithIgnoreListStatuses[T any](statuses ...int) typedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.ignoreListStatuses = append(config.ignoreListStatuses, statuses...)
 	}
 }
 
-func NewSweepClient(ctx context.Context) (*sdk.APIClient, error) {
+func newSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 	var username, password string
 
 	url, ok := os.LookupEnv("TF_VAR_testacc_morpheus_url")
@@ -195,7 +207,7 @@ func NewSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 }
 
 // RecoverSweepPanic recovers from panics during sweep execution and converts them to errors.
-func RecoverSweepPanic(resourceName string, retErr *error) {
+func recoverSweepPanic(resourceName string, retErr *error) {
 	if r := recover(); r != nil {
 		*retErr = fmt.Errorf("panic during %s sweep: %v", resourceName, r)
 		log.Printf("[ERROR] %v", *retErr)
