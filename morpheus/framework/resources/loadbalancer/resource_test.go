@@ -4,6 +4,7 @@ package loadbalancer_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -114,7 +115,43 @@ func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
 					"cloud_id",
 					"network_server_id",
 					"type_code",
+					"permissions.groups",
 				},
+			},
+		},
+	})
+}
+
+// Test validation: permissions.all conflicts with permissions.groups
+func TestAccMorpheusLoadBalancerValidationPermissionsConflict(t *testing.T) {
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	name := acctest.RandomWithPrefix(t.Name())
+	name = name[0:16] + name[len(name)-16:]
+
+	resourceConfig := `
+resource "hpe_morpheus_load_balancer" "test" {
+  name = "` + name + `"
+
+  config = {}
+
+  permissions = {
+    all    = true
+    groups = [1, 2]
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile(`(?i)attribute "permissions.groups" cannot be specified when`),
 			},
 		},
 	})
