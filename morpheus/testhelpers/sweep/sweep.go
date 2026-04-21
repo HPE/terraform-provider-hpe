@@ -18,23 +18,23 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-// typedSweepList returns all candidate resources that could be swept.
-type typedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
+// TypedSweepList returns all candidate resources that could be swept.
+type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
 
-// typedResourceCheck decides whether a listed item is a test resource.
-type typedResourceCheck[T any] func(item T) bool
+// TypedResourceCheck decides whether a listed item is a test resource.
+type TypedResourceCheck[T any] func(item T) bool
 
-// typedSweepDelete deletes a resource item selected for sweeping.
-type typedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
+// TypedSweepDelete deletes a resource item selected for sweeping.
+type TypedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
 
-// typedSweepOption configures optional sweep behavior.
-type typedSweepOption[T any] func(*typedSweepConfig[T])
+// TypedSweepOption configures optional sweep behavior.
+type TypedSweepOption[T any] func(*typedSweepConfig[T])
 
-// typedSweepFilter applies additional checks before delete is attempted.
-type typedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, item T) (bool, string, error)
+// TypedSweepFilter applies additional checks before delete is attempted.
+type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, item T) (bool, string, error)
 
 type typedSweepConfig[T any] struct {
-	filter             typedSweepFilter[T]
+	filter             TypedSweepFilter[T]
 	ignoreListStatuses []int
 }
 
@@ -61,10 +61,10 @@ func registerSweeper(resourceName string, sweep func() error) {
 // ignored list status codes).
 func RegisterTypedAPISweeper[T any](
 	resourceName string,
-	listResource typedSweepList[T],
-	isTestResource typedResourceCheck[T],
-	deleteResource typedSweepDelete[T],
-	options ...typedSweepOption[T],
+	listResource TypedSweepList[T],
+	isTestResource TypedResourceCheck[T],
+	deleteResource TypedSweepDelete[T],
+	options ...TypedSweepOption[T],
 ) {
 	config := typedSweepConfig[T]{}
 
@@ -146,7 +146,7 @@ func RegisterTypedAPISweeper[T any](
 }
 
 // WithFilter adds an optional post-check before deleteResource is called.
-func WithFilter[T any](filter typedSweepFilter[T]) typedSweepOption[T] {
+func WithFilter[T any](filter TypedSweepFilter[T]) TypedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.filter = filter
 	}
@@ -154,7 +154,7 @@ func WithFilter[T any](filter typedSweepFilter[T]) typedSweepOption[T] {
 
 // WithIgnoreListStatuses treats listed HTTP status codes from listResource as
 // non-fatal and returns success for the sweep.
-func WithIgnoreListStatuses[T any](statuses ...int) typedSweepOption[T] {
+func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.ignoreListStatuses = append(config.ignoreListStatuses, statuses...)
 	}
