@@ -38,6 +38,20 @@ type typedSweepConfig[T any] struct {
 	ignoreListStatuses []int
 }
 
+func registerSweeper(resourceName string, sweep func() error) {
+	resource.AddTestSweepers(
+		resourceName,
+		&resource.Sweeper{
+			Name: resourceName,
+			F: func(_ string) (retErr error) {
+				defer recoverSweepPanic(resourceName, &retErr)
+
+				return sweep()
+			},
+		},
+	)
+}
+
 // RegisterTypedAPISweeper registers a typed sweeper with an explicit contract:
 //   - listResource: list all resources that could be swept.
 //   - isTestResource: decide if a listed item is a test resource.
@@ -129,20 +143,6 @@ func RegisterTypedAPISweeper[T any](
 
 		return sweepErr
 	})
-}
-
-func registerSweeper(resourceName string, sweep func() error) {
-	resource.AddTestSweepers(
-		resourceName,
-		&resource.Sweeper{
-			Name: resourceName,
-			F: func(_ string) (retErr error) {
-				defer recoverSweepPanic(resourceName, &retErr)
-
-				return sweep()
-			},
-		},
-	)
 }
 
 // WithFilter adds an optional post-check before deleteResource is called.
