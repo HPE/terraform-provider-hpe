@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Datastores whose name begins with this string will be eligible for deletion
@@ -20,7 +20,7 @@ const (
 )
 
 func init() {
-	testsweep.RegisterTypedAPISweeper(
+	sweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
 		// List all datastore resources.
 		func(ctx context.Context, client *sdk.APIClient) (
@@ -63,11 +63,11 @@ func init() {
 
 			return hresp, err
 		},
-		testsweep.WithIgnoreListStatuses[sdk.ListDatastores200ResponseAllOfDatastoresInner](
+		sweep.WithIgnoreListStatuses[sdk.ListDatastores200ResponseAllOfDatastoresInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
-		testsweep.WithFilter(func(
+		sweep.WithFilter(func(
 			_ context.Context,
 			_ *sdk.APIClient,
 			_ sdk.ListDatastores200ResponseAllOfDatastoresInner,
