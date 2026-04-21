@@ -87,7 +87,7 @@ func RegisterTypedAPISweeper[T any](
 		}
 
 		var sweptCount int
-		var sweepErrors []string
+		var sweepErr error
 
 		for _, item := range items {
 			if !isTestResource(item) {
@@ -99,7 +99,7 @@ func RegisterTypedAPISweeper[T any](
 				if err != nil {
 					errMsg := fmt.Sprintf("failed to evaluate filter for %s: %s", resourceName, err)
 					log.Printf("[ERROR] %s", errMsg)
-					sweepErrors = append(sweepErrors, errMsg)
+					sweepErr = errors.Join(sweepErr, errors.New(errMsg))
 
 					continue
 				}
@@ -117,7 +117,7 @@ func RegisterTypedAPISweeper[T any](
 			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf("failed to delete %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
 				log.Printf("[ERROR] %s", errMsg)
-				sweepErrors = append(sweepErrors, errMsg)
+				sweepErr = errors.Join(sweepErr, errors.New(errMsg))
 
 				continue
 			}
@@ -125,9 +125,14 @@ func RegisterTypedAPISweeper[T any](
 			sweptCount++
 		}
 
-		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, len(sweepErrors))
+		errCount := 0
+		if sweepErr != nil {
+			errCount = len(strings.Split(sweepErr.Error(), "\n"))
+		}
 
-		return SweepErrorsToError(sweepErrors)
+		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, errCount)
+
+		return sweepErr
 	})
 }
 
@@ -195,13 +200,4 @@ func RecoverSweepPanic(resourceName string, retErr *error) {
 		*retErr = fmt.Errorf("panic during %s sweep: %v", resourceName, r)
 		log.Printf("[ERROR] %v", *retErr)
 	}
-}
-
-// SweepErrorsToError converts a slice of sweep error strings into a single error, or nil if empty.
-func SweepErrorsToError(sweepErrors []string) error {
-	if len(sweepErrors) > 0 {
-		return fmt.Errorf("%s", strings.Join(sweepErrors, "\n"))
-	}
-
-	return nil
 }
