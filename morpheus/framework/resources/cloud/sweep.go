@@ -19,7 +19,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_cloud",
 		// List all cloud resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListClouds200ResponseAllOfZonesInner,
 			*http.Response,
 			error,

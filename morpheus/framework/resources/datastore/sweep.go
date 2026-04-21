@@ -23,7 +23,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
 		// List all datastore resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListDatastores200ResponseAllOfDatastoresInner,
 			*http.Response,
 			error,

@@ -47,7 +47,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_network",
 		// List all network resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListNetworks200ResponseAllOfNetworksInner,
 			*http.Response,
 			error,

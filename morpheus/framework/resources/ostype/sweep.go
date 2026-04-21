@@ -19,7 +19,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_os_type",
 		// List all OS type resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListOsTypes200ResponseAllOfOsTypesInner,
 			*http.Response,
 			error,

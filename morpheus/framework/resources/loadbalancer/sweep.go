@@ -21,7 +21,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
 		// List all load balancer resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 			*http.Response,
 			error,

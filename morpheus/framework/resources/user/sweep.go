@@ -30,7 +30,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
 		// List all user resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListUsers200ResponseAllOfUsersInner,
 			*http.Response,
 			error,

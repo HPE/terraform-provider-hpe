@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"slices"
@@ -23,7 +23,7 @@ type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, it
 
 type TypedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
 
-type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient, prefix string) ([]T, *http.Response, error)
+type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
 
 type TypedResourceCheck[T any] func(item T) bool
 
@@ -66,15 +66,15 @@ func RegisterTypedAPISweeper[T any](
 
 		client, err := NewSweepClient(ctx)
 		if err != nil {
-			log.Printf("[WARN] Cannot create sweep client: %v", err)
+			slog.Warn("Cannot create sweep client", "resource", resourceName, "error", err)
 
 			return nil
 		}
 
-		items, hresp, err := listResource(ctx, client, "")
+		items, hresp, err := listResource(ctx, client)
 		if err != nil {
 			if hresp != nil && slices.Contains(config.ignoreListStatuses, hresp.StatusCode) {
-				log.Printf("[INFO] No %s found (status %d)", resourceName, hresp.StatusCode)
+				slog.Info("No resources found", "resource", resourceName, "status", hresp.StatusCode)
 
 				return nil
 			}
@@ -98,25 +98,25 @@ func RegisterTypedAPISweeper[T any](
 				allowed, reason, err := config.filter(ctx, client, item)
 				if err != nil {
 					errMsg := fmt.Sprintf("failed to evaluate filter for %s: %s", resourceName, err)
-					log.Printf("[ERROR] %s", errMsg)
+					slog.Error(errMsg)
 					sweepErrors = append(sweepErrors, errMsg)
 
 					continue
 				}
 
 				if !allowed {
-					log.Printf("[INFO] Skipping %s (%s)", resourceName, reason)
+					slog.Info("Skipping resource", "resource", resourceName, "reason", reason)
 
 					continue
 				}
 			}
 
-			log.Printf("[INFO] Sweeping %s", resourceName)
+			slog.Info("Sweeping resource", "resource", resourceName)
 
 			hresp, err := deleteResource(ctx, client, item)
 			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf("failed to delete %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
-				log.Printf("[ERROR] %s", errMsg)
+				slog.Error(errMsg)
 				sweepErrors = append(sweepErrors, errMsg)
 
 				continue
@@ -125,7 +125,7 @@ func RegisterTypedAPISweeper[T any](
 			sweptCount++
 		}
 
-		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, len(sweepErrors))
+		slog.Info("Sweep completed", "resource", resourceName, "swept", sweptCount, "errors", len(sweepErrors))
 
 		return SweepErrorsToError(sweepErrors)
 	})
@@ -193,7 +193,7 @@ func NewSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 func RecoverSweepPanic(resourceName string, retErr *error) {
 	if r := recover(); r != nil {
 		*retErr = fmt.Errorf("panic during %s sweep: %v", resourceName, r)
-		log.Printf("[ERROR] %v", *retErr)
+		slog.Error("Panic during sweep", "resource", resourceName, "panic", r)
 	}
 }
 

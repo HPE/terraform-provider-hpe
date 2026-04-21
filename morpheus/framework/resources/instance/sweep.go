@@ -51,7 +51,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
 		// List all instance resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListInstances200ResponseAllOfInstancesInner,
 			*http.Response,
 			error,

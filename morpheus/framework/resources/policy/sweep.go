@@ -20,7 +20,7 @@ func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_policy",
 		// List all policy resources.
-		func(ctx context.Context, client *sdk.APIClient, _ string) (
+		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListPolicies200ResponseAllOfPoliciesInner,
 			*http.Response,
 			error,
