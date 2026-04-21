@@ -20,7 +20,7 @@ const testLoadBalancerPrefix = "TestAccMorpheusL"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
-		// List candidate load balancers for sweeping.
+		// List all load balancer resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 			*http.Response,
@@ -33,7 +33,7 @@ func init() {
 
 			return resp.GetLoadBalancers(), hresp, err
 		},
-		// Match only acceptance-test load balancers.
+		// Is this a test load balancer?
 		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -42,7 +42,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testLoadBalancerPrefix)
 		},
-		// Delete a matched load balancer.
+		// Delete the test load balancer.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

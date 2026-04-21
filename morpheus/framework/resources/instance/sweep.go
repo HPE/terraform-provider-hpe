@@ -50,7 +50,7 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
-		// List candidate instances for sweeping.
+		// List all instance resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListInstances200ResponseAllOfInstancesInner,
 			*http.Response,
@@ -63,7 +63,7 @@ func init() {
 
 			return resp.GetInstances(), hresp, err
 		},
-		// Match only acceptance-test instances.
+		// Is this a test instance?
 		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil || !strings.HasPrefix(*name, testInstancePrefix) {
@@ -72,7 +72,7 @@ func init() {
 
 			return true
 		},
-		// Delete a matched instance by stopping and removing its backing hosts.
+		// Delete the test instance.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
@@ -102,7 +102,6 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
-		// Confirm the instance carries the expected sweep tags before deletion.
 		testhelpers.WithFilter(func(
 			ctx context.Context,
 			client *sdk.APIClient,

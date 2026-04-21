@@ -18,7 +18,7 @@ const testCloudPrefix = "TestAccMorpheusCloud"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_cloud",
-		// List candidate clouds for sweeping.
+		// List all cloud resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListClouds200ResponseAllOfZonesInner,
 			*http.Response,
@@ -31,7 +31,7 @@ func init() {
 
 			return resp.Zones, hresp, err
 		},
-		// Match only acceptance-test clouds.
+		// Is this a test cloud?
 		func(item sdk.ListClouds200ResponseAllOfZonesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -40,7 +40,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testCloudPrefix)
 		},
-		// Delete a matched cloud.
+		// Delete the test cloud.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

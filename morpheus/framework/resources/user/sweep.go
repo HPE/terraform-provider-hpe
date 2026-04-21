@@ -29,7 +29,7 @@ func isSweepableEmail(email string) bool {
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
-		// List candidate users for sweeping.
+		// List all user resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListUsers200ResponseAllOfUsersInner,
 			*http.Response,
@@ -42,7 +42,7 @@ func init() {
 
 			return resp.GetUsers(), hresp, err
 		},
-		// Match only acceptance-test users with a sweepable email.
+		// Is this a test user?
 		func(item sdk.ListUsers200ResponseAllOfUsersInner) bool {
 			username, ok := item.GetUsernameOk()
 			if !ok || username == nil || !strings.HasPrefix(*username, testUserPrefix) {
@@ -56,7 +56,7 @@ func init() {
 
 			return true
 		},
-		// Delete a matched user.
+		// Delete the test user.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

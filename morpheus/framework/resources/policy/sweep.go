@@ -19,7 +19,7 @@ const testPolicyPrefix = "TestAccMorpheusPolicy"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_policy",
-		// List candidate policies for sweeping.
+		// List all policy resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListPolicies200ResponseAllOfPoliciesInner,
 			*http.Response,
@@ -32,7 +32,7 @@ func init() {
 
 			return resp.GetPolicies(), hresp, err
 		},
-		// Match only acceptance-test policies.
+		// Is this a test policy?
 		func(item sdk.ListPolicies200ResponseAllOfPoliciesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -41,7 +41,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testPolicyPrefix)
 		},
-		// Delete a matched policy.
+		// Delete the test policy.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

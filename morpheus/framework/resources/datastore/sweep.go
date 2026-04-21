@@ -22,7 +22,7 @@ const (
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
-		// List candidate datastores for sweeping.
+		// List all datastore resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListDatastores200ResponseAllOfDatastoresInner,
 			*http.Response,
@@ -35,7 +35,7 @@ func init() {
 
 			return resp.GetDatastores(), hresp, err
 		},
-		// Match only acceptance-test datastores when deletion is enabled.
+		// Is this a test datastore?
 		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {
 			if !enableDatastoreDelete {
 				return false
@@ -48,7 +48,7 @@ func init() {
 
 			return true
 		},
-		// Delete a matched datastore.
+		// Delete the test datastore.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
@@ -67,7 +67,6 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
-		// Block datastore sweeping unless explicitly enabled.
 		testhelpers.WithFilter(func(
 			_ context.Context,
 			_ *sdk.APIClient,

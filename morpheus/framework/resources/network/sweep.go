@@ -46,7 +46,7 @@ func hasRequiredLabels(labels []string) bool {
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_network",
-		// List candidate networks for sweeping.
+		// List all network resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListNetworks200ResponseAllOfNetworksInner,
 			*http.Response,
@@ -59,7 +59,7 @@ func init() {
 
 			return resp.GetNetworks(), hresp, err
 		},
-		// Match only acceptance-test networks with the required labels.
+		// Is this a test network?
 		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil || !strings.HasPrefix(*name, testNetworkPrefix) {
@@ -73,7 +73,7 @@ func init() {
 
 			return true
 		},
-		// Delete a matched network.
+		// Delete the test network.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

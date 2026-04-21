@@ -18,7 +18,7 @@ const testOsTypePrefix = "TestAccMorpheusOsType"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_os_type",
-		// List candidate OS types for sweeping.
+		// List all OS type resources.
 		func(ctx context.Context, client *sdk.APIClient, _ string) (
 			[]sdk.ListOsTypes200ResponseAllOfOsTypesInner,
 			*http.Response,
@@ -31,7 +31,7 @@ func init() {
 
 			return resp.GetOsTypes(), hresp, err
 		},
-		// Match only acceptance-test OS types.
+		// Is this a test OS type?
 		func(item sdk.ListOsTypes200ResponseAllOfOsTypesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -40,7 +40,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testOsTypePrefix)
 		},
-		// Delete a matched OS type.
+		// Delete the test OS type.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
