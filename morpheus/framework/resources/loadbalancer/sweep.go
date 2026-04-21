@@ -4,7 +4,9 @@ package loadbalancer
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -18,38 +20,41 @@ const testLoadBalancerPrefix = "TestAccMorpheusL"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
-		testLoadBalancerPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner, *http.Response, error) {
-			resp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Phrase(prefix).Execute()
+		// List candidate load balancers for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetLoadBalancers(), hresp, err
 		},
-		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) (string, bool) {
+		// Match only acceptance-test load balancers.
+		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
-				return "", false
+				return false
 			}
 
-			return *name, true
+			return strings.HasPrefix(*name, testLoadBalancerPrefix)
 		},
-		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) (int64, bool) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
-				return 0, false
-			}
-
-			return *id, true
-		},
+		// Delete a matched load balancer.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
-			id int64,
-			_ sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
+			item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 		) (*http.Response, error) {
-			_, hresp, err := client.LoadBalancersAPI.DeleteLoadBalancer(ctx, id).Execute()
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return nil, fmt.Errorf("could not get ID")
+			}
+
+			_, hresp, err := client.LoadBalancersAPI.DeleteLoadBalancer(ctx, *id).Execute()
+
 			return hresp, err
 		},
 	)

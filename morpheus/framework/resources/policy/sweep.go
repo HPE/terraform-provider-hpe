@@ -4,7 +4,9 @@ package policy
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -17,33 +19,41 @@ const testPolicyPrefix = "TestAccMorpheusPolicy"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_policy",
-		testPolicyPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListPolicies200ResponseAllOfPoliciesInner, *http.Response, error) {
-			resp, hresp, err := client.PoliciesAPI.ListPolicies(ctx).Phrase(prefix).Execute()
+		// List candidate policies for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListPolicies200ResponseAllOfPoliciesInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.PoliciesAPI.ListPolicies(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetPolicies(), hresp, err
 		},
-		func(item sdk.ListPolicies200ResponseAllOfPoliciesInner) (string, bool) {
+		// Match only acceptance-test policies.
+		func(item sdk.ListPolicies200ResponseAllOfPoliciesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
-				return "", false
+				return false
 			}
 
-			return *name, true
+			return strings.HasPrefix(*name, testPolicyPrefix)
 		},
-		func(item sdk.ListPolicies200ResponseAllOfPoliciesInner) (int64, bool) {
+		// Delete a matched policy.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListPolicies200ResponseAllOfPoliciesInner,
+		) (*http.Response, error) {
 			id, ok := item.GetIdOk()
 			if !ok || id == nil {
-				return 0, false
+				return nil, fmt.Errorf("could not get ID")
 			}
 
-			return *id, true
-		},
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListPolicies200ResponseAllOfPoliciesInner) (*http.Response, error) {
-			_, hresp, err := client.PoliciesAPI.RemovePolicies(ctx, id).Execute()
+			_, hresp, err := client.PoliciesAPI.RemovePolicies(ctx, *id).Execute()
+
 			return hresp, err
 		},
 		testhelpers.WithIgnoreListStatuses[sdk.ListPolicies200ResponseAllOfPoliciesInner](

@@ -4,7 +4,9 @@ package datastore
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -20,44 +22,52 @@ const (
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
-		testDatastorePrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListDatastores200ResponseAllOfDatastoresInner, *http.Response, error) {
-			resp, hresp, err := client.DatastoresAPI.ListDatastores(ctx).Phrase(prefix).Execute()
+		// List candidate datastores for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListDatastores200ResponseAllOfDatastoresInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.DatastoresAPI.ListDatastores(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetDatastores(), hresp, err
 		},
-		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) (string, bool) {
+		// Match only acceptance-test datastores when deletion is enabled.
+		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {
+			if !enableDatastoreDelete {
+				return false
+			}
+
 			name, ok := item.GetNameOk()
-			if !ok || name == nil {
-				return "", false
+			if !ok || name == nil || !strings.HasPrefix(*name, testDatastorePrefix) {
+				return false
 			}
 
-			return *name, true
+			return true
 		},
-		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) (int64, bool) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
-				return 0, false
-			}
-
-			return *id, true
-		},
+		// Delete a matched datastore.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
-			id int64,
-			_ sdk.ListDatastores200ResponseAllOfDatastoresInner,
+			item sdk.ListDatastores200ResponseAllOfDatastoresInner,
 		) (*http.Response, error) {
-			_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, id).Execute()
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return nil, fmt.Errorf("could not get ID")
+			}
+
+			_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, *id).Execute()
+
 			return hresp, err
 		},
 		testhelpers.WithIgnoreListStatuses[sdk.ListDatastores200ResponseAllOfDatastoresInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
+		// Block datastore sweeping unless explicitly enabled.
 		testhelpers.WithFilter(func(
 			_ context.Context,
 			_ *sdk.APIClient,

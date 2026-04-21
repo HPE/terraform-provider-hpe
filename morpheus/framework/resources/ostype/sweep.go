@@ -4,7 +4,9 @@ package ostype
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -16,33 +18,41 @@ const testOsTypePrefix = "TestAccMorpheusOsType"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_os_type",
-		testOsTypePrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListOsTypes200ResponseAllOfOsTypesInner, *http.Response, error) {
-			resp, hresp, err := client.LibraryAPI.ListOsTypes(ctx).Phrase(prefix).Execute()
+		// List candidate OS types for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListOsTypes200ResponseAllOfOsTypesInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.LibraryAPI.ListOsTypes(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetOsTypes(), hresp, err
 		},
-		func(item sdk.ListOsTypes200ResponseAllOfOsTypesInner) (string, bool) {
+		// Match only acceptance-test OS types.
+		func(item sdk.ListOsTypes200ResponseAllOfOsTypesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
-				return "", false
+				return false
 			}
 
-			return *name, true
+			return strings.HasPrefix(*name, testOsTypePrefix)
 		},
-		func(item sdk.ListOsTypes200ResponseAllOfOsTypesInner) (int64, bool) {
+		// Delete a matched OS type.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListOsTypes200ResponseAllOfOsTypesInner,
+		) (*http.Response, error) {
 			id, ok := item.GetIdOk()
 			if !ok || id == nil {
-				return 0, false
+				return nil, fmt.Errorf("could not get ID")
 			}
 
-			return *id, true
-		},
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListOsTypes200ResponseAllOfOsTypesInner) (*http.Response, error) {
-			_, hresp, err := client.LibraryAPI.DeleteOsType(ctx, id).Execute()
+			_, hresp, err := client.LibraryAPI.DeleteOsType(ctx, *id).Execute()
+
 			return hresp, err
 		},
 	)

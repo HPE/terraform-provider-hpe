@@ -4,7 +4,9 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -44,46 +46,47 @@ func hasRequiredLabels(labels []string) bool {
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_network",
-		testNetworkPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListNetworks200ResponseAllOfNetworksInner, *http.Response, error) {
-			resp, hresp, err := client.NetworksAPI.ListNetworks(ctx).Phrase(prefix).Execute()
+		// List candidate networks for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListNetworks200ResponseAllOfNetworksInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.NetworksAPI.ListNetworks(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetNetworks(), hresp, err
 		},
-		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) (string, bool) {
+		// Match only acceptance-test networks with the required labels.
+		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) bool {
 			name, ok := item.GetNameOk()
-			if !ok || name == nil {
-				return "", false
+			if !ok || name == nil || !strings.HasPrefix(*name, testNetworkPrefix) {
+				return false
 			}
 
-			return *name, true
+			labels, ok := item.GetLabelsOk()
+			if !ok || !hasRequiredLabels(labels) {
+				return false
+			}
+
+			return true
 		},
-		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) (int64, bool) {
+		// Delete a matched network.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListNetworks200ResponseAllOfNetworksInner,
+		) (*http.Response, error) {
 			id, ok := item.GetIdOk()
 			if !ok || id == nil {
-				return 0, false
+				return nil, fmt.Errorf("could not get ID")
 			}
 
-			return *id, true
-		},
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListNetworks200ResponseAllOfNetworksInner) (*http.Response, error) {
-			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
+			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, *id).Execute()
+
 			return hresp, err
 		},
-		testhelpers.WithFilter(func(
-			_ context.Context,
-			_ *sdk.APIClient,
-			network sdk.ListNetworks200ResponseAllOfNetworksInner,
-		) (bool, string, error) {
-			labels, ok := network.GetLabelsOk()
-			if !ok || !hasRequiredLabels(labels) {
-				return false, "labels", nil
-			}
-
-			return true, "", nil
-		}),
 	)
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -49,35 +50,32 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
-		testInstancePrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListInstances200ResponseAllOfInstancesInner, *http.Response, error) {
-			resp, hresp, err := client.InstancesAPI.ListInstances(ctx).Phrase(prefix).Execute()
+		// List candidate instances for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListInstances200ResponseAllOfInstancesInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.InstancesAPI.ListInstances(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetInstances(), hresp, err
 		},
-		func(item sdk.ListInstances200ResponseAllOfInstancesInner) (string, bool) {
+		// Match only acceptance-test instances.
+		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
 			name, ok := item.GetNameOk()
-			if !ok || name == nil {
-				return "", false
+			if !ok || name == nil || !strings.HasPrefix(*name, testInstancePrefix) {
+				return false
 			}
 
-			return *name, true
+			return true
 		},
-		func(item sdk.ListInstances200ResponseAllOfInstancesInner) (int64, bool) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
-				return 0, false
-			}
-
-			return *id, true
-		},
+		// Delete a matched instance by stopping and removing its backing hosts.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
-			id int64,
 			instance sdk.ListInstances200ResponseAllOfInstancesInner,
 		) (*http.Response, error) {
 			serverIDs, err := getServerIDs(instance)
@@ -104,6 +102,7 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
+		// Confirm the instance carries the expected sweep tags before deletion.
 		testhelpers.WithFilter(func(
 			ctx context.Context,
 			client *sdk.APIClient,

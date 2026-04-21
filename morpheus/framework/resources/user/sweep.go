@@ -4,7 +4,9 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -27,46 +29,47 @@ func isSweepableEmail(email string) bool {
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
-		testUserPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListUsers200ResponseAllOfUsersInner, *http.Response, error) {
-			resp, hresp, err := client.UsersAPI.ListUsers(ctx).Phrase(prefix).Execute()
+		// List candidate users for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListUsers200ResponseAllOfUsersInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.UsersAPI.ListUsers(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
 
 			return resp.GetUsers(), hresp, err
 		},
-		func(item sdk.ListUsers200ResponseAllOfUsersInner) (string, bool) {
-			name, ok := item.GetUsernameOk()
-			if !ok || name == nil {
-				return "", false
+		// Match only acceptance-test users with a sweepable email.
+		func(item sdk.ListUsers200ResponseAllOfUsersInner) bool {
+			username, ok := item.GetUsernameOk()
+			if !ok || username == nil || !strings.HasPrefix(*username, testUserPrefix) {
+				return false
 			}
 
-			return *name, true
+			email, ok := item.GetEmailOk()
+			if !ok || email == nil || !isSweepableEmail(*email) {
+				return false
+			}
+
+			return true
 		},
-		func(item sdk.ListUsers200ResponseAllOfUsersInner) (int64, bool) {
+		// Delete a matched user.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListUsers200ResponseAllOfUsersInner,
+		) (*http.Response, error) {
 			id, ok := item.GetIdOk()
 			if !ok || id == nil {
-				return 0, false
+				return nil, fmt.Errorf("could not get ID")
 			}
 
-			return *id, true
-		},
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListUsers200ResponseAllOfUsersInner) (*http.Response, error) {
-			_, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
+			_, hresp, err := client.UsersAPI.DeleteUser(ctx, *id).Execute()
+
 			return hresp, err
 		},
-		testhelpers.WithFilter(func(
-			_ context.Context,
-			_ *sdk.APIClient,
-			user sdk.ListUsers200ResponseAllOfUsersInner,
-		) (bool, string, error) {
-			email, ok := user.GetEmailOk()
-			if !ok || email == nil || !isSweepableEmail(*email) {
-				return false, "email", nil
-			}
-
-			return true, "", nil
-		}),
 	)
 }

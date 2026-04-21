@@ -4,7 +4,9 @@ package cloud
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -16,8 +18,12 @@ const testCloudPrefix = "TestAccMorpheusCloud"
 func init() {
 	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_cloud",
-		testCloudPrefix,
-		func(ctx context.Context, client *sdk.APIClient, _ string) ([]sdk.ListClouds200ResponseAllOfZonesInner, *http.Response, error) {
+		// List candidate clouds for sweeping.
+		func(ctx context.Context, client *sdk.APIClient, _ string) (
+			[]sdk.ListClouds200ResponseAllOfZonesInner,
+			*http.Response,
+			error,
+		) {
 			resp, hresp, err := client.CloudsAPI.ListClouds(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
@@ -25,29 +31,28 @@ func init() {
 
 			return resp.Zones, hresp, err
 		},
-		func(item sdk.ListClouds200ResponseAllOfZonesInner) (string, bool) {
+		// Match only acceptance-test clouds.
+		func(item sdk.ListClouds200ResponseAllOfZonesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
-				return "", false
+				return false
 			}
 
-			return *name, true
+			return strings.HasPrefix(*name, testCloudPrefix)
 		},
-		func(item sdk.ListClouds200ResponseAllOfZonesInner) (int64, bool) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
-				return 0, false
-			}
-
-			return *id, true
-		},
+		// Delete a matched cloud.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
-			id int64,
-			_ sdk.ListClouds200ResponseAllOfZonesInner,
+			item sdk.ListClouds200ResponseAllOfZonesInner,
 		) (*http.Response, error) {
-			_, hresp, err := client.CloudsAPI.RemoveClouds(ctx, id).Force(true).Execute()
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return nil, fmt.Errorf("could not get ID")
+			}
+
+			_, hresp, err := client.CloudsAPI.RemoveClouds(ctx, *id).Force(true).Execute()
+
 			return hresp, err
 		},
 	)
