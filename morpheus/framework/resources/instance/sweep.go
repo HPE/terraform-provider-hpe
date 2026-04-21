@@ -47,15 +47,39 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 }
 
 func init() {
-	testhelpers.RegisterAPISweeper(
+	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
 		testInstancePrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
-			return client.InstancesAPI.ListInstances(ctx).Phrase(prefix).Execute()
+		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListInstances200ResponseAllOfInstancesInner, *http.Response, error) {
+			resp, hresp, err := client.InstancesAPI.ListInstances(ctx).Phrase(prefix).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return resp.GetInstances(), hresp, err
 		},
-		"GetInstances",
-		func(ctx context.Context, client *sdk.APIClient, id int64, item any) (*http.Response, error) {
-			instance := item.(sdk.Instance)
+		func(item sdk.ListInstances200ResponseAllOfInstancesInner) (string, bool) {
+			name, ok := item.GetNameOk()
+			if !ok || name == nil {
+				return "", false
+			}
+
+			return *name, true
+		},
+		func(item sdk.ListInstances200ResponseAllOfInstancesInner) (int64, bool) {
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return 0, false
+			}
+
+			return *id, true
+		},
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			id int64,
+			instance sdk.ListInstances200ResponseAllOfInstancesInner,
+		) (*http.Response, error) {
 			serverIDs, err := getServerIDs(instance)
 			if err != nil {
 				return nil, err
@@ -80,8 +104,11 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
-		testhelpers.WithFilter(func(ctx context.Context, client *sdk.APIClient, item any) (bool, string, error) {
-			instance := item.(sdk.Instance)
+		testhelpers.WithFilter(func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			instance sdk.ListInstances200ResponseAllOfInstancesInner,
+		) (bool, string, error) {
 			id, ok := instance.GetIdOk()
 			if !ok || id == nil {
 				return false, "id", nil
@@ -103,7 +130,7 @@ func init() {
 	)
 }
 
-func getServerIDs(instance sdk.Instance) ([]int64, error) {
+func getServerIDs(instance sdk.ListInstances200ResponseAllOfInstancesInner) ([]int64, error) {
 	containers, ok := instance.GetContainerDetailsOk()
 	if !ok || containers == nil {
 		return nil, fmt.Errorf("failed to get container details")

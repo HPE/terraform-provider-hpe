@@ -16,14 +16,39 @@ import (
 const testLoadBalancerPrefix = "TestAccMorpheusL"
 
 func init() {
-	testhelpers.RegisterAPISweeper(
+	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
 		testLoadBalancerPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
-			return client.LoadBalancersAPI.ListLoadBalancers(ctx).Phrase(prefix).Execute()
+		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner, *http.Response, error) {
+			resp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Phrase(prefix).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return resp.GetLoadBalancers(), hresp, err
 		},
-		"GetLoadBalancers",
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ any) (*http.Response, error) {
+		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) (string, bool) {
+			name, ok := item.GetNameOk()
+			if !ok || name == nil {
+				return "", false
+			}
+
+			return *name, true
+		},
+		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) (int64, bool) {
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return 0, false
+			}
+
+			return *id, true
+		},
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			id int64,
+			_ sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
+		) (*http.Response, error) {
 			_, hresp, err := client.LoadBalancersAPI.DeleteLoadBalancer(ctx, id).Execute()
 			return hresp, err
 		},

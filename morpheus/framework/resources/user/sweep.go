@@ -25,20 +25,42 @@ func isSweepableEmail(email string) bool {
 }
 
 func init() {
-	testhelpers.RegisterAPISweeper(
+	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
 		testUserPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
-			return client.UsersAPI.ListUsers(ctx).Phrase(prefix).Execute()
+		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListUsers200ResponseAllOfUsersInner, *http.Response, error) {
+			resp, hresp, err := client.UsersAPI.ListUsers(ctx).Phrase(prefix).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return resp.GetUsers(), hresp, err
 		},
-		"GetUsers",
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ any) (*http.Response, error) {
+		func(item sdk.ListUsers200ResponseAllOfUsersInner) (string, bool) {
+			name, ok := item.GetUsernameOk()
+			if !ok || name == nil {
+				return "", false
+			}
+
+			return *name, true
+		},
+		func(item sdk.ListUsers200ResponseAllOfUsersInner) (int64, bool) {
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return 0, false
+			}
+
+			return *id, true
+		},
+		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListUsers200ResponseAllOfUsersInner) (*http.Response, error) {
 			_, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
 			return hresp, err
 		},
-		testhelpers.WithNameMethod("GetUsernameOk"),
-		testhelpers.WithFilter(func(_ context.Context, _ *sdk.APIClient, item any) (bool, string, error) {
-			user := item.(sdk.User)
+		testhelpers.WithFilter(func(
+			_ context.Context,
+			_ *sdk.APIClient,
+			user sdk.ListUsers200ResponseAllOfUsersInner,
+		) (bool, string, error) {
 			email, ok := user.GetEmailOk()
 			if !ok || email == nil || !isSweepableEmail(*email) {
 				return false, "email", nil

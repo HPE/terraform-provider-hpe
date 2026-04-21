@@ -42,19 +42,42 @@ func hasRequiredLabels(labels []string) bool {
 }
 
 func init() {
-	testhelpers.RegisterAPISweeper(
+	testhelpers.RegisterTypedAPISweeper(
 		"hpe_morpheus_network",
 		testNetworkPrefix,
-		func(ctx context.Context, client *sdk.APIClient, prefix string) (any, *http.Response, error) {
-			return client.NetworksAPI.ListNetworks(ctx).Phrase(prefix).Execute()
+		func(ctx context.Context, client *sdk.APIClient, prefix string) ([]sdk.ListNetworks200ResponseAllOfNetworksInner, *http.Response, error) {
+			resp, hresp, err := client.NetworksAPI.ListNetworks(ctx).Phrase(prefix).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return resp.GetNetworks(), hresp, err
 		},
-		"GetNetworks",
-		func(ctx context.Context, client *sdk.APIClient, id int64, _ any) (*http.Response, error) {
+		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) (string, bool) {
+			name, ok := item.GetNameOk()
+			if !ok || name == nil {
+				return "", false
+			}
+
+			return *name, true
+		},
+		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) (int64, bool) {
+			id, ok := item.GetIdOk()
+			if !ok || id == nil {
+				return 0, false
+			}
+
+			return *id, true
+		},
+		func(ctx context.Context, client *sdk.APIClient, id int64, _ sdk.ListNetworks200ResponseAllOfNetworksInner) (*http.Response, error) {
 			_, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
 			return hresp, err
 		},
-		testhelpers.WithFilter(func(_ context.Context, _ *sdk.APIClient, item any) (bool, string, error) {
-			network := item.(sdk.Network)
+		testhelpers.WithFilter(func(
+			_ context.Context,
+			_ *sdk.APIClient,
+			network sdk.ListNetworks200ResponseAllOfNetworksInner,
+		) (bool, string, error) {
 			labels, ok := network.GetLabelsOk()
 			if !ok || !hasRequiredLabels(labels) {
 				return false, "labels", nil
