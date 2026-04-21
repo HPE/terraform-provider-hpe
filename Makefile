@@ -5,6 +5,9 @@
 
 .PHONY: build linter lint test docs sweep build-render-tool
 
+SWEEP ?= all
+SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
+
 build:
 	go build
 
@@ -35,5 +38,4 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
-	go test -v ./morpheus/utils/test/sweep/... \
-	  -sweep=all -sweep-run=hpe_morpheus_datastore,hpe_morpheus_instance,hpe_morpheus_network,hpe_morpheus_policy,hpe_morpheus_user
+	go test -v ./morpheus/utils/test/sweep/... -sweep=all $(SWEEP_RUN_ARGS)

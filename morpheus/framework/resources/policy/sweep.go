@@ -56,6 +56,7 @@ func init() {
 
 			return hresp, err
 		},
+		// Ignore (i.e. just log) "not found" and "forbidden" errors
 		testhelpers.WithIgnoreListStatuses[sdk.ListPolicies200ResponseAllOfPoliciesInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
