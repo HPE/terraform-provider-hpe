@@ -115,6 +115,7 @@ func ResourceTaskAnsibleTower() *schema.Resource {
 				Type:         schema.TypeString,
 				Description:  "The visibility of the ansible tower task (public or private)",
 				Optional:     true,
+				Default:      "private",
 				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
 			},
 		},

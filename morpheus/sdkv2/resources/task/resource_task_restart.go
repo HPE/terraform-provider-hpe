@@ -75,6 +75,7 @@ func ResourceTaskRestart() *schema.Resource {
 				Description:  "The visibility of the task (private or public)",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
+				Default:      "private",
 				Computed:     true,
 			},
 		},
