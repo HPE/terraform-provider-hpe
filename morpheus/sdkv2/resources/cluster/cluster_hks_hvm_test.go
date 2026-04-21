@@ -3,6 +3,7 @@
 package cluster_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -29,11 +30,15 @@ func TestAccClusterHKSHVMExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	prefix := strings.ToLower(name)
+
 	resourceConfig, err := cluster.RenderClusterHKSHVMConfig(t, map[string]string{
 		"Name":                               name,
 		"WorkflowId":                         "null",
 		"ServerStorageDataVolumeDatastoreId": "1",
 		"ServerStorageRootVolumeDatastoreId": "1",
+		"ResourcePrefix":                     prefix,
+		"HostnamePrefix":                     prefix,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -48,12 +53,12 @@ func TestAccClusterHKSHVMExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_hvm.example",
 			"resource_prefix",
-			"vmpre",
+			prefix,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_hvm.example",
 			"hostname_prefix",
-			"ospre",
+			prefix,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_hvm.example",
