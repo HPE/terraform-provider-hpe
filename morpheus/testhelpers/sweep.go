@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
+	"log"
 	"net/http"
 	"os"
 	"slices"
@@ -66,7 +66,7 @@ func RegisterTypedAPISweeper[T any](
 
 		client, err := NewSweepClient(ctx)
 		if err != nil {
-			slog.Warn("Cannot create sweep client", "resource", resourceName, "error", err)
+			log.Printf("[WARN] Cannot create sweep client: %v", err)
 
 			return nil
 		}
@@ -74,7 +74,7 @@ func RegisterTypedAPISweeper[T any](
 		items, hresp, err := listResource(ctx, client)
 		if err != nil {
 			if hresp != nil && slices.Contains(config.ignoreListStatuses, hresp.StatusCode) {
-				slog.Info("No resources found", "resource", resourceName, "status", hresp.StatusCode)
+				log.Printf("[INFO] No %s found (status %d)", resourceName, hresp.StatusCode)
 
 				return nil
 			}
@@ -98,25 +98,25 @@ func RegisterTypedAPISweeper[T any](
 				allowed, reason, err := config.filter(ctx, client, item)
 				if err != nil {
 					errMsg := fmt.Sprintf("failed to evaluate filter for %s: %s", resourceName, err)
-					slog.Error(errMsg)
+					log.Printf("[ERROR] %s", errMsg)
 					sweepErrors = append(sweepErrors, errMsg)
 
 					continue
 				}
 
 				if !allowed {
-					slog.Info("Skipping resource", "resource", resourceName, "reason", reason)
+					log.Printf("[INFO] Skipping %s (%s)", resourceName, reason)
 
 					continue
 				}
 			}
 
-			slog.Info("Sweeping resource", "resource", resourceName)
+			log.Printf("[INFO] Sweeping %s", resourceName)
 
 			hresp, err := deleteResource(ctx, client, item)
 			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 				errMsg := fmt.Sprintf("failed to delete %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
-				slog.Error(errMsg)
+				log.Printf("[ERROR] %s", errMsg)
 				sweepErrors = append(sweepErrors, errMsg)
 
 				continue
@@ -125,7 +125,7 @@ func RegisterTypedAPISweeper[T any](
 			sweptCount++
 		}
 
-		slog.Info("Sweep completed", "resource", resourceName, "swept", sweptCount, "errors", len(sweepErrors))
+		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, len(sweepErrors))
 
 		return SweepErrorsToError(sweepErrors)
 	})
@@ -193,7 +193,7 @@ func NewSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 func RecoverSweepPanic(resourceName string, retErr *error) {
 	if r := recover(); r != nil {
 		*retErr = fmt.Errorf("panic during %s sweep: %v", resourceName, r)
-		slog.Error("Panic during sweep", "resource", resourceName, "panic", r)
+		log.Printf("[ERROR] %v", *retErr)
 	}
 }
 
