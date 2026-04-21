@@ -1,6 +1,6 @@
 // (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
-package sweep
+package sweep_test
 
 import (
 	"testing"

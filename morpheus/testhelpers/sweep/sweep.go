@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package testhelpers
+package sweep
 
 import (
 	"context"

@@ -38,4 +38,4 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
-	go test -v ./morpheus/utils/test/sweep/... -sweep=all $(SWEEP_RUN_ARGS)
+	go test -v ./morpheus/testhelpers/sweep/... -sweep=all $(SWEEP_RUN_ARGS)
