@@ -115,7 +115,6 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
 				Default:      "private",
-				Computed:     true,
 			},
 			"remote_target_host": {
 				Type:        schema.TypeString,
