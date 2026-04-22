@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package datastore
+package sweep
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Datastores whose name begins with this string will be eligible for deletion
@@ -20,7 +20,7 @@ const (
 )
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
 		// List all datastore resources.
 		func(ctx context.Context, client *sdk.APIClient) (
@@ -63,11 +63,11 @@ func init() {
 
 			return hresp, err
 		},
-		sweep.WithIgnoreListStatuses[sdk.ListDatastores200ResponseAllOfDatastoresInner](
+		testsweep.WithIgnoreListStatuses[sdk.ListDatastores200ResponseAllOfDatastoresInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
-		sweep.WithFilter(func(
+		testsweep.WithFilter(func(
 			_ context.Context,
 			_ *sdk.APIClient,
 			_ sdk.ListDatastores200ResponseAllOfDatastoresInner,

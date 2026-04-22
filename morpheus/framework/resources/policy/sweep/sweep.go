@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package policy
+package sweep
 
 import (
 	"context"
@@ -10,14 +10,14 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Policies whose name begins with this string will be eligible for deletion
 const testPolicyPrefix = "TestAccMorpheusPolicy"
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_policy",
 		// List all policy resources.
 		func(ctx context.Context, client *sdk.APIClient) (
@@ -57,7 +57,7 @@ func init() {
 			return hresp, err
 		},
 		// Ignore (i.e. just log) "not found" and "forbidden" errors
-		sweep.WithIgnoreListStatuses[sdk.ListPolicies200ResponseAllOfPoliciesInner](
+		testsweep.WithIgnoreListStatuses[sdk.ListPolicies200ResponseAllOfPoliciesInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),

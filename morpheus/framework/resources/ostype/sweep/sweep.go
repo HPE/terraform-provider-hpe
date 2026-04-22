@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package ostype
+package sweep
 
 import (
 	"context"
@@ -10,13 +10,13 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 const testOsTypePrefix = "TestAccMorpheusOsType"
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_os_type",
 		// List all OS type resources.
 		func(ctx context.Context, client *sdk.APIClient) (

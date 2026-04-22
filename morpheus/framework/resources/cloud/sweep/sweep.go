@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package cloud
+package sweep
 
 import (
 	"context"
@@ -10,13 +10,13 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 const testCloudPrefix = "TestAccMorpheusCloud"
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_cloud",
 		// List all cloud resources.
 		func(ctx context.Context, client *sdk.APIClient) (

@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package network
+package sweep
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Networks whose name begins with this string will be eligible for deletion
@@ -44,7 +44,7 @@ func hasRequiredLabels(labels []string) bool {
 }
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_network",
 		// List all network resources.
 		func(ctx context.Context, client *sdk.APIClient) (

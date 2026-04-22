@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package loadbalancer
+package sweep
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // testLoadBalancerPrefix is truncated to 16 characters to account for the
@@ -18,7 +18,7 @@ import (
 const testLoadBalancerPrefix = "TestAccMorpheusL"
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
 		// List all load balancer resources.
 		func(ctx context.Context, client *sdk.APIClient) (

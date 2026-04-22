@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package user
+package sweep
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Users whose name begins with this string will be eligible for deletion
@@ -27,7 +27,7 @@ func isSweepableEmail(email string) bool {
 }
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
 		// List all user resources.
 		func(ctx context.Context, client *sdk.APIClient) (

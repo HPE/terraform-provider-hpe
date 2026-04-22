@@ -1,6 +1,6 @@
 // (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
-package instance
+package sweep
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	sweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
 // Instances whose name begins with this string will be eligible for deletion
@@ -48,7 +48,7 @@ func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInne
 }
 
 func init() {
-	sweep.RegisterTypedAPISweeper(
+	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
 		// List all instance resources.
 		func(ctx context.Context, client *sdk.APIClient) (
@@ -102,7 +102,7 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
-		sweep.WithFilter(func(
+		testsweep.WithFilter(func(
 			ctx context.Context,
 			client *sdk.APIClient,
 			instance sdk.ListInstances200ResponseAllOfInstancesInner,
