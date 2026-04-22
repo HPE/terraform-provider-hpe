@@ -1,7 +1,7 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-// Package networkdhcpservers implements a data source for network_dhcp_server
-package networkdhcpservers
+// Package networkdhcpserver implements a data source for network_dhcp_server
+package networkdhcpserver
 
 import (
 	"context"

@@ -1,6 +1,6 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-package networkdhcpservers_test
+package networkdhcpserver_test
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpservers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
@@ -44,7 +44,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByNameConfig(t, nil)
+	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByIdConfig(t, nil)
+	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByNameConfig(t,
+	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t,
 		map[string]string{
 			"Name": "______",
 		},
@@ -140,7 +140,7 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
         network_server_id = 1
       }`
 
-	expected := networkdhcpservers.ErrorNoValidSearchTerms
+	expected := networkdhcpserver.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -165,7 +165,7 @@ func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
         network_server_id = 1
       }`
 
-	expected := networkdhcpservers.ErrorRunningPreApply
+	expected := networkdhcpserver.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
