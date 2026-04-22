@@ -78,14 +78,14 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The ID of the network server this DHCP server belongs to",
 				MarkdownDescription: "The ID of the network server this DHCP server belongs to",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"server_ip_address": schema.StringAttribute{
 				Required:            true,
 				Description:         "Server address for the DHCP server",
 				MarkdownDescription: "Server address for the DHCP server",
-			},
-			"success": schema.BoolAttribute{
-				Computed: true,
 			},
 		},
 	}
@@ -99,7 +99,6 @@ type NetworkDhcpServerModel struct {
 	Name            types.String   `tfsdk:"name"`
 	NetworkServerId types.Int64    `tfsdk:"network_server_id"`
 	ServerIpAddress types.String   `tfsdk:"server_ip_address"`
-	Success         types.Bool     `tfsdk:"success"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxType{}

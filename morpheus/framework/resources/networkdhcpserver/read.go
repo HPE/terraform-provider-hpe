@@ -18,6 +18,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
+// dhcpServerReadPayload is a local struct for decoding the untyped GET
+// response returned by the SDK (interface{}).
+type dhcpServerReadPayload struct {
+	Id              *int64                      `json:"id"`
+	Name            *string                     `json:"name"`
+	ServerIpAddress *string                     `json:"serverIpAddress"`
+	LeaseTime       *int64                      `json:"leaseTime"`
+	Config          json.RawMessage             `json:"config"`
+	NetworkServer   *dhcpServerNetworkServerRef `json:"networkServer"`
+}
+
+type dhcpServerNetworkServerRef struct {
+	Id *float64 `json:"id"`
+}
+
 func getNetworkDhcpServerAsState(
 	ctx context.Context,
 	id int64,
@@ -29,7 +44,7 @@ func getNetworkDhcpServerAsState(
 	var diags diag.Diagnostics
 
 	dhcpResp, hresp, err := client.NetworksAPI.
-		GetNetworkDhcpServer(ctx, id, float32(serverID)).Execute()
+		GetNetworkDhcpServer(ctx, id, serverID).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate network dhcp server resource",
@@ -40,9 +55,35 @@ func getNetworkDhcpServerAsState(
 		return state, diags
 	}
 
-	dhcpServer := dhcpResp.GetNetworkDhcpServer()
+	raw := dhcpResp.GetNetworkDhcpServer()
 
-	if dhcpServer.Id == nil {
+	encoded, err := json.Marshal(raw)
+	if err != nil {
+		diags.AddError(
+			"populate network dhcp server resource",
+			fmt.Sprintf(
+				"network dhcp server %d: failed to marshal response: %s",
+				id, err,
+			),
+		)
+
+		return state, diags
+	}
+
+	var payload dhcpServerReadPayload
+	if err := json.Unmarshal(encoded, &payload); err != nil {
+		diags.AddError(
+			"populate network dhcp server resource",
+			fmt.Sprintf(
+				"network dhcp server %d: failed to unmarshal response: %s",
+				id, err,
+			),
+		)
+
+		return state, diags
+	}
+
+	if payload.Id == nil {
 		diags.AddError(
 			"populate network dhcp server resource",
 			fmt.Sprintf("network dhcp server %d GET response missing id", id),
@@ -51,21 +92,20 @@ func getNetworkDhcpServerAsState(
 		return state, diags
 	}
 
-	state.Id = types.Int64Value(int64(*dhcpServer.Id))
-
-	state.Name = convert.StrToType(dhcpServer.Name)
-	state.ServerIpAddress = convert.StrToType(dhcpServer.ServerIpAddress)
+	state.Id = types.Int64Value(*payload.Id)
+	state.Name = convert.StrToType(payload.Name)
+	state.ServerIpAddress = convert.StrToType(payload.ServerIpAddress)
 
 	// leaseTime may not be returned by the GET response;
 	// preserve from plan / prior state when absent.
-	if dhcpServer.LeaseTime != nil {
-		state.LeaseTime = types.Int64Value(int64(*dhcpServer.LeaseTime))
+	if payload.LeaseTime != nil {
+		state.LeaseTime = types.Int64Value(*payload.LeaseTime)
 	} else {
 		state.LeaseTime = plan.LeaseTime
 	}
 
-	if networkServerID, ok := getNetworkServerIDFromAPI(dhcpServer); ok {
-		state.NetworkServerId = types.Int64Value(networkServerID)
+	if payload.NetworkServer != nil && payload.NetworkServer.Id != nil {
+		state.NetworkServerId = types.Int64Value(int64(*payload.NetworkServer.Id))
 	} else {
 		// Some API versions do not include networkServer in this response.
 		state.NetworkServerId = plan.NetworkServerId
@@ -74,18 +114,23 @@ func getNetworkDhcpServerAsState(
 	state.Config = types.DynamicNull()
 	state.ConfigNsx = NewConfigNsxValueNull()
 
-	cfg := dhcpServer.GetConfig()
-
 	switch {
 	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
 		edgeCluster := types.StringNull()
 		activeEdgeNode := types.StringNull()
 		standbyEdgeNode := types.StringNull()
 
-		if nsxCfg := cfg.NSXDHCPServerConfiguration; nsxCfg != nil {
-			edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
-			activeEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode1.Get())
-			standbyEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode2.Get())
+		if len(payload.Config) > 0 {
+			var nsxCfg sdk.NetworkDhcpServerConfigNSX
+			if err := json.Unmarshal(payload.Config, &nsxCfg); err == nil {
+				edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
+				activeEdgeNode = convert.StrToType(
+					nsxCfg.PreferredEdgeNode1.Get(),
+				)
+				standbyEdgeNode = convert.StrToType(
+					nsxCfg.PreferredEdgeNode2.Get(),
+				)
+			}
 		}
 
 		nsxValue, nsxDiags := NewConfigNsxValue(
@@ -107,44 +152,7 @@ func getNetworkDhcpServerAsState(
 		state.Config = plan.Config
 	}
 
-	// success is not part of the GET response; set to null.
-	state.Success = types.BoolNull()
-
 	return state, diags
-}
-
-func getNetworkServerIDFromAPI(dhcpServer any) (int64, bool) {
-	encoded, err := json.Marshal(dhcpServer)
-	if err != nil {
-		return 0, false
-	}
-
-	var payload map[string]any
-	if err := json.Unmarshal(encoded, &payload); err != nil {
-		return 0, false
-	}
-
-	networkServerRaw, ok := payload["networkServer"]
-	if !ok {
-		return 0, false
-	}
-
-	networkServerMap, ok := networkServerRaw.(map[string]any)
-	if !ok {
-		return 0, false
-	}
-
-	idRaw, ok := networkServerMap["id"]
-	if !ok {
-		return 0, false
-	}
-
-	idFloat, ok := idRaw.(float64)
-	if !ok {
-		return 0, false
-	}
-
-	return int64(idFloat), true
 }
 
 func (r *Resource) Read(

@@ -3,11 +3,13 @@
 package networkdhcpserver_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
@@ -84,6 +86,22 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"config", "config_nsx"},
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_dhcp_server.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["network_server_id"] +
+						":" + rs.Primary.Attributes["id"], nil
+				},
+				ResourceName: "hpe_morpheus_network_dhcp_server.example",
+				Check:        checkFn,
 			},
 		},
 	})

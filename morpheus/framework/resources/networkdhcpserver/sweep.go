@@ -55,7 +55,7 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 	}
 
 	resp, hresp, err := s.client.NetworksAPI.
-		GetNetworkDhcpServers(ctx, float32(s.serverID)).Execute()
+		GetNetworkDhcpServers(ctx, s.serverID).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf(
 			"failed to list network dhcp servers: %s",
@@ -63,25 +63,13 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 		)
 	}
 
-	items, ok := resp.GetNetworkDhcpServers().([]interface{})
-	if !ok {
-		log.Printf(
-			"[INFO] Unexpected dhcp servers list type, skipping sweep",
-		)
-
-		return nil
-	}
+	items := resp.GetNetworkDhcpServers()
 
 	var sweptCount int
 	var sweepErrors []string
 
 	for _, item := range items {
-		m, ok := item.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		name, _ := m["name"].(string)
+		name := item.GetName()
 		if !strings.HasPrefix(name, testDhcpServerPrefix) {
 			log.Printf(
 				"[INFO] Skipping network dhcp server (name): %s", name,
@@ -90,8 +78,8 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 			continue
 		}
 
-		idFloat, ok := m["id"].(float64)
-		if !ok {
+		idPtr := item.GetId()
+		if idPtr == 0 {
 			log.Printf(
 				"[INFO] Skipping network dhcp server (id): %s", name,
 			)
@@ -99,14 +87,14 @@ func (s *dhcpServerSweeper) Sweep(_ string) error {
 			continue
 		}
 
-		id := int64(idFloat)
+		id := idPtr
 		log.Printf(
 			"[INFO] Sweeping network dhcp server: %s (id: %d)",
 			name, id,
 		)
 
 		_, hresp, err := s.client.NetworksAPI.
-			DeleteNetworkDhcpServer(ctx, id, float32(s.serverID)).Execute()
+			DeleteNetworkDhcpServer(ctx, id, s.serverID).Execute()
 		if err != nil || hresp.StatusCode != http.StatusOK {
 			errMsg := fmt.Sprintf(
 				"failed to delete network dhcp server %s (id: %d): %s",

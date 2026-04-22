@@ -12,7 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
-var _ resource.Resource = &Resource{}
+var (
+	_ resource.Resource                = &Resource{}
+	_ resource.ResourceWithImportState = &Resource{}
+)
 
 func NewResource() resource.Resource {
 	return &Resource{}

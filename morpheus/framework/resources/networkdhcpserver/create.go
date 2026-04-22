@@ -52,7 +52,7 @@ func (r *Resource) Create(
 
 	switch {
 	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
-		nsxConfig := sdk.NewNSXDHCPServerConfiguration()
+		nsxConfig := sdk.NewNSXDHCPServerConfiguration1()
 
 		if !plan.ConfigNsx.EdgeCluster.IsNull() &&
 			!plan.ConfigNsx.EdgeCluster.IsUnknown() {
@@ -74,7 +74,7 @@ func (r *Resource) Create(
 		}
 
 		dhcpServer.SetConfig(sdk.CreateNetworkDhcpServerRequestNetworkDhcpServerConfig{
-			NSXDHCPServerConfiguration: nsxConfig,
+			NSXDHCPServerConfiguration1: nsxConfig,
 		})
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
@@ -131,7 +131,7 @@ func (r *Resource) Create(
 	serverID := plan.NetworkServerId.ValueInt64()
 
 	createResp, hresp, err := client.NetworksAPI.
-		CreateNetworkDhcpServer(ctx, float32(serverID)).
+		CreateNetworkDhcpServer(ctx, serverID).
 		CreateNetworkDhcpServerRequest(*createReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(

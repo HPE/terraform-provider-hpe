@@ -41,7 +41,7 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, fmt.Sprintf("Deleting network dhcp server %d", id))
 
 	_, hresp, err := client.NetworksAPI.
-		DeleteNetworkDhcpServer(ctx, id, float32(serverID)).Execute()
+		DeleteNetworkDhcpServer(ctx, id, serverID).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"delete network dhcp server resource",

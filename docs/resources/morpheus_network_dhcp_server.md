@@ -8,6 +8,8 @@ description: |-
 
 
 
+This resource manages a DHCP server configuration attached to a Morpheus network server.
+
 ## Example Usage
 
 ```terraform
@@ -41,7 +43,6 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of this resource.
-- `success` (Boolean)
 
 <a id="nestedatt--config_nsx"></a>
 ### Nested Schema for `config_nsx`

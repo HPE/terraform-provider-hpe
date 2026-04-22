@@ -114,7 +114,7 @@ func (r *Resource) Update(
 	serverID := plan.NetworkServerId.ValueInt64()
 
 	_, hresp, err := client.NetworksAPI.
-		UpdateNetworkDhcpServer(ctx, id, float32(serverID)).
+		UpdateNetworkDhcpServer(ctx, id, serverID).
 		UpdateNetworkDhcpServerRequest(*updateReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
