@@ -100,7 +100,6 @@ func ResourceTaskGroovyScript() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
 				Default:      "private",
-				Computed:     true,
 			},
 			"retryable": {
 				Type:        schema.TypeBool,

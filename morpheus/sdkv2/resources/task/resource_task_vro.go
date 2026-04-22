@@ -103,7 +103,6 @@ func ResourceTaskVRO() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
 				Default:      "private",
-				Computed:     true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
