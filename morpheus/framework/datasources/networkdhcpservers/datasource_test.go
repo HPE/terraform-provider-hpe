@@ -1,0 +1,190 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+package networkdhcpservers_test
+
+import (
+	"os"
+	"regexp"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpservers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+)
+
+func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+const providerConfigOffline = `
+provider "hpe" {
+  morpheus {
+    url          = ""
+    username     = ""
+    password     = ""
+  }
+}
+`
+
+func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByNameConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := networkDhcpServerChecks()
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByIdConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := networkDhcpServerChecks()
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	dataSourceConfig, err := networkdhcpservers.RenderNetworkDhcpServerByNameConfig(t,
+		map[string]string{
+			"Name": "______",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := regexp.MustCompile(`no network DHCP server found`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + dataSourceConfig,
+				ExpectError: expected,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	config := providerConfigOffline + `
+      data "hpe_morpheus_network_dhcp_server" "test" {
+        network_server_id = 1
+      }`
+
+	expected := networkdhcpservers.ErrorNoValidSearchTerms
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	t.Parallel()
+
+	config := providerConfigOffline + `
+      data "hpe_morpheus_network_dhcp_server" "test" {
+        id                = 1
+        name              = "______"
+        network_server_id = 1
+      }`
+
+	expected := networkdhcpservers.ErrorRunningPreApply
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
+func networkDhcpServerChecks() []resource.TestCheckFunc {
+	ds := "data.hpe_morpheus_network_dhcp_server.example"
+
+	return []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet(ds, "id"),
+		resource.TestCheckResourceAttrSet(ds, "name"),
+		resource.TestCheckResourceAttrSet(ds, "network_server_id"),
+		resource.TestCheckResourceAttrSet(ds, "lease_time"),
+	}
+}
