@@ -17,10 +17,10 @@ func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
 
 	return clientfactory.NewAPIClient(
 		ctx,
-		os.Getenv("TF_VAR_testacc_morpheus_url"),
-		os.Getenv("TF_VAR_testacc_morpheus_username"),
-		os.Getenv("TF_VAR_testacc_morpheus_password"),
-		os.Getenv("TF_VAR_testacc_morpheus_tenant_subdomain"),
-		os.Getenv("TF_VAR_testacc_morpheus_access_token"),
+		os.Getenv(EnvTFVarTestAccMorpheusUrl),
+		os.Getenv(EnvTFVarTestAccMorpheusUsername),
+		os.Getenv(EnvTFVarTestAccMorpheusPassword),
+		os.Getenv(EnvTFVarTestAccMorpheusTenantSubdomain),
+		os.Getenv(EnvTFVarTestAccMorpheusAccessToken),
 		clientfactory.WithInsecureTLS())
 }

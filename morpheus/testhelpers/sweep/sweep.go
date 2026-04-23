@@ -14,6 +14,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
@@ -163,31 +164,33 @@ func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
 func newSweepClient(ctx context.Context) (*sdk.APIClient, error) {
 	var username, password string
 
-	url, ok := os.LookupEnv("TF_VAR_testacc_morpheus_url")
+	url, ok := os.LookupEnv(testhelpers.EnvTFVarTestAccMorpheusUrl)
 	if !ok {
-		return nil, errors.New("TF_VAR_testacc_morpheus_url not set")
+		return nil, fmt.Errorf("%s not set", testhelpers.EnvTFVarTestAccMorpheusUrl)
 	}
 
-	token, ok := os.LookupEnv("TF_VAR_testacc_morpheus_access_token")
+	token, ok := os.LookupEnv(testhelpers.EnvTFVarTestAccMorpheusAccessToken)
 	if !ok {
-		username, ok = os.LookupEnv("TF_VAR_testacc_morpheus_username")
+		username, ok = os.LookupEnv(testhelpers.EnvTFVarTestAccMorpheusUsername)
 		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_username must be set",
+			return nil, fmt.Errorf(
+				"one of %s or %s must be set",
+				testhelpers.EnvTFVarTestAccMorpheusAccessToken,
+				testhelpers.EnvTFVarTestAccMorpheusUsername,
 			)
 		}
 
-		password, ok = os.LookupEnv("TF_VAR_testacc_morpheus_password")
+		password, ok = os.LookupEnv(testhelpers.EnvTFVarTestAccMorpheusPassword)
 		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_password must be set",
+			return nil, fmt.Errorf(
+				"one of %s or %s must be set",
+				testhelpers.EnvTFVarTestAccMorpheusAccessToken,
+				testhelpers.EnvTFVarTestAccMorpheusPassword,
 			)
 		}
 	}
 
-	_, insecure := os.LookupEnv("TF_VAR_testacc_morpheus_insecure")
+	_, insecure := os.LookupEnv(testhelpers.EnvTFVarTestAccMorpheusInsecure)
 	var opts []clientfactory.ClientOption
 	if insecure {
 		opts = append(opts, clientfactory.WithInsecureTLS())
