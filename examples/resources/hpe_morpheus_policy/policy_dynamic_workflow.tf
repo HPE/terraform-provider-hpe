@@ -1,26 +1,12 @@
 # Workflow Policy - Executes workflow on provision
 # Allowed associated_resource_types: Group, Cloud, User, Global
 # Tenant specification: allowed (can specify tenants array)
-# Note: This example uses the morpheus external provider to create a workflow resource
-# because the hpe provider does not yet have a workflow resource implemented.
-# You will need to configure the morpheus provider in your terraform configuration.
 
-terraform {
-  required_providers {
-    hpe = {
-      source  = "HPE/hpe"
-      version = "= 0.3.0"
-    }
-    morpheus = {
-      source  = "gomorpheus/morpheus"
-      version = "~> 0.13.2"
-    }
-  }
-}
-
-resource "morpheus_operational_workflow" "example" {
+resource "hpe_morpheus_workflow_operational" "example" {
   name        = "Example Policy Workflow"
   description = "Example workflow for policy testing"
+  platform    = "all"
+  visibility  = "private"
 }
 
 resource "hpe_morpheus_policy" "workflow" {
@@ -36,6 +22,6 @@ resource "hpe_morpheus_policy" "workflow" {
 
   config = {
     # Required
-    workflowId = morpheus_operational_workflow.example.id # ID of the workflow to execute
+    workflowId = hpe_morpheus_workflow_operational.example.id # ID of the workflow to execute
   }
 }

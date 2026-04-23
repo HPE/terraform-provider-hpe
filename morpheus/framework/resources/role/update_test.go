@@ -721,12 +721,6 @@ resource "hpe_morpheus_role" "update_test" {
 	removedPermissionsCheckFn := resource.ComposeAggregateTestCheckFunc(removedPermissionsChecks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Create dependencies
