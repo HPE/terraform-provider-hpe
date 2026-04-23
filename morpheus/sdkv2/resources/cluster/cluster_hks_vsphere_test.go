@@ -40,7 +40,9 @@ func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := cluster.RenderClusterHKSVsphereConfig(t, map[string]string{
-		"Name": name,
+		"Name":            name,
+		"WorkflowId":      "null",
+		"ClusterLayoutId": "1229", // HKS Kubernetes 1.34 Cluster on Ubuntu 24.04
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -111,7 +113,7 @@ func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_vsphere.example",
 			"cluster_layout_id",
-			"1070",
+			"1229",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_vsphere.example",
