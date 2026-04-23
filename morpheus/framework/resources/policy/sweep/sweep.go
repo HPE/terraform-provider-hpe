@@ -14,7 +14,7 @@ import (
 )
 
 // Policies whose name begins with this string will be eligible for deletion
-const testPolicyPrefix = "TestAccMorpheusPolicy"
+const testResourcePrefix = "TestAccMorpheus"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
@@ -39,7 +39,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testPolicyPrefix)
+			return strings.HasPrefix(*name, testResourcePrefix)
 		},
 		// Delete the test policy.
 		func(

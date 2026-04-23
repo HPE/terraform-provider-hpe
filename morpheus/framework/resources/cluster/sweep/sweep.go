@@ -14,7 +14,7 @@ import (
 )
 
 // Clusters whose name begins with this string will be eligible for deletion.
-const testClusterPrefix = "TestAccMorpheusCluster"
+const testResourcePrefix = "TestAccMorpheus"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
@@ -39,7 +39,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testClusterPrefix)
+			return strings.HasPrefix(*name, testResourcePrefix)
 		},
 		// Delete the test cluster.
 		func(

@@ -13,9 +13,8 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// testLoadBalancerPrefix is truncated to 16 characters to account for the
-// 32-character name limit after RandomWithPrefix appends a random suffix.
-const testLoadBalancerPrefix = "TestAccMorpheusL"
+// testResourcePrefix is used to identify test resources for cleanup.
+const testResourcePrefix = "TestAccMorpheus"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
@@ -40,7 +39,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testLoadBalancerPrefix)
+			return strings.HasPrefix(*name, testResourcePrefix)
 		},
 		// Delete the test load balancer.
 		func(

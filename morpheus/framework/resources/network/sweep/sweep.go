@@ -14,34 +14,7 @@ import (
 )
 
 // Networks whose name begins with this string will be eligible for deletion
-const testNetworkPrefix = "TestAccMorpheusNetworkResource"
-
-// All of these labels must be present for the network to be deleted
-var requiredSweepLabels = []string{
-	"terraform",
-	"acctest",
-	"hpe_morpheus_network",
-	"sweepable",
-}
-
-func hasRequiredLabels(labels []string) bool {
-	if labels == nil {
-		return false
-	}
-
-	labelMap := make(map[string]bool)
-	for _, label := range labels {
-		labelMap[label] = true
-	}
-
-	for _, requiredLabel := range requiredSweepLabels {
-		if !labelMap[requiredLabel] {
-			return false
-		}
-	}
-
-	return true
-}
+const testResourcePrefix = "TestAccMorpheus"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
@@ -62,16 +35,11 @@ func init() {
 		// Is this a test network?
 		func(item sdk.ListNetworks200ResponseAllOfNetworksInner) bool {
 			name, ok := item.GetNameOk()
-			if !ok || name == nil || !strings.HasPrefix(*name, testNetworkPrefix) {
+			if !ok || name == nil {
 				return false
 			}
 
-			labels, ok := item.GetLabelsOk()
-			if !ok || !hasRequiredLabels(labels) {
-				return false
-			}
-
-			return true
+			return strings.HasPrefix(*name, testResourcePrefix)
 		},
 		// Delete the test network.
 		func(

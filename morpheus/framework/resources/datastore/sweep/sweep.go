@@ -14,10 +14,7 @@ import (
 )
 
 // Datastores whose name begins with this string will be eligible for deletion
-const (
-	testDatastorePrefix   = "TestAccMorpheusDatastore"
-	enableDatastoreDelete = false
-)
+const testResourcePrefix = "TestAccMorpheus"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
@@ -37,16 +34,12 @@ func init() {
 		},
 		// Is this a test datastore?
 		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {
-			if !enableDatastoreDelete {
-				return false
-			}
-
 			name, ok := item.GetNameOk()
-			if !ok || name == nil || !strings.HasPrefix(*name, testDatastorePrefix) {
+			if !ok || name == nil {
 				return false
 			}
 
-			return true
+			return strings.HasPrefix(*name, testResourcePrefix)
 		},
 		// Delete the test datastore.
 		func(
@@ -67,16 +60,5 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
-		testsweep.WithFilter(func(
-			_ context.Context,
-			_ *sdk.APIClient,
-			_ sdk.ListDatastores200ResponseAllOfDatastoresInner,
-		) (bool, string, error) {
-			if enableDatastoreDelete {
-				return true, "", nil
-			}
-
-			return false, "delete disabled", nil
-		}),
 	)
 }
