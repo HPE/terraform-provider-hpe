@@ -17,4 +17,8 @@ resource "hpe_morpheus_load_balancer" "haproxy" {
     plan_id = 8
     pool    = "pool-574"
   }
+
+  permissions = {
+    all = true
+  }
 }
