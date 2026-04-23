@@ -1,3 +1,3 @@
 data "hpe_morpheus_datastore" "test" {
-  name = {{.Name}}
+  id = 99
 }
