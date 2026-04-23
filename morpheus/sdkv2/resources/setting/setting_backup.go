@@ -4,6 +4,7 @@ package setting
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	backupSettingsID = "1"
+	backupSettingsID              = "1"
+	backupSettingsUpdateFailedErr = "Failed to update backup settings."
 )
 
 func ResourceSettingBackup() *schema.Resource {
@@ -173,8 +175,8 @@ func resourceSettingBackupCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BackupSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BackupSettings"))
+	if !result.Success {
+		return diag.FromErr(errors.New(backupSettingsUpdateFailedErr))
 	}
 
 	d.SetId(backupSettingsID)
@@ -338,8 +340,8 @@ func resourceSettingBackupUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BackupSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BackupSettings"))
+	if !result.Success {
+		return diag.FromErr(errors.New(backupSettingsUpdateFailedErr))
 	}
 
 	d.SetId(backupSettingsID)
