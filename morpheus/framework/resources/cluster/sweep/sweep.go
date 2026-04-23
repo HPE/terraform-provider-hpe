@@ -13,9 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Clusters whose name begins with this string will be eligible for deletion.
-const testClusterPrefix = "TestAccMorpheusCluster"
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_cluster",
@@ -39,7 +36,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testClusterPrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test cluster.
 		func(
