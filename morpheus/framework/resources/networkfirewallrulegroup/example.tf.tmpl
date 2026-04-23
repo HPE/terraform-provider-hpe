@@ -1,0 +1,14 @@
+resource "hpe_morpheus_network_firewall_rule_group" "example" {
+  network_server_id = {{.NetworkServerId}}
+  name              = "{{.Name}}"
+  external_type     = "{{.ExternalType}}"
+  {{- if ne .Description ""}}
+  description       = "{{.Description}}"
+  {{- end}}
+  {{- if ne .Priority ""}}
+  priority          = {{.Priority}}
+  {{- end}}
+  {{- if ne .GroupLayer ""}}
+  group_layer       = "{{.GroupLayer}}"
+  {{- end}}
+}
