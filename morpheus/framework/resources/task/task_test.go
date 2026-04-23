@@ -1,6 +1,7 @@
 package task_test
 
 //go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow" ElseOperationalWorkflowId "4091" ElseOperationalWorkflowName "Example Else Workflow"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow_null_else.tf example_conditional_workflow_null_else.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow"
 //go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task" OperationalWorkflowId "4090" OperationalWorkflowName "Example Workflow"
 
 import (
@@ -304,6 +305,172 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 				ImportStateVerify: true,
 				ResourceName:      "hpe_morpheus_task.example_task",
 				Check:             checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+		"Name", name,
+		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
+		"IfOperationalWorkflowName", testFailureWorkflowName,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"task_type_code",
+			"conditionalWorkflow",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"config_conditional_workflow.if_operational_workflow_id",
+			testIfOperationalWorkflowId,
+		),
+		// Else id should be null in state
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"config_conditional_workflow.else_operational_workflow_id",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"allow_custom_config",
+			"true",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_task.example_task",
+				ImportStateVerifyIgnore: []string{
+					"config_conditional_workflow.conditional_script",
+				},
+				Check: checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusTaskExampleConditionalNullElseUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+		"Name", name,
+		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
+		"IfOperationalWorkflowName", testFailureWorkflowName,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nullElseChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"name",
+			name,
+		),
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"config_conditional_workflow.else_operational_workflow_id",
+		),
+	)
+
+	nonNullElseChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"config_conditional_workflow.if_operational_workflow_id",
+			testIfOperationalWorkflowId,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_task.example_task",
+			"config_conditional_workflow.else_operational_workflow_id",
+			testElseOperationalWorkflowId,
+		),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_task.example_task",
+				plancheck.ResourceActionUpdate,
+			),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              nullElseChecks,
+			},
+			// update to add a non-null else workflow
+			{
+				ConfigPlanChecks: checkInPlaceUpdate,
+				Check:            nonNullElseChecks,
+				Config: providerConfig + `
+					resource "hpe_morpheus_task" "example_task" {
+						name = "` + name + `"
+						task_type_code = "conditionalWorkflow"
+						config_conditional_workflow = {
+							if_operational_workflow_id   = ` + testIfOperationalWorkflowId + `
+							if_operational_workflow_name = "` + testFailureWorkflowName + `"
+
+							else_operational_workflow_id   = ` + testElseOperationalWorkflowId + `
+							else_operational_workflow_name = "` + testWorkflowName + `"
+						}
+
+						execute_target = "local"
+						retryable = false
+						allow_custom_config = true
+					}`,
 			},
 		},
 	})
