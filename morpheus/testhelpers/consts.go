@@ -1,5 +1,6 @@
 package testhelpers
 
+// nolint:gosec
 const (
 	EnvTFVarTestAccMorpheusUrl             = "TF_VAR_testacc_morpheus_url"
 	EnvTFVarTestAccMorpheusUsername        = "TF_VAR_testacc_morpheus_username"
