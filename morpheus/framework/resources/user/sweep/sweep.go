@@ -13,9 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Users whose name begins with this string will be eligible for deletion
-const testResourcePrefix = "TestAccMorpheus"
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
@@ -39,7 +36,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*username, testResourcePrefix)
+			return strings.HasPrefix(*username, testsweep.TestResourcePrefix)
 		},
 		// Delete the test user.
 		func(

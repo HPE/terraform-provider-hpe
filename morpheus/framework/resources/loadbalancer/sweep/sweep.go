@@ -13,9 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// testResourcePrefix is used to identify test resources for cleanup.
-const testResourcePrefix = "TestAccMorpheus"
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_load_balancer",
@@ -39,7 +36,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testResourcePrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test load balancer.
 		func(
