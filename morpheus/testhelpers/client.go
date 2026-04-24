@@ -12,13 +12,14 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 )
 
 func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
 	t.Helper()
 
-	client, err := NewClientForServer(ctx, "")
+	client, err := NewClientForServer(ctx, systemoverride.GetPreferred(t, ""))
 	if err != nil {
 		t.Fatalf("failed to create test client: %v", err)
 	}
