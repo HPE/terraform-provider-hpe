@@ -6,6 +6,7 @@
 .PHONY: build linter lint test docs sweep build-render-tool
 
 SWEEP ?= all
+SWEEP_SYSTEMS ?= zodiac,feature
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 
 build:
@@ -38,4 +39,4 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
-	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=all $(SWEEP_RUN_ARGS)
+	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
