@@ -8,13 +8,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"slices"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -41,15 +40,15 @@ type typedSweepConfig[T any] struct {
 	ignoreListStatuses []int
 }
 
-func registerSweeper(resourceName string, sweep func() error) {
+func registerSweeper(resourceName string, sweep func(string) error) {
 	resource.AddTestSweepers(
 		resourceName,
 		&resource.Sweeper{
 			Name: resourceName,
-			F: func(_ string) (retErr error) {
+			F: func(system string) (retErr error) {
 				defer recoverSweepPanic(resourceName, &retErr)
 
-				return sweep()
+				return sweep(system)
 			},
 		},
 	)
@@ -75,12 +74,12 @@ func RegisterTypedAPISweeper[T any](
 		option(&config)
 	}
 
-	registerSweeper(resourceName, func() error {
+	registerSweeper(resourceName, func(system string) error {
 		ctx := context.Background()
 
-		client, err := newSweepClient(ctx)
+		client, err := testhelpers.NewClientForServer(ctx, system)
 		if err != nil {
-			log.Printf("[WARN] Cannot create sweep client: %v", err)
+			log.Printf("[WARN] Cannot create sweep client for %q: %v", system, err)
 
 			return nil
 		}
@@ -161,52 +160,6 @@ func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.ignoreListStatuses = append(config.ignoreListStatuses, statuses...)
 	}
-}
-
-func newSweepClient(ctx context.Context) (*sdk.APIClient, error) {
-	var username, password string
-
-	url, ok := os.LookupEnv("TF_VAR_testacc_morpheus_url")
-	if !ok {
-		return nil, errors.New("TF_VAR_testacc_morpheus_url not set")
-	}
-
-	token, ok := os.LookupEnv("TF_VAR_testacc_morpheus_access_token")
-	if !ok {
-		username, ok = os.LookupEnv("TF_VAR_testacc_morpheus_username")
-		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_username must be set",
-			)
-		}
-
-		password, ok = os.LookupEnv("TF_VAR_testacc_morpheus_password")
-		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_password must be set",
-			)
-		}
-	}
-
-	_, insecure := os.LookupEnv("TF_VAR_testacc_morpheus_insecure")
-	var opts []clientfactory.ClientOption
-	if insecure {
-		opts = append(opts, clientfactory.WithInsecureTLS())
-	}
-
-	client := clientfactory.NewAPIClient(
-		ctx,
-		url,
-		username,
-		password,
-		"",
-		token,
-		opts...,
-	)
-
-	return client, nil
 }
 
 // RecoverSweepPanic recovers from panics during sweep execution and converts them to errors.
