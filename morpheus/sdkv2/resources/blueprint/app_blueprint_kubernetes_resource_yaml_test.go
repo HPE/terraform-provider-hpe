@@ -23,8 +23,6 @@ func TestAccMorpheusAppBlueprintKubernetesYamlExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to missing infrastructure in test environment")
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -38,7 +36,7 @@ func TestAccMorpheusAppBlueprintKubernetesYamlExampleOk(t *testing.T) {
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"hpe_morpheus_app_blueprint_kubernetes.tfexample_kubernetes_app_blueprint_yaml",
 			"blueprint_content",
 			"---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n name: nginx-deployment\n"+
 				" labels:\n app: nginx\nspec:\n replicas: 3\n selector:\n matchLabels:\n app: nginx\n"+
@@ -47,25 +45,25 @@ func TestAccMorpheusAppBlueprintKubernetesYamlExampleOk(t *testing.T) {
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"hpe_morpheus_app_blueprint_kubernetes.tfexample_kubernetes_app_blueprint_yaml",
 			"category",
 			"k8s",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"hpe_morpheus_app_blueprint_kubernetes.tfexample_kubernetes_app_blueprint_yaml",
 			"description",
 			"tf example kubernetes app blueprint",
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"hpe_morpheus_app_blueprint_kubernetes.tfexample_kubernetes_app_blueprint_yaml",
 			"name",
-			"tf-kubernetes-app-blueprint-example-yaml",
+			name,
 		),
 
 		resource.TestCheckResourceAttr(
-			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"hpe_morpheus_app_blueprint_kubernetes.tfexample_kubernetes_app_blueprint_yaml",
 			"source_type",
 			"yaml",
 		),

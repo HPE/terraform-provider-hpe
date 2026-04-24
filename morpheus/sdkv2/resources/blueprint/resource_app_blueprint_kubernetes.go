@@ -176,7 +176,7 @@ func resourceAppBlueprintKubernetesCreate(
 		} else {
 			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
-		kubernetesConfig[sourceTypeYaml] = blueprintContent
+		kubernetesConfig[sourceTypeYaml] = strings.TrimSpace(blueprintContent)
 
 	case sourceTypeSpec:
 		kubernetesConfig["configType"] = sourceTypeSpec
@@ -325,7 +325,7 @@ func resourceAppBlueprintKubernetesRead(
 	switch kubernetesBlueprint.Blueprint.Config.Kubernetes.Configtype {
 	case sourceTypeYaml:
 		d.Set("source_type", sourceTypeYaml)
-		d.Set("blueprint_content", kubernetesBlueprint.Blueprint.Config.Kubernetes)
+		d.Set("blueprint_content", strings.TrimSpace(kubernetesBlueprint.Blueprint.Config.Kubernetes.Yaml))
 	case configTypeGit:
 		d.Set("source_type", sourceTypeRepository)
 		d.Set("working_path", kubernetesBlueprint.Blueprint.Config.Kubernetes.Git.Path)
@@ -407,7 +407,7 @@ func resourceAppBlueprintKubernetesUpdate(
 		} else {
 			return diag.FromErr(helpers.TypeAssertFailError("blueprint_content", d.Get("blueprint_content")))
 		}
-		kubernetesConfig[sourceTypeYaml] = blueprintContent
+		kubernetesConfig[sourceTypeYaml] = strings.TrimSpace(blueprintContent)
 
 	case sourceTypeSpec:
 		kubernetesConfig["configType"] = sourceTypeSpec
@@ -545,6 +545,7 @@ type AppBlueprintKubernetes struct {
 					IntegrationId int    `json:"integrationId"`
 					Branch        string `json:"branch"`
 				} `json:"git"`
+				Yaml string `json:"yaml"`
 			} `json:"kubernetes"`
 			Config struct {
 				Specs []struct {
