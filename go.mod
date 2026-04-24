@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0
-	github.com/hashicorp/go-version v1.8.0
+	github.com/hashicorp/go-version v1.9.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
