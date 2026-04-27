@@ -37,6 +37,7 @@ resource "hpe_morpheus_task_restart" "tfexample_restart" {
 - `retry_count` (Number) The number of times to retry the task if there is a failure
 - `retry_delay_seconds` (Number) The number of seconds to wait between retry attempts
 - `retryable` (Boolean) Whether to retry the task if there is a failure
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 

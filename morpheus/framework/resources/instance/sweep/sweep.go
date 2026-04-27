@@ -13,40 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Instances whose name begins with this string will be eligible for deletion
-const testInstancePrefix = "TestAccMorpheusInstance"
-
-// All of these tags must be present with value "true" for the instance to be deleted
-var requiredSweepTags = []string{
-	"terraform",
-	"acctest",
-	"hpe_morpheus_instance",
-	"sweepable",
-}
-
-func hasRequiredTags(tags []sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInner) bool {
-	if tags == nil {
-		return false
-	}
-
-	tagMap := make(map[string]string)
-	for _, tag := range tags {
-		if name, ok := tag.GetNameOk(); ok && name != nil {
-			if value, ok := tag.GetValueOk(); ok && value != nil {
-				tagMap[*name] = *value
-			}
-		}
-	}
-
-	for _, requiredTag := range requiredSweepTags {
-		if value, exists := tagMap[requiredTag]; !exists || value != "true" {
-			return false
-		}
-	}
-
-	return true
-}
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_instance",
@@ -66,11 +32,11 @@ func init() {
 		// Is this a test instance?
 		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
 			name, ok := item.GetNameOk()
-			if !ok || name == nil || !strings.HasPrefix(*name, testInstancePrefix) {
+			if !ok || name == nil {
 				return false
 			}
 
-			return true
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test instance.
 		func(
@@ -102,29 +68,6 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
-		testsweep.WithFilter(func(
-			ctx context.Context,
-			client *sdk.APIClient,
-			instance sdk.ListInstances200ResponseAllOfInstancesInner,
-		) (bool, string, error) {
-			id, ok := instance.GetIdOk()
-			if !ok || id == nil {
-				return false, "id", nil
-			}
-
-			instanceDetail, hresp, err := client.InstancesAPI.GetInstance(ctx, *id).Execute()
-			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
-				return false, "failed to get details", nil
-			}
-
-			detail := instanceDetail.GetInstance()
-			tags, ok := detail.GetTagsOk()
-			if !ok || !hasRequiredTags(tags) {
-				return false, "tags", nil
-			}
-
-			return true, "", nil
-		}),
 	)
 }
 

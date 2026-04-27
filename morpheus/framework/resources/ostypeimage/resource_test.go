@@ -4,47 +4,79 @@ package ostypeimage_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestMain(m *testing.M) {
 	code := m.Run()
+	systemoverride.ParseFlags()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
-}
-
 // Tests that our example file template used for docs is a valid config.
 func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
+	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	resourceConfig, err := ostypeimage.RenderOsTypeImageConfig(t, nil)
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	imageConfig, err := image.RenderImageConfig(t, map[string]string{
+		"Name":              name,
+		"OsTypeId":          "hpe_morpheus_os_type.test.id",
+		"StorageProviderId": "1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	datasourceConfig := `
+data "hpe_morpheus_provision_type" "test" {
+	name = "KVM"
+}
+
+data "hpe_morpheus_cloud" "test" {
+	name = "hvm"
+}
+`
+	// The virtual images API will NOT update the underlying osType.Id of the virtual image.
+	// So we set up a clean room scenario with the virtual image we wish to create
+	// an OS Type image from, with the virtual image's os_type set correctly to an os type
+	// that we create.
+	dependencyConfig := `
+resource "hpe_morpheus_os_type" "test" {
+  name      = "` + name + `"
+  code      = "` + code + `"
+  platform  = "linux"
+  bit_count = 64
+}
+` + imageConfig
+
+	resourceConfig, err := ostypeimage.RenderOsTypeImageConfig(t, map[string]string{
+		"OsTypeId":        "hpe_morpheus_os_type.test.id",
+		"VirtualImageId":  "hpe_morpheus_image.example_image.id",
+		"CloudId":         "data.hpe_morpheus_cloud.test.id",
+		"ProvisionTypeId": "data.hpe_morpheus_provision_type.test.id",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,45 +86,48 @@ func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
 			"hpe_morpheus_os_type_image.example",
 			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.example",
 			"os_type_id",
-			"75",
+			"hpe_morpheus_os_type.test",
+			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.example",
 			"virtual_image_id",
-			"257",
+			"hpe_morpheus_image.example_image",
+			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.example",
 			"cloud_id",
-			"1",
+			"data.hpe_morpheus_cloud.test",
+			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.example",
 			"provision_type_id",
-			"22",
+			"data.hpe_morpheus_provision_type.test",
+			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + datasourceConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"os_type_id"},
-				ResourceName:            "hpe_morpheus_os_type_image.example",
-				Check:                   checkFn,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_os_type_image.example",
+				Check:             checkFn,
 			},
 		},
 	})
@@ -100,17 +135,44 @@ func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
 
 // Tests creating with only the required attributes.
 func TestAccMorpheusOsTypeImageRequiredAttrsOk(t *testing.T) {
+	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	imageConfig, err := image.RenderImageConfig(t, map[string]string{
+		"Name":              name,
+		"OsTypeId":          "hpe_morpheus_os_type.test.id",
+		"StorageProviderId": "1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The virtual images API will NOT update the underlying osType.Id of the virtual image.
+	// So we set up a clean room scenario with the virtual image we wish to create
+	// an OS Type image from, with the virtual image's os_type set correctly to an os type
+	// that we create.
+	dependencyConfig := `
+resource "hpe_morpheus_os_type" "test" {
+  name      = "` + name + `"
+  code      = "` + code + `"
+  platform  = "linux"
+  bit_count = 64
+}
+` + imageConfig
 
 	resourceConfig := `
 resource "hpe_morpheus_os_type_image" "required_only" {
-  os_type_id       = 75
-  virtual_image_id = 257
+  os_type_id       = resource.hpe_morpheus_os_type.test.id
+  virtual_image_id = resource.hpe_morpheus_image.example_image.id
 }
 `
 
@@ -119,35 +181,36 @@ resource "hpe_morpheus_os_type_image" "required_only" {
 			"hpe_morpheus_os_type_image.required_only",
 			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.required_only",
 			"os_type_id",
-			"75",
+			"hpe_morpheus_os_type.test",
+			"id",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_os_type_image.required_only",
 			"virtual_image_id",
-			"257",
+			"hpe_morpheus_image.example_image",
+			"id",
 		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"os_type_id"},
-				ResourceName:            "hpe_morpheus_os_type_image.required_only",
-				Check:                   checkFn,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_os_type_image.required_only",
+				Check:             checkFn,
 			},
 		},
 	})

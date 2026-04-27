@@ -129,7 +129,7 @@ func ResourceTaskShellScript() *schema.Resource {
 				Description:  "The visibility of the task (private or public)",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
-				Computed:     true,
+				Default:      "private",
 			},
 			"remote_target_host": {
 				Type:        schema.TypeString,
@@ -294,13 +294,6 @@ func resourceTaskShellScriptCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("local_repository_ref", d.Get("local_repository_ref")))
-	}
-	if visibility, ok := d.Get("visibility").(string); ok {
-		if visibility != "" {
-			taskOptions["visibility"] = visibility
-		}
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
 	labelsPayload := make([]string, 0)
@@ -630,14 +623,6 @@ func resourceTaskShellScriptUpdate(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(helpers.TypeAssertFailError("local_repository_ref", d.Get("local_repository_ref")))
 		}
 	}
-	if d.HasChange("visibility") {
-		if visibility, ok := d.Get("visibility").(string); ok {
-			taskOptions["visibility"] = visibility
-		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-		}
-	}
-
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
 		if labelSet, ok := attr.(*schema.Set); ok {

@@ -62,7 +62,7 @@ These settings can be changed as required.
 
 ```terraform
 data "hpe_morpheus_cloud" "vme_cloud" {
-  name = "HPE Alletra VME"
+  name = "MyCloud"
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
@@ -72,9 +72,9 @@ data "hpe_morpheus_service_plan" "vme_512mb" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "TestInstance"
-  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
-  layout_id        = 5385                                 # Single KVM VM
-  instance_type_id = 9                  # (HVM) mvm-cluster
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id 
+  layout_id        = 644 # Single KVM VM
+  instance_type_id = 9 # (HVM) mvm-cluster
 
   group_id = 1
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
@@ -82,7 +82,7 @@ resource "hpe_morpheus_instance" "example" {
   instance_context = "dev"
   network_interfaces = [
     {
-      network_id = 103481
+      network_id = 755
     }
   ]
 
@@ -92,14 +92,14 @@ resource "hpe_morpheus_instance" "example" {
       name            = "root"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = 555
     },
     {
       root_volume     = false
       name            = "data"
       size            = 10
       storage_type_id = 1
-      datastore_id    = 38658
+      datastore_id    = 555
     }
   ]
 
@@ -127,7 +127,7 @@ resource "hpe_morpheus_instance" "example" {
   ]
 
   config_hvm = {
-    resource_pool_id      = "pool-62299"
+    resource_pool_id      = "pool-700"
     nested_virtualization = "off"
     no_agent              = true
     create_user           = false
@@ -409,7 +409,7 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
-## VMware VM Instance with Service Plan Options
+## VMware VM Instance with Service Plan Options and Network Domain
 
 Some Service Plans have options that must be set at the time of creation of the instance.
 
@@ -443,6 +443,8 @@ resource "hpe_morpheus_instance" "example" {
       network_id = 86657
     }
   ]
+
+  network_domain_id = 27
 
   service_plan_options = {
     max_cores = 2
@@ -733,6 +735,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
 - `instance_context` (String) Environment
 - `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
+- `network_domain_id` (Number) The Network Domain ID to provision the instance into.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))

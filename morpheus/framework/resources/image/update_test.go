@@ -9,15 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
-var (
-	storageProvider = "196"
-	// nolint: lll
-	url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
-)
+// nolint: lll
+var url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
 
 func TestAccMorpheusImageUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
@@ -28,9 +27,19 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
+
+	datasourceConfig := `
+data "hpe_morpheus_os_type" "test" {
+	name = "linux"
+}
+
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -63,23 +72,21 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 		},
 	}
 
-	osType := "75"
-
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `"
 						description = "this is a test image"
 						labels = ["terraform-image"]
 						image_type = "qcow2"
 						url = "` + url + `"
-						storage_provider_id = ` + storageProvider + `
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id
 						install_agent = false
 						cloud_init = false
-						os_type_id = ` + osType + `
+						os_type_id = data.hpe_morpheus_os_type.test.id
 						min_ram = 2
 						uefi = false
 						min_disk = 25
@@ -104,17 +111,17 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 			},
 			// change fields which don't require a replace
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `2"
 						description = "this is a test image" # requires replace
 						labels = ["terraform-image", "terraform-test"]
 						image_type = "qcow2" # requires replace
 						url = "` + url + `" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						install_agent = true
 						cloud_init = true
-						os_type_id = ` + osType + `
+						os_type_id = data.hpe_morpheus_os_type.test.id
 						min_ram = 1
 						uefi = true
 						min_disk = 20
@@ -144,13 +151,13 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 				ConfigPlanChecks: checkInPlaceUpdate,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `2"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
 						url = "` + url + `" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 					}`,
 				Check:              checkFn,
 				ExpectNonEmptyPlan: true,
@@ -158,13 +165,13 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 				ConfigPlanChecks:   checkInPlaceUpdate,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `2"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
 						url = "` + url + `" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						ssh_password_wo = "this-is-a-test-password2"
 						ssh_password_wo_version = 1
 					}`,
@@ -175,17 +182,17 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 			},
 			// change description to force a replace
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `2"
 						description = "this is a test image2" # requires replace
 						labels = ["terraform-image", "terraform-test"]
 						image_type = "qcow2" # requires replace
 						url = "` + url + `" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						install_agent = true
 						cloud_init = true
-						os_type_id = ` + osType + `
+						os_type_id = data.hpe_morpheus_os_type.test.id
 						min_ram = 1
 						uefi = true
 						min_disk = 20
@@ -223,9 +230,15 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
+
+	datasourceConfig := `
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+`
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -263,15 +276,15 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						ssh_password_wo = "this-is-a-test-password"
 						ssh_password_wo_version = 1
 					}`,
@@ -281,12 +294,12 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 			// changing the password without bumping the `wo_version` should not
 			// change the password
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						ssh_password_wo = "this-is-a-test-password2"
 						ssh_password_wo_version = 1
 					}`,
@@ -296,12 +309,12 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 			},
 			// removing the password field should not cause any changes
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						ssh_password_wo_version = 1
 					}`,
 				Check:            checkFn,
@@ -311,12 +324,12 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 			// bumping the password version and changing the password attribute
 			// should trigger an in place update
 			{
-				Config: providerConfig + `
+				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
 						name = "` + name + `"
 						description = "this is a test image" # requires replace
 						image_type = "qcow2" # requires replace
-						storage_provider_id = ` + storageProvider + ` # requires replace
+						storage_provider_id = data.hpe_morpheus_storage_bucket.test.id # requires replace
 						ssh_password_wo = "this-is-a-test-password2"
 						ssh_password_wo_version = 2
 					}`,

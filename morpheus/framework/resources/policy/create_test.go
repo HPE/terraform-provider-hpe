@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
@@ -104,7 +106,7 @@ func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixedForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
@@ -144,12 +146,14 @@ resource "hpe_morpheus_cloud" "test" {
   }
 }
 
-resource "morpheus_operational_workflow" "test" {
+resource "hpe_morpheus_workflow_operational" "test" {
   name = "` + namePrefix + `-workflow"
+  platform = "all"
+  visibility = "private"
 }
 
-data "morpheus_workflow" "test" {
-  name = morpheus_operational_workflow.test.name
+data "hpe_morpheus_workflow" "test" {
+  name = hpe_morpheus_workflow_operational.test.name
 }
 
 resource "hpe_morpheus_policy" "test" {
@@ -202,12 +206,14 @@ resource "hpe_morpheus_cloud" "test" {
   }
 }
 
-resource "morpheus_operational_workflow" "test" {
+resource "hpe_morpheus_workflow_operational" "test" {
   name = "` + namePrefix + `-workflow"
+  platform = "all"
+  visibility = "private"
 }
 
-data "morpheus_workflow" "test" {
-  name = morpheus_operational_workflow.test.name
+data "hpe_morpheus_workflow" "test" {
+  name = hpe_morpheus_workflow_operational.test.name
 }
 
 resource "hpe_morpheus_policy" "test" {
@@ -226,13 +232,7 @@ resource "hpe_morpheus_policy" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Step 1: Approve Delete
 			{
@@ -532,7 +532,7 @@ resource "hpe_morpheus_policy" "test" {
 					resource.TestCheckResourceAttr("hpe_morpheus_policy.test", "description", "Create user group policy"),
 				),
 			},
-			// Step 18: Workflow (uses Morpheus provider to create workflow resource)
+			// Step 18: Workflow
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_group" "test" {
@@ -540,12 +540,14 @@ resource "hpe_morpheus_group" "test" {
   location = "test"
 }
 
-resource "morpheus_operational_workflow" "test" {
+resource "hpe_morpheus_workflow_operational" "test" {
   name = "` + namePrefix + `-workflow"
+  platform = "all"
+  visibility = "private"
 }
 
-data "morpheus_workflow" "test" {
-  name = morpheus_operational_workflow.test.name
+data "hpe_morpheus_workflow" "test" {
+  name = hpe_morpheus_workflow_operational.test.name
 }
 
 resource "hpe_morpheus_policy" "test" {
@@ -560,7 +562,7 @@ resource "hpe_morpheus_policy" "test" {
   }
   
   config = {
-    workflowId = data.morpheus_workflow.test.id
+    workflowId = data.hpe_morpheus_workflow.test.id
   }
 }
 `,
@@ -820,7 +822,7 @@ func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixedForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -846,8 +848,10 @@ resource "hpe_morpheus_user" "test" {
   password_wo = "TestPassword123!"
 }
 
-resource "morpheus_operational_workflow" "test" {
+resource "hpe_morpheus_workflow_operational" "test" {
   name = "` + namePrefix + `-workflow"
+  platform = "all"
+  visibility = "private"
 }
 
 resource "hpe_morpheus_cloud" "test" {
@@ -863,19 +867,13 @@ resource "hpe_morpheus_cloud" "test" {
   }
 }
 
-data "morpheus_workflow" "test" {
-  name = morpheus_operational_workflow.test.name
+data "hpe_morpheus_workflow" "test" {
+  name = hpe_morpheus_workflow_operational.test.name
 }
 `
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Step 1: Approve Delete (using config_approval)
 			{

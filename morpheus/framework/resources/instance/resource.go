@@ -116,7 +116,18 @@ func (g *Resource) ModifyPlan(
 		return
 	}
 
-	version, err := semver.NewVersion(*apiVersion)
+	versionParts := strings.Split(*apiVersion, ".")
+	if len(versionParts) < 3 {
+		resp.Diagnostics.AddError(
+			"Unable to Parse Appliance Version",
+			"Not enough components - expect at least major.minor.patch, got %s"+
+				*apiVersion,
+		)
+	}
+
+	trimmedVersion := strings.Join(versionParts[:3], ".")
+
+	version, err := semver.NewVersion(trimmedVersion)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Parse Appliance Version",

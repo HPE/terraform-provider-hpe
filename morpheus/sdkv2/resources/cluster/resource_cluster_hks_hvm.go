@@ -28,7 +28,7 @@ func ResourceClusterHKSHVM() *schema.Resource {
 		UpdateContext: resourceClusterHKSHVMUpdate,
 		DeleteContext: resourceClusterHKSHVMDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(45 * time.Minute),
+			Create: schema.DefaultTimeout(90 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(45 * time.Minute),
 			Delete: schema.DefaultTimeout(45 * time.Minute),

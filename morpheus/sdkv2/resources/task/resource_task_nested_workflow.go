@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceTaskNestedWorkflow() *schema.Resource {
@@ -80,6 +81,13 @@ func ResourceTaskNestedWorkflow() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the shell script",
 				Optional:    true,
 				Computed:    true,
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Default:      "private",
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -177,6 +185,13 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("retry_delay_seconds", d.Get("retry_delay_seconds")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -186,6 +201,7 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -289,6 +305,7 @@ func resourceTaskNestedWorkflowRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("retry_count", nestedWorkflowTask.RetryCount)
 	d.Set("retry_delay_seconds", nestedWorkflowTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", nestedWorkflowTask.AllowCustomConfig)
+	d.Set("visibility", nestedWorkflowTask.Visibility)
 
 	return diags
 }
@@ -381,6 +398,13 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(helpers.TypeAssertFailError("retry_delay_seconds", d.Get("retry_delay_seconds")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -390,6 +414,7 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

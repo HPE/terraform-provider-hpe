@@ -5,6 +5,9 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -19,7 +22,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -113,8 +115,13 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 						Computed:            true,
 						Description:         "Pass true to allow access to all groups",
 						MarkdownDescription: "Pass true to allow access to all groups",
+						Validators: []validator.Bool{
+							boolvalidator.ConflictsWith(path.Expressions{
+								path.MatchRelative().AtParent().AtName("groups"),
+							}...),
+						},
 					},
-					"groups": schema.SetAttribute{
+					"groups": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
@@ -424,14 +431,12 @@ func (t ConfigHaproxyType) ValueFromTerraform(ctx context.Context, in tftypes.Va
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -470,7 +475,6 @@ func (v ConfigHaproxyValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.PlanId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -478,7 +482,6 @@ func (v ConfigHaproxyValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["plan_id"] = val
 
 		val, err = v.Pool.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -639,12 +642,12 @@ func (t PermissionsType) ValueFromObject(ctx context.Context, in basetypes.Objec
 		return nil, diags
 	}
 
-	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
+	groupsVal, ok := groupsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
+			fmt.Sprintf(`groups expected to be basetypes.ListValue, was: %T`, groupsAttribute))
 	}
 
 	if diags.HasError() {
@@ -749,12 +752,12 @@ func NewPermissionsValue(attributeTypes map[string]attr.Type, attributes map[str
 		return NewPermissionsValueUnknown(), diags
 	}
 
-	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
+	groupsVal, ok := groupsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
+			fmt.Sprintf(`groups expected to be basetypes.ListValue, was: %T`, groupsAttribute))
 	}
 
 	if diags.HasError() {
@@ -811,14 +814,12 @@ func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -837,7 +838,7 @@ var _ basetypes.ObjectValuable = PermissionsValue{}
 
 type PermissionsValue struct {
 	All    basetypes.BoolValue `tfsdk:"all"`
-	Groups basetypes.SetValue  `tfsdk:"groups"`
+	Groups basetypes.ListValue `tfsdk:"groups"`
 	state  attr.ValueState
 }
 
@@ -848,7 +849,7 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 	var err error
 
 	attrTypes["all"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["groups"] = basetypes.SetType{
+	attrTypes["groups"] = basetypes.ListType{
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
 
@@ -859,7 +860,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.All.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -867,7 +867,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["all"] = val
 
 		val, err = v.Groups.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -903,22 +902,22 @@ func (v PermissionsValue) String() string {
 func (v PermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var groupsVal basetypes.SetValue
+	var groupsVal basetypes.ListValue
 	switch {
 	case v.Groups.IsUnknown():
-		groupsVal = types.SetUnknown(types.Int64Type)
+		groupsVal = types.ListUnknown(types.Int64Type)
 	case v.Groups.IsNull():
-		groupsVal = types.SetNull(types.Int64Type)
+		groupsVal = types.ListNull(types.Int64Type)
 	default:
 		var d diag.Diagnostics
-		groupsVal, d = types.SetValue(types.Int64Type, v.Groups.Elements())
+		groupsVal, d = types.ListValue(types.Int64Type, v.Groups.Elements())
 		diags.Append(d...)
 	}
 
 	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"all": basetypes.BoolType{},
-			"groups": basetypes.SetType{
+			"groups": basetypes.ListType{
 				ElemType: types.Int64Type,
 			},
 		}), diags
@@ -926,7 +925,7 @@ func (v PermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 
 	attributeTypes := map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"groups": basetypes.SetType{
+		"groups": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}
@@ -986,7 +985,7 @@ func (v PermissionsValue) Type(ctx context.Context) attr.Type {
 func (v PermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"groups": basetypes.SetType{
+		"groups": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}
@@ -1225,14 +1224,12 @@ func (t TenantsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1271,7 +1268,6 @@ func (v TenantsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1279,7 +1275,6 @@ func (v TenantsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

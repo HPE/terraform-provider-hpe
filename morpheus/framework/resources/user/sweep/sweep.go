@@ -13,19 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Users whose name begins with this string will be eligible for deletion
-const testUserPrefix = "TestAccMorpheusUser"
-
-// Additionally, the user email must match one of these in order to be deleted
-var sweepableEmails = map[string]bool{
-	"foo@testacc.com": true,
-	"bar@testacc.com": true,
-}
-
-func isSweepableEmail(email string) bool {
-	return sweepableEmails[email]
-}
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_user",
@@ -45,16 +32,11 @@ func init() {
 		// Is this a test user?
 		func(item sdk.ListUsers200ResponseAllOfUsersInner) bool {
 			username, ok := item.GetUsernameOk()
-			if !ok || username == nil || !strings.HasPrefix(*username, testUserPrefix) {
+			if !ok || username == nil {
 				return false
 			}
 
-			email, ok := item.GetEmailOk()
-			if !ok || email == nil || !isSweepableEmail(*email) {
-				return false
-			}
-
-			return true
+			return strings.HasPrefix(*username, testsweep.TestResourcePrefix)
 		},
 		// Delete the test user.
 		func(

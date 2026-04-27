@@ -70,7 +70,7 @@ func TestAccMorpheusDataSourceBlueprintExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + dependenciesConfig + datasourceConfig,
-				ExpectNonEmptyPlan: true,
+				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 		},

@@ -102,7 +102,7 @@ func ResourceTaskLibraryScript() *schema.Resource {
 				Description:  "The visibility of the task (private or public)",
 				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
 				Optional:     true,
-				Computed:     true,
+				Default:      "private",
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -139,9 +139,6 @@ func resourceTaskLibraryScriptCreate(ctx context.Context, d *schema.ResourceData
 		visibility = visibilityValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
 	}
 
 	var scriptTemplateId string
@@ -376,9 +373,6 @@ func resourceTaskLibraryScriptUpdate(ctx context.Context, d *schema.ResourceData
 		visibility = visibilityValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
-	}
-	if visibility != "" {
-		taskOptions["visibility"] = visibility
 	}
 
 	var scriptTemplateId string

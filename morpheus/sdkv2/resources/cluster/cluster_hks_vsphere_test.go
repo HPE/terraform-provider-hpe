@@ -13,9 +13,11 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
 func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
 	code := m.Run()
 
 	testhelpers.WriteMergedResults()
@@ -32,12 +34,15 @@ func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlock()
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := cluster.RenderClusterHKSVsphereConfig(t, map[string]string{
-		"Name": name,
+		"Name":            name,
+		"WorkflowId":      "null",
+		"ClusterLayoutId": "1229", // HKS Kubernetes 1.34 Cluster on Ubuntu 24.04
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +113,7 @@ func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_vsphere.example",
 			"cluster_layout_id",
-			"1070",
+			"1229",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster_hks_vsphere.example",

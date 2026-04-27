@@ -42,6 +42,7 @@ EOF
 - `retry_delay_seconds` (Number) The number of seconds to wait between retry attempts
 - `retryable` (Boolean) Whether to retry the task if there is a failure
 - `script_content` (String) The content of the javascript script
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 

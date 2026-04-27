@@ -18,6 +18,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
+// TestResourcePrefix identifies acceptance test resources eligible for sweeping.
+const TestResourcePrefix = "TestAccMorpheus"
+
 // TypedSweepList returns all candidate resources that could be swept.
 type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
 

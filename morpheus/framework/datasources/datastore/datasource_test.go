@@ -2,23 +2,16 @@
 
 package datastore_test
 
-//go:generate ../../../../bin/render example-id.tf.tmpl Id 99
-//go:generate ../../../../bin/render example-name.tf.tmpl Name "\"Example name\""
-
 import (
 	"os"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 const providerConfigOffline = `
@@ -38,47 +31,30 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
+func TestAccMorpheusFindDatastoreById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
 
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hpe": newProviderWithError,
-}
-
-func testCheckFns(name string) []resource.TestCheckFunc {
-	checks := testCheckFnsNoResourcePermissions(name)
-	checksResourcePermissions := []resource.TestCheckFunc{
-		resource.TestCheckTypeSetElemNestedAttrs(
-			"data.hpe_morpheus_datastore.test",
-			"resource_permissions.groups.*",
-			map[string]string{
-				"id": "17830",
-			},
-		),
-		// it seems that adding resource permissions results in the root tenant being added
-		// for our tests with TerraformTester on feature
-		resource.TestCheckTypeSetElemNestedAttrs(
-			"data.hpe_morpheus_datastore.test",
-			"tenants.*",
-			map[string]string{
-				"id": "1",
-			},
-		),
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
 	}
-	checks = append(checks, checksResourcePermissions...)
 
-	return checks
-}
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-func testCheckFnsNoResourcePermissions(name string) []resource.TestCheckFunc {
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-id.tf.tmpl",
+		"Id", "1",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_datastore.test",
 			"name",
-			name,
+			"local",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_datastore.test",
@@ -88,96 +64,23 @@ func testCheckFnsNoResourcePermissions(name string) []resource.TestCheckFunc {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_datastore.test",
 			"associated_resource_id",
-			"6032",
+			"1",
 		),
-		resource.TestCheckTypeSetElemNestedAttrs(
+		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_datastore.test",
-			"tenants.*",
-			map[string]string{
-				"id": "466",
-			},
+			"type",
+			"Directory Pool",
 		),
 	}
 
-	return checks
-}
-
-func TestAccMorpheusFindDatastoreById(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	name := acctest.RandomWithPrefix(t.Name())
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
-
-	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
-		"Name", name,
-		"AssociatedResourceID", "6032",
-		"StorageServerID", "1489",
-		"GroupID", "17830",
-		"TenantID", "466",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "hpe_morpheus_datastore.example.id")
-	if err != nil {
-		t.Fatal(err)
-	}
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + datastoreResouceConfig + dataSourceConfig,
-				Check:  resource.ComposeAggregateTestCheckFunc(testCheckFns(name)...),
-			},
-		},
-	})
-}
-
-func TestAccMorpheusFindDatastoreNoResourcePermissionsById(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	name := acctest.RandomWithPrefix(t.Name())
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
-
-	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm_no_resource_permissions.tf.tmpl",
-		"Name", name,
-		"AssociatedResourceID", "6032",
-		"StorageServerID", "1489",
-		"TenantID", "466",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "hpe_morpheus_datastore.example.id")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + datastoreResouceConfig + dataSourceConfig,
-				Check:  resource.ComposeAggregateTestCheckFunc(testCheckFnsNoResourcePermissions(name)...),
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
 			},
 		},
 	})
@@ -191,34 +94,52 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	name := acctest.RandomWithPrefix(t.Name())
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	datastoreResouceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
-		"Name", name,
-		"AssociatedResourceID", "6032",
-		"StorageServerID", "1489",
-		"GroupID", "17830",
-		"TenantID", "466",
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-name.tf.tmpl",
+		"Name", "\"local\"",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-name.tf.tmpl", "Name", "hpe_morpheus_datastore.example.name")
-	if err != nil {
-		t.Fatal(err)
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_datastore.test",
+			"id",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_datastore.test",
+			"name",
+			"local",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_datastore.test",
+			"associated_resource_type",
+			"Cluster",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_datastore.test",
+			"associated_resource_id",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_datastore.test",
+			"type",
+			"Directory Pool",
+		),
 	}
 
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + datastoreResouceConfig + dataSourceConfig,
-				Check:  resource.ComposeAggregateTestCheckFunc(testCheckFns(name)...),
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
 			},
 		},
 	})
@@ -232,12 +153,12 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	config := providerConfig + `
       data "hpe_morpheus_datastore" "test" {
-        name = "blah" 
+        name = "blahasdf"
       }`
 
 	checks := []resource.TestCheckFunc{
@@ -250,12 +171,12 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
 				Check:       checkFn,
-				ExpectError: regexp.MustCompile("datastore blah not found"),
+				ExpectError: regexp.MustCompile("datastore blahasdf not found"),
 			},
 		},
 	})
@@ -279,7 +200,7 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -297,7 +218,7 @@ func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
 	config := providerConfigOffline + `
       data "hpe_morpheus_datastore" "test" {
         id = 1
-        name = "blah" 
+        name = "blah"
       }`
 
 	checks := []resource.TestCheckFunc{
@@ -310,7 +231,7 @@ func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,

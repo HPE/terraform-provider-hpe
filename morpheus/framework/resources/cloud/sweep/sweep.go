@@ -13,8 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-const testCloudPrefix = "TestAccMorpheusCloud"
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_cloud",
@@ -38,7 +36,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testCloudPrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test cloud.
 		func(
