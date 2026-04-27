@@ -255,7 +255,7 @@ func getInstanceAsState(
 	state.NetworkInterfaces = networkInterfacesList
 
 	// network_domain_id
-	networkDomainId, ndiags := getInstanceNetworkId(instance, plan)
+	networkDomainId, ndiags := getInstanceNetworkDomainId(instance, plan)
 	diags = append(diags, ndiags...)
 	if diags.HasError() {
 		return state, diags
@@ -321,7 +321,7 @@ func getInstanceAsState(
 	return state, diags
 }
 
-func getInstanceNetworkId(
+func getInstanceNetworkDomainId(
 	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
 ) (types.Int64, diag.Diagnostics) {

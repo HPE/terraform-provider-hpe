@@ -308,6 +308,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The Network Domain ID to provision the instance into.",
 				MarkdownDescription: "The Network Domain ID to provision the instance into.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"network_interfaces": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
