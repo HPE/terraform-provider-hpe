@@ -34,6 +34,10 @@ resource "hpe_morpheus_load_balancer" "haproxy" {
     plan_id = 8
     pool    = "pool-574"
   }
+
+  permissions = {
+    all = true
+  }
 }
 ```
 
@@ -63,6 +67,10 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
     pool = {
       id = "pool-574"
     }
+  }
+
+  permissions = {
+    groups = [data.hpe_morpheus_group.example.id]
   }
 }
 ```
@@ -106,7 +114,7 @@ Required:
 Optional:
 
 - `all` (Boolean) Pass true to allow access to all groups
-- `groups` (Set of Number) Array of group IDs that are allowed access
+- `groups` (List of Number) Array of group IDs that are allowed access
 
 
 <a id="nestedatt--tenants"></a>

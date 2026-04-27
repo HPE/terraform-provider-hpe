@@ -85,6 +85,7 @@ resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_git" {
 - `script_content` (String) The content of the groovy script. Used when the local source type is specified
 - `script_path` (String) The path of the groovy script, either the url or the path in the repository
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) The visibility of the task (private or public)
 
 ### Read-Only
 

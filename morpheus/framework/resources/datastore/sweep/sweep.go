@@ -13,12 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Datastores whose name begins with this string will be eligible for deletion
-const (
-	testDatastorePrefix   = "TestAccMorpheusDatastore"
-	enableDatastoreDelete = false
-)
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_datastore",
@@ -37,16 +31,12 @@ func init() {
 		},
 		// Is this a test datastore?
 		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {
-			if !enableDatastoreDelete {
-				return false
-			}
-
 			name, ok := item.GetNameOk()
-			if !ok || name == nil || !strings.HasPrefix(*name, testDatastorePrefix) {
+			if !ok || name == nil {
 				return false
 			}
 
-			return true
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test datastore.
 		func(
@@ -67,16 +57,5 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
-		testsweep.WithFilter(func(
-			_ context.Context,
-			_ *sdk.APIClient,
-			_ sdk.ListDatastores200ResponseAllOfDatastoresInner,
-		) (bool, string, error) {
-			if enableDatastoreDelete {
-				return true, "", nil
-			}
-
-			return false, "delete disabled", nil
-		}),
 	)
 }

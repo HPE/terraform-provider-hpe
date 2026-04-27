@@ -97,6 +97,13 @@ func ResourceTaskVRO() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Default:      "private",
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -215,6 +222,13 @@ func resourceTaskVROCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -225,6 +239,7 @@ func resourceTaskVROCreate(ctx context.Context, d *schema.ResourceData, meta any
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -332,6 +347,7 @@ func resourceTaskVRORead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("retry_count", workflowTask.RetryCount)
 	d.Set("retry_delay_seconds", workflowTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", workflowTask.AllowCustomConfig)
+	d.Set("visibility", workflowTask.Visibility)
 
 	return diags
 }
@@ -446,6 +462,13 @@ func resourceTaskVROUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -456,6 +479,7 @@ func resourceTaskVROUpdate(ctx context.Context, d *schema.ResourceData, meta any
 				"taskOptions":       taskOptions,
 				"resultType":        resultType,
 				"executeTarget":     executeTarget,
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

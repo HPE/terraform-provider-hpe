@@ -60,7 +60,7 @@ func TestAccMorpheusFormNumberOk(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.export_meta", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_label", "number input"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.field_name", "numberInput"),
-					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Is this working now"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.help_block", "Help block example"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.hidden", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.locked", "true"),
 					resource.TestCheckResourceAttr("hpe_morpheus_form.example", "option_type.0.max_value", "44"),

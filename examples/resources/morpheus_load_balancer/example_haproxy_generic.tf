@@ -22,4 +22,8 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
       id = "pool-574"
     }
   }
+
+  permissions = {
+    groups = [data.hpe_morpheus_group.example.id]
+  }
 }

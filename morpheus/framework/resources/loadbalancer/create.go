@@ -242,6 +242,7 @@ func setCreatePermissions(
 	}
 
 	if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
+		perms.SetAll(false)
 		var groupIDs []int64
 		if diags := plan.Permissions.Groups.ElementsAs(ctx, &groupIDs, false); diags.HasError() {
 			return fmt.Errorf("failed to parse permission groups: %s", diags.Errors())

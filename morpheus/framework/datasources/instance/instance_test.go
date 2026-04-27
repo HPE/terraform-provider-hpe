@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
@@ -50,22 +51,23 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
-	instanceTypeID := "9"
-	resourcePool := "pool-62299"
-	resourceConfig, err := testhelpers.RenderExample(t, "../../resources/instance/example.tf.tmpl",
-		"Name", name,
-		"InstanceType", instanceTypeID,
-		"ResourcePool", resourcePool,
-	)
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":         name,
+		"InstanceType": instanceTypeID,
+		"ResourcePool": resourcePool,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dataSourceConfigWithId, err := testhelpers.RenderExample(t,
+	dataSourceConfigWithID, err := testhelpers.RenderExample(t,
 		"example-id.tf.tmpl", "Id", "hpe_morpheus_instance.example.id")
 	if err != nil {
 		t.Fatal(err)
@@ -147,7 +149,7 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 				Config: providerConfig + resourceConfig,
 			},
 			{
-				Config: providerConfig + resourceConfig + dataSourceConfigWithId,
+				Config: providerConfig + resourceConfig + dataSourceConfigWithID,
 				Check:  checkFn,
 			},
 			{

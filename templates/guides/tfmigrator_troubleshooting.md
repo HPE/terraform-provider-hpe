@@ -25,7 +25,7 @@ terraform {
     }
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.2.0"
+      version = ">= 1.3.0"
     }
   }
 }
@@ -119,7 +119,7 @@ terraform {
     }
     hpe = {
       source  = "HPE/hpe"
-      version = "= 1.2.0"
+      version = ">= 1.3.0"
     }
   }
 }
