@@ -57,6 +57,8 @@ func NewClientForServer(ctx context.Context, preferredSystem string) (*sdk.APICl
 		}
 	}
 
+	tenantSubdomain, _ := LookupProviderEnv(preferredSystem, "tenant_subdomain")
+
 	_, insecure := LookupProviderEnv(preferredSystem, "insecure")
 	var opts []clientfactory.ClientOption
 	if insecure {
@@ -68,7 +70,7 @@ func NewClientForServer(ctx context.Context, preferredSystem string) (*sdk.APICl
 		url,
 		username,
 		password,
-		"",
+		tenantSubdomain,
 		token,
 		opts...,
 	)
