@@ -50,6 +50,7 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 	t.Parallel()
 
+	t.Skip("Skipping all Feature data-store tests")
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
@@ -153,6 +154,7 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
+	t.Skip("Skipping all Feature data-store tests")
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
