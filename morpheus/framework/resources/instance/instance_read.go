@@ -254,6 +254,14 @@ func getInstanceAsState(
 
 	state.NetworkInterfaces = networkInterfacesList
 
+	// network_domain_id
+	networkDomainId, ndiags := getInstanceNetworkId(instance, plan)
+	diags = append(diags, ndiags...)
+	if diags.HasError() {
+		return state, diags
+	}
+	state.NetworkDomainId = networkDomainId
+
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
 
@@ -311,6 +319,41 @@ func getInstanceAsState(
 	state.Volumes = volumes
 
 	return state, diags
+}
+
+func getInstanceNetworkId(
+	instance sdk.GetInstance200ResponseInstance,
+	plan InstanceModel,
+) (types.Int64, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// if this isn't an import, return the plan value
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		return plan.NetworkDomainId, diags
+	}
+
+	// on import, get the network domain id from the config in the API response
+	apiConfig, ok := instance.GetConfigOk()
+	if !ok {
+		diags.AddError(
+			"get network_domain_id",
+			fmt.Sprintf("instance %d config GET failed", instance.Id),
+		)
+
+		return types.Int64Null(), diags
+	}
+
+	networkDomain, ok := apiConfig.GetNetworkDomainOk()
+	if !ok {
+		return types.Int64Null(), diags
+	}
+
+	networkDomainId, ok := networkDomain.GetIdOk()
+	if !ok {
+		return types.Int64Null(), diags
+	}
+
+	return convert.Int64ToType(networkDomainId), diags
 }
 
 // getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances

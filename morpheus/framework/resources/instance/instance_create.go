@@ -241,6 +241,13 @@ func (g *Resource) Create(
 		reqInstance.Instance.SetName(plan.Name.ValueString())
 	}
 
+	// network_domain_id
+	if !plan.NetworkDomainId.IsNull() {
+		netDomain := sdk.NewAddInstanceRequestInstanceNetworkDomainWithDefaults()
+		netDomain.SetId(plan.NetworkDomainId.ValueInt64())
+		reqInstance.Instance.SetNetworkDomain(*netDomain)
+	}
+
 	// network_interfaces
 	networkInterfaces, diags := convert.FromListType(
 		ctx,
