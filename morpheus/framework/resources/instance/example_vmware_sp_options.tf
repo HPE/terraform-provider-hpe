@@ -28,6 +28,8 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
+  network_domain_id = 27
+
   service_plan_options = {
     max_cores = 2
     max_memory = 2048

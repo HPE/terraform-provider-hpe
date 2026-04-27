@@ -304,6 +304,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Name of the instance to be created.",
 				MarkdownDescription: "Name of the instance to be created.",
 			},
+			"network_domain_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "The Network Domain ID to provision the instance into.",
+				MarkdownDescription: "The Network Domain ID to provision the instance into.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
 			"network_interfaces": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -659,6 +667,7 @@ type InstanceModel struct {
 	LayoutId           types.Int64             `tfsdk:"layout_id"`
 	LayoutSize         types.Int64             `tfsdk:"layout_size"`
 	Name               types.String            `tfsdk:"name"`
+	NetworkDomainId    types.Int64             `tfsdk:"network_domain_id"`
 	NetworkInterfaces  types.List              `tfsdk:"network_interfaces"`
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
