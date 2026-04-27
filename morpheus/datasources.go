@@ -17,6 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
@@ -39,6 +40,7 @@ func (SubProvider) GetDataSources(
 		image.NewDataSource,
 		loadbalancer.NewDataSource,
 		network.NewDataSource,
+		networkdhcpserver.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,
