@@ -12,6 +12,8 @@ An OS type image maps a virtual image to an operating system type, optionally sc
 
 ~> All attributes on this resource force recreation when changed. There is no in-place update.
 
+~> When associating a virtual image with an OS type image, Morpheus will not automatically update the osType field of that virtual image with the `os_type_id` set in the os type image. It is therefore recommended you update the virtual image's `os_type_id` field using the provider BEFORE creating an os type image associated with that virtual image.
+
 ## Example Usage
 
 {{ tffile "examples/resources/morpheus_os_type_image/example.tf" }}

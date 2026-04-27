@@ -98,7 +98,7 @@ func (r *Resource) Create(
 
 	createdID := createResp.GetId()
 
-	state, diag := getOsTypeAsState(ctx, createdID, client, plan)
+	state, diag := getOsTypeAsState(ctx, createdID, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

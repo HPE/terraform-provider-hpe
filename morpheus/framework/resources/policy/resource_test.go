@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/provider"
@@ -165,7 +166,7 @@ func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockMixedForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	roleName := acctest.RandomWithPrefix(t.Name() + "-role")
 	userName := acctest.RandomWithPrefix(t.Name() + "-user")
@@ -202,13 +203,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + resourceConfig,

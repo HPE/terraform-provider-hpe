@@ -104,6 +104,13 @@ func getLoadBalancerAsState(
 			return state, fmt.Errorf("failed to convert resource permissions: %w", err)
 		}
 
+		// The API does not return per-group (site) assignments in the GET response,
+		// so preserve groups from plan/state. After import they will be null.
+		if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() &&
+			!plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
+			perms.Groups = plan.Permissions.Groups
+		}
+
 		state.Permissions = perms
 	} else {
 		state.Permissions = NewPermissionsValueNull()
@@ -129,16 +136,16 @@ func convertResourcePermissions(
 		}
 	}
 
-	var groupIDsSet attr.Value
+	var groupIDsList attr.Value
 	if len(groupIDValues) > 0 {
-		s, d := types.SetValue(types.Int64Type, groupIDValues)
+		l, d := types.ListValue(types.Int64Type, groupIDValues)
 		if d.HasError() {
-			return PermissionsValue{}, fmt.Errorf("failed to build groups set: %s", d.Errors())
+			return PermissionsValue{}, fmt.Errorf("failed to build groups list: %s", d.Errors())
 		}
 
-		groupIDsSet = s
+		groupIDsList = l
 	} else {
-		groupIDsSet = types.SetNull(types.Int64Type)
+		groupIDsList = types.ListNull(types.Int64Type)
 	}
 
 	perms, d := NewPermissionsValue(
@@ -148,7 +155,7 @@ func convertResourcePermissions(
 				resourcePermission.All != nil &&
 					*resourcePermission.All,
 			),
-			"groups": groupIDsSet,
+			"groups": groupIDsList,
 		},
 	)
 	if d.HasError() {

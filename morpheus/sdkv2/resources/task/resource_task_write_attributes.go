@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceTaskWriteAttributes() *schema.Resource {
@@ -84,6 +85,13 @@ func ResourceTaskWriteAttributes() *schema.Resource {
 				Description: "Custom configuration data to pass during the execution of the write attributes task",
 				Optional:    true,
 				Computed:    true,
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the task (private or public)",
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+				Optional:     true,
+				Default:      "private",
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -173,6 +181,13 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -182,6 +197,7 @@ func resourceTaskWriteAttributesCreate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,
@@ -286,6 +302,7 @@ func resourceTaskWriteAttributesRead(ctx context.Context, d *schema.ResourceData
 	d.Set("retry_count", writeAttributesTask.RetryCount)
 	d.Set("retry_delay_seconds", writeAttributesTask.RetryDelaySeconds)
 	d.Set("allow_custom_config", writeAttributesTask.AllowCustomConfig)
+	d.Set("visibility", writeAttributesTask.Visibility)
 
 	return diags
 }
@@ -370,6 +387,13 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(helpers.TypeAssertFailError("allow_custom_config", d.Get("allow_custom_config")))
 	}
 
+	var visibility string
+	if visibilityValue, ok := d.Get("visibility").(string); ok {
+		visibility = visibilityValue
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"task": map[string]any{
@@ -379,6 +403,7 @@ func resourceTaskWriteAttributesUpdate(ctx context.Context, d *schema.ResourceDa
 				"taskType":          taskType,
 				"taskOptions":       taskOptions,
 				"executeTarget":     "local",
+				"visibility":        visibility,
 				"retryable":         retryable,
 				"retryCount":        retryCount,
 				"retryDelaySeconds": retryDelaySeconds,

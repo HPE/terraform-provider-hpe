@@ -67,7 +67,6 @@ func populateClusterData(
 	data.Id = convert.Int64ToType(cluster.Id)
 	data.Uuid = convert.StrToType(cluster.Uuid)
 	data.Name = convert.StrToType(cluster.Name)
-	data.Code = convert.StrToType(cluster.Code.Get())
 	data.Category = convert.StrToType(cluster.Category.Get())
 	data.Visibility = convert.StrToType(cluster.Visibility)
 	data.Description = convert.StrToType(cluster.Description.Get())

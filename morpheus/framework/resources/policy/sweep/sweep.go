@@ -13,9 +13,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// Policies whose name begins with this string will be eligible for deletion
-const testPolicyPrefix = "TestAccMorpheusPolicy"
-
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		"hpe_morpheus_policy",
@@ -39,7 +36,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testPolicyPrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test policy.
 		func(

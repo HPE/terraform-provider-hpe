@@ -184,6 +184,8 @@ func setUpdatePermissions(
 
 	if !plan.Permissions.All.IsNull() && !plan.Permissions.All.IsUnknown() {
 		perms.SetAll(plan.Permissions.All.ValueBool())
+	} else if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
+		perms.SetAll(false)
 	}
 
 	if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {

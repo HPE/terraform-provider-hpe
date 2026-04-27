@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
@@ -25,7 +27,7 @@ func TestAccMorpheusRoleUserUpdateAllAttrsOk(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"
@@ -35,25 +37,25 @@ resource "hpe_morpheus_group" "testacc_group" {
   name = "` + name + `"
 }
 
-resource "morpheus_terraform_app_blueprint" "testacc_blueprint" {
+resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
   name = "` + name + `"
   source_type = "hcl"
   spec_template_ids = [] # not a required field, but if we don't include it this will be computed
 }
 
-resource "morpheus_instance_type" "testacc_instance_type" {
+resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
   visibility = "public"
   category = "cloud"
 }
 
-resource "morpheus_groovy_script_task" "testacc_task" {
+resource "hpe_morpheus_task_groovy_script" "testacc_task" {
   name = "` + name + `"
   source_type = "local"
 }
 
-resource "morpheus_operational_workflow" "testacc_workflow" {
+resource "hpe_morpheus_workflow_operational" "testacc_workflow" {
   name = "` + name + `"
 }
 `
@@ -63,20 +65,20 @@ data "hpe_morpheus_group" "testacc_group" {
   name = hpe_morpheus_group.testacc_group.name
 }
 
-data "morpheus_blueprint" "testacc_blueprint" {
-  name = morpheus_terraform_app_blueprint.testacc_blueprint.name
+data "hpe_morpheus_blueprint" "testacc_blueprint" {
+  name = hpe_morpheus_app_blueprint_terraform.testacc_blueprint.name
 }
 
-data "morpheus_instance_type" "testacc_instance_type" {
-  name = morpheus_instance_type.testacc_instance_type.name
+data "hpe_morpheus_instance_type" "testacc_instance_type" {
+  name = hpe_morpheus_instance_type.testacc_instance_type.name
 }
 
-data "morpheus_task" "testacc_task" {
-  name = morpheus_groovy_script_task.testacc_task.name
+data "hpe_morpheus_task" "testacc_task" {
+  name = hpe_morpheus_task_groovy_script.testacc_task.name
 }
 
-data "morpheus_workflow" "testacc_workflow" {
-  name = morpheus_operational_workflow.testacc_workflow.name
+data "hpe_morpheus_workflow" "testacc_workflow" {
+  name = hpe_morpheus_workflow_operational.testacc_workflow.name
 }
 
 resource "hpe_morpheus_role" "update_test" {
@@ -111,13 +113,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	blueprint_permissions = [
 	  {
-		id     = data.morpheus_blueprint.testacc_blueprint.id
+		id     = data.hpe_morpheus_blueprint.testacc_blueprint.id
 		access = "none"
 	  }
 	]
 	instance_type_permissions = [
 	  {
-		id     = data.morpheus_instance_type.testacc_instance_type.id
+		id     = data.hpe_morpheus_instance_type.testacc_instance_type.id
 		access = "none"
 	  }
 	]
@@ -135,13 +137,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	task_permissions = [
 	  {
-		id     = data.morpheus_task.testacc_task.id
+		id     = data.hpe_morpheus_task.testacc_task.id
 		access = "none"
 	  }
 	]
 	workflow_permissions = [
 	  {
-		id     = data.morpheus_workflow.testacc_workflow.id
+		id     = data.hpe_morpheus_workflow.testacc_workflow.id
 		access = "none"
 	  }
 	]
@@ -155,20 +157,20 @@ data "hpe_morpheus_group" "testacc_group" {
   name = hpe_morpheus_group.testacc_group.name
 }
 
-data "morpheus_blueprint" "testacc_blueprint" {
-  name = morpheus_terraform_app_blueprint.testacc_blueprint.name
+data "hpe_morpheus_blueprint" "testacc_blueprint" {
+  name = hpe_morpheus_app_blueprint_terraform.testacc_blueprint.name
 }
 
-data "morpheus_instance_type" "testacc_instance_type" {
-  name = morpheus_instance_type.testacc_instance_type.name
+data "hpe_morpheus_instance_type" "testacc_instance_type" {
+  name = hpe_morpheus_instance_type.testacc_instance_type.name
 }
 
-data "morpheus_task" "testacc_task" {
-  name = morpheus_groovy_script_task.testacc_task.name
+data "hpe_morpheus_task" "testacc_task" {
+  name = hpe_morpheus_task_groovy_script.testacc_task.name
 }
 
-data "morpheus_workflow" "testacc_workflow" {
-  name = morpheus_operational_workflow.testacc_workflow.name
+data "hpe_morpheus_workflow" "testacc_workflow" {
+  name = hpe_morpheus_workflow_operational.testacc_workflow.name
 }
 
 resource "hpe_morpheus_role" "update_test" {
@@ -202,13 +204,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	blueprint_permissions = [
 	  {
-		id     = data.morpheus_blueprint.testacc_blueprint.id
+		id     = data.hpe_morpheus_blueprint.testacc_blueprint.id
 		access = "full"
 	  }
 	]
 	instance_type_permissions = [
 	  {
-		id     = data.morpheus_instance_type.testacc_instance_type.id
+		id     = data.hpe_morpheus_instance_type.testacc_instance_type.id
 		access = "full"
 	  }
 	]
@@ -226,13 +228,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	task_permissions = [
 	  {
-		id     = data.morpheus_task.testacc_task.id
+		id     = data.hpe_morpheus_task.testacc_task.id
 		access = "full"
 	  }
 	]
 	workflow_permissions = [
 	  {
-		id     = data.morpheus_workflow.testacc_workflow.id
+		id     = data.hpe_morpheus_workflow.testacc_workflow.id
 		access = "full"
 	  }
 	]
@@ -370,7 +372,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.blueprint_permissions.0.id",
-			"data.morpheus_blueprint.testacc_blueprint",
+			"data.hpe_morpheus_blueprint.testacc_blueprint",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -387,7 +389,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.instance_type_permissions.0.id",
-			"data.morpheus_instance_type.testacc_instance_type",
+			"data.hpe_morpheus_instance_type.testacc_instance_type",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -436,7 +438,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.task_permissions.0.id",
-			"data.morpheus_task.testacc_task",
+			"data.hpe_morpheus_task.testacc_task",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -453,7 +455,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.workflow_permissions.0.id",
-			"data.morpheus_workflow.testacc_workflow",
+			"data.hpe_morpheus_workflow.testacc_workflow",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -583,7 +585,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.blueprint_permissions.0.id",
-			"data.morpheus_blueprint.testacc_blueprint",
+			"data.hpe_morpheus_blueprint.testacc_blueprint",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -600,7 +602,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.instance_type_permissions.0.id",
-			"data.morpheus_instance_type.testacc_instance_type",
+			"data.hpe_morpheus_instance_type.testacc_instance_type",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -649,7 +651,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.task_permissions.0.id",
-			"data.morpheus_task.testacc_task",
+			"data.hpe_morpheus_task.testacc_task",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -666,7 +668,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.workflow_permissions.0.id",
-			"data.morpheus_workflow.testacc_workflow",
+			"data.hpe_morpheus_workflow.testacc_workflow",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -719,13 +721,7 @@ resource "hpe_morpheus_role" "update_test" {
 	removedPermissionsCheckFn := resource.ComposeAggregateTestCheckFunc(removedPermissionsChecks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Create dependencies
 			{
@@ -808,61 +804,63 @@ func TestAccMorpheusRoleTenantUpdateAllAttrsOk(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	providerConfig := testhelpers.ProviderBlockMixed()
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"
 
 	dependencyResourceConfig := `
-resource "morpheus_standard_cloud" "testacc_cloud" {
+resource "hpe_morpheus_cloud" "testacc_cloud" {
   name = "` + name + `"
-  code = "standard"
   tenant_id = 1
   visibility = "public"
+  config_hvm = {
+    "enable_network_type_selection" = true
+  }
 }
 
-resource "morpheus_terraform_app_blueprint" "testacc_blueprint" {
+resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
   name = "` + name + `"
   source_type = "hcl"
   spec_template_ids = [] # not a required field, but if we don't include it this will be computed
 }
 
-resource "morpheus_instance_type" "testacc_instance_type" {
+resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
   visibility = "public"
   category = "cloud"
 }
 
-resource "morpheus_groovy_script_task" "testacc_task" {
+resource "hpe_morpheus_task_groovy_script" "testacc_task" {
   name = "` + name + `"
   source_type = "local"
 }
 
-resource "morpheus_operational_workflow" "testacc_workflow" {
+resource "hpe_morpheus_workflow_operational" "testacc_workflow" {
   name = "` + name + `"
 }
 `
 	// Initial configuration
 	initialResourceConfig := `
-data "morpheus_cloud" "testacc_cloud" {
-  name = morpheus_standard_cloud.testacc_cloud.name
+data "hpe_morpheus_cloud" "testacc_cloud" {
+  name = hpe_morpheus_cloud.testacc_cloud.name
 }
 
-data "morpheus_blueprint" "testacc_blueprint" {
-  name = morpheus_terraform_app_blueprint.testacc_blueprint.name
+data "hpe_morpheus_blueprint" "testacc_blueprint" {
+  name = hpe_morpheus_app_blueprint_terraform.testacc_blueprint.name
 }
 
-data "morpheus_instance_type" "testacc_instance_type" {
-  name = morpheus_instance_type.testacc_instance_type.name
+data "hpe_morpheus_instance_type" "testacc_instance_type" {
+  name = hpe_morpheus_instance_type.testacc_instance_type.name
 }
 
-data "morpheus_task" "testacc_task" {
-  name = morpheus_groovy_script_task.testacc_task.name
+data "hpe_morpheus_task" "testacc_task" {
+  name = hpe_morpheus_task_groovy_script.testacc_task.name
 }
 
-data "morpheus_workflow" "testacc_workflow" {
-  name = morpheus_operational_workflow.testacc_workflow.name
+data "hpe_morpheus_workflow" "testacc_workflow" {
+  name = hpe_morpheus_workflow_operational.testacc_workflow.name
 }
 
 resource "hpe_morpheus_role" "update_test" {
@@ -889,19 +887,19 @@ resource "hpe_morpheus_role" "update_test" {
 	# test specific permission types
 	cloud_permissions = [
 	  {
-		id     = data.morpheus_cloud.testacc_cloud.id
+		id     = data.hpe_morpheus_cloud.testacc_cloud.id
 		access = "none"
 	  }
 	]
 	blueprint_permissions = [
 	  {
-		id     = data.morpheus_blueprint.testacc_blueprint.id
+		id     = data.hpe_morpheus_blueprint.testacc_blueprint.id
 		access = "none"
 	  }
 	]
 	instance_type_permissions = [
 	  {
-		id     = data.morpheus_instance_type.testacc_instance_type.id
+		id     = data.hpe_morpheus_instance_type.testacc_instance_type.id
 		access = "none"
 	  }
 	]
@@ -919,13 +917,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	task_permissions = [
 	  {
-		id     = data.morpheus_task.testacc_task.id
+		id     = data.hpe_morpheus_task.testacc_task.id
 		access = "none"
 	  }
 	]
 	workflow_permissions = [
 	  {
-		id     = data.morpheus_workflow.testacc_workflow.id
+		id     = data.hpe_morpheus_workflow.testacc_workflow.id
 		access = "none"
 	  }
 	]
@@ -935,24 +933,24 @@ resource "hpe_morpheus_role" "update_test" {
 
 	// Updated configuration
 	updatedResourceConfig := `
-data "morpheus_cloud" "testacc_cloud" {
-  name = morpheus_standard_cloud.testacc_cloud.name
+data "hpe_morpheus_cloud" "testacc_cloud" {
+  name = hpe_morpheus_cloud.testacc_cloud.name
 }
 
-data "morpheus_blueprint" "testacc_blueprint" {
-  name = morpheus_terraform_app_blueprint.testacc_blueprint.name
+data "hpe_morpheus_blueprint" "testacc_blueprint" {
+  name = hpe_morpheus_app_blueprint_terraform.testacc_blueprint.name
 }
 
-data "morpheus_instance_type" "testacc_instance_type" {
-  name = morpheus_instance_type.testacc_instance_type.name
+data "hpe_morpheus_instance_type" "testacc_instance_type" {
+  name = hpe_morpheus_instance_type.testacc_instance_type.name
 }
 
-data "morpheus_task" "testacc_task" {
-  name = morpheus_groovy_script_task.testacc_task.name
+data "hpe_morpheus_task" "testacc_task" {
+  name = hpe_morpheus_task_groovy_script.testacc_task.name
 }
 
-data "morpheus_workflow" "testacc_workflow" {
-  name = morpheus_operational_workflow.testacc_workflow.name
+data "hpe_morpheus_workflow" "testacc_workflow" {
+  name = hpe_morpheus_workflow_operational.testacc_workflow.name
 }
 
 resource "hpe_morpheus_role" "update_test" {
@@ -978,19 +976,19 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	cloud_permissions = [
 	  {
-		id     = data.morpheus_cloud.testacc_cloud.id
+		id     = data.hpe_morpheus_cloud.testacc_cloud.id
 		access = "full"
 	  }
 	]
 	blueprint_permissions = [
 	  {
-		id     = data.morpheus_blueprint.testacc_blueprint.id
+		id     = data.hpe_morpheus_blueprint.testacc_blueprint.id
 		access = "full"
 	  }
 	]
 	instance_type_permissions = [
 	  {
-		id     = data.morpheus_instance_type.testacc_instance_type.id
+		id     = data.hpe_morpheus_instance_type.testacc_instance_type.id
 		access = "full"
 	  }
 	]
@@ -1008,13 +1006,13 @@ resource "hpe_morpheus_role" "update_test" {
 	]
 	task_permissions = [
 	  {
-		id     = data.morpheus_task.testacc_task.id
+		id     = data.hpe_morpheus_task.testacc_task.id
 		access = "full"
 	  }
 	]
 	workflow_permissions = [
 	  {
-		id     = data.morpheus_workflow.testacc_workflow.id
+		id     = data.hpe_morpheus_workflow.testacc_workflow.id
 		access = "full"
 	  }
 	]
@@ -1138,7 +1136,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.cloud_permissions.0.id",
-			"data.morpheus_cloud.testacc_cloud",
+			"data.hpe_morpheus_cloud.testacc_cloud",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1155,7 +1153,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.blueprint_permissions.0.id",
-			"data.morpheus_blueprint.testacc_blueprint",
+			"data.hpe_morpheus_blueprint.testacc_blueprint",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1172,7 +1170,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.instance_type_permissions.0.id",
-			"data.morpheus_instance_type.testacc_instance_type",
+			"data.hpe_morpheus_instance_type.testacc_instance_type",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1221,7 +1219,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.task_permissions.0.id",
-			"data.morpheus_task.testacc_task",
+			"data.hpe_morpheus_task.testacc_task",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1238,7 +1236,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.workflow_permissions.0.id",
-			"data.morpheus_workflow.testacc_workflow",
+			"data.hpe_morpheus_workflow.testacc_workflow",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1356,7 +1354,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.cloud_permissions.0.id",
-			"data.morpheus_cloud.testacc_cloud",
+			"data.hpe_morpheus_cloud.testacc_cloud",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1373,7 +1371,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.blueprint_permissions.0.id",
-			"data.morpheus_blueprint.testacc_blueprint",
+			"data.hpe_morpheus_blueprint.testacc_blueprint",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1390,7 +1388,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.instance_type_permissions.0.id",
-			"data.morpheus_instance_type.testacc_instance_type",
+			"data.hpe_morpheus_instance_type.testacc_instance_type",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1439,7 +1437,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.task_permissions.0.id",
-			"data.morpheus_task.testacc_task",
+			"data.hpe_morpheus_task.testacc_task",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1456,7 +1454,7 @@ resource "hpe_morpheus_role" "update_test" {
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_role.update_test",
 			"permissions.workflow_permissions.0.id",
-			"data.morpheus_workflow.testacc_workflow",
+			"data.hpe_morpheus_workflow.testacc_workflow",
 			"id",
 		),
 		resource.TestCheckResourceAttr(
@@ -1509,13 +1507,7 @@ resource "hpe_morpheus_role" "update_test" {
 	removedPermissionsCheckFn := resource.ComposeAggregateTestCheckFunc(removedPermissionsChecks...)
 
 	resource.Test(t, resource.TestCase{
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"morpheus": {
-				Source:            "gomorpheus/morpheus",
-				VersionConstraint: "0.13.2",
-			},
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Create dependencies
 			{

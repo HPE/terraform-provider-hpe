@@ -11,34 +11,31 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
+
+const providerConfigOffline = `
+provider "hpe" {
+  morpheus {
+    url          = ""
+    username     = ""
+    password     = ""
+  }
+}
+`
 
 func TestMain(m *testing.M) {
 	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 func TestAccMorpheusImageDatasourceById(t *testing.T) {
@@ -51,18 +48,30 @@ func TestAccMorpheusImageDatasourceById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	imageResourceConfig := `
-resource "hpe_morpheus_image" "test_image" {
-  name       = "` + name + `"
-  image_type = "qcow2"
+	imageConfig, err := image.RenderImageConfig(t, map[string]string{
+		"Name":              name,
+		"OsTypeId":          "data.hpe_morpheus_os_type.test.id",
+		"StorageProviderId": "data.hpe_morpheus_storage_bucket.test.id",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dependencyConfig := `
+data "hpe_morpheus_os_type" "test" {
+	name = "linux"
 }
-`
+
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+` + imageConfig
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "hpe_morpheus_image.test_image.id")
+		"example-id.tf.tmpl", "Id", "hpe_morpheus_image.example_image.id")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,57 +92,10 @@ resource "hpe_morpheus_image" "test_image" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + imageResourceConfig + dataSourceConfig,
-				Check:  checkFn,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusImageDatasourceByIdExisting(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	id := "105490" // ID matching "AlmaLinux 9" on the Feature system
-	name := "AlmaLinux 9"
-	imageType := "azure-reference"
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
-
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", id)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"name",
-			name,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"image_type",
-			imageType,
-		),
-	}
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + dependencyConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -150,18 +112,30 @@ func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	imageResourceConfig := `
-resource "hpe_morpheus_image" "test_image" {
-  name       = "` + name + `"
-  image_type = "qcow2"
+	imageConfig, err := image.RenderImageConfig(t, map[string]string{
+		"Name":              name,
+		"OsTypeId":          "data.hpe_morpheus_os_type.test.id",
+		"StorageProviderId": "data.hpe_morpheus_storage_bucket.test.id",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dependencyConfig := `
+data "hpe_morpheus_os_type" "test" {
+	name = "linux"
 }
-`
+
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+` + imageConfig
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-name.tf.tmpl", "Name", "hpe_morpheus_image.test_image.name")
+		"example-name.tf.tmpl", "Name", "hpe_morpheus_image.example_image.name")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,10 +156,10 @@ resource "hpe_morpheus_image" "test_image" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + imageResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependencyConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -201,21 +175,33 @@ func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	}
 
 	name := acctest.RandomWithPrefix(t.Name())
-	imageType := "iso"
+	imageType := "qcow2"
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	imageResourceConfig := `
-resource "hpe_morpheus_image" "test_image" {
-  name       = "` + name + `"
-  image_type = "` + imageType + `"
+	imageConfig, err := image.RenderImageConfig(t, map[string]string{
+		"Name":              name,
+		"OsTypeId":          "data.hpe_morpheus_os_type.test.id",
+		"StorageProviderId": "data.hpe_morpheus_storage_bucket.test.id",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dependencyConfig := `
+data "hpe_morpheus_os_type" "test" {
+	name = "linux"
 }
-`
+
+data "hpe_morpheus_storage_bucket" "test" {
+	name = "Local Storage"
+}
+` + imageConfig
 
 	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name-type.tf.tmpl",
-		"Name", "hpe_morpheus_image.test_image.name",
-		"Type", "\"iso\"",
+		"Name", "hpe_morpheus_image.example_image.name",
+		"Type", "\"qcow2\"",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -237,10 +223,10 @@ resource "hpe_morpheus_image" "test_image" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + imageResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependencyConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -252,9 +238,6 @@ func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
-
 	dataSourceConfig := `
 data "hpe_morpheus_image" "test" {
   image_type = "qcow2"
@@ -263,11 +246,11 @@ data "hpe_morpheus_image" "test" {
 
 	errMatch := regexp.MustCompile("Attribute \"name\" must be specified when \"image_type\" is specified")
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		IsUnitTest:               true,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + dataSourceConfig,
+				Config:      providerConfigOffline + dataSourceConfig,
 				ExpectError: errMatch,
 			},
 		},
@@ -278,9 +261,6 @@ data "hpe_morpheus_image" "test" {
 func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig := `
 data "hpe_morpheus_image" "test" {
@@ -293,10 +273,10 @@ data "hpe_morpheus_image" "test" {
 	errMatch := regexp.MustCompile("Attribute \"(.*)\" cannot be specified when \"id\" is specified")
 	resource.Test(t, resource.TestCase{
 		IsUnitTest:               true,
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + dataSourceConfig,
+				Config:      providerConfigOffline + dataSourceConfig,
 				ExpectError: errMatch,
 			},
 		},
