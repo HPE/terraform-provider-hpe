@@ -92,10 +92,16 @@ func (r *Resource) Update(
 			IfOperationalWorkflowId.ValueInt64Pointer()
 		conditionalWorkflow.IfOperationalWorkflowName = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowName.ValueStringPointer()
-		conditionalWorkflow.ElseOperationalWorkflowId = plan.ConfigConditionalWorkflow.
-			ElseOperationalWorkflowId.ValueInt64Pointer()
-		conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
-			ElseOperationalWorkflowName.ValueStringPointer()
+		if !plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsNull() &&
+			!plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsUnknown() {
+			conditionalWorkflow.ElseOperationalWorkflowId = plan.ConfigConditionalWorkflow.
+				ElseOperationalWorkflowId.ValueInt64Pointer()
+		}
+		if !plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsNull() &&
+			!plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsUnknown() {
+			conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
+				ElseOperationalWorkflowName.ValueStringPointer()
+		}
 
 		taskOptions.ConditionalWorkflowTaskConfig3 = conditionalWorkflow
 	}

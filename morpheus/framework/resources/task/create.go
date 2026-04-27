@@ -82,11 +82,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		conditionalWorkflow.IfOperationalWorkflowName = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowName.ValueStringPointer()
 
-		conditionalWorkflow.ElseOperationalWorkflowId = plan.ConfigConditionalWorkflow.
-			ElseOperationalWorkflowId.ValueInt64Pointer()
+		if !plan.ConfigConditionalWorkflow.ElseOperationalWorkflowId.IsNull() &&
+			!plan.ConfigConditionalWorkflow.ElseOperationalWorkflowId.IsUnknown() {
+			conditionalWorkflow.ElseOperationalWorkflowId = plan.ConfigConditionalWorkflow.
+				ElseOperationalWorkflowId.ValueInt64Pointer()
+		}
 
-		conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
-			ElseOperationalWorkflowName.ValueStringPointer()
+		if !plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsNull() &&
+			!plan.ConfigConditionalWorkflow.ElseOperationalWorkflowName.IsUnknown() {
+			conditionalWorkflow.ElseOperationalWorkflowName = plan.ConfigConditionalWorkflow.
+				ElseOperationalWorkflowName.ValueStringPointer()
+		}
 
 		taskOptions.ConditionalWorkflowTaskConfig = conditionalWorkflow
 
