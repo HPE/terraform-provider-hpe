@@ -107,6 +107,84 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 	})
 }
 
+func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerDynamicConfig(t,
+		map[string]string{
+			"Name": name,
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_dhcp_server.dynamic_example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_dhcp_server.dynamic_example",
+			"server_ip_address",
+			"192.168.1.1/24",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_dhcp_server.dynamic_example",
+			"lease_time",
+			"86400",
+		),
+		resource.TestCheckResourceAttrSet(
+			"hpe_morpheus_network_dhcp_server.dynamic_example",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
+			t, morpheus.New(), nil,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+				PlanOnly:           false,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"config", "config_nsx"},
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_dhcp_server.dynamic_example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["network_server_id"] +
+						":" + rs.Primary.Attributes["id"], nil
+				},
+				ResourceName: "hpe_morpheus_network_dhcp_server.dynamic_example",
+				Check:        checkFn,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusNetworkDhcpServerUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 

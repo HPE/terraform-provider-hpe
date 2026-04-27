@@ -52,7 +52,7 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ConfigNsxValue{}.AttributeTypes(ctx),
 					},
 				},
-				Required:            true,
+				Optional:            true,
 				Description:         "Configuration object with parameters that vary by type",
 				MarkdownDescription: "Configuration object with parameters that vary by type",
 			},

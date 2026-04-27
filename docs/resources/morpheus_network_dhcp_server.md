@@ -30,7 +30,6 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 
 ### Required
 
-- `config_nsx` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsx))
 - `name` (String) Name
 - `network_server_id` (Number) The ID of the network server this DHCP server belongs to
 - `server_ip_address` (String) Server address for the DHCP server
@@ -38,6 +37,7 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 ### Optional
 
 - `config` (Dynamic) Generic DHCP Server Configuration
+- `config_nsx` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsx))
 - `lease_time` (Number) Lease time in seconds for the DHCP server
 
 ### Read-Only
