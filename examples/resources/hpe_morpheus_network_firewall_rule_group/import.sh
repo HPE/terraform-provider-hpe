@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_network_firewall_rule_group.example 128:1

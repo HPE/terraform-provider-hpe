@@ -84,8 +84,9 @@ func getNetworkFirewallRuleGroupAsState(
 		state.Description = types.StringNull()
 	}
 
-	// network_server_id is not returned in the GET response; preserve from prior state.
+	// network_server_id and external_type are not returned in the GET response; preserve from prior state.
 	state.NetworkServerId = prior.NetworkServerId
+	state.ExternalType = prior.ExternalType
 
 	return state, diags
 }

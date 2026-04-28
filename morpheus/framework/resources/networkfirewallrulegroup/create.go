@@ -28,14 +28,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Write-only attributes are not in the plan, read from config
-	var config NetworkFirewallRuleGroupModel
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -47,7 +39,7 @@ func (r *Resource) Create(
 
 	ruleGroup := sdk.NewCreateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
 	ruleGroup.SetName(name)
-	ruleGroup.SetExternalType(config.ExternalType.ValueString())
+	ruleGroup.SetExternalType(plan.ExternalType.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		ruleGroup.SetDescription(plan.Description.ValueString())

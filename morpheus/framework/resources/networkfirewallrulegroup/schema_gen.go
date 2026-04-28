@@ -23,7 +23,6 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"external_type": schema.StringAttribute{
 				Required:            true,
-				WriteOnly:           true,
 				Description:         "The external type of the firewall rule group (e.g. SecurityPolicy)",
 				MarkdownDescription: "The external type of the firewall rule group (e.g. SecurityPolicy)",
 				PlanModifiers: []planmodifier.String{
