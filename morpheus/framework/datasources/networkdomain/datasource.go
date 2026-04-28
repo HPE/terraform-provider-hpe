@@ -21,11 +21,11 @@ import (
 )
 
 const (
-	summary                      = "read network domain data source"
-	ErrorNoValidSearchTerms      = `no valid search terms - an id or name is required`
-	ErrorRunningPreApply         = `Error running pre-apply plan: exit status 1`
-	ErrorNoNetworkDomainFound    = `no network domain found`
-	ErrorMultipleNetworkDomains  = `multiple network domains were returned`
+	summary                     = "read network domain data source"
+	ErrorNoValidSearchTerms     = `no valid search terms - an id or name is required`
+	ErrorRunningPreApply        = `Error running pre-apply plan: exit status 1`
+	ErrorNoNetworkDomainFound   = `no network domain found`
+	ErrorMultipleNetworkDomains = `multiple network domains were returned`
 )
 
 // Ensure the implementation satisfies the expected interfaces.
