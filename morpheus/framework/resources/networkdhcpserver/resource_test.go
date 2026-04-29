@@ -88,9 +88,8 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"config", "config_nsx"},
+				ImportState:       true,
+				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_dhcp_server.example"]
 					if !ok {
@@ -166,9 +165,7 @@ func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"config", "config_nsx"},
+				ImportState: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_dhcp_server.dynamic_example"]
 					if !ok {
@@ -179,7 +176,34 @@ func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
 						":" + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_dhcp_server.dynamic_example",
-				Check:        checkFn,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network_dhcp_server.dynamic_example",
+						"name",
+						name,
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network_dhcp_server.dynamic_example",
+						"server_ip_address",
+						"192.168.1.1/24",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network_dhcp_server.dynamic_example",
+						"lease_time",
+						"86400",
+					),
+					resource.TestCheckResourceAttrSet(
+						"hpe_morpheus_network_dhcp_server.dynamic_example",
+						"id",
+					),
+					// Import auto-detects NSX config and populates config_nsx
+					// instead of the dynamic config attribute.
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network_dhcp_server.dynamic_example",
+						"config_nsx.edge_cluster",
+						"qa-edge-cluster-01",
+					),
+				),
 			},
 		},
 	})

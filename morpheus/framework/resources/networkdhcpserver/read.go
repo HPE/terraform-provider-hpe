@@ -30,7 +30,7 @@ type dhcpServerReadPayload struct {
 }
 
 type dhcpServerNetworkServerRef struct {
-	Id *float64 `json:"id"`
+	Id *int64 `json:"id"`
 }
 
 func getNetworkDhcpServerAsState(
@@ -105,54 +105,181 @@ func getNetworkDhcpServerAsState(
 	}
 
 	if payload.NetworkServer != nil && payload.NetworkServer.Id != nil {
-		state.NetworkServerId = types.Int64Value(int64(*payload.NetworkServer.Id))
+		state.NetworkServerId = types.Int64Value(*payload.NetworkServer.Id)
 	} else {
 		// Some API versions do not include networkServer in this response.
 		state.NetworkServerId = plan.NetworkServerId
 	}
 
-	state.Config = types.DynamicNull()
-	state.ConfigNsx = NewConfigNsxValueNull()
-
-	switch {
-	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
-		edgeCluster := types.StringNull()
-		activeEdgeNode := types.StringNull()
-		standbyEdgeNode := types.StringNull()
-
-		if len(payload.Config) > 0 {
-			var nsxCfg sdk.NetworkDhcpServerConfigNSX
-			if err := json.Unmarshal(payload.Config, &nsxCfg); err == nil {
-				edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
-				activeEdgeNode = convert.StrToType(
-					nsxCfg.PreferredEdgeNode1.Get(),
-				)
-				standbyEdgeNode = convert.StrToType(
-					nsxCfg.PreferredEdgeNode2.Get(),
-				)
-			}
-		}
-
-		nsxValue, nsxDiags := NewConfigNsxValue(
-			ConfigNsxValue{}.AttributeTypes(ctx),
-			map[string]attr.Value{
-				"edge_cluster":      edgeCluster,
-				"active_edge_node":  activeEdgeNode,
-				"standby_edge_node": standbyEdgeNode,
-			},
-		)
-		if nsxDiags.HasError() {
-			diags.Append(nsxDiags...)
-
-			return state, diags
-		}
-
-		state.ConfigNsx = nsxValue
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		state.Config = plan.Config
+	configState, cfgDiags := resolveConfigState(ctx, id, payload.Config, plan)
+	diags.Append(cfgDiags...)
+	if diags.HasError() {
+		return state, diags
 	}
 
+	state.Config = configState.config
+	state.ConfigNsx = configState.configNsx
+
 	return state, diags
+}
+
+type configResult struct {
+	config    types.Dynamic
+	configNsx ConfigNsxValue
+}
+
+// resolveConfigState determines whether the API response contains NSX config
+// or generic config and returns the appropriate Terraform state values.
+//
+// When the plan already indicates which variant the user wrote (config_nsx vs
+// config), we honour that. During import neither field is set, so we
+// auto-detect by attempting an NSX unmarshal first.
+func resolveConfigState(
+	ctx context.Context,
+	id int64,
+	rawConfig json.RawMessage,
+	plan NetworkDhcpServerModel,
+) (configResult, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	planHasNsx := !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown()
+	planHasDynamic := !plan.Config.IsNull() && !plan.Config.IsUnknown()
+
+	switch {
+	case planHasNsx:
+		nsx, nsxDiags := buildNsxConfigValue(ctx, id, rawConfig)
+		diags.Append(nsxDiags...)
+
+		return configResult{
+			config:    types.DynamicNull(),
+			configNsx: nsx,
+		}, diags
+
+	case planHasDynamic:
+		return configResult{
+			config:    plan.Config,
+			configNsx: NewConfigNsxValueNull(),
+		}, diags
+
+	default:
+		// Import path: no plan context — auto-detect from API response.
+		return detectConfigFromResponse(ctx, id, rawConfig)
+	}
+}
+
+// buildNsxConfigValue unmarshals raw config JSON into a ConfigNsxValue.
+func buildNsxConfigValue(
+	ctx context.Context,
+	id int64,
+	rawConfig json.RawMessage,
+) (ConfigNsxValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	edgeCluster := types.StringNull()
+	activeEdgeNode := types.StringNull()
+	standbyEdgeNode := types.StringNull()
+
+	if len(rawConfig) > 0 {
+		var nsxCfg sdk.NetworkDhcpServerConfigNSX
+		if err := json.Unmarshal(rawConfig, &nsxCfg); err != nil {
+			diags.AddWarning(
+				"populate network dhcp server resource",
+				fmt.Sprintf(
+					"network dhcp server %d: failed to unmarshal NSX config: %s",
+					id, err,
+				),
+			)
+		} else {
+			edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
+			activeEdgeNode = convert.StrToType(
+				nsxCfg.PreferredEdgeNode1.Get(),
+			)
+			standbyEdgeNode = convert.StrToType(
+				nsxCfg.PreferredEdgeNode2.Get(),
+			)
+		}
+	}
+
+	nsxValue, nsxDiags := NewConfigNsxValue(
+		ConfigNsxValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"edge_cluster":      edgeCluster,
+			"active_edge_node":  activeEdgeNode,
+			"standby_edge_node": standbyEdgeNode,
+		},
+	)
+	diags.Append(nsxDiags...)
+
+	return nsxValue, diags
+}
+
+// detectConfigFromResponse is used during import when there is no plan
+// context. It tries NSX config first; if any NSX-specific field is present,
+// it populates config_nsx. Otherwise it falls back to a dynamic value for
+// the generic config attribute.
+func detectConfigFromResponse(
+	ctx context.Context,
+	id int64,
+	rawConfig json.RawMessage,
+) (configResult, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	result := configResult{
+		config:    types.DynamicNull(),
+		configNsx: NewConfigNsxValueNull(),
+	}
+
+	if len(rawConfig) == 0 {
+		return result, diags
+	}
+
+	var nsxCfg sdk.NetworkDhcpServerConfigNSX
+	if err := json.Unmarshal(rawConfig, &nsxCfg); err == nil && isNsxConfig(&nsxCfg) {
+		nsx, nsxDiags := buildNsxConfigValue(ctx, id, rawConfig)
+		diags.Append(nsxDiags...)
+		result.configNsx = nsx
+
+		return result, diags
+	}
+
+	// Fall back to generic dynamic config.
+	var configMap map[string]any
+	if err := json.Unmarshal(rawConfig, &configMap); err != nil {
+		diags.AddWarning(
+			"populate network dhcp server resource",
+			fmt.Sprintf(
+				"network dhcp server %d: failed to unmarshal config as map: %s",
+				id, err,
+			),
+		)
+
+		return result, diags
+	}
+
+	dynVal, err := convert.MapToDynamic(ctx, configMap)
+	if err != nil {
+		diags.AddWarning(
+			"populate network dhcp server resource",
+			fmt.Sprintf(
+				"network dhcp server %d: failed to convert config to dynamic value: %s",
+				id, err,
+			),
+		)
+
+		return result, diags
+	}
+
+	result.config = dynVal
+
+	return result, diags
+}
+
+// isNsxConfig returns true when at least one NSX-specific field is present
+// in the decoded config, distinguishing it from an arbitrary generic map.
+func isNsxConfig(cfg *sdk.NetworkDhcpServerConfigNSX) bool {
+	return cfg.IsSetEdgeCluster() ||
+		cfg.IsSetPreferredEdgeNode1() ||
+		cfg.IsSetPreferredEdgeNode2()
 }
 
 func (r *Resource) Read(
