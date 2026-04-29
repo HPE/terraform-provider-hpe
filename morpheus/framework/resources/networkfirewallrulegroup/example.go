@@ -21,11 +21,11 @@ func RenderNetworkFirewallRuleGroupConfig(
 
 	defaults := map[string]string{
 		"NetworkIntegrationId": "128",
-		"Name":            "Example Firewall Rule Group",
-		"ExternalType":    "SecurityPolicy",
-		"Description":     "An example firewall rule group",
-		"Priority":        "100",
-		"GroupLayer":      "Application",
+		"Name":                 "Example Firewall Rule Group",
+		"ExternalType":         "SecurityPolicy",
+		"Description":          "An example firewall rule group",
+		"Priority":             "100",
+		"GroupLayer":           "Application",
 	}
 
 	for key, value := range overrides {
