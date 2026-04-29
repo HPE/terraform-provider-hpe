@@ -40,7 +40,7 @@ func (r *Resource) Read(
 	}
 
 	state, diag := getNetworkFirewallRuleAsState(
-		ctx, data.Id.ValueInt64(), data.NetworkServerId.ValueInt64(), client,
+		ctx, data.Id.ValueInt64(), data.NetworkIntegrationId.ValueInt64(), client,
 	)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
@@ -72,7 +72,7 @@ func getNetworkFirewallRuleAsState(
 	rule := ruleResp.GetRule()
 
 	state.Id = types.Int64Value(int64(rule.GetId()))
-	state.NetworkServerId = types.Int64Value(serverId)
+	state.NetworkIntegrationId = types.Int64Value(serverId)
 	state.Name = convert.StrToType(rule.Name)
 	state.Direction = convert.StrToType(rule.Direction)
 	state.Policy = convert.StrToType(rule.Policy)

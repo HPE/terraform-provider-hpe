@@ -90,10 +90,10 @@ func NetworkFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the network firewall rule.",
 				MarkdownDescription: "The name of the network firewall rule.",
 			},
-			"network_server_id": schema.Int64Attribute{
+			"network_integration_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The ID of the network server",
-				MarkdownDescription: "The ID of the network server",
+				Description:         "The ID of the network integration",
+				MarkdownDescription: "The ID of the network integration",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -173,19 +173,19 @@ func NetworkFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkFirewallRuleModel struct {
-	Config          ConfigValue       `tfsdk:"config"`
-	Description     types.String      `tfsdk:"description"`
-	Destinations    DestinationsValue `tfsdk:"destinations"`
-	Direction       types.String      `tfsdk:"direction"`
-	Enabled         types.Bool        `tfsdk:"enabled"`
-	Id              types.Int64       `tfsdk:"id"`
-	Name            types.String      `tfsdk:"name"`
-	NetworkServerId types.Int64       `tfsdk:"network_server_id"`
-	Policy          types.String      `tfsdk:"policy"`
-	Priority        types.String      `tfsdk:"priority"`
-	RuleGroupId     RuleGroupIdValue  `tfsdk:"rule_group_id"`
-	Scopes          ScopesValue       `tfsdk:"scopes"`
-	Sources         SourcesValue      `tfsdk:"sources"`
+	Config               ConfigValue       `tfsdk:"config"`
+	Description          types.String      `tfsdk:"description"`
+	Destinations         DestinationsValue `tfsdk:"destinations"`
+	Direction            types.String      `tfsdk:"direction"`
+	Enabled              types.Bool        `tfsdk:"enabled"`
+	Id                   types.Int64       `tfsdk:"id"`
+	Name                 types.String      `tfsdk:"name"`
+	NetworkIntegrationId types.Int64       `tfsdk:"network_integration_id"`
+	Policy               types.String      `tfsdk:"policy"`
+	Priority             types.String      `tfsdk:"priority"`
+	RuleGroupId          RuleGroupIdValue  `tfsdk:"rule_group_id"`
+	Scopes               ScopesValue       `tfsdk:"scopes"`
+	Sources              SourcesValue      `tfsdk:"sources"`
 }
 
 var _ basetypes.ObjectTypable = ConfigType{}

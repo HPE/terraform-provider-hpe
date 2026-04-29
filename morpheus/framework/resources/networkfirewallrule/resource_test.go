@@ -54,9 +54,9 @@ func checkDestroy(t *testing.T) resource.TestCheckFunc {
 				return fmt.Errorf("invalid ID %q: %w", rs.Primary.ID, err)
 			}
 
-			serverId, err := strconv.ParseInt(rs.Primary.Attributes["network_server_id"], 10, 64)
+			serverId, err := strconv.ParseInt(rs.Primary.Attributes["network_integration_id"], 10, 64)
 			if err != nil {
-				return fmt.Errorf("invalid network_server_id %q: %w", rs.Primary.Attributes["network_server_id"], err)
+				return fmt.Errorf("invalid network_integration_id %q: %w", rs.Primary.Attributes["network_integration_id"], err)
 			}
 
 			_, httpResp, _ := client.NetworksAPI.
@@ -132,7 +132,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network_firewall_rule.example",
-			"network_server_id",
+			"network_integration_id",
 			"128",
 		),
 	}
@@ -158,7 +158,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["network_server_id"] + ":" + rs.Primary.Attributes["id"], nil
+					return rs.Primary.Attributes["network_integration_id"] + ":" + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_firewall_rule.example",
 			},
@@ -392,7 +392,7 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "not-a-valid-id",
 				ResourceName:  "hpe_morpheus_network_firewall_rule.example",
-				ExpectError:   regexp.MustCompile(`expected format\s*'network_server_id:rule_id'`),
+				ExpectError:   regexp.MustCompile(`expected format\s*'network_integration_id:rule_id'`),
 			},
 		},
 	})
@@ -432,7 +432,7 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "abc:def",
 				ResourceName:  "hpe_morpheus_network_firewall_rule.example",
-				ExpectError:   regexp.MustCompile(`network_server_id.*is invalid`),
+				ExpectError:   regexp.MustCompile(`network_integration_id.*is invalid`),
 			},
 		},
 	})

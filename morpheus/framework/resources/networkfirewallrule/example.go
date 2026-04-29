@@ -11,13 +11,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_firewall_rule/example.tf example.tf.tmpl NetworkServerId "1" Name "Example Firewall Rule" Direction "Ingress" Policy "Accept" Enabled "true" RuleGroupId "1"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_firewall_rule/example.tf example.tf.tmpl NetworkIntegrationId "1" Name "Example Firewall Rule" Direction "Ingress" Policy "Accept" Enabled "true" RuleGroupId "1"
 
 func RenderNetworkFirewallRuleConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"NetworkServerId": "128",
+		"NetworkIntegrationId": "128",
 		"Name":            "Example Firewall Rule",
 		"Direction":       "Ingress",
 		"Policy":          "Accept",

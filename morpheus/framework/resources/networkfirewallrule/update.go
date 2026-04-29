@@ -106,7 +106,7 @@ func (r *Resource) Update(
 	updateReq.SetRule(ruleMap)
 
 	id := currentState.Id.ValueInt64()
-	serverId := currentState.NetworkServerId.ValueInt64()
+	serverId := currentState.NetworkIntegrationId.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.
 		UpdateNetworkFirewallRule(ctx, id, serverId).

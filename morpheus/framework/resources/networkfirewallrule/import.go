@@ -22,7 +22,7 @@ func (r *Resource) ImportState(
 		resp.Diagnostics.AddError(
 			"import network_firewall_rule resource",
 			fmt.Sprintf(
-				"provided import ID %q is invalid; expected format 'network_server_id:rule_id'",
+				"provided import ID %q is invalid; expected format 'network_integration_id:rule_id'",
 				req.ID,
 			),
 		)
@@ -34,7 +34,7 @@ func (r *Resource) ImportState(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import network_firewall_rule resource",
-			"network_server_id '"+parts[0]+"' is invalid (non-number)",
+			"network_integration_id '"+parts[0]+"' is invalid (non-number)",
 		)
 
 		return
@@ -50,6 +50,6 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("network_server_id"), serverId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("network_integration_id"), serverId)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), ruleId)...)
 }

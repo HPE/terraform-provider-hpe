@@ -27,7 +27,7 @@ func (r *Resource) Delete(
 	}
 
 	id := data.Id.ValueInt64()
-	serverId := data.NetworkServerId.ValueInt64()
+	serverId := data.NetworkIntegrationId.ValueInt64()
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

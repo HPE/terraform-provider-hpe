@@ -96,7 +96,7 @@ func (r *Resource) Create(
 	addReq := sdk.NewCreateNetworkFirewallRuleRequestWithDefaults()
 	addReq.SetRule(*rule)
 
-	serverId := plan.NetworkServerId.ValueInt64()
+	serverId := plan.NetworkIntegrationId.ValueInt64()
 
 	createResp, httpResp, err := client.NetworksAPI.
 		CreateNetworkFirewallRule(ctx, serverId).
