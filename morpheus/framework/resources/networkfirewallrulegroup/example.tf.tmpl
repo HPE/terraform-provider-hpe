@@ -1,5 +1,5 @@
 resource "hpe_morpheus_network_firewall_rule_group" "example" {
-  network_server_id = {{.NetworkServerId}}
+  network_integration_id = {{.NetworkIntegrationId}}
   name              = "{{.Name}}"
   external_type     = "{{.ExternalType}}"
   {{- if ne .Description ""}}

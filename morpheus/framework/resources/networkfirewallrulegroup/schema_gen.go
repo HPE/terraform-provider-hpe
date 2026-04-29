@@ -23,6 +23,7 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"external_type": schema.StringAttribute{
 				Required:            true,
+				WriteOnly:           true,
 				Description:         "The external type of the firewall rule group (e.g. SecurityPolicy)",
 				MarkdownDescription: "The external type of the firewall rule group (e.g. SecurityPolicy)",
 				PlanModifiers: []planmodifier.String{
@@ -49,10 +50,10 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network firewall rule group name",
 				MarkdownDescription: "Network firewall rule group name",
 			},
-			"network_server_id": schema.Int64Attribute{
+			"network_integration_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The ID of the network server",
-				MarkdownDescription: "The ID of the network server",
+				Description:         "The ID of the network integration",
+				MarkdownDescription: "The ID of the network integration",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -68,11 +69,11 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkFirewallRuleGroupModel struct {
-	Description     types.String `tfsdk:"description"`
-	ExternalType    types.String `tfsdk:"external_type"`
-	GroupLayer      types.String `tfsdk:"group_layer"`
-	Id              types.Int64  `tfsdk:"id"`
-	Name            types.String `tfsdk:"name"`
-	NetworkServerId types.Int64  `tfsdk:"network_server_id"`
-	Priority        types.Int64  `tfsdk:"priority"`
+	Description          types.String `tfsdk:"description"`
+	ExternalType         types.String `tfsdk:"external_type"`
+	GroupLayer           types.String `tfsdk:"group_layer"`
+	Id                   types.Int64  `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	NetworkIntegrationId types.Int64  `tfsdk:"network_integration_id"`
+	Priority             types.Int64  `tfsdk:"priority"`
 }

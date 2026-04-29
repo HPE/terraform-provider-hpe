@@ -35,7 +35,7 @@ func (r *Resource) Update(
 	}
 
 	id := currentState.Id.ValueInt64()
-	serverID := currentState.NetworkServerId.ValueInt64()
+	serverID := currentState.NetworkIntegrationId.ValueInt64()
 
 	ruleGroupMap := map[string]interface{}{}
 

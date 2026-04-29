@@ -37,7 +37,7 @@ func (r *Resource) Read(
 	}
 
 	id := data.Id.ValueInt64()
-	serverID := data.NetworkServerId.ValueInt64()
+	serverID := data.NetworkIntegrationId.ValueInt64()
 
 	state, diags := getNetworkFirewallRuleGroupAsState(
 		ctx, id, serverID, client, data,
@@ -84,8 +84,8 @@ func getNetworkFirewallRuleGroupAsState(
 		state.Description = types.StringNull()
 	}
 
-	// network_server_id and external_type are not returned in the GET response; preserve from prior state.
-	state.NetworkServerId = prior.NetworkServerId
+	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.
+	state.NetworkIntegrationId = prior.NetworkIntegrationId
 	state.ExternalType = prior.ExternalType
 
 	return state, diags

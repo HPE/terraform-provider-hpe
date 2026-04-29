@@ -69,7 +69,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttrSet(
 			"hpe_morpheus_network_firewall_rule_group.example",
-			"network_server_id",
+			"network_integration_id",
 		),
 	}
 
@@ -97,7 +97,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["network_server_id"] +
+					return rs.Primary.Attributes["network_integration_id"] +
 						":" + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_firewall_rule_group.example",

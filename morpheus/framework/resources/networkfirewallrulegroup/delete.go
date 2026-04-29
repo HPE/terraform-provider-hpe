@@ -33,7 +33,7 @@ func (r *Resource) Delete(
 	}
 
 	id := data.Id.ValueInt64()
-	serverID := data.NetworkServerId.ValueInt64()
+	serverID := data.NetworkIntegrationId.ValueInt64()
 
 	tflog.Debug(ctx, fmt.Sprintf(
 		"Deleting network firewall rule group %d", id,

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_firewall_rule_group/example.tf example.tf.tmpl NetworkServerId "128" Name "Example Firewall Rule Group" ExternalType "SecurityPolicy" Description "An example firewall rule group" Priority "100" GroupLayer "Application"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_firewall_rule_group/example.tf example.tf.tmpl NetworkIntegrationId "128" Name "Example Firewall Rule Group" ExternalType "SecurityPolicy" Description "An example firewall rule group" Priority "100" GroupLayer "Application"
 
 func RenderNetworkFirewallRuleGroupConfig(
 	t *testing.T,
@@ -20,7 +20,7 @@ func RenderNetworkFirewallRuleGroupConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"NetworkServerId": "128",
+		"NetworkIntegrationId": "128",
 		"Name":            "Example Firewall Rule Group",
 		"ExternalType":    "SecurityPolicy",
 		"Description":     "An example firewall rule group",

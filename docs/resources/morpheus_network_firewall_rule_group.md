@@ -12,12 +12,12 @@ description: |-
 
 ```terraform
 resource "hpe_morpheus_network_firewall_rule_group" "example" {
-  network_server_id = 128
-  name              = "Example Firewall Rule Group"
-  external_type     = "SecurityPolicy"
-  description       = "An example firewall rule group"
-  priority          = 100
-  group_layer       = "Application"
+  network_integration_id = 128
+  name                   = "Example Firewall Rule Group"
+  external_type          = "SecurityPolicy"
+  description            = "An example firewall rule group"
+  priority               = 100
+  group_layer            = "Application"
 }
 ```
 
@@ -26,9 +26,11 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
 
 ### Required
 
-- `external_type` (String) The external type of the firewall rule group (e.g. SecurityPolicy)
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `external_type` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The external type of the firewall rule group (e.g. SecurityPolicy)
 - `name` (String) Network firewall rule group name
-- `network_server_id` (Number) The ID of the network server
+- `network_integration_id` (Number) The ID of the network integration
 
 ### Optional
 
@@ -42,7 +44,7 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
 
 ## Import
 
-Import is supported using the following syntax, where the ID format is `network_server_id:id`:
+Import is supported using the following syntax, where the ID format is `network_integration_id:id`:
 
 ```shell
 terraform import hpe_morpheus_network_firewall_rule_group.example 128:1
