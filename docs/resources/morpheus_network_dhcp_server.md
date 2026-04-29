@@ -14,10 +14,10 @@ This resource manages a DHCP server configuration attached to a Morpheus network
 
 ```terraform
 resource "hpe_morpheus_network_dhcp_server" "example" {
-  network_server_id = 16
-  name              = "Example DHCP Server"
-  server_ip_address = "192.168.1.1/24"
-  lease_time        = 86400
+  network_integration_id = 16
+  name                   = "Example DHCP Server"
+  server_ip_address      = "192.168.1.1/24"
+  lease_time             = 86400
 
   config_nsx = {
     edge_cluster = "qa-edge-cluster-01"
@@ -31,7 +31,7 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 ### Required
 
 - `name` (String) Name
-- `network_server_id` (Number) The ID of the network server this DHCP server belongs to
+- `network_integration_id` (Number) The ID of the network integration this DHCP server belongs to
 - `server_ip_address` (String) Server address for the DHCP server
 
 ### Optional
@@ -55,7 +55,7 @@ Optional:
 
 ## Import
 
-Network DHCP servers can be imported using `network_server_id:id`, e.g.
+Network DHCP servers can be imported using `network_integration_id:id`, e.g.
 
 ```bash
 terraform import hpe_morpheus_network_dhcp_server.example 16:123

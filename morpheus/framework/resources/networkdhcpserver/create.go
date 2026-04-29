@@ -128,7 +128,7 @@ func (r *Resource) Create(
 
 	createReq := sdk.NewCreateNetworkDhcpServerRequestWithDefaults()
 	createReq.SetNetworkDhcpServer(*dhcpServer)
-	serverID := plan.NetworkServerId.ValueInt64()
+	serverID := plan.NetworkIntegrationId.ValueInt64()
 
 	createResp, hresp, err := client.NetworksAPI.
 		CreateNetworkDhcpServer(ctx, serverID).

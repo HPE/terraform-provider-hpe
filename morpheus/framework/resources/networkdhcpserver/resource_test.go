@@ -96,7 +96,7 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["network_server_id"] +
+					return rs.Primary.Attributes["network_integration_id"] +
 						":" + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_dhcp_server.example",
@@ -172,7 +172,7 @@ func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["network_server_id"] +
+					return rs.Primary.Attributes["network_integration_id"] +
 						":" + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_dhcp_server.dynamic_example",

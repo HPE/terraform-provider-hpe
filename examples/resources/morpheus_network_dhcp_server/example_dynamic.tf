@@ -1,8 +1,8 @@
 resource "hpe_morpheus_network_dhcp_server" "dynamic_example" {
-  network_server_id = 16
-  name              = "Example DHCP Server"
-  server_ip_address = "192.168.1.1/24"
-  lease_time        = 86400
+  network_integration_id = 16
+  name                   = "Example DHCP Server"
+  server_ip_address      = "192.168.1.1/24"
+  lease_time             = 86400
 
   config = {
     edge_cluster = "qa-edge-cluster-01"

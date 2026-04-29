@@ -105,10 +105,10 @@ func getNetworkDhcpServerAsState(
 	}
 
 	if payload.NetworkServer != nil && payload.NetworkServer.Id != nil {
-		state.NetworkServerId = types.Int64Value(*payload.NetworkServer.Id)
+		state.NetworkIntegrationId = types.Int64Value(*payload.NetworkServer.Id)
 	} else {
 		// Some API versions do not include networkServer in this response.
-		state.NetworkServerId = plan.NetworkServerId
+		state.NetworkIntegrationId = plan.NetworkIntegrationId
 	}
 
 	configState, cfgDiags := resolveConfigState(ctx, id, payload.Config, plan)
@@ -305,7 +305,7 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	serverID := plan.NetworkServerId.ValueInt64()
+	serverID := plan.NetworkIntegrationId.ValueInt64()
 
 	state, diags := getNetworkDhcpServerAsState(
 		ctx, id, serverID, client, plan,

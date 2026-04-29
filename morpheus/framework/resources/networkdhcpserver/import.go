@@ -21,17 +21,17 @@ func (r *Resource) ImportState(
 		resp.Diagnostics.AddError(
 			"import network dhcp server resource",
 			"provided import ID '"+req.ID+
-				"' is invalid, expected format 'network_server_id:id'",
+				"' is invalid, expected format 'network_integration_id:id'",
 		)
 
 		return
 	}
 
-	serverID, err := strconv.Atoi(parts[0])
+	integrationID, err := strconv.Atoi(parts[0])
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import network dhcp server resource",
-			"provided network_server_id '"+parts[0]+"' is invalid (non-number)",
+			"provided network_integration_id '"+parts[0]+"' is invalid (non-number)",
 		)
 
 		return
@@ -48,7 +48,7 @@ func (r *Resource) ImportState(
 	}
 
 	resp.Diagnostics.Append(
-		resp.State.SetAttribute(ctx, path.Root("network_server_id"), serverID)...,
+		resp.State.SetAttribute(ctx, path.Root("network_integration_id"), integrationID)...,
 	)
 	resp.Diagnostics.Append(
 		resp.State.SetAttribute(ctx, path.Root("id"), id)...,

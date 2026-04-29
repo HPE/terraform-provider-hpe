@@ -74,10 +74,10 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Name",
 				MarkdownDescription: "Name",
 			},
-			"network_server_id": schema.Int64Attribute{
+			"network_integration_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The ID of the network server this DHCP server belongs to",
-				MarkdownDescription: "The ID of the network server this DHCP server belongs to",
+				Description:         "The ID of the network integration this DHCP server belongs to",
+				MarkdownDescription: "The ID of the network integration this DHCP server belongs to",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -92,13 +92,13 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkDhcpServerModel struct {
-	Config          types.Dynamic  `tfsdk:"config"`
-	ConfigNsx       ConfigNsxValue `tfsdk:"config_nsx"`
-	Id              types.Int64    `tfsdk:"id"`
-	LeaseTime       types.Int64    `tfsdk:"lease_time"`
-	Name            types.String   `tfsdk:"name"`
-	NetworkServerId types.Int64    `tfsdk:"network_server_id"`
-	ServerIpAddress types.String   `tfsdk:"server_ip_address"`
+	Config               types.Dynamic  `tfsdk:"config"`
+	ConfigNsx            ConfigNsxValue `tfsdk:"config_nsx"`
+	Id                   types.Int64    `tfsdk:"id"`
+	LeaseTime            types.Int64    `tfsdk:"lease_time"`
+	Name                 types.String   `tfsdk:"name"`
+	NetworkIntegrationId types.Int64    `tfsdk:"network_integration_id"`
+	ServerIpAddress      types.String   `tfsdk:"server_ip_address"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxType{}

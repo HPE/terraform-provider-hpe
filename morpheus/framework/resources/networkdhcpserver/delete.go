@@ -36,7 +36,7 @@ func (r *Resource) Delete(
 	}
 
 	id := state.Id.ValueInt64()
-	serverID := state.NetworkServerId.ValueInt64()
+	serverID := state.NetworkIntegrationId.ValueInt64()
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting network dhcp server %d", id))
 
