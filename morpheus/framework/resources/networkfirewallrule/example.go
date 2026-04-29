@@ -18,11 +18,11 @@ func RenderNetworkFirewallRuleConfig(t *testing.T, overrides map[string]string) 
 
 	defaults := map[string]string{
 		"NetworkIntegrationId": "128",
-		"Name":            "Example Firewall Rule",
-		"Direction":       "Ingress",
-		"Policy":          "Accept",
-		"Enabled":         "true",
-		"RuleGroupId":     "233264",
+		"Name":                 "Example Firewall Rule",
+		"Direction":            "Ingress",
+		"Policy":               "Accept",
+		"Enabled":              "true",
+		"RuleGroupId":          "233264",
 	}
 
 	for key, value := range overrides {
