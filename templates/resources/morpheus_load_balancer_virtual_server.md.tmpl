@@ -1,0 +1,27 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_load_balancer_virtual_server/example.tf" }}
+
+## Example Usage NSX-T
+
+{{ tffile "examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Load balancer virtual servers can be imported using the load balancer ID and virtual server ID separated by a slash, e.g.
+
+```shell
+terraform import hpe_morpheus_load_balancer_virtual_server.example 1/42
+```
