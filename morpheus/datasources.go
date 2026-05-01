@@ -16,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
@@ -40,6 +41,7 @@ func (SubProvider) GetDataSources(
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,
 		loadbalancer.NewDataSource,
+		loadbalancervirtualserver.NewDataSource,
 		network.NewDataSource,
 		networkdhcpserver.NewDataSource,
 		networkdomain.NewDataSource,

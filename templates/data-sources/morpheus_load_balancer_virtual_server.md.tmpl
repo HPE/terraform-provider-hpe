@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Looks up a load balancer virtual server by ID or VIP name within a given load balancer. This is useful for referencing existing virtual servers in other resources without hard-coding IDs.
+---
+# {{.Name}} ({{.Type}})
+
+Looks up a load balancer virtual server by ID or VIP name within a given load balancer. This is useful for referencing existing virtual servers in other resources without hard-coding IDs.
+
+## Example Usage
+
+### Lookup by ID
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_virtual_server/example-id.tf" }}
+
+### Lookup by VIP Name
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_virtual_server/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
