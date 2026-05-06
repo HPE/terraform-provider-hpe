@@ -18,6 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/iancoleman/strcase v0.3.0
+	github.com/spf13/pflag v1.0.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/text v0.36.0
 )
