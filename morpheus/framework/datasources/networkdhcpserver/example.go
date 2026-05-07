@@ -11,15 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-id.tf example-id.tf.tmpl Id 99 NetworkIntegrationId 1
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-name.tf example-name.tf.tmpl Name "Example name" NetworkIntegrationId 1
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-id.tf example-id.tf.tmpl Id 99 NetworkServerId 1
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-name.tf example-name.tf.tmpl Name "Example name" NetworkServerId 1
 
 func RenderNetworkDhcpServerByNameConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 "qa-dhcp-profile-vlan30",
-		"NetworkIntegrationId": "16",
+		"Name":            "qa-dhcp-profile-vlan30",
+		"NetworkServerId": "16",
 	}
 
 	for key, value := range overrides {
@@ -50,8 +50,8 @@ func RenderNetworkDhcpServerByIdConfig(t *testing.T, overrides map[string]string
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id":                   "5",
-		"NetworkIntegrationId": "16",
+		"Id":              "5",
+		"NetworkServerId": "16",
 	}
 
 	for key, value := range overrides {

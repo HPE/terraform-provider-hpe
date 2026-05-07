@@ -137,7 +137,7 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_network_dhcp_server" "test" {
-        network_integration_id = 1
+        network_server_id = 1
       }`
 
 	expected := networkdhcpserver.ErrorNoValidSearchTerms
@@ -160,9 +160,9 @@ func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_network_dhcp_server" "test" {
-        id                     = 1
-        name                   = "______"
-        network_integration_id = 1
+        id                = 1
+        name              = "______"
+        network_server_id = 1
       }`
 
 	expected := networkdhcpserver.ErrorRunningPreApply
@@ -184,7 +184,7 @@ func networkDhcpServerChecks() []resource.TestCheckFunc {
 	return []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
-		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
+		resource.TestCheckResourceAttrSet(ds, "network_server_id"),
 		resource.TestCheckResourceAttrSet(ds, "lease_time"),
 	}
 }
