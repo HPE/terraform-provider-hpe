@@ -1,0 +1,3 @@
+data "hpe_morpheus_network_domain" "example" {
+  name = "test.local"
+}
