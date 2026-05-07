@@ -16,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
+	networkrouter "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -36,6 +37,7 @@ func (s SubProvider) GetResources(
 		loadbalancer.NewResource,
 		network.NewResource,
 		networkdhcpserver.NewResource,
+		networkrouter.NewResource,
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
