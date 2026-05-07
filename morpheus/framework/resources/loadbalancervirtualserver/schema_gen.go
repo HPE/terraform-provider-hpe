@@ -231,10 +231,10 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"vip_protocol": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "VIP Protocol",
-				MarkdownDescription: "VIP Protocol",
+				Description:         "VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.",
+				MarkdownDescription: "VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.",
 				Validators: []validator.String{
-					stringvalidator.OneOf("udp", "tcp", "sctp"),
+					stringvalidator.OneOf("http", "https", "udp", "tcp"),
 				},
 			},
 			"vip_scheme": schema.StringAttribute{

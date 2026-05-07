@@ -56,7 +56,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
 - `vip_hostname` (String) VIP Hostname
 - `vip_name` (String) VIP Name
 - `vip_port` (Number) VIP Port
-- `vip_protocol` (String) VIP Protocol
+- `vip_protocol` (String) VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.
 - `vip_type` (String) VIP Type
 
 ### Read-Only
