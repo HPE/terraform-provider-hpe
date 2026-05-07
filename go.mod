@@ -4,7 +4,7 @@ go 1.25.8
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260506110215-9d30f8f1c9ca
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.43.0
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.48.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -18,7 +18,6 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/iancoleman/strcase v0.3.0
-	github.com/spf13/pflag v1.0.2
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/text v0.36.0
 )
