@@ -124,8 +124,8 @@ Read-Only:
 
 ## Import
 
-Load balancer virtual servers can be imported using the load balancer ID and virtual server ID separated by a slash, e.g.
+Load balancer virtual servers can be imported using the load balancer ID and virtual server ID separated by a dot, e.g.
 
 ```shell
-terraform import hpe_morpheus_load_balancer_virtual_server.example 1/42
+terraform import hpe_morpheus_load_balancer_virtual_server.example 1.42
 ```

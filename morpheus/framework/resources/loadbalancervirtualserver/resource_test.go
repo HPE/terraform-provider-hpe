@@ -96,7 +96,7 @@ func TestAccMorpheusLoadBalancerVirtualServerExampleOk(t *testing.T) {
 					lbID := rs.Primary.Attributes["load_balancer_id"]
 					id := rs.Primary.Attributes["id"]
 
-					return lbID + "/" + id, nil
+					return lbID + "." + id, nil
 				},
 			},
 		},

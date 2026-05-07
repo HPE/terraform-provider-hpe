@@ -13,18 +13,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// ImportState supports importing with the format "loadBalancerId/id".
+// ImportState supports importing with the format "loadBalancerId.id".
 func (r *Resource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, "/", 2)
+	parts := strings.SplitN(req.ID, ".", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"import load balancer virtual server",
 			fmt.Sprintf(
-				"provided import ID %q is invalid; expected format: load_balancer_id/id",
+				"provided import ID %q is invalid; expected format: load_balancer_id.id",
 				req.ID,
 			),
 		)
