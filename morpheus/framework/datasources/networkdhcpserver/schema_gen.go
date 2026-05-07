@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func NetworkDhcpServersDataSourceSchema(ctx context.Context) schema.Schema {
+func NetworkDhcpServerDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"config": schema.DynamicAttribute{
@@ -77,10 +77,10 @@ func NetworkDhcpServersDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
-			"network_server_id": schema.Int64Attribute{
+			"network_integration_id": schema.NumberAttribute{
 				Required:            true,
-				Description:         "The ID of the network server this DHCP server belongs to",
-				MarkdownDescription: "The ID of the network server this DHCP server belongs to",
+				Description:         "The ID of the network integration this DHCP server belongs to",
+				MarkdownDescription: "The ID of the network integration this DHCP server belongs to",
 			},
 			"server_ip_address": schema.StringAttribute{
 				Computed:            true,
@@ -91,14 +91,14 @@ func NetworkDhcpServersDataSourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-type NetworkDhcpServersModel struct {
-	Config          types.Dynamic  `tfsdk:"config"`
-	ConfigNsx       ConfigNsxValue `tfsdk:"config_nsx"`
-	Id              types.Int64    `tfsdk:"id"`
-	LeaseTime       types.Int64    `tfsdk:"lease_time"`
-	Name            types.String   `tfsdk:"name"`
-	NetworkServerId types.Int64    `tfsdk:"network_server_id"`
-	ServerIpAddress types.String   `tfsdk:"server_ip_address"`
+type NetworkDhcpServerModel struct {
+	Config               types.Dynamic  `tfsdk:"config"`
+	ConfigNsx            ConfigNsxValue `tfsdk:"config_nsx"`
+	Id                   types.Int64    `tfsdk:"id"`
+	LeaseTime            types.Int64    `tfsdk:"lease_time"`
+	Name                 types.String   `tfsdk:"name"`
+	NetworkIntegrationId types.Number   `tfsdk:"network_integration_id"`
+	ServerIpAddress      types.String   `tfsdk:"server_ip_address"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxType{}

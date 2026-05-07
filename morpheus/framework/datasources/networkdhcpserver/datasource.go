@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
@@ -58,20 +59,20 @@ func (d *DataSource) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = NetworkDhcpServersDataSourceSchema(ctx)
+	resp.Schema = NetworkDhcpServerDataSourceSchema(ctx)
 }
 
 func dhcpServerAsState(
 	ctx context.Context,
 	dhcp *sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer,
-	networkServerId int64,
-) (NetworkDhcpServersModel, error) {
-	state := NetworkDhcpServersModel{
-		Id:              convert.Int64ToType(dhcp.Id),
-		Name:            convert.StrToType(dhcp.Name),
-		LeaseTime:       convert.Int64ToType(dhcp.LeaseTime),
-		ServerIpAddress: convert.StrToType(dhcp.ServerIpAddress),
-		NetworkServerId: types.Int64Value(networkServerId),
+	networkIntegrationId int64,
+) (NetworkDhcpServerModel, error) {
+	state := NetworkDhcpServerModel{
+		Id:                   convert.Int64ToType(dhcp.Id),
+		Name:                 convert.StrToType(dhcp.Name),
+		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
+		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
+		NetworkIntegrationId: types.NumberValue(new(big.Float).SetInt64(networkIntegrationId)),
 	}
 
 	state.Config = types.DynamicNull()
@@ -88,14 +89,14 @@ func dhcpServerAsState(
 				},
 			)
 			if diags.HasError() {
-				return NetworkDhcpServersModel{}, fmt.Errorf("error creating config_nsx value")
+				return NetworkDhcpServerModel{}, fmt.Errorf("error creating config_nsx value")
 			}
 
 			state.ConfigNsx = v
 		} else if dhcp.Config.MapmapOfStringAny != nil {
 			raw, err := json.Marshal(*dhcp.Config.MapmapOfStringAny)
 			if err != nil {
-				return NetworkDhcpServersModel{}, fmt.Errorf("error marshalling config: %w", err)
+				return NetworkDhcpServerModel{}, fmt.Errorf("error marshalling config: %w", err)
 			}
 
 			state.Config = types.DynamicValue(types.StringValue(string(raw)))
@@ -170,10 +171,10 @@ func getDhcpServerByName(
 
 func getDhcpServer(
 	ctx context.Context,
-	config *NetworkDhcpServersModel,
+	config *NetworkDhcpServerModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer, error) {
-	serverId := config.NetworkServerId.ValueInt64()
+	serverId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
 
 	if !config.Id.IsNull() {
 		return getDhcpServerByID(ctx, config.Id.ValueInt64(), serverId, apiClient)
@@ -190,7 +191,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var config NetworkDhcpServersModel
+	var config NetworkDhcpServerModel
 
 	// Read config
 	diags := req.Config.Get(ctx, &config)
@@ -219,7 +220,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	state, err := dhcpServerAsState(ctx, dhcp, config.NetworkServerId.ValueInt64())
+	networkIntegrationId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
+	state, err := dhcpServerAsState(ctx, dhcp, networkIntegrationId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
