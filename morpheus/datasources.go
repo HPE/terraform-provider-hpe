@@ -1,4 +1,4 @@
-// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
 package morpheus
 
@@ -18,7 +18,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
@@ -42,7 +41,6 @@ func (SubProvider) GetDataSources(
 		loadbalancer.NewDataSource,
 		network.NewDataSource,
 		networkdhcpserver.NewDataSource,
-		networkdomain.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,
