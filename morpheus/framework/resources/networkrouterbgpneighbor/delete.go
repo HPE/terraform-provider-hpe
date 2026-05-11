@@ -42,7 +42,14 @@ func (r *Resource) Delete(
 
 	_, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterBgpNeighbor(ctx, id, routerID).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	if err != nil {
+		// Treat 404 as success — resource is already gone
+		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
+			tflog.Debug(ctx, fmt.Sprintf("BGP neighbor %d already deleted (404)", id))
+
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"delete network router bgp neighbor resource",
 			fmt.Sprintf("bgp neighbor %d DELETE failed: %s",
