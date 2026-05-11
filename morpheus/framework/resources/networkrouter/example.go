@@ -12,8 +12,8 @@ import (
 )
 
 //go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_generic.tf example_generic.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsx_gateway_tier0.tf example_nsx_gateway_tier0.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1" "IpServerId" "1"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsx_gateway_tier1.tf example_nsx_gateway_tier1.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier0.tf example_nsxt_gateway_tier0.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1" "IpServerId" "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier1.tf example_nsxt_gateway_tier1.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1"
 
 func RenderNetworkRouterGenericConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -76,7 +76,7 @@ func RenderNetworkRouterNSXGatewayTier0Config(t *testing.T, overrides map[string
 	}
 
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example_nsx_gateway_tier0.tf.tmpl")
+	templatePath := filepath.Join(dir, "example_nsxt_gateway_tier0.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
@@ -110,7 +110,7 @@ func RenderNetworkRouterNSXGatewayTier1Config(t *testing.T, overrides map[string
 	}
 
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example_nsx_gateway_tier1.tf.tmpl")
+	templatePath := filepath.Join(dir, "example_nsxt_gateway_tier1.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

@@ -57,10 +57,10 @@ func getRouterAsState(
 		// We don't want to read everything back from API as there may be stuff
 		// that exists in remote `config` not set by user.
 		state.Config = plan.Config
-	case !plan.ConfigNsxGatewayTier0.IsNull() && !plan.ConfigNsxGatewayTier0.IsUnknown():
-		state.ConfigNsxGatewayTier0 = plan.ConfigNsxGatewayTier0
-	case !plan.ConfigNsxGatewayTier1.IsNull() && !plan.ConfigNsxGatewayTier1.IsUnknown():
-		state.ConfigNsxGatewayTier1 = plan.ConfigNsxGatewayTier1
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		state.ConfigNsxtGatewayTier0 = plan.ConfigNsxtGatewayTier0
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		state.ConfigNsxtGatewayTier1 = plan.ConfigNsxtGatewayTier1
 	}
 
 	// Populate type_id from API response if importing (plan.Name is null)

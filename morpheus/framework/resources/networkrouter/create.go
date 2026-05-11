@@ -49,7 +49,7 @@ func (r *Resource) Create(
 
 	// Set type (required)
 	switch {
-	case !plan.ConfigNsxGatewayTier0.IsNull() && !plan.ConfigNsxGatewayTier0.IsUnknown():
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
 		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier0Gateway)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -62,7 +62,7 @@ func (r *Resource) Create(
 		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(*typeId)
 		router.SetType(*routerType)
 
-	case !plan.ConfigNsxGatewayTier1.IsNull() && !plan.ConfigNsxGatewayTier1.IsUnknown():
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
 		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier1Gateway)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -191,13 +191,13 @@ func buildRouterConfig(
 
 	switch {
 	// Typed NSX Tier0 config
-	case !plan.ConfigNsxGatewayTier0.IsNull() && !plan.ConfigNsxGatewayTier0.IsUnknown():
-		cfg := nsxTier0Config(plan.ConfigNsxGatewayTier0)
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		cfg := nsxTier0Config(plan.ConfigNsxtGatewayTier0)
 
 		return &cfg, diags
 	// Typed NSX Tier1 config
-	case !plan.ConfigNsxGatewayTier1.IsNull() && !plan.ConfigNsxGatewayTier1.IsUnknown():
-		cfg := nsxTier1Config(plan.ConfigNsxGatewayTier1)
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		cfg := nsxTier1Config(plan.ConfigNsxtGatewayTier1)
 
 		return &cfg, diags
 

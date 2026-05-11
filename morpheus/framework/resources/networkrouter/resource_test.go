@@ -51,9 +51,9 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier0ExampleOk(t *testing.T) {
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
-					resource.TestCheckResourceAttr(resourceName, "config_nsx_gateway_tier0.ha_mode", "ACTIVE_ACTIVE"),
-					resource.TestCheckResourceAttr(resourceName, "config_nsx_gateway_tier0.ip_server_id", "1"),
-					resource.TestCheckResourceAttr(resourceName, "config_nsx_gateway_tier0.restart_mode", "HELPER_ONLY"),
+					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.ha_mode", "ACTIVE_ACTIVE"),
+					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.ip_server_id", "1"),
+					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.restart_mode", "HELPER_ONLY"),
 				),
 			},
 		},

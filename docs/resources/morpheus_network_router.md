@@ -25,7 +25,7 @@ resource "hpe_morpheus_network_router" "example" {
 }
 ```
 
-### NSX gateway Tier-0 config
+### NSX-T gateway Tier-0 config
 
 ```terraform
 resource "hpe_morpheus_network_router" "example" {
@@ -34,7 +34,7 @@ resource "hpe_morpheus_network_router" "example" {
   group_id               = 1
   network_integration_id = 1
 
-  config_nsx_gateway_tier0 = {
+  config_nsxt_gateway_tier0 = {
     ha_mode      = "ACTIVE_ACTIVE"
     ip_server_id = 1
     restart_mode = "HELPER_ONLY"
@@ -42,7 +42,7 @@ resource "hpe_morpheus_network_router" "example" {
 }
 ```
 
-### NSX gateway Tier-1 config
+### NSX-T gateway Tier-1 config
 
 ```terraform
 resource "hpe_morpheus_network_router" "example" {
@@ -51,7 +51,7 @@ resource "hpe_morpheus_network_router" "example" {
   group_id               = 1
   network_integration_id = 1
 
-  config_nsx_gateway_tier1 = {
+  config_nsxt_gateway_tier1 = {
     ip_management_type = "dhcpLocal"
   }
 }
@@ -72,8 +72,8 @@ resource "hpe_morpheus_network_router" "example" {
 ### Optional
 
 - `config` (Dynamic) Generic configuration object for network routers.
-- `config_nsx_gateway_tier0` (Attributes) Configuration object for NSX-T Tier-0 gateway network routers. (see [below for nested schema](#nestedatt--config_nsx_gateway_tier0))
-- `config_nsx_gateway_tier1` (Attributes) Configuration object for NSX-T Tier-1 gateway network routers. (see [below for nested schema](#nestedatt--config_nsx_gateway_tier1))
+- `config_nsxt_gateway_tier0` (Attributes) Configuration object for NSX-T Tier-0 gateway network routers. (see [below for nested schema](#nestedatt--config_nsxt_gateway_tier0))
+- `config_nsxt_gateway_tier1` (Attributes) Configuration object for NSX-T Tier-1 gateway network routers. (see [below for nested schema](#nestedatt--config_nsxt_gateway_tier1))
 - `enable_bgp` (Boolean)
 - `enabled` (Boolean) Can be used to enable / disable the network router (true, false). Default is on
 
@@ -82,8 +82,8 @@ resource "hpe_morpheus_network_router" "example" {
 - `code` (String)
 - `id` (Number) The ID of this resource.
 
-<a id="nestedatt--config_nsx_gateway_tier0"></a>
-### Nested Schema for `config_nsx_gateway_tier0`
+<a id="nestedatt--config_nsxt_gateway_tier0"></a>
+### Nested Schema for `config_nsxt_gateway_tier0`
 
 Required:
 
@@ -120,8 +120,8 @@ Optional:
 - `tier1_static` (Boolean)
 
 
-<a id="nestedatt--config_nsx_gateway_tier1"></a>
-### Nested Schema for `config_nsx_gateway_tier1`
+<a id="nestedatt--config_nsxt_gateway_tier1"></a>
+### Nested Schema for `config_nsxt_gateway_tier1`
 
 Optional:
 

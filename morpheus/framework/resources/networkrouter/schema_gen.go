@@ -53,17 +53,17 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Dynamic{
 					validators.ValidObjectMap(),
 					dynamicvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("config_nsx_gateway_tier0"),
-						path.MatchRoot("config_nsx_gateway_tier1"),
+						path.MatchRoot("config_nsxt_gateway_tier0"),
+						path.MatchRoot("config_nsxt_gateway_tier1"),
 					}...),
 					dynamicvalidator.AtLeastOneOf(path.Expressions{
 						path.MatchRoot("config"),
-						path.MatchRoot("config_nsx_gateway_tier0"),
-						path.MatchRoot("config_nsx_gateway_tier1"),
+						path.MatchRoot("config_nsxt_gateway_tier0"),
+						path.MatchRoot("config_nsxt_gateway_tier1"),
 					}...),
 				},
 			},
-			"config_nsx_gateway_tier0": schema.SingleNestedAttribute{
+			"config_nsxt_gateway_tier0": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"ecmp": schema.BoolAttribute{
 						Optional: true,
@@ -221,9 +221,9 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 						Default:  booldefault.StaticBool(false),
 					},
 				},
-				CustomType: ConfigNsxGatewayTier0Type{
+				CustomType: ConfigNsxtGatewayTier0Type{
 					ObjectType: types.ObjectType{
-						AttrTypes: ConfigNsxGatewayTier0Value{}.AttributeTypes(ctx),
+						AttrTypes: ConfigNsxtGatewayTier0Value{}.AttributeTypes(ctx),
 					},
 				},
 				Optional:            true,
@@ -233,7 +233,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 					objectplanmodifier.RequiresReplace(),
 				},
 			},
-			"config_nsx_gateway_tier1": schema.SingleNestedAttribute{
+			"config_nsxt_gateway_tier1": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"edge_cluster": schema.StringAttribute{
 						Optional:            true,
@@ -306,9 +306,9 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 						Default:  booldefault.StaticBool(false),
 					},
 				},
-				CustomType: ConfigNsxGatewayTier1Type{
+				CustomType: ConfigNsxtGatewayTier1Type{
 					ObjectType: types.ObjectType{
-						AttrTypes: ConfigNsxGatewayTier1Value{}.AttributeTypes(ctx),
+						AttrTypes: ConfigNsxtGatewayTier1Value{}.AttributeTypes(ctx),
 					},
 				},
 				Optional:            true,
@@ -388,29 +388,29 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkRouterModel struct {
-	CloudId               types.Int64                `tfsdk:"cloud_id"`
-	Code                  types.String               `tfsdk:"code"`
-	Config                types.Dynamic              `tfsdk:"config"`
-	ConfigNsxGatewayTier0 ConfigNsxGatewayTier0Value `tfsdk:"config_nsx_gateway_tier0"`
-	ConfigNsxGatewayTier1 ConfigNsxGatewayTier1Value `tfsdk:"config_nsx_gateway_tier1"`
-	EnableBgp             types.Bool                 `tfsdk:"enable_bgp"`
-	Enabled               types.Bool                 `tfsdk:"enabled"`
-	GroupId               types.Int64                `tfsdk:"group_id"`
-	Id                    types.Int64                `tfsdk:"id"`
-	Name                  types.String               `tfsdk:"name"`
-	NetworkIntegrationId  types.Int64                `tfsdk:"network_integration_id"`
-	SharedGroupAccess     types.Bool                 `tfsdk:"shared_group_access"`
-	TypeId                types.Int64                `tfsdk:"type_id"`
+	CloudId                types.Int64                 `tfsdk:"cloud_id"`
+	Code                   types.String                `tfsdk:"code"`
+	Config                 types.Dynamic               `tfsdk:"config"`
+	ConfigNsxtGatewayTier0 ConfigNsxtGatewayTier0Value `tfsdk:"config_nsxt_gateway_tier0"`
+	ConfigNsxtGatewayTier1 ConfigNsxtGatewayTier1Value `tfsdk:"config_nsxt_gateway_tier1"`
+	EnableBgp              types.Bool                  `tfsdk:"enable_bgp"`
+	Enabled                types.Bool                  `tfsdk:"enabled"`
+	GroupId                types.Int64                 `tfsdk:"group_id"`
+	Id                     types.Int64                 `tfsdk:"id"`
+	Name                   types.String                `tfsdk:"name"`
+	NetworkIntegrationId   types.Int64                 `tfsdk:"network_integration_id"`
+	SharedGroupAccess      types.Bool                  `tfsdk:"shared_group_access"`
+	TypeId                 types.Int64                 `tfsdk:"type_id"`
 }
 
-var _ basetypes.ObjectTypable = ConfigNsxGatewayTier0Type{}
+var _ basetypes.ObjectTypable = ConfigNsxtGatewayTier0Type{}
 
-type ConfigNsxGatewayTier0Type struct {
+type ConfigNsxtGatewayTier0Type struct {
 	basetypes.ObjectType
 }
 
-func (t ConfigNsxGatewayTier0Type) Equal(o attr.Type) bool {
-	other, ok := o.(ConfigNsxGatewayTier0Type)
+func (t ConfigNsxtGatewayTier0Type) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtGatewayTier0Type)
 
 	if !ok {
 		return false
@@ -419,19 +419,19 @@ func (t ConfigNsxGatewayTier0Type) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t ConfigNsxGatewayTier0Type) String() string {
-	return "ConfigNsxGatewayTier0Type"
+func (t ConfigNsxtGatewayTier0Type) String() string {
+	return "ConfigNsxtGatewayTier0Type"
 }
 
-func (t ConfigNsxGatewayTier0Type) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewConfigNsxGatewayTier0ValueUnknown(), nil
+		return NewConfigNsxtGatewayTier0ValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxGatewayTier0ValueNull(), nil
+		return NewConfigNsxtGatewayTier0ValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -944,7 +944,7 @@ func (t ConfigNsxGatewayTier0Type) ValueFromObject(ctx context.Context, in baset
 		return nil, diags
 	}
 
-	return ConfigNsxGatewayTier0Value{
+	return ConfigNsxtGatewayTier0Value{
 		Ecmp:                    ecmpVal,
 		EdgeCluster:             edgeClusterVal,
 		FailOver:                failOverVal,
@@ -977,19 +977,19 @@ func (t ConfigNsxGatewayTier0Type) ValueFromObject(ctx context.Context, in baset
 	}, diags
 }
 
-func NewConfigNsxGatewayTier0ValueNull() ConfigNsxGatewayTier0Value {
-	return ConfigNsxGatewayTier0Value{
+func NewConfigNsxtGatewayTier0ValueNull() ConfigNsxtGatewayTier0Value {
+	return ConfigNsxtGatewayTier0Value{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewConfigNsxGatewayTier0ValueUnknown() ConfigNsxGatewayTier0Value {
-	return ConfigNsxGatewayTier0Value{
+func NewConfigNsxtGatewayTier0ValueUnknown() ConfigNsxtGatewayTier0Value {
+	return ConfigNsxtGatewayTier0Value{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxGatewayTier0Value, diag.Diagnostics) {
+func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtGatewayTier0Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -1000,11 +1000,11 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 
 		if !ok {
 			diags.AddError(
-				"Missing ConfigNsxGatewayTier0Value Attribute Value",
-				"While creating a ConfigNsxGatewayTier0Value value, a missing attribute value was detected. "+
-					"A ConfigNsxGatewayTier0Value must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigNsxtGatewayTier0Value Attribute Value",
+				"While creating a ConfigNsxtGatewayTier0Value value, a missing attribute value was detected. "+
+					"A ConfigNsxtGatewayTier0Value must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxGatewayTier0Value Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigNsxtGatewayTier0Value Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -1012,12 +1012,12 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid ConfigNsxGatewayTier0Value Attribute Type",
-				"While creating a ConfigNsxGatewayTier0Value value, an invalid attribute value was detected. "+
-					"A ConfigNsxGatewayTier0Value must use a matching attribute type for the value. "+
+				"Invalid ConfigNsxtGatewayTier0Value Attribute Type",
+				"While creating a ConfigNsxtGatewayTier0Value value, an invalid attribute value was detected. "+
+					"A ConfigNsxtGatewayTier0Value must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxGatewayTier0Value Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("ConfigNsxGatewayTier0Value Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigNsxtGatewayTier0Value Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtGatewayTier0Value Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -1027,17 +1027,17 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 
 		if !ok {
 			diags.AddError(
-				"Extra ConfigNsxGatewayTier0Value Attribute Value",
-				"While creating a ConfigNsxGatewayTier0Value value, an extra attribute value was detected. "+
-					"A ConfigNsxGatewayTier0Value must not contain values beyond the expected attribute types. "+
+				"Extra ConfigNsxtGatewayTier0Value Attribute Value",
+				"While creating a ConfigNsxtGatewayTier0Value value, an extra attribute value was detected. "+
+					"A ConfigNsxtGatewayTier0Value must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra ConfigNsxGatewayTier0Value Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigNsxtGatewayTier0Value Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	ecmpAttribute, ok := attributes["ecmp"]
@@ -1047,7 +1047,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ecmp is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	ecmpVal, ok := ecmpAttribute.(basetypes.BoolValue)
@@ -1065,7 +1065,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`edge_cluster is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	edgeClusterVal, ok := edgeClusterAttribute.(basetypes.StringValue)
@@ -1083,7 +1083,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`fail_over is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	failOverVal, ok := failOverAttribute.(basetypes.StringValue)
@@ -1101,7 +1101,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ha_mode is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	haModeVal, ok := haModeAttribute.(basetypes.StringValue)
@@ -1119,7 +1119,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`inter_sr_ibgp is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	interSrIbgpVal, ok := interSrIbgpAttribute.(basetypes.BoolValue)
@@ -1137,7 +1137,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ip_management_type is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	ipManagementTypeVal, ok := ipManagementTypeAttribute.(basetypes.StringValue)
@@ -1155,7 +1155,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ip_server_id is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	ipServerIdVal, ok := ipServerIdAttribute.(basetypes.StringValue)
@@ -1173,7 +1173,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`local_as_num is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	localAsNumVal, ok := localAsNumAttribute.(basetypes.StringValue)
@@ -1191,7 +1191,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`multipath_relax is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	multipathRelaxVal, ok := multipathRelaxAttribute.(basetypes.BoolValue)
@@ -1209,7 +1209,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`restart_mode is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	restartModeVal, ok := restartModeAttribute.(basetypes.StringValue)
@@ -1227,7 +1227,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`restart_time is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	restartTimeVal, ok := restartTimeAttribute.(basetypes.Int64Value)
@@ -1245,7 +1245,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`stale_route_time is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	staleRouteTimeVal, ok := staleRouteTimeAttribute.(basetypes.Int64Value)
@@ -1263,7 +1263,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_dns_forwarder_ip is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0DnsForwarderIpVal, ok := tier0DnsForwarderIpAttribute.(basetypes.BoolValue)
@@ -1281,7 +1281,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_external_interface is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0ExternalInterfaceVal, ok := tier0ExternalInterfaceAttribute.(basetypes.BoolValue)
@@ -1299,7 +1299,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_ipsec_local_ip is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0IpsecLocalIpVal, ok := tier0IpsecLocalIpAttribute.(basetypes.BoolValue)
@@ -1317,7 +1317,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_loopback_interface is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0LoopbackInterfaceVal, ok := tier0LoopbackInterfaceAttribute.(basetypes.BoolValue)
@@ -1335,7 +1335,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_nat is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0NatVal, ok := tier0NatAttribute.(basetypes.BoolValue)
@@ -1353,7 +1353,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_segment is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0SegmentVal, ok := tier0SegmentAttribute.(basetypes.BoolValue)
@@ -1371,7 +1371,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_service_interface is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0ServiceInterfaceVal, ok := tier0ServiceInterfaceAttribute.(basetypes.BoolValue)
@@ -1389,7 +1389,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_static is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier0StaticVal, ok := tier0StaticAttribute.(basetypes.BoolValue)
@@ -1407,7 +1407,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_dns_forwarder_ip is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1DnsForwarderIpVal, ok := tier1DnsForwarderIpAttribute.(basetypes.BoolValue)
@@ -1425,7 +1425,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_ipsec_local_endpoint is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1IpsecLocalEndpointVal, ok := tier1IpsecLocalEndpointAttribute.(basetypes.BoolValue)
@@ -1443,7 +1443,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_lb_snat is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1LbSnatVal, ok := tier1LbSnatAttribute.(basetypes.BoolValue)
@@ -1461,7 +1461,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_lb_vip is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1LbVipVal, ok := tier1LbVipAttribute.(basetypes.BoolValue)
@@ -1479,7 +1479,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_nat is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1NatVal, ok := tier1NatAttribute.(basetypes.BoolValue)
@@ -1497,7 +1497,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_segment is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1SegmentVal, ok := tier1SegmentAttribute.(basetypes.BoolValue)
@@ -1515,7 +1515,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_service_interface is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1ServiceInterfaceVal, ok := tier1ServiceInterfaceAttribute.(basetypes.BoolValue)
@@ -1533,7 +1533,7 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_static is missing from object`)
 
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
 	tier1StaticVal, ok := tier1StaticAttribute.(basetypes.BoolValue)
@@ -1545,10 +1545,10 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxGatewayTier0ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
 
-	return ConfigNsxGatewayTier0Value{
+	return ConfigNsxtGatewayTier0Value{
 		Ecmp:                    ecmpVal,
 		EdgeCluster:             edgeClusterVal,
 		FailOver:                failOverVal,
@@ -1581,8 +1581,8 @@ func NewConfigNsxGatewayTier0Value(attributeTypes map[string]attr.Type, attribut
 	}, diags
 }
 
-func NewConfigNsxGatewayTier0ValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxGatewayTier0Value {
-	object, diags := NewConfigNsxGatewayTier0Value(attributeTypes, attributes)
+func NewConfigNsxtGatewayTier0ValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtGatewayTier0Value {
+	object, diags := NewConfigNsxtGatewayTier0Value(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -1596,15 +1596,15 @@ func NewConfigNsxGatewayTier0ValueMust(attributeTypes map[string]attr.Type, attr
 				diagnostic.Detail()))
 		}
 
-		panic("NewConfigNsxGatewayTier0ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigNsxtGatewayTier0ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t ConfigNsxGatewayTier0Type) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigNsxtGatewayTier0Type) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewConfigNsxGatewayTier0ValueNull(), nil
+		return NewConfigNsxtGatewayTier0ValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -1612,11 +1612,11 @@ func (t ConfigNsxGatewayTier0Type) ValueFromTerraform(ctx context.Context, in tf
 	}
 
 	if !in.IsKnown() {
-		return NewConfigNsxGatewayTier0ValueUnknown(), nil
+		return NewConfigNsxtGatewayTier0ValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxGatewayTier0ValueNull(), nil
+		return NewConfigNsxtGatewayTier0ValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -1639,16 +1639,16 @@ func (t ConfigNsxGatewayTier0Type) ValueFromTerraform(ctx context.Context, in tf
 		attributes[k] = a
 	}
 
-	return NewConfigNsxGatewayTier0ValueMust(ConfigNsxGatewayTier0Value{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigNsxtGatewayTier0ValueMust(ConfigNsxtGatewayTier0Value{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t ConfigNsxGatewayTier0Type) ValueType(ctx context.Context) attr.Value {
-	return ConfigNsxGatewayTier0Value{}
+func (t ConfigNsxtGatewayTier0Type) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtGatewayTier0Value{}
 }
 
-var _ basetypes.ObjectValuable = ConfigNsxGatewayTier0Value{}
+var _ basetypes.ObjectValuable = ConfigNsxtGatewayTier0Value{}
 
-type ConfigNsxGatewayTier0Value struct {
+type ConfigNsxtGatewayTier0Value struct {
 	Ecmp                    basetypes.BoolValue   `tfsdk:"ecmp"`
 	EdgeCluster             basetypes.StringValue `tfsdk:"edge_cluster"`
 	FailOver                basetypes.StringValue `tfsdk:"fail_over"`
@@ -1680,7 +1680,7 @@ type ConfigNsxGatewayTier0Value struct {
 	state                   attr.ValueState
 }
 
-func (v ConfigNsxGatewayTier0Value) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigNsxtGatewayTier0Value) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 28)
 
 	var val tftypes.Value
@@ -1959,19 +1959,19 @@ func (v ConfigNsxGatewayTier0Value) ToTerraformValue(ctx context.Context) (tftyp
 	}
 }
 
-func (v ConfigNsxGatewayTier0Value) IsNull() bool {
+func (v ConfigNsxtGatewayTier0Value) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v ConfigNsxGatewayTier0Value) IsUnknown() bool {
+func (v ConfigNsxtGatewayTier0Value) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v ConfigNsxGatewayTier0Value) String() string {
-	return "ConfigNsxGatewayTier0Value"
+func (v ConfigNsxtGatewayTier0Value) String() string {
+	return "ConfigNsxtGatewayTier0Value"
 }
 
-func (v ConfigNsxGatewayTier0Value) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigNsxtGatewayTier0Value) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -2049,8 +2049,8 @@ func (v ConfigNsxGatewayTier0Value) ToObjectValue(ctx context.Context) (basetype
 	return objVal, diags
 }
 
-func (v ConfigNsxGatewayTier0Value) Equal(o attr.Value) bool {
-	other, ok := o.(ConfigNsxGatewayTier0Value)
+func (v ConfigNsxtGatewayTier0Value) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtGatewayTier0Value)
 
 	if !ok {
 		return false
@@ -2179,15 +2179,15 @@ func (v ConfigNsxGatewayTier0Value) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v ConfigNsxGatewayTier0Value) Type(ctx context.Context) attr.Type {
-	return ConfigNsxGatewayTier0Type{
+func (v ConfigNsxtGatewayTier0Value) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtGatewayTier0Type{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v ConfigNsxGatewayTier0Value) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigNsxtGatewayTier0Value) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"ecmp":                       basetypes.BoolType{},
 		"edge_cluster":               basetypes.StringType{},
@@ -2220,14 +2220,14 @@ func (v ConfigNsxGatewayTier0Value) AttributeTypes(ctx context.Context) map[stri
 	}
 }
 
-var _ basetypes.ObjectTypable = ConfigNsxGatewayTier1Type{}
+var _ basetypes.ObjectTypable = ConfigNsxtGatewayTier1Type{}
 
-type ConfigNsxGatewayTier1Type struct {
+type ConfigNsxtGatewayTier1Type struct {
 	basetypes.ObjectType
 }
 
-func (t ConfigNsxGatewayTier1Type) Equal(o attr.Type) bool {
-	other, ok := o.(ConfigNsxGatewayTier1Type)
+func (t ConfigNsxtGatewayTier1Type) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtGatewayTier1Type)
 
 	if !ok {
 		return false
@@ -2236,19 +2236,19 @@ func (t ConfigNsxGatewayTier1Type) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t ConfigNsxGatewayTier1Type) String() string {
-	return "ConfigNsxGatewayTier1Type"
+func (t ConfigNsxtGatewayTier1Type) String() string {
+	return "ConfigNsxtGatewayTier1Type"
 }
 
-func (t ConfigNsxGatewayTier1Type) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewConfigNsxGatewayTier1ValueUnknown(), nil
+		return NewConfigNsxtGatewayTier1ValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxGatewayTier1ValueNull(), nil
+		return NewConfigNsxtGatewayTier1ValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -2473,7 +2473,7 @@ func (t ConfigNsxGatewayTier1Type) ValueFromObject(ctx context.Context, in baset
 		return nil, diags
 	}
 
-	return ConfigNsxGatewayTier1Value{
+	return ConfigNsxtGatewayTier1Value{
 		EdgeCluster:             edgeClusterVal,
 		FailOver:                failOverVal,
 		IpManagementType:        ipManagementTypeVal,
@@ -2490,19 +2490,19 @@ func (t ConfigNsxGatewayTier1Type) ValueFromObject(ctx context.Context, in baset
 	}, diags
 }
 
-func NewConfigNsxGatewayTier1ValueNull() ConfigNsxGatewayTier1Value {
-	return ConfigNsxGatewayTier1Value{
+func NewConfigNsxtGatewayTier1ValueNull() ConfigNsxtGatewayTier1Value {
+	return ConfigNsxtGatewayTier1Value{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewConfigNsxGatewayTier1ValueUnknown() ConfigNsxGatewayTier1Value {
-	return ConfigNsxGatewayTier1Value{
+func NewConfigNsxtGatewayTier1ValueUnknown() ConfigNsxtGatewayTier1Value {
+	return ConfigNsxtGatewayTier1Value{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxGatewayTier1Value, diag.Diagnostics) {
+func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtGatewayTier1Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -2513,11 +2513,11 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 
 		if !ok {
 			diags.AddError(
-				"Missing ConfigNsxGatewayTier1Value Attribute Value",
-				"While creating a ConfigNsxGatewayTier1Value value, a missing attribute value was detected. "+
-					"A ConfigNsxGatewayTier1Value must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigNsxtGatewayTier1Value Attribute Value",
+				"While creating a ConfigNsxtGatewayTier1Value value, a missing attribute value was detected. "+
+					"A ConfigNsxtGatewayTier1Value must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxGatewayTier1Value Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigNsxtGatewayTier1Value Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -2525,12 +2525,12 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid ConfigNsxGatewayTier1Value Attribute Type",
-				"While creating a ConfigNsxGatewayTier1Value value, an invalid attribute value was detected. "+
-					"A ConfigNsxGatewayTier1Value must use a matching attribute type for the value. "+
+				"Invalid ConfigNsxtGatewayTier1Value Attribute Type",
+				"While creating a ConfigNsxtGatewayTier1Value value, an invalid attribute value was detected. "+
+					"A ConfigNsxtGatewayTier1Value must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxGatewayTier1Value Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("ConfigNsxGatewayTier1Value Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigNsxtGatewayTier1Value Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtGatewayTier1Value Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -2540,17 +2540,17 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 
 		if !ok {
 			diags.AddError(
-				"Extra ConfigNsxGatewayTier1Value Attribute Value",
-				"While creating a ConfigNsxGatewayTier1Value value, an extra attribute value was detected. "+
-					"A ConfigNsxGatewayTier1Value must not contain values beyond the expected attribute types. "+
+				"Extra ConfigNsxtGatewayTier1Value Attribute Value",
+				"While creating a ConfigNsxtGatewayTier1Value value, an extra attribute value was detected. "+
+					"A ConfigNsxtGatewayTier1Value must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra ConfigNsxGatewayTier1Value Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigNsxtGatewayTier1Value Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -2560,7 +2560,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`edge_cluster is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	edgeClusterVal, ok := edgeClusterAttribute.(basetypes.StringValue)
@@ -2578,7 +2578,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`fail_over is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	failOverVal, ok := failOverAttribute.(basetypes.StringValue)
@@ -2596,7 +2596,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ip_management_type is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	ipManagementTypeVal, ok := ipManagementTypeAttribute.(basetypes.StringValue)
@@ -2614,7 +2614,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`ip_server_id is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	ipServerIdVal, ok := ipServerIdAttribute.(basetypes.StringValue)
@@ -2632,7 +2632,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier0_gateway is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier0GatewayVal, ok := tier0GatewayAttribute.(basetypes.StringValue)
@@ -2650,7 +2650,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_connected is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1ConnectedVal, ok := tier1ConnectedAttribute.(basetypes.BoolValue)
@@ -2668,7 +2668,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_dns_forwarder_ip is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1DnsForwarderIpVal, ok := tier1DnsForwarderIpAttribute.(basetypes.BoolValue)
@@ -2686,7 +2686,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_ipsec_local_endpoint is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1IpsecLocalEndpointVal, ok := tier1IpsecLocalEndpointAttribute.(basetypes.BoolValue)
@@ -2704,7 +2704,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_lb_snat is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1LbSnatVal, ok := tier1LbSnatAttribute.(basetypes.BoolValue)
@@ -2722,7 +2722,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_lb_vip is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1LbVipVal, ok := tier1LbVipAttribute.(basetypes.BoolValue)
@@ -2740,7 +2740,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_nat is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1NatVal, ok := tier1NatAttribute.(basetypes.BoolValue)
@@ -2758,7 +2758,7 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 			"Attribute Missing",
 			`tier1_static_routes is missing from object`)
 
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
 	tier1StaticRoutesVal, ok := tier1StaticRoutesAttribute.(basetypes.BoolValue)
@@ -2770,10 +2770,10 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxGatewayTier1ValueUnknown(), diags
+		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
 
-	return ConfigNsxGatewayTier1Value{
+	return ConfigNsxtGatewayTier1Value{
 		EdgeCluster:             edgeClusterVal,
 		FailOver:                failOverVal,
 		IpManagementType:        ipManagementTypeVal,
@@ -2790,8 +2790,8 @@ func NewConfigNsxGatewayTier1Value(attributeTypes map[string]attr.Type, attribut
 	}, diags
 }
 
-func NewConfigNsxGatewayTier1ValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxGatewayTier1Value {
-	object, diags := NewConfigNsxGatewayTier1Value(attributeTypes, attributes)
+func NewConfigNsxtGatewayTier1ValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtGatewayTier1Value {
+	object, diags := NewConfigNsxtGatewayTier1Value(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -2805,15 +2805,15 @@ func NewConfigNsxGatewayTier1ValueMust(attributeTypes map[string]attr.Type, attr
 				diagnostic.Detail()))
 		}
 
-		panic("NewConfigNsxGatewayTier1ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigNsxtGatewayTier1ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t ConfigNsxGatewayTier1Type) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigNsxtGatewayTier1Type) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewConfigNsxGatewayTier1ValueNull(), nil
+		return NewConfigNsxtGatewayTier1ValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -2821,11 +2821,11 @@ func (t ConfigNsxGatewayTier1Type) ValueFromTerraform(ctx context.Context, in tf
 	}
 
 	if !in.IsKnown() {
-		return NewConfigNsxGatewayTier1ValueUnknown(), nil
+		return NewConfigNsxtGatewayTier1ValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxGatewayTier1ValueNull(), nil
+		return NewConfigNsxtGatewayTier1ValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -2848,16 +2848,16 @@ func (t ConfigNsxGatewayTier1Type) ValueFromTerraform(ctx context.Context, in tf
 		attributes[k] = a
 	}
 
-	return NewConfigNsxGatewayTier1ValueMust(ConfigNsxGatewayTier1Value{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigNsxtGatewayTier1ValueMust(ConfigNsxtGatewayTier1Value{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t ConfigNsxGatewayTier1Type) ValueType(ctx context.Context) attr.Value {
-	return ConfigNsxGatewayTier1Value{}
+func (t ConfigNsxtGatewayTier1Type) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtGatewayTier1Value{}
 }
 
-var _ basetypes.ObjectValuable = ConfigNsxGatewayTier1Value{}
+var _ basetypes.ObjectValuable = ConfigNsxtGatewayTier1Value{}
 
-type ConfigNsxGatewayTier1Value struct {
+type ConfigNsxtGatewayTier1Value struct {
 	EdgeCluster             basetypes.StringValue `tfsdk:"edge_cluster"`
 	FailOver                basetypes.StringValue `tfsdk:"fail_over"`
 	IpManagementType        basetypes.StringValue `tfsdk:"ip_management_type"`
@@ -2873,7 +2873,7 @@ type ConfigNsxGatewayTier1Value struct {
 	state                   attr.ValueState
 }
 
-func (v ConfigNsxGatewayTier1Value) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigNsxtGatewayTier1Value) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 12)
 
 	var val tftypes.Value
@@ -3008,19 +3008,19 @@ func (v ConfigNsxGatewayTier1Value) ToTerraformValue(ctx context.Context) (tftyp
 	}
 }
 
-func (v ConfigNsxGatewayTier1Value) IsNull() bool {
+func (v ConfigNsxtGatewayTier1Value) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v ConfigNsxGatewayTier1Value) IsUnknown() bool {
+func (v ConfigNsxtGatewayTier1Value) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v ConfigNsxGatewayTier1Value) String() string {
-	return "ConfigNsxGatewayTier1Value"
+func (v ConfigNsxtGatewayTier1Value) String() string {
+	return "ConfigNsxtGatewayTier1Value"
 }
 
-func (v ConfigNsxGatewayTier1Value) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigNsxtGatewayTier1Value) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -3066,8 +3066,8 @@ func (v ConfigNsxGatewayTier1Value) ToObjectValue(ctx context.Context) (basetype
 	return objVal, diags
 }
 
-func (v ConfigNsxGatewayTier1Value) Equal(o attr.Value) bool {
-	other, ok := o.(ConfigNsxGatewayTier1Value)
+func (v ConfigNsxtGatewayTier1Value) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtGatewayTier1Value)
 
 	if !ok {
 		return false
@@ -3132,15 +3132,15 @@ func (v ConfigNsxGatewayTier1Value) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v ConfigNsxGatewayTier1Value) Type(ctx context.Context) attr.Type {
-	return ConfigNsxGatewayTier1Type{
+func (v ConfigNsxtGatewayTier1Value) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtGatewayTier1Type{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v ConfigNsxGatewayTier1Value) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigNsxtGatewayTier1Value) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"edge_cluster":               basetypes.StringType{},
 		"fail_over":                  basetypes.StringType{},
