@@ -11,8 +11,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example.tf example.tf.tmpl LoadBalancerId 1 VipName "example-vip" Description "Example virtual server" VipAddress "10.0.0.1" VipPort 80 VipProtocol "HTTP"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf example_nsxt.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.2" VipPort 443 VipProtocol "HTTPS" ApplicationProfile "/infra/lb-app-profiles/default-http-lb-app-profile"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example.tf example.tf.tmpl LoadBalancerId 1 VipName "example-vip" Description "Example virtual server" VipAddress "10.0.0.1" VipPort 80 VipProtocol "http"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf example_nsxt.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.2" VipPort 443 VipProtocol "https" ApplicationProfile "/infra/lb-app-profiles/default-http-lb-app-profile"
 
 func RenderLoadBalancerVirtualServerConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -23,7 +23,7 @@ func RenderLoadBalancerVirtualServerConfig(t *testing.T, overrides map[string]st
 		"Description":    "Example virtual server",
 		"VipAddress":     "10.0.0.1",
 		"VipPort":        "80",
-		"VipProtocol":    "HTTP",
+		"VipProtocol":    "http",
 	}
 
 	for key, value := range overrides {
@@ -59,7 +59,7 @@ func RenderLoadBalancerVirtualServerNsxtConfig(t *testing.T, overrides map[strin
 		"Description":        "Example NSX-T virtual server",
 		"VipAddress":         "10.0.0.2",
 		"VipPort":            "443",
-		"VipProtocol":        "HTTPS",
+		"VipProtocol":        "https",
 		"ApplicationProfile": "/infra/lb-app-profiles/default-http-lb-app-profile",
 	}
 

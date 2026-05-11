@@ -50,7 +50,7 @@ func TestAccMorpheusLoadBalancerVirtualServerExampleOk(t *testing.T) {
 		"Description":    "test virtual server",
 		"VipAddress":     "10.0.0.100",
 		"VipPort":        "80",
-		"VipProtocol":    "HTTP",
+		"VipProtocol":    "http",
 	})
 	if err != nil {
 		t.Fatalf("failed to render vs config: %s", err)
@@ -66,7 +66,7 @@ func TestAccMorpheusLoadBalancerVirtualServerExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "description", "test virtual server"),
 		resource.TestCheckResourceAttr(resourceName, "vip_address", "10.0.0.100"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "80"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "HTTP"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "http"),
 		resource.TestCheckResourceAttrPair(
 			resourceName, "load_balancer_id",
 			"hpe_morpheus_load_balancer.haproxy", "id",
@@ -131,7 +131,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "test" {
   vip_name         = "` + vipName + `"
   description      = "initial description"
   vip_port         = 80
-  vip_protocol     = "HTTP"
+  vip_protocol     = "http"
 }
 `
 
@@ -142,7 +142,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "test" {
   vip_name         = "` + updatedVipName + `"
   description      = "updated description"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 }
 `
 
@@ -151,7 +151,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "test" {
 		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
 		resource.TestCheckResourceAttr(resourceName, "description", "initial description"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "80"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "HTTP"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "http"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -159,7 +159,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "test" {
 		resource.TestCheckResourceAttr(resourceName, "vip_name", updatedVipName),
 		resource.TestCheckResourceAttr(resourceName, "description", "updated description"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "443"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "HTTPS"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
 	)
 
 	resource.Test(t, resource.TestCase{

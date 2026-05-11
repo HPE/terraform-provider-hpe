@@ -4,5 +4,5 @@ resource "hpe_morpheus_load_balancer_virtual_server" "example" {
   description      = "Example virtual server"
   vip_address      = "10.0.0.1"
   vip_port         = 80
-  vip_protocol     = "HTTP"
+  vip_protocol     = "http"
 }

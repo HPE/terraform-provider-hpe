@@ -40,7 +40,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		"Description":        "test nsxt virtual server",
 		"VipAddress":         "10.0.0.200",
 		"VipPort":            "443",
-		"VipProtocol":        "HTTPS",
+		"VipProtocol":        "https",
 		"ApplicationProfile": "/infra/lb-app-profiles/default-http-lb-app-profile",
 	})
 	if err != nil {
@@ -56,7 +56,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "description", "test nsxt virtual server"),
 		resource.TestCheckResourceAttr(resourceName, "vip_address", "10.0.0.200"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "443"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "HTTPS"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
 			"/infra/lb-app-profiles/default-http-lb-app-profile"),
 		resource.TestCheckResourceAttr(resourceName, "load_balancer_id", nsxtLBID),
@@ -113,7 +113,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
   vip_name         = "` + vipName + `"
   description      = "nsxt update test"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 
   config_nsxt = {
     application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
@@ -128,7 +128,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
   vip_name         = "` + updatedVipName + `"
   description      = "nsxt update test updated"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 
   config_nsxt = {
     application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
@@ -150,7 +150,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
 		resource.TestCheckResourceAttr(resourceName, "description", "nsxt update test"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "443"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "HTTPS"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
 			"/infra/lb-app-profiles/default-http-lb-app-profile"),
 	)
@@ -202,7 +202,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 
   config_nsxt = {
     application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
@@ -216,7 +216,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 
   config_nsxt = {
     application_profile = "/infra/lb-app-profiles/default-tcp-lb-app-profile"

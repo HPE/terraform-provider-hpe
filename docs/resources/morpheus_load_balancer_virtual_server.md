@@ -17,7 +17,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "example" {
   description      = "Example virtual server"
   vip_address      = "10.0.0.1"
   vip_port         = 80
-  vip_protocol     = "HTTP"
+  vip_protocol     = "http"
 }
 ```
 
@@ -30,7 +30,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
   description      = "Example NSX-T virtual server"
   vip_address      = "10.0.0.2"
   vip_port         = 443
-  vip_protocol     = "HTTPS"
+  vip_protocol     = "https"
 
   config_nsxt = {
     application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
