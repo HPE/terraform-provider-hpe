@@ -51,25 +51,25 @@ func (r *Resource) Create(
 	}
 
 	switch {
-	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
 		nsxConfig := sdk.NewNSXDHCPServerConfiguration1()
 
-		if !plan.ConfigNsx.EdgeCluster.IsNull() &&
-			!plan.ConfigNsx.EdgeCluster.IsUnknown() {
-			nsxConfig.SetEdgeCluster(plan.ConfigNsx.EdgeCluster.ValueString())
+		if !plan.ConfigNsxt.EdgeCluster.IsNull() &&
+			!plan.ConfigNsxt.EdgeCluster.IsUnknown() {
+			nsxConfig.SetEdgeCluster(plan.ConfigNsxt.EdgeCluster.ValueString())
 		}
 
-		if !plan.ConfigNsx.ActiveEdgeNode.IsNull() &&
-			!plan.ConfigNsx.ActiveEdgeNode.IsUnknown() {
+		if !plan.ConfigNsxt.ActiveEdgeNode.IsNull() &&
+			!plan.ConfigNsxt.ActiveEdgeNode.IsUnknown() {
 			nsxConfig.SetPreferredEdgeNode1(
-				plan.ConfigNsx.ActiveEdgeNode.ValueString(),
+				plan.ConfigNsxt.ActiveEdgeNode.ValueString(),
 			)
 		}
 
-		if !plan.ConfigNsx.StandbyEdgeNode.IsNull() &&
-			!plan.ConfigNsx.StandbyEdgeNode.IsUnknown() {
+		if !plan.ConfigNsxt.StandbyEdgeNode.IsNull() &&
+			!plan.ConfigNsxt.StandbyEdgeNode.IsUnknown() {
 			nsxConfig.SetPreferredEdgeNode2(
-				plan.ConfigNsx.StandbyEdgeNode.ValueString(),
+				plan.ConfigNsxt.StandbyEdgeNode.ValueString(),
 			)
 		}
 
