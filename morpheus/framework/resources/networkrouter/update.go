@@ -50,7 +50,6 @@ func (r *Resource) Update(
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
 		router.SetName(plan.Name.ValueString())
-
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
