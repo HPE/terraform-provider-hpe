@@ -78,7 +78,7 @@ Optional:
 
 ## Import
 
-BGP neighbors can be imported using the `router_id:id` format, e.g.
+BGP neighbors can be imported using the `router_id.id` format, e.g.
 
 ```shell
 # Import using router_id.id format

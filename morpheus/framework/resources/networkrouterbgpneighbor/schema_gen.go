@@ -8,6 +8,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -83,6 +84,9 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Configuration for NSX-T Tier-0/Tier-1 router BGP neighbors",
 				MarkdownDescription: "Configuration for NSX-T Tier-0/Tier-1 router BGP neighbors",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nsxv")}...),
+				},
 			},
 			"config_nsxv": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
