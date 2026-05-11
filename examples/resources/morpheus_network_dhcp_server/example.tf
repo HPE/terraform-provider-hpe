@@ -4,7 +4,7 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
   server_ip_address      = "192.168.1.1/24"
   lease_time             = 86400
 
-  config_nsx = {
+  config_nsxt = {
     edge_cluster = "qa-edge-cluster-01"
   }
 }
