@@ -26,7 +26,7 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Generic DHCP Server Configuration",
 				MarkdownDescription: "Generic DHCP Server Configuration",
 			},
-			"config_nsx": schema.SingleNestedAttribute{
+			"config_nsxt": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"active_edge_node": schema.StringAttribute{
 						Optional:            true,
@@ -47,9 +47,9 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Standby Edge Node",
 					},
 				},
-				CustomType: ConfigNsxType{
+				CustomType: ConfigNsxtType{
 					ObjectType: types.ObjectType{
-						AttrTypes: ConfigNsxValue{}.AttributeTypes(ctx),
+						AttrTypes: ConfigNsxtValue{}.AttributeTypes(ctx),
 					},
 				},
 				Optional:            true,
@@ -92,23 +92,23 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkDhcpServerModel struct {
-	Config               types.Dynamic  `tfsdk:"config"`
-	ConfigNsx            ConfigNsxValue `tfsdk:"config_nsx"`
-	Id                   types.Int64    `tfsdk:"id"`
-	LeaseTime            types.Int64    `tfsdk:"lease_time"`
-	Name                 types.String   `tfsdk:"name"`
-	NetworkIntegrationId types.Int64    `tfsdk:"network_integration_id"`
-	ServerIpAddress      types.String   `tfsdk:"server_ip_address"`
+	Config               types.Dynamic   `tfsdk:"config"`
+	ConfigNsxt           ConfigNsxtValue `tfsdk:"config_nsxt"`
+	Id                   types.Int64     `tfsdk:"id"`
+	LeaseTime            types.Int64     `tfsdk:"lease_time"`
+	Name                 types.String    `tfsdk:"name"`
+	NetworkIntegrationId types.Int64     `tfsdk:"network_integration_id"`
+	ServerIpAddress      types.String    `tfsdk:"server_ip_address"`
 }
 
-var _ basetypes.ObjectTypable = ConfigNsxType{}
+var _ basetypes.ObjectTypable = ConfigNsxtType{}
 
-type ConfigNsxType struct {
+type ConfigNsxtType struct {
 	basetypes.ObjectType
 }
 
-func (t ConfigNsxType) Equal(o attr.Type) bool {
-	other, ok := o.(ConfigNsxType)
+func (t ConfigNsxtType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtType)
 
 	if !ok {
 		return false
@@ -117,19 +117,19 @@ func (t ConfigNsxType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t ConfigNsxType) String() string {
-	return "ConfigNsxType"
+func (t ConfigNsxtType) String() string {
+	return "ConfigNsxtType"
 }
 
-func (t ConfigNsxType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if in.IsUnknown() {
-		return NewConfigNsxValueUnknown(), nil
+		return NewConfigNsxtValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxValueNull(), nil
+		return NewConfigNsxtValueNull(), nil
 	}
 
 	attributes := in.Attributes()
@@ -192,7 +192,7 @@ func (t ConfigNsxType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 		return nil, diags
 	}
 
-	return ConfigNsxValue{
+	return ConfigNsxtValue{
 		ActiveEdgeNode:  activeEdgeNodeVal,
 		EdgeCluster:     edgeClusterVal,
 		StandbyEdgeNode: standbyEdgeNodeVal,
@@ -200,19 +200,19 @@ func (t ConfigNsxType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	}, diags
 }
 
-func NewConfigNsxValueNull() ConfigNsxValue {
-	return ConfigNsxValue{
+func NewConfigNsxtValueNull() ConfigNsxtValue {
+	return ConfigNsxtValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewConfigNsxValueUnknown() ConfigNsxValue {
-	return ConfigNsxValue{
+func NewConfigNsxtValueUnknown() ConfigNsxtValue {
+	return ConfigNsxtValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxValue, diag.Diagnostics) {
+func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -223,11 +223,11 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 
 		if !ok {
 			diags.AddError(
-				"Missing ConfigNsxValue Attribute Value",
-				"While creating a ConfigNsxValue value, a missing attribute value was detected. "+
-					"A ConfigNsxValue must contain values for all attributes, even if null or unknown. "+
+				"Missing ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, a missing attribute value was detected. "+
+					"A ConfigNsxtValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -235,12 +235,12 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid ConfigNsxValue Attribute Type",
-				"While creating a ConfigNsxValue value, an invalid attribute value was detected. "+
-					"A ConfigNsxValue must use a matching attribute type for the value. "+
+				"Invalid ConfigNsxtValue Attribute Type",
+				"While creating a ConfigNsxtValue value, an invalid attribute value was detected. "+
+					"A ConfigNsxtValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("ConfigNsxValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("ConfigNsxValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -250,17 +250,17 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 
 		if !ok {
 			diags.AddError(
-				"Extra ConfigNsxValue Attribute Value",
-				"While creating a ConfigNsxValue value, an extra attribute value was detected. "+
-					"A ConfigNsxValue must not contain values beyond the expected attribute types. "+
+				"Extra ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, an extra attribute value was detected. "+
+					"A ConfigNsxtValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra ConfigNsxValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra ConfigNsxtValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxValueUnknown(), diags
+		return NewConfigNsxtValueUnknown(), diags
 	}
 
 	activeEdgeNodeAttribute, ok := attributes["active_edge_node"]
@@ -270,7 +270,7 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 			"Attribute Missing",
 			`active_edge_node is missing from object`)
 
-		return NewConfigNsxValueUnknown(), diags
+		return NewConfigNsxtValueUnknown(), diags
 	}
 
 	activeEdgeNodeVal, ok := activeEdgeNodeAttribute.(basetypes.StringValue)
@@ -288,7 +288,7 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 			"Attribute Missing",
 			`edge_cluster is missing from object`)
 
-		return NewConfigNsxValueUnknown(), diags
+		return NewConfigNsxtValueUnknown(), diags
 	}
 
 	edgeClusterVal, ok := edgeClusterAttribute.(basetypes.StringValue)
@@ -306,7 +306,7 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 			"Attribute Missing",
 			`standby_edge_node is missing from object`)
 
-		return NewConfigNsxValueUnknown(), diags
+		return NewConfigNsxtValueUnknown(), diags
 	}
 
 	standbyEdgeNodeVal, ok := standbyEdgeNodeAttribute.(basetypes.StringValue)
@@ -318,10 +318,10 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 	}
 
 	if diags.HasError() {
-		return NewConfigNsxValueUnknown(), diags
+		return NewConfigNsxtValueUnknown(), diags
 	}
 
-	return ConfigNsxValue{
+	return ConfigNsxtValue{
 		ActiveEdgeNode:  activeEdgeNodeVal,
 		EdgeCluster:     edgeClusterVal,
 		StandbyEdgeNode: standbyEdgeNodeVal,
@@ -329,8 +329,8 @@ func NewConfigNsxValue(attributeTypes map[string]attr.Type, attributes map[strin
 	}, diags
 }
 
-func NewConfigNsxValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxValue {
-	object, diags := NewConfigNsxValue(attributeTypes, attributes)
+func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtValue {
+	object, diags := NewConfigNsxtValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -344,15 +344,15 @@ func NewConfigNsxValueMust(attributeTypes map[string]attr.Type, attributes map[s
 				diagnostic.Detail()))
 		}
 
-		panic("NewConfigNsxValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t ConfigNsxType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewConfigNsxValueNull(), nil
+		return NewConfigNsxtValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -360,11 +360,11 @@ func (t ConfigNsxType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	}
 
 	if !in.IsKnown() {
-		return NewConfigNsxValueUnknown(), nil
+		return NewConfigNsxtValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewConfigNsxValueNull(), nil
+		return NewConfigNsxtValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -387,23 +387,23 @@ func (t ConfigNsxType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 		attributes[k] = a
 	}
 
-	return NewConfigNsxValueMust(ConfigNsxValue{}.AttributeTypes(ctx), attributes), nil
+	return NewConfigNsxtValueMust(ConfigNsxtValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t ConfigNsxType) ValueType(ctx context.Context) attr.Value {
-	return ConfigNsxValue{}
+func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtValue{}
 }
 
-var _ basetypes.ObjectValuable = ConfigNsxValue{}
+var _ basetypes.ObjectValuable = ConfigNsxtValue{}
 
-type ConfigNsxValue struct {
+type ConfigNsxtValue struct {
 	ActiveEdgeNode  basetypes.StringValue `tfsdk:"active_edge_node"`
 	EdgeCluster     basetypes.StringValue `tfsdk:"edge_cluster"`
 	StandbyEdgeNode basetypes.StringValue `tfsdk:"standby_edge_node"`
 	state           attr.ValueState
 }
 
-func (v ConfigNsxValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 3)
 
 	var val tftypes.Value
@@ -457,19 +457,19 @@ func (v ConfigNsxValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 	}
 }
 
-func (v ConfigNsxValue) IsNull() bool {
+func (v ConfigNsxtValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v ConfigNsxValue) IsUnknown() bool {
+func (v ConfigNsxtValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v ConfigNsxValue) String() string {
-	return "ConfigNsxValue"
+func (v ConfigNsxtValue) String() string {
+	return "ConfigNsxtValue"
 }
 
-func (v ConfigNsxValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
@@ -497,8 +497,8 @@ func (v ConfigNsxValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	return objVal, diags
 }
 
-func (v ConfigNsxValue) Equal(o attr.Value) bool {
-	other, ok := o.(ConfigNsxValue)
+func (v ConfigNsxtValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtValue)
 
 	if !ok {
 		return false
@@ -527,15 +527,15 @@ func (v ConfigNsxValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v ConfigNsxValue) Type(ctx context.Context) attr.Type {
-	return ConfigNsxType{
+func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v ConfigNsxValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"active_edge_node":  basetypes.StringType{},
 		"edge_cluster":      basetypes.StringType{},

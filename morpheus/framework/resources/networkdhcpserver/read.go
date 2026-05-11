@@ -118,22 +118,22 @@ func getNetworkDhcpServerAsState(
 	}
 
 	state.Config = configState.config
-	state.ConfigNsx = configState.configNsx
+	state.ConfigNsxt = configState.configNsxt
 
 	return state, diags
 }
 
 type configResult struct {
-	config    types.Dynamic
-	configNsx ConfigNsxValue
+	config     types.Dynamic
+	configNsxt ConfigNsxtValue
 }
 
-// resolveConfigState determines whether the API response contains NSX config
+// resolveConfigState determines whether the API response contains NSXT config
 // or generic config and returns the appropriate Terraform state values.
 //
-// When the plan already indicates which variant the user wrote (config_nsx vs
+// When the plan already indicates which variant the user wrote (config_nsxt vs
 // config), we honour that. During import neither field is set, so we
-// auto-detect by attempting an NSX unmarshal first.
+// auto-detect by attempting an NSXT unmarshal first.
 func resolveConfigState(
 	ctx context.Context,
 	id int64,
@@ -142,23 +142,23 @@ func resolveConfigState(
 ) (configResult, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	planHasNsx := !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown()
+	planHasNsxt := !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown()
 	planHasDynamic := !plan.Config.IsNull() && !plan.Config.IsUnknown()
 
 	switch {
-	case planHasNsx:
-		nsx, nsxDiags := buildNsxConfigValue(ctx, id, rawConfig)
-		diags.Append(nsxDiags...)
+	case planHasNsxt:
+		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig)
+		diags.Append(nsxtDiags...)
 
 		return configResult{
-			config:    types.DynamicNull(),
-			configNsx: nsx,
+			config:     types.DynamicNull(),
+			configNsxt: nsxt,
 		}, diags
 
 	case planHasDynamic:
 		return configResult{
-			config:    plan.Config,
-			configNsx: NewConfigNsxValueNull(),
+			config:     plan.Config,
+			configNsxt: NewConfigNsxtValueNull(),
 		}, diags
 
 	default:
@@ -167,12 +167,12 @@ func resolveConfigState(
 	}
 }
 
-// buildNsxConfigValue unmarshals raw config JSON into a ConfigNsxValue.
-func buildNsxConfigValue(
+// buildNsxtConfigValue unmarshals raw config JSON into a ConfigNsxtValue.
+func buildNsxtConfigValue(
 	ctx context.Context,
 	id int64,
 	rawConfig json.RawMessage,
-) (ConfigNsxValue, diag.Diagnostics) {
+) (ConfigNsxtValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	edgeCluster := types.StringNull()
@@ -185,7 +185,7 @@ func buildNsxConfigValue(
 			diags.AddWarning(
 				"populate network dhcp server resource",
 				fmt.Sprintf(
-					"network dhcp server %d: failed to unmarshal NSX config: %s",
+					"network dhcp server %d: failed to unmarshal NSXT config: %s",
 					id, err,
 				),
 			)
@@ -200,22 +200,22 @@ func buildNsxConfigValue(
 		}
 	}
 
-	nsxValue, nsxDiags := NewConfigNsxValue(
-		ConfigNsxValue{}.AttributeTypes(ctx),
+	nsxtValue, nsxtDiags := NewConfigNsxtValue(
+		ConfigNsxtValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
 			"edge_cluster":      edgeCluster,
 			"active_edge_node":  activeEdgeNode,
 			"standby_edge_node": standbyEdgeNode,
 		},
 	)
-	diags.Append(nsxDiags...)
+	diags.Append(nsxtDiags...)
 
-	return nsxValue, diags
+	return nsxtValue, diags
 }
 
 // detectConfigFromResponse is used during import when there is no plan
-// context. It tries NSX config first; if any NSX-specific field is present,
-// it populates config_nsx. Otherwise it falls back to a dynamic value for
+// context. It tries NSXT config first; if any NSXT-specific field is present,
+// it populates config_nsxt. Otherwise it falls back to a dynamic value for
 // the generic config attribute.
 func detectConfigFromResponse(
 	ctx context.Context,
@@ -225,8 +225,8 @@ func detectConfigFromResponse(
 	var diags diag.Diagnostics
 
 	result := configResult{
-		config:    types.DynamicNull(),
-		configNsx: NewConfigNsxValueNull(),
+		config:     types.DynamicNull(),
+		configNsxt: NewConfigNsxtValueNull(),
 	}
 
 	if len(rawConfig) == 0 {
@@ -234,10 +234,10 @@ func detectConfigFromResponse(
 	}
 
 	var nsxCfg sdk.NetworkDhcpServerConfigNSX
-	if err := json.Unmarshal(rawConfig, &nsxCfg); err == nil && isNsxConfig(&nsxCfg) {
-		nsx, nsxDiags := buildNsxConfigValue(ctx, id, rawConfig)
-		diags.Append(nsxDiags...)
-		result.configNsx = nsx
+	if err := json.Unmarshal(rawConfig, &nsxCfg); err == nil && isNsxtConfig(&nsxCfg) {
+		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig)
+		diags.Append(nsxtDiags...)
+		result.configNsxt = nsxt
 
 		return result, diags
 	}
@@ -274,9 +274,9 @@ func detectConfigFromResponse(
 	return result, diags
 }
 
-// isNsxConfig returns true when at least one NSX-specific field is present
+// isNsxtConfig returns true when at least one NSXT-specific field is present
 // in the decoded config, distinguishing it from an arbitrary generic map.
-func isNsxConfig(cfg *sdk.NetworkDhcpServerConfigNSX) bool {
+func isNsxtConfig(cfg *sdk.NetworkDhcpServerConfigNSX) bool {
 	return cfg.IsSetEdgeCluster() ||
 		cfg.IsSetPreferredEdgeNode1() ||
 		cfg.IsSetPreferredEdgeNode2()

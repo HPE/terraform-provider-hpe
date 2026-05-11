@@ -56,23 +56,23 @@ func (r *Resource) Update(
 	}
 
 	switch {
-	case !plan.ConfigNsx.IsNull() && !plan.ConfigNsx.IsUnknown():
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
 		configMap := map[string]interface{}{}
 
-		if !plan.ConfigNsx.EdgeCluster.IsNull() &&
-			!plan.ConfigNsx.EdgeCluster.IsUnknown() {
-			configMap["edgeCluster"] = plan.ConfigNsx.EdgeCluster.ValueString()
+		if !plan.ConfigNsxt.EdgeCluster.IsNull() &&
+			!plan.ConfigNsxt.EdgeCluster.IsUnknown() {
+			configMap["edgeCluster"] = plan.ConfigNsxt.EdgeCluster.ValueString()
 		}
 
-		if !plan.ConfigNsx.ActiveEdgeNode.IsNull() &&
-			!plan.ConfigNsx.ActiveEdgeNode.IsUnknown() {
-			configMap["preferredEdgeNode1"] = plan.ConfigNsx.
+		if !plan.ConfigNsxt.ActiveEdgeNode.IsNull() &&
+			!plan.ConfigNsxt.ActiveEdgeNode.IsUnknown() {
+			configMap["preferredEdgeNode1"] = plan.ConfigNsxt.
 				ActiveEdgeNode.ValueString()
 		}
 
-		if !plan.ConfigNsx.StandbyEdgeNode.IsNull() &&
-			!plan.ConfigNsx.StandbyEdgeNode.IsUnknown() {
-			configMap["preferredEdgeNode2"] = plan.ConfigNsx.
+		if !plan.ConfigNsxt.StandbyEdgeNode.IsNull() &&
+			!plan.ConfigNsxt.StandbyEdgeNode.IsUnknown() {
+			configMap["preferredEdgeNode2"] = plan.ConfigNsxt.
 				StandbyEdgeNode.ValueString()
 		}
 

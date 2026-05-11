@@ -19,7 +19,7 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
   server_ip_address      = "192.168.1.1/24"
   lease_time             = 86400
 
-  config_nsx = {
+  config_nsxt = {
     edge_cluster = "qa-edge-cluster-01"
   }
 }
@@ -37,15 +37,15 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 ### Optional
 
 - `config` (Dynamic) Generic DHCP Server Configuration
-- `config_nsx` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsx))
+- `config_nsxt` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsxt))
 - `lease_time` (Number) Lease time in seconds for the DHCP server
 
 ### Read-Only
 
 - `id` (Number) The ID of this resource.
 
-<a id="nestedatt--config_nsx"></a>
-### Nested Schema for `config_nsx`
+<a id="nestedatt--config_nsxt"></a>
+### Nested Schema for `config_nsxt`
 
 Optional:
 
