@@ -5,41 +5,43 @@ package networkdhcpserver
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-func NetworkDhcpServerDataSourceSchema(ctx context.Context) schema.Schema {
+func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"config": schema.DynamicAttribute{
-				Computed:            true,
+				Optional:            true,
 				Description:         "Generic DHCP Server Configuration",
 				MarkdownDescription: "Generic DHCP Server Configuration",
 			},
 			"config_nsx": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"active_edge_node": schema.StringAttribute{
+						Optional:            true,
 						Computed:            true,
 						Description:         "Active Edge Node",
 						MarkdownDescription: "Active Edge Node",
 					},
 					"edge_cluster": schema.StringAttribute{
+						Optional:            true,
 						Computed:            true,
 						Description:         "Edge Cluster",
 						MarkdownDescription: "Edge Cluster",
 					},
 					"standby_edge_node": schema.StringAttribute{
+						Optional:            true,
 						Computed:            true,
 						Description:         "Standby Edge Node",
 						MarkdownDescription: "Standby Edge Node",
@@ -50,40 +52,38 @@ func NetworkDhcpServerDataSourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ConfigNsxValue{}.AttributeTypes(ctx),
 					},
 				},
-				Computed:            true,
+				Optional:            true,
 				Description:         "Configuration object with parameters that vary by type",
 				MarkdownDescription: "Configuration object with parameters that vary by type",
 			},
 			"id": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Morpheus ID of the network DHCP server",
-				MarkdownDescription: "Morpheus ID of the network DHCP server",
-				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
+				Computed: true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"lease_time": schema.Int64Attribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "Lease time in seconds for the DHCP server",
 				MarkdownDescription: "Lease time in seconds for the DHCP server",
+				Default:             int64default.StaticInt64(86400),
 			},
 			"name": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "The name of the network DHCP server",
-				MarkdownDescription: "The name of the network DHCP server",
-				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
-				},
+				Required:            true,
+				Description:         "Name",
+				MarkdownDescription: "Name",
 			},
-			"network_integration_id": schema.NumberAttribute{
+			"network_integration_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the network integration this DHCP server belongs to",
 				MarkdownDescription: "The ID of the network integration this DHCP server belongs to",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"server_ip_address": schema.StringAttribute{
-				Computed:            true,
+				Required:            true,
 				Description:         "Server address for the DHCP server",
 				MarkdownDescription: "Server address for the DHCP server",
 			},
@@ -97,7 +97,7 @@ type NetworkDhcpServerModel struct {
 	Id                   types.Int64    `tfsdk:"id"`
 	LeaseTime            types.Int64    `tfsdk:"lease_time"`
 	Name                 types.String   `tfsdk:"name"`
-	NetworkIntegrationId types.Number   `tfsdk:"network_integration_id"`
+	NetworkIntegrationId types.Int64    `tfsdk:"network_integration_id"`
 	ServerIpAddress      types.String   `tfsdk:"server_ip_address"`
 }
 

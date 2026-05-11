@@ -1,6 +1,6 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package networkdhcpserver
+package networkdomain
 
 import (
 	"fmt"
@@ -11,15 +11,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-id.tf example-id.tf.tmpl Id 99 NetworkIntegrationId 1
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_dhcp_server/example-name.tf example-name.tf.tmpl Name "Example name" NetworkIntegrationId 1
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_domain/example-id.tf example-id.tf.tmpl Id 99
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_domain/example-name.tf example-name.tf.tmpl Name "Example name"
 
-func RenderNetworkDhcpServerByNameConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderNetworkDomainByNameConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 "qa-dhcp-profile-vlan30",
-		"NetworkIntegrationId": "16",
+		"Name": "acceptance test.localdomain",
 	}
 
 	for key, value := range overrides {
@@ -46,12 +45,11 @@ func RenderNetworkDhcpServerByNameConfig(t *testing.T, overrides map[string]stri
 	)
 }
 
-func RenderNetworkDhcpServerByIdConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderNetworkDomainByIdConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id":                   "5",
-		"NetworkIntegrationId": "16",
+		"Id": "193",
 	}
 
 	for key, value := range overrides {

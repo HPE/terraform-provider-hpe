@@ -1,0 +1,25 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+This resource manages a DHCP server configuration attached to a Morpheus network server.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_network_dhcp_server/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network DHCP servers can be imported using `network_integration_id:id`, e.g.
+
+```bash
+terraform import hpe_morpheus_network_dhcp_server.example 16:123
+```
