@@ -10,7 +10,7 @@ description: |-
 
 This resource manages a DHCP server configuration attached to a Morpheus network server.
 
-## Example Usage
+### Example Usage (NSX-T)
 
 ```terraform
 resource "hpe_morpheus_network_dhcp_server" "example" {
