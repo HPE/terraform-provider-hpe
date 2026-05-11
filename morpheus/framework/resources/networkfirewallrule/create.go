@@ -73,14 +73,20 @@ func (r *Resource) Create(
 		rule.SetScopes(*scopes)
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		config := sdk.NewCreateNetworkFirewallRuleRequestRuleConfigWithDefaults()
-		if !plan.Config.Application.IsNull() && !plan.Config.Application.IsUnknown() {
-			config.SetApplication(setValueToStringSlice(plan.Config.Application))
-		}
-		if !plan.Config.Profile.IsNull() && !plan.Config.Profile.IsUnknown() {
-			config.SetProfile(setValueToStringSlice(plan.Config.Profile))
-		}
+	config := sdk.NewCreateNetworkFirewallRuleRequestRuleConfigWithDefaults()
+	configSet := false
+
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		config.SetApplication(setValueToStringSlice(plan.Application))
+		configSet = true
+	}
+
+	if !plan.Profile.IsNull() && !plan.Profile.IsUnknown() {
+		config.SetProfile(setValueToStringSlice(plan.Profile))
+		configSet = true
+	}
+
+	if configSet {
 		rule.SetConfig(*config)
 	}
 

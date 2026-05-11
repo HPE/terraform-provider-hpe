@@ -107,9 +107,13 @@ func getNetworkFirewallRuleAsState(
 	diags.Append(scopeDiags...)
 	state.Scopes = scopes
 
-	config, cfgDiags := mapConfigFromResponse(rule.Applications, rule.Profiles)
-	diags.Append(cfgDiags...)
-	state.Config = config
+	application, appDiags := mapApplicationsFromResponse(rule.Applications)
+	diags.Append(appDiags...)
+	state.Application = application
+
+	profile, profileDiags := mapProfilesFromResponse(rule.Profiles)
+	diags.Append(profileDiags...)
+	state.Profile = profile
 
 	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup)
 
@@ -171,31 +175,24 @@ func mapScopesFromResponse(
 	}, diags
 }
 
-func mapConfigFromResponse(
+func mapApplicationsFromResponse(
 	applications []sdk.GetNetworkFirewallRule200ResponseRuleApplicationsInner,
-	profiles []sdk.GetNetworkFirewallRule200ResponseRuleProfilesInner,
-) (ConfigValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	appSet, appDiags := extractStringIDs(applications,
+) (basetypes.SetValue, diag.Diagnostics) {
+	return extractStringIDs(applications,
 		func(i sdk.GetNetworkFirewallRule200ResponseRuleApplicationsInner) *string {
 			return i.Id
 		},
 	)
-	diags.Append(appDiags...)
+}
 
-	profileSet, profileDiags := extractStringIDs(profiles,
+func mapProfilesFromResponse(
+	profiles []sdk.GetNetworkFirewallRule200ResponseRuleProfilesInner,
+) (basetypes.SetValue, diag.Diagnostics) {
+	return extractStringIDs(profiles,
 		func(i sdk.GetNetworkFirewallRule200ResponseRuleProfilesInner) *string {
 			return i.Id
 		},
 	)
-	diags.Append(profileDiags...)
-
-	return ConfigValue{
-		Application: appSet,
-		Profile:     profileSet,
-		state:       attr.ValueStateKnown,
-	}, diags
 }
 
 func mapRuleGroupFromResponse(

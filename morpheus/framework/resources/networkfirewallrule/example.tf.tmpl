@@ -32,15 +32,10 @@ resource "hpe_morpheus_network_firewall_rule" "example" {
     id = [{{.ScopeIds}}]
   }
 {{- end}}
-{{- if or .ApplicationIds .ProfileIds}}
-
-  config = {
 {{- if .ApplicationIds}}
-    application = [{{.ApplicationIds}}]
+  application = [{{.ApplicationIds}}]
 {{- end}}
 {{- if .ProfileIds}}
-    profile = [{{.ProfileIds}}]
-{{- end}}
-  }
+  profile = [{{.ProfileIds}}]
 {{- end}}
 }

@@ -81,15 +81,17 @@ func (r *Resource) Update(
 		}
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configMap := map[string]interface{}{}
-		if !plan.Config.Application.IsNull() && !plan.Config.Application.IsUnknown() {
-			configMap["application"] = setValueToStringSlice(plan.Config.Application)
-		}
-		if !plan.Config.Profile.IsNull() && !plan.Config.Profile.IsUnknown() {
-			configMap["profile"] = setValueToStringSlice(plan.Config.Profile)
-		}
+	configMap := map[string]interface{}{}
 
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		configMap["application"] = setValueToStringSlice(plan.Application)
+	}
+
+	if !plan.Profile.IsNull() && !plan.Profile.IsUnknown() {
+		configMap["profile"] = setValueToStringSlice(plan.Profile)
+	}
+
+	if len(configMap) > 0 {
 		ruleMap["config"] = configMap
 	}
 
