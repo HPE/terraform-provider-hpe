@@ -93,217 +93,215 @@ func getCloudAsState(
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
 		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
 
-		attrTypes := make(map[string]attr.Type)
+		attrTypes := ConfigAwsValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
 
 		if cfg.AccessKey != nil {
-			attrTypes["access_key"] = types.StringType
 			attrValues["access_key"] = convert.StrToType(cfg.AccessKey)
+		} else {
+			attrValues["access_key"] = types.StringNull()
 		}
 
 		if cfg.BackupMode != nil {
-			attrTypes["backup_provider"] = types.StringType
 			attrValues["backup_provider"] = convert.StrToType(cfg.BackupMode)
+		} else {
+			attrValues["backup_provider"] = types.StringNull()
 		}
 
 		if cfg.ConfigCmdbDiscovery != nil {
-			attrTypes["cmdb_discovery"] = types.BoolType
 			attrValues["cmdb_discovery"] = convert.BoolToType(cfg.ConfigCmdbDiscovery)
+		} else {
+			attrValues["cmdb_discovery"] = types.BoolNull()
 		}
 
 		if cfg.ConfigManagementId != nil {
-			attrTypes["config_management_id"] = types.StringType
 			attrValues["config_management_id"] = convert.StrToType(cfg.ConfigManagementId)
+		} else {
+			attrValues["config_management_id"] = types.StringNull()
 		}
 
 		if cfg.CostingBucket != nil {
-			attrTypes["costing_bucket"] = types.StringType
 			attrValues["costing_bucket"] = convert.StrToType(cfg.CostingBucket)
+		} else {
+			attrValues["costing_bucket"] = types.StringNull()
 		}
 
 		if cfg.CostingFolder != nil {
-			attrTypes["costing_folder"] = types.StringType
 			attrValues["costing_folder"] = convert.StrToType(cfg.CostingFolder)
+		} else {
+			attrValues["costing_folder"] = types.StringNull()
 		}
 
 		if cfg.CostingAccessKey != nil {
-			attrTypes["costing_key"] = types.StringType
 			attrValues["costing_key"] = convert.StrToType(cfg.CostingAccessKey)
+		} else {
+			attrValues["costing_key"] = types.StringNull()
 		}
 
 		if cfg.CostingReportName != nil {
-			attrTypes["costing_report_name"] = types.StringType
 			attrValues["costing_report_name"] = convert.StrToType(cfg.CostingReportName)
+		} else {
+			attrValues["costing_report_name"] = types.StringNull()
 		}
 
 		if cfg.CostingSecretKey.Get() != nil {
-			attrTypes["costing_secret"] = types.StringType
 			attrValues["costing_secret"] = convert.StrToType(cfg.CostingSecretKey.Get())
+		} else {
+			attrValues["costing_secret"] = types.StringNull()
 		}
 
 		if cfg.UseHostCredentials != nil {
-			attrTypes["credentials"] = types.StringType
 			attrValues["credentials"] = convert.StrToType(cfg.UseHostCredentials)
+		} else {
+			attrValues["credentials"] = types.StringNull()
 		}
 
 		if cfg.EbsEncryption != nil {
-			attrTypes["ebs_encryption"] = types.StringType
 			attrValues["ebs_encryption"] = convert.StrToType(cfg.EbsEncryption)
+		} else {
+			attrValues["ebs_encryption"] = types.StringNull()
 		}
 
 		if cfg.Endpoint != nil {
-			attrTypes["endpoint"] = types.StringType
 			attrValues["endpoint"] = convert.StrToType(cfg.Endpoint)
+		} else {
+			attrValues["endpoint"] = types.StringNull()
 		}
 
 		if cfg.ReplicationMode != nil {
-			attrTypes["replication_provider"] = types.StringType
 			attrValues["replication_provider"] = convert.StrToType(cfg.ReplicationMode)
+		} else {
+			attrValues["replication_provider"] = types.StringNull()
 		}
 
 		if cfg.StsAssumeRole != nil {
-			attrTypes["role_arn"] = types.StringType
 			attrValues["role_arn"] = convert.StrToType(cfg.StsAssumeRole)
+		} else {
+			attrValues["role_arn"] = types.StringNull()
 		}
 
 		if cfg.SecretKey != nil {
-			attrTypes["secret_key"] = types.StringType
 			attrValues["secret_key"] = convert.StrToType(cfg.SecretKey)
+		} else {
+			attrValues["secret_key"] = types.StringNull()
 		}
 
 		if cfg.Vpc != nil {
-			attrTypes["vpc"] = types.StringType
 			attrValues["vpc"] = convert.StrToType(cfg.Vpc)
+		} else {
+			attrValues["vpc"] = types.StringNull()
 		}
 
 		// These fields are not returned by the API yet.
 		// We want to avoid overwriting any values set in the config.
-		attrTypes["api_proxy"] = types.StringType
 		if plan.ConfigAws.ApiProxy.IsUnknown() {
 			attrValues["api_proxy"] = types.StringUnknown()
 		} else {
 			attrValues["api_proxy"] = plan.ConfigAws.ApiProxy
 		}
 
-		attrTypes["bypass_proxy"] = types.BoolType
 		if plan.ConfigAws.BypassProxy.IsUnknown() {
 			attrValues["bypass_proxy"] = types.BoolUnknown()
 		} else {
 			attrValues["bypass_proxy"] = plan.ConfigAws.BypassProxy
 		}
 
-		attrTypes["change_management_config"] = types.StringType
 		if plan.ConfigAws.ChangeManagementConfig.IsUnknown() {
 			attrValues["change_management_config"] = types.StringUnknown()
 		} else {
 			attrValues["change_management_config"] = plan.ConfigAws.ChangeManagementConfig
 		}
 
-		attrTypes["cmdb_config"] = types.StringType
 		if plan.ConfigAws.CmdbConfig.IsUnknown() {
 			attrValues["cmdb_config"] = types.StringUnknown()
 		} else {
 			attrValues["cmdb_config"] = plan.ConfigAws.CmdbConfig
 		}
 
-		attrTypes["costing"] = types.StringType
 		if plan.ConfigAws.Costing.IsUnknown() {
 			attrValues["costing"] = types.StringUnknown()
 		} else {
 			attrValues["costing"] = plan.ConfigAws.Costing
 		}
 
-		attrTypes["dark_mode_logo"] = types.StringType
 		if plan.ConfigAws.DarkModeLogo.IsUnknown() {
 			attrValues["dark_mode_logo"] = types.StringUnknown()
 		} else {
 			attrValues["dark_mode_logo"] = plan.ConfigAws.DarkModeLogo
 		}
 
-		attrTypes["domain"] = types.StringType
 		if plan.ConfigAws.Domain.IsUnknown() {
 			attrValues["domain"] = types.StringUnknown()
 		} else {
 			attrValues["domain"] = plan.ConfigAws.Domain
 		}
 
-		attrTypes["guidance"] = types.StringType
 		if plan.ConfigAws.Guidance.IsUnknown() {
 			attrValues["guidance"] = types.StringUnknown()
 		} else {
 			attrValues["guidance"] = plan.ConfigAws.Guidance
 		}
 
-		attrTypes["logo"] = types.StringType
 		if plan.ConfigAws.Logo.IsUnknown() {
 			attrValues["logo"] = types.StringUnknown()
 		} else {
 			attrValues["logo"] = plan.ConfigAws.Logo
 		}
 
-		attrTypes["network_mode"] = types.StringType
 		if plan.ConfigAws.NetworkMode.IsUnknown() {
 			attrValues["network_mode"] = types.StringUnknown()
 		} else {
 			attrValues["network_mode"] = plan.ConfigAws.NetworkMode
 		}
 
-		attrTypes["no_proxy"] = types.StringType
 		if plan.ConfigAws.NoProxy.IsUnknown() {
 			attrValues["no_proxy"] = types.StringUnknown()
 		} else {
 			attrValues["no_proxy"] = plan.ConfigAws.NoProxy
 		}
 
-		attrTypes["proxy"] = types.StringType
 		if plan.ConfigAws.Proxy.IsUnknown() {
 			attrValues["proxy"] = types.StringUnknown()
 		} else {
 			attrValues["proxy"] = plan.ConfigAws.Proxy
 		}
 
-		attrTypes["region"] = types.StringType
 		if plan.ConfigAws.Region.IsUnknown() {
 			attrValues["region"] = types.StringUnknown()
 		} else {
 			attrValues["region"] = plan.ConfigAws.Region
 		}
 
-		attrTypes["timezone"] = types.StringType
 		if plan.ConfigAws.Timezone.IsUnknown() {
 			attrValues["timezone"] = types.StringUnknown()
 		} else {
 			attrValues["timezone"] = plan.ConfigAws.Timezone
 		}
 
-		attrTypes["user_data"] = types.StringType
 		if plan.ConfigAws.UserData.IsUnknown() {
 			attrValues["user_data"] = types.StringUnknown()
 		} else {
 			attrValues["user_data"] = plan.ConfigAws.UserData
 		}
 
-		attrTypes["vdi_gateway"] = types.StringType
 		if plan.ConfigAws.VdiGateway.IsUnknown() {
 			attrValues["vdi_gateway"] = types.StringUnknown()
 		} else {
 			attrValues["vdi_gateway"] = plan.ConfigAws.VdiGateway
 		}
 
-		if len(attrValues) > 0 {
-			configAws, diagsAws := NewConfigAwsValue(attrTypes, attrValues)
-			if diagsAws.HasError() {
-				diags.Append(diagsAws...)
-				diags.AddError(
-					readOperation,
-					fmt.Sprintf("cloud %d: failed to decode AWS configuration", id),
-				)
+		configAws, diagsAws := NewConfigAwsValue(attrTypes, attrValues)
+		if diagsAws.HasError() {
+			diags.Append(diagsAws...)
+			diags.AddError(
+				readOperation,
+				fmt.Sprintf("cloud %d: failed to decode AWS configuration", id),
+			)
 
-				return state, diags
-			}
-
-			state.ConfigAws = configAws
+			return state, diags
 		}
+
+		state.ConfigAws = configAws
 
 	case cloudType == standardCloud && (!plan.ConfigHvm.IsNull() || importing):
 		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf
@@ -315,33 +313,33 @@ func getCloudAsState(
 		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
 		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
 
-		attrTypes := make(map[string]attr.Type)
+		attrTypes := ConfigHvmValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
 
 		if cfg.CertificateProvider.Get() != nil {
-			attrTypes["certificate_provider"] = types.StringType
 			attrValues["certificate_provider"] = convert.StrToType(cfg.CertificateProvider.Get())
+		} else {
+			attrValues["certificate_provider"] = types.StringNull()
 		}
 
 		if cfg.EnableNetworkTypeSelection.Get() != nil {
-			attrTypes["enable_network_type_selection"] = types.BoolType
 			attrValues["enable_network_type_selection"] = convert.StringToBool(ctx, *cfg.EnableNetworkTypeSelection.Get())
+		} else {
+			attrValues["enable_network_type_selection"] = types.BoolNull()
 		}
 
-		if len(attrValues) > 0 {
-			configHvm, diagsHvm := NewConfigHvmValue(attrTypes, attrValues)
-			if diagsHvm.HasError() {
-				diags.Append(diagsHvm...)
-				diags.AddError(
-					readOperation,
-					fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
-				)
+		configHvm, diagsHvm := NewConfigHvmValue(attrTypes, attrValues)
+		if diagsHvm.HasError() {
+			diags.Append(diagsHvm...)
+			diags.AddError(
+				readOperation,
+				fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
+			)
 
-				return state, diags
-			}
-
-			state.ConfigHvm = configHvm
+			return state, diags
 		}
+
+		state.ConfigHvm = configHvm
 
 	case cloudType == vmwareCloud && (!plan.ConfigVmware.IsNull() || importing):
 		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf1
@@ -353,104 +351,111 @@ func getCloudAsState(
 		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
 		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
 
-		attrTypes := make(map[string]attr.Type)
+		attrTypes := ConfigVmwareValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
 
 		if cfg.ApiUrl != nil {
-			attrTypes["api_url"] = types.StringType
 			attrValues["api_url"] = convert.StrToType(cfg.ApiUrl)
+		} else {
+			attrValues["api_url"] = types.StringNull()
 		}
 
 		if cfg.ApiVersion.Get() != nil {
-			attrTypes["api_version"] = types.StringType
 			attrValues["api_version"] = convert.StrToType(cfg.ApiVersion.Get())
+		} else {
+			attrValues["api_version"] = types.StringNull()
 		}
 
 		if cfg.CertificateProvider.Get() != nil {
-			attrTypes["certificate_provider"] = types.StringType
 			attrValues["certificate_provider"] = convert.StrToType(cfg.CertificateProvider.Get())
+		} else {
+			attrValues["certificate_provider"] = types.StringNull()
 		}
 
 		if cfg.Cluster != nil {
-			attrTypes["cluster"] = types.StringType
 			attrValues["cluster"] = convert.StrToType(cfg.Cluster)
+		} else {
+			attrValues["cluster"] = types.StringNull()
 		}
 
 		if cfg.ConfigManagementId.Get() != nil {
-			attrTypes["config_management_id"] = types.StringType
 			attrValues["config_management_id"] = convert.StrToType(cfg.ConfigManagementId.Get())
+		} else {
+			attrValues["config_management_id"] = types.StringNull()
 		}
 
 		if cfg.Datacenter != nil {
-			attrTypes["datacenter"] = types.StringType
 			attrValues["datacenter"] = convert.StrToType(cfg.Datacenter)
+		} else {
+			attrValues["datacenter"] = types.StringNull()
 		}
 
 		if cfg.EnableDiskTypeSelection.Get() != nil {
-			attrTypes["enable_disk_type_selection"] = types.BoolType
 			attrValues["enable_disk_type_selection"] = convert.StringToBool(ctx, *cfg.EnableDiskTypeSelection.Get())
+		} else {
+			attrValues["enable_disk_type_selection"] = types.BoolNull()
 		}
 
 		if cfg.EnableNetworkTypeSelection.Get() != nil {
-			attrTypes["enable_network_type_selection"] = types.BoolType
 			attrValues["enable_network_type_selection"] = convert.StringToBool(ctx, *cfg.EnableNetworkTypeSelection.Get())
+		} else {
+			attrValues["enable_network_type_selection"] = types.BoolNull()
 		}
 
 		if cfg.EnableStorageTypeSelection.Get() != nil {
-			attrTypes["enable_storage_type_selection"] = types.BoolType
 			attrValues["enable_storage_type_selection"] = convert.StringToBool(ctx, *cfg.EnableStorageTypeSelection.Get())
+		} else {
+			attrValues["enable_storage_type_selection"] = types.BoolNull()
 		}
 
 		if cfg.EnableVnc.Get() != nil {
-			attrTypes["enable_vnc"] = types.BoolType
 			attrValues["enable_vnc"] = convert.StringToBool(ctx, *cfg.EnableVnc.Get())
+		} else {
+			attrValues["enable_vnc"] = types.BoolNull()
 		}
 
 		if cfg.HideHostSelection.Get() != nil {
-			attrTypes["hide_host_selection"] = types.BoolType
 			attrValues["hide_host_selection"] = convert.StringToBool(ctx, *cfg.HideHostSelection.Get())
 		} else {
-			attrTypes["hide_host_selection"] = types.BoolType
 			attrValues["hide_host_selection"] = types.BoolNull()
 		}
 
 		if cfg.Password.Get() != nil {
-			attrTypes["password"] = types.StringType
 			attrValues["password"] = convert.StrToType(cfg.Password.Get())
 		} else {
-			attrTypes["password"] = types.StringType
 			attrValues["password"] = types.StringNull()
 		}
 
 		if cfg.ResourcePool != nil {
-			attrTypes["resource_pool"] = types.StringType
 			attrValues["resource_pool"] = convert.StrToType(cfg.ResourcePool)
+		} else {
+			attrValues["resource_pool"] = types.StringNull()
 		}
 
 		if cfg.RpcMode != nil {
-			attrTypes["rpc_mode"] = types.StringType
 			attrValues["rpc_mode"] = convert.StrToType(cfg.RpcMode)
+		} else {
+			attrValues["rpc_mode"] = types.StringNull()
 		}
 
 		if cfg.Username != nil {
-			attrTypes["username"] = types.StringType
 			attrValues["username"] = convert.StrToType(cfg.Username)
+		} else {
+			attrValues["username"] = types.StringNull()
 		}
 
-		if len(attrValues) > 0 {
-			configVmware, diagsHvm := NewConfigVmwareValue(attrTypes, attrValues)
-			if diagsHvm.HasError() {
-				diags.Append(diagsHvm...)
-				diags.AddError(
-					readOperation,
-					fmt.Sprintf("cloud %d: failed to decode VMware configuration", id),
-				)
+		configVmware, diagsVmware := NewConfigVmwareValue(attrTypes, attrValues)
+		if diagsVmware.HasError() {
+			diags.Append(diagsVmware...)
+			diags.AddError(
+				readOperation,
+				fmt.Sprintf("cloud %d: failed to decode VMware configuration", id),
+			)
 
-				return state, diags
-			}
-
-			state.ConfigVmware = configVmware
+			return state, diags
 		}
+
+		state.ConfigVmware = configVmware
 	case !plan.Config.IsNull() || importing:
 		state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
 
