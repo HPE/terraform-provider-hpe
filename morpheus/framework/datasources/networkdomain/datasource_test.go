@@ -1,6 +1,6 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package networkdhcpserver_test
+package networkdomain_test
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
@@ -32,7 +32,7 @@ provider "hpe" {
 }
 `
 
-func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
+func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,15 +41,55 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t, nil)
+	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	checks := networkDhcpServerChecks()
+	checks := networkDomainChecks()
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	dataSourceConfig, err := networkdomain.RenderNetworkDomainByIdConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_network_domain.example",
+			"id",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_network_domain.example",
+			"name",
+		),
+	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
@@ -64,7 +104,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
+func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -73,42 +113,10 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checks := networkDhcpServerChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dataSourceConfig,
-				Check:  checkFn,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	t.Parallel()
-
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
-
-	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t,
+	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t,
 		map[string]string{
 			"Name": "______",
 		},
@@ -117,7 +125,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := regexp.MustCompile(`no network DHCP server found`)
+	expected := regexp.MustCompile(`no network domain found`)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -130,17 +138,16 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindNetworkDomainNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
 	config := providerConfigOffline + `
-      data "hpe_morpheus_network_dhcp_server" "test" {
-        network_integration_id = 1
+      data "hpe_morpheus_network_domain" "test" {
       }`
 
-	expected := networkdhcpserver.ErrorNoValidSearchTerms
+	expected := networkdomain.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -153,19 +160,18 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
+func TestAccMorpheusFindNetworkDomainBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
 	config := providerConfigOffline + `
-      data "hpe_morpheus_network_dhcp_server" "test" {
-        id                     = 1
-        name                   = "______"
-        network_integration_id = 1
+      data "hpe_morpheus_network_domain" "test" {
+        id   = 1
+        name = "______"
       }`
 
-	expected := networkdhcpserver.ErrorRunningPreApply
+	expected := networkdomain.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -178,13 +184,12 @@ func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
 	})
 }
 
-func networkDhcpServerChecks() []resource.TestCheckFunc {
-	ds := "data.hpe_morpheus_network_dhcp_server.example"
+func networkDomainChecks() []resource.TestCheckFunc {
+	ds := "data.hpe_morpheus_network_domain.example"
 
 	return []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
-		resource.TestCheckResourceAttrSet(ds, "name"),
-		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
-		resource.TestCheckResourceAttrSet(ds, "lease_time"),
+		resource.TestCheckResourceAttr(ds, "name", "acceptance test.localdomain"),
+		resource.TestCheckResourceAttrSet(ds, "visibility"),
 	}
 }

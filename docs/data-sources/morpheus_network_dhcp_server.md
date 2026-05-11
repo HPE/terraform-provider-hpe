@@ -12,15 +12,15 @@ description: |-
 
 ```terraform
 data "hpe_morpheus_network_dhcp_server" "example" {
-  id                = 99
-  network_server_id = 1
+  id                     = 99
+  network_integration_id = 1
 }
 ```
 
 ```terraform
 data "hpe_morpheus_network_dhcp_server" "example" {
-  name              = "Example name"
-  network_server_id = 1
+  name                   = "Example name"
+  network_integration_id = 1
 }
 ```
 
@@ -29,7 +29,7 @@ data "hpe_morpheus_network_dhcp_server" "example" {
 
 ### Required
 
-- `network_server_id` (Number) The ID of the network server this DHCP server belongs to
+- `network_integration_id` (Number) The ID of the network integration this DHCP server belongs to
 
 ### Optional
 
