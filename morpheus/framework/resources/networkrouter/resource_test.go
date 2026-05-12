@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkRouterNSXGatewayTier0ExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterGenericExampleOk(t *testing.T) {
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -30,12 +30,13 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier0ExampleOk(t *testing.T) {
 		t.Skip("Skipping slow acceptance test in short mode")
 	}
 
-	t.Skip("Skipping due to missing infrastructure in test environment")
-
 	name := acctest.RandomWithPrefix(t.Name())
 
-	config, err := networkrouter.RenderNetworkRouterNSXGatewayTier0Config(t, map[string]string{
-		"Name": name,
+	config, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name,
+		"TypeId":               "9", // tier 1 gateway
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
 	})
 	if err != nil {
 		t.Fatalf("failed to render config: %s", err)
@@ -51,8 +52,49 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier0ExampleOk(t *testing.T) {
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_id", "9"), // tier 1
+					resource.TestCheckResourceAttr(resourceName, "group_id", "3"),
+					resource.TestCheckResourceAttr(resourceName, "network_integration_id", "5"),
+					resource.TestCheckResourceAttr(resourceName, "config.ipManagementType", "dhcpLocal"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkRouterNSXTGatewayTier0ExampleOk(t *testing.T) {
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow acceptance test in short mode")
+	}
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	config, err := networkrouter.RenderNetworkRouterNSXTGatewayTier0Config(t, map[string]string{
+		"Name":                 name,
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %s", err)
+	}
+
+	resourceName := "hpe_morpheus_network_router.example"
+	config = testhelpers.ProviderBlock() + config
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_id", "8"), // tier 0
+					resource.TestCheckResourceAttr(resourceName, "group_id", "3"),
+					resource.TestCheckResourceAttr(resourceName, "network_integration_id", "5"),
 					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.ha_mode", "ACTIVE_ACTIVE"),
-					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.ip_server_id", "1"),
 					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier0.restart_mode", "HELPER_ONLY"),
 				),
 			},
@@ -60,7 +102,7 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier0ExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNSXGatewayTier1ExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterNSXTGatewayTier1ExampleOk(t *testing.T) {
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -68,12 +110,12 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier1ExampleOk(t *testing.T) {
 		t.Skip("Skipping slow acceptance test in short mode")
 	}
 
-	t.Skip("Skipping due to missing infrastructure in test environment")
-
 	name := acctest.RandomWithPrefix(t.Name())
 
-	config, err := networkrouter.RenderNetworkRouterNSXGatewayTier1Config(t, map[string]string{
-		"Name": name,
+	config, err := networkrouter.RenderNetworkRouterNSXTGatewayTier1Config(t, map[string]string{
+		"Name":                 name,
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
 	})
 	if err != nil {
 		t.Fatalf("failed to render config: %s", err)
@@ -89,6 +131,10 @@ func TestAccMorpheusNetworkRouterNSXGatewayTier1ExampleOk(t *testing.T) {
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_id", "9"), // tier 1
+					resource.TestCheckResourceAttr(resourceName, "group_id", "3"),
+					resource.TestCheckResourceAttr(resourceName, "network_integration_id", "5"),
+					resource.TestCheckResourceAttr(resourceName, "config_nsxt_gateway_tier1.ip_management_type", "dhcpLocal"),
 				),
 			},
 		},

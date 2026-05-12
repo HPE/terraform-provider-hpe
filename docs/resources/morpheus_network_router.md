@@ -21,6 +21,7 @@ resource "hpe_morpheus_network_router" "example" {
   enabled                = true
 
   config = {
+    ipManagementType = "dhcpLocal"
   }
 }
 ```
@@ -30,13 +31,11 @@ resource "hpe_morpheus_network_router" "example" {
 ```terraform
 resource "hpe_morpheus_network_router" "example" {
   name                   = "TestRouter"
-  type_id                = 1
   group_id               = 1
   network_integration_id = 1
 
   config_nsxt_gateway_tier0 = {
     ha_mode      = "ACTIVE_ACTIVE"
-    ip_server_id = 1
     restart_mode = "HELPER_ONLY"
   }
 }
@@ -47,7 +46,6 @@ resource "hpe_morpheus_network_router" "example" {
 ```terraform
 resource "hpe_morpheus_network_router" "example" {
   name                   = "TestRouter"
-  type_id                = 1
   group_id               = 1
   network_integration_id = 1
 
@@ -62,20 +60,20 @@ resource "hpe_morpheus_network_router" "example" {
 
 ### Required
 
-- `cloud_id` (Number) Required when router type does not support a network integration
 - `group_id` (Number) Group ID
 - `name` (String) Name
-- `network_integration_id` (Number) Required when router type supports a network integration
-- `shared_group_access` (Boolean) Used to enable shared group access. Conflicts with group_id.
-- `type_id` (Number) Network router type ID
 
 ### Optional
 
+- `cloud_id` (Number) Required when router type does not support a network integration
 - `config` (Dynamic) Generic configuration object for network routers.
 - `config_nsxt_gateway_tier0` (Attributes) Configuration object for NSX-T Tier-0 gateway network routers. (see [below for nested schema](#nestedatt--config_nsxt_gateway_tier0))
 - `config_nsxt_gateway_tier1` (Attributes) Configuration object for NSX-T Tier-1 gateway network routers. (see [below for nested schema](#nestedatt--config_nsxt_gateway_tier1))
 - `enable_bgp` (Boolean)
 - `enabled` (Boolean) Can be used to enable / disable the network router (true, false). Default is on
+- `network_integration_id` (Number) Required when router type supports a network integration
+- `shared_group_access` (Boolean) Used to enable shared group access. Conflicts with group_id.
+- `type_id` (Number) The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.
 
 ### Read-Only
 
@@ -88,7 +86,6 @@ resource "hpe_morpheus_network_router" "example" {
 Required:
 
 - `ha_mode` (String)
-- `ip_server_id` (String)
 - `restart_mode` (String)
 
 Optional:
@@ -98,6 +95,7 @@ Optional:
 - `fail_over` (String) Required with edge_cluster.
 - `inter_sr_ibgp` (Boolean)
 - `ip_management_type` (String)
+- `ip_server_id` (String)
 - `local_as_num` (String)
 - `multipath_relax` (Boolean)
 - `restart_time` (Number)

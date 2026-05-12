@@ -44,22 +44,28 @@ func getRouterAsState(
 	state.Name = convert.StrToType(router.Name)
 	state.Code = convert.StrToType(router.Code)
 	state.Enabled = convert.BoolToType(router.Enabled)
+	state.EnableBgp = convert.BoolToType(router.EnableBgp)
 
 	// Preserve plan values for immutable fields
-	state.TypeId = plan.TypeId
 	state.GroupId = plan.GroupId
 	state.CloudId = plan.CloudId
 	state.NetworkIntegrationId = plan.NetworkIntegrationId
 
 	switch {
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		// Use the type ID we set in config if it's a generic config.
+		state.TypeId = plan.TypeId
 		// Config: preserve from plan - we only care about what was set by user.
 		// We don't want to read everything back from API as there may be stuff
 		// that exists in remote `config` not set by user.
 		state.Config = plan.Config
 	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		// read type ID from API if using static config (it's not known at plan)
+		state.TypeId = convert.Int64ToType(router.Type.Id)
 		state.ConfigNsxtGatewayTier0 = plan.ConfigNsxtGatewayTier0
 	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		// read type ID from API if using static config (it's not known at plan)
+		state.TypeId = convert.Int64ToType(router.Type.Id)
 		state.ConfigNsxtGatewayTier1 = plan.ConfigNsxtGatewayTier1
 	}
 

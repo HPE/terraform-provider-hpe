@@ -6,5 +6,6 @@ resource "hpe_morpheus_network_router" "example" {
   enabled                = true
 
   config = {
+    ipManagementType = "dhcpLocal"
   }
 }

@@ -12,8 +12,8 @@ import (
 )
 
 //go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_generic.tf example_generic.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier0.tf example_nsxt_gateway_tier0.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1" "IpServerId" "1"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier1.tf example_nsxt_gateway_tier1.tf.tmpl Name "TestRouter" TypeId "1" GroupId "1" NetworkIntegrationId "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier0.tf example_nsxt_gateway_tier0.tf.tmpl Name "TestRouter" GroupId "1" NetworkIntegrationId "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router/example_nsxt_gateway_tier1.tf example_nsxt_gateway_tier1.tf.tmpl Name "TestRouter" GroupId "1" NetworkIntegrationId "1"
 
 func RenderNetworkRouterGenericConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -23,7 +23,6 @@ func RenderNetworkRouterGenericConfig(t *testing.T, overrides map[string]string)
 		"TypeId":               "1",
 		"GroupId":              "1",
 		"NetworkIntegrationId": "1",
-		"IpServerId":           "1",
 	}
 
 	for key, value := range overrides {
@@ -42,7 +41,7 @@ func RenderNetworkRouterGenericConfig(t *testing.T, overrides map[string]string)
 	}
 
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example.tf.tmpl")
+	templatePath := filepath.Join(dir, "example_generic.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
@@ -51,12 +50,11 @@ func RenderNetworkRouterGenericConfig(t *testing.T, overrides map[string]string)
 	)
 }
 
-func RenderNetworkRouterNSXGatewayTier0Config(t *testing.T, overrides map[string]string) (string, error) {
+func RenderNetworkRouterNSXTGatewayTier0Config(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":                 "TestRouter",
-		"TypeId":               "1",
 		"GroupId":              "1",
 		"NetworkIntegrationId": "1",
 	}
@@ -85,12 +83,11 @@ func RenderNetworkRouterNSXGatewayTier0Config(t *testing.T, overrides map[string
 	)
 }
 
-func RenderNetworkRouterNSXGatewayTier1Config(t *testing.T, overrides map[string]string) (string, error) {
+func RenderNetworkRouterNSXTGatewayTier1Config(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":                 "TestRouter",
-		"TypeId":               "1",
 		"GroupId":              "1",
 		"NetworkIntegrationId": "1",
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -30,7 +31,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"cloud_id": schema.Int64Attribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "Required when router type does not support a network integration",
 				MarkdownDescription: "Required when router type does not support a network integration",
 				PlanModifiers: []planmodifier.Int64{
@@ -114,10 +115,12 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"ip_server_id": schema.StringAttribute{
-						Required: true,
+						Optional: true,
 					},
 					"local_as_num": schema.StringAttribute{
 						Optional: true,
+						Computed: true,
+						Default:  stringdefault.StaticString("65000"),
 					},
 					"multipath_relax": schema.BoolAttribute{
 						Optional: true,
@@ -358,7 +361,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Name",
 			},
 			"network_integration_id": schema.Int64Attribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "Required when router type supports a network integration",
 				MarkdownDescription: "Required when router type supports a network integration",
 				PlanModifiers: []planmodifier.Int64{
@@ -371,16 +374,20 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"shared_group_access": schema.BoolAttribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "Used to enable shared group access. Conflicts with group_id.",
 				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id.",
 			},
 			"type_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "Network router type ID",
-				MarkdownDescription: "Network router type ID",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.",
+				MarkdownDescription: "The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Int64{
+					int64validator.AlsoRequires(path.Expressions{path.MatchRoot("config")}...),
 				},
 			},
 		},

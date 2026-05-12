@@ -49,6 +49,9 @@ func (r *Resource) Create(
 
 	// Set type (required)
 	switch {
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(plan.TypeId.ValueInt64())
+		router.SetType(*routerType)
 	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
 		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier0Gateway)
 		if err != nil {
@@ -73,11 +76,6 @@ func (r *Resource) Create(
 			return
 		}
 		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(*typeId)
-		router.SetType(*routerType)
-
-	// generic config
-	default:
-		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(plan.TypeId.ValueInt64())
 		router.SetType(*routerType)
 	}
 
@@ -236,7 +234,7 @@ func buildRouterConfig(
 }
 
 func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*int64, error) {
-	res, hresp, err := client.NetworksAPI.ListNetworkRouterTypesExecute(sdk.ApiListNetworkRouterTypesRequest{})
+	res, hresp, err := client.NetworksAPI.ListNetworkRouterTypes(ctx).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"network router types GET failed: %s",
