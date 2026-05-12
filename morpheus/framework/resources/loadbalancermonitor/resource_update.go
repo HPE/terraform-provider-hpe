@@ -239,6 +239,10 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Preserve the canonical monitor_type from plan (the API returns
+	// the LB-specific value, e.g. LBHttpMonitorProfile for NSX-T).
+	state.MonitorType = plan.MonitorType
+
 	// Preserve write-only / sensitive values from plan.
 	state.ExtraConfig = plan.ExtraConfig
 	state.MonitorPasswordWoVersion = plan.MonitorPasswordWoVersion

@@ -63,7 +63,7 @@ func TestAccMorpheusLoadBalancerMonitorNsxtExampleOk(t *testing.T) {
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, "name", monitorName),
 		resource.TestCheckResourceAttr(resourceName, "description", "An NSX-T HTTP health check monitor"),
-		resource.TestCheckResourceAttr(resourceName, "monitor_type", "LBHttpMonitorProfile"),
+		resource.TestCheckResourceAttr(resourceName, "monitor_type", "http"),
 		resource.TestCheckResourceAttr(resourceName, "monitor_interval", "5"),
 		resource.TestCheckResourceAttr(resourceName, "monitor_timeout", "15"),
 		resource.TestCheckResourceAttr(resourceName, "monitor_destination", "/"),
