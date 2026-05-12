@@ -157,10 +157,6 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the load balancer monitor",
 				MarkdownDescription: "The name of the load balancer monitor",
 			},
-			"partition": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-			},
 			"receive_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -219,7 +215,6 @@ type LoadBalancerMonitorModel struct {
 	MonitorType              types.String `tfsdk:"monitor_type"`
 	MonitorUsername          types.String `tfsdk:"monitor_username"`
 	Name                     types.String `tfsdk:"name"`
-	Partition                types.String `tfsdk:"partition"`
 	ReceiveCode              types.String `tfsdk:"receive_code"`
 	ReceiveData              types.String `tfsdk:"receive_data"`
 	RiseCount                types.Int64  `tfsdk:"rise_count"`

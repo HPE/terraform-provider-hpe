@@ -52,12 +52,14 @@ func (r *Resource) Delete(
 		_, httpResp, err := client.LoadBalancersAPI.
 			GetLoadBalancerMonitor(ctx, loadBalancerID, id).Execute()
 		if err != nil {
-			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
-				return struct{}{}, backoff.Permanent(err)
+			if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+				return struct{}{}, nil
 			}
+
+			return struct{}{}, backoff.Permanent(err)
 		}
 
-		return struct{}{}, nil
+		return struct{}{}, fmt.Errorf("load balancer monitor %d still exists", id)
 	}
 
 	if _, err := backoff.Retry(

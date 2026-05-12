@@ -55,8 +55,56 @@ func (r *Resource) Update(
 		monitor.SetDescription(plan.Description.ValueString())
 	}
 
+	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
+
 	if !plan.MonitorType.IsNull() && !plan.MonitorType.IsUnknown() {
-		monitor.SetMonitorType(plan.MonitorType.ValueString())
+		monitorType := plan.MonitorType.ValueString()
+
+		lbResp, httpResp, err := client.LoadBalancersAPI.
+			GetLoadBalancer(ctx, loadBalancerID).Execute()
+		if err != nil || httpResp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				"error reading load balancer",
+				fmt.Sprintf("load balancer %d GET failed: %s", loadBalancerID,
+					errfmt.ErrMsg(err, httpResp)),
+			)
+
+			return
+		}
+
+		lbTypeCode := ""
+		if lb := lbResp.GetLoadBalancer(); lb.Type != nil {
+			if code := lb.Type.Code; code != nil {
+				lbTypeCode = *code
+			}
+		}
+
+		switch lbTypeCode {
+		case LBTypeNsxT:
+			if mapped, ok := nsxtMonitorTypes[monitorType]; ok {
+				monitorType = mapped
+			} else {
+				resp.Diagnostics.AddError(
+					"invalid monitor_type for NSX-T load balancer",
+					fmt.Sprintf("monitor_type %q is not valid for NSX-T; valid values: http, https, icmp, passive, tcp, udp",
+						plan.MonitorType.ValueString()),
+				)
+
+				return
+			}
+		case LBTypeNsxV:
+			if _, ok := nsxvMonitorTypes[monitorType]; !ok {
+				resp.Diagnostics.AddError(
+					"invalid monitor_type for NSX-V load balancer",
+					fmt.Sprintf("monitor_type %q is not valid for NSX-V; valid values: dns, http, https, ldap, mssql, tcp, udp",
+						plan.MonitorType.ValueString()),
+				)
+
+				return
+			}
+		}
+
+		monitor.SetMonitorType(monitorType)
 	}
 
 	if !plan.MonitorInterval.IsNull() && !plan.MonitorInterval.IsUnknown() {
@@ -168,7 +216,6 @@ func (r *Resource) Update(
 	updateReq := sdk.NewUpdateLoadBalancerMonitorRequestWithDefaults()
 	updateReq.SetLoadBalancerMonitor(*monitor)
 
-	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
 	id := currentState.Id.ValueInt64()
 
 	_, httpResp, err := client.LoadBalancersAPI.

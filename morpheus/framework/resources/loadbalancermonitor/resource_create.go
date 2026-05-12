@@ -168,10 +168,6 @@ func (r *Resource) Create(
 	// and ldap. The field is NOT returned by the GET API (commented out in the
 	// GSON response template). The state value is preserved from the plan on
 	// read to avoid drift.
-	//
-	// partition was removed — it is also write-only and not returned by GET.
-	// It is not exposed in any seed option types; it is set only by LB plugins
-	// during sync (e.g. F5) and is not user-settable via the API.
 	if !plan.ExtraConfig.IsNull() && !plan.ExtraConfig.IsUnknown() {
 		monitor.SetExtraConfig(plan.ExtraConfig.ValueString())
 	}

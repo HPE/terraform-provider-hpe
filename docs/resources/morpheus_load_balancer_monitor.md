@@ -30,7 +30,7 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxt" {
   load_balancer_id    = 1
   name                = "NSX-T HTTP Monitor"
   description         = "An NSX-T HTTP health check monitor"
-  monitor_type        = "LBHttpMonitorProfile"
+  monitor_type        = "http"
   monitor_interval    = 5
   monitor_timeout     = 15
   monitor_destination = "/"
