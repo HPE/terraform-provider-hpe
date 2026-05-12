@@ -5,11 +5,14 @@ package networkdhcpserver
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -25,6 +28,9 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Generic DHCP Server Configuration",
 				MarkdownDescription: "Generic DHCP Server Configuration",
+				Validators: []validator.Dynamic{
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nsxt")}...),
+				},
 			},
 			"config_nsxt": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
