@@ -100,4 +100,3 @@ func RenderLoadBalancerNsxvConfig(t *testing.T, overrides map[string]string) (st
 
 	return "", nil
 }
-
