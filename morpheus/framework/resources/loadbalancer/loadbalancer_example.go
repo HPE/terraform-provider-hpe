@@ -94,3 +94,10 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 
 	return "", nil
 }
+
+func RenderLoadBalancerNsxvConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	return "", nil
+}
+
