@@ -78,7 +78,7 @@ func RenderLoadBalancerMonitorNsxvConfig(t *testing.T, overrides map[string]stri
 		"ReceiveCode":        "200",
 		"MonitorDestination": "/health",
 		"MonitorUsername":    "",
-		"MonitorPasswordWo": "",
+		"MonitorPasswordWo":  "",
 	}
 
 	for key, value := range overrides {
