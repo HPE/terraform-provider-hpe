@@ -88,3 +88,9 @@ func RenderLoadBalancerHAProxyGenericConfig(t *testing.T, overrides map[string]s
 		args...,
 	)
 }
+
+func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	return "", nil
+}
