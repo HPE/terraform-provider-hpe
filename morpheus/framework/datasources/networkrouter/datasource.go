@@ -78,8 +78,14 @@ func networkRouterAsState(
 		Enabled:    convert.BoolToType(router.Enabled),
 		EnableBgp:  convert.BoolToType(router.EnableBgp),
 		ProviderId: convert.StrToType(router.ProviderId),
-		Config:     types.DynamicNull(),
 	}
+
+	config, err := convert.MapToDynamic(ctx, router.Config)
+	if err != nil {
+		return NetworkRouterModel{}, fmt.Errorf("network router config mapping failed: %w", err)
+	}
+
+	state.Config = config
 
 	if err := setCloudState(ctx, &state, router); err != nil {
 		return NetworkRouterModel{}, err

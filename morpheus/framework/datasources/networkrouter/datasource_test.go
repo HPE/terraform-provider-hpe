@@ -190,5 +190,6 @@ func networkRouterChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "group.id"),
 		resource.TestCheckResourceAttrSet(ds, "group.name"),
 		resource.TestCheckResourceAttrSet(ds, "permissions.visibility"),
+		resource.TestCheckResourceAttrSet(ds, "config.bridgeName"),
 	}
 }
