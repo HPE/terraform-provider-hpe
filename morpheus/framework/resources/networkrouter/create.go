@@ -252,5 +252,9 @@ func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*i
 		}
 	}
 
-	return nil, fmt.Errorf("Could not find network router type for code %s.\nThe network integration for the type may not yet be configured on the Morpheus appliance.", code)
+	return nil, fmt.Errorf(
+		"Could not find network router type for code %s.\n"+
+			"The network integration for the type may not yet be configured on the Morpheus appliance.",
+		code,
+	)
 }

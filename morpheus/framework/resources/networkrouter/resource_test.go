@@ -15,6 +15,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
+const testResourceName = "hpe_morpheus_network_router.example"
+
 func TestMain(m *testing.M) {
 	systemoverride.ParseFlags()
 	code := m.Run()
@@ -42,7 +44,7 @@ func TestAccMorpheusNetworkRouterGenericExampleOk(t *testing.T) {
 		t.Fatalf("failed to render config: %s", err)
 	}
 
-	resourceName := "hpe_morpheus_network_router.example"
+	resourceName := testResourceName
 	config = testhelpers.ProviderBlock() + config
 
 	resource.Test(t, resource.TestCase{
@@ -81,7 +83,7 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier0ExampleOk(t *testing.T) {
 		t.Fatalf("failed to render config: %s", err)
 	}
 
-	resourceName := "hpe_morpheus_network_router.example"
+	resourceName := testResourceName
 	config = testhelpers.ProviderBlock() + config
 
 	resource.Test(t, resource.TestCase{
@@ -121,7 +123,7 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier1ExampleOk(t *testing.T) {
 		t.Fatalf("failed to render config: %s", err)
 	}
 
-	resourceName := "hpe_morpheus_network_router.example"
+	resourceName := testResourceName
 	config = testhelpers.ProviderBlock() + config
 
 	resource.Test(t, resource.TestCase{

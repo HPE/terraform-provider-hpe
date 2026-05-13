@@ -13,8 +13,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-const testResourceName = "hpe_morpheus_network_router.example"
-
 func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
