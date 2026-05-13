@@ -4,7 +4,6 @@ package loadbalancervirtualserver_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -13,11 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
-
-const nsxtLBIDEnvVar = "HPE_TEST_NSXT_LB_ID"
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 	t.Parallel()
@@ -27,15 +25,20 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		t.Skip("Skipping slow acceptance test in short mode")
 	}
 
-	nsxtLBID := os.Getenv(nsxtLBIDEnvVar)
-	if nsxtLBID == "" {
-		t.Skipf("Skipping NSX-T test: %s environment variable not set", nsxtLBIDEnvVar)
+	lbName := acctest.RandomWithPrefix(t.Name())
+	lbName = lbName[0:min(32, len(lbName))]
+
+	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
+		"Name": lbName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render lb config: %s", err)
 	}
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
 	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtConfig(t, map[string]string{
-		"LoadBalancerId":     nsxtLBID,
+		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
 		"Description":        "test nsxt virtual server",
 		"VipAddress":         "10.0.0.200",
@@ -59,14 +62,15 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
 			"/infra/lb-app-profiles/default-http-lb-app-profile"),
-		resource.TestCheckResourceAttr(resourceName, "load_balancer_id", nsxtLBID),
+		resource.TestCheckResourceAttrPair(resourceName, "load_balancer_id",
+			"hpe_morpheus_load_balancer.lb", "id"),
 	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + vsConfig,
+				Config: providerConfig + lbConfig + vsConfig,
 				Check:  checks,
 			},
 			{
@@ -98,18 +102,23 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow acceptance test in short mode")
 	}
 
-	nsxtLBID := os.Getenv(nsxtLBIDEnvVar)
-	if nsxtLBID == "" {
-		t.Skipf("Skipping NSX-T test: %s environment variable not set", nsxtLBIDEnvVar)
+	lbName := acctest.RandomWithPrefix(t.Name())
+	lbName = lbName[0:min(32, len(lbName))]
+
+	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
+		"Name": lbName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render lb config: %s", err)
 	}
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 	providerConfig := testhelpers.ProviderBlock()
 	resourceName := "hpe_morpheus_load_balancer_virtual_server.nsxt_update"
 
-	createConfig := providerConfig + `
+	createConfig := providerConfig + lbConfig + `
 resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
-  load_balancer_id = ` + nsxtLBID + `
+  load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt update test"
   vip_port         = 443
@@ -122,9 +131,9 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 `
 
 	updatedVipName := vipName + "-upd"
-	updateConfig := providerConfig + `
+	updateConfig := providerConfig + lbConfig + `
 resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
-  load_balancer_id = ` + nsxtLBID + `
+  load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + updatedVipName + `"
   description      = "nsxt update test updated"
   vip_port         = 443
@@ -187,18 +196,23 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtConfigChangeRequiresReplace(t *
 		t.Skip("Skipping slow acceptance test in short mode")
 	}
 
-	nsxtLBID := os.Getenv(nsxtLBIDEnvVar)
-	if nsxtLBID == "" {
-		t.Skipf("Skipping NSX-T test: %s environment variable not set", nsxtLBIDEnvVar)
+	lbName := acctest.RandomWithPrefix(t.Name())
+	lbName = lbName[0:min(32, len(lbName))]
+
+	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
+		"Name": lbName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render lb config: %s", err)
 	}
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 	providerConfig := testhelpers.ProviderBlock()
 	resourceName := "hpe_morpheus_load_balancer_virtual_server.nsxt_replace"
 
-	createConfig := providerConfig + `
+	createConfig := providerConfig + lbConfig + `
 resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
-  load_balancer_id = ` + nsxtLBID + `
+  load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
   vip_port         = 443
@@ -210,9 +224,9 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 }
 `
 
-	replaceConfig := providerConfig + `
+	replaceConfig := providerConfig + lbConfig + `
 resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
-  load_balancer_id = ` + nsxtLBID + `
+  load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
   vip_port         = 443
