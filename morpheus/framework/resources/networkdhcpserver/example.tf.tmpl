@@ -4,7 +4,7 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
   server_ip_address = "{{.ServerIpAddress}}"
   lease_time        = {{.LeaseTime}}
 
-  config_nsx = {
+  config_nsxt = {
     edge_cluster = "{{.EdgeCluster}}"
     {{- if ne .ActiveEdgeNode ""}}
     active_edge_node = "{{.ActiveEdgeNode}}"

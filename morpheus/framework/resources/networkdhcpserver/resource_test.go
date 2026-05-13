@@ -65,7 +65,7 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network_dhcp_server.example",
-			"config_nsx.edge_cluster",
+			"config_nsxt.edge_cluster",
 			"qa-edge-cluster-01",
 		),
 		resource.TestCheckResourceAttrSet(
@@ -196,11 +196,11 @@ func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
 						"hpe_morpheus_network_dhcp_server.dynamic_example",
 						"id",
 					),
-					// Import auto-detects NSX config and populates config_nsx
+					// Import auto-detects NSXT config and populates config_nsxt
 					// instead of the dynamic config attribute.
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_dhcp_server.dynamic_example",
-						"config_nsx.edge_cluster",
+						"config_nsxt.edge_cluster",
 						"qa-edge-cluster-01",
 					),
 				),
