@@ -57,7 +57,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 						path.MatchRoot("config_nsxt_gateway_tier0"),
 						path.MatchRoot("config_nsxt_gateway_tier1"),
 					}...),
-					dynamicvalidator.AtLeastOneOf(path.Expressions{
+					dynamicvalidator.ExactlyOneOf(path.Expressions{
 						path.MatchRoot("config"),
 						path.MatchRoot("config_nsxt_gateway_tier0"),
 						path.MatchRoot("config_nsxt_gateway_tier1"),
