@@ -16,7 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
-	loadbalancermonitor "github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancermonitor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
