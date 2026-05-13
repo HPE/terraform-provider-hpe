@@ -60,8 +60,13 @@ func (r *Resource) Read(
 	// Preserve fields the API does not return on GET.
 	state.SslServerCert = current.SslServerCert
 
-	// During import the VipName will be Unknown (no prior state exists).
-	// Build config from the API response; otherwise preserve the plan value.
+	// Import detection: during import only id and load_balancer_id are set
+	// (see import.go), so VipName is Unknown because no prior state exists.
+	// On a normal read VipName is always known from the previous apply.
+	// If VipName ever gains a schema default this heuristic will break
+	// because the framework will populate the default instead of Unknown.
+	// Build config from the API response on import; otherwise preserve the
+	// plan value.
 	if current.VipName.IsUnknown() {
 		if err := setConfigFromResponse(ctx, &state, lbTypeCode, configMap); err != nil {
 			resp.Diagnostics.AddError("import load balancer virtual server", err.Error())

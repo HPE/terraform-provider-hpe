@@ -26,7 +26,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 	}
 
 	lbName := acctest.RandomWithPrefix(t.Name())
-	lbName = lbName[0:min(32, len(lbName))]
+	lbName = lbName[0:16] + lbName[len(lbName)-16:]
 
 	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
 		"Name": lbName,
@@ -103,7 +103,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtUpdateOk(t *testing.T) {
 	}
 
 	lbName := acctest.RandomWithPrefix(t.Name())
-	lbName = lbName[0:min(32, len(lbName))]
+	lbName = lbName[0:16] + lbName[len(lbName)-16:]
 
 	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
 		"Name": lbName,
@@ -197,7 +197,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtConfigChangeRequiresReplace(t *
 	}
 
 	lbName := acctest.RandomWithPrefix(t.Name())
-	lbName = lbName[0:min(32, len(lbName))]
+	lbName = lbName[0:16] + lbName[len(lbName)-16:]
 
 	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
 		"Name": lbName,

@@ -57,6 +57,6 @@ func (r *Resource) ImportState(
 		types.Int64Value(lbID),
 	)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("id"), vsID,
+		ctx, path.Root("id"), types.Int64Value(vsID),
 	)...)
 }
