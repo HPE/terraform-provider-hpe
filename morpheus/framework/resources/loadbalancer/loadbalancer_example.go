@@ -93,14 +93,13 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":               "example-terraform-nsxt-lb",
-		"TypeCode":           "nsx-t",
-		"Visibility":         "public",
-		"AdminState":         "true",
-		"ApplicationProfile": "nsxt-lb-app-profile",
-		"Loglevel":           "INFO",
-		"Size":               "SMALL",
-		"Tier1":              "tier1-gateway",
+		"Name":       "example-terraform-nsxt-lb",
+		"TypeCode":   "nsx-t",
+		"Visibility": "public",
+		"AdminState": "true",
+		"Loglevel":   "INFO",
+		"Size":       "SMALL",
+		"Tier1":      "tier1-gateway",
 	}
 
 	for key, value := range overrides {
@@ -115,7 +114,6 @@ resource "hpe_morpheus_load_balancer" "lb" {
 
   config_nsxt = {
     admin_state         = %s
-    application_profile = %q
     loglevel            = %q
     size                = %q
     tier1               = %q
@@ -126,31 +124,8 @@ resource "hpe_morpheus_load_balancer" "lb" {
 		defaults["TypeCode"],
 		defaults["Visibility"],
 		defaults["AdminState"],
-		defaults["ApplicationProfile"],
 		defaults["Loglevel"],
 		defaults["Size"],
 		defaults["Tier1"],
 	), nil
-}
-
-func RenderLoadBalancerNsxvConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"Name":       "example-terraform-nsxv-lb",
-		"TypeCode":   "nsx-v",
-		"Visibility": "public",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	return fmt.Sprintf(`
-resource "hpe_morpheus_load_balancer" "lb" {
-  name       = %q
-  type_code  = %q
-  visibility = %q
-}
-`, defaults["Name"], defaults["TypeCode"], defaults["Visibility"]), nil
 }
