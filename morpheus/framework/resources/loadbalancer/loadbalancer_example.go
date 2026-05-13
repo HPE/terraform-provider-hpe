@@ -92,11 +92,43 @@ func RenderLoadBalancerHAProxyGenericConfig(t *testing.T, overrides map[string]s
 func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
-	return "", nil
+	defaults := map[string]string{
+		"Name":       "example-terraform-nsxt-lb",
+		"TypeCode":   "nsx-t",
+		"Visibility": "public",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return fmt.Sprintf(`
+resource "hpe_morpheus_load_balancer" "lb" {
+  name       = %q
+  type_code  = %q
+  visibility = %q
+}
+`, defaults["Name"], defaults["TypeCode"], defaults["Visibility"]), nil
 }
 
 func RenderLoadBalancerNsxvConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
-	return "", nil
+	defaults := map[string]string{
+		"Name":       "example-terraform-nsxv-lb",
+		"TypeCode":   "nsx-v",
+		"Visibility": "public",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	return fmt.Sprintf(`
+resource "hpe_morpheus_load_balancer" "lb" {
+  name       = %q
+  type_code  = %q
+  visibility = %q
+}
+`, defaults["Name"], defaults["TypeCode"], defaults["Visibility"]), nil
 }
