@@ -135,6 +135,8 @@ func (r *Resource) Create(
 	switch {
 	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
 		state.ConfigHaproxy = plan.ConfigHaproxy
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
+		state.ConfigNsxt = plan.ConfigNsxt
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		state.Config = plan.Config
 	}
@@ -174,6 +176,19 @@ func setCreateConfig(
 		cfg.HAProxyLoadBalancerConfigObject = haproxyConfig
 		createLB.SetConfig(cfg)
 
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
+		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+			createLB.SetType(plan.TypeCode.ValueString())
+		} else {
+			createLB.SetType(typeCodeNSXT)
+		}
+
+		configDataMap := configNsxtToMap(plan.ConfigNsxt)
+
+		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
+		cfg.MapmapOfStringAny = &configDataMap
+		createLB.SetConfig(cfg)
+
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		createLB.SetType(plan.TypeCode.ValueString())
 
@@ -194,6 +209,28 @@ func setCreateConfig(
 	}
 
 	return nil
+}
+
+func configNsxtToMap(config ConfigNsxtValue) map[string]any {
+	configMap := map[string]any{}
+
+	if !config.AdminState.IsNull() && !config.AdminState.IsUnknown() {
+		configMap["adminState"] = config.AdminState.ValueBool()
+	}
+
+	if !config.LogLevel.IsNull() && !config.LogLevel.IsUnknown() {
+		configMap["loglevel"] = config.LogLevel.ValueString()
+	}
+
+	if !config.Size.IsNull() && !config.Size.IsUnknown() {
+		configMap["size"] = config.Size.ValueString()
+	}
+
+	if !config.Tier1Gateway.IsNull() && !config.Tier1Gateway.IsUnknown() {
+		configMap["tier1"] = config.Tier1Gateway.ValueString()
+	}
+
+	return configMap
 }
 
 func setCreateTenants(

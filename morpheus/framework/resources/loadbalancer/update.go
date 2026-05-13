@@ -97,6 +97,8 @@ func (r *Resource) Update(
 	switch {
 	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
 		newState.ConfigHaproxy = plan.ConfigHaproxy
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
+		newState.ConfigNsxt = plan.ConfigNsxt
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		newState.Config = plan.Config
 	}
@@ -122,6 +124,9 @@ func setUpdateConfig(
 			},
 		}
 		updateLB.SetConfig(configMap)
+
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
+		updateLB.SetConfig(configNsxtToMap(plan.ConfigNsxt))
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()

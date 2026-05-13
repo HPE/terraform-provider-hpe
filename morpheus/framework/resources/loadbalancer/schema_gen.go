@@ -5,8 +5,6 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -22,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -43,8 +42,8 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object with parameters that vary by load balancer type.",
 				MarkdownDescription: "Configuration object with parameters that vary by load balancer type.",
 				Validators: []validator.Dynamic{
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_haproxy")}...),
+					dynamicvalidator.ExactlyOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy"), path.MatchRoot("config_nsxt")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_haproxy"), path.MatchRoot("config_nsxt")}...),
 				},
 			},
 			"config_haproxy": schema.SingleNestedAttribute{
@@ -70,6 +69,47 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Configuration for HAProxy container load balancer type",
 				Validators: []validator.Object{
 					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
+				},
+			},
+			"config_nsxt": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"admin_state": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "If true then admin State rule will be active/enabled.",
+						MarkdownDescription: "If true then admin State rule will be active/enabled.",
+					},
+					"log_level": schema.StringAttribute{
+						Optional:            true,
+						Description:         "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
+						MarkdownDescription: "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
+						Validators: []validator.String{
+							stringvalidator.OneOf("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"),
+						},
+					},
+					"size": schema.StringAttribute{
+						Optional:            true,
+						Description:         "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
+						MarkdownDescription: "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
+						Validators: []validator.String{
+							stringvalidator.OneOf("SMALL", "MEDIUM", "LARGE"),
+						},
+					},
+					"tier1_gateway": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Provider ID of the Tier-1 Gateway.",
+						MarkdownDescription: "Provider ID of the Tier-1 Gateway.",
+					},
+				},
+				CustomType: ConfigNsxtType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigNsxtValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration for NSX-T load balancer type",
+				MarkdownDescription: "Configuration for NSX-T load balancer type",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy")}...),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -117,7 +157,7 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Pass true to allow access to all groups",
 						Validators: []validator.Bool{
 							boolvalidator.ConflictsWith(path.Expressions{
-								path.MatchRelative().AtParent().AtName("groups"),
+								path.MatchRelative().AtParent().AtName("group"),
 							}...),
 						},
 					},
@@ -187,6 +227,7 @@ type LoadBalancerModel struct {
 	CloudId         types.Int64        `tfsdk:"cloud_id"`
 	Config          types.Dynamic      `tfsdk:"config"`
 	ConfigHaproxy   ConfigHaproxyValue `tfsdk:"config_haproxy"`
+	ConfigNsxt      ConfigNsxtValue    `tfsdk:"config_nsxt"`
 	Description     types.String       `tfsdk:"description"`
 	GroupId         types.Int64        `tfsdk:"group_id"`
 	Id              types.Int64        `tfsdk:"id"`
@@ -431,12 +472,14 @@ func (t ConfigHaproxyType) ValueFromTerraform(ctx context.Context, in tftypes.Va
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -475,6 +518,7 @@ func (v ConfigHaproxyValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.PlanId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -482,6 +526,7 @@ func (v ConfigHaproxyValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["plan_id"] = val
 
 		val, err = v.Pool.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -578,6 +623,503 @@ func (v ConfigHaproxyValue) AttributeTypes(ctx context.Context) map[string]attr.
 	return map[string]attr.Type{
 		"plan_id": basetypes.Int64Type{},
 		"pool":    basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigNsxtType{}
+
+type ConfigNsxtType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigNsxtType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigNsxtType) String() string {
+	return "ConfigNsxtType"
+}
+
+func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	adminStateAttribute, ok := attributes["admin_state"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`admin_state is missing from object`)
+
+		return nil, diags
+	}
+
+	adminStateVal, ok := adminStateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`admin_state expected to be basetypes.BoolValue, was: %T`, adminStateAttribute))
+	}
+
+	logLevelAttribute, ok := attributes["log_level"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`log_level is missing from object`)
+
+		return nil, diags
+	}
+
+	logLevelVal, ok := logLevelAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`log_level expected to be basetypes.StringValue, was: %T`, logLevelAttribute))
+	}
+
+	sizeAttribute, ok := attributes["size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`size is missing from object`)
+
+		return nil, diags
+	}
+
+	sizeVal, ok := sizeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`size expected to be basetypes.StringValue, was: %T`, sizeAttribute))
+	}
+
+	tier1GatewayAttribute, ok := attributes["tier1_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tier1_gateway is missing from object`)
+
+		return nil, diags
+	}
+
+	tier1GatewayVal, ok := tier1GatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tier1_gateway expected to be basetypes.StringValue, was: %T`, tier1GatewayAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigNsxtValue{
+		AdminState:   adminStateVal,
+		LogLevel:     logLevelVal,
+		Size:         sizeVal,
+		Tier1Gateway: tier1GatewayVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueNull() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigNsxtValueUnknown() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, a missing attribute value was detected. "+
+					"A ConfigNsxtValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigNsxtValue Attribute Type",
+				"While creating a ConfigNsxtValue value, an invalid attribute value was detected. "+
+					"A ConfigNsxtValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, an extra attribute value was detected. "+
+					"A ConfigNsxtValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigNsxtValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	adminStateAttribute, ok := attributes["admin_state"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`admin_state is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	adminStateVal, ok := adminStateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`admin_state expected to be basetypes.BoolValue, was: %T`, adminStateAttribute))
+	}
+
+	logLevelAttribute, ok := attributes["log_level"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`log_level is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	logLevelVal, ok := logLevelAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`log_level expected to be basetypes.StringValue, was: %T`, logLevelAttribute))
+	}
+
+	sizeAttribute, ok := attributes["size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`size is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	sizeVal, ok := sizeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`size expected to be basetypes.StringValue, was: %T`, sizeAttribute))
+	}
+
+	tier1GatewayAttribute, ok := attributes["tier1_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tier1_gateway is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	tier1GatewayVal, ok := tier1GatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tier1_gateway expected to be basetypes.StringValue, was: %T`, tier1GatewayAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	return ConfigNsxtValue{
+		AdminState:   adminStateVal,
+		LogLevel:     logLevelVal,
+		Size:         sizeVal,
+		Tier1Gateway: tier1GatewayVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtValue {
+	object, diags := NewConfigNsxtValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigNsxtValueMust(ConfigNsxtValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigNsxtValue{}
+
+type ConfigNsxtValue struct {
+	AdminState   basetypes.BoolValue   `tfsdk:"admin_state"`
+	LogLevel     basetypes.StringValue `tfsdk:"log_level"`
+	Size         basetypes.StringValue `tfsdk:"size"`
+	Tier1Gateway basetypes.StringValue `tfsdk:"tier1_gateway"`
+	state        attr.ValueState
+}
+
+func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["admin_state"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["log_level"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["size"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["tier1_gateway"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.AdminState.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["admin_state"] = val
+
+		val, err = v.LogLevel.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["log_level"] = val
+
+		val, err = v.Size.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["size"] = val
+
+		val, err = v.Tier1Gateway.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tier1_gateway"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigNsxtValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigNsxtValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigNsxtValue) String() string {
+	return "ConfigNsxtValue"
+}
+
+func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"admin_state":   basetypes.BoolType{},
+		"log_level":     basetypes.StringType{},
+		"size":          basetypes.StringType{},
+		"tier1_gateway": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"admin_state":   v.AdminState,
+			"log_level":     v.LogLevel,
+			"size":          v.Size,
+			"tier1_gateway": v.Tier1Gateway,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigNsxtValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AdminState.Equal(other.AdminState) {
+		return false
+	}
+
+	if !v.LogLevel.Equal(other.LogLevel) {
+		return false
+	}
+
+	if !v.Size.Equal(other.Size) {
+		return false
+	}
+
+	if !v.Tier1Gateway.Equal(other.Tier1Gateway) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"admin_state":   basetypes.BoolType{},
+		"log_level":     basetypes.StringType{},
+		"size":          basetypes.StringType{},
+		"tier1_gateway": basetypes.StringType{},
 	}
 }
 
@@ -814,12 +1356,14 @@ func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -860,6 +1404,7 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.All.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -867,6 +1412,7 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["all"] = val
 
 		val, err = v.Groups.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1224,12 +1770,14 @@ func (t TenantsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1268,6 +1816,7 @@ func (v TenantsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1275,6 +1824,7 @@ func (v TenantsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

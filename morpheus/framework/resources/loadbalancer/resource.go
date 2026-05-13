@@ -10,7 +10,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 )
 
-const typeCodeHAProxy = "haproxyContainer"
+const (
+	typeCodeHAProxy = "haproxyContainer"
+	typeCodeNSXT    = "nsx-t"
+)
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var (
