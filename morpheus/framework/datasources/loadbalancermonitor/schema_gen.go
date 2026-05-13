@@ -102,6 +102,7 @@ func LoadBalancerMonitorDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the load balancer monitor",
 				MarkdownDescription: "The ID of the load balancer monitor",
 				Validators: []validator.Int64{
+					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("id"), path.MatchRoot("name")}...),
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
@@ -151,6 +152,7 @@ func LoadBalancerMonitorDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the load balancer monitor",
 				MarkdownDescription: "The name of the load balancer monitor",
 				Validators: []validator.String{
+					stringvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("id"), path.MatchRoot("name")}...),
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
