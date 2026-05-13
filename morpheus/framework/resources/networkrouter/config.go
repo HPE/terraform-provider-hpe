@@ -95,7 +95,7 @@ func nsxTier0Config(cfg ConfigNsxtGatewayTier0Value) sdk.CreateNetworkRouterRequ
 	}
 
 	if !cfg.InterSrIbgp.IsNull() && !cfg.InterSrIbgp.IsUnknown() {
-		t0.SetINTER_SR_IBGP(convert.BoolToStringOnOff(cfg.Tier1Segment.ValueBool()).ValueString())
+		t0.SetINTER_SR_IBGP(convert.BoolToStringOnOff(cfg.InterSrIbgp.ValueBool()).ValueString())
 	}
 
 	anyOf := sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOfAsCreateNetworkRouterRequestNetworkRouterConfigAnyOf( //nolint:lll
