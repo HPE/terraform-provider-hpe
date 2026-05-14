@@ -2,14 +2,19 @@
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
 subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
-{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+  Provides a Network Domain data source. This can be used to reference an existing Network Domain by name or id.
 ---
 # {{.Name}} ({{.Type}})
 
-{{ .Description | trimspace }}
+Provides a Network Domain data source. This can be used to reference an existing Network Domain by name or id.
 
-## Example Usage
+## Example Usage - Name
 
-{{tffile "examples/data-sources/morpheus_network_domain/data-source.tf"}}
+{{tffile "examples/data-sources/morpheus_network_domain/example-name.tf"}}
+
+## Example Usage - Id
+
+{{tffile "examples/data-sources/morpheus_network_domain/example-id.tf"}}
+
 
 {{ .SchemaMarkdown | trimspace }}

@@ -185,7 +185,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_integration_git":            integrationds.DataSourceIntegrationGit(),
 			"hpe_morpheus_job":                        jobds.DataSourceJob(),
 			"hpe_morpheus_key_pair":                   trustds.DataSourceKeyPair(),
-			"hpe_morpheus_network_domain":             networkds.DataSourceNetworkDomain(),
 			"hpe_morpheus_network_group":              networkds.DataSourceNetworkGroup(),
 			"hpe_morpheus_network_subnet":             networkds.DataSourceNetworkSubnet(),
 			"hpe_morpheus_networks":                   networkds.DataSourceNetworks(),
