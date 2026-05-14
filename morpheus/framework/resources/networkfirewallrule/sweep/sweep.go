@@ -63,6 +63,8 @@ func sweepFirewallRules() error {
 
 	rules := resp.GetRules()
 
+	// TODO: The SDK returns rules as interface{} (untyped), so we use a JSON
+	// round-trip to extract name/ID. Revisit when the SDK adds typed list responses.
 	rulesJSON, err := json.Marshal(rules)
 	if err != nil {
 		return fmt.Errorf("marshaling rules response: %w", err)

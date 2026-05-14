@@ -122,7 +122,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
+	state, _, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

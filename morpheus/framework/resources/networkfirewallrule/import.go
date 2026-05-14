@@ -51,6 +51,10 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("network_integration_id"), types.Int64Value(networkIntegrationId))...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(ruleId))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("network_integration_id"), types.Int64Value(networkIntegrationId),
+	)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(
+		ctx, path.Root("id"), types.Int64Value(ruleId),
+	)...)
 }

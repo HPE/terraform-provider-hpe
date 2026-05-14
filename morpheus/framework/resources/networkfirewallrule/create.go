@@ -129,7 +129,7 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(ctx, createdID, networkIntegrationId, client)
+	state, _, diag := getNetworkFirewallRuleAsState(ctx, createdID, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		taintResourceState(createdID)
 

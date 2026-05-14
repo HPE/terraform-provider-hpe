@@ -42,17 +42,13 @@ func (r *Resource) Read(
 	id := data.Id.ValueInt64()
 	networkIntegrationId := data.NetworkIntegrationId.ValueInt64()
 
-	_, httpResp, err := client.NetworksAPI.
-		GetNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
-	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
-			resp.State.RemoveResource(ctx)
+	state, notFound, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
+	if notFound {
+		resp.State.RemoveResource(ctx)
 
-			return
-		}
+		return
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -65,24 +61,25 @@ func getNetworkFirewallRuleAsState(
 	id int64,
 	networkIntegrationId int64,
 	client *sdk.APIClient,
-) (NetworkFirewallRuleModel, diag.Diagnostics) {
-	var state NetworkFirewallRuleModel
-	var diags diag.Diagnostics
-
+) (state NetworkFirewallRuleModel, notFound bool, diags diag.Diagnostics) {
 	ruleResp, httpResp, err := client.NetworksAPI.
 		GetNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
 	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
+		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+			return state, true, diags
+		}
+
 		diags.AddError(
 			"error reading network firewall rule",
 			fmt.Sprintf("network firewall rule %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	rule := ruleResp.GetRule()
 
-	state.Id = types.Int64Value(int64(rule.GetId()))
+	state.Id = types.Int64Value(rule.GetId())
 	state.NetworkIntegrationId = types.Int64Value(networkIntegrationId)
 	state.Name = convert.StrToType(rule.Name)
 	state.Direction = convert.StrToType(rule.Direction)
@@ -90,7 +87,7 @@ func getNetworkFirewallRuleAsState(
 	state.Enabled = convert.BoolToType(rule.Enabled)
 
 	if rule.Priority != nil {
-		state.Priority = types.StringValue(strconv.FormatInt(int64(*rule.Priority), 10))
+		state.Priority = types.StringValue(strconv.FormatInt(*rule.Priority, 10))
 	} else {
 		state.Priority = types.StringNull()
 	}
@@ -128,7 +125,7 @@ func getNetworkFirewallRuleAsState(
 
 	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup.Get())
 
-	return state, diags
+	return state, false, diags
 }
 
 func extractStringIDs[T any](
@@ -215,7 +212,7 @@ func mapRuleGroupFromResponse(
 
 	var idVal basetypes.Int64Value
 	if ruleGroup.Id != nil {
-		idVal = types.Int64Value(int64(*ruleGroup.Id))
+		idVal = types.Int64Value(*ruleGroup.Id)
 	} else {
 		idVal = types.Int64Null()
 	}
