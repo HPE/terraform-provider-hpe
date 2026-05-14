@@ -183,10 +183,26 @@ func setCreateConfig(
 			createLB.SetType(typeCodeNSXT)
 		}
 
-		configDataMap := configNsxtToMap(plan.ConfigNsxt)
+		nsxtConfig := sdk.NewNSXTLoadBalancerConfigObject()
+
+		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
+			nsxtConfig.SetAdminState(plan.ConfigNsxt.AdminState.ValueBool())
+		}
+
+		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
+			nsxtConfig.SetLoglevel(plan.ConfigNsxt.LogLevel.ValueString())
+		}
+
+		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
+			nsxtConfig.SetSize(plan.ConfigNsxt.Size.ValueString())
+		}
+
+		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
+			nsxtConfig.SetTier1(plan.ConfigNsxt.Tier1Gateway.ValueString())
+		}
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
-		cfg.MapmapOfStringAny = &configDataMap
+		cfg.NSXTLoadBalancerConfigObject = nsxtConfig
 		createLB.SetConfig(cfg)
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
@@ -209,28 +225,6 @@ func setCreateConfig(
 	}
 
 	return nil
-}
-
-func configNsxtToMap(config ConfigNsxtValue) map[string]any {
-	configMap := map[string]any{}
-
-	if !config.AdminState.IsNull() && !config.AdminState.IsUnknown() {
-		configMap["adminState"] = config.AdminState.ValueBool()
-	}
-
-	if !config.LogLevel.IsNull() && !config.LogLevel.IsUnknown() {
-		configMap["loglevel"] = config.LogLevel.ValueString()
-	}
-
-	if !config.Size.IsNull() && !config.Size.IsUnknown() {
-		configMap["size"] = config.Size.ValueString()
-	}
-
-	if !config.Tier1Gateway.IsNull() && !config.Tier1Gateway.IsUnknown() {
-		configMap["tier1"] = config.Tier1Gateway.ValueString()
-	}
-
-	return configMap
 }
 
 func setCreateTenants(

@@ -126,7 +126,25 @@ func setUpdateConfig(
 		updateLB.SetConfig(configMap)
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		updateLB.SetConfig(configNsxtToMap(plan.ConfigNsxt))
+		configMap := map[string]interface{}{}
+
+		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
+			configMap["adminState"] = plan.ConfigNsxt.AdminState.ValueBool()
+		}
+
+		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
+			configMap["loglevel"] = plan.ConfigNsxt.LogLevel.ValueString()
+		}
+
+		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
+			configMap["size"] = plan.ConfigNsxt.Size.ValueString()
+		}
+
+		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
+			configMap["tier1"] = plan.ConfigNsxt.Tier1Gateway.ValueString()
+		}
+
+		updateLB.SetConfig(configMap)
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()

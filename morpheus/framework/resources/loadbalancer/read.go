@@ -54,8 +54,10 @@ func getLoadBalancerAsState(
 
 	// Set config based on the load balancer type.
 	// For HAProxy LBs, parse the API config map into the typed config_haproxy attribute.
+	// For NSX-T LBs, parse the API config map into the typed config_nsxt attribute.
 	// For other types, leave both null — the caller preserves config from the plan.
 	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
+	isNSXT := data.Type.Code != nil && *data.Type.Code == typeCodeNSXT
 
 	switch {
 	case isHAProxy && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
@@ -67,6 +69,15 @@ func getLoadBalancerAsState(
 		}
 
 		state.ConfigHaproxy = haproxyCfg
+	case isNSXT && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
+		state.TypeCode = types.StringNull()
+
+		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
+		if err != nil {
+			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
+		}
+
+		state.ConfigNsxt = nsxtCfg
 	default:
 		state.TypeCode = types.StringValue(*data.Type.Code)
 
@@ -205,6 +216,55 @@ func parseHAProxyConfig(
 	)
 	if d.HasError() {
 		return ConfigHaproxyValue{}, fmt.Errorf("failed to build config_haproxy value: %s", d.Errors())
+	}
+
+	return cfg, nil
+}
+
+func parseNsxtConfig(
+	ctx context.Context,
+	configMap map[string]interface{},
+) (ConfigNsxtValue, error) {
+	var adminState bool
+	var logLevel string
+	var size string
+	var tier1 string
+
+	if adminStateRaw, ok := configMap["adminState"]; ok {
+		if v, ok := adminStateRaw.(bool); ok {
+			adminState = v
+		}
+	}
+
+	if logLevelRaw, ok := configMap["loglevel"]; ok {
+		if v, ok := logLevelRaw.(string); ok {
+			logLevel = v
+		}
+	}
+
+	if sizeRaw, ok := configMap["size"]; ok {
+		if v, ok := sizeRaw.(string); ok {
+			size = v
+		}
+	}
+
+	if tier1Raw, ok := configMap["tier1"]; ok {
+		if v, ok := tier1Raw.(string); ok {
+			tier1 = v
+		}
+	}
+
+	cfg, d := NewConfigNsxtValue(
+		ConfigNsxtValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"admin_state":   types.BoolValue(adminState),
+			"log_level":     types.StringValue(logLevel),
+			"size":          types.StringValue(size),
+			"tier1_gateway": types.StringValue(tier1),
+		},
+	)
+	if d.HasError() {
+		return ConfigNsxtValue{}, fmt.Errorf("failed to build config_nsxt value: %s", d.Errors())
 	}
 
 	return cfg, nil
