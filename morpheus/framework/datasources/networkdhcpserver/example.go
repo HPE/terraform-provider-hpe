@@ -18,7 +18,7 @@ func RenderNetworkDhcpServerByNameConfig(t *testing.T, overrides map[string]stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":            "qa-dhcp-profile-vlan30",
+		"Name":                 "qa-dhcp-profile-vlan30",
 		"NetworkIntegrationId": "16",
 	}
 
@@ -50,7 +50,7 @@ func RenderNetworkDhcpServerByIdConfig(t *testing.T, overrides map[string]string
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id":              "5",
+		"Id":                   "5",
 		"NetworkIntegrationId": "16",
 	}
 

@@ -67,10 +67,10 @@ func dhcpServerAsState(
 	networkServerId int64,
 ) (NetworkDhcpServerModel, error) {
 	state := NetworkDhcpServerModel{
-		Id:              convert.Int64ToType(dhcp.Id),
-		Name:            convert.StrToType(dhcp.Name),
-		LeaseTime:       convert.Int64ToType(dhcp.LeaseTime),
-		ServerIpAddress: convert.StrToType(dhcp.ServerIpAddress),
+		Id:                   convert.Int64ToType(dhcp.Id),
+		Name:                 convert.StrToType(dhcp.Name),
+		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
+		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
 		NetworkIntegrationId: types.Int64Value(networkServerId),
 	}
 
