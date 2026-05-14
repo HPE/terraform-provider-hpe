@@ -18,7 +18,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
-	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	networkrouter "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
