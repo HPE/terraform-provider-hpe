@@ -5,7 +5,6 @@ package networkrouterbgpneighbor
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -147,12 +146,12 @@ func bgpNeighborAsState(
 
 			state.ConfigNsxv = v
 		} else if neighbor.Config.MapmapOfStringAny != nil {
-			raw, err := json.Marshal(*neighbor.Config.MapmapOfStringAny)
+			v, err := convert.MapToDynamic(ctx, *neighbor.Config.MapmapOfStringAny)
 			if err != nil {
-				return NetworkRouterBgpNeighborModel{}, fmt.Errorf("error marshalling config: %w", err)
+				return NetworkRouterBgpNeighborModel{}, fmt.Errorf("error converting config: %w", err)
 			}
 
-			state.Config = types.DynamicValue(types.StringValue(string(raw)))
+			state.Config = v
 		}
 	}
 
