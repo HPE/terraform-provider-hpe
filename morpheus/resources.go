@@ -17,8 +17,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	networkrouter "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
@@ -42,13 +42,10 @@ func (s SubProvider) GetResources(
 		loadbalancermonitor.NewResource,
 		loadbalancervirtualserver.NewResource,
 		network.NewResource,
-<<<<<<< firewall-rule-resource
 		networkfirewallrule.NewResource,
-=======
 		networkdhcpserver.NewResource,
 		networkrouter.NewResource,
 		networkrouterbgpneighbor.NewResource,
->>>>>>> gl-parity
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
