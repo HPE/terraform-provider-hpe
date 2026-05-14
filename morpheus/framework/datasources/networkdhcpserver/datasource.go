@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
@@ -65,23 +64,23 @@ func (d *DataSource) Schema(
 func dhcpServerAsState(
 	ctx context.Context,
 	dhcp *sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer,
-	networkIntegrationId int64,
+	networkServerId int64,
 ) (NetworkDhcpServerModel, error) {
 	state := NetworkDhcpServerModel{
-		Id:                   convert.Int64ToType(dhcp.Id),
-		Name:                 convert.StrToType(dhcp.Name),
-		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
-		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
-		NetworkIntegrationId: types.NumberValue(new(big.Float).SetInt64(networkIntegrationId)),
+		Id:              convert.Int64ToType(dhcp.Id),
+		Name:            convert.StrToType(dhcp.Name),
+		LeaseTime:       convert.Int64ToType(dhcp.LeaseTime),
+		ServerIpAddress: convert.StrToType(dhcp.ServerIpAddress),
+		NetworkIntegrationId: types.Int64Value(networkServerId),
 	}
 
 	state.Config = types.DynamicNull()
-	state.ConfigNsx = NewConfigNsxValueNull()
+	state.ConfigNsxt = NewConfigNsxtValueNull()
 
 	if dhcp.Config != nil {
 		if nsx := dhcp.Config.NSXDHCPServerConfiguration2; nsx != nil {
-			v, diags := NewConfigNsxValue(
-				ConfigNsxValue{}.AttributeTypes(ctx),
+			v, diags := NewConfigNsxtValue(
+				ConfigNsxtValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
 					"edge_cluster":      convert.StrToType(nsx.EdgeCluster.Get()),
 					"active_edge_node":  convert.StrToType(nsx.PreferredEdgeNode1.Get()),
@@ -89,10 +88,10 @@ func dhcpServerAsState(
 				},
 			)
 			if diags.HasError() {
-				return NetworkDhcpServerModel{}, fmt.Errorf("error creating config_nsx value")
+				return NetworkDhcpServerModel{}, fmt.Errorf("error creating config_nsxt value")
 			}
 
-			state.ConfigNsx = v
+			state.ConfigNsxt = v
 		} else if dhcp.Config.MapmapOfStringAny != nil {
 			raw, err := json.Marshal(*dhcp.Config.MapmapOfStringAny)
 			if err != nil {
@@ -174,7 +173,7 @@ func getDhcpServer(
 	config *NetworkDhcpServerModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer, error) {
-	serverId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
+	serverId := config.NetworkIntegrationId.ValueInt64()
 
 	if !config.Id.IsNull() {
 		return getDhcpServerByID(ctx, config.Id.ValueInt64(), serverId, apiClient)
@@ -220,8 +219,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	networkIntegrationId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
-	state, err := dhcpServerAsState(ctx, dhcp, networkIntegrationId)
+	state, err := dhcpServerAsState(ctx, dhcp, config.NetworkIntegrationId.ValueInt64())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
