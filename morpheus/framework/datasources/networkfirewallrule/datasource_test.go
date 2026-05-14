@@ -186,7 +186,7 @@ func networkFirewallRuleChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "name"),
 		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
 		resource.TestCheckResourceAttrSet(ds, "enabled"),
-		resource.TestCheckResourceAttrSet(ds, "config"),
+		resource.TestCheckResourceAttrSet(ds, "config.%"),
 		resource.TestCheckResourceAttrSet(ds, "direction"),
 		resource.TestCheckResourceAttrSet(ds, "policy"),
 		resource.TestCheckResourceAttrSet(ds, "priority"),
