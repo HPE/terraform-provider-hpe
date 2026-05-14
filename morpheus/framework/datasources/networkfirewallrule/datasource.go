@@ -192,33 +192,33 @@ func firewallRuleAsState(
 
 	config := types.DynamicNull()
 	if rule.Config != nil {
-		raw, err := json.Marshal(rule.Config)
+		v, err := convert.MapToDynamic(ctx, rule.Config)
 		if err != nil {
-			return NetworkFirewallRuleModel{}, fmt.Errorf("error marshalling config: %w", err)
+			return NetworkFirewallRuleModel{}, fmt.Errorf("error creating config value: %w", err)
 		}
 
-		config = types.DynamicValue(types.StringValue(string(raw)))
+		config = v
 	}
 
 	return NetworkFirewallRuleModel{
-		Applications:    applications,
-		AppliedTargets:  appliedTargets,
-		Config:          config,
-		DestinationType: convert.StrToType(rule.DestinationType),
-		Destinations:    destinations,
-		Direction:       convert.StrToType(rule.Direction),
-		Enabled:         convert.BoolToType(rule.Enabled),
-		GroupName:       convert.StrToType(rule.GroupName),
-		Id:              convert.Int64ToType(rule.Id),
-		Name:            convert.StrToType(rule.Name),
-		Policy:          convert.StrToType(rule.Policy),
-		Priority:        convert.Int64ToType(rule.Priority),
-		Profiles:        profiles,
-		RuleGroup:       ruleGroup,
-		Scopes:          scopes,
+		Applications:         applications,
+		AppliedTargets:       appliedTargets,
+		Config:               config,
+		DestinationType:      convert.StrToType(rule.DestinationType),
+		Destinations:         destinations,
+		Direction:            convert.StrToType(rule.Direction),
+		Enabled:              convert.BoolToType(rule.Enabled),
+		GroupName:            convert.StrToType(rule.GroupName),
+		Id:                   convert.Int64ToType(rule.Id),
+		Name:                 convert.StrToType(rule.Name),
 		NetworkIntegrationId: types.Int64Value(networkIntegrationId),
-		SourceType:      convert.StrToType(rule.SourceType),
-		Sources:         sources,
+		Policy:               convert.StrToType(rule.Policy),
+		Priority:             convert.Int64ToType(rule.Priority),
+		Profiles:             profiles,
+		RuleGroup:            ruleGroup,
+		Scopes:               scopes,
+		SourceType:           convert.StrToType(rule.SourceType),
+		Sources:              sources,
 	}, nil
 }
 
