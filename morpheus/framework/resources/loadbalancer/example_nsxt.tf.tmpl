@@ -1,0 +1,12 @@
+resource "hpe_morpheus_load_balancer" "lb" {
+  name       = "{{ .Name }}"
+  type_code  = "{{ .TypeCode }}"
+  visibility = "{{ .Visibility }}"
+
+  config_nsxt = {
+    admin_state   = {{ .AdminState }}
+    log_level     = "{{ .LogLevel }}"
+    size          = "{{ .Size }}"
+    tier1_gateway = "{{ .Tier1Gateway }}"
+  }
+}
