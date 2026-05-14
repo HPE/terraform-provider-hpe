@@ -6,6 +6,7 @@ package networkfirewallrule
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -22,6 +23,7 @@ import (
 
 const (
 	summary                           = "read network firewall rule data source"
+	ErrorNoValidSearchTerms           = `no valid search terms - an id or name is required`
 	ErrorRunningPreApply              = `Error running pre-apply plan: exit status 1`
 	ErrorNoNetworkFirewallRuleFound   = `no network firewall rule found`
 	ErrorMultipleNetworkFirewallRules = `multiple network firewall rules were returned`
@@ -258,7 +260,7 @@ func getFirewallRuleByName(
 	// The subsequent loop performs exact-match filtering on the results.
 	rs, hresp, err := apiClient.NetworksAPI.GetNetworkFirewallRules(
 		ctx, serverId,
-	).Phrase(name).Execute()
+	).Phrase(name).Max(10000).Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for network firewall rules: %s",
@@ -312,9 +314,11 @@ func getFirewallRule(
 
 	if !config.Id.IsNull() {
 		return getFirewallRuleByID(ctx, config.Id.ValueInt64(), serverId, apiClient)
+	} else if !config.Name.IsNull() {
+		return getFirewallRuleByName(ctx, config.Name.ValueString(), serverId, apiClient)
 	}
 
-	return getFirewallRuleByName(ctx, config.Name.ValueString(), serverId, apiClient)
+	return nil, errors.New(ErrorNoValidSearchTerms)
 }
 
 // Read refreshes the Terraform state with the latest data.
