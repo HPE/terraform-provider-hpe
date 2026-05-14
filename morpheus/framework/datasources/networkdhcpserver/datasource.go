@@ -64,14 +64,14 @@ func (d *DataSource) Schema(
 func dhcpServerAsState(
 	ctx context.Context,
 	dhcp *sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer,
-	networkServerId int64,
+	networkIntegrationId int64,
 ) (NetworkDhcpServerModel, error) {
 	state := NetworkDhcpServerModel{
 		Id:                   convert.Int64ToType(dhcp.Id),
 		Name:                 convert.StrToType(dhcp.Name),
 		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
 		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
-		NetworkIntegrationId: types.Int64Value(networkServerId),
+		NetworkIntegrationId: types.Int64Value(networkIntegrationId),
 	}
 
 	state.Config = types.DynamicNull()
@@ -219,7 +219,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	state, err := dhcpServerAsState(ctx, dhcp, config.NetworkIntegrationId.ValueInt64())
+	networkIntegrationId := config.NetworkIntegrationId.ValueInt64()
+	state, err := dhcpServerAsState(ctx, dhcp, networkIntegrationId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,
