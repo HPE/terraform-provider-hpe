@@ -1,0 +1,19 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+Get a `network_firewall_rule_group` by `id`
+{{ tffile "examples/data-sources/morpheus_network_firewall_rule_group/example-id.tf" }}
+
+Get a `network_firewall_rule_group` by `name`
+{{ tffile "examples/data-sources/morpheus_network_firewall_rule_group/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
