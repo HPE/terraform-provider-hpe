@@ -1,0 +1,17 @@
+resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
+  load_balancer_id            = {{.LoadBalancerId}}
+  name                        = "{{.Name}}"
+  description                 = "{{.Description}}"
+  monitor_type                = "{{.MonitorType}}"
+  monitor_interval            = {{.MonitorInterval}}
+  monitor_timeout             = {{.MonitorTimeout}}
+  max_retry                   = {{.MaxRetry}}
+  send_data                   = "{{.SendData}}"
+  send_type                   = "{{.SendType}}"
+  receive_data                = "{{.ReceiveData}}"
+  receive_code                = "{{.ReceiveCode}}"
+  monitor_destination         = "{{.MonitorDestination}}"
+  monitor_username            = "{{.MonitorUsername}}"
+  monitor_password_wo         = "{{.MonitorPasswordWo}}"
+  monitor_password_wo_version = 1
+}

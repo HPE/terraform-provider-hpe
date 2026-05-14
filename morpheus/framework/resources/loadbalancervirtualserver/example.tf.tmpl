@@ -1,0 +1,8 @@
+resource "hpe_morpheus_load_balancer_virtual_server" "example" {
+  load_balancer_id = {{.LoadBalancerId}}
+  vip_name         = "{{.VipName}}"
+  description      = "{{.Description}}"
+  vip_address      = "{{.VipAddress}}"
+  vip_port         = {{.VipPort}}
+  vip_protocol     = "{{.VipProtocol}}"
+}
