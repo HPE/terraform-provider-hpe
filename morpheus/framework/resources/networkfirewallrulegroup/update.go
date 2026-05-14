@@ -69,7 +69,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := getNetworkFirewallRuleGroupAsState(
+	state, _, diags := getNetworkFirewallRuleGroupAsState(
 		ctx, id, serverID, client, plan,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {

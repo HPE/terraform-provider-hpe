@@ -92,7 +92,7 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, diags := getNetworkFirewallRuleGroupAsState(
+	state, _, diags := getNetworkFirewallRuleGroupAsState(
 		ctx, createdID, serverID, client, plan,
 	)
 	if diags.HasError() {

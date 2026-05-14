@@ -15,8 +15,6 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-const testFirewallRuleGroupPrefix = "TestAccMorpheusNetworkFirewallRuleGroup"
-
 // ruleGroupItem represents a firewall rule group item returned by the list API.
 type ruleGroupItem struct {
 	Id            *int64  `json:"id"`
@@ -94,7 +92,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*item.Name, testFirewallRuleGroupPrefix)
+			return strings.HasPrefix(*item.Name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test firewall rule group.
 		func(

@@ -42,6 +42,11 @@ func (r *Resource) Delete(
 	_, httpResp, err := client.NetworksAPI.
 		DeleteNetworkFirewallRuleGroup(ctx, id, serverID).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
+		// 404 means the resource is already gone — treat as success
+		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"error deleting network firewall rule group",
 			fmt.Sprintf("network firewall rule group %d DELETE failed: ", id)+

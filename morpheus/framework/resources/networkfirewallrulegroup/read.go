@@ -39,9 +39,15 @@ func (r *Resource) Read(
 	id := data.Id.ValueInt64()
 	serverID := data.NetworkIntegrationId.ValueInt64()
 
-	state, diags := getNetworkFirewallRuleGroupAsState(
+	state, notFound, diags := getNetworkFirewallRuleGroupAsState(
 		ctx, id, serverID, client, data,
 	)
+	if notFound {
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -55,20 +61,24 @@ func getNetworkFirewallRuleGroupAsState(
 	serverID int64,
 	client *sdk.APIClient,
 	prior NetworkFirewallRuleGroupModel,
-) (NetworkFirewallRuleGroupModel, diag.Diagnostics) {
+) (NetworkFirewallRuleGroupModel, bool, diag.Diagnostics) {
 	var state NetworkFirewallRuleGroupModel
 	var diags diag.Diagnostics
 
 	getResp, httpResp, err := client.NetworksAPI.
 		GetNetworkFirewallRuleGroup(ctx, id, serverID).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
+		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+			return state, true, diags
+		}
+
 		diags.AddError(
 			"error reading network firewall rule group",
 			fmt.Sprintf("network firewall rule group %d GET failed: ", id)+
 				errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	ruleGroup := getResp.GetRuleGroup()
@@ -88,5 +98,5 @@ func getNetworkFirewallRuleGroupAsState(
 	state.NetworkIntegrationId = prior.NetworkIntegrationId
 	state.ExternalType = prior.ExternalType
 
-	return state, diags
+	return state, false, diags
 }
