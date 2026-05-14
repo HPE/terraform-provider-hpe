@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func (r *Resource) ImportState(
@@ -30,7 +31,7 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	serverId, err := strconv.ParseInt(parts[0], 10, 64)
+	networkIntegrationId, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import network_firewall_rule resource",
@@ -50,6 +51,6 @@ func (r *Resource) ImportState(
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("network_integration_id"), serverId)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), ruleId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("network_integration_id"), types.Int64Value(networkIntegrationId))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(ruleId))...)
 }

@@ -5,7 +5,6 @@ package sweep
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,14 +12,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-const testPrefix = "TestAccMorpheusNetworkFirewallRule"
+const testPrefix = testsweep.TestResourcePrefix
 
 func init() {
 	resource.AddTestSweepers(
@@ -49,7 +48,7 @@ func sweepFirewallRules() error {
 
 	ctx := context.Background()
 
-	client, err := newSweepClient(ctx)
+	client, err := testhelpers.NewClientForServer(ctx, "")
 	if err != nil {
 		log.Printf("[WARN] Cannot create sweep client: %v", err)
 
@@ -106,51 +105,4 @@ func sweepFirewallRules() error {
 	}
 
 	return nil
-}
-
-func newSweepClient(ctx context.Context) (*sdk.APIClient, error) {
-	var username, password string
-
-	url, ok := os.LookupEnv("TF_VAR_testacc_morpheus_url")
-	if !ok {
-		return nil, errors.New("TF_VAR_testacc_morpheus_url not set")
-	}
-
-	token, ok := os.LookupEnv("TF_VAR_testacc_morpheus_access_token")
-	if !ok {
-		username, ok = os.LookupEnv("TF_VAR_testacc_morpheus_username")
-		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_username must be set",
-			)
-		}
-
-		password, ok = os.LookupEnv("TF_VAR_testacc_morpheus_password")
-		if !ok {
-			return nil, errors.New(
-				"one of TF_VAR_testacc_morpheus_access_token or " +
-					"TF_VAR_testacc_morpheus_password must be set",
-			)
-		}
-	}
-
-	_, insecure := os.LookupEnv("TF_VAR_testacc_morpheus_insecure")
-
-	var opts []clientfactory.ClientOption
-	if insecure {
-		opts = append(opts, clientfactory.WithInsecureTLS())
-	}
-
-	client := clientfactory.NewAPIClient(
-		ctx,
-		url,
-		username,
-		password,
-		"",
-		token,
-		opts...,
-	)
-
-	return client, nil
 }

@@ -108,10 +108,10 @@ func (r *Resource) Update(
 	updateReq.SetRule(ruleMap)
 
 	id := currentState.Id.ValueInt64()
-	serverId := currentState.NetworkIntegrationId.ValueInt64()
+	networkIntegrationId := currentState.NetworkIntegrationId.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.
-		UpdateNetworkFirewallRule(ctx, id, serverId).
+		UpdateNetworkFirewallRule(ctx, id, networkIntegrationId).
 		UpdateNetworkFirewallRuleRequest(*updateReq).Execute()
 	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
 		resp.Diagnostics.AddError(
@@ -122,7 +122,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(ctx, id, serverId, client)
+	state, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

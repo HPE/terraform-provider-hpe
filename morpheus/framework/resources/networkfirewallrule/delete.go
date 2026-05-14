@@ -27,7 +27,7 @@ func (r *Resource) Delete(
 	}
 
 	id := data.Id.ValueInt64()
-	serverId := data.NetworkIntegrationId.ValueInt64()
+	networkIntegrationId := data.NetworkIntegrationId.ValueInt64()
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -37,8 +37,13 @@ func (r *Resource) Delete(
 	}
 
 	_, httpResp, err := client.NetworksAPI.
-		DeleteNetworkFirewallRule(ctx, id, serverId).Execute()
+		DeleteNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
 	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
+		// 404 means the resource is already gone — treat as success
+		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"error deleting network firewall rule",
 			fmt.Sprintf("network firewall rule %d DELETE failed: ", id)+errfmt.ErrMsg(err, httpResp),
@@ -49,7 +54,7 @@ func (r *Resource) Delete(
 
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.NetworksAPI.
-			GetNetworkFirewallRule(ctx, id, serverId).Execute()
+			GetNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
 		if err != nil {
 			if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
 				return struct{}{}, nil
@@ -66,7 +71,7 @@ func (r *Resource) Delete(
 		ctx,
 		waitForDeleted,
 		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
-		backoff.WithMaxElapsedTime(45*time.Minute),
+		backoff.WithMaxElapsedTime(5*time.Minute),
 	); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting network firewall rule",

@@ -102,10 +102,10 @@ func (r *Resource) Create(
 	addReq := sdk.NewCreateNetworkFirewallRuleRequestWithDefaults()
 	addReq.SetRule(*rule)
 
-	serverId := plan.NetworkIntegrationId.ValueInt64()
+	networkIntegrationId := plan.NetworkIntegrationId.ValueInt64()
 
 	createResp, httpResp, err := client.NetworksAPI.
-		CreateNetworkFirewallRule(ctx, serverId).
+		CreateNetworkFirewallRule(ctx, networkIntegrationId).
 		CreateNetworkFirewallRuleRequest(*addReq).Execute()
 	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
 		resp.Diagnostics.AddError(
@@ -129,7 +129,7 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(ctx, createdID, serverId, client)
+	state, diag := getNetworkFirewallRuleAsState(ctx, createdID, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		taintResourceState(createdID)
 

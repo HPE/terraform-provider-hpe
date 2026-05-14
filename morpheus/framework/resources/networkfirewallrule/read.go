@@ -39,9 +39,20 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diag := getNetworkFirewallRuleAsState(
-		ctx, data.Id.ValueInt64(), data.NetworkIntegrationId.ValueInt64(), client,
-	)
+	id := data.Id.ValueInt64()
+	networkIntegrationId := data.NetworkIntegrationId.ValueInt64()
+
+	_, httpResp, err := client.NetworksAPI.
+		GetNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
+	if err != nil {
+		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+	}
+
+	state, diag := getNetworkFirewallRuleAsState(ctx, id, networkIntegrationId, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -52,14 +63,14 @@ func (r *Resource) Read(
 func getNetworkFirewallRuleAsState(
 	ctx context.Context,
 	id int64,
-	serverId int64,
+	networkIntegrationId int64,
 	client *sdk.APIClient,
 ) (NetworkFirewallRuleModel, diag.Diagnostics) {
 	var state NetworkFirewallRuleModel
 	var diags diag.Diagnostics
 
 	ruleResp, httpResp, err := client.NetworksAPI.
-		GetNetworkFirewallRule(ctx, id, serverId).Execute()
+		GetNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
 	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
 		diags.AddError(
 			"error reading network firewall rule",
@@ -72,7 +83,7 @@ func getNetworkFirewallRuleAsState(
 	rule := ruleResp.GetRule()
 
 	state.Id = types.Int64Value(int64(rule.GetId()))
-	state.NetworkIntegrationId = types.Int64Value(serverId)
+	state.NetworkIntegrationId = types.Int64Value(networkIntegrationId)
 	state.Name = convert.StrToType(rule.Name)
 	state.Direction = convert.StrToType(rule.Direction)
 	state.Policy = convert.StrToType(rule.Policy)
@@ -115,7 +126,7 @@ func getNetworkFirewallRuleAsState(
 	diags.Append(profileDiags...)
 	state.Profile = profile
 
-	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup)
+	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup.Get())
 
 	return state, diags
 }

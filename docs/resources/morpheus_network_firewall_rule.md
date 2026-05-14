@@ -34,13 +34,14 @@ resource "hpe_morpheus_network_firewall_rule" "example" {
 
 ### Optional
 
-- `config` (Attributes) Additional configuration for the firewall rule (applications, profiles). (see [below for nested schema](#nestedatt--config))
+- `application` (Set of String) Application identifiers for the firewall rule.
 - `description` (String) The description of the network firewall rule.
 - `destinations` (Attributes) Destination addresses or groups for the firewall rule. (see [below for nested schema](#nestedatt--destinations))
 - `direction` (String) The traffic direction for the firewall rule (e.g. ingress, egress).
 - `enabled` (Boolean) Whether the firewall rule is enabled.
 - `policy` (String) The policy action for the firewall rule (e.g. accept, deny, drop).
 - `priority` (String) The priority of the network firewall rule.
+- `profile` (Set of String) Profile identifiers for the firewall rule.
 - `rule_group_id` (Attributes) The ID of the firewall rule group this rule belongs to. (see [below for nested schema](#nestedatt--rule_group_id))
 - `scopes` (Attributes) The scopes applied to the firewall rule. (see [below for nested schema](#nestedatt--scopes))
 - `sources` (Attributes) Source addresses or groups for the firewall rule. (see [below for nested schema](#nestedatt--sources))
@@ -48,15 +49,6 @@ resource "hpe_morpheus_network_firewall_rule" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of this resource.
-
-<a id="nestedatt--config"></a>
-### Nested Schema for `config`
-
-Optional:
-
-- `application` (Set of String)
-- `profile` (Set of String)
-
 
 <a id="nestedatt--destinations"></a>
 ### Nested Schema for `destinations`
