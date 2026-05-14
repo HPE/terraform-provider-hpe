@@ -71,6 +71,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 			"hpe_morpheus_network_firewall_rule_group.example",
 			"network_integration_id",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_firewall_rule_group.example",
+			"external_type",
+			"SecurityPolicy",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -168,6 +173,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 			"group_layer",
 			"Application",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_firewall_rule_group.example",
+			"external_type",
+			"SecurityPolicy",
+		),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -190,6 +200,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 			"hpe_morpheus_network_firewall_rule_group.example",
 			"group_layer",
 			"Application",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_network_firewall_rule_group.example",
+			"external_type",
+			"SecurityPolicy",
 		),
 	)
 
