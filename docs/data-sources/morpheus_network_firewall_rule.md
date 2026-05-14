@@ -12,15 +12,15 @@ description: |-
 
 ```terraform
 data "hpe_morpheus_network_firewall_rule" "example" {
-  id        = 99
-  server_id = 1
+  id                     = 99
+  network_integration_id = 1
 }
 ```
 
 ```terraform
 data "hpe_morpheus_network_firewall_rule" "example" {
-  name      = "Example name"
-  server_id = 1
+  name                   = "Example name"
+  network_integration_id = 1
 }
 ```
 
@@ -29,7 +29,7 @@ data "hpe_morpheus_network_firewall_rule" "example" {
 
 ### Required
 
-- `server_id` (Number) The ID of the network server that the firewall rule belongs to
+- `network_integration_id` (Number) The ID of the network integration that the firewall rule belongs to
 
 ### Optional
 

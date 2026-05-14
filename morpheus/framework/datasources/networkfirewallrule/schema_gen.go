@@ -112,6 +112,11 @@ func NetworkFirewallRuleDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"network_integration_id": schema.Int64Attribute{
+				Required:            true,
+				Description:         "The ID of the network integration that the firewall rule belongs to",
+				MarkdownDescription: "The ID of the network integration that the firewall rule belongs to",
+			},
 			"policy": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The policy action of the firewall rule (e.g. accept, deny)",
@@ -180,11 +185,6 @@ func NetworkFirewallRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The scopes associated with the firewall rule",
 				MarkdownDescription: "The scopes associated with the firewall rule",
 			},
-			"server_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "The ID of the network server that the firewall rule belongs to",
-				MarkdownDescription: "The ID of the network server that the firewall rule belongs to",
-			},
 			"source_type": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The source type of the firewall rule",
@@ -215,24 +215,24 @@ func NetworkFirewallRuleDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkFirewallRuleModel struct {
-	Applications    types.Set      `tfsdk:"applications"`
-	AppliedTargets  types.Dynamic  `tfsdk:"applied_targets"`
-	Config          types.Dynamic  `tfsdk:"config"`
-	DestinationType types.String   `tfsdk:"destination_type"`
-	Destinations    types.Set      `tfsdk:"destinations"`
-	Direction       types.String   `tfsdk:"direction"`
-	Enabled         types.Bool     `tfsdk:"enabled"`
-	GroupName       types.String   `tfsdk:"group_name"`
-	Id              types.Int64    `tfsdk:"id"`
-	Name            types.String   `tfsdk:"name"`
-	Policy          types.String   `tfsdk:"policy"`
-	Priority        types.Int64    `tfsdk:"priority"`
-	Profiles        types.Set      `tfsdk:"profiles"`
-	RuleGroup       RuleGroupValue `tfsdk:"rule_group"`
-	Scopes          types.Set      `tfsdk:"scopes"`
-	ServerId        types.Int64    `tfsdk:"server_id"`
-	SourceType      types.String   `tfsdk:"source_type"`
-	Sources         types.Set      `tfsdk:"sources"`
+	Applications         types.Set      `tfsdk:"applications"`
+	AppliedTargets       types.Dynamic  `tfsdk:"applied_targets"`
+	Config               types.Dynamic  `tfsdk:"config"`
+	DestinationType      types.String   `tfsdk:"destination_type"`
+	Destinations         types.Set      `tfsdk:"destinations"`
+	Direction            types.String   `tfsdk:"direction"`
+	Enabled              types.Bool     `tfsdk:"enabled"`
+	GroupName            types.String   `tfsdk:"group_name"`
+	Id                   types.Int64    `tfsdk:"id"`
+	Name                 types.String   `tfsdk:"name"`
+	NetworkIntegrationId types.Int64    `tfsdk:"network_integration_id"`
+	Policy               types.String   `tfsdk:"policy"`
+	Priority             types.Int64    `tfsdk:"priority"`
+	Profiles             types.Set      `tfsdk:"profiles"`
+	RuleGroup            RuleGroupValue `tfsdk:"rule_group"`
+	Scopes               types.Set      `tfsdk:"scopes"`
+	SourceType           types.String   `tfsdk:"source_type"`
+	Sources              types.Set      `tfsdk:"sources"`
 }
 
 var _ basetypes.ObjectTypable = ApplicationsType{}

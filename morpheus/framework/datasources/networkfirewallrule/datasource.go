@@ -64,7 +64,7 @@ func (d *DataSource) Schema(
 func firewallRuleAsState(
 	ctx context.Context,
 	rule *sdk.GetNetworkFirewallRule200ResponseRule,
-	serverId int64,
+	networkIntegrationId int64,
 ) (NetworkFirewallRuleModel, error) {
 	var convErr error
 
@@ -192,12 +192,12 @@ func firewallRuleAsState(
 
 	config := types.DynamicNull()
 	if rule.Config != nil {
-		v, err := convert.MapToDynamic(ctx, rule.Config)
+		raw, err := json.Marshal(rule.Config)
 		if err != nil {
-			return NetworkFirewallRuleModel{}, fmt.Errorf("error creating config value: %w", err)
+			return NetworkFirewallRuleModel{}, fmt.Errorf("error marshalling config: %w", err)
 		}
 
-		config = v
+		config = types.DynamicValue(types.StringValue(string(raw)))
 	}
 
 	return NetworkFirewallRuleModel{
@@ -216,7 +216,7 @@ func firewallRuleAsState(
 		Profiles:        profiles,
 		RuleGroup:       ruleGroup,
 		Scopes:          scopes,
-		ServerId:        types.Int64Value(serverId),
+		NetworkIntegrationId: types.Int64Value(networkIntegrationId),
 		SourceType:      convert.StrToType(rule.SourceType),
 		Sources:         sources,
 	}, nil
@@ -225,11 +225,11 @@ func firewallRuleAsState(
 func getFirewallRuleByID(
 	ctx context.Context,
 	id int64,
-	serverId int64,
+	networkIntegrationId int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkFirewallRule200ResponseRule, error) {
 	r, hresp, err := apiClient.NetworksAPI.GetNetworkFirewallRule(
-		ctx, id, serverId,
+		ctx, id, networkIntegrationId,
 	).Execute()
 	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
@@ -253,13 +253,13 @@ type listRuleSummary struct {
 func getFirewallRuleByName(
 	ctx context.Context,
 	name string,
-	serverId int64,
+	networkIntegrationId int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkFirewallRule200ResponseRule, error) {
 	// Phrase is used because the API does not expose an exact Name filter.
 	// The subsequent loop performs exact-match filtering on the results.
 	rs, hresp, err := apiClient.NetworksAPI.GetNetworkFirewallRules(
-		ctx, serverId,
+		ctx, networkIntegrationId,
 	).Phrase(name).Max(10000).Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
@@ -302,7 +302,7 @@ func getFirewallRuleByName(
 		return nil, fmt.Errorf("%s matching name %q", ErrorMultipleNetworkFirewallRules, name)
 	}
 
-	return getFirewallRuleByID(ctx, matchedIDs[0], serverId, apiClient)
+	return getFirewallRuleByID(ctx, matchedIDs[0], networkIntegrationId, apiClient)
 }
 
 func getFirewallRule(
@@ -310,12 +310,12 @@ func getFirewallRule(
 	config *NetworkFirewallRuleModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkFirewallRule200ResponseRule, error) {
-	serverId := config.ServerId.ValueInt64()
+	networkIntegrationId := config.NetworkIntegrationId.ValueInt64()
 
 	if !config.Id.IsNull() {
-		return getFirewallRuleByID(ctx, config.Id.ValueInt64(), serverId, apiClient)
+		return getFirewallRuleByID(ctx, config.Id.ValueInt64(), networkIntegrationId, apiClient)
 	} else if !config.Name.IsNull() {
-		return getFirewallRuleByName(ctx, config.Name.ValueString(), serverId, apiClient)
+		return getFirewallRuleByName(ctx, config.Name.ValueString(), networkIntegrationId, apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -356,8 +356,8 @@ func (d *DataSource) Read(
 		return
 	}
 
-	serverId := config.ServerId.ValueInt64()
-	state, err := firewallRuleAsState(ctx, rule, serverId)
+	networkIntegrationId := config.NetworkIntegrationId.ValueInt64()
+	state, err := firewallRuleAsState(ctx, rule, networkIntegrationId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			summary,

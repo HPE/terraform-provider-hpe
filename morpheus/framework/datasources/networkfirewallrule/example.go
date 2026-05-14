@@ -11,15 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule/example-id.tf example-id.tf.tmpl Id 99 ServerId 1
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule/example-name.tf example-name.tf.tmpl Name "Example name" ServerId 1
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule/example-id.tf example-id.tf.tmpl Id 99 NetworkIntegrationId 1
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule/example-name.tf example-name.tf.tmpl Name "Example name" NetworkIntegrationId 1
 
 func RenderNetworkFirewallRuleByNameConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     "test-rule-api-015",
-		"ServerId": "16",
+		"Name":                 "test-rule-api-015",
+		"NetworkIntegrationId": "16",
 	}
 
 	for key, value := range overrides {
@@ -50,8 +50,8 @@ func RenderNetworkFirewallRuleByIdConfig(t *testing.T, overrides map[string]stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id":       "1683563",
-		"ServerId": "16",
+		"Id":                   "1683563",
+		"NetworkIntegrationId": "16",
 	}
 
 	for key, value := range overrides {

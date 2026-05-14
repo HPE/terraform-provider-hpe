@@ -137,7 +137,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_network_firewall_rule" "test" {
-        server_id = 1
+        network_integration_id = 1
       }`
 
 	expected := `At least one attribute out of \[id,name\] must be specified`
@@ -162,7 +162,7 @@ func TestAccMorpheusFindNetworkFirewallRuleBothSearchAttrs(t *testing.T) {
       data "hpe_morpheus_network_firewall_rule" "test" {
         id        = 1
         name      = "______"
-        server_id = 1
+        network_integration_id = 1
       }`
 
 	expected := networkfirewallrule.ErrorRunningPreApply
@@ -184,8 +184,9 @@ func networkFirewallRuleChecks() []resource.TestCheckFunc {
 	return []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
-		resource.TestCheckResourceAttrSet(ds, "server_id"),
+		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
 		resource.TestCheckResourceAttrSet(ds, "enabled"),
+		resource.TestCheckResourceAttrSet(ds, "config"),
 		resource.TestCheckResourceAttrSet(ds, "direction"),
 		resource.TestCheckResourceAttrSet(ds, "policy"),
 		resource.TestCheckResourceAttrSet(ds, "priority"),
