@@ -40,4 +40,3 @@ docs: build-render-tool
 
 sweep:
 	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
-	go test -v ./... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)

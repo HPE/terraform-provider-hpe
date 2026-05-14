@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
@@ -71,16 +72,16 @@ func dhcpServerAsState(
 		Name:                 convert.StrToType(dhcp.Name),
 		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
 		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
-		NetworkIntegrationId: types.Int64Value(networkIntegrationId),
+		NetworkIntegrationId: types.NumberValue(new(big.Float).SetInt64(networkIntegrationId)),
 	}
 
 	state.Config = types.DynamicNull()
-	state.ConfigNsxt = NewConfigNsxtValueNull()
+	state.ConfigNsx = NewConfigNsxValueNull()
 
 	if dhcp.Config != nil {
 		if nsx := dhcp.Config.NSXDHCPServerConfiguration2; nsx != nil {
-			v, diags := NewConfigNsxtValue(
-				ConfigNsxtValue{}.AttributeTypes(ctx),
+			v, diags := NewConfigNsxValue(
+				ConfigNsxValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
 					"edge_cluster":      convert.StrToType(nsx.EdgeCluster.Get()),
 					"active_edge_node":  convert.StrToType(nsx.PreferredEdgeNode1.Get()),
@@ -88,10 +89,10 @@ func dhcpServerAsState(
 				},
 			)
 			if diags.HasError() {
-				return NetworkDhcpServerModel{}, fmt.Errorf("error creating config_nsxt value")
+				return NetworkDhcpServerModel{}, fmt.Errorf("error creating config_nsx value")
 			}
 
-			state.ConfigNsxt = v
+			state.ConfigNsx = v
 		} else if dhcp.Config.MapmapOfStringAny != nil {
 			raw, err := json.Marshal(*dhcp.Config.MapmapOfStringAny)
 			if err != nil {
@@ -173,7 +174,7 @@ func getDhcpServer(
 	config *NetworkDhcpServerModel,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetNetworkDhcpServer200ResponseNetworkDhcpServer, error) {
-	serverId := config.NetworkIntegrationId.ValueInt64()
+	serverId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
 
 	if !config.Id.IsNull() {
 		return getDhcpServerByID(ctx, config.Id.ValueInt64(), serverId, apiClient)
@@ -219,7 +220,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	networkIntegrationId := config.NetworkIntegrationId.ValueInt64()
+	networkIntegrationId, _ := config.NetworkIntegrationId.ValueBigFloat().Int64()
 	state, err := dhcpServerAsState(ctx, dhcp, networkIntegrationId)
 	if err != nil {
 		resp.Diagnostics.AddError(

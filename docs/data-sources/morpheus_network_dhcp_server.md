@@ -39,12 +39,12 @@ data "hpe_morpheus_network_dhcp_server" "example" {
 ### Read-Only
 
 - `config` (Dynamic) Generic DHCP Server Configuration
-- `config_nsxt` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsxt))
+- `config_nsx` (Attributes) Configuration object with parameters that vary by type (see [below for nested schema](#nestedatt--config_nsx))
 - `lease_time` (Number) Lease time in seconds for the DHCP server
 - `server_ip_address` (String) Server address for the DHCP server
 
-<a id="nestedatt--config_nsxt"></a>
-### Nested Schema for `config_nsxt`
+<a id="nestedatt--config_nsx"></a>
+### Nested Schema for `config_nsx`
 
 Read-Only:
 
