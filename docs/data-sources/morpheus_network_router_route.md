@@ -45,6 +45,7 @@ data "hpe_morpheus_network_router_route" "example" {
 - `description` (String)
 - `enabled` (Boolean)
 - `external_id` (String)
+- `mtu` (Number) Maximum Transmission Unit (MTU).
 - `provider_id` (String)
 - `route_type` (String)
 - `source_type` (String)
