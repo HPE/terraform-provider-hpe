@@ -57,23 +57,22 @@ func (r *Resource) Read(
 		return
 	}
 
-	// Preserve fields the API does not return on GET.
-	state.SslServerCert = current.SslServerCert
-
 	// Import detection: during import only id and load_balancer_id are set
 	// (see import.go), so VipName is Unknown because no prior state exists.
 	// On a normal read VipName is always known from the previous apply.
-	// If VipName ever gains a schema default this heuristic will break
-	// because the framework will populate the default instead of Unknown.
-	// Build config from the API response on import; otherwise preserve the
-	// plan value.
-	if current.VipName.IsUnknown() {
+	isImport := current.VipName.IsUnknown()
+
+	if isImport {
+		// Build config from the API response on import.
 		if err := setConfigFromResponse(ctx, &state, lbTypeCode, configMap); err != nil {
 			resp.Diagnostics.AddError("import load balancer virtual server", err.Error())
 
 			return
 		}
 	} else {
+		// Preserve write-only fields the API does not return in schema-compatible form.
+		state.VipPool = current.VipPool
+
 		switch lbTypeCode {
 		case "nsx-t":
 			state.ConfigNsxt = current.ConfigNsxt
@@ -186,6 +185,20 @@ func getVirtualServerAsState(
 		state.SslCert = types.Int64Null()
 	}
 
+	// SSL server cert — GET returns an object {id, name}; schema expects Int64.
+	if sslServerCert, ok := vs.GetSslServerCertOk(); ok && sslServerCert != nil {
+		state.SslServerCert = convert.Int64ToType(sslServerCert.Id)
+	} else {
+		state.SslServerCert = types.Int64Null()
+	}
+
+	// Pool — GET returns a nested object {id, name}; extract the ID for pool_id.
+	if vs.Pool != nil && vs.Pool.Id != nil {
+		state.PoolId = types.Int64Value(*vs.Pool.Id)
+	} else {
+		state.PoolId = types.Int64Null()
+	}
+
 	// Nested load_balancer object
 	lb, d := buildLoadBalancerValue(ctx, vs.LoadBalancer)
 	if diags.Append(d...); diags.HasError() {
@@ -211,12 +224,39 @@ func setConfigFromResponse(
 			return nil
 		}
 
-		appProfile, _ := configMap["applicationProfile"].(string)
+		appProfile := types.Int64Null()
+		if v, ok := configMap["applicationProfile"].(float64); ok {
+			appProfile = types.Int64Value(int64(v))
+		}
+
+		persistence := types.StringNull()
+		if v, ok := configMap["persistence"].(string); ok {
+			persistence = types.StringValue(v)
+		}
+
+		persistenceProfile := types.Int64Null()
+		if v, ok := configMap["persistenceProfile"].(float64); ok {
+			persistenceProfile = types.Int64Value(int64(v))
+		}
+
+		sslClientProfile := types.Int64Null()
+		if v, ok := configMap["sslClientProfile"].(float64); ok {
+			sslClientProfile = types.Int64Value(int64(v))
+		}
+
+		sslServerProfile := types.Int64Null()
+		if v, ok := configMap["sslServerProfile"].(float64); ok {
+			sslServerProfile = types.Int64Value(int64(v))
+		}
 
 		nsxtVal, d := NewConfigNsxtValue(
 			ConfigNsxtValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"application_profile": types.StringValue(appProfile),
+				"application_profile": appProfile,
+				"persistence":         persistence,
+				"persistence_profile": persistenceProfile,
+				"ssl_client_profile":  sslClientProfile,
+				"ssl_server_profile":  sslServerProfile,
 			},
 		)
 		if d.HasError() {

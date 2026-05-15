@@ -43,8 +43,15 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		"Description":        "test nsxt virtual server",
 		"VipAddress":         "10.0.0.200",
 		"VipPort":            "443",
-		"VipProtocol":        "https",
-		"ApplicationProfile": "/infra/lb-app-profiles/default-http-lb-app-profile",
+		"VipProtocol":        "http",
+		"PoolId":             "42",
+		"SslCert":            "12",
+		"SslServerCert":      "0",
+		"ApplicationProfile": "85",
+		"Persistence":        "SOURCE_IP",
+		"PersistenceProfile": "78",
+		"SslClientProfile":   "33",
+		"SslServerProfile":   "0",
 	})
 	if err != nil {
 		t.Fatalf("failed to render vs config: %s", err)
@@ -59,9 +66,15 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "description", "test nsxt virtual server"),
 		resource.TestCheckResourceAttr(resourceName, "vip_address", "10.0.0.200"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "443"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
-			"/infra/lb-app-profiles/default-http-lb-app-profile"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "http"),
+		resource.TestCheckResourceAttr(resourceName, "pool_id", "42"),
+		resource.TestCheckResourceAttr(resourceName, "ssl_cert", "12"),
+		resource.TestCheckResourceAttr(resourceName, "ssl_server_cert", "0"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "85"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", "SOURCE_IP"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence_profile", "78"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.ssl_client_profile", "33"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.ssl_server_profile", "0"),
 		resource.TestCheckResourceAttrPair(resourceName, "load_balancer_id",
 			"hpe_morpheus_load_balancer.lb", "id"),
 	)
@@ -76,7 +89,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 			{
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ssl_server_cert"},
+				ImportStateVerifyIgnore: []string{"vip_pool"},
 				ResourceName:            resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources[resourceName]
@@ -121,11 +134,19 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt update test"
+  vip_address      = "10.0.0.201"
   vip_port         = 443
-  vip_protocol     = "https"
+  vip_protocol     = "http"
+  pool_id          = 42
+  ssl_cert         = 12
+  ssl_server_cert  = 0
 
   config_nsxt = {
-    application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
+    application_profile = 85
+    persistence         = "SOURCE_IP"
+    persistence_profile = 78
+    ssl_client_profile  = 33
+    ssl_server_profile  = 0
   }
 }
 `
@@ -136,11 +157,19 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + updatedVipName + `"
   description      = "nsxt update test updated"
+  vip_address      = "10.0.0.201"
   vip_port         = 443
-  vip_protocol     = "https"
+  vip_protocol     = "http"
+  pool_id          = 42
+  ssl_cert         = 12
+  ssl_server_cert  = 0
 
   config_nsxt = {
-    application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
+    application_profile = 85
+    persistence         = "COOKIE"
+    persistence_profile = 79
+    ssl_client_profile  = 33
+    ssl_server_profile  = 0
   }
 }
 `
@@ -159,17 +188,22 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
 		resource.TestCheckResourceAttr(resourceName, "description", "nsxt update test"),
 		resource.TestCheckResourceAttr(resourceName, "vip_port", "443"),
-		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "https"),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
-			"/infra/lb-app-profiles/default-http-lb-app-profile"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "http"),
+		resource.TestCheckResourceAttr(resourceName, "pool_id", "42"),
+		resource.TestCheckResourceAttr(resourceName, "ssl_cert", "12"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "85"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", "SOURCE_IP"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence_profile", "78"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.ssl_client_profile", "33"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "vip_name", updatedVipName),
 		resource.TestCheckResourceAttr(resourceName, "description", "nsxt update test updated"),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
-			"/infra/lb-app-profiles/default-http-lb-app-profile"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "85"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", "COOKIE"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence_profile", "79"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -215,11 +249,15 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
+  vip_address      = "10.0.0.202"
   vip_port         = 443
-  vip_protocol     = "https"
+  vip_protocol     = "http"
+  pool_id          = 42
 
   config_nsxt = {
-    application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
+    application_profile = 85
+    persistence         = "SOURCE_IP"
+    persistence_profile = 78
   }
 }
 `
@@ -229,11 +267,14 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
   vip_name         = "` + vipName + `"
   description      = "nsxt replace test"
+  vip_address      = "10.0.0.202"
   vip_port         = 443
-  vip_protocol     = "https"
+  vip_protocol     = "http"
+  pool_id          = 42
 
   config_nsxt = {
-    application_profile = "/infra/lb-app-profiles/default-tcp-lb-app-profile"
+    application_profile = 90
+    persistence         = ""
   }
 }
 `
@@ -252,8 +293,9 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
-			"/infra/lb-app-profiles/default-http-lb-app-profile"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "85"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", "SOURCE_IP"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence_profile", "78"),
 		func(s *terraform.State) error {
 			rs, ok := s.RootModule().Resources[resourceName]
 			if !ok {
@@ -269,8 +311,8 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 	replaceChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile",
-			"/infra/lb-app-profiles/default-tcp-lb-app-profile"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "90"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", ""),
 		func(s *terraform.State) error {
 			rs, ok := s.RootModule().Resources[resourceName]
 			if !ok {
