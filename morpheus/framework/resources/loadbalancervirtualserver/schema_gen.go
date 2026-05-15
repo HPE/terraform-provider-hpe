@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -46,10 +47,33 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"config_nsxt": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"application_profile": schema.StringAttribute{
+					"application_profile": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "The Load Balancer Application Profile ID. Use /api/options/nsxt/nsxtLBVirtualServerApplicationProfile to list available options.",
-						MarkdownDescription: "The Load Balancer Application Profile ID. Use /api/options/nsxt/nsxtLBVirtualServerApplicationProfile to list available options.",
+						Description:         "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+						MarkdownDescription: "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+					},
+					"persistence": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+						MarkdownDescription: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("SOURCE_IP", "COOKIE", ""),
+						},
+					},
+					"persistence_profile": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
+						MarkdownDescription: "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
+					},
+					"ssl_client_profile": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
+						MarkdownDescription: "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
+					},
+					"ssl_server_profile": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
+						MarkdownDescription: "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
 					},
 				},
 				CustomType: ConfigNsxtType{
@@ -62,6 +86,9 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				MarkdownDescription: "NSX-T virtual server configuration",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
 				},
 			},
 			"date_created": schema.StringAttribute{
@@ -150,6 +177,11 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"network_id": schema.StringAttribute{
 				Computed: true,
 			},
+			"pool_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "The ID of the load balancer pool to assign to this virtual server.",
+				MarkdownDescription: "The ID of the load balancer pool to assign to this virtual server.",
+			},
 			"pool_name": schema.StringAttribute{
 				Computed: true,
 			},
@@ -170,8 +202,8 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"ssl_cert": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "SSL Client Certificate ID",
-				MarkdownDescription: "SSL Client Certificate ID",
+				Description:         "SSL Client Certificate ID. Use `0` for none.",
+				MarkdownDescription: "SSL Client Certificate ID. Use `0` for none.",
 			},
 			"ssl_enabled": schema.StringAttribute{
 				Computed: true,
@@ -184,8 +216,8 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"ssl_server_cert": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "SSL Server Certificate ID",
-				MarkdownDescription: "SSL Server Certificate ID",
+				Description:         "SSL Server Certificate ID. Use `0` for none.",
+				MarkdownDescription: "SSL Server Certificate ID. Use `0` for none.",
 			},
 			"status": schema.StringAttribute{
 				Computed: true,
@@ -199,8 +231,8 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"vip_address": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "VIP Address",
-				MarkdownDescription: "VIP Address",
+				Description:         "VIP Address. Required when `vip_pool` is not set.",
+				MarkdownDescription: "VIP Address. Required when `vip_pool` is not set.",
 			},
 			"vip_balance": schema.StringAttribute{
 				Computed: true,
@@ -222,6 +254,11 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Description:         "VIP Name",
 				MarkdownDescription: "VIP Name",
 			},
+			"vip_pool": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.",
+				MarkdownDescription: "Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.",
+			},
 			"vip_port": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -231,10 +268,10 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"vip_protocol": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.",
-				MarkdownDescription: "VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.",
+				Description:         "VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`.",
+				MarkdownDescription: "VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`.",
 				Validators: []validator.String{
-					stringvalidator.OneOf("http", "https", "udp", "tcp"),
+					stringvalidator.OneOf("http", "tcp", "udp"),
 				},
 			},
 			"vip_scheme": schema.StringAttribute{
@@ -255,8 +292,8 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"vip_type": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "VIP Type",
-				MarkdownDescription: "VIP Type",
+				Description:         "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
+				MarkdownDescription: "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -283,6 +320,7 @@ type LoadBalancerVirtualServerModel struct {
 	LoadBalancer     LoadBalancerValue `tfsdk:"load_balancer"`
 	LoadBalancerId   types.Int64       `tfsdk:"load_balancer_id"`
 	NetworkId        types.String      `tfsdk:"network_id"`
+	PoolId           types.Int64       `tfsdk:"pool_id"`
 	PoolName         types.String      `tfsdk:"pool_name"`
 	Removing         types.Bool        `tfsdk:"removing"`
 	ServerName       types.String      `tfsdk:"server_name"`
@@ -303,6 +341,7 @@ type LoadBalancerVirtualServerModel struct {
 	VipHostname      types.String      `tfsdk:"vip_hostname"`
 	VipMode          types.String      `tfsdk:"vip_mode"`
 	VipName          types.String      `tfsdk:"vip_name"`
+	VipPool          types.Int64       `tfsdk:"vip_pool"`
 	VipPort          types.Int64       `tfsdk:"vip_port"`
 	VipProtocol      types.String      `tfsdk:"vip_protocol"`
 	VipScheme        types.String      `tfsdk:"vip_scheme"`
@@ -356,12 +395,84 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 		return nil, diags
 	}
 
-	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.StringValue)
+	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`application_profile expected to be basetypes.StringValue, was: %T`, applicationProfileAttribute))
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
+	}
+
+	persistenceAttribute, ok := attributes["persistence"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence is missing from object`)
+
+		return nil, diags
+	}
+
+	persistenceVal, ok := persistenceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
+	}
+
+	persistenceProfileAttribute, ok := attributes["persistence_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	persistenceProfileVal, ok := persistenceProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
+	}
+
+	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_client_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	sslClientProfileVal, ok := sslClientProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
+	}
+
+	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_server_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	sslServerProfileVal, ok := sslServerProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
 	}
 
 	if diags.HasError() {
@@ -370,6 +481,10 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 
 	return ConfigNsxtValue{
 		ApplicationProfile: applicationProfileVal,
+		Persistence:        persistenceVal,
+		PersistenceProfile: persistenceProfileVal,
+		SslClientProfile:   sslClientProfileVal,
+		SslServerProfile:   sslServerProfileVal,
 		state:              attr.ValueStateKnown,
 	}, diags
 }
@@ -447,12 +562,84 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 		return NewConfigNsxtValueUnknown(), diags
 	}
 
-	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.StringValue)
+	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`application_profile expected to be basetypes.StringValue, was: %T`, applicationProfileAttribute))
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
+	}
+
+	persistenceAttribute, ok := attributes["persistence"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	persistenceVal, ok := persistenceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
+	}
+
+	persistenceProfileAttribute, ok := attributes["persistence_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	persistenceProfileVal, ok := persistenceProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
+	}
+
+	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_client_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	sslClientProfileVal, ok := sslClientProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
+	}
+
+	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_server_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	sslServerProfileVal, ok := sslServerProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
 	}
 
 	if diags.HasError() {
@@ -461,6 +648,10 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 
 	return ConfigNsxtValue{
 		ApplicationProfile: applicationProfileVal,
+		Persistence:        persistenceVal,
+		PersistenceProfile: persistenceProfileVal,
+		SslClientProfile:   sslClientProfileVal,
+		SslServerProfile:   sslServerProfileVal,
 		state:              attr.ValueStateKnown,
 	}, diags
 }
@@ -533,23 +724,31 @@ func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigNsxtValue{}
 
 type ConfigNsxtValue struct {
-	ApplicationProfile basetypes.StringValue `tfsdk:"application_profile"`
+	ApplicationProfile basetypes.Int64Value  `tfsdk:"application_profile"`
+	Persistence        basetypes.StringValue `tfsdk:"persistence"`
+	PersistenceProfile basetypes.Int64Value  `tfsdk:"persistence_profile"`
+	SslClientProfile   basetypes.Int64Value  `tfsdk:"ssl_client_profile"`
+	SslServerProfile   basetypes.Int64Value  `tfsdk:"ssl_server_profile"`
 	state              attr.ValueState
 }
 
 func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 1)
+	attrTypes := make(map[string]tftypes.Type, 5)
 
 	var val tftypes.Value
 	var err error
 
-	attrTypes["application_profile"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["application_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["persistence"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["persistence_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["ssl_client_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["ssl_server_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 1)
+		vals := make(map[string]tftypes.Value, 5)
 
 		val, err = v.ApplicationProfile.ToTerraformValue(ctx)
 
@@ -558,6 +757,38 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		}
 
 		vals["application_profile"] = val
+
+		val, err = v.Persistence.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["persistence"] = val
+
+		val, err = v.PersistenceProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["persistence_profile"] = val
+
+		val, err = v.SslClientProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ssl_client_profile"] = val
+
+		val, err = v.SslServerProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ssl_server_profile"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -589,7 +820,11 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"application_profile": basetypes.StringType{},
+		"application_profile": basetypes.Int64Type{},
+		"persistence":         basetypes.StringType{},
+		"persistence_profile": basetypes.Int64Type{},
+		"ssl_client_profile":  basetypes.Int64Type{},
+		"ssl_server_profile":  basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -604,6 +839,10 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 		attributeTypes,
 		map[string]attr.Value{
 			"application_profile": v.ApplicationProfile,
+			"persistence":         v.Persistence,
+			"persistence_profile": v.PersistenceProfile,
+			"ssl_client_profile":  v.SslClientProfile,
+			"ssl_server_profile":  v.SslServerProfile,
 		})
 
 	return objVal, diags
@@ -628,6 +867,22 @@ func (v ConfigNsxtValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Persistence.Equal(other.Persistence) {
+		return false
+	}
+
+	if !v.PersistenceProfile.Equal(other.PersistenceProfile) {
+		return false
+	}
+
+	if !v.SslClientProfile.Equal(other.SslClientProfile) {
+		return false
+	}
+
+	if !v.SslServerProfile.Equal(other.SslServerProfile) {
+		return false
+	}
+
 	return true
 }
 
@@ -641,7 +896,11 @@ func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"application_profile": basetypes.StringType{},
+		"application_profile": basetypes.Int64Type{},
+		"persistence":         basetypes.StringType{},
+		"persistence_profile": basetypes.Int64Type{},
+		"ssl_client_profile":  basetypes.Int64Type{},
+		"ssl_server_profile":  basetypes.Int64Type{},
 	}
 }
 
