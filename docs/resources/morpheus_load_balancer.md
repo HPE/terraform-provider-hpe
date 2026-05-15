@@ -112,12 +112,15 @@ Required:
 <a id="nestedatt--config_nsxt"></a>
 ### Nested Schema for `config_nsxt`
 
+Required:
+
+- `tier1_gateway` (String) Provider ID of the Tier-1 Gateway. provider_id can be found in the hpe_morpheus_network_router datasource.
+
 Optional:
 
 - `admin_state` (Boolean) If true then admin State rule will be active/enabled.
 - `log_level` (String) In Filter. Supported Values are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"
 - `size` (String) In Filter. Supported Values are "SMALL", "MEDIUM", "LARGE"
-- `tier1_gateway` (String) Provider ID of the Tier-1 Gateway.
 
 
 <a id="nestedatt--permissions"></a>
