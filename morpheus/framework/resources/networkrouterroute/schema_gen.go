@@ -49,7 +49,7 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.RequiresReplace(),
 				},
-				Default: booldefault.StaticBool(false),
+				Default: booldefault.StaticBool(true),
 			},
 			"external_id": schema.StringAttribute{
 				Computed: true,
@@ -102,8 +102,7 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"router_id": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
+				Required:            true,
 				Description:         "ID of the parent router.",
 				MarkdownDescription: "ID of the parent router.",
 				PlanModifiers: []planmodifier.Int64{

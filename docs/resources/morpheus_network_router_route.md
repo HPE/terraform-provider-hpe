@@ -8,6 +8,8 @@ description: |-
 
 
 
+Used to create and delete Router routes.
+
 ~> **Note:** Update is not supported for this resource. Any change to the resource configuration will result in the existing resource being destroyed and a new one being created.
 
 ## Example Usage
@@ -34,6 +36,7 @@ resource "hpe_morpheus_network_router_route" "example" {
 - `name` (String) The name of the route.
 - `network` (String) Source IPV4 address or CIDR range.
 - `next_hop` (String) Destination IPV4 address or CIDR range.
+- `router_id` (Number) ID of the parent router.
 
 ### Optional
 
@@ -41,7 +44,6 @@ resource "hpe_morpheus_network_router_route" "example" {
 - `description` (String) Route description
 - `enabled` (Boolean) Can be used to enable / disable the route.
 - `mtu` (Number) Maximum Transmission Unit (MTU).
-- `router_id` (Number) ID of the parent router.
 
 ### Read-Only
 

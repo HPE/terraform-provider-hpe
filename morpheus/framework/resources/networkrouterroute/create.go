@@ -51,7 +51,7 @@ func (r *Resource) Create(
 		route.SetSource(plan.Network.ValueString())
 	}
 
-	if !plan.NextHop.IsNull() && !plan.Network.IsUnknown() {
+	if !plan.NextHop.IsNull() && !plan.NextHop.IsUnknown() {
 		route.SetDestination(plan.NextHop.ValueString())
 	}
 
