@@ -3,11 +3,13 @@
 package networkrouterroute_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
@@ -88,7 +90,15 @@ func TestAccMorpheusNetworkRouterRouteExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ResourceName:      resourceName,
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["id"] + "." + rs.Primary.Attributes["id"], nil
+				},
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
