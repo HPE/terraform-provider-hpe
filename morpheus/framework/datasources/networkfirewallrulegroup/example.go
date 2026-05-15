@@ -11,15 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule_group/example-id.tf example-id.tf.tmpl ServerId 1 Id 99
-//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule_group/example-name.tf example-name.tf.tmpl ServerId 1 Name "Example Rule Group"
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule_group/example-id.tf example-id.tf.tmpl NetworkIntegrationId 1 Id 99
+//go:generate ../../../../bin/render -out examples/data-sources/morpheus_network_firewall_rule_group/example-name.tf example-name.tf.tmpl NetworkIntegrationId 1 Name "Example Rule Group"
 
 func RenderDataSourceByIDConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"ServerId": "128",
-		"Id":       "233264",
+		"NetworkIntegrationId": "128",
+		"Id":                   "233264",
 	}
 
 	for key, value := range overrides {
@@ -50,8 +50,8 @@ func RenderDataSourceByNameConfig(t *testing.T, overrides map[string]string) (st
 	t.Helper()
 
 	defaults := map[string]string{
-		"ServerId": "128",
-		"Name":     "dg-test-policy",
+		"NetworkIntegrationId": "128",
+		"Name":                 "dg-test-policy",
 	}
 
 	for key, value := range overrides {
