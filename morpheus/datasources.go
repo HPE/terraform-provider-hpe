@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
@@ -46,6 +47,7 @@ func (SubProvider) GetDataSources(
 		network.NewDataSource,
 		networkdhcpserver.NewDataSource,
 		networkdomain.NewDataSource,
+		networkrouter.NewDataSource,
 		networkrouterbgpneighbor.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
