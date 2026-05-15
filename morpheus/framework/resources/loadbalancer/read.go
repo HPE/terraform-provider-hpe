@@ -56,15 +56,13 @@ func getLoadBalancerAsState(
 	state.NetworkServerId = plan.NetworkServerId
 	state.TypeCode = plan.TypeCode
 
-	// Set config based on the load balancer type.
-	// For HAProxy LBs, parse the API config map into the typed config_haproxy attribute.
-	// For NSX-T LBs, parse the API config map into the typed config_nsxt attribute.
-	// For other types, leave both null — the caller preserves config from the plan.
-	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
-	isNSXT := data.Type.Code != nil && *data.Type.Code == typeCodeNSXT
-
+	// Set config based on which config attribute the plan is using.
+	// This ensures the state mirrors the plan's chosen config attribute rather
+	// than always defaulting to the typed attribute for the LB type. If the user
+	// switches from a typed attribute (e.g. config_nsxt) to the generic config,
+	// we must populate state.Config so Terraform doesn't see an inconsistency.
 	switch {
-	case isHAProxy:
+	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
@@ -73,7 +71,7 @@ func getLoadBalancerAsState(
 		state.ConfigHaproxy = haproxyCfg
 		state.ConfigNsxt = NewConfigNsxtValueNull()
 		state.Config = types.DynamicNull()
-	case isNSXT:
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
 		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
