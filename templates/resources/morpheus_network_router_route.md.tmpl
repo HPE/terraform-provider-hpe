@@ -8,9 +8,12 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> **Note:** Update is not supported for this resource. Any change to the resource configuration will result in the existing resource being destroyed and a new one being created.
+
 ## Example Usage
 
 {{ tffile "examples/resources/hpe_morpheus_network_router_route/resource.tf" }}
+
 
 {{ .SchemaMarkdown | trimspace }}
 
