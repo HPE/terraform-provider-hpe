@@ -45,7 +45,10 @@ func getLoadBalancerAsState(
 	state.Name = convert.StrToType(data.Name)
 	state.Description = convert.StrToType(data.Description)
 	state.Visibility = convert.StrToType(data.Visibility)
-	state.CloudId = convert.Int64ToType(data.Cloud.Id)
+
+	// cloud_id is Optional (not Computed), so preserve configured value from plan/state
+	// to avoid post-apply inconsistencies when API returns an implicit/default cloud.
+	state.CloudId = plan.CloudId
 
 	// The API does not return group or network_server_id on load balancers,
 	// so these must be preserved from plan/state. After import they will be null.
