@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -87,9 +86,9 @@ func getNetworkFirewallRuleAsState(
 	state.Enabled = convert.BoolToType(rule.Enabled)
 
 	if rule.Priority != nil {
-		state.Priority = types.StringValue(strconv.FormatInt(*rule.Priority, 10))
+		state.Priority = types.Int64Value(*rule.Priority)
 	} else {
-		state.Priority = types.StringNull()
+		state.Priority = types.Int64Null()
 	}
 
 	// Description is not in the typed GET response; check AdditionalProperties

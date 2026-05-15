@@ -88,12 +88,12 @@ func NetworkFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The policy action for the firewall rule (e.g. accept, deny, drop).",
 				MarkdownDescription: "The policy action for the firewall rule (e.g. accept, deny, drop).",
 			},
-			"priority": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "The priority of the network firewall rule.",
-				MarkdownDescription: "The priority of the network firewall rule.",
-			},
+		"priority": schema.Int64Attribute{
+			Optional:            true,
+			Computed:            true,
+			Description:         "The priority of the network firewall rule.",
+			MarkdownDescription: "The priority of the network firewall rule.",
+		},
 			"profile": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
@@ -173,7 +173,7 @@ type NetworkFirewallRuleModel struct {
 	Name                 types.String      `tfsdk:"name"`
 	NetworkIntegrationId types.Int64       `tfsdk:"network_integration_id"`
 	Policy               types.String      `tfsdk:"policy"`
-	Priority             types.String      `tfsdk:"priority"`
+	Priority             types.Int64       `tfsdk:"priority"`
 	Profile              types.Set         `tfsdk:"profile"`
 	RuleGroupId          RuleGroupIdValue  `tfsdk:"rule_group_id"`
 	Scopes               ScopesValue       `tfsdk:"scopes"`

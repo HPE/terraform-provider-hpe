@@ -8,7 +8,7 @@ resource "hpe_morpheus_network_firewall_rule" "example" {
   description = "{{.Description}}"
 {{- end}}
 {{- if .Priority}}
-  priority    = "{{.Priority}}"
+  priority    = {{.Priority}}
 {{- end}}
 
   rule_group_id = {

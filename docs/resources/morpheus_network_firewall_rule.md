@@ -40,7 +40,7 @@ resource "hpe_morpheus_network_firewall_rule" "example" {
 - `direction` (String) The traffic direction for the firewall rule (e.g. ingress, egress).
 - `enabled` (Boolean) Whether the firewall rule is enabled.
 - `policy` (String) The policy action for the firewall rule (e.g. accept, deny, drop).
-- `priority` (String) The priority of the network firewall rule.
+- `priority` (Number) The priority of the network firewall rule.
 - `profile` (Set of String) Profile identifiers for the firewall rule.
 - `rule_group_id` (Attributes) The ID of the firewall rule group this rule belongs to. (see [below for nested schema](#nestedatt--rule_group_id))
 - `scopes` (Attributes) The scopes applied to the firewall rule. (see [below for nested schema](#nestedatt--scopes))
