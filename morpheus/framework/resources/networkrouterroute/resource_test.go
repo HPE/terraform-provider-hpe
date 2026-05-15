@@ -92,12 +92,12 @@ func TestAccMorpheusNetworkRouterRouteExampleOk(t *testing.T) {
 			{
 				ResourceName: resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router.example"]
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_route.example"]
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["id"] + "." + rs.Primary.Attributes["id"], nil
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
