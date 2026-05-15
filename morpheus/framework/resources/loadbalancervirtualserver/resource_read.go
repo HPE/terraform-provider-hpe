@@ -73,6 +73,11 @@ func (r *Resource) Read(
 		// Preserve write-only fields the API does not return in schema-compatible form.
 		state.VipPool = current.VipPool
 
+		// Pool ID: preserve from current state if the API doesn't return it.
+		if state.PoolId.IsNull() && !current.PoolId.IsNull() {
+			state.PoolId = current.PoolId
+		}
+
 		switch lbTypeCode {
 		case "nsx-t":
 			state.ConfigNsxt = current.ConfigNsxt

@@ -4,6 +4,7 @@ package loadbalancervirtualserver_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -15,7 +16,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
+
+func TestMain(m *testing.M) {
+	systemoverride.ParseFlags()
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 	t.Parallel()
@@ -37,7 +46,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
-	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtConfig(t, map[string]string{
+	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtFullConfig(t, map[string]string{
 		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
 		"Description":        "test nsxt virtual server",
@@ -340,6 +349,85 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 				Config:           replaceConfig,
 				ConfigPlanChecks: checkReplace,
 				Check:            replaceChecks,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusLoadBalancerVirtualServerNsxtMinimalExampleOk(t *testing.T) {
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow acceptance test in short mode")
+	}
+
+	lbName := acctest.RandomWithPrefix(t.Name())
+	lbName = lbName[0:16] + lbName[len(lbName)-16:]
+
+	lbConfig, err := loadbalancer.RenderLoadBalancerNsxtConfig(t, map[string]string{
+		"Name": lbName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render lb config: %s", err)
+	}
+
+	vipName := acctest.RandomWithPrefix(t.Name())
+
+	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtMinimalConfig(t, map[string]string{
+		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
+		"VipName":            vipName,
+		"Description":        "test minimal nsxt virtual server",
+		"VipAddress":         "10.0.0.210",
+		"VipPort":            "80",
+		"VipProtocol":        "http",
+		"PoolId":             "42",
+		"ApplicationProfile": "85",
+	})
+	if err != nil {
+		t.Fatalf("failed to render vs config: %s", err)
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	resourceName := "hpe_morpheus_load_balancer_virtual_server.nsxt_minimal"
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "vip_name", vipName),
+		resource.TestCheckResourceAttr(resourceName, "description", "test minimal nsxt virtual server"),
+		resource.TestCheckResourceAttr(resourceName, "vip_address", "10.0.0.210"),
+		resource.TestCheckResourceAttr(resourceName, "vip_port", "80"),
+		resource.TestCheckResourceAttr(resourceName, "vip_protocol", "http"),
+		resource.TestCheckResourceAttr(resourceName, "pool_id", "42"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.application_profile", "85"),
+		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", ""),
+		resource.TestCheckResourceAttrPair(resourceName, "load_balancer_id",
+			"hpe_morpheus_load_balancer.lb", "id"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + lbConfig + vsConfig,
+				Check:  checks,
+			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"vip_pool"},
+				ResourceName:            resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+
+					lbID := rs.Primary.Attributes["load_balancer_id"]
+					id := rs.Primary.Attributes["id"]
+
+					return lbID + "." + id, nil
+				},
 			},
 		},
 	})

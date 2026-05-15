@@ -5,7 +5,9 @@ package loadbalancervirtualserver
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -58,22 +60,34 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 						MarkdownDescription: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("SOURCE_IP", "COOKIE", ""),
+							validators.RequiresNonEmptyStringAlsoRequiresInt64At("persistence_profile"),
 						},
 					},
 					"persistence_profile": schema.Int64Attribute{
 						Optional:            true,
 						Description:         "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
 						MarkdownDescription: "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
+						Validators: []validator.Int64{
+							int64validator.AlsoRequires(path.Expressions{
+								path.MatchRelative().AtParent().AtName("persistence"),
+							}...),
+						},
 					},
 					"ssl_client_profile": schema.Int64Attribute{
 						Optional:            true,
 						Description:         "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
 						MarkdownDescription: "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
+						Validators: []validator.Int64{
+							validators.RequiresNonZeroInt64At("ssl_cert"),
+						},
 					},
 					"ssl_server_profile": schema.Int64Attribute{
 						Optional:            true,
 						Description:         "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
 						MarkdownDescription: "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
+						Validators: []validator.Int64{
+							validators.RequiresNonZeroInt64At("ssl_server_cert"),
+						},
 					},
 				},
 				CustomType: ConfigNsxtType{
