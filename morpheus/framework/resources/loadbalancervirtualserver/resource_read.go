@@ -58,33 +58,49 @@ func (r *Resource) Read(
 		return
 	}
 
-	// Import detection: during import only id and load_balancer_id are set
-	// (see import.go), so VipName is Unknown because no prior state exists.
-	// On a normal read VipName is always known from the previous apply.
-	isImport := current.VipName.IsUnknown()
+	// Config handling: on import the current state has no config (both are null)
+	// so we must build it from the API response. On a normal read the current
+	// state already has the correct config, so we preserve it — the API returns
+	// config as a generic map that may not round-trip perfectly.
+	switch lbTypeCode {
+	case "nsx-t":
+		if current.ConfigNsxt.IsNull() {
+			if err := setConfigFromResponse(ctx, &state, lbTypeCode, configMap); err != nil {
+				resp.Diagnostics.AddError("import load balancer virtual server", err.Error())
 
-	if isImport {
-		// Build config from the API response on import.
-		if err := setConfigFromResponse(ctx, &state, lbTypeCode, configMap); err != nil {
-			resp.Diagnostics.AddError("import load balancer virtual server", err.Error())
-
-			return
-		}
-	} else {
-		// Preserve write-only fields the API does not return in schema-compatible form.
-		state.VipPool = current.VipPool
-
-		// Pool ID: preserve from current state if the API doesn't return it.
-		if state.PoolId.IsNull() && !current.PoolId.IsNull() {
-			state.PoolId = current.PoolId
-		}
-
-		switch lbTypeCode {
-		case "nsx-t":
+				return
+			}
+		} else {
 			state.ConfigNsxt = current.ConfigNsxt
-		default:
+		}
+	default:
+		if current.Config.IsNull() {
+			if err := setConfigFromResponse(ctx, &state, lbTypeCode, configMap); err != nil {
+				resp.Diagnostics.AddError("import load balancer virtual server", err.Error())
+
+				return
+			}
+		} else {
 			state.Config = current.Config
 		}
+	}
+
+	// VipPool is write-only; always preserve from current state.
+	state.VipPool = current.VipPool
+
+	// Pool ID: getVirtualServerAsState already tried the top-level pool object.
+	// If still null, try extracting from the config map (NSX-T stores pool there).
+	if state.PoolId.IsNull() && configMap != nil {
+		if v, ok := configMap["pool"].(string); ok && v != "" {
+			if pid, parseErr := strconv.ParseInt(v, 10, 64); parseErr == nil {
+				state.PoolId = types.Int64Value(pid)
+			}
+		}
+	}
+
+	// Last resort: preserve pool_id from current state (e.g. API returned neither).
+	if state.PoolId.IsNull() && !current.PoolId.IsNull() {
+		state.PoolId = current.PoolId
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -270,13 +286,6 @@ func setConfigFromResponse(
 		}
 
 		state.ConfigNsxt = nsxtVal
-
-		// Pool ID lives inside config for NSX-T. Extract it on import.
-		if v, ok := configMap["pool"].(string); ok && v != "" {
-			if id, err := strconv.ParseInt(v, 10, 64); err == nil {
-				state.PoolId = types.Int64Value(id)
-			}
-		}
 	default:
 		if configMap == nil {
 			state.Config = types.DynamicNull()
