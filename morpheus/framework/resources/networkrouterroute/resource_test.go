@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccNetworkRouterRouteExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterRouteExampleOk(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -87,7 +87,7 @@ func TestAccNetworkRouterRouteExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccNetworkRouterRouteUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterRouteUpdate(t *testing.T) {
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
