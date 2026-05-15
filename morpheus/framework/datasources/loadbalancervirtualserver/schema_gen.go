@@ -29,6 +29,43 @@ func LoadBalancerVirtualServerDataSourceSchema(ctx context.Context) schema.Schem
 				Description:         "Generic virtual server configuration object. Settings vary by load balancer type.",
 				MarkdownDescription: "Generic virtual server configuration object. Settings vary by load balancer type.",
 			},
+			"config_nsxt": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"application_profile": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+						MarkdownDescription: "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
+					},
+					"persistence": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled).",
+						MarkdownDescription: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled).",
+					},
+					"persistence_profile": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "The persistence profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The persistence profile ID (`NetworkLoadBalancerProfile`).",
+					},
+					"ssl_client_profile": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "The SSL client profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The SSL client profile ID (`NetworkLoadBalancerProfile`).",
+					},
+					"ssl_server_profile": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "The SSL server profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The SSL server profile ID (`NetworkLoadBalancerProfile`).",
+					},
+				},
+				CustomType: ConfigNsxtType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigNsxtValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "NSX-T virtual server configuration",
+				MarkdownDescription: "NSX-T virtual server configuration",
+			},
 			"date_created": schema.StringAttribute{
 				Computed: true,
 			},
@@ -125,6 +162,11 @@ func LoadBalancerVirtualServerDataSourceSchema(ctx context.Context) schema.Schem
 				Computed:            true,
 				Description:         "Backend server pool assigned to this virtual server.",
 				MarkdownDescription: "Backend server pool assigned to this virtual server.",
+			},
+			"pool_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the load balancer pool assigned to this virtual server.",
+				MarkdownDescription: "The ID of the load balancer pool assigned to this virtual server.",
 			},
 			"pool_name": schema.StringAttribute{
 				Computed: true,
@@ -258,6 +300,7 @@ type LoadBalancerVirtualServerModel struct {
 	Active           types.Bool         `tfsdk:"active"`
 	BackendPort      types.String       `tfsdk:"backend_port"`
 	Config           types.Dynamic      `tfsdk:"config"`
+	ConfigNsxt       ConfigNsxtValue    `tfsdk:"config_nsxt"`
 	DateCreated      types.String       `tfsdk:"date_created"`
 	Description      types.String       `tfsdk:"description"`
 	ExternalAddress  types.Bool         `tfsdk:"external_address"`
@@ -272,6 +315,7 @@ type LoadBalancerVirtualServerModel struct {
 	LoadBalancerId   types.Int64        `tfsdk:"load_balancer_id"`
 	NetworkId        types.String       `tfsdk:"network_id"`
 	Pool             PoolValue          `tfsdk:"pool"`
+	PoolId           types.Int64        `tfsdk:"pool_id"`
 	PoolName         types.String       `tfsdk:"pool_name"`
 	Removing         types.Bool         `tfsdk:"removing"`
 	ServerName       types.String       `tfsdk:"server_name"`
@@ -301,6 +345,558 @@ type LoadBalancerVirtualServerModel struct {
 	VipStatus        types.String       `tfsdk:"vip_status"`
 	VipSticky        types.String       `tfsdk:"vip_sticky"`
 	VipType          types.String       `tfsdk:"vip_type"`
+}
+
+var _ basetypes.ObjectTypable = ConfigNsxtType{}
+
+type ConfigNsxtType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigNsxtType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigNsxtType) String() string {
+	return "ConfigNsxtType"
+}
+
+func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	applicationProfileAttribute, ok := attributes["application_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`application_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
+	}
+
+	persistenceAttribute, ok := attributes["persistence"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence is missing from object`)
+
+		return nil, diags
+	}
+
+	persistenceVal, ok := persistenceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
+	}
+
+	persistenceProfileAttribute, ok := attributes["persistence_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	persistenceProfileVal, ok := persistenceProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
+	}
+
+	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_client_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	sslClientProfileVal, ok := sslClientProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
+	}
+
+	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_server_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	sslServerProfileVal, ok := sslServerProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigNsxtValue{
+		ApplicationProfile: applicationProfileVal,
+		Persistence:        persistenceVal,
+		PersistenceProfile: persistenceProfileVal,
+		SslClientProfile:   sslClientProfileVal,
+		SslServerProfile:   sslServerProfileVal,
+		state:              attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueNull() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigNsxtValueUnknown() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, a missing attribute value was detected. "+
+					"A ConfigNsxtValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigNsxtValue Attribute Type",
+				"While creating a ConfigNsxtValue value, an invalid attribute value was detected. "+
+					"A ConfigNsxtValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, an extra attribute value was detected. "+
+					"A ConfigNsxtValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigNsxtValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	applicationProfileAttribute, ok := attributes["application_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`application_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	applicationProfileVal, ok := applicationProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
+	}
+
+	persistenceAttribute, ok := attributes["persistence"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	persistenceVal, ok := persistenceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
+	}
+
+	persistenceProfileAttribute, ok := attributes["persistence_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`persistence_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	persistenceProfileVal, ok := persistenceProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
+	}
+
+	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_client_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	sslClientProfileVal, ok := sslClientProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
+	}
+
+	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ssl_server_profile is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	sslServerProfileVal, ok := sslServerProfileAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	return ConfigNsxtValue{
+		ApplicationProfile: applicationProfileVal,
+		Persistence:        persistenceVal,
+		PersistenceProfile: persistenceProfileVal,
+		SslClientProfile:   sslClientProfileVal,
+		SslServerProfile:   sslServerProfileVal,
+		state:              attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtValue {
+	object, diags := NewConfigNsxtValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigNsxtValueMust(ConfigNsxtValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigNsxtValue{}
+
+type ConfigNsxtValue struct {
+	ApplicationProfile basetypes.Int64Value  `tfsdk:"application_profile"`
+	Persistence        basetypes.StringValue `tfsdk:"persistence"`
+	PersistenceProfile basetypes.Int64Value  `tfsdk:"persistence_profile"`
+	SslClientProfile   basetypes.Int64Value  `tfsdk:"ssl_client_profile"`
+	SslServerProfile   basetypes.Int64Value  `tfsdk:"ssl_server_profile"`
+	state              attr.ValueState
+}
+
+func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 5)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["application_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["persistence"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["persistence_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["ssl_client_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["ssl_server_profile"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 5)
+
+		val, err = v.ApplicationProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["application_profile"] = val
+
+		val, err = v.Persistence.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["persistence"] = val
+
+		val, err = v.PersistenceProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["persistence_profile"] = val
+
+		val, err = v.SslClientProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ssl_client_profile"] = val
+
+		val, err = v.SslServerProfile.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ssl_server_profile"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigNsxtValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigNsxtValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigNsxtValue) String() string {
+	return "ConfigNsxtValue"
+}
+
+func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"application_profile": basetypes.Int64Type{},
+		"persistence":         basetypes.StringType{},
+		"persistence_profile": basetypes.Int64Type{},
+		"ssl_client_profile":  basetypes.Int64Type{},
+		"ssl_server_profile":  basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"application_profile": v.ApplicationProfile,
+			"persistence":         v.Persistence,
+			"persistence_profile": v.PersistenceProfile,
+			"ssl_client_profile":  v.SslClientProfile,
+			"ssl_server_profile":  v.SslServerProfile,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigNsxtValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ApplicationProfile.Equal(other.ApplicationProfile) {
+		return false
+	}
+
+	if !v.Persistence.Equal(other.Persistence) {
+		return false
+	}
+
+	if !v.PersistenceProfile.Equal(other.PersistenceProfile) {
+		return false
+	}
+
+	if !v.SslClientProfile.Equal(other.SslClientProfile) {
+		return false
+	}
+
+	if !v.SslServerProfile.Equal(other.SslServerProfile) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"application_profile": basetypes.Int64Type{},
+		"persistence":         basetypes.StringType{},
+		"persistence_profile": basetypes.Int64Type{},
+		"ssl_client_profile":  basetypes.Int64Type{},
+		"ssl_server_profile":  basetypes.Int64Type{},
+	}
 }
 
 var _ basetypes.ObjectTypable = LoadBalancerType{}

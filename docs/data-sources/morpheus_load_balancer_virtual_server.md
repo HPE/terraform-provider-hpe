@@ -47,6 +47,7 @@ data "hpe_morpheus_load_balancer_virtual_server" "example" {
 - `active` (Boolean)
 - `backend_port` (String)
 - `config` (Dynamic) Generic virtual server configuration object. Settings vary by load balancer type.
+- `config_nsxt` (Attributes) NSX-T virtual server configuration (see [below for nested schema](#nestedatt--config_nsxt))
 - `date_created` (String)
 - `description` (String)
 - `external_address` (Boolean)
@@ -59,6 +60,7 @@ data "hpe_morpheus_load_balancer_virtual_server" "example" {
 - `load_balancer` (Attributes) (see [below for nested schema](#nestedatt--load_balancer))
 - `network_id` (String)
 - `pool` (Attributes) Backend server pool assigned to this virtual server. (see [below for nested schema](#nestedatt--pool))
+- `pool_id` (Number) The ID of the load balancer pool assigned to this virtual server.
 - `pool_name` (String)
 - `removing` (Boolean)
 - `server_name` (String)
@@ -87,6 +89,18 @@ data "hpe_morpheus_load_balancer_virtual_server" "example" {
 - `vip_status` (String)
 - `vip_sticky` (String)
 - `vip_type` (String)
+
+<a id="nestedatt--config_nsxt"></a>
+### Nested Schema for `config_nsxt`
+
+Read-Only:
+
+- `application_profile` (Number) The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.
+- `persistence` (String) Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled).
+- `persistence_profile` (Number) The persistence profile ID (`NetworkLoadBalancerProfile`).
+- `ssl_client_profile` (Number) The SSL client profile ID (`NetworkLoadBalancerProfile`).
+- `ssl_server_profile` (Number) The SSL server profile ID (`NetworkLoadBalancerProfile`).
+
 
 <a id="nestedatt--load_balancer"></a>
 ### Nested Schema for `load_balancer`

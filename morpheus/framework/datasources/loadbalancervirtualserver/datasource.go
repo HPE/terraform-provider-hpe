@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -317,16 +318,96 @@ func populateVirtualServerState(
 	}
 
 	// Config — the generic config map returned as a dynamic value.
-	if configMap := vs.GetConfig(); configMap != nil {
-		dyn, err := convert.MapToDynamic(ctx, configMap)
-		if err == nil {
-			state.Config = dyn
+	// For NSX-T, build a typed config_nsxt and extract pool_id from config.
+	lbTypeCode := ""
+	if vs.LoadBalancer != nil {
+		if lbType, ok := vs.LoadBalancer.GetTypeOk(); ok && lbType != nil {
+			if code, ok := lbType.GetCodeOk(); ok && code != nil {
+				lbTypeCode = *code
+			}
+		}
+	}
+
+	configMap := vs.GetConfig()
+
+	switch lbTypeCode {
+	case "nsx-t":
+		state.Config = types.DynamicNull()
+
+		if configMap != nil {
+			appProfile := types.Int64Null()
+			if v, ok := configMap["applicationProfile"].(float64); ok {
+				appProfile = types.Int64Value(int64(v))
+			}
+
+			persistence := types.StringNull()
+			if v, ok := configMap["persistence"].(string); ok {
+				persistence = types.StringValue(v)
+			}
+
+			persistenceProfile := types.Int64Null()
+			if v, ok := configMap["persistenceProfile"].(float64); ok {
+				persistenceProfile = types.Int64Value(int64(v))
+			}
+
+			sslClientProfile := types.Int64Null()
+			if v, ok := configMap["sslClientProfile"].(float64); ok {
+				sslClientProfile = types.Int64Value(int64(v))
+			}
+
+			sslServerProfile := types.Int64Null()
+			if v, ok := configMap["sslServerProfile"].(float64); ok {
+				sslServerProfile = types.Int64Value(int64(v))
+			}
+
+			nsxtVal, d := NewConfigNsxtValue(
+				ConfigNsxtValue{}.AttributeTypes(ctx),
+				map[string]attr.Value{
+					"application_profile": appProfile,
+					"persistence":         persistence,
+					"persistence_profile": persistenceProfile,
+					"ssl_client_profile":  sslClientProfile,
+					"ssl_server_profile":  sslServerProfile,
+				},
+			)
+			if !d.HasError() {
+				state.ConfigNsxt = nsxtVal
+			} else {
+				state.ConfigNsxt = NewConfigNsxtValueNull()
+			}
+
+			// For NSX-T, pool_id lives inside config as a string.
+			if state.PoolId.IsNull() {
+				if v, ok := configMap["pool"].(string); ok && v != "" {
+					if pid, err := strconv.ParseInt(v, 10, 64); err == nil {
+						state.PoolId = types.Int64Value(pid)
+					}
+				}
+			}
+		} else {
+			state.ConfigNsxt = NewConfigNsxtValueNull()
+		}
+
+	default:
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+
+		if configMap != nil {
+			dyn, err := convert.MapToDynamic(ctx, configMap)
+			if err == nil {
+				state.Config = dyn
+			} else {
+				state.Config = types.DynamicNull()
+			}
 		} else {
 			state.Config = types.DynamicNull()
 		}
-	} else {
-		state.Config = types.DynamicNull()
 	}
+
+	// Pool_id — from the top-level pool object if present.
+	if vs.Pool != nil && vs.Pool.Id != nil {
+		state.PoolId = types.Int64Value(*vs.Pool.Id)
+	}
+	// If still null, it may have been set from configMap above for NSX-T.
 
 	return state
 }
