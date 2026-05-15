@@ -62,7 +62,6 @@ func routeAsState(
 	route *sdk.GetNetworkRouterRoute200ResponseNetworkRoute,
 	routerID int64,
 ) NetworkRouterRouteModel {
-
 	// We're only doing this for now because SDK generated with float32.
 	mtu := route.NetworkMtu.Get()
 	var mtuInt64 *int64
@@ -72,6 +71,7 @@ func routeAsState(
 		i := int64(*mtu)
 		mtuInt64 = &i
 	}
+
 	return NetworkRouterRouteModel{
 		Id:           convert.Int64ToType(route.Id),
 		RouterId:     types.Int64Value(routerID),
