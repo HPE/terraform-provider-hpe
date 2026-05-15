@@ -60,6 +60,8 @@ func (d *DataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = NetworkFirewallRuleGroupDataSourceSchema(ctx)
+	resp.Schema.Description = "Provides a network firewall rule group data source."
+	resp.Schema.MarkdownDescription = "Provides a network firewall rule group data source."
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -125,7 +127,7 @@ func getRuleGroupByID(
 		defer hresp.Body.Close()
 	}
 
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
+	if r == nil || err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for firewall rule group %d: %s",
 			id, errfmt.ErrMsg(err, hresp),
@@ -148,7 +150,7 @@ func getRuleGroupByName(
 		defer hresp.Body.Close()
 	}
 
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
+	if r == nil || err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for firewall rule groups on integration %d: %s",
 			integrationID, errfmt.ErrMsg(err, hresp),

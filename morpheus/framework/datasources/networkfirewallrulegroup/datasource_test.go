@@ -120,11 +120,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
-	config := providerConfig + `
-      data "hpe_morpheus_network_firewall_rule_group" "test" {
-        network_integration_id = 128
-        name                   = "______nonexistent______"
-      }`
+	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByNameConfig(t, map[string]string{
+		"Name": "______nonexistent______",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected := regexp.MustCompile(networkfirewallrulegroup.ErrorNotFound)
 
@@ -132,7 +133,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      providerConfig + dataSourceConfig,
 				ExpectError: expected,
 			},
 		},

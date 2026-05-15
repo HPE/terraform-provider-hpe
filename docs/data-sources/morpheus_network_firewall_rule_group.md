@@ -13,16 +13,16 @@ description: |-
 Get a `network_firewall_rule_group` by `id`
 ```terraform
 data "hpe_morpheus_network_firewall_rule_group" "example" {
-  server_id = 1
-  id        = 99
+  network_integration_id = 1
+  id                     = 99
 }
 ```
 
 Get a `network_firewall_rule_group` by `name`
 ```terraform
 data "hpe_morpheus_network_firewall_rule_group" "example" {
-  server_id = 1
-  name      = "Example Rule Group"
+  network_integration_id = 1
+  name                   = "Example Rule Group"
 }
 ```
 
