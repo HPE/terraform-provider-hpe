@@ -40,6 +40,11 @@ func NetworkRouterRouteDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
+			"mtu": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Maximum Transmission Unit (MTU).",
+				MarkdownDescription: "Maximum Transmission Unit (MTU).",
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -74,6 +79,7 @@ type NetworkRouterRouteModel struct {
 	Enabled      types.Bool   `tfsdk:"enabled"`
 	ExternalId   types.String `tfsdk:"external_id"`
 	Id           types.Int64  `tfsdk:"id"`
+	Mtu          types.Int64  `tfsdk:"mtu"`
 	Name         types.String `tfsdk:"name"`
 	ProviderId   types.String `tfsdk:"provider_id"`
 	RouteType    types.String `tfsdk:"route_type"`
