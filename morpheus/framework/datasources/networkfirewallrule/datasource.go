@@ -174,8 +174,8 @@ func firewallRuleAsState(
 	}
 
 	ruleGroup := NewRuleGroupValueNull()
-	if rule.RuleGroup.IsSet() {
-		rg := rule.RuleGroup.Get()
+	if rule.IsSetRuleGroup() {
+		rg := rule.GetRuleGroup()
 		v, rgDiags := NewRuleGroupValue(
 			RuleGroupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
