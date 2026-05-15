@@ -12,7 +12,7 @@ import (
 )
 
 //go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example.tf example.tf.tmpl LoadBalancerId 1 VipName "example-vip" Description "Example virtual server" VipAddress "10.0.0.1" VipPort 80 VipProtocol "http"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf example_nsxt.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.2" VipPort 443 VipProtocol "https" ApplicationProfile "/infra/lb-app-profiles/default-http-lb-app-profile"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf example_nsxt.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.2" VipPort 443 VipProtocol "http" PoolId 42 SslCert 12 SslServerCert 0 ApplicationProfile 85 Persistence "SOURCE_IP" PersistenceProfile 78 SslClientProfile 33 SslServerProfile 0
 
 func RenderLoadBalancerVirtualServerConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -59,8 +59,15 @@ func RenderLoadBalancerVirtualServerNsxtConfig(t *testing.T, overrides map[strin
 		"Description":        "Example NSX-T virtual server",
 		"VipAddress":         "10.0.0.2",
 		"VipPort":            "443",
-		"VipProtocol":        "https",
-		"ApplicationProfile": "/infra/lb-app-profiles/default-http-lb-app-profile",
+		"VipProtocol":        "http",
+		"PoolId":             "42",
+		"SslCert":            "12",
+		"SslServerCert":      "0",
+		"ApplicationProfile": "85",
+		"Persistence":        "SOURCE_IP",
+		"PersistenceProfile": "78",
+		"SslClientProfile":   "33",
+		"SslServerProfile":   "0",
 	}
 
 	for key, value := range overrides {
