@@ -51,10 +51,10 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 		"VipName":            vipName,
 		"Description":        "datasource test vs",
 		"VipAddress":         "10.0.0.201",
-		"VipPort":            "80",
+		"VipPort":            "443",
 		"VipProtocol":        "http",
-		"PoolId":             "42",
-		"ApplicationProfile": "85",
+		"PoolId":             "11",
+		"ApplicationProfile": "13",
 	})
 	if err != nil {
 		t.Fatalf("failed to render vs config: %s", err)
@@ -116,10 +116,10 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 		"VipName":            vipName,
 		"Description":        "datasource test vs",
 		"VipAddress":         "10.0.0.202",
-		"VipPort":            "80",
+		"VipPort":            "443",
 		"VipProtocol":        "http",
-		"PoolId":             "42",
-		"ApplicationProfile": "85",
+		"PoolId":             "11",
+		"ApplicationProfile": "13",
 	})
 	if err != nil {
 		t.Fatalf("failed to render vs config: %s", err)

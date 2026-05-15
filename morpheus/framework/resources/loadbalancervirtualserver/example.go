@@ -11,26 +11,26 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf example_nsxt_full.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server with full SSL and persistence" VipAddress "10.0.0.2" VipPort 443 VipProtocol "http" PoolId 42 SslCert 12 SslServerCert 0 ApplicationProfile 85 Persistence "SOURCE_IP" PersistenceProfile 78 SslClientProfile 33 SslServerProfile 0
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_minimal.tf example_nsxt_minimal.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-minimal" Description "Minimal NSX-T virtual server" VipAddress "10.0.0.3" VipPort 80 VipProtocol "http" PoolId 42 ApplicationProfile 85
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf example_nsxt_full.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip-ssl-client" Description "Example NSX-T virtual server" VipAddress "10.0.0.5" VipPort 443 VipProtocol "http" PoolId 11 SslCert 12 SslServerCert 0 ApplicationProfile 13 Persistence "COOKIE" PersistenceProfile 16 SslClientProfile 19 SslServerProfile 0
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_minimal.tf example_nsxt_minimal.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.4" VipPort 443 VipProtocol "http" PoolId 11 ApplicationProfile 13
 
 func RenderLoadBalancerVirtualServerNsxtFullConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"LoadBalancerId":     "1",
-		"VipName":            "example-nsxt-vip",
-		"Description":        "Example NSX-T virtual server with full SSL and persistence",
-		"VipAddress":         "10.0.0.2",
+		"VipName":            "example-nsxt-vip-ssl-client",
+		"Description":        "Example NSX-T virtual server",
+		"VipAddress":         "10.0.0.5",
 		"VipPort":            "443",
 		"VipProtocol":        "http",
-		"PoolId":             "42",
+		"PoolId":             "11",
 		"SslCert":            "12",
 		"SslServerCert":      "0",
-		"ApplicationProfile": "85",
-		"Persistence":        "SOURCE_IP",
-		"PersistenceProfile": "78",
-		"SslClientProfile":   "33",
+		"ApplicationProfile": "13",
+		"Persistence":        "COOKIE",
+		"PersistenceProfile": "16",
+		"SslClientProfile":   "19",
 		"SslServerProfile":   "0",
 	}
 
@@ -63,13 +63,13 @@ func RenderLoadBalancerVirtualServerNsxtMinimalConfig(t *testing.T, overrides ma
 
 	defaults := map[string]string{
 		"LoadBalancerId":     "1",
-		"VipName":            "example-nsxt-minimal",
-		"Description":        "Minimal NSX-T virtual server",
-		"VipAddress":         "10.0.0.3",
-		"VipPort":            "80",
+		"VipName":            "example-nsxt-vip",
+		"Description":        "Example NSX-T virtual server",
+		"VipAddress":         "10.0.0.4",
+		"VipPort":            "443",
 		"VipProtocol":        "http",
-		"PoolId":             "42",
-		"ApplicationProfile": "85",
+		"PoolId":             "11",
+		"ApplicationProfile": "13",
 	}
 
 	for key, value := range overrides {
