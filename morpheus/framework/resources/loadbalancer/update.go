@@ -58,7 +58,7 @@ func (r *Resource) Update(
 		updateLB.SetVisibility(plan.Visibility.ValueString())
 	}
 
-	if err := setUpdateConfig(ctx, updateLB, plan, state); err != nil {
+	if err := setUpdateConfig(ctx, updateLB, plan); err != nil {
 		resp.Diagnostics.AddError("update load balancer resource", err.Error())
 
 		return
@@ -108,7 +108,6 @@ func setUpdateConfig(
 	ctx context.Context,
 	updateLB *sdk.UpdateLoadBalancerRequestLoadBalancer,
 	plan LoadBalancerModel,
-	state LoadBalancerModel,
 ) error {
 	// The update SDK's SetConfig accepts map[string]interface{} (not a typed union
 	// like the create SDK), so we build the map directly.
@@ -125,26 +124,13 @@ func setUpdateConfig(
 		updateLB.SetConfig(configMap)
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		configMap := map[string]interface{}{}
-
-		// Only include NSX-T fields that have changed (compared to state).
-		if plan.ConfigNsxt.AdminState.ValueBool() != state.ConfigNsxt.AdminState.ValueBool() {
-			configMap["adminState"] = plan.ConfigNsxt.AdminState.ValueBool()
+		configMap := map[string]interface{}{
+			"adminState": plan.ConfigNsxt.AdminState.ValueBool(),
+			"loglevel":   plan.ConfigNsxt.LogLevel.ValueString(),
+			"size":       plan.ConfigNsxt.Size.ValueString(),
+			"tier1":      plan.ConfigNsxt.Tier1Gateway.ValueString(),
 		}
-		if plan.ConfigNsxt.LogLevel.ValueString() != state.ConfigNsxt.LogLevel.ValueString() {
-			configMap["loglevel"] = plan.ConfigNsxt.LogLevel.ValueString()
-		}
-		if plan.ConfigNsxt.Size.ValueString() != state.ConfigNsxt.Size.ValueString() {
-			configMap["size"] = plan.ConfigNsxt.Size.ValueString()
-		}
-		if plan.ConfigNsxt.Tier1Gateway.ValueString() != state.ConfigNsxt.Tier1Gateway.ValueString() {
-			configMap["tier1"] = plan.ConfigNsxt.Tier1Gateway.ValueString()
-		}
-
-		// Only set config if anything changed
-		if len(configMap) > 0 {
-			updateLB.SetConfig(configMap)
-		}
+		updateLB.SetConfig(configMap)
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
