@@ -92,9 +92,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_type"},
+				ImportState:       true,
+				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().
 						Resources["hpe_morpheus_network_firewall_rule_group.example"]
@@ -103,7 +102,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 					}
 
 					return rs.Primary.Attributes["network_integration_id"] +
-						":" + rs.Primary.Attributes["id"], nil
+						"." + rs.Primary.Attributes["id"] +
+						"." + rs.Primary.Attributes["external_type"], nil
 				},
 				ResourceName: "hpe_morpheus_network_firewall_rule_group.example",
 				Check:        checkFn,

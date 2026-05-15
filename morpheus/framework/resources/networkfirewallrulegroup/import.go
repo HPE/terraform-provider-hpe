@@ -17,12 +17,12 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ":", 2)
-	if len(parts) != 2 {
+	parts := strings.SplitN(req.ID, ".", 3)
+	if len(parts) != 3 {
 		resp.Diagnostics.AddError(
 			"import network firewall rule group resource",
 			"provided import ID '"+req.ID+
-				"' is invalid, expected format 'network_integration_id:id'",
+				"' is invalid, expected format 'network_integration_id.id.external_type'",
 		)
 
 		return
@@ -48,6 +48,16 @@ func (r *Resource) ImportState(
 		return
 	}
 
+	externalType := parts[2]
+	if externalType == "" {
+		resp.Diagnostics.AddError(
+			"import network firewall rule group resource",
+			"provided external_type is empty, expected a non-empty value (e.g. 'SecurityPolicy')",
+		)
+
+		return
+	}
+
 	resp.Diagnostics.Append(
 		resp.State.SetAttribute(
 			ctx, path.Root("network_integration_id"), types.Int64Value(serverID),
@@ -55,5 +65,10 @@ func (r *Resource) ImportState(
 	)
 	resp.Diagnostics.Append(
 		resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(id))...,
+	)
+	resp.Diagnostics.Append(
+		resp.State.SetAttribute(
+			ctx, path.Root("external_type"), types.StringValue(externalType),
+		)...,
 	)
 }

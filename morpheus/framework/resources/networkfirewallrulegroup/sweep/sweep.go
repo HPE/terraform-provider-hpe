@@ -4,7 +4,6 @@ package sweep
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,13 +14,11 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-// ruleGroupItem represents a firewall rule group item returned by the list API.
+// ruleGroupItem represents a firewall rule group item for sweep operations.
 type ruleGroupItem struct {
-	Id            *int64  `json:"id"`
-	Name          *string `json:"name"`
-	NetworkServer *struct {
-		Id *float64 `json:"id"`
-	} `json:"networkServer"`
+	Id              int64
+	Name            string
+	NetworkServerID int64
 }
 
 func init() {
@@ -66,33 +63,27 @@ func init() {
 					continue
 				}
 
-				raw := listResp.GetRuleGroups()
-				if raw == nil {
-					continue
-				}
+				for _, rg := range listResp.GetRuleGroups() {
+					id, idOk := rg.GetIdOk()
+					name, nameOk := rg.GetNameOk()
 
-				encoded, err := json.Marshal(raw)
-				if err != nil {
-					continue
-				}
+					if !idOk || id == nil || !nameOk || name == nil {
+						continue
+					}
 
-				var items []ruleGroupItem
-				if err := json.Unmarshal(encoded, &items); err != nil {
-					continue
+					allGroups = append(allGroups, ruleGroupItem{
+						Id:              *id,
+						Name:            *name,
+						NetworkServerID: *nsID,
+					})
 				}
-
-				allGroups = append(allGroups, items...)
 			}
 
 			return allGroups, &http.Response{StatusCode: http.StatusOK}, nil
 		},
 		// Is this a test firewall rule group?
 		func(item ruleGroupItem) bool {
-			if item.Name == nil {
-				return false
-			}
-
-			return strings.HasPrefix(*item.Name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(item.Name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test firewall rule group.
 		func(
@@ -100,18 +91,12 @@ func init() {
 			client *sdk.APIClient,
 			item ruleGroupItem,
 		) (*http.Response, error) {
-			if item.Id == nil {
-				return nil, fmt.Errorf("could not get ID")
-			}
-
-			if item.NetworkServer == nil || item.NetworkServer.Id == nil {
+			if item.NetworkServerID == 0 {
 				return nil, fmt.Errorf("could not get network server ID")
 			}
 
-			serverID := int64(*item.NetworkServer.Id)
-
 			_, hresp, err := client.NetworksAPI.
-				DeleteNetworkFirewallRuleGroup(ctx, *item.Id, serverID).
+				DeleteNetworkFirewallRuleGroup(ctx, item.Id, item.NetworkServerID).
 				Execute()
 
 			return hresp, err

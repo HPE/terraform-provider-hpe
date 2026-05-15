@@ -42,8 +42,8 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
 
 ## Import
 
-Import is supported using the following syntax, where the ID format is `network_integration_id:id`:
+Import is supported using the following syntax, where the ID format is `network_integration_id.id.external_type`:
 
 ```shell
-terraform import hpe_morpheus_network_firewall_rule_group.example 128:1
+terraform import hpe_morpheus_network_firewall_rule_group.example 128.1.SecurityPolicy
 ```
