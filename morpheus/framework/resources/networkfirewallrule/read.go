@@ -91,16 +91,8 @@ func getNetworkFirewallRuleAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	// Description is not in the typed GET response; check AdditionalProperties
-	if desc, ok := rule.AdditionalProperties["description"]; ok {
-		if descStr, ok := desc.(string); ok {
-			state.Description = types.StringValue(descStr)
-		} else {
-			state.Description = types.StringNull()
-		}
-	} else {
-		state.Description = types.StringNull()
-	}
+	// Description is a NullableString in the SDK response
+	state.Description = convert.StrToType(rule.Description.Get())
 
 	sources, srcDiags := mapSourcesFromResponse(rule.Sources)
 	diags.Append(srcDiags...)
