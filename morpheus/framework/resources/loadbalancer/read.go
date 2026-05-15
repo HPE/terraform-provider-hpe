@@ -54,6 +54,7 @@ func getLoadBalancerAsState(
 	// so these must be preserved from plan/state. After import they will be null.
 	state.GroupId = plan.GroupId
 	state.NetworkServerId = plan.NetworkServerId
+	state.TypeCode = plan.TypeCode
 
 	// Set config based on the load balancer type.
 	// For HAProxy LBs, parse the API config map into the typed config_haproxy attribute.
@@ -63,26 +64,27 @@ func getLoadBalancerAsState(
 	isNSXT := data.Type.Code != nil && *data.Type.Code == typeCodeNSXT
 
 	switch {
-	case isHAProxy && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
-		state.TypeCode = types.StringNull()
-
+	case isHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}
 
 		state.ConfigHaproxy = haproxyCfg
-	case isNSXT && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
-		state.TypeCode = types.StringNull()
-
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.Config = types.DynamicNull()
+	case isNSXT:
 		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
 		}
 
 		state.ConfigNsxt = nsxtCfg
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.Config = types.DynamicNull()
 	default:
-		state.TypeCode = types.StringValue(*data.Type.Code)
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.ConfigNsxt = NewConfigNsxtValueNull()
 
 		state.Config, err = convert.MapToDynamic(ctx, data.GetConfig())
 		if err != nil {
@@ -302,15 +304,6 @@ func (r *Resource) Read(
 		resp.Diagnostics.AddError("read load balancer resource", err.Error())
 
 		return
-	}
-
-	switch {
-	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		state.ConfigHaproxy = plan.ConfigHaproxy
-	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		state.ConfigNsxt = plan.ConfigNsxt
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		state.Config = plan.Config
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

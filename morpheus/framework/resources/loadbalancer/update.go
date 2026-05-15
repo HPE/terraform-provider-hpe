@@ -94,15 +94,6 @@ func (r *Resource) Update(
 		return
 	}
 
-	switch {
-	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		newState.ConfigHaproxy = plan.ConfigHaproxy
-	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		newState.ConfigNsxt = plan.ConfigNsxt
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		newState.Config = plan.Config
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 

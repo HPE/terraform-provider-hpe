@@ -132,15 +132,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	switch {
-	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		state.ConfigHaproxy = plan.ConfigHaproxy
-	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		state.ConfigNsxt = plan.ConfigNsxt
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		state.Config = plan.Config
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
