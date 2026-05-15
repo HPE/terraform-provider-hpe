@@ -12,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 func (r *Resource) Update(
@@ -71,12 +72,43 @@ func (r *Resource) Update(
 		return
 	}
 
+	taintResourceState := func(id int64) {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_firewall_rule_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
 	state, _, diags := getNetworkFirewallRuleGroupAsState(
 		ctx, id, serverID, client, plan,
 	)
-	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"failed to read network firewall rule group state",
+			fmt.Sprintf(
+				"Network firewall rule group %d was updated but could not be read",
+				id,
+			),
+		)
+		taintResourceState(id)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set network firewall rule group state",
+			fmt.Sprintf(
+				"Network firewall rule group %d was updated but state could not be saved",
+				id,
+			),
+		)
+		taintResourceState(id)
+
+		return
+	}
 }
