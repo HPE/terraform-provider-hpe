@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -269,6 +270,13 @@ func setConfigFromResponse(
 		}
 
 		state.ConfigNsxt = nsxtVal
+
+		// Pool ID lives inside config for NSX-T. Extract it on import.
+		if v, ok := configMap["pool"].(string); ok && v != "" {
+			if id, err := strconv.ParseInt(v, 10, 64); err == nil {
+				state.PoolId = types.Int64Value(id)
+			}
+		}
 	default:
 		if configMap == nil {
 			state.Config = types.DynamicNull()
