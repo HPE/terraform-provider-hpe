@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package networkfirewallrulegroup
 
@@ -28,15 +28,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	// WriteOnly attributes (e.g. external_type) are null in the plan;
-	// read them from the config instead.
-	var config NetworkFirewallRuleGroupModel
-
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -48,7 +39,7 @@ func (r *Resource) Create(
 
 	ruleGroup := sdk.NewCreateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
 	ruleGroup.SetName(name)
-	ruleGroup.SetExternalType(config.ExternalType.ValueString())
+	ruleGroup.SetExternalType(plan.ExternalType.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		ruleGroup.SetDescription(plan.Description.ValueString())

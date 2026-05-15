@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package networkfirewallrulegroup
 
@@ -49,7 +49,9 @@ func (r *Resource) Update(
 		ruleGroupMap["description"] = plan.Description.ValueString()
 	}
 
-	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
+	if plan.Priority.IsNull() {
+		ruleGroupMap["priority"] = nil
+	} else if !plan.Priority.IsUnknown() {
 		ruleGroupMap["priority"] = plan.Priority.ValueInt64()
 	}
 

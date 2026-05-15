@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_network_firewall_rule_group Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  
+  Manages a network firewall rule group resource in Morpheus.
 ---
 # hpe_morpheus_network_firewall_rule_group (Resource)
 
-
+Manages a network firewall rule group resource in Morpheus.
 
 ## Example Usage
 
@@ -26,9 +26,7 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
 
 ### Required
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
-- `external_type` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The external type of the firewall rule group (e.g. SecurityPolicy)
+- `external_type` (String) The external type of the firewall rule group (e.g. SecurityPolicy)
 - `name` (String) Network firewall rule group name
 - `network_integration_id` (Number) The ID of the network integration
 
