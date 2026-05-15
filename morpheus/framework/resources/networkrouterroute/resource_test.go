@@ -82,6 +82,16 @@ func TestAccMorpheusNetworkRouterRouteExampleOk(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "provider_id"),
 				),
 			},
+			{
+				Config:             providerConfig + routerConfig + routeConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
