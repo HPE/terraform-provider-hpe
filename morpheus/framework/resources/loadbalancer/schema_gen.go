@@ -5,6 +5,7 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -12,7 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -42,8 +45,16 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object with parameters that vary by load balancer type.",
 				MarkdownDescription: "Configuration object with parameters that vary by load balancer type.",
 				Validators: []validator.Dynamic{
-					dynamicvalidator.ExactlyOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy"), path.MatchRoot("config_nsxt")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_haproxy"), path.MatchRoot("config_nsxt")}...),
+					validators.ValidObjectMap(),
+					dynamicvalidator.ConflictsWith(path.Expressions{
+						path.MatchRoot("config_haproxy"),
+						path.MatchRoot("config_nsxt"),
+					}...),
+					dynamicvalidator.ExactlyOneOf(path.Expressions{
+						path.MatchRoot("config"),
+						path.MatchRoot("config_haproxy"),
+						path.MatchRoot("config_nsxt"),
+					}...),
 				},
 			},
 			"config_haproxy": schema.SingleNestedAttribute{
@@ -77,11 +88,17 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "If true then admin State rule will be active/enabled.",
 						MarkdownDescription: "If true then admin State rule will be active/enabled.",
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.RequiresReplace(),
+						},
 					},
 					"log_level": schema.StringAttribute{
 						Optional:            true,
 						Description:         "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
 						MarkdownDescription: "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 						Validators: []validator.String{
 							stringvalidator.OneOf("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"),
 						},
@@ -90,14 +107,20 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 						Optional:            true,
 						Description:         "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
 						MarkdownDescription: "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 						Validators: []validator.String{
 							stringvalidator.OneOf("SMALL", "MEDIUM", "LARGE"),
 						},
 					},
 					"tier1_gateway": schema.StringAttribute{
-						Optional:            true,
-						Description:         "Provider ID of the Tier-1 Gateway.",
-						MarkdownDescription: "Provider ID of the Tier-1 Gateway.",
+						Required:            true,
+						Description:         "Provider ID of the Tier-1 Gateway. provider_id can be found in the hpe_morpheus_network_router datasource.",
+						MarkdownDescription: "Provider ID of the Tier-1 Gateway. provider_id can be found in the hpe_morpheus_network_router datasource.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 					},
 				},
 				CustomType: ConfigNsxtType{
@@ -108,6 +131,9 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Configuration for NSX-T load balancer type",
 				MarkdownDescription: "Configuration for NSX-T load balancer type",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.Object{
 					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_haproxy")}...),
 				},
@@ -157,7 +183,7 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Pass true to allow access to all groups",
 						Validators: []validator.Bool{
 							boolvalidator.ConflictsWith(path.Expressions{
-								path.MatchRelative().AtParent().AtName("group"),
+								path.MatchRelative().AtParent().AtName("groups"),
 							}...),
 						},
 					},
