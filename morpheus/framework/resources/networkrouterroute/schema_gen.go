@@ -4,9 +4,13 @@ package networkrouterroute
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,20 +27,29 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Can be used to set as default route.",
 				MarkdownDescription: "Can be used to set as default route.",
-				Default:             booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
+				Default: booldefault.StaticBool(false),
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Route description",
 				MarkdownDescription: "Route description",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Can be used to enable / disable the route.",
 				MarkdownDescription: "Can be used to enable / disable the route.",
-				Default:             booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
+				Default: booldefault.StaticBool(false),
 			},
 			"external_id": schema.StringAttribute{
 				Computed: true,
@@ -51,21 +64,36 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Maximum Transmission Unit (MTU).",
 				MarkdownDescription: "Maximum Transmission Unit (MTU).",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "The name of the route.",
 				MarkdownDescription: "The name of the route.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"network": schema.StringAttribute{
 				Required:            true,
 				Description:         "Source IPV4 address or CIDR range.",
 				MarkdownDescription: "Source IPV4 address or CIDR range.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"next_hop": schema.StringAttribute{
 				Required:            true,
 				Description:         "Destination IPV4 address or CIDR range.",
 				MarkdownDescription: "Destination IPV4 address or CIDR range.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"provider_id": schema.StringAttribute{
 				Computed: true,
@@ -78,6 +106,9 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "ID of the parent router.",
 				MarkdownDescription: "ID of the parent router.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"source_type": schema.StringAttribute{
 				Computed: true,
