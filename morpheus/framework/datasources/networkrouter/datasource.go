@@ -254,9 +254,9 @@ func setInterfacesState(
 		iv, diags := NewInterfacesValue(
 			InterfacesValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"id":         mapInt64(iface, "id"),
-				"cidr":       mapString(iface, "cidr"),
-				"ip_address": mapString(iface, "ipAddress"),
+				"id":         types.Int64PointerValue(iface.Id),
+				"cidr":       types.StringPointerValue(iface.Cidr),
+				"ip_address": types.StringPointerValue(iface.IpAddress),
 			},
 		)
 		if diags.HasError() {
@@ -279,29 +279,6 @@ func setInterfacesState(
 	state.Interfaces = setVal
 
 	return nil
-}
-
-func mapString(m map[string]interface{}, key string) types.String {
-	if v, ok := m[key]; ok {
-		if s, ok := v.(string); ok {
-			return types.StringValue(s)
-		}
-	}
-
-	return types.StringNull()
-}
-
-func mapInt64(m map[string]interface{}, key string) types.Int64 {
-	if v, ok := m[key]; ok {
-		switch n := v.(type) {
-		case float64:
-			return types.Int64Value(int64(n))
-		case int64:
-			return types.Int64Value(n)
-		}
-	}
-
-	return types.Int64Null()
 }
 
 func getNetworkRouterByID(
