@@ -73,7 +73,8 @@ func (r *Resource) ValidateConfig(
 				path.Root("network_server_id"),
 				"Missing required attribute",
 				fmt.Sprintf(
-					"network_server_id is required for NSX-T load balancers. Set network_server_id when using type_code %q or config_nsxt.",
+					"network_server_id is required for NSX-T load balancers. "+
+						"Set network_server_id when using type_code %q or config_nsxt.",
 					typeCodeNSXT,
 				),
 			)
