@@ -71,6 +71,15 @@ func (r *Resource) Create(
 		return
 	}
 
+	if createResp == nil {
+		resp.Diagnostics.AddError(
+			"error creating network firewall rule group",
+			"network firewall rule group "+name+" POST returned an empty response",
+		)
+
+		return
+	}
+
 	createdID := createResp.GetId()
 	plan.Id = types.Int64Value(createdID)
 

@@ -5,6 +5,7 @@ package networkfirewallrulegroup_test
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -286,6 +287,170 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 				Config:             providerConfig + replaceConfig,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+		map[string]string{
+			"Name":         name,
+			"ExternalType": "SecurityPolicy",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+		map[string]string{
+			"Name":         name,
+			"ExternalType": "GatewayPolicy",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
+			t, morpheus.New(), nil,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config:   providerConfig + createConfig,
+				PlanOnly: false,
+			},
+			{
+				Config:             providerConfig + replaceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+		map[string]string{
+			"Name":                 name,
+			"NetworkIntegrationId": "128",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+		map[string]string{
+			"Name":                 name,
+			"NetworkIntegrationId": "999",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
+			t, morpheus.New(), nil,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config:   providerConfig + createConfig,
+				PlanOnly: false,
+			},
+			{
+				Config:             providerConfig + replaceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "feature")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+		map[string]string{
+			"Name": name,
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
+			t, morpheus.New(), nil,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config:   providerConfig + resourceConfig,
+				PlanOnly: false,
+			},
+			{
+				ImportState:   true,
+				ImportStateId: "128:1",
+				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
+				ExpectError:   regexp.MustCompile(`expected format 'network_integration_id\.id\.external_type'`),
+			},
+			{
+				ImportState:   true,
+				ImportStateId: "notanumber.1.SecurityPolicy",
+				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
+				ExpectError:   regexp.MustCompile(`network_integration_id.*is invalid \(non-number\)`),
+			},
+			{
+				ImportState:   true,
+				ImportStateId: "128.notanumber.SecurityPolicy",
+				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
+				ExpectError:   regexp.MustCompile(`id.*is invalid \(non-number\)`),
+			},
+			{
+				ImportState:   true,
+				ImportStateId: "128.1.",
+				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
+				ExpectError:   regexp.MustCompile(`external_type is empty`),
 			},
 		},
 	})

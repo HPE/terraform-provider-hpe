@@ -40,9 +40,7 @@ func (r *Resource) Update(
 
 	ruleGroup := sdk.NewUpdateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
 
-	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		ruleGroup.SetName(plan.Name.ValueString())
-	}
+	ruleGroup.SetName(plan.Name.ValueString())
 
 	if plan.Description.IsNull() {
 		ruleGroup.SetDescriptionNil()
