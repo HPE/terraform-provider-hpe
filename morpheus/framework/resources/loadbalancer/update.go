@@ -29,7 +29,24 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update load balancer resource",
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
 	updateLB := sdk.NewUpdateLoadBalancerRequestLoadBalancerWithDefaults()
+
+	// Morpheus requires the LB type in the PUT body to apply config changes.
+	if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+		updateLB.AdditionalProperties = map[string]interface{}{
+			"type": plan.TypeCode.ValueString(),
+		}
+	}
 
 	updateLB.SetName(plan.Name.ValueString())
 
@@ -62,16 +79,6 @@ func (r *Resource) Update(
 	updateReq := sdk.NewUpdateLoadBalancerRequest()
 	updateReq.SetLoadBalancer(*updateLB)
 
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update load balancer resource",
-			"failed to create client: "+err.Error(),
-		)
-
-		return
-	}
-
 	_, hresp, err := client.LoadBalancersAPI.UpdateLoadBalancer(ctx, id).
 		UpdateLoadBalancerRequest(*updateReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -103,7 +110,7 @@ func setUpdateConfig(
 	plan LoadBalancerModel,
 ) error {
 	// The update SDK's SetConfig accepts map[string]interface{} (not a typed union
-	// like the create SDK), so we build the map directly for HAProxy config.
+	// like the create SDK), so we build the map directly.
 	switch {
 	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
 		configMap := map[string]interface{}{
@@ -117,24 +124,12 @@ func setUpdateConfig(
 		updateLB.SetConfig(configMap)
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		configMap := map[string]interface{}{}
-
-		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
-			configMap["adminState"] = plan.ConfigNsxt.AdminState.ValueBool()
+		configMap := map[string]interface{}{
+			"adminState": plan.ConfigNsxt.AdminState.ValueBool(),
+			"loglevel":   plan.ConfigNsxt.LogLevel.ValueString(),
+			"size":       plan.ConfigNsxt.Size.ValueString(),
+			"tier1":      plan.ConfigNsxt.Tier1Gateway.ValueString(),
 		}
-
-		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
-			configMap["loglevel"] = plan.ConfigNsxt.LogLevel.ValueString()
-		}
-
-		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
-			configMap["size"] = plan.ConfigNsxt.Size.ValueString()
-		}
-
-		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
-			configMap["tier1"] = plan.ConfigNsxt.Tier1Gateway.ValueString()
-		}
-
 		updateLB.SetConfig(configMap)
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
