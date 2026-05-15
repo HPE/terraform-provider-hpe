@@ -124,13 +124,8 @@ func setUpdateConfig(
 		updateLB.SetConfig(configMap)
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		configMap := map[string]interface{}{
-			"adminState": plan.ConfigNsxt.AdminState.ValueBool(),
-			"loglevel":   plan.ConfigNsxt.LogLevel.ValueString(),
-			"size":       plan.ConfigNsxt.Size.ValueString(),
-			"tier1":      plan.ConfigNsxt.Tier1Gateway.ValueString(),
-		}
-		updateLB.SetConfig(configMap)
+		// config_nsxt attributes are replace-only, so in-place Update should not
+		// send NSX-T config payloads. Replacement is handled by Create/Delete.
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
