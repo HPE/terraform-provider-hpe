@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -89,6 +90,10 @@ func (r *Resource) Update(
 		instance.SetVipHostname(plan.VipHostname.ValueString())
 	}
 
+	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {
+		instance.SetVipPool(plan.VipPool.ValueInt64())
+	}
+
 	if !plan.SslCert.IsNull() && !plan.SslCert.IsUnknown() {
 		instance.SetSslCert(plan.SslCert.ValueInt64())
 	}
@@ -125,8 +130,8 @@ func (r *Resource) Update(
 		return
 	}
 
-	// Preserve fields the API does not return on GET.
-	state.SslServerCert = plan.SslServerCert
+	// Preserve fields the API does not return in the expected schema type.
+	state.VipPool = plan.VipPool
 	state.Config = plan.Config
 	state.ConfigNsxt = plan.ConfigNsxt
 
@@ -140,11 +145,34 @@ func setUpdateConfig(
 ) error {
 	if !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown() {
 		nsxConfig := sdk.NewNSXVirtualServerConfigObject1()
-		if !plan.ConfigNsxt.ApplicationProfile.IsNull() && !plan.ConfigNsxt.ApplicationProfile.IsUnknown() {
-			nsxConfig.SetApplicationProfile(plan.ConfigNsxt.ApplicationProfile.ValueString())
+
+		if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
+			nsxConfig.SetPool(strconv.FormatInt(plan.PoolId.ValueInt64(), 10))
 		}
 
-		cfg := sdk.NSXVirtualServerConfigObject1AsUpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig(nsxConfig)
+		if !plan.ConfigNsxt.ApplicationProfile.IsNull() && !plan.ConfigNsxt.ApplicationProfile.IsUnknown() {
+			nsxConfig.SetApplicationProfile(plan.ConfigNsxt.ApplicationProfile.ValueInt64())
+		}
+
+		if !plan.ConfigNsxt.Persistence.IsNull() && !plan.ConfigNsxt.Persistence.IsUnknown() {
+			nsxConfig.SetPersistence(plan.ConfigNsxt.Persistence.ValueString())
+		}
+
+		if !plan.ConfigNsxt.PersistenceProfile.IsNull() && !plan.ConfigNsxt.PersistenceProfile.IsUnknown() {
+			nsxConfig.SetPersistenceProfile(plan.ConfigNsxt.PersistenceProfile.ValueInt64())
+		}
+
+		if !plan.ConfigNsxt.SslClientProfile.IsNull() && !plan.ConfigNsxt.SslClientProfile.IsUnknown() {
+			nsxConfig.SetSslClientProfile(plan.ConfigNsxt.SslClientProfile.ValueInt64())
+		}
+
+		if !plan.ConfigNsxt.SslServerProfile.IsNull() && !plan.ConfigNsxt.SslServerProfile.IsUnknown() {
+			nsxConfig.SetSslServerProfile(plan.ConfigNsxt.SslServerProfile.ValueInt64())
+		}
+
+		cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
+			NSXVirtualServerConfigObject1: nsxConfig,
+		}
 		instance.SetConfig(cfg)
 
 		return nil
@@ -166,7 +194,9 @@ func setUpdateConfig(
 		return fmt.Errorf("config must be a valid object/map")
 	}
 
-	cfg := sdk.MapmapOfStringAnyAsUpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig(&configDataMap)
+	cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
+		MapmapOfStringAny: &configDataMap,
+	}
 	instance.SetConfig(cfg)
 
 	return nil

@@ -87,7 +87,7 @@ func TestAccMorpheusLoadBalancerVirtualServerExampleOk(t *testing.T) {
 			{
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"config", "ssl_server_cert"},
+				ImportStateVerifyIgnore: []string{"config", "vip_pool"},
 				ResourceName:            resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources[resourceName]
