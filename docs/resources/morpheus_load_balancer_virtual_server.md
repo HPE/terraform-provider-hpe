@@ -30,10 +30,17 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
   description      = "Example NSX-T virtual server"
   vip_address      = "10.0.0.2"
   vip_port         = 443
-  vip_protocol     = "https"
+  vip_protocol     = "http"
+  pool_id          = 42
+  ssl_cert         = 12
+  ssl_server_cert  = 0
 
   config_nsxt = {
-    application_profile = "/infra/lb-app-profiles/default-http-lb-app-profile"
+    application_profile = 85
+    persistence         = "SOURCE_IP"
+    persistence_profile = 78
+    ssl_client_profile  = 33
+    ssl_server_profile  = 0
   }
 }
 ```
@@ -50,14 +57,16 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
 - `config` (Dynamic) Generic virtual server configuration object. Settings vary by load balancer type.
 - `config_nsxt` (Attributes) NSX-T virtual server configuration (see [below for nested schema](#nestedatt--config_nsxt))
 - `description` (String) Description
-- `ssl_cert` (Number) SSL Client Certificate ID
-- `ssl_server_cert` (Number) SSL Server Certificate ID
-- `vip_address` (String) VIP Address
+- `pool_id` (Number) The ID of the load balancer pool to assign to this virtual server.
+- `ssl_cert` (Number) SSL Client Certificate ID. Use `0` for none.
+- `ssl_server_cert` (Number) SSL Server Certificate ID. Use `0` for none.
+- `vip_address` (String) VIP Address. Required when `vip_pool` is not set.
 - `vip_hostname` (String) VIP Hostname
 - `vip_name` (String) VIP Name
+- `vip_pool` (Number) Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.
 - `vip_port` (Number) VIP Port
-- `vip_protocol` (String) VIP Protocol. Allowed values: `http`, `https`, `udp`, `tcp`.
-- `vip_type` (String) VIP Type
+- `vip_protocol` (String) VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`.
+- `vip_type` (String) The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.
 
 ### Read-Only
 
@@ -100,7 +109,11 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
 
 Optional:
 
-- `application_profile` (String) The Load Balancer Application Profile ID. Use /api/options/nsxt/nsxtLBVirtualServerApplicationProfile to list available options.
+- `application_profile` (Number) The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.
+- `persistence` (String) Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.
+- `persistence_profile` (Number) The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.
+- `ssl_client_profile` (Number) The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.
+- `ssl_server_profile` (Number) The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.
 
 
 <a id="nestedatt--load_balancer"></a>

@@ -4,7 +4,7 @@ go 1.25.8
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260506110215-9d30f8f1c9ca
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.54.0
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.57.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -15,11 +15,11 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-mux v0.23.1
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/text v0.36.0
+	golang.org/x/text v0.37.0
 )
 
 require (
@@ -62,10 +62,10 @@ require (
 	github.com/zclconf/go-cty v1.18.1 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/mod v0.35.0 // indirect
-	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/tools v0.43.0 // indirect
+	golang.org/x/tools v0.44.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/grpc v1.79.3 // indirect
