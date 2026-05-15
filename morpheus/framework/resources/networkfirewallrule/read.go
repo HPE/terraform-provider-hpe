@@ -123,7 +123,7 @@ func getNetworkFirewallRuleAsState(
 	diags.Append(profileDiags...)
 	state.Profile = profile
 
-	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup.Get())
+	state.RuleGroupId = mapRuleGroupFromResponse(rule.RuleGroup)
 
 	return state, false, diags
 }

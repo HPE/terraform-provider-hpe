@@ -5,6 +5,7 @@ package networkfirewallrule
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -52,7 +53,14 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		rule.SetPriority(plan.Priority.ValueString())
+		priorityVal, err := strconv.ParseInt(plan.Priority.ValueString(), 10, 64)
+		if err != nil {
+			resp.Diagnostics.AddError("invalid priority value", "priority must be a valid integer: "+err.Error())
+
+			return
+		}
+
+		rule.SetPriority(priorityVal)
 	}
 
 	if !plan.Sources.IsNull() && !plan.Sources.IsUnknown() {

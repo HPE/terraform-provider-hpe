@@ -5,6 +5,7 @@ package networkfirewallrule
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -37,75 +38,86 @@ func (r *Resource) Update(
 		return
 	}
 
-	ruleMap := map[string]interface{}{}
+	rule := sdk.NewUpdateNetworkFirewallRuleRequestRule()
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		ruleMap["name"] = plan.Name.ValueString()
+		rule.SetName(plan.Name.ValueString())
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		ruleMap["description"] = plan.Description.ValueString()
+		rule.SetDescription(plan.Description.ValueString())
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		ruleMap["enabled"] = plan.Enabled.ValueBool()
+		rule.SetEnabled(plan.Enabled.ValueBool())
 	}
 
 	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
-		ruleMap["direction"] = plan.Direction.ValueString()
+		rule.SetDirection(plan.Direction.ValueString())
 	}
 
 	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
-		ruleMap["policy"] = plan.Policy.ValueString()
+		rule.SetPolicy(plan.Policy.ValueString())
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		ruleMap["priority"] = plan.Priority.ValueString()
+		priorityVal, err := strconv.ParseInt(plan.Priority.ValueString(), 10, 64)
+		if err != nil {
+			resp.Diagnostics.AddError("invalid priority value", "priority must be a valid integer: "+err.Error())
+
+			return
+		}
+
+		rule.SetPriority(priorityVal)
 	}
 
 	if !plan.Sources.IsNull() && !plan.Sources.IsUnknown() {
-		ruleMap["sources"] = map[string]interface{}{
-			"id": setValueToStringSlice(plan.Sources.Id),
-		}
+		sources := sdk.NewUpdateNetworkFirewallRuleRequestRuleSources()
+		sources.SetId(setValueToStringSlice(plan.Sources.Id))
+		rule.SetSources(*sources)
 	}
 
 	if !plan.Destinations.IsNull() && !plan.Destinations.IsUnknown() {
-		ruleMap["destinations"] = map[string]interface{}{
-			"id": setValueToStringSlice(plan.Destinations.Id),
-		}
+		destinations := sdk.NewUpdateNetworkFirewallRuleRequestRuleDestinations()
+		destinations.SetId(setValueToStringSlice(plan.Destinations.Id))
+		rule.SetDestinations(*destinations)
 	}
 
 	if !plan.Scopes.IsNull() && !plan.Scopes.IsUnknown() {
-		ruleMap["scopes"] = map[string]interface{}{
-			"id": setValueToStringSlice(plan.Scopes.Id),
-		}
+		scopes := sdk.NewUpdateNetworkFirewallRuleRequestRuleScopes()
+		scopes.SetId(setValueToStringSlice(plan.Scopes.Id))
+		rule.SetScopes(*scopes)
 	}
 
-	configMap := map[string]interface{}{}
+	config := sdk.NewUpdateNetworkFirewallRuleRequestRuleConfig()
+	configSet := false
 
 	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		configMap["application"] = setValueToStringSlice(plan.Application)
+		config.SetApplication(setValueToStringSlice(plan.Application))
+		configSet = true
 	}
 
 	if !plan.Profile.IsNull() && !plan.Profile.IsUnknown() {
-		configMap["profile"] = setValueToStringSlice(plan.Profile)
+		config.SetProfile(setValueToStringSlice(plan.Profile))
+		configSet = true
 	}
 
-	if len(configMap) > 0 {
-		ruleMap["config"] = configMap
+	if configSet {
+		rule.SetConfig(*config)
 	}
 
 	if !plan.RuleGroupId.IsNull() && !plan.RuleGroupId.IsUnknown() {
-		ruleGroupMap := map[string]interface{}{}
+		ruleGroup := sdk.NewUpdateNetworkFirewallRuleRequestRuleRuleGroup()
 		if !plan.RuleGroupId.Id.IsNull() && !plan.RuleGroupId.Id.IsUnknown() {
-			ruleGroupMap["id"] = plan.RuleGroupId.Id.ValueInt64()
+			ruleGroupID := int32(plan.RuleGroupId.Id.ValueInt64()) //nolint:gosec // API uses int32
+			ruleGroup.SetId(ruleGroupID)
 		}
 
-		ruleMap["ruleGroup"] = ruleGroupMap
+		rule.SetRuleGroup(*ruleGroup)
 	}
 
 	updateReq := sdk.NewUpdateNetworkFirewallRuleRequestWithDefaults()
-	updateReq.SetRule(ruleMap)
+	updateReq.SetRule(*rule)
 
 	id := currentState.Id.ValueInt64()
 	networkIntegrationId := currentState.NetworkIntegrationId.ValueInt64()
