@@ -11,62 +11,26 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example.tf example.tf.tmpl LoadBalancerId 1 VipName "example-vip" Description "Example virtual server" VipAddress "10.0.0.1" VipPort 80 VipProtocol "http"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt.tf example_nsxt.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.2" VipPort 443 VipProtocol "http" PoolId 42 SslCert 12 SslServerCert 0 ApplicationProfile 85 Persistence "SOURCE_IP" PersistenceProfile 78 SslClientProfile 33 SslServerProfile 0
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf example_nsxt_full.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip-ssl-client" Description "Example NSX-T virtual server" VipAddress "10.0.0.5" VipPort 443 VipProtocol "http" PoolId 11 SslCert 12 SslServerCert 0 ApplicationProfile 13 Persistence "COOKIE" PersistenceProfile 16 SslClientProfile 19 SslServerProfile 0
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_minimal.tf example_nsxt_minimal.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.4" VipPort 443 VipProtocol "http" PoolId 11 ApplicationProfile 13
 
-func RenderLoadBalancerVirtualServerConfig(t *testing.T, overrides map[string]string) (string, error) {
-	t.Helper()
-
-	defaults := map[string]string{
-		"LoadBalancerId": "1",
-		"VipName":        "example-vip",
-		"Description":    "Example virtual server",
-		"VipAddress":     "10.0.0.1",
-		"VipPort":        "80",
-		"VipProtocol":    "http",
-	}
-
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
-
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return "", fmt.Errorf("unable to get current file path")
-	}
-
-	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example.tf.tmpl")
-
-	return testhelpers.RenderExample(
-		t,
-		templatePath,
-		args...,
-	)
-}
-
-func RenderLoadBalancerVirtualServerNsxtConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderLoadBalancerVirtualServerNsxtFullConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"LoadBalancerId":     "1",
-		"VipName":            "example-nsxt-vip",
+		"VipName":            "example-nsxt-vip-ssl-client",
 		"Description":        "Example NSX-T virtual server",
-		"VipAddress":         "10.0.0.2",
+		"VipAddress":         "10.0.0.5",
 		"VipPort":            "443",
 		"VipProtocol":        "http",
-		"PoolId":             "42",
+		"PoolId":             "11",
 		"SslCert":            "12",
 		"SslServerCert":      "0",
-		"ApplicationProfile": "85",
-		"Persistence":        "SOURCE_IP",
-		"PersistenceProfile": "78",
-		"SslClientProfile":   "33",
+		"ApplicationProfile": "13",
+		"Persistence":        "COOKIE",
+		"PersistenceProfile": "16",
+		"SslClientProfile":   "19",
 		"SslServerProfile":   "0",
 	}
 
@@ -85,7 +49,45 @@ func RenderLoadBalancerVirtualServerNsxtConfig(t *testing.T, overrides map[strin
 	}
 
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example_nsxt.tf.tmpl")
+	templatePath := filepath.Join(dir, "example_nsxt_full.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
+}
+
+func RenderLoadBalancerVirtualServerNsxtMinimalConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"LoadBalancerId":     "1",
+		"VipName":            "example-nsxt-vip",
+		"Description":        "Example NSX-T virtual server",
+		"VipAddress":         "10.0.0.4",
+		"VipPort":            "443",
+		"VipProtocol":        "http",
+		"PoolId":             "11",
+		"ApplicationProfile": "13",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example_nsxt_minimal.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

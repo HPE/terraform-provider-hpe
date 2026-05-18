@@ -107,7 +107,7 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
 - `monitor_timeout` (Number) The maximum time in seconds to wait for a health check response before marking as failed
 - `monitor_type` (String) The monitor protocol type. Valid values are: dns, http, https, icmp, ldap, mssql, passive, tcp, udp. The provider maps these to the appropriate load-balancer-specific value based on the load balancer type (e.g. http becomes LBHttpMonitorProfile for NSX-T).
 - `monitor_username` (String) The username for authenticated health checks
-- `receive_code` (String) The expected HTTP response status codes for a successful health check (e.g. 200,201,204)
+- `receive_code` (String) A comma-separated list of HTTP status codes expected for a successful health check (e.g. "200" or "200,201")
 - `receive_data` (String) The expected response body string to validate in the health check response
 - `rise_count` (Number) The number of consecutive successful health checks before marking the target as up
 - `send_data` (String) The request body to send to the target during health checks

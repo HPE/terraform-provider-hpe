@@ -126,6 +126,12 @@ func (r *Resource) Create(
 	state.Config = plan.Config
 	state.ConfigNsxt = plan.ConfigNsxt
 
+	// Pool ID: the API sends pool inside config for NSX-T but may not return
+	// a top-level pool object in the GET response. Preserve from plan if needed.
+	if state.PoolId.IsNull() && !plan.PoolId.IsNull() {
+		state.PoolId = plan.PoolId
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

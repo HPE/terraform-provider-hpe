@@ -1,8 +1,14 @@
-resource "hpe_morpheus_load_balancer_virtual_server" "example" {
+resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_minimal" {
   load_balancer_id = {{.LoadBalancerId}}
   vip_name         = "{{.VipName}}"
   description      = "{{.Description}}"
   vip_address      = "{{.VipAddress}}"
   vip_port         = {{.VipPort}}
   vip_protocol     = "{{.VipProtocol}}"
+  pool_id          = {{.PoolId}}
+
+  config_nsxt = {
+    application_profile = {{.ApplicationProfile}}
+    persistence         = ""
+  }
 }
