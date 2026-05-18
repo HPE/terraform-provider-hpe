@@ -18,8 +18,8 @@ func RenderDataSourceByIDConfig(t *testing.T, overrides map[string]string) (stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"NetworkIntegrationId": "128",
-		"Id":                   "233264",
+		"NetworkIntegrationId": "5",
+		"Id":                   "65",
 	}
 
 	for key, value := range overrides {
@@ -50,8 +50,8 @@ func RenderDataSourceByNameConfig(t *testing.T, overrides map[string]string) (st
 	t.Helper()
 
 	defaults := map[string]string{
-		"NetworkIntegrationId": "128",
-		"Name":                 "dg-test-policy",
+		"NetworkIntegrationId": "5",
+		"Name":                 "TerraformTestGroup",
 	}
 
 	for key, value := range overrides {
