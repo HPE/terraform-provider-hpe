@@ -5,29 +5,17 @@ package loadbalancervirtualserver
 import (
 	"context"
 	"fmt"
-	"github.com/HPE/terraform-provider-hpe/utils/validators"
-	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema {
+func LoadBalancerVirtualServerDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
@@ -37,57 +25,36 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Computed: true,
 			},
 			"config": schema.DynamicAttribute{
-				Optional:            true,
+				Computed:            true,
 				Description:         "Generic virtual server configuration object. Settings vary by load balancer type.",
 				MarkdownDescription: "Generic virtual server configuration object. Settings vary by load balancer type.",
-				PlanModifiers: []planmodifier.Dynamic{
-					dynamicplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.Dynamic{
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nsxt")}...),
-				},
 			},
 			"config_nsxt": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"application_profile": schema.Int64Attribute{
-						Optional:            true,
+						Computed:            true,
 						Description:         "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
 						MarkdownDescription: "The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
 					},
 					"persistence": schema.StringAttribute{
-						Optional:            true,
-						Description:         "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
-						MarkdownDescription: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.",
-						Validators: []validator.String{
-							stringvalidator.OneOf("SOURCE_IP", "COOKIE", ""),
-							validators.RequiresNonEmptyStringAlsoRequiresInt64At("persistence_profile"),
-						},
+						Computed:            true,
+						Description:         "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled).",
+						MarkdownDescription: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled).",
 					},
 					"persistence_profile": schema.Int64Attribute{
-						Optional:            true,
-						Description:         "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
-						MarkdownDescription: "The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.",
-						Validators: []validator.Int64{
-							int64validator.AlsoRequires(path.Expressions{
-								path.MatchRelative().AtParent().AtName("persistence"),
-							}...),
-						},
+						Computed:            true,
+						Description:         "The persistence profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The persistence profile ID (`NetworkLoadBalancerProfile`).",
 					},
 					"ssl_client_profile": schema.Int64Attribute{
-						Optional:            true,
-						Description:         "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
-						MarkdownDescription: "The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.",
-						Validators: []validator.Int64{
-							validators.RequiresNonZeroInt64At("ssl_cert"),
-						},
+						Computed:            true,
+						Description:         "The SSL client profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The SSL client profile ID (`NetworkLoadBalancerProfile`).",
 					},
 					"ssl_server_profile": schema.Int64Attribute{
-						Optional:            true,
-						Description:         "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
-						MarkdownDescription: "The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.",
-						Validators: []validator.Int64{
-							validators.RequiresNonZeroInt64At("ssl_server_cert"),
-						},
+						Computed:            true,
+						Description:         "The SSL server profile ID (`NetworkLoadBalancerProfile`).",
+						MarkdownDescription: "The SSL server profile ID (`NetworkLoadBalancerProfile`).",
 					},
 				},
 				CustomType: ConfigNsxtType{
@@ -95,23 +62,15 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 						AttrTypes: ConfigNsxtValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional:            true,
+				Computed:            true,
 				Description:         "NSX-T virtual server configuration",
 				MarkdownDescription: "NSX-T virtual server configuration",
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
-				},
 			},
 			"date_created": schema.StringAttribute{
 				Computed: true,
 			},
 			"description": schema.StringAttribute{
-				Optional:            true,
-				Description:         "Description",
-				MarkdownDescription: "Description",
+				Computed: true,
 			},
 			"external_address": schema.BoolAttribute{
 				Computed: true,
@@ -126,10 +85,10 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Computed: true,
 			},
 			"id": schema.Int64Attribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "The ID of the load balancer virtual server",
+				MarkdownDescription: "The ID of the load balancer virtual server",
 			},
 			"instance": schema.StringAttribute{
 				Computed: true,
@@ -176,25 +135,38 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 						AttrTypes: LoadBalancerValue{}.AttributeTypes(ctx),
 					},
 				},
-				Computed:            true,
-				Description:         "The parent load balancer",
-				MarkdownDescription: "The parent load balancer",
+				Computed: true,
 			},
 			"load_balancer_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the load balancer this virtual server belongs to",
 				MarkdownDescription: "The ID of the load balancer this virtual server belongs to",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(), // force new,
-				},
 			},
 			"network_id": schema.StringAttribute{
 				Computed: true,
 			},
+			"pool": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: PoolType{
+					ObjectType: types.ObjectType{
+						AttrTypes: PoolValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "Backend server pool assigned to this virtual server.",
+				MarkdownDescription: "Backend server pool assigned to this virtual server.",
+			},
 			"pool_id": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "The ID of the load balancer pool to assign to this virtual server.",
-				MarkdownDescription: "The ID of the load balancer pool to assign to this virtual server.",
+				Computed:            true,
+				Description:         "The ID of the load balancer pool assigned to this virtual server.",
+				MarkdownDescription: "The ID of the load balancer pool assigned to this virtual server.",
 			},
 			"pool_name": schema.StringAttribute{
 				Computed: true,
@@ -214,10 +186,21 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"source_address": schema.StringAttribute{
 				Computed: true,
 			},
-			"ssl_cert": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "SSL Client Certificate ID. Use `0` for none.",
-				MarkdownDescription: "SSL Client Certificate ID. Use `0` for none.",
+			"ssl_cert": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: SslCertType{
+					ObjectType: types.ObjectType{
+						AttrTypes: SslCertValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
 			},
 			"ssl_enabled": schema.StringAttribute{
 				Computed: true,
@@ -228,10 +211,21 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 			"ssl_redirect_mode": schema.StringAttribute{
 				Computed: true,
 			},
-			"ssl_server_cert": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "SSL Server Certificate ID. Use `0` for none.",
-				MarkdownDescription: "SSL Server Certificate ID. Use `0` for none.",
+			"ssl_server_cert": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+					"name": schema.StringAttribute{
+						Computed: true,
+					},
+				},
+				CustomType: SslServerCertType{
+					ObjectType: types.ObjectType{
+						AttrTypes: SslServerCertValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed: true,
 			},
 			"status": schema.StringAttribute{
 				Computed: true,
@@ -243,10 +237,7 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Computed: true,
 			},
 			"vip_address": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "VIP Address. Required when `vip_pool` is not set.",
-				MarkdownDescription: "VIP Address. Required when `vip_pool` is not set.",
+				Computed: true,
 			},
 			"vip_balance": schema.StringAttribute{
 				Computed: true,
@@ -255,9 +246,7 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Computed: true,
 			},
 			"vip_hostname": schema.StringAttribute{
-				Optional:            true,
-				Description:         "VIP Hostname",
-				MarkdownDescription: "VIP Hostname",
+				Computed: true,
 			},
 			"vip_mode": schema.StringAttribute{
 				Computed: true,
@@ -268,25 +257,22 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Description:         "VIP Name",
 				MarkdownDescription: "VIP Name",
 			},
-			"vip_pool": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.",
-				MarkdownDescription: "Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.",
+			"vip_pool": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{},
+				CustomType: VipPoolType{
+					ObjectType: types.ObjectType{
+						AttrTypes: VipPoolValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "Network Pool used for VIP address allocation, if set.",
+				MarkdownDescription: "Network Pool used for VIP address allocation, if set.",
 			},
 			"vip_port": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "VIP Port",
-				MarkdownDescription: "VIP Port",
+				Computed: true,
 			},
 			"vip_protocol": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`.",
-				MarkdownDescription: "VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`.",
-				Validators: []validator.String{
-					stringvalidator.OneOf("http", "tcp", "udp"),
-				},
+				Computed: true,
 			},
 			"vip_scheme": schema.StringAttribute{
 				Computed: true,
@@ -304,66 +290,61 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Computed: true,
 			},
 			"vip_type": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
-				MarkdownDescription: "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Computed: true,
 			},
 		},
 	}
 }
 
 type LoadBalancerVirtualServerModel struct {
-	Active           types.Bool        `tfsdk:"active"`
-	BackendPort      types.String      `tfsdk:"backend_port"`
-	Config           types.Dynamic     `tfsdk:"config"`
-	ConfigNsxt       ConfigNsxtValue   `tfsdk:"config_nsxt"`
-	DateCreated      types.String      `tfsdk:"date_created"`
-	Description      types.String      `tfsdk:"description"`
-	ExternalAddress  types.Bool        `tfsdk:"external_address"`
-	ExternalId       types.String      `tfsdk:"external_id"`
-	ExternalPortId   types.String      `tfsdk:"external_port_id"`
-	ExtraConfig      types.String      `tfsdk:"extra_config"`
-	Id               types.Int64       `tfsdk:"id"`
-	Instance         types.String      `tfsdk:"instance"`
-	InternalId       types.String      `tfsdk:"internal_id"`
-	LastUpdated      types.String      `tfsdk:"last_updated"`
-	LoadBalancer     LoadBalancerValue `tfsdk:"load_balancer"`
-	LoadBalancerId   types.Int64       `tfsdk:"load_balancer_id"`
-	NetworkId        types.String      `tfsdk:"network_id"`
-	PoolId           types.Int64       `tfsdk:"pool_id"`
-	PoolName         types.String      `tfsdk:"pool_name"`
-	Removing         types.Bool        `tfsdk:"removing"`
-	ServerName       types.String      `tfsdk:"server_name"`
-	ServiceAccess    types.String      `tfsdk:"service_access"`
-	ServicePort      types.String      `tfsdk:"service_port"`
-	SourceAddress    types.String      `tfsdk:"source_address"`
-	SslCert          types.Int64       `tfsdk:"ssl_cert"`
-	SslEnabled       types.String      `tfsdk:"ssl_enabled"`
-	SslMode          types.String      `tfsdk:"ssl_mode"`
-	SslRedirectMode  types.String      `tfsdk:"ssl_redirect_mode"`
-	SslServerCert    types.Int64       `tfsdk:"ssl_server_cert"`
-	Status           types.String      `tfsdk:"status"`
-	Sticky           types.Bool        `tfsdk:"sticky"`
-	SubnetId         types.String      `tfsdk:"subnet_id"`
-	VipAddress       types.String      `tfsdk:"vip_address"`
-	VipBalance       types.String      `tfsdk:"vip_balance"`
-	VipDirectAddress types.String      `tfsdk:"vip_direct_address"`
-	VipHostname      types.String      `tfsdk:"vip_hostname"`
-	VipMode          types.String      `tfsdk:"vip_mode"`
-	VipName          types.String      `tfsdk:"vip_name"`
-	VipPool          types.Int64       `tfsdk:"vip_pool"`
-	VipPort          types.Int64       `tfsdk:"vip_port"`
-	VipProtocol      types.String      `tfsdk:"vip_protocol"`
-	VipScheme        types.String      `tfsdk:"vip_scheme"`
-	VipShared        types.Bool        `tfsdk:"vip_shared"`
-	VipSource        types.String      `tfsdk:"vip_source"`
-	VipStatus        types.String      `tfsdk:"vip_status"`
-	VipSticky        types.String      `tfsdk:"vip_sticky"`
-	VipType          types.String      `tfsdk:"vip_type"`
+	Active           types.Bool         `tfsdk:"active"`
+	BackendPort      types.String       `tfsdk:"backend_port"`
+	Config           types.Dynamic      `tfsdk:"config"`
+	ConfigNsxt       ConfigNsxtValue    `tfsdk:"config_nsxt"`
+	DateCreated      types.String       `tfsdk:"date_created"`
+	Description      types.String       `tfsdk:"description"`
+	ExternalAddress  types.Bool         `tfsdk:"external_address"`
+	ExternalId       types.String       `tfsdk:"external_id"`
+	ExternalPortId   types.String       `tfsdk:"external_port_id"`
+	ExtraConfig      types.String       `tfsdk:"extra_config"`
+	Id               types.Int64        `tfsdk:"id"`
+	Instance         types.String       `tfsdk:"instance"`
+	InternalId       types.String       `tfsdk:"internal_id"`
+	LastUpdated      types.String       `tfsdk:"last_updated"`
+	LoadBalancer     LoadBalancerValue  `tfsdk:"load_balancer"`
+	LoadBalancerId   types.Int64        `tfsdk:"load_balancer_id"`
+	NetworkId        types.String       `tfsdk:"network_id"`
+	Pool             PoolValue          `tfsdk:"pool"`
+	PoolId           types.Int64        `tfsdk:"pool_id"`
+	PoolName         types.String       `tfsdk:"pool_name"`
+	Removing         types.Bool         `tfsdk:"removing"`
+	ServerName       types.String       `tfsdk:"server_name"`
+	ServiceAccess    types.String       `tfsdk:"service_access"`
+	ServicePort      types.String       `tfsdk:"service_port"`
+	SourceAddress    types.String       `tfsdk:"source_address"`
+	SslCert          SslCertValue       `tfsdk:"ssl_cert"`
+	SslEnabled       types.String       `tfsdk:"ssl_enabled"`
+	SslMode          types.String       `tfsdk:"ssl_mode"`
+	SslRedirectMode  types.String       `tfsdk:"ssl_redirect_mode"`
+	SslServerCert    SslServerCertValue `tfsdk:"ssl_server_cert"`
+	Status           types.String       `tfsdk:"status"`
+	Sticky           types.Bool         `tfsdk:"sticky"`
+	SubnetId         types.String       `tfsdk:"subnet_id"`
+	VipAddress       types.String       `tfsdk:"vip_address"`
+	VipBalance       types.String       `tfsdk:"vip_balance"`
+	VipDirectAddress types.String       `tfsdk:"vip_direct_address"`
+	VipHostname      types.String       `tfsdk:"vip_hostname"`
+	VipMode          types.String       `tfsdk:"vip_mode"`
+	VipName          types.String       `tfsdk:"vip_name"`
+	VipPool          VipPoolValue       `tfsdk:"vip_pool"`
+	VipPort          types.Int64        `tfsdk:"vip_port"`
+	VipProtocol      types.String       `tfsdk:"vip_protocol"`
+	VipScheme        types.String       `tfsdk:"vip_scheme"`
+	VipShared        types.Bool         `tfsdk:"vip_shared"`
+	VipSource        types.String       `tfsdk:"vip_source"`
+	VipStatus        types.String       `tfsdk:"vip_status"`
+	VipSticky        types.String       `tfsdk:"vip_sticky"`
+	VipType          types.String       `tfsdk:"vip_type"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxtType{}
@@ -1882,4 +1863,1425 @@ func (v TypeValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"id":   basetypes.Int64Type{},
 		"name": basetypes.StringType{},
 	}
+}
+
+var _ basetypes.ObjectTypable = PoolType{}
+
+type PoolType struct {
+	basetypes.ObjectType
+}
+
+func (t PoolType) Equal(o attr.Type) bool {
+	other, ok := o.(PoolType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PoolType) String() string {
+	return "PoolType"
+}
+
+func (t PoolType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPoolValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPoolValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PoolValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPoolValueNull() PoolValue {
+	return PoolValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPoolValueUnknown() PoolValue {
+	return PoolValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPoolValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PoolValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PoolValue Attribute Value",
+				"While creating a PoolValue value, a missing attribute value was detected. "+
+					"A PoolValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PoolValue Attribute Type",
+				"While creating a PoolValue value, an invalid attribute value was detected. "+
+					"A PoolValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PoolValue Attribute Value",
+				"While creating a PoolValue value, an extra attribute value was detected. "+
+					"A PoolValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PoolValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPoolValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewPoolValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewPoolValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPoolValueUnknown(), diags
+	}
+
+	return PoolValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPoolValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PoolValue {
+	object, diags := NewPoolValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPoolValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PoolType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPoolValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPoolValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPoolValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPoolValueMust(PoolValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PoolType) ValueType(ctx context.Context) attr.Value {
+	return PoolValue{}
+}
+
+var _ basetypes.ObjectValuable = PoolValue{}
+
+type PoolValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v PoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PoolValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PoolValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PoolValue) String() string {
+	return "PoolValue"
+}
+
+func (v PoolValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v PoolValue) Equal(o attr.Value) bool {
+	other, ok := o.(PoolValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v PoolValue) Type(ctx context.Context) attr.Type {
+	return PoolType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PoolValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = SslCertType{}
+
+type SslCertType struct {
+	basetypes.ObjectType
+}
+
+func (t SslCertType) Equal(o attr.Type) bool {
+	other, ok := o.(SslCertType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t SslCertType) String() string {
+	return "SslCertType"
+}
+
+func (t SslCertType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewSslCertValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSslCertValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return SslCertValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSslCertValueNull() SslCertValue {
+	return SslCertValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewSslCertValueUnknown() SslCertValue {
+	return SslCertValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewSslCertValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (SslCertValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing SslCertValue Attribute Value",
+				"While creating a SslCertValue value, a missing attribute value was detected. "+
+					"A SslCertValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SslCertValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid SslCertValue Attribute Type",
+				"While creating a SslCertValue value, an invalid attribute value was detected. "+
+					"A SslCertValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SslCertValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("SslCertValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra SslCertValue Attribute Value",
+				"While creating a SslCertValue value, an extra attribute value was detected. "+
+					"A SslCertValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra SslCertValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewSslCertValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewSslCertValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewSslCertValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewSslCertValueUnknown(), diags
+	}
+
+	return SslCertValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSslCertValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) SslCertValue {
+	object, diags := NewSslCertValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewSslCertValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t SslCertType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewSslCertValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewSslCertValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSslCertValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewSslCertValueMust(SslCertValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t SslCertType) ValueType(ctx context.Context) attr.Value {
+	return SslCertValue{}
+}
+
+var _ basetypes.ObjectValuable = SslCertValue{}
+
+type SslCertValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v SslCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v SslCertValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v SslCertValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v SslCertValue) String() string {
+	return "SslCertValue"
+}
+
+func (v SslCertValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v SslCertValue) Equal(o attr.Value) bool {
+	other, ok := o.(SslCertValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v SslCertValue) Type(ctx context.Context) attr.Type {
+	return SslCertType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v SslCertValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = SslServerCertType{}
+
+type SslServerCertType struct {
+	basetypes.ObjectType
+}
+
+func (t SslServerCertType) Equal(o attr.Type) bool {
+	other, ok := o.(SslServerCertType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t SslServerCertType) String() string {
+	return "SslServerCertType"
+}
+
+func (t SslServerCertType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewSslServerCertValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSslServerCertValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return SslServerCertValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSslServerCertValueNull() SslServerCertValue {
+	return SslServerCertValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewSslServerCertValueUnknown() SslServerCertValue {
+	return SslServerCertValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewSslServerCertValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (SslServerCertValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing SslServerCertValue Attribute Value",
+				"While creating a SslServerCertValue value, a missing attribute value was detected. "+
+					"A SslServerCertValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SslServerCertValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid SslServerCertValue Attribute Type",
+				"While creating a SslServerCertValue value, an invalid attribute value was detected. "+
+					"A SslServerCertValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SslServerCertValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("SslServerCertValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra SslServerCertValue Attribute Value",
+				"While creating a SslServerCertValue value, an extra attribute value was detected. "+
+					"A SslServerCertValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra SslServerCertValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewSslServerCertValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewSslServerCertValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewSslServerCertValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewSslServerCertValueUnknown(), diags
+	}
+
+	return SslServerCertValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSslServerCertValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) SslServerCertValue {
+	object, diags := NewSslServerCertValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewSslServerCertValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t SslServerCertType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewSslServerCertValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewSslServerCertValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSslServerCertValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewSslServerCertValueMust(SslServerCertValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t SslServerCertType) ValueType(ctx context.Context) attr.Value {
+	return SslServerCertValue{}
+}
+
+var _ basetypes.ObjectValuable = SslServerCertValue{}
+
+type SslServerCertValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v SslServerCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v SslServerCertValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v SslServerCertValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v SslServerCertValue) String() string {
+	return "SslServerCertValue"
+}
+
+func (v SslServerCertValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v SslServerCertValue) Equal(o attr.Value) bool {
+	other, ok := o.(SslServerCertValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v SslServerCertValue) Type(ctx context.Context) attr.Type {
+	return SslServerCertType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v SslServerCertValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = VipPoolType{}
+
+type VipPoolType struct {
+	basetypes.ObjectType
+}
+
+func (t VipPoolType) Equal(o attr.Type) bool {
+	other, ok := o.(VipPoolType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t VipPoolType) String() string {
+	return "VipPoolType"
+}
+
+func (t VipPoolType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return VipPoolValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVipPoolValueNull() VipPoolValue {
+	return VipPoolValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewVipPoolValueUnknown() VipPoolValue {
+	return VipPoolValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewVipPoolValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (VipPoolValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing VipPoolValue Attribute Value",
+				"While creating a VipPoolValue value, a missing attribute value was detected. "+
+					"A VipPoolValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VipPoolValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid VipPoolValue Attribute Type",
+				"While creating a VipPoolValue value, an invalid attribute value was detected. "+
+					"A VipPoolValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VipPoolValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("VipPoolValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra VipPoolValue Attribute Value",
+				"While creating a VipPoolValue value, an extra attribute value was detected. "+
+					"A VipPoolValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra VipPoolValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewVipPoolValueUnknown(), diags
+	}
+
+	if diags.HasError() {
+		return NewVipPoolValueUnknown(), diags
+	}
+
+	return VipPoolValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVipPoolValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) VipPoolValue {
+	object, diags := NewVipPoolValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewVipPoolValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t VipPoolType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewVipPoolValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewVipPoolValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewVipPoolValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewVipPoolValueMust(VipPoolValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t VipPoolType) ValueType(ctx context.Context) attr.Value {
+	return VipPoolValue{}
+}
+
+var _ basetypes.ObjectValuable = VipPoolValue{}
+
+type VipPoolValue struct {
+	state attr.ValueState
+}
+
+func (v VipPoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 0)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 0)
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v VipPoolValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v VipPoolValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v VipPoolValue) String() string {
+	return "VipPoolValue"
+}
+
+func (v VipPoolValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{})
+
+	return objVal, diags
+}
+
+func (v VipPoolValue) Equal(o attr.Value) bool {
+	other, ok := o.(VipPoolValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	return true
+}
+
+func (v VipPoolValue) Type(ctx context.Context) attr.Type {
+	return VipPoolType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v VipPoolValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{}
 }

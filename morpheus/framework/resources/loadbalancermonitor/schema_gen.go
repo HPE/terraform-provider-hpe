@@ -160,8 +160,8 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 			"receive_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The expected HTTP response status codes for a successful health check (e.g. 200,201,204)",
-				MarkdownDescription: "The expected HTTP response status codes for a successful health check (e.g. 200,201,204)",
+				Description:         "A comma-separated list of HTTP status codes expected for a successful health check (e.g. \"200\" or \"200,201\")",
+				MarkdownDescription: "A comma-separated list of HTTP status codes expected for a successful health check (e.g. \"200\" or \"200,201\")",
 			},
 			"receive_data": schema.StringAttribute{
 				Optional:            true,
