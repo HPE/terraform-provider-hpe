@@ -34,7 +34,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -419,34 +419,39 @@ func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T)
 		t.Fatal(err)
 	}
 
+	config := providerConfig + resourceConfig
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
 			t, morpheus.New(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + resourceConfig,
-				PlanOnly: false,
+				Config: config,
 			},
 			{
+				Config:        config,
 				ImportState:   true,
 				ImportStateId: "128:1",
 				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
 				ExpectError:   regexp.MustCompile(`expected format 'network_integration_id\.id\.external_type'`),
 			},
 			{
+				Config:        config,
 				ImportState:   true,
 				ImportStateId: "notanumber.1.SecurityPolicy",
 				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
 				ExpectError:   regexp.MustCompile(`network_integration_id.*is invalid \(non-number\)`),
 			},
 			{
+				Config:        config,
 				ImportState:   true,
 				ImportStateId: "128.notanumber.SecurityPolicy",
 				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
 				ExpectError:   regexp.MustCompile(`id.*is invalid \(non-number\)`),
 			},
 			{
+				Config:        config,
 				ImportState:   true,
 				ImportStateId: "128.1.",
 				ResourceName:  "hpe_morpheus_network_firewall_rule_group.example",
