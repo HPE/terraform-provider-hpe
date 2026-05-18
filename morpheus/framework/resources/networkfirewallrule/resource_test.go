@@ -158,7 +158,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["network_integration_id"] + ":" + rs.Primary.Attributes["id"], nil
+					return rs.Primary.Attributes["network_integration_id"] + "." + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_firewall_rule.example",
 			},
@@ -430,7 +430,7 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 			},
 			{
 				ImportState:   true,
-				ImportStateId: "abc:def",
+				ImportStateId: "abc.def",
 				ResourceName:  "hpe_morpheus_network_firewall_rule.example",
 				ExpectError:   regexp.MustCompile(`non-number`),
 			},
