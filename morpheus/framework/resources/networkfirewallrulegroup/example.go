@@ -20,7 +20,7 @@ func RenderNetworkFirewallRuleGroupConfig(
 	t.Helper()
 
 	defaults := map[string]string{
-		"NetworkIntegrationId": "128",
+		"NetworkIntegrationId": "5",
 		"Name":                 "Example Firewall Rule Group",
 		"ExternalType":         "SecurityPolicy",
 		"Description":          "An example firewall rule group",
