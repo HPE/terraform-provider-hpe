@@ -18,12 +18,12 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ":", 2)
+	parts := strings.SplitN(req.ID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network_firewall_rule resource",
 			fmt.Sprintf(
-				"provided import ID %q is invalid; expected format 'network_integration_id:rule_id'",
+				"provided import ID %q is invalid; expected format 'network_integration_id.rule_id'",
 				req.ID,
 			),
 		)
