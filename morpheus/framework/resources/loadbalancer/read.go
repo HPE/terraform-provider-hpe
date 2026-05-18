@@ -54,15 +54,24 @@ func getLoadBalancerAsState(
 	// so these must be preserved from plan/state. After import they will be null.
 	state.GroupId = plan.GroupId
 	state.NetworkServerId = plan.NetworkServerId
-	if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+
+	// Check if load balancer is HAProxy or NSX-T based on returned type code
+	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
+	isNSXT := data.Type.Code != nil && *data.Type.Code == typeCodeNSXT
+
+	switch {
+	case isHAProxy && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
+		// HAProxy sets code as null in state on read
+		state.TypeCode = types.StringNull()
+	case !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown():
 		state.TypeCode = plan.TypeCode
-	} else {
+	default:
 		state.TypeCode = convert.StrToType(data.Type.Code)
 	}
 
-	// Set config from the normalized type code on state.
-	switch state.TypeCode.ValueString() {
-	case typeCodeHAProxy:
+	// Set config based on the load balancer type code from the API.
+	switch {
+	case isHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
@@ -71,7 +80,7 @@ func getLoadBalancerAsState(
 		state.ConfigHaproxy = haproxyCfg
 		state.ConfigNsxt = NewConfigNsxtValueNull()
 		state.Config = types.DynamicNull()
-	case typeCodeNSXT:
+	case isNSXT:
 		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
