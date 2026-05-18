@@ -129,7 +129,7 @@ func dataSourceAnsibleTowerInventoryRead(
 				break
 			}
 		} else if value != 0 {
-			if value == allInventories[i].Value {
+			if v, ok := allInventories[i].Value.(float64); ok && value == int(v) {
 				inventory = allInventories[i]
 
 				break
@@ -140,8 +140,8 @@ func dataSourceAnsibleTowerInventoryRead(
 	}
 
 	var inventoryValue int
-	if v, ok := inventory.Value.(int); ok {
-		inventoryValue = v
+	if v, ok := inventory.Value.(float64); ok {
+		inventoryValue = int(v)
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("inventory.Value", inventory.Value))
 	}
