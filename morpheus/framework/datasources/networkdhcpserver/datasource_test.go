@@ -160,8 +160,8 @@ func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_network_dhcp_server" "test" {
-        id                     = 1
-        name                   = "______"
+        id                = 1
+        name              = "______"
         network_integration_id = 1
       }`
 
