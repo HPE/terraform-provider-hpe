@@ -86,16 +86,16 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				Attributes: map[string]schema.Attribute{
 					"admin_state": schema.BoolAttribute{
 						Optional:            true,
-						Description:         "If true then admin State rule will be active/enabled.",
-						MarkdownDescription: "If true then admin State rule will be active/enabled.",
+						Description:         "If true then Admin State will be active/enabled.",
+						MarkdownDescription: "If true then Admin State will be active/enabled.",
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.RequiresReplace(),
 						},
 					},
 					"log_level": schema.StringAttribute{
 						Optional:            true,
-						Description:         "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
-						MarkdownDescription: "In Filter. Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
+						Description:         "Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
+						MarkdownDescription: "Supported Values are \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\", \"ALERT\", \"EMERGENCY\"",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
@@ -105,8 +105,8 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"size": schema.StringAttribute{
 						Optional:            true,
-						Description:         "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
-						MarkdownDescription: "In Filter. Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
+						Description:         "Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
+						MarkdownDescription: "Supported Values are \"SMALL\", \"MEDIUM\", \"LARGE\"",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
