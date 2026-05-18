@@ -18,8 +18,8 @@ func RenderNetworkFirewallRuleByNameConfig(t *testing.T, overrides map[string]st
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                 "test-rule-api-015",
-		"NetworkIntegrationId": "16",
+		"Name":                 "TerraformTestRule",
+		"NetworkIntegrationId": "5",
 	}
 
 	for key, value := range overrides {
@@ -50,8 +50,8 @@ func RenderNetworkFirewallRuleByIdConfig(t *testing.T, overrides map[string]stri
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id":                   "1683563",
-		"NetworkIntegrationId": "16",
+		"Id":                   "80",
+		"NetworkIntegrationId": "5",
 	}
 
 	for key, value := range overrides {
