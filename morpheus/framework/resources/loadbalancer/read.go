@@ -228,26 +228,26 @@ func parseNsxtConfig(
 	ctx context.Context,
 	configMap map[string]interface{},
 ) (ConfigNsxtValue, error) {
-	var adminState bool
-	var logLevel string
-	var size string
+	adminStateValue := types.BoolNull()
+	logLevelValue := types.StringNull()
+	sizeValue := types.StringNull()
 	var tier1 string
 
 	if adminStateRaw, ok := configMap["adminState"]; ok {
 		if v, ok := adminStateRaw.(bool); ok {
-			adminState = v
+			adminStateValue = types.BoolValue(v)
 		}
 	}
 
 	if logLevelRaw, ok := configMap["loglevel"]; ok {
 		if v, ok := logLevelRaw.(string); ok {
-			logLevel = v
+			logLevelValue = types.StringValue(v)
 		}
 	}
 
 	if sizeRaw, ok := configMap["size"]; ok {
 		if v, ok := sizeRaw.(string); ok {
-			size = v
+			sizeValue = types.StringValue(v)
 		}
 	}
 
@@ -260,9 +260,9 @@ func parseNsxtConfig(
 	cfg, d := NewConfigNsxtValue(
 		ConfigNsxtValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
-			"admin_state":   types.BoolValue(adminState),
-			"log_level":     types.StringValue(logLevel),
-			"size":          types.StringValue(size),
+			"admin_state":   adminStateValue,
+			"log_level":     logLevelValue,
+			"size":          sizeValue,
 			"tier1_gateway": types.StringValue(tier1),
 		},
 	)
