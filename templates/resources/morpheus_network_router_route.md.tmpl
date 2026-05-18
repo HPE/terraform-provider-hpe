@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Used to create and delete Router routes.
+
+~> **Note:** Update is not supported for this resource. Any change to the resource configuration will result in the existing resource being destroyed and a new one being created.
+
+## Example Usage
+
+{{ tffile "examples/resources/hpe_morpheus_network_router_route/resource.tf" }}
+
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network router routes can be imported using the `router_id.id` format, e.g.
+
+{{ codefile "shell" "examples/resources/hpe_morpheus_network_router_route/import.sh" }}
