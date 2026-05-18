@@ -118,9 +118,9 @@ Required:
 
 Optional:
 
-- `admin_state` (Boolean) If true then admin State rule will be active/enabled.
-- `log_level` (String) In Filter. Supported Values are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"
-- `size` (String) In Filter. Supported Values are "SMALL", "MEDIUM", "LARGE"
+- `admin_state` (Boolean) If true then Admin State will be active/enabled.
+- `log_level` (String) Supported Values are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"
+- `size` (String) Supported Values are "SMALL", "MEDIUM", "LARGE"
 
 
 <a id="nestedatt--permissions"></a>
