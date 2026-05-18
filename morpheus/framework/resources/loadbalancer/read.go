@@ -45,30 +45,53 @@ func getLoadBalancerAsState(
 	state.Name = convert.StrToType(data.Name)
 	state.Description = convert.StrToType(data.Description)
 	state.Visibility = convert.StrToType(data.Visibility)
-	state.CloudId = convert.Int64ToType(data.Cloud.Id)
+
+	// cloud_id is Optional (not Computed), so preserve configured value from plan/state
+	// to avoid post-apply inconsistencies when API returns an implicit/default cloud.
+	state.CloudId = plan.CloudId
 
 	// The API does not return group or network_server_id on load balancers,
 	// so these must be preserved from plan/state. After import they will be null.
 	state.GroupId = plan.GroupId
 	state.NetworkServerId = plan.NetworkServerId
 
-	// Set config based on the load balancer type.
-	// For HAProxy LBs, parse the API config map into the typed config_haproxy attribute.
-	// For other types, leave both null — the caller preserves config from the plan.
+	// Check if load balancer is HAProxy or NSX-T based on returned type code
 	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy
+	isNSXT := data.Type.Code != nil && *data.Type.Code == typeCodeNSXT
 
 	switch {
 	case isHAProxy && (plan.TypeCode.IsNull() || plan.TypeCode.IsUnknown()):
+		// HAProxy sets code as null in state on read
 		state.TypeCode = types.StringNull()
+	case !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown():
+		state.TypeCode = plan.TypeCode
+	default:
+		state.TypeCode = convert.StrToType(data.Type.Code)
+	}
 
+	// Set config based on the load balancer type code from the API.
+	switch {
+	case isHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}
 
 		state.ConfigHaproxy = haproxyCfg
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+		state.Config = types.DynamicNull()
+	case isNSXT:
+		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
+		if err != nil {
+			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
+		}
+
+		state.ConfigNsxt = nsxtCfg
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.Config = types.DynamicNull()
 	default:
-		state.TypeCode = types.StringValue(*data.Type.Code)
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.ConfigNsxt = NewConfigNsxtValueNull()
 
 		state.Config, err = convert.MapToDynamic(ctx, data.GetConfig())
 		if err != nil {
@@ -210,6 +233,55 @@ func parseHAProxyConfig(
 	return cfg, nil
 }
 
+func parseNsxtConfig(
+	ctx context.Context,
+	configMap map[string]interface{},
+) (ConfigNsxtValue, error) {
+	adminStateValue := types.BoolNull()
+	logLevelValue := types.StringNull()
+	sizeValue := types.StringNull()
+	var tier1 string
+
+	if adminStateRaw, ok := configMap["adminState"]; ok {
+		if v, ok := adminStateRaw.(bool); ok {
+			adminStateValue = types.BoolValue(v)
+		}
+	}
+
+	if logLevelRaw, ok := configMap["loglevel"]; ok {
+		if v, ok := logLevelRaw.(string); ok {
+			logLevelValue = types.StringValue(v)
+		}
+	}
+
+	if sizeRaw, ok := configMap["size"]; ok {
+		if v, ok := sizeRaw.(string); ok {
+			sizeValue = types.StringValue(v)
+		}
+	}
+
+	if tier1Raw, ok := configMap["tier1"]; ok {
+		if v, ok := tier1Raw.(string); ok {
+			tier1 = v
+		}
+	}
+
+	cfg, d := NewConfigNsxtValue(
+		ConfigNsxtValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"admin_state":   adminStateValue,
+			"log_level":     logLevelValue,
+			"size":          sizeValue,
+			"tier1_gateway": types.StringValue(tier1),
+		},
+	)
+	if d.HasError() {
+		return ConfigNsxtValue{}, fmt.Errorf("failed to build config_nsxt value: %s", d.Errors())
+	}
+
+	return cfg, nil
+}
+
 func (r *Resource) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
@@ -239,13 +311,6 @@ func (r *Resource) Read(
 		resp.Diagnostics.AddError("read load balancer resource", err.Error())
 
 		return
-	}
-
-	switch {
-	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		state.ConfigHaproxy = plan.ConfigHaproxy
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		state.Config = plan.Config
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

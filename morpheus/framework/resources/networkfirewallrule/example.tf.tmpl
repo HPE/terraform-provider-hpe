@@ -1,0 +1,41 @@
+resource "hpe_morpheus_network_firewall_rule" "example" {
+  network_integration_id = {{.NetworkIntegrationId}}
+  name        = "{{.Name}}"
+  direction   = "{{.Direction}}"
+  policy      = "{{.Policy}}"
+  enabled     = {{.Enabled}}
+{{- if .Description}}
+  description = "{{.Description}}"
+{{- end}}
+{{- if .Priority}}
+  priority    = {{.Priority}}
+{{- end}}
+
+  rule_group_id = {
+    id = {{.RuleGroupId}}
+  }
+{{- if .SourceIds}}
+
+  sources = {
+    id = [{{.SourceIds}}]
+  }
+{{- end}}
+{{- if .DestinationIds}}
+
+  destinations = {
+    id = [{{.DestinationIds}}]
+  }
+{{- end}}
+{{- if .ScopeIds}}
+
+  scopes = {
+    id = [{{.ScopeIds}}]
+  }
+{{- end}}
+{{- if .ApplicationIds}}
+  application = [{{.ApplicationIds}}]
+{{- end}}
+{{- if .ProfileIds}}
+  profile = [{{.ProfileIds}}]
+{{- end}}
+}
