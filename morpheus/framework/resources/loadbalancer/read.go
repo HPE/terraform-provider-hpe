@@ -46,11 +46,6 @@ func getLoadBalancerAsState(
 	state.Description = convert.StrToType(data.Description)
 	state.Visibility = convert.StrToType(data.Visibility)
 
-	apiTypeCode := ""
-	if data.Type.Code != nil {
-		apiTypeCode = *data.Type.Code
-	}
-
 	// cloud_id is Optional (not Computed), so preserve configured value from plan/state
 	// to avoid post-apply inconsistencies when API returns an implicit/default cloud.
 	state.CloudId = plan.CloudId
@@ -65,8 +60,8 @@ func getLoadBalancerAsState(
 		state.TypeCode = convert.StrToType(data.Type.Code)
 	}
 
-	// Set config from API type code.
-	switch apiTypeCode {
+	// Set config from the normalized type code on state.
+	switch state.TypeCode.ValueString() {
 	case typeCodeHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
 		if err != nil {
