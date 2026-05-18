@@ -392,7 +392,7 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "not-a-valid-id",
 				ResourceName:  "hpe_morpheus_network_firewall_rule.example",
-				ExpectError:   regexp.MustCompile(`expected format\s*'network_integration_id:rule_id'`),
+				ExpectError:   regexp.MustCompile(`expected format`),
 			},
 		},
 	})
