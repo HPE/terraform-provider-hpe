@@ -18,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	networkrouter "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
@@ -42,6 +43,7 @@ func (s SubProvider) GetResources(
 		loadbalancermonitor.NewResource,
 		loadbalancervirtualserver.NewResource,
 		network.NewResource,
+		networkfirewallrulegroup.NewResource,
 		networkdhcpserver.NewResource,
 		networkrouter.NewResource,
 		networkrouterbgpneighbor.NewResource,
