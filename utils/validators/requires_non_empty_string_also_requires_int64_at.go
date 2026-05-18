@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -59,7 +58,7 @@ func (v RequiresNonEmptyStringAlsoRequiresInt64AtValidator) ValidateString(
 				"Missing required sibling attribute",
 				fmt.Sprintf(
 					"Attribute %q must be set when %q is %q.",
-					path.Root(v.SiblingName),
+					siblingPath,
 					request.Path,
 					request.ConfigValue.ValueString(),
 				),

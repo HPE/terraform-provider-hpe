@@ -46,6 +46,8 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
+	// Use port 443 with protocol "http" intentionally: this verifies the API
+	// stores the configured port as-is rather than normalizing based on protocol.
 	vsConfig, err := resourcevs.RenderLoadBalancerVirtualServerNsxtMinimalConfig(t, map[string]string{
 		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
@@ -81,7 +83,7 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 					resource.TestCheckResourceAttr(dsName, "vip_name", vipName),
 					resource.TestCheckResourceAttr(dsName, "description", "datasource test vs"),
 					resource.TestCheckResourceAttr(dsName, "vip_address", "10.0.0.201"),
-					resource.TestCheckResourceAttr(dsName, "vip_port", "80"),
+					resource.TestCheckResourceAttr(dsName, "vip_port", "443"),
 					resource.TestCheckResourceAttr(dsName, "vip_protocol", "http"),
 				),
 			},
@@ -111,6 +113,8 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
+	// Use port 443 with protocol "http" intentionally: this verifies the API
+	// stores the configured port as-is rather than normalizing based on protocol.
 	vsConfig, err := resourcevs.RenderLoadBalancerVirtualServerNsxtMinimalConfig(t, map[string]string{
 		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
@@ -146,7 +150,7 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 					resource.TestCheckResourceAttr(dsName, "vip_name", vipName),
 					resource.TestCheckResourceAttr(dsName, "description", "datasource test vs"),
 					resource.TestCheckResourceAttr(dsName, "vip_address", "10.0.0.202"),
-					resource.TestCheckResourceAttr(dsName, "vip_port", "80"),
+					resource.TestCheckResourceAttr(dsName, "vip_port", "443"),
 					resource.TestCheckResourceAttr(dsName, "vip_protocol", "http"),
 				),
 			},

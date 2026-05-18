@@ -46,6 +46,8 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
+	// Use port 443 with protocol "http" intentionally: this verifies the API
+	// stores the configured port as-is rather than normalizing based on protocol.
 	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtFullConfig(t, map[string]string{
 		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
@@ -374,6 +376,8 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtMinimalExampleOk(t *testing.T) 
 
 	vipName := acctest.RandomWithPrefix(t.Name())
 
+	// Use port 443 with protocol "http" intentionally: this verifies the API
+	// stores the configured port as-is rather than normalizing based on protocol.
 	vsConfig, err := loadbalancervirtualserver.RenderLoadBalancerVirtualServerNsxtMinimalConfig(t, map[string]string{
 		"LoadBalancerId":     "hpe_morpheus_load_balancer.lb.id",
 		"VipName":            vipName,
