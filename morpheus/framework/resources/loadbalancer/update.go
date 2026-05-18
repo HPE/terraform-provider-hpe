@@ -29,24 +29,7 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update load balancer resource",
-			"failed to create client: "+err.Error(),
-		)
-
-		return
-	}
-
 	updateLB := sdk.NewUpdateLoadBalancerRequestLoadBalancerWithDefaults()
-
-	// Morpheus requires the LB type in the PUT body to apply config changes.
-	if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
-		updateLB.AdditionalProperties = map[string]interface{}{
-			"type": plan.TypeCode.ValueString(),
-		}
-	}
 
 	updateLB.SetName(plan.Name.ValueString())
 
@@ -79,6 +62,16 @@ func (r *Resource) Update(
 	updateReq := sdk.NewUpdateLoadBalancerRequest()
 	updateReq.SetLoadBalancer(*updateLB)
 
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update load balancer resource",
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
 	_, hresp, err := client.LoadBalancersAPI.UpdateLoadBalancer(ctx, id).
 		UpdateLoadBalancerRequest(*updateReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -101,6 +94,13 @@ func (r *Resource) Update(
 		return
 	}
 
+	switch {
+	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
+		newState.ConfigHaproxy = plan.ConfigHaproxy
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		newState.Config = plan.Config
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
@@ -110,7 +110,7 @@ func setUpdateConfig(
 	plan LoadBalancerModel,
 ) error {
 	// The update SDK's SetConfig accepts map[string]interface{} (not a typed union
-	// like the create SDK), so we build the map directly.
+	// like the create SDK), so we build the map directly for HAProxy config.
 	switch {
 	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
 		configMap := map[string]interface{}{
@@ -122,10 +122,6 @@ func setUpdateConfig(
 			},
 		}
 		updateLB.SetConfig(configMap)
-
-	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		// config_nsxt attributes are replace-only, so in-place Update should not
-		// send NSX-T config payloads. Replacement is handled by Create/Delete.
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
