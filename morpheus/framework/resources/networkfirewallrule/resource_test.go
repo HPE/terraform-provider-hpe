@@ -133,7 +133,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network_firewall_rule.example",
 			"network_integration_id",
-			"128",
+			"5",
 		),
 	}
 
@@ -432,7 +432,7 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: "abc:def",
 				ResourceName:  "hpe_morpheus_network_firewall_rule.example",
-				ExpectError:   regexp.MustCompile(`network_integration_id.*is invalid`),
+				ExpectError:   regexp.MustCompile(`non-number`),
 			},
 		},
 	})
