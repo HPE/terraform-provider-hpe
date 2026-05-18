@@ -132,13 +132,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	switch {
-	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		state.ConfigHaproxy = plan.ConfigHaproxy
-	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		state.Config = plan.Config
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
@@ -172,6 +165,35 @@ func setCreateConfig(
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
 		cfg.HAProxyLoadBalancerConfigObject = haproxyConfig
+		createLB.SetConfig(cfg)
+
+	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
+		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+			createLB.SetType(plan.TypeCode.ValueString())
+		} else {
+			createLB.SetType(typeCodeNSXT)
+		}
+
+		nsxtConfig := sdk.NewNSXTLoadBalancerConfigObject()
+
+		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
+			nsxtConfig.SetAdminState(plan.ConfigNsxt.AdminState.ValueBool())
+		}
+
+		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
+			nsxtConfig.SetLoglevel(plan.ConfigNsxt.LogLevel.ValueString())
+		}
+
+		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
+			nsxtConfig.SetSize(plan.ConfigNsxt.Size.ValueString())
+		}
+
+		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
+			nsxtConfig.SetTier1(plan.ConfigNsxt.Tier1Gateway.ValueString())
+		}
+
+		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
+		cfg.NSXTLoadBalancerConfigObject = nsxtConfig
 		createLB.SetConfig(cfg)
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
