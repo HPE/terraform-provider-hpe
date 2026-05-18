@@ -360,8 +360,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 
 	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
 		map[string]string{
-			"Name":                 name,
-			"NetworkIntegrationId": "128",
+			"Name": name,
 		},
 	)
 	if err != nil {
