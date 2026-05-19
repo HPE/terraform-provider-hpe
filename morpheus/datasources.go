@@ -16,10 +16,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancermonitor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
@@ -41,10 +47,16 @@ func (SubProvider) GetDataSources(
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,
 		loadbalancer.NewDataSource,
+		loadbalancermonitor.NewDataSource,
+		loadbalancervirtualserver.NewDataSource,
 		network.NewDataSource,
 		networkdhcpserver.NewDataSource,
 		networkdomain.NewDataSource,
+		networkfirewallrule.NewDataSource,
+		networkfirewallrulegroup.NewDataSource,
+		networkrouter.NewDataSource,
 		networkrouterbgpneighbor.NewDataSource,
+		networkrouterroute.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,

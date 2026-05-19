@@ -1,0 +1,19 @@
+resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
+  load_balancer_id = {{.LoadBalancerId}}
+  vip_name         = "{{.VipName}}"
+  description      = "{{.Description}}"
+  vip_address      = "{{.VipAddress}}"
+  vip_port         = {{.VipPort}}
+  vip_protocol     = "{{.VipProtocol}}"
+  pool_id          = {{.PoolId}}
+  ssl_cert         = {{.SslCert}}
+  ssl_server_cert  = {{.SslServerCert}}
+
+  config_nsxt = {
+    application_profile = {{.ApplicationProfile}}
+    persistence         = "{{.Persistence}}"
+    persistence_profile = {{.PersistenceProfile}}
+    ssl_client_profile  = {{.SslClientProfile}}
+    ssl_server_profile  = {{.SslServerProfile}}
+  }
+}

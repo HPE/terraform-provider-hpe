@@ -87,6 +87,7 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 - `cloud_id` (Number) The ID of the cloud associated with the load balancer
 - `config` (Dynamic) Configuration object with parameters that vary by load balancer type.
 - `config_haproxy` (Attributes) Configuration for HAProxy container load balancer type (see [below for nested schema](#nestedatt--config_haproxy))
+- `config_nsxt` (Attributes) Configuration for NSX-T load balancer type (see [below for nested schema](#nestedatt--config_nsxt))
 - `description` (String) Description
 - `group_id` (Number) The ID of the group associated with the load balancer
 - `network_server_id` (Number) Network Server ID
@@ -106,6 +107,20 @@ Required:
 
 - `plan_id` (Number) The ID of the service plan for the HAProxy load balancer
 - `pool` (String) The ID of the network pool for the HAProxy load balancer
+
+
+<a id="nestedatt--config_nsxt"></a>
+### Nested Schema for `config_nsxt`
+
+Required:
+
+- `tier1_gateway` (String) Provider ID of the Tier-1 Gateway. provider_id can be found in the hpe_morpheus_network_router datasource.
+
+Optional:
+
+- `admin_state` (Boolean) If true then Admin State will be active/enabled.
+- `log_level` (String) Supported Values are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"
+- `size` (String) Supported Values are "SMALL", "MEDIUM", "LARGE"
 
 
 <a id="nestedatt--permissions"></a>

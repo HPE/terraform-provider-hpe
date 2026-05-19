@@ -1,0 +1,46 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus load balancer health check monitor.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus load balancer health check monitor. This data source can be used to look up an existing monitor by ID or name to reference its attributes in other resources.
+
+The `monitor_type` value returned by the API varies by load balancer type:
+
+### NSX-T
+
+| Value | Description |
+|-------|-------------|
+| `LBHttpMonitorProfile` | HTTP active monitor |
+| `LBHttpsMonitorProfile` | HTTPS active monitor |
+| `LBIcmpMonitorProfile` | ICMP ping monitor |
+| `LBPassiveMonitorProfile` | Passive health monitor |
+| `LBTcpMonitorProfile` | TCP connection monitor |
+| `LBUdpMonitorProfile` | UDP datagram monitor |
+
+### NSX-V
+
+| Value | Description |
+|-------|-------------|
+| `dns` | DNS query monitor |
+| `http` | HTTP health check |
+| `https` | HTTPS health check |
+| `ldap` | LDAP bind monitor |
+| `mssql` | Microsoft SQL Server monitor |
+| `tcp` | TCP connection monitor |
+| `udp` | UDP datagram monitor |
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_monitor/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_monitor/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

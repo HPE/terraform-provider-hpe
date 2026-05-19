@@ -1,0 +1,33 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+### Dynamic config
+
+{{ tffile "examples/resources/morpheus_network_router/example_generic.tf" }}
+
+### NSX-T gateway Tier-0 config
+
+{{ tffile "examples/resources/morpheus_network_router/example_nsxt_gateway_tier0.tf" }}
+
+### NSX-T gateway Tier-1 config
+
+{{ tffile "examples/resources/morpheus_network_router/example_nsxt_gateway_tier1.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network routers can be imported using their ID:
+
+```shell
+terraform import hpe_morpheus_network_router.example 42
+```

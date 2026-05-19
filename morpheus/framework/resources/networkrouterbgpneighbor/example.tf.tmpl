@@ -1,0 +1,9 @@
+resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
+  router_id            = {{.RouterId}}
+  ip_address           = "{{.IpAddress}}"
+  description          = "{{.Description}}"
+  remote_as            = "{{.RemoteAs}}"
+  weight               = {{.Weight}}
+  keep_alive           = {{.KeepAlive}}
+  hold_down            = {{.HoldDown}}
+}
