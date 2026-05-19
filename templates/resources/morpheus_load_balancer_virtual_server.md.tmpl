@@ -1,0 +1,38 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
+
+## Example Usage — Minimal NSX-T
+
+A minimal NSX-T virtual server with an application profile, a pool, and no persistence or SSL.
+
+{{ tffile "examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_minimal.tf" }}
+
+## Example Usage — Full NSX-T with SSL and Persistence
+
+An NSX-T virtual server with SSL certificates, SSL profiles, and session persistence configured.
+
+{{ tffile "examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf" }}
+
+~> **SSL Certificate Notes**
+- `ssl_cert` is the **frontend** certificate presented to clients (TLS termination at the VIP). `ssl_server_cert` is the **backend** certificate used to re-encrypt traffic to pool members.
+- If you only need TLS termination at the VIP, set `ssl_cert` and leave `ssl_server_cert` as `0`.
+- If you need end-to-end encryption (re-encrypt traffic to backends), set both.
+- They are typically different certificates — the frontend cert matches the public domain, while the backend cert authenticates to the pool members.
+- Nothing prevents using the same `AccountCertificate` ID for both, but that would be unusual.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Load balancer virtual servers can be imported using the load balancer ID and virtual server ID separated by a dot, e.g.
+
+```shell
+terraform import hpe_morpheus_load_balancer_virtual_server.example 1.42
+```

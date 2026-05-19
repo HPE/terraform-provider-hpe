@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/resources/hpe_morpheus_network_firewall_rule/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network firewall rules can be imported using the `network_integration_id:rule_id`, e.g.
+
+```bash
+terraform import hpe_morpheus_network_firewall_rule.example 1:123
+```

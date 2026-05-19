@@ -14,8 +14,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
-	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
@@ -33,7 +41,15 @@ func (s SubProvider) GetResources(
 		group.NewResource,
 		image.NewResource,
 		loadbalancer.NewResource,
+		loadbalancermonitor.NewResource,
+		loadbalancervirtualserver.NewResource,
 		network.NewResource,
+		networkfirewallrule.NewResource,
+		networkfirewallrulegroup.NewResource,
+		networkdhcpserver.NewResource,
+		networkrouter.NewResource,
+		networkrouterbgpneighbor.NewResource,
+		networkrouterroute.NewResource,
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
