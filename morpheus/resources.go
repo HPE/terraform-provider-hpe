@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/account"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
@@ -24,8 +23,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/integration"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_container_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_instance_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_layout"
@@ -74,7 +71,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/virtual_image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/whitelabel_settings"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/workflow"
 )
 
 func (s SubProvider) GetResources(
@@ -125,10 +121,7 @@ func (s SubProvider) GetResources(
 		security_group_rule.NewResource,
 
 		// Sprint 3: Automation & Orchestration
-		workflow.NewResource,
-		job.NewResource,
 		deployment.NewResource,
-		integration.NewResource,
 		catalog_item_type.NewResource,
 		cypher.NewResource,
 
@@ -159,7 +152,6 @@ func (s SubProvider) GetResources(
 		provisioning_license.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance
-		account.NewResource,
 		vdi_pool.NewResource,
 		virtual_image.NewResource,
 		user_source.NewResource,
