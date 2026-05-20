@@ -22,14 +22,14 @@ resource "hpe_morpheus_network" "ovs_port_group" {
   active                     = true
   dhcp_server                = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility   = "public"
-  cidr         = "10.32.148.0/22"
-  zone_pool_id = 62299
-  vlan_id      = 43
-  labels       = ["terraform", "example"]
+  visibility                 = "public"
+  cidr                       = "10.32.148.0/22"
+  zone_pool_id               = 62299
+  vlan_id                    = 43
+  labels                     = ["terraform", "example"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]

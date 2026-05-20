@@ -5,12 +5,12 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name        = "tf byteSize example"
-    code        = "bytesize-input"
-    description = "Terraform byteSize example"
-    type        = "byteSize"
-    field_label = "Byte Size"
-    field_name  = "byteSize"
+    name                     = "tf byteSize example"
+    code                     = "bytesize-input"
+    description              = "Terraform byteSize example"
+    type                     = "byteSize"
+    field_label              = "Byte Size"
+    field_name               = "byteSize"
     // Size in bytes
     default_value            = "48318382080"
     placeholder              = ""

@@ -12,13 +12,13 @@ description: |-
 
 ```terraform
 data "hpe_morpheus_user" "example" {
-  id = 99
+    id = 99
 }
 ```
 
 ```terraform
 data "hpe_morpheus_user" "example" {
-  username = "<no value>"
+    username = "<no value>"
 }
 ```
 

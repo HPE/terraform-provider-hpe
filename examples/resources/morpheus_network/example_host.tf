@@ -21,10 +21,10 @@ resource "hpe_morpheus_network" "host" {
   active                     = true
   dhcp_server                = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility = "private"
-  cidr       = "10.0.0.0/8"
-  labels     = [terraform, example]
+  visibility                 = "private"
+  cidr                       = "10.0.0.0/8"
+  labels                     = [terraform, example]
 }

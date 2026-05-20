@@ -5,12 +5,12 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name        = "tf logo selector example"
-    code        = "logo-selector-input"
-    description = "Terraform logo selector example"
-    type        = "logoSelector"
-    field_label = "Select Logo"
-    field_name  = "logoSelector"
+    name                     = "tf logo selector example"
+    code                     = "logo-selector-input"
+    description              = "Terraform logo selector example"
+    type                     = "logoSelector"
+    field_label              = "Select Logo"
+    field_name               = "logoSelector"
     // For just a logo without a label: jsonencode({ value = "/assets/branding/140x40/resource.svg" })
     default_value            = jsonencode({ value = "identicon", settings = { type = "identicon", iconLabel = "example" } })
     placeholder              = ""

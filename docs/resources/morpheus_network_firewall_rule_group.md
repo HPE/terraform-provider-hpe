@@ -13,11 +13,11 @@ Manages a network firewall rule group resource in Morpheus.
 ```terraform
 resource "hpe_morpheus_network_firewall_rule_group" "example" {
   network_integration_id = 128
-  name              = "Example Firewall Rule Group"
-  external_type     = "SecurityPolicy"
-  description       = "An example firewall rule group"
-  priority          = 100
-  group_layer       = "Application"
+  name                   = "Example Firewall Rule Group"
+  external_type          = "SecurityPolicy"
+  description            = "An example firewall rule group"
+  priority               = 100
+  group_layer            = "Application"
 }
 ```
 

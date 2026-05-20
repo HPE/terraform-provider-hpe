@@ -1,7 +1,7 @@
 resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_url" {
   name                = "tfexample_groovy_url"
   code                = "tfexample_groovy_url"
-  labels              = ["demo", "terraform"]
+  labels              = ["demo","terraform"]
   source_type         = "url"
   result_type         = "json"
   script_path         = "https://example.com/example.groovy"
