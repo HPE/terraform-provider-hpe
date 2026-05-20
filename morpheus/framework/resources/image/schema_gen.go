@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -367,7 +368,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`offer is missing from object`)
+			`offer is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -377,7 +379,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`offer expected to be basetypes.StringValue, was: %T`, offerAttribute))
+			fmt.Sprintf(`offer expected to be basetypes.StringValue, was: %T`, offerAttribute),
+		)
 	}
 
 	publisherAttribute, ok := attributes["publisher"]
@@ -385,7 +388,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`publisher is missing from object`)
+			`publisher is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -395,7 +399,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`publisher expected to be basetypes.StringValue, was: %T`, publisherAttribute))
+			fmt.Sprintf(`publisher expected to be basetypes.StringValue, was: %T`, publisherAttribute),
+		)
 	}
 
 	skuAttribute, ok := attributes["sku"]
@@ -403,7 +408,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`sku is missing from object`)
+			`sku is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -413,7 +419,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`sku expected to be basetypes.StringValue, was: %T`, skuAttribute))
+			fmt.Sprintf(`sku expected to be basetypes.StringValue, was: %T`, skuAttribute),
+		)
 	}
 
 	versionAttribute, ok := attributes["version"]
@@ -421,7 +428,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`version is missing from object`)
+			`version is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -431,7 +439,8 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`version expected to be basetypes.StringValue, was: %T`, versionAttribute))
+			fmt.Sprintf(`version expected to be basetypes.StringValue, was: %T`, versionAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -515,7 +524,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`offer is missing from object`)
+			`offer is missing from object`,
+		)
 
 		return NewConfigAzureValueUnknown(), diags
 	}
@@ -525,7 +535,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`offer expected to be basetypes.StringValue, was: %T`, offerAttribute))
+			fmt.Sprintf(`offer expected to be basetypes.StringValue, was: %T`, offerAttribute),
+		)
 	}
 
 	publisherAttribute, ok := attributes["publisher"]
@@ -533,7 +544,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`publisher is missing from object`)
+			`publisher is missing from object`,
+		)
 
 		return NewConfigAzureValueUnknown(), diags
 	}
@@ -543,7 +555,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`publisher expected to be basetypes.StringValue, was: %T`, publisherAttribute))
+			fmt.Sprintf(`publisher expected to be basetypes.StringValue, was: %T`, publisherAttribute),
+		)
 	}
 
 	skuAttribute, ok := attributes["sku"]
@@ -551,7 +564,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`sku is missing from object`)
+			`sku is missing from object`,
+		)
 
 		return NewConfigAzureValueUnknown(), diags
 	}
@@ -561,7 +575,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`sku expected to be basetypes.StringValue, was: %T`, skuAttribute))
+			fmt.Sprintf(`sku expected to be basetypes.StringValue, was: %T`, skuAttribute),
+		)
 	}
 
 	versionAttribute, ok := attributes["version"]
@@ -569,7 +584,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`version is missing from object`)
+			`version is missing from object`,
+		)
 
 		return NewConfigAzureValueUnknown(), diags
 	}
@@ -579,7 +595,8 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`version expected to be basetypes.StringValue, was: %T`, versionAttribute))
+			fmt.Sprintf(`version expected to be basetypes.StringValue, was: %T`, versionAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -607,7 +624,8 @@ func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -764,7 +782,8 @@ func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 			"publisher": v.Publisher,
 			"sku":       v.Sku,
 			"version":   v.Version,
-		})
+		},
+	)
 
 	return objVal, diags
 }
@@ -858,7 +877,8 @@ func (t TagsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`)
+			`name is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -868,7 +888,8 @@ func (t TagsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
+		)
 	}
 
 	valueAttribute, ok := attributes["value"]
@@ -876,7 +897,8 @@ func (t TagsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`value is missing from object`)
+			`value is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -886,7 +908,8 @@ func (t TagsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute))
+			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -968,7 +991,8 @@ func NewTagsValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`)
+			`name is missing from object`,
+		)
 
 		return NewTagsValueUnknown(), diags
 	}
@@ -978,7 +1002,8 @@ func NewTagsValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
+		)
 	}
 
 	valueAttribute, ok := attributes["value"]
@@ -986,7 +1011,8 @@ func NewTagsValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`value is missing from object`)
+			`value is missing from object`,
+		)
 
 		return NewTagsValueUnknown(), diags
 	}
@@ -996,7 +1022,8 @@ func NewTagsValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute))
+			fmt.Sprintf(`value expected to be basetypes.StringValue, was: %T`, valueAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -1022,7 +1049,8 @@ func NewTagsValueMust(attributeTypes map[string]attr.Type, attributes map[string
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewTagsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -1157,7 +1185,8 @@ func (v TagsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 		map[string]attr.Value{
 			"name":  v.Name,
 			"value": v.Value,
-		})
+		},
+	)
 
 	return objVal, diags
 }

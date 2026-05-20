@@ -38,7 +38,8 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(t,
+	resourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -120,7 +121,8 @@ func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerDynamicConfig(t,
+	resourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerDynamicConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -223,7 +225,8 @@ func TestAccMorpheusNetworkDhcpServerUpdateOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(t,
+	createConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(
+		t,
 		map[string]string{
 			"Name":            name,
 			"ServerIpAddress": "192.168.1.1/24",
@@ -236,7 +239,8 @@ func TestAccMorpheusNetworkDhcpServerUpdateOk(t *testing.T) {
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(t,
+	updateConfig, err := networkdhcpserver.RenderNetworkDhcpServerConfig(
+		t,
 		map[string]string{
 			"Name":            updatedName,
 			"ServerIpAddress": "192.168.1.2/24",

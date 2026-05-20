@@ -47,7 +47,8 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 `
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"Name", name,
 		"StorageProviderId", "data.hpe_morpheus_storage_bucket.test.id",
 		"OsTypeId", "data.hpe_morpheus_os_type.test.id",

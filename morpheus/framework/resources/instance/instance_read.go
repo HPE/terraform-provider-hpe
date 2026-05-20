@@ -818,7 +818,8 @@ func getVolumes(
 	if !ok || len(contDetails) == 0 {
 		diags.AddError(
 			"cannot get instance containerDetails",
-			fmt.Sprintf("instance %d GET containerDetails failed", instance.GetId()))
+			fmt.Sprintf("instance %d GET containerDetails failed", instance.GetId()),
+		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
@@ -827,7 +828,8 @@ func getVolumes(
 	if !ok {
 		diags.AddError(
 			"cannot get instance containerDetails server",
-			fmt.Sprintf("instance %d GET containerDetails.server failed", instance.GetId()))
+			fmt.Sprintf("instance %d GET containerDetails.server failed", instance.GetId()),
+		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
@@ -836,7 +838,8 @@ func getVolumes(
 	if !ok {
 		diags.AddError(
 			"cannot get instance containerDetails server volumes",
-			fmt.Sprintf("instance %d GET containerDetails.server.volumes failed", instance.GetId()))
+			fmt.Sprintf("instance %d GET containerDetails.server.volumes failed", instance.GetId()),
+		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
@@ -1139,7 +1142,8 @@ func getConnectionInfo(
 	if !ok {
 		diags.AddError(
 			"cannot get instance connectionInfo",
-			fmt.Sprintf("instance %d GET connectionInfo failed", instance.GetId()))
+			fmt.Sprintf("instance %d GET connectionInfo failed", instance.GetId()),
+		)
 
 		return types.ListNull(types.StringType), diags
 	}
@@ -1248,7 +1252,8 @@ func getStateInterfacesFromInstance(
 	if !ok {
 		diags.AddError(
 			"instance GetInterfaces failed",
-			fmt.Sprintf("instance %d GET interfaces failed", instance.GetId()))
+			fmt.Sprintf("instance %d GET interfaces failed", instance.GetId()),
+		)
 
 		return nil, diags
 	}

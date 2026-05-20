@@ -70,7 +70,7 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
   }
 
   permissions = {
-    groups = [data.hpe_morpheus_group.example.id]
+    groups = [ data.hpe_morpheus_group.example.id ]
   }
 }
 ```

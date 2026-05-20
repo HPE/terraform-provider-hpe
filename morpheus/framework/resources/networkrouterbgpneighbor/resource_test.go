@@ -111,22 +111,28 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"remote_as", "65001"),
+						"remote_as", "65001",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"weight", "60"),
+						"weight", "60",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"keep_alive", "60"),
+						"keep_alive", "60",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"hold_down", "180"),
+						"hold_down", "180",
+					),
 				),
 			},
 		},
@@ -182,52 +188,68 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.all_attrs", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.all_attrs", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"description", name),
+						"description", name,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"remote_as", "65002"),
+						"remote_as", "65002",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"weight", "100"),
+						"weight", "100",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"keep_alive", "30"),
+						"keep_alive", "30",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"hold_down", "90"),
+						"hold_down", "90",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_enabled", "true"),
+						"bfd_enabled", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_interval", "500"),
+						"bfd_interval", "500",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_multiple", "3"),
+						"bfd_multiple", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"allow_as_in", "true"),
+						"allow_as_in", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"hop_limit", "2"),
+						"hop_limit", "2",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"restart_mode", "HELPER_ONLY"),
+						"restart_mode", "HELPER_ONLY",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_type", "IPV4"),
+						"route_filtering_type", "IPV4",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_in", "filter-in"),
+						"route_filtering_in", "filter-in",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_out", "filter-out"),
+						"route_filtering_out", "filter-out",
+					),
 				),
 			},
 		},
@@ -298,13 +320,16 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.update_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.update_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"remote_as", "65001"),
+						"remote_as", "65001",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"weight", "60"),
+						"weight", "60",
+					),
 				),
 			},
 			{
@@ -312,37 +337,48 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"description", name+" updated"),
+						"description", name+" updated",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"remote_as", "65002"),
+						"remote_as", "65002",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"weight", "100"),
+						"weight", "100",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"keep_alive", "30"),
+						"keep_alive", "30",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"hold_down", "90"),
+						"hold_down", "90",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_enabled", "true"),
+						"bfd_enabled", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_interval", "500"),
+						"bfd_interval", "500",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_multiple", "3"),
+						"bfd_multiple", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"allow_as_in", "true"),
+						"allow_as_in", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"hop_limit", "3"),
+						"hop_limit", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"restart_mode", "GRACEFUL_RESTART"),
+						"restart_mode", "GRACEFUL_RESTART",
+					),
 				),
 			},
 		},
@@ -386,7 +422,8 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.import_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.import_test", "id",
+					),
 				),
 			},
 			{
@@ -448,16 +485,20 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"remote_as", "65010"),
+						"remote_as", "65010",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"config_nsxt.source_addresses.#", "2"),
+						"config_nsxt.source_addresses.#", "2",
+					),
 				),
 			},
 		},
@@ -506,19 +547,24 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxv_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"remote_as", "65020"),
+						"remote_as", "65020",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"config_nsxv.router_id", "10.0.0.1"),
+						"config_nsxv.router_id", "10.0.0.1",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"config_nsxv.interface", "vNic_0"),
+						"config_nsxv.interface", "vNic_0",
+					),
 				),
 			},
 		},

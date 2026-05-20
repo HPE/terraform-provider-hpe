@@ -34,7 +34,8 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := acctest.RandomWithPrefix("os.type")
 
-	resourceConfig, err := ostype.RenderOsTypeConfig(t,
+	resourceConfig, err := ostype.RenderOsTypeConfig(
+		t,
 		map[string]string{
 			"Name": name,
 			"Code": code,

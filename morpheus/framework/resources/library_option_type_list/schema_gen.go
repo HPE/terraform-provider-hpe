@@ -12,14 +12,14 @@ import (
 )
 
 type libraryOptionTypeListModel struct {
-	ID         types.Int64  `tfsdk:"id"`
-	Name       types.String `tfsdk:"name"`
+	ID          types.Int64  `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
-	Type       types.String `tfsdk:"type"`
-	SourceURL  types.String `tfsdk:"source_url"`
-	Visibility types.String `tfsdk:"visibility"`
-	ApiType    types.String `tfsdk:"api_type"`
-	RealTime   types.Bool   `tfsdk:"real_time"`
+	Type        types.String `tfsdk:"type"`
+	SourceURL   types.String `tfsdk:"source_url"`
+	Visibility  types.String `tfsdk:"visibility"`
+	ApiType     types.String `tfsdk:"api_type"`
+	RealTime    types.Bool   `tfsdk:"real_time"`
 }
 
 func LibraryOptionTypeListSchema(_ context.Context) schema.Schema {

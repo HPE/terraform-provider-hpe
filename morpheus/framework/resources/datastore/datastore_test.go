@@ -56,7 +56,8 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_alletramp_hvm.tf.tmpl",
 		"Name", name,
 		"ProviderConfig", providerConfig,
 		"AssociatedResourceID", "6032",
@@ -201,7 +202,8 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 	checkFnAll := resource.ComposeAggregateTestCheckFunc(checksAll...)
 	checkFnNotNested := resource.ComposeAggregateTestCheckFunc(checksNotNested...)
 	checkFnNotNestedAndResourcePermissions := resource.ComposeAggregateTestCheckFunc(
-		checksNotNestedAndResourcePermissions...)
+		checksNotNestedAndResourcePermissions...,
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -620,7 +622,8 @@ func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
                       }
 					}`,
 				ExpectError: regexp.MustCompile(
-					`Attribute config_alletramp_hvm.protocol_type value must be one of`),
+					`Attribute config_alletramp_hvm.protocol_type value must be one of`,
+				),
 			},
 			{
 				// checks plan fails when nfs source_version is invalid

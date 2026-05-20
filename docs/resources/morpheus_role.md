@@ -14,10 +14,10 @@ Roles in HPE Morpheus Enterprise control the access levels for Morpheus resource
 
 ```terraform
 resource "hpe_morpheus_role" "example" {
-  name        = "ExampleUserRole"
+  name = "ExampleUserRole"
   multitenant = false
   description = "An example user role"
-  role_type   = "user"
+  role_type = "user"
 }
 ```
 
@@ -25,9 +25,9 @@ resource "hpe_morpheus_role" "example" {
 
 ```terraform
 resource "hpe_morpheus_role" "example" {
-  name        = "ExampleTenantRole"
+  name = "ExampleTenantRole"
   description = "An example tenant role"
-  role_type   = "tenant"
+  role_type = "tenant"
 }
 ```
 

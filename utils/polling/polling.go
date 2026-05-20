@@ -99,7 +99,8 @@ func WaitForStatus(ctx context.Context, cfg Config, fn StatusFunc) (string, erro
 		return status, checkStatus(status, cfg.TargetStatuses, cfg.ErrorStatuses)
 	}
 
-	return backoff.Retry(ctx, poll,
+	return backoff.Retry(
+		ctx, poll,
 		backoff.WithBackOff(backoff.NewConstantBackOff(cfg.Interval)),
 		backoff.WithMaxElapsedTime(cfg.MaxTimeout),
 	)
@@ -119,7 +120,8 @@ func WaitForDeletion(ctx context.Context, cfg Config, fn ExistenceFunc) error {
 		return struct{}{}, fmt.Errorf("resource still exists")
 	}
 
-	_, err := backoff.Retry(ctx, poll,
+	_, err := backoff.Retry(
+		ctx, poll,
 		backoff.WithBackOff(backoff.NewConstantBackOff(cfg.Interval)),
 		backoff.WithMaxElapsedTime(cfg.MaxTimeout),
 	)
@@ -140,7 +142,8 @@ func WaitForStatusOrDeletion(ctx context.Context, cfg Config, fn StatusFunc) (st
 		return status, checkStatus(status, cfg.TargetStatuses, cfg.ErrorStatuses)
 	}
 
-	return backoff.Retry(ctx, poll,
+	return backoff.Retry(
+		ctx, poll,
 		backoff.WithBackOff(backoff.NewConstantBackOff(cfg.Interval)),
 		backoff.WithMaxElapsedTime(cfg.MaxTimeout),
 	)

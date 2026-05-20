@@ -56,10 +56,10 @@ resource "hpe_morpheus_network_pool_server" "test" {
 				),
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"service_username", "service_password"},
-				ResourceName:      "hpe_morpheus_network_pool_server.test",
+				ResourceName:            "hpe_morpheus_network_pool_server.test",
 			},
 		},
 	})

@@ -3,12 +3,13 @@ package whitelabel_settings
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 var (
@@ -134,7 +135,7 @@ func (r *whitelabelSettingsResource) Delete(ctx context.Context, req resource.De
 	enabled := false
 	body := sdk.UpdateWhitelabelSettingsRequest{
 		WhitelabelSettings: &sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{
-			Enabled:        &enabled,
+			Enabled:         &enabled,
 			ResetHeaderLogo: boolPtr(true),
 			ResetFooterLogo: boolPtr(true),
 			ResetLoginLogo:  boolPtr(true),

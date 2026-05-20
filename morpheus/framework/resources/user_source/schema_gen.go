@@ -10,12 +10,12 @@ import (
 )
 
 type userSourceModel struct {
-	ID                    types.Int64  `tfsdk:"id"`
-	Name                  types.String `tfsdk:"name"`
-	Type                  types.String `tfsdk:"type"`
-	AccountId             types.Int64  `tfsdk:"account_id"`
-	Description           types.String `tfsdk:"description"`
-	DefaultAccountRoleId  types.Int64  `tfsdk:"default_account_role_id"`
+	ID                   types.Int64  `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Type                 types.String `tfsdk:"type"`
+	AccountId            types.Int64  `tfsdk:"account_id"`
+	Description          types.String `tfsdk:"description"`
+	DefaultAccountRoleId types.Int64  `tfsdk:"default_account_role_id"`
 }
 
 func UserSourceSchema(_ context.Context) schema.Schema {

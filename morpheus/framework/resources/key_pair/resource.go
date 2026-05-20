@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 var (
@@ -50,7 +51,7 @@ func (r *keyPairResource) Create(ctx context.Context, req resource.CreateRequest
 
 	body := sdk.AddKeyPairsRequestKeyPair{
 		Name:      plan.Name.ValueString(),
-		PublicKey:  plan.PublicKey.ValueString(),
+		PublicKey: plan.PublicKey.ValueString(),
 	}
 	if !plan.PrivateKey.IsNull() {
 		body.PrivateKey = plan.PrivateKey.ValueStringPointer()

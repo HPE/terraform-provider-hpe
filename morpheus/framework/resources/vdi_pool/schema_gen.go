@@ -11,7 +11,7 @@ import (
 )
 
 type vdiPoolModel struct {
-	ID                               types.Int64 `tfsdk:"id"`
+	ID                               types.Int64  `tfsdk:"id"`
 	Name                             types.String `tfsdk:"name"`
 	Description                      types.String `tfsdk:"description"`
 	Enabled                          types.Bool   `tfsdk:"enabled"`

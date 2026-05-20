@@ -49,12 +49,12 @@ data "hpe_morpheus_tenant" "example" {
 }
 
 resource "hpe_morpheus_network" "aws" {
-  name        = "example-terraform-aws"
-  description = "AWS subnet"
-  cloud_id    = data.hpe_morpheus_cloud.example.id
-  pool_id     = 1
-  group_id    = data.hpe_morpheus_group.example.id
-  type_id     = 36
+  name                       = "example-terraform-aws"
+  description                = "AWS subnet"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = 1
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = 36
   config = {
     assignPublicIp   = true
     availabilityZone = "us-west-1a"
@@ -62,13 +62,13 @@ resource "hpe_morpheus_network" "aws" {
   active                     = true
   dhcp_server                = true
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility   = "private"
-  cidr         = "10.200.99.0/24"
-  zone_pool_id = 12329
-  labels       = ["terraform", "example"]
+  visibility                 = "private"
+  cidr                       = "10.200.99.0/24"
+  zone_pool_id               = 12329
+  labels                     = ["terraform", "example"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]
@@ -110,7 +110,7 @@ resource "hpe_morpheus_network" "azure" {
     "subnetCidr"      = "10.100.1.0/24"
     "location"        = "eastus"
   }
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
 }
@@ -132,12 +132,12 @@ data "hpe_morpheus_tenant" "example" {
 }
 
 resource "hpe_morpheus_network" "gcp" {
-  name        = "example-terraform-gcp"
-  description = "GCP network"
-  cloud_id    = data.hpe_morpheus_cloud.example.id
-  pool_id     = 1
-  group_id    = data.hpe_morpheus_group.example.id
-  type_id     = 38
+  name                       = "example-terraform-gcp"
+  description                = "GCP network"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = 1
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = 38
   config = {
     mtu        = "1460"
     autoCreate = true
@@ -145,13 +145,13 @@ resource "hpe_morpheus_network" "gcp" {
   active                     = true
   dhcp_server                = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility   = "private"
-  cidr         = "10.0.0.0/8"
-  zone_pool_id = 85990
-  labels       = ["terraform", "example"]
+  visibility                 = "private"
+  cidr                       = "10.0.0.0/8"
+  zone_pool_id               = 85990
+  labels                     = ["terraform", "example"]
 }
 ```
 
@@ -181,12 +181,12 @@ resource "hpe_morpheus_network" "host" {
   active                     = true
   dhcp_server                = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility = "private"
-  cidr       = "10.0.0.0/8"
-  labels     = [terraform, example]
+  visibility                 = "private"
+  cidr                       = "10.0.0.0/8"
+  labels                     = [terraform, example]
 }
 ```
 
@@ -217,14 +217,14 @@ resource "hpe_morpheus_network" "ovs_port_group" {
   active                     = true
   dhcp_server                = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [
+  tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
   ]
-  visibility   = "public"
-  cidr         = "10.32.148.0/22"
-  zone_pool_id = 62299
-  vlan_id      = 43
-  labels       = ["terraform", "example"]
+  visibility                 = "public"
+  cidr                       = "10.32.148.0/22"
+  zone_pool_id               = 62299
+  vlan_id                    = 43
+  labels                     = ["terraform", "example"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]

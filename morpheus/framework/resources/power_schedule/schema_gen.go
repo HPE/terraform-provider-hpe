@@ -73,118 +73,118 @@ func PowerScheduleSchema(_ context.Context) schema.Schema {
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the power schedule is enabled.",
 			},
-		"monday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Monday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"monday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Monday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"monday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Monday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"monday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Monday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"tuesday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Tuesday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"tuesday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Tuesday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"tuesday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Tuesday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"tuesday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Tuesday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"wednesday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Wednesday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"wednesday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Wednesday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"wednesday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Wednesday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"wednesday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Wednesday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"thursday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Thursday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"thursday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Thursday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"thursday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Thursday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"thursday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Thursday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"friday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Friday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"friday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Friday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"friday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Friday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"friday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Friday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"saturday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Saturday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"saturday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Saturday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"saturday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Saturday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"saturday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Saturday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"sunday_on_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Sunday on time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"sunday_on_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Sunday on time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
-		"sunday_off_time": schema.StringAttribute{
-			Optional:    true,
-			Computed:    true,
-			Description: "The Sunday off time for the power schedule.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			"sunday_off_time": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The Sunday off time for the power schedule.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
-		},
 			"total_monthly_hours_saved": schema.Float64Attribute{
 				Computed:    true,
 				Description: "The total monthly hours saved by the power schedule.",

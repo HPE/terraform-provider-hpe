@@ -47,7 +47,8 @@ func getImageAsState(
 	if image.GetImageType() == "azure-reference" {
 		if image.GetConfig().AzureReferenceVirtualImageConfiguration3 != nil {
 			state.ConfigAzure.Publisher = convert.StrToType(
-				&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher)
+				&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher,
+			)
 			state.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Offer)
 			state.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Version)
 			state.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Sku)

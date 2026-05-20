@@ -47,9 +47,9 @@ func TestAccMorpheusUserSourceBasic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "hpe_morpheus_user_source.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "hpe_morpheus_user_source.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"account_id"},
 			},
 		},

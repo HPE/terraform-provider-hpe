@@ -5,6 +5,8 @@ package networkfirewallrule
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -12,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -88,12 +89,12 @@ func NetworkFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The policy action for the firewall rule (e.g. accept, deny, drop).",
 				MarkdownDescription: "The policy action for the firewall rule (e.g. accept, deny, drop).",
 			},
-		"priority": schema.Int64Attribute{
-			Optional:            true,
-			Computed:            true,
-			Description:         "The priority of the network firewall rule.",
-			MarkdownDescription: "The priority of the network firewall rule.",
-		},
+			"priority": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The priority of the network firewall rule.",
+				MarkdownDescription: "The priority of the network firewall rule.",
+			},
 			"profile": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
@@ -218,7 +219,8 @@ func (t DestinationsType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -228,7 +230,8 @@ func (t DestinationsType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -309,7 +312,8 @@ func NewDestinationsValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return NewDestinationsValueUnknown(), diags
 	}
@@ -319,7 +323,8 @@ func NewDestinationsValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -344,7 +349,8 @@ func NewDestinationsValueMust(attributeTypes map[string]attr.Type, attributes ma
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewDestinationsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -375,14 +381,12 @@ func (t DestinationsType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -421,7 +425,6 @@ func (v DestinationsValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -495,7 +498,8 @@ func (v DestinationsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		attributeTypes,
 		map[string]attr.Value{
 			"id": idVal,
-		})
+		},
+	)
 
 	return objVal, diags
 }
@@ -576,7 +580,8 @@ func (t RuleGroupIdType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -586,7 +591,8 @@ func (t RuleGroupIdType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
+		)
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -594,7 +600,8 @@ func (t RuleGroupIdType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`)
+			`name is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -604,7 +611,8 @@ func (t RuleGroupIdType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -686,7 +694,8 @@ func NewRuleGroupIdValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return NewRuleGroupIdValueUnknown(), diags
 	}
@@ -696,7 +705,8 @@ func NewRuleGroupIdValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
+		)
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -704,7 +714,8 @@ func NewRuleGroupIdValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`)
+			`name is missing from object`,
+		)
 
 		return NewRuleGroupIdValueUnknown(), diags
 	}
@@ -714,7 +725,8 @@ func NewRuleGroupIdValue(attributeTypes map[string]attr.Type, attributes map[str
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -740,7 +752,8 @@ func NewRuleGroupIdValueMust(attributeTypes map[string]attr.Type, attributes map
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewRuleGroupIdValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -771,14 +784,12 @@ func (t RuleGroupIdType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -817,7 +828,6 @@ func (v RuleGroupIdValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -825,7 +835,6 @@ func (v RuleGroupIdValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -879,7 +888,8 @@ func (v RuleGroupIdValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 		map[string]attr.Value{
 			"id":   v.Id,
 			"name": v.Name,
-		})
+		},
+	)
 
 	return objVal, diags
 }
@@ -963,7 +973,8 @@ func (t ScopesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -973,7 +984,8 @@ func (t ScopesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -1054,7 +1066,8 @@ func NewScopesValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return NewScopesValueUnknown(), diags
 	}
@@ -1064,7 +1077,8 @@ func NewScopesValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -1089,7 +1103,8 @@ func NewScopesValueMust(attributeTypes map[string]attr.Type, attributes map[stri
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewScopesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -1120,14 +1135,12 @@ func (t ScopesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1166,7 +1179,6 @@ func (v ScopesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1240,7 +1252,8 @@ func (v ScopesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		attributeTypes,
 		map[string]attr.Value{
 			"id": idVal,
-		})
+		},
+	)
 
 	return objVal, diags
 }
@@ -1321,7 +1334,8 @@ func (t SourcesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -1331,7 +1345,8 @@ func (t SourcesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -1412,7 +1427,8 @@ func NewSourcesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`)
+			`id is missing from object`,
+		)
 
 		return NewSourcesValueUnknown(), diags
 	}
@@ -1422,7 +1438,8 @@ func NewSourcesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute))
+			fmt.Sprintf(`id expected to be basetypes.SetValue, was: %T`, idAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -1447,7 +1464,8 @@ func NewSourcesValueMust(attributeTypes map[string]attr.Type, attributes map[str
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewSourcesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -1478,14 +1496,12 @@ func (t SourcesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1524,7 +1540,6 @@ func (v SourcesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1598,7 +1613,8 @@ func (v SourcesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		attributeTypes,
 		map[string]attr.Value{
 			"id": idVal,
-		})
+		},
+	)
 
 	return objVal, diags
 }

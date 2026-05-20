@@ -14,7 +14,7 @@ import (
 type keyPairModel struct {
 	ID            types.Int64  `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
-	PublicKey      types.String `tfsdk:"public_key"`
+	PublicKey     types.String `tfsdk:"public_key"`
 	PrivateKey    types.String `tfsdk:"private_key"`
 	Passphrase    types.String `tfsdk:"passphrase"`
 	HasPrivateKey types.Bool   `tfsdk:"has_private_key"`
