@@ -92,7 +92,8 @@ func getDatastoreAsState(
 		// For imports, we need to get the tenants and resource permissions from the cloud datastore API
 		if plan.Name.IsNull() || plan.Name.IsUnknown() {
 			tenants, resourcePermissions, pdiags := populateCloudDatastoreInformation(
-				ctx, id, *datastore.RefId, client)
+				ctx, id, *datastore.RefId, client,
+			)
 			diags = append(diags, pdiags...)
 			state.Tenants = tenants
 			state.ResourcePermissions = resourcePermissions
@@ -109,7 +110,8 @@ func getDatastoreAsState(
 		// For imports, we need to get the tenants and resource permissions from the cluster datastore API
 		if plan.Name.IsNull() || plan.Name.IsUnknown() {
 			tenants, resourcePermissions, pdiags := populateClusterDatastoreInformation(
-				ctx, id, *datastore.RefId, client)
+				ctx, id, *datastore.RefId, client,
+			)
 			diags = append(diags, pdiags...)
 			state.Tenants = tenants
 			state.ResourcePermissions = resourcePermissions
@@ -168,7 +170,8 @@ func getDatastoreAsState(
 			"protocol_type":     "protocolType",
 		}
 		keysFromMap, pdiags := compare.CheckPlanAttributeAgainstAPIAttribute(
-			ctx, plan.ConfigAlletrampHvm, datastore.Config, keysMap)
+			ctx, plan.ConfigAlletrampHvm, datastore.Config, keysMap,
+		)
 		diags = append(diags, pdiags...)
 
 		var configAlletraMPHVM ConfigAlletrampHvmValue

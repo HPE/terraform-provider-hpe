@@ -9,3 +9,16 @@ templates-combined-temp/
 .terraform/
 .terraform.lock*
 .vscode/
+
+# Hero (AI tooling - not part of project)
+.hero/
+
+# OpenCode config
+.opencode/
+opencode.json
+
+# AI tooling
+AGENTS.md
+.gitattributes
+tools/.hero-satellite
+tools/.opencode/

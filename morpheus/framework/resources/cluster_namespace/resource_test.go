@@ -1,0 +1,75 @@
+package cluster_namespace_test
+
+import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/provider"
+)
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"hpe": func() (tfprotov6.ProviderServer, error) {
+		return providerserver.NewProtocol6WithError(
+			provider.New("test", morpheus.New())(),
+		)()
+	},
+}
+
+func TestAccClusterNamespaceResource_basic(t *testing.T) {
+	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
+	if clusterID == "" {
+		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set, skipping")
+	}
+
+	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccClusterNamespaceConfig(clusterID, rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("hpe_morpheus_cluster_namespace.test", "id"),
+					resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.test", "cluster_id", clusterID),
+					resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.test", "name", rName),
+				),
+			},
+			// ImportState with composite ID
+			{
+				ResourceName:      "hpe_morpheus_cluster_namespace.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs := s.RootModule().Resources["hpe_morpheus_cluster_namespace.test"]
+
+					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
+func testAccClusterNamespaceConfig(clusterID, name string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_cluster_namespace" "test" {
+  cluster_id = %q
+  name       = %q
+}
+`, clusterID, name)
+}

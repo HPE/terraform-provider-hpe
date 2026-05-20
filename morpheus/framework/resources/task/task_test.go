@@ -56,7 +56,8 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
@@ -134,7 +135,8 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
@@ -257,7 +259,8 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_generic_config.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_generic_config.tf.tmpl",
 		"Name", name,
 		"OperationalWorkflowId", testElseOperationalWorkflowId,
 		"OperationalWorkflowName", testWorkflowName,
@@ -322,7 +325,8 @@ func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"IfOperationalWorkflowName", testFailureWorkflowName,
@@ -395,7 +399,8 @@ func TestAccMorpheusTaskExampleConditionalNullElseUpdateOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"IfOperationalWorkflowName", testFailureWorkflowName,

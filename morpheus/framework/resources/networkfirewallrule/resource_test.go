@@ -84,7 +84,8 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "test description",
@@ -180,7 +181,8 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	createConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "initial description",
@@ -193,7 +195,8 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	updateConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        updatedName,
 			"Direction":   "Egress",
@@ -321,7 +324,8 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":           name,
 			"DestinationIds": `"ANY"`,
@@ -372,7 +376,8 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -412,7 +417,8 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},

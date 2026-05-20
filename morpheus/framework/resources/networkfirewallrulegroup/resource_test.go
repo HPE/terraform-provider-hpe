@@ -39,7 +39,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -127,7 +128,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "Initial description",
@@ -141,7 +143,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	updateConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":        updatedName,
 			"Description": "Updated description",
@@ -254,7 +257,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":       name,
 			"GroupLayer": "Application",
@@ -264,7 +268,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":       name,
 			"GroupLayer": "Ethernet",
@@ -306,7 +311,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":         name,
 			"ExternalType": "SecurityPolicy",
@@ -316,7 +322,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":         name,
 			"ExternalType": "GatewayPolicy",
@@ -358,7 +365,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -367,7 +375,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":                 name,
 			"NetworkIntegrationId": "999",
@@ -409,7 +418,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},

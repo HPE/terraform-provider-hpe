@@ -704,7 +704,8 @@ func getPolicyAsState(
 		}
 
 		policyTypeValue, policyTypeDiags := NewPolicyTypeValue(
-			PolicyTypeValue{}.AttributeTypes(ctx), policyTypeAttrs)
+			PolicyTypeValue{}.AttributeTypes(ctx), policyTypeAttrs,
+		)
 		if policyTypeDiags.HasError() {
 			diags.Append(policyTypeDiags...)
 

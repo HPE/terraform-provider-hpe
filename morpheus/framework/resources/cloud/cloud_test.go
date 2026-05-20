@@ -52,7 +52,8 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"Name", name,
 		"Code", code,
 		"TenantId", "1",
@@ -203,7 +204,8 @@ func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example_generic.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_generic.tf.tmpl",
 		"Name", name,
 		"Code", code,
 		"TenantId", "1",
@@ -967,7 +969,8 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 							"labels.*",
 							"Label3",
 						),
-					}...),
+					}...,
+				),
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
 			},

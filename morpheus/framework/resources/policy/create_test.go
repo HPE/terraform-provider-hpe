@@ -667,7 +667,8 @@ resource "hpe_morpheus_network" "test" {
 	policyNamePlan := acctest.RandomWithPrefix(t.Name() + "-plan-policy")
 	policyNameNetwork := acctest.RandomWithPrefix(t.Name() + "-network-policy")
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "group_policy",
 		"Name", policyNameGroup,
 		"Description", "Example group-scoped policy",
@@ -681,7 +682,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	cloudResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	cloudResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "cloud_policy",
 		"Name", policyNameCloud,
 		"Description", "Example cloud-scoped policy",
@@ -695,7 +697,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	roleResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	roleResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "role_policy",
 		"Name", policyNameRole,
 		"Description", "Example role-scoped policy",
@@ -709,7 +712,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	userResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	userResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "user_policy",
 		"Name", policyNameUser,
 		"Description", "Example user-scoped policy",
@@ -723,7 +727,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	planResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	planResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "plan_policy",
 		"Name", policyNamePlan,
 		"Description", "Example plan-scoped policy",
@@ -737,7 +742,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	networkResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	networkResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "network_policy",
 		"Name", policyNameNetwork,
 		"Description", "Example network-scoped policy",

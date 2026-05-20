@@ -101,16 +101,21 @@ func getServicePlanAsState(
 		configRanges["min_sockets"] = convert.Int64ToType(apiConfig.Ranges.MinSockets.Get())
 		configRanges["max_sockets"] = convert.Int64ToType(apiConfig.Ranges.MaxSockets.Get())
 		configRanges["min_cores_per_socket"] = convert.Int64ToType(
-			apiConfig.Ranges.MinCoresPerSocket.Get())
+			apiConfig.Ranges.MinCoresPerSocket.Get(),
+		)
 		configRanges["max_cores_per_socket"] = convert.Int64ToType(
-			apiConfig.Ranges.MaxCoresPerSocket.Get())
+			apiConfig.Ranges.MaxCoresPerSocket.Get(),
+		)
 		configRanges["min_per_disk_size"] = convert.Int64ToType(
-			apiConfig.Ranges.MinPerDiskSize.Get())
+			apiConfig.Ranges.MinPerDiskSize.Get(),
+		)
 		configRanges["max_per_disk_size"] = convert.Int64ToType(
-			apiConfig.Ranges.MaxPerDiskSize.Get())
+			apiConfig.Ranges.MaxPerDiskSize.Get(),
+		)
 
 		configRangesValue, diags := NewConfigRangesValue(
-			ConfigRangesValue{}.AttributeTypes(ctx), configRanges)
+			ConfigRangesValue{}.AttributeTypes(ctx), configRanges,
+		)
 		if diags.HasError() {
 			return state, diags
 		}
@@ -152,7 +157,8 @@ func setProvisionTypeInCreate(
 	provisionTypeCode := plan.ProvisionTypeCode.ValueString()
 
 	pTypes, hresp, err := client.ProvisioningAPI.ListProvisionTypes(ctx).Code(
-		provisionTypeCode).Execute()
+		provisionTypeCode,
+	).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf("GET failed for provision type code %s: %s",
 			provisionTypeCode, errfmt.ErrMsg(err, hresp))
@@ -196,7 +202,8 @@ func setProvisionTypeInUpdate(
 	provisionTypeCode := plan.ProvisionTypeCode.ValueString()
 
 	pTypes, hresp, err := client.ProvisioningAPI.ListProvisionTypes(ctx).Code(
-		provisionTypeCode).Execute()
+		provisionTypeCode,
+	).Execute()
 	if pTypes == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return fmt.Errorf("GET failed for provision type code %s: %s",
 			provisionTypeCode, errfmt.ErrMsg(err, hresp))
@@ -464,7 +471,8 @@ func (r *Resource) Create(
 	addServicePlanRequest := sdk.NewAddServicePlansRequest(*addServicePlan)
 
 	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(
-		ctx).AddServicePlansRequest(*addServicePlanRequest).Execute()
+		ctx,
+	).AddServicePlansRequest(*addServicePlanRequest).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
 			"create service plan resource",

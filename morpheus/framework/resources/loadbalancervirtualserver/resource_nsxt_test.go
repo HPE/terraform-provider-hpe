@@ -333,7 +333,8 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 			if rs.Primary.ID == initialResourceID {
 				return fmt.Errorf(
 					"expected resource ID to change due to config_nsxt change (RequiresReplace), "+
-						"but ID remained the same: %s", rs.Primary.ID)
+						"but ID remained the same: %s", rs.Primary.ID,
+				)
 			}
 
 			return nil

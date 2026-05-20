@@ -48,7 +48,8 @@ func TestAccMorpheusGroupExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	resourceConfig, err := group.RenderGroupConfig(t,
+	resourceConfig, err := group.RenderGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 			"Code": code,

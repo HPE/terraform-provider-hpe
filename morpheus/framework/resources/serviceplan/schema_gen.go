@@ -319,7 +319,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores is missing from object`)
+			`max_cores is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -329,7 +330,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute),
+		)
 	}
 
 	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
@@ -337,7 +339,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores_per_socket is missing from object`)
+			`max_cores_per_socket is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -347,7 +350,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute),
+		)
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -355,7 +359,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_memory is missing from object`)
+			`max_memory is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -365,7 +370,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute),
+		)
 	}
 
 	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
@@ -373,7 +379,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_per_disk_size is missing from object`)
+			`max_per_disk_size is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -383,7 +390,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute),
+		)
 	}
 
 	maxSocketsAttribute, ok := attributes["max_sockets"]
@@ -391,7 +399,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_sockets is missing from object`)
+			`max_sockets is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -401,7 +410,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute),
+		)
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -409,7 +419,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_storage is missing from object`)
+			`max_storage is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -419,7 +430,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute),
+		)
 	}
 
 	minCoresAttribute, ok := attributes["min_cores"]
@@ -427,7 +439,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores is missing from object`)
+			`min_cores is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -437,7 +450,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute),
+		)
 	}
 
 	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
@@ -445,7 +459,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores_per_socket is missing from object`)
+			`min_cores_per_socket is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -455,7 +470,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute),
+		)
 	}
 
 	minMemoryAttribute, ok := attributes["min_memory"]
@@ -463,7 +479,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_memory is missing from object`)
+			`min_memory is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -473,7 +490,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute),
+		)
 	}
 
 	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
@@ -481,7 +499,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_per_disk_size is missing from object`)
+			`min_per_disk_size is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -491,7 +510,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute),
+		)
 	}
 
 	minSocketsAttribute, ok := attributes["min_sockets"]
@@ -499,7 +519,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_sockets is missing from object`)
+			`min_sockets is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -509,7 +530,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute),
+		)
 	}
 
 	minStorageAttribute, ok := attributes["min_storage"]
@@ -517,7 +539,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_storage is missing from object`)
+			`min_storage is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -527,7 +550,8 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -619,7 +643,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores is missing from object`)
+			`max_cores is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -629,7 +654,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute),
+		)
 	}
 
 	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
@@ -637,7 +663,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores_per_socket is missing from object`)
+			`max_cores_per_socket is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -647,7 +674,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute),
+		)
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -655,7 +683,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_memory is missing from object`)
+			`max_memory is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -665,7 +694,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute),
+		)
 	}
 
 	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
@@ -673,7 +703,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_per_disk_size is missing from object`)
+			`max_per_disk_size is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -683,7 +714,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute),
+		)
 	}
 
 	maxSocketsAttribute, ok := attributes["max_sockets"]
@@ -691,7 +723,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_sockets is missing from object`)
+			`max_sockets is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -701,7 +734,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute),
+		)
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -709,7 +743,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_storage is missing from object`)
+			`max_storage is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -719,7 +754,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute),
+		)
 	}
 
 	minCoresAttribute, ok := attributes["min_cores"]
@@ -727,7 +763,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores is missing from object`)
+			`min_cores is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -737,7 +774,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute),
+		)
 	}
 
 	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
@@ -745,7 +783,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores_per_socket is missing from object`)
+			`min_cores_per_socket is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -755,7 +794,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute),
+		)
 	}
 
 	minMemoryAttribute, ok := attributes["min_memory"]
@@ -763,7 +803,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_memory is missing from object`)
+			`min_memory is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -773,7 +814,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute),
+		)
 	}
 
 	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
@@ -781,7 +823,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_per_disk_size is missing from object`)
+			`min_per_disk_size is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -791,7 +834,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute),
+		)
 	}
 
 	minSocketsAttribute, ok := attributes["min_sockets"]
@@ -799,7 +843,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_sockets is missing from object`)
+			`min_sockets is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -809,7 +854,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute),
+		)
 	}
 
 	minStorageAttribute, ok := attributes["min_storage"]
@@ -817,7 +863,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_storage is missing from object`)
+			`min_storage is missing from object`,
+		)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -827,7 +874,8 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -863,7 +911,8 @@ func NewConfigRangesValueMust(attributeTypes map[string]attr.Type, attributes ma
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewConfigRangesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -894,14 +943,12 @@ func (t ConfigRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -960,7 +1007,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.MaxCores.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -968,7 +1014,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores"] = val
 
 		val, err = v.MaxCoresPerSocket.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -976,7 +1021,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores_per_socket"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -984,7 +1028,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_memory"] = val
 
 		val, err = v.MaxPerDiskSize.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -992,7 +1035,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_per_disk_size"] = val
 
 		val, err = v.MaxSockets.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1000,7 +1042,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_sockets"] = val
 
 		val, err = v.MaxStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1008,7 +1049,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_storage"] = val
 
 		val, err = v.MinCores.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1016,7 +1056,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores"] = val
 
 		val, err = v.MinCoresPerSocket.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1024,7 +1063,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores_per_socket"] = val
 
 		val, err = v.MinMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1032,7 +1070,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_memory"] = val
 
 		val, err = v.MinPerDiskSize.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1040,7 +1077,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_per_disk_size"] = val
 
 		val, err = v.MinSockets.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1048,7 +1084,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_sockets"] = val
 
 		val, err = v.MinStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1122,7 +1157,8 @@ func (v ConfigRangesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"min_per_disk_size":    v.MinPerDiskSize,
 			"min_sockets":          v.MinSockets,
 			"min_storage":          v.MinStorage,
-		})
+		},
+	)
 
 	return objVal, diags
 }

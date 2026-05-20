@@ -177,7 +177,8 @@ func mapScopesFromResponse(
 func mapApplicationsFromResponse(
 	applications []sdk.GetNetworkFirewallRule200ResponseRuleApplicationsInner,
 ) (basetypes.SetValue, diag.Diagnostics) {
-	return extractStringIDs(applications,
+	return extractStringIDs(
+		applications,
 		func(i sdk.GetNetworkFirewallRule200ResponseRuleApplicationsInner) *string {
 			return i.Id
 		},
@@ -187,7 +188,8 @@ func mapApplicationsFromResponse(
 func mapProfilesFromResponse(
 	profiles []sdk.GetNetworkFirewallRule200ResponseRuleProfilesInner,
 ) (basetypes.SetValue, diag.Diagnostics) {
-	return extractStringIDs(profiles,
+	return extractStringIDs(
+		profiles,
 		func(i sdk.GetNetworkFirewallRule200ResponseRuleProfilesInner) *string {
 			return i.Id
 		},
