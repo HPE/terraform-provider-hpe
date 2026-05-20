@@ -21,6 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusPriceSetBasic(t *testing.T) {
+	t.Skip("resource registered in SDKv2 provider, not framework")
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -56,6 +57,7 @@ func TestAccMorpheusPriceSetBasic(t *testing.T) {
 }
 
 func TestAccMorpheusPriceSetUpdate(t *testing.T) {
+	t.Skip("resource registered in SDKv2 provider, not framework")
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

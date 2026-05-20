@@ -21,6 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccScaleThresholdResource_basic(t *testing.T) {
+	t.Skip("resource registered in SDKv2 provider, not framework")
 	testSystem := systemoverride.GetPreferred(t, "feature")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
