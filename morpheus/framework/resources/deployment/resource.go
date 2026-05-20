@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &deploymentResource{}
 }
 
-func (r *deploymentResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *deploymentResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_deployment"
 }
 
@@ -40,6 +44,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -61,6 +66,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "deployment", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -74,6 +80,7 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -88,10 +95,12 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	result, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "deployment", "", err, httpResp)
+
 		return
 	}
 
@@ -105,6 +114,7 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -123,11 +133,13 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).UpdateDeploymentRequest(sdk.UpdateDeploymentRequest{
-		Deployment: &body,
-	}).Execute()
+	result, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
+		UpdateDeploymentRequest(sdk.UpdateDeploymentRequest{
+			Deployment: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "deployment", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -141,6 +153,7 @@ func (r *deploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -155,14 +168,20 @@ func (r *deploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 	_, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "deployment", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *deploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *deploymentResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

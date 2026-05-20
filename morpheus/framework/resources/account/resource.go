@@ -40,6 +40,7 @@ func (r *accountResource) Create(ctx context.Context, req resource.CreateRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -73,6 +74,7 @@ func (r *accountResource) Create(ctx context.Context, req resource.CreateRequest
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "account", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -86,6 +88,7 @@ func (r *accountResource) Read(ctx context.Context, req resource.ReadRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -100,10 +103,12 @@ func (r *accountResource) Read(ctx context.Context, req resource.ReadRequest, re
 	result, httpResp, err := client.TenantsAPI.GetTenant(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "account", "", err, httpResp)
+
 		return
 	}
 
@@ -117,6 +122,7 @@ func (r *accountResource) Update(ctx context.Context, req resource.UpdateRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -152,6 +158,7 @@ func (r *accountResource) Update(ctx context.Context, req resource.UpdateRequest
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "account", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -159,6 +166,7 @@ func (r *accountResource) Update(ctx context.Context, req resource.UpdateRequest
 	result, httpResp, err := client.TenantsAPI.GetTenant(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "account", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -172,6 +180,7 @@ func (r *accountResource) Delete(ctx context.Context, req resource.DeleteRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -186,14 +195,20 @@ func (r *accountResource) Delete(ctx context.Context, req resource.DeleteRequest
 	_, httpResp, err := client.TenantsAPI.RemoveTenant(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "account", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *accountResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *accountResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

@@ -40,6 +40,7 @@ func (r *priceResource) Create(ctx context.Context, req resource.CreateRequest, 
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -71,6 +72,7 @@ func (r *priceResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "price", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -89,14 +91,16 @@ func (r *priceResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 	if id == 0 {
 		resp.Diagnostics.AddError("Error creating price", "Could not determine ID from create response")
+
 		return
 	}
 	plan.ID = types.Int64Value(id)
 
 	// Read back the full object
-	readResult, readHttpResp, readErr := client.PricesAPI.GetPrices(ctx, id).Execute()
-	if err := errfmt.CheckResponse(readErr, readHttpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price", plan.Name.ValueString(), err, readHttpResp)
+	readResult, readHTTPResp, readErr := client.PricesAPI.GetPrices(ctx, id).Execute()
+	if err := errfmt.CheckResponse(readErr, readHTTPResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price", plan.Name.ValueString(), err, readHTTPResp)
+
 		return
 	}
 	rp := readResult.GetPrice()
@@ -109,6 +113,7 @@ func (r *priceResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -123,10 +128,12 @@ func (r *priceResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	result, httpResp, err := client.PricesAPI.GetPrices(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price", "", err, httpResp)
+
 		return
 	}
 
@@ -140,6 +147,7 @@ func (r *priceResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -174,13 +182,15 @@ func (r *priceResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	_ = result
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "price", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	// Read back the full object since update only returns {"success": true}
-	readResult, readHttpResp, readErr := client.PricesAPI.GetPrices(ctx, id).Execute()
-	if err := errfmt.CheckResponse(readErr, readHttpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price", plan.Name.ValueString(), err, readHttpResp)
+	readResult, readHTTPResp, readErr := client.PricesAPI.GetPrices(ctx, id).Execute()
+	if err := errfmt.CheckResponse(readErr, readHTTPResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price", plan.Name.ValueString(), err, readHTTPResp)
+
 		return
 	}
 	rp := readResult.GetPrice()
@@ -193,6 +203,7 @@ func (r *priceResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -207,88 +218,26 @@ func (r *priceResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	_, httpResp, err := client.PricesAPI.DeactivatePrices(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "price", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *priceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *priceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *priceModel, p *sdk.AddPrices200ResponseAllOfPrice) {
-	if p.Id != nil {
-		model.ID = types.Int64Value(*p.Id)
-	}
-	if p.Name != nil {
-		model.Name = types.StringValue(*p.Name)
-	}
-	if p.Code != nil {
-		model.Code = types.StringValue(*p.Code)
-	}
-	if p.PriceType != nil {
-		model.PriceType = types.StringValue(*p.PriceType)
-	}
-	if p.PriceUnit != nil {
-		model.PriceUnit = types.StringValue(*p.PriceUnit)
-	}
-	if v := p.Cost.Get(); v != nil {
-		model.Cost = types.Float64Value(float64(*v))
-	}
-	if v := p.MarkupType.Get(); v != nil {
-		model.MarkupType = types.StringValue(*v)
-	} else {
-		model.MarkupType = types.StringNull()
-	}
-	if v := p.Markup.Get(); v != nil {
-		model.Markup = types.Float64Value(float64(*v))
-	} else {
-		model.Markup = types.Float64Null()
-	}
-	if p.Currency != nil {
-		model.Currency = types.StringValue(*p.Currency)
-	}
-}
-
 func mapGetResponseToModel(model *priceModel, p *sdk.GetPrices200ResponsePrice) {
-	if p.Id != nil {
-		model.ID = types.Int64Value(*p.Id)
-	}
-	if p.Name != nil {
-		model.Name = types.StringValue(*p.Name)
-	}
-	if p.Code != nil {
-		model.Code = types.StringValue(*p.Code)
-	}
-	if p.PriceType != nil {
-		model.PriceType = types.StringValue(*p.PriceType)
-	}
-	if p.PriceUnit != nil {
-		model.PriceUnit = types.StringValue(*p.PriceUnit)
-	}
-	if v := p.Cost.Get(); v != nil {
-		model.Cost = types.Float64Value(float64(*v))
-	}
-	if v := p.MarkupType.Get(); v != nil {
-		model.MarkupType = types.StringValue(*v)
-	} else {
-		model.MarkupType = types.StringNull()
-	}
-	if v := p.Markup.Get(); v != nil {
-		model.Markup = types.Float64Value(float64(*v))
-	} else {
-		model.Markup = types.Float64Null()
-	}
-	if p.Currency != nil {
-		model.Currency = types.StringValue(*p.Currency)
-	}
-}
-
-func mapUpdateResponseToModel(model *priceModel, p *sdk.UpdatePrices200ResponseAllOfPrice) {
 	if p.Id != nil {
 		model.ID = types.Int64Value(*p.Id)
 	}

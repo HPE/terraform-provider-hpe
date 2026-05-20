@@ -17,9 +17,9 @@ type scaleThresholdModel struct {
 	AutoDownscale types.Bool    `tfsdk:"auto_downscale"`
 	MinCount      types.Int64   `tfsdk:"min_count"`
 	MaxCount      types.Int64   `tfsdk:"max_count"`
-	CpuEnabled    types.Bool    `tfsdk:"cpu_enabled"`
-	MinCpu        types.Float64 `tfsdk:"min_cpu"`
-	MaxCpu        types.Float64 `tfsdk:"max_cpu"`
+	CPUEnabled    types.Bool    `tfsdk:"cpu_enabled"`
+	MinCPU        types.Float64 `tfsdk:"min_cpu"`
+	MaxCPU        types.Float64 `tfsdk:"max_cpu"`
 	MemoryEnabled types.Bool    `tfsdk:"memory_enabled"`
 	MinMemory     types.Float64 `tfsdk:"min_memory"`
 	MaxMemory     types.Float64 `tfsdk:"max_memory"`

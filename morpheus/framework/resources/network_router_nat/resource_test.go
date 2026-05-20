@@ -66,6 +66,7 @@ resource "hpe_morpheus_network_router_nat" "test" {
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}
+
 					return rs.Primary.Attributes["router_id"] + "/" + rs.Primary.ID, nil
 				},
 			},

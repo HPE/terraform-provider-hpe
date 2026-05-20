@@ -29,7 +29,11 @@ func NewResource() resource.Resource {
 	return &virtualImageResource{}
 }
 
-func (r *virtualImageResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *virtualImageResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_virtual_image"
 }
 
@@ -41,6 +45,7 @@ func (r *virtualImageResource) Create(ctx context.Context, req resource.CreateRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -63,8 +68,8 @@ func (r *virtualImageResource) Create(ctx context.Context, req resource.CreateRe
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
 		body.InstallAgent = plan.InstallAgent.ValueBoolPointer()
 	}
-	if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
-		body.MinRam = *sdk.NewNullableInt64(plan.MinRam.ValueInt64Pointer())
+	if !plan.MinRAM.IsNull() && !plan.MinRAM.IsUnknown() {
+		body.MinRam = *sdk.NewNullableInt64(plan.MinRAM.ValueInt64Pointer())
 	}
 	if !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown() {
 		body.MinDisk = *sdk.NewNullableInt64(plan.MinDisk.ValueInt64Pointer())
@@ -83,6 +88,7 @@ func (r *virtualImageResource) Create(ctx context.Context, req resource.CreateRe
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "virtual_image", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -102,6 +108,7 @@ func (r *virtualImageResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	if id == 0 {
 		resp.Diagnostics.AddError("Create Error", "Could not determine ID from create response")
+
 		return
 	}
 
@@ -109,6 +116,7 @@ func (r *virtualImageResource) Create(ctx context.Context, req resource.CreateRe
 	result, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "virtual_image", "", err, httpResp)
+
 		return
 	}
 
@@ -122,6 +130,7 @@ func (r *virtualImageResource) Read(ctx context.Context, req resource.ReadReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -136,10 +145,12 @@ func (r *virtualImageResource) Read(ctx context.Context, req resource.ReadReques
 	result, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "virtual_image", "", err, httpResp)
+
 		return
 	}
 
@@ -153,6 +164,7 @@ func (r *virtualImageResource) Update(ctx context.Context, req resource.UpdateRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -188,18 +200,20 @@ func (r *virtualImageResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 		body.Labels = labels
 	}
-	if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
+	if !plan.MinRAM.IsNull() && !plan.MinRAM.IsUnknown() {
 		if body.AdditionalProperties == nil {
 			body.AdditionalProperties = make(map[string]interface{})
 		}
-		body.AdditionalProperties["minRam"] = plan.MinRam.ValueInt64()
+		body.AdditionalProperties["minRam"] = plan.MinRAM.ValueInt64()
 	}
 
-	_, httpResp, err := client.LibraryAPI.UpdateVirtualImage(ctx, id).UpdateVirtualImageRequest(sdk.UpdateVirtualImageRequest{
-		VirtualImage: body,
-	}).Execute()
+	_, httpResp, err := client.LibraryAPI.UpdateVirtualImage(ctx, id).
+		UpdateVirtualImageRequest(sdk.UpdateVirtualImageRequest{
+			VirtualImage: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "virtual_image", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -207,6 +221,7 @@ func (r *virtualImageResource) Update(ctx context.Context, req resource.UpdateRe
 	result, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "virtual_image", "", err, httpResp)
+
 		return
 	}
 
@@ -220,6 +235,7 @@ func (r *virtualImageResource) Delete(ctx context.Context, req resource.DeleteRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -234,20 +250,31 @@ func (r *virtualImageResource) Delete(ctx context.Context, req resource.DeleteRe
 	_, httpResp, err := client.LibraryAPI.RemoveVirtualImage(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "virtual_image", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *virtualImageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *virtualImageResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetVirtualImageToModel(ctx context.Context, model *virtualImageModel, vi *sdk.GetVirtualImage200ResponseVirtualImage, diags *diag.Diagnostics) {
+func mapGetVirtualImageToModel(
+	ctx context.Context,
+	model *virtualImageModel,
+	vi *sdk.GetVirtualImage200ResponseVirtualImage,
+	diags *diag.Diagnostics,
+) {
 	if vi.Id != nil {
 		model.ID = types.Int64Value(*vi.Id)
 	}
@@ -269,9 +296,9 @@ func mapGetVirtualImageToModel(ctx context.Context, model *virtualImageModel, vi
 		model.InstallAgent = types.BoolValue(*vi.InstallAgent)
 	}
 	if vi.MinRam.IsSet() && vi.MinRam.Get() != nil {
-		model.MinRam = types.Int64Value(*vi.MinRam.Get())
-	} else if model.MinRam.IsNull() || model.MinRam.IsUnknown() {
-		model.MinRam = types.Int64Null()
+		model.MinRAM = types.Int64Value(*vi.MinRam.Get())
+	} else if model.MinRAM.IsNull() || model.MinRAM.IsUnknown() {
+		model.MinRAM = types.Int64Null()
 	}
 	if vi.MinDisk.IsSet() && vi.MinDisk.Get() != nil {
 		model.MinDisk = types.Int64Value(*vi.MinDisk.Get())

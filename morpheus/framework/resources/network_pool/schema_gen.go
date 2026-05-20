@@ -17,7 +17,7 @@ type networkPoolModel struct {
 	IpCount       types.Int64  `tfsdk:"ip_count"`
 	FreeCount     types.Int64  `tfsdk:"free_count"`
 	PoolEnabled   types.Bool   `tfsdk:"pool_enabled"`
-	DnsDomain     types.String `tfsdk:"dns_domain"`
+	DNSDomain     types.String `tfsdk:"dns_domain"`
 	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
 	Gateway       types.String `tfsdk:"gateway"`
 	Netmask       types.String `tfsdk:"netmask"`

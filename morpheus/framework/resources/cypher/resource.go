@@ -51,7 +51,15 @@ type cypherReadResponse struct {
 	Data          string `json:"data"`
 }
 
-func (r *cypherResource) doCypherRequest(ctx context.Context, method, cypherPath string, value string, ttl int64) (*http.Response, []byte, error) {
+func (r *cypherResource) doCypherRequest(
+	ctx context.Context,
+	method,
+	cypherPath string,
+	value string,
+	ttl int64) (*http.Response,
+	[]byte,
+	error,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -119,6 +127,7 @@ func (r *cypherResource) Create(ctx context.Context, req resource.CreateRequest,
 	httpResp, body, err := r.doCypherRequest(ctx, http.MethodPost, cypherPath, value, ttl)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating cypher", err.Error())
+
 		return
 	}
 	if httpResp.StatusCode >= 400 {
@@ -126,12 +135,14 @@ func (r *cypherResource) Create(ctx context.Context, req resource.CreateRequest,
 			fmt.Sprintf("Error creating cypher: HTTP %d", httpResp.StatusCode),
 			string(body),
 		)
+
 		return
 	}
 
 	var result cypherCreateResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		resp.Diagnostics.AddError("Error parsing cypher response", err.Error())
+
 		return
 	}
 
@@ -157,10 +168,12 @@ func (r *cypherResource) Read(ctx context.Context, req resource.ReadRequest, res
 	httpResp, body, err := r.doCypherRequest(ctx, http.MethodGet, cypherPath, "", 0)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading cypher", err.Error())
+
 		return
 	}
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if httpResp.StatusCode >= 400 {
@@ -168,12 +181,14 @@ func (r *cypherResource) Read(ctx context.Context, req resource.ReadRequest, res
 			fmt.Sprintf("Error reading cypher: HTTP %d", httpResp.StatusCode),
 			string(body),
 		)
+
 		return
 	}
 
 	var result cypherReadResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		resp.Diagnostics.AddError("Error parsing cypher response", err.Error())
+
 		return
 	}
 
@@ -199,6 +214,7 @@ func (r *cypherResource) Update(ctx context.Context, req resource.UpdateRequest,
 	httpResp, body, err := r.doCypherRequest(ctx, http.MethodDelete, cypherPath, "", 0)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting cypher for update", err.Error())
+
 		return
 	}
 	if httpResp.StatusCode >= 400 && !errfmt.IsNotFound(httpResp) {
@@ -206,6 +222,7 @@ func (r *cypherResource) Update(ctx context.Context, req resource.UpdateRequest,
 			fmt.Sprintf("Error deleting cypher for update: HTTP %d", httpResp.StatusCode),
 			string(body),
 		)
+
 		return
 	}
 
@@ -219,6 +236,7 @@ func (r *cypherResource) Update(ctx context.Context, req resource.UpdateRequest,
 	httpResp, body, err = r.doCypherRequest(ctx, http.MethodPost, cypherPath, value, ttl)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating cypher", err.Error())
+
 		return
 	}
 	if httpResp.StatusCode >= 400 {
@@ -226,12 +244,14 @@ func (r *cypherResource) Update(ctx context.Context, req resource.UpdateRequest,
 			fmt.Sprintf("Error creating cypher: HTTP %d", httpResp.StatusCode),
 			string(body),
 		)
+
 		return
 	}
 
 	var result cypherCreateResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		resp.Diagnostics.AddError("Error parsing cypher response", err.Error())
+
 		return
 	}
 
@@ -256,6 +276,7 @@ func (r *cypherResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	httpResp, body, err := r.doCypherRequest(ctx, http.MethodDelete, cypherPath, "", 0)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting cypher", err.Error())
+
 		return
 	}
 	if httpResp.StatusCode >= 400 && !errfmt.IsNotFound(httpResp) {
@@ -263,11 +284,16 @@ func (r *cypherResource) Delete(ctx context.Context, req resource.DeleteRequest,
 			fmt.Sprintf("Error deleting cypher: HTTP %d", httpResp.StatusCode),
 			string(body),
 		)
+
 		return
 	}
 }
 
-func (r *cypherResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *cypherResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Import by cypher key path
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 }

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &vdiGatewayResource{}
 }
 
-func (r *vdiGatewayResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *vdiGatewayResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_vdi_gateway"
 }
 
@@ -40,6 +44,7 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -62,6 +67,7 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -75,6 +81,7 @@ func (r *vdiGatewayResource) Read(ctx context.Context, req resource.ReadRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -89,10 +96,12 @@ func (r *vdiGatewayResource) Read(ctx context.Context, req resource.ReadRequest,
 	result, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_gateway", "", err, httpResp)
+
 		return
 	}
 
@@ -106,6 +115,7 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -125,11 +135,13 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
-		VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGatewayOneOfAsUpdateVDIGatewaysRequestVdiGateway(&body),
-	}).Execute()
+	result, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
+		UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
+			VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGatewayOneOfAsUpdateVDIGatewaysRequestVdiGateway(&body),
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -143,6 +155,7 @@ func (r *vdiGatewayResource) Delete(ctx context.Context, req resource.DeleteRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -157,14 +170,20 @@ func (r *vdiGatewayResource) Delete(ctx context.Context, req resource.DeleteRequ
 	_, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_gateway", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *vdiGatewayResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *vdiGatewayResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

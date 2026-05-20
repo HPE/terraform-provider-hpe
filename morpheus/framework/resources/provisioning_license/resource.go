@@ -28,18 +28,31 @@ func NewResource() resource.Resource {
 	return &provisioningLicenseResource{}
 }
 
-func (r *provisioningLicenseResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *provisioningLicenseResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_provisioning_license"
 }
 
-func (r *provisioningLicenseResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *provisioningLicenseResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = ProvisioningLicenseSchema(ctx)
 }
 
-func (r *provisioningLicenseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *provisioningLicenseResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -74,11 +87,13 @@ func (r *provisioningLicenseResource) Create(ctx context.Context, req resource.C
 		body.Tenants = tenants
 	}
 
-	result, httpResp, err := client.ProvisioningLicensesAPI.AddProvisioningLicense(ctx).AddProvisioningLicenseRequest(sdk.AddProvisioningLicenseRequest{
-		License: &body,
-	}).Execute()
+	result, httpResp, err := client.ProvisioningLicensesAPI.AddProvisioningLicense(ctx).
+		AddProvisioningLicenseRequest(sdk.AddProvisioningLicenseRequest{
+			License: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "provisioning_license", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -94,6 +109,7 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -108,10 +124,12 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	result, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "provisioning_license", "", err, httpResp)
+
 		return
 	}
 
@@ -138,10 +156,15 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *provisioningLicenseResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *provisioningLicenseResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -176,21 +199,28 @@ func (r *provisioningLicenseResource) Update(ctx context.Context, req resource.U
 		body.Tenants = tenants
 	}
 
-	_, httpResp, err := client.ProvisioningLicensesAPI.UpdateProvisioningLicense(ctx, id).UpdateProvisioningLicenseRequest(sdk.UpdateProvisioningLicenseRequest{
-		License: &body,
-	}).Execute()
+	_, httpResp, err := client.ProvisioningLicensesAPI.UpdateProvisioningLicense(ctx, id).
+		UpdateProvisioningLicenseRequest(sdk.UpdateProvisioningLicenseRequest{
+			License: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "provisioning_license", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *provisioningLicenseResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *provisioningLicenseResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -205,14 +235,20 @@ func (r *provisioningLicenseResource) Delete(ctx context.Context, req resource.D
 	_, httpResp, err := client.ProvisioningLicensesAPI.RemoveProvisioningLicense(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "provisioning_license", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *provisioningLicenseResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *provisioningLicenseResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

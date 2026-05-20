@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &storageBucketResource{}
 }
 
-func (r *storageBucketResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *storageBucketResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_storage_bucket"
 }
 
@@ -40,6 +44,7 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -78,11 +83,13 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		}
 	}
 
-	result, httpResp, err := client.StorageAPI.AddStorageBuckets(ctx).AddStorageBucketsRequest(sdk.AddStorageBucketsRequest{
-		StorageBucket: body,
-	}).Execute()
+	result, httpResp, err := client.StorageAPI.AddStorageBuckets(ctx).
+		AddStorageBucketsRequest(sdk.AddStorageBucketsRequest{
+			StorageBucket: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -96,6 +103,7 @@ func (r *storageBucketResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -110,10 +118,12 @@ func (r *storageBucketResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_bucket", "", err, httpResp)
+
 		return
 	}
 
@@ -127,6 +137,7 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -154,11 +165,13 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		body.RetentionPolicyType = &retType
 	}
 
-	_, httpResp, err := client.StorageAPI.UpdateStorageBuckets(ctx, id).UpdateStorageBucketsRequest(sdk.UpdateStorageBucketsRequest{
-		StorageBucket: body,
-	}).Execute()
+	_, httpResp, err := client.StorageAPI.UpdateStorageBuckets(ctx, id).
+		UpdateStorageBucketsRequest(sdk.UpdateStorageBucketsRequest{
+			StorageBucket: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -169,6 +182,7 @@ func (r *storageBucketResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -183,14 +197,20 @@ func (r *storageBucketResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_bucket", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *storageBucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *storageBucketResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

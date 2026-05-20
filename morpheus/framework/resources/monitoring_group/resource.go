@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &monitoringGroupResource{}
 }
 
-func (r *monitoringGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *monitoringGroupResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_group"
 }
 
@@ -36,10 +40,15 @@ func (r *monitoringGroupResource) Schema(ctx context.Context, _ resource.SchemaR
 	resp.Schema = MonitoringGroupSchema(ctx)
 }
 
-func (r *monitoringGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *monitoringGroupResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -56,7 +65,7 @@ func (r *monitoringGroupResource) Create(ctx context.Context, req resource.Creat
 		body.Description = plan.Description.ValueStringPointer()
 	}
 	if !plan.MinHappy.IsNull() {
-		mh := int32(plan.MinHappy.ValueInt64())
+		mh := int32(plan.MinHappy.ValueInt64()) //nolint:gosec // value range is safe
 		body.MinHappy = &mh
 	}
 	if !plan.Severity.IsNull() {
@@ -74,6 +83,7 @@ func (r *monitoringGroupResource) Create(ctx context.Context, req resource.Creat
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -87,6 +97,7 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -101,10 +112,12 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 	result, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_group", "", err, httpResp)
+
 		return
 	}
 
@@ -114,10 +127,15 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *monitoringGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *monitoringGroupResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -136,7 +154,7 @@ func (r *monitoringGroupResource) Update(ctx context.Context, req resource.Updat
 		body.Description = plan.Description.ValueStringPointer()
 	}
 	if !plan.MinHappy.IsNull() {
-		mh := int32(plan.MinHappy.ValueInt64())
+		mh := int32(plan.MinHappy.ValueInt64()) //nolint:gosec // value range is safe
 		body.MinHappy = &mh
 	}
 	if !plan.Severity.IsNull() {
@@ -149,11 +167,13 @@ func (r *monitoringGroupResource) Update(ctx context.Context, req resource.Updat
 		body.Active = plan.Active.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).UpdateCheckGroupsRequest(sdk.UpdateCheckGroupsRequest{
-		CheckGroup: body,
-	}).Execute()
+	result, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
+		UpdateCheckGroupsRequest(sdk.UpdateCheckGroupsRequest{
+			CheckGroup: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -163,10 +183,15 @@ func (r *monitoringGroupResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *monitoringGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *monitoringGroupResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -181,14 +206,20 @@ func (r *monitoringGroupResource) Delete(ctx context.Context, req resource.Delet
 	_, httpResp, err := client.ChecksAPI.DeleteCheckGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_group", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *monitoringGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *monitoringGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
@@ -248,7 +279,10 @@ func mapGetGroupResponseToModel(model *monitoringGroupModel, group *sdk.GetCheck
 	}
 }
 
-func mapUpdateGroupResponseToModel(model *monitoringGroupModel, group *sdk.UpdateCheckGroups200ResponseAllOfCheckGroup) {
+func mapUpdateGroupResponseToModel(
+	model *monitoringGroupModel,
+	group *sdk.UpdateCheckGroups200ResponseAllOfCheckGroup,
+) {
 	if group.Id != nil {
 		model.ID = types.Int64Value(*group.Id)
 	}

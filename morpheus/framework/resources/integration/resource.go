@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &integrationResource{}
 }
 
-func (r *integrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *integrationResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_integration"
 }
 
@@ -40,6 +44,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -80,6 +85,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	result, httpResp, err := client.IntegrationsAPI.AddIntegrations(ctx).AddIntegrationsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "integration", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -92,6 +98,7 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -106,10 +113,12 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 	result, httpResp, err := client.IntegrationsAPI.GetIntegrations(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "integration", "", err, httpResp)
+
 		return
 	}
 
@@ -122,6 +131,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -164,6 +174,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	_, httpResp, err := client.IntegrationsAPI.UpdateIntegrations(ctx, id).UpdateIntegrationsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "integration", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -171,6 +182,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	result, httpResp, err := client.IntegrationsAPI.GetIntegrations(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "integration", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -183,6 +195,7 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -197,14 +210,20 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	_, httpResp, err := client.IntegrationsAPI.RemoveIntegrations(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "integration", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *integrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *integrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

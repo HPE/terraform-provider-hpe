@@ -99,7 +99,8 @@ resource "hpe_morpheus_library_container_script" "test" {
 			{
 				Config: providerConfig + updateConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_library_container_script.test", "script", "#!/bin/bash\necho updated"),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_library_container_script.test", "script", "!/bin/bash\necho updated"),
 				),
 			},
 		},

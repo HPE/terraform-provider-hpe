@@ -64,6 +64,7 @@ func testAccLibraryContainerTypeConfig(name, shortName, version, description str
 	if description != "" {
 		desc = fmt.Sprintf(`description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_library_container_type" "test" {
   name                = %q

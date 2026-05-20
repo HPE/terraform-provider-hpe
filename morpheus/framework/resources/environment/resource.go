@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &environmentResource{}
 }
 
-func (r *environmentResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *environmentResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_environment"
 }
 
@@ -40,6 +44,7 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -68,6 +73,7 @@ func (r *environmentResource) Create(ctx context.Context, req resource.CreateReq
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "environment", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -81,6 +87,7 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -95,10 +102,12 @@ func (r *environmentResource) Read(ctx context.Context, req resource.ReadRequest
 	result, httpResp, err := client.EnvironmentsAPI.GetEnvironments(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "environment", "", err, httpResp)
+
 		return
 	}
 
@@ -112,6 +121,7 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -139,11 +149,13 @@ func (r *environmentResource) Update(ctx context.Context, req resource.UpdateReq
 		body.Active = plan.Active.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.EnvironmentsAPI.UpdateEnvironments(ctx, id).UpdateEnvironmentsRequest(sdk.UpdateEnvironmentsRequest{
-		Environment: body,
-	}).Execute()
+	result, httpResp, err := client.EnvironmentsAPI.UpdateEnvironments(ctx, id).
+		UpdateEnvironmentsRequest(sdk.UpdateEnvironmentsRequest{
+			Environment: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "environment", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -157,6 +169,7 @@ func (r *environmentResource) Delete(ctx context.Context, req resource.DeleteReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -171,14 +184,20 @@ func (r *environmentResource) Delete(ctx context.Context, req resource.DeleteReq
 	_, httpResp, err := client.EnvironmentsAPI.DeleteEnvironments(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "environment", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *environmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *environmentResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

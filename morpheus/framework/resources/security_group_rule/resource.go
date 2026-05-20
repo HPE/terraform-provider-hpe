@@ -29,18 +29,31 @@ func NewResource() resource.Resource {
 	return &securityGroupRuleResource{}
 }
 
-func (r *securityGroupRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *securityGroupRuleResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_security_group_rule"
 }
 
-func (r *securityGroupRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *securityGroupRuleResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = SecurityGroupRuleSchema(ctx)
 }
 
-func (r *securityGroupRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *securityGroupRuleResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -81,11 +94,13 @@ func (r *securityGroupRuleResource) Create(ctx context.Context, req resource.Cre
 		body.Policy = plan.Policy.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroupRules(ctx, sgID).AddSecurityGroupRulesRequest(sdk.AddSecurityGroupRulesRequest{
-		Rule: body,
-	}).Execute()
+	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroupRules(ctx, sgID).
+		AddSecurityGroupRulesRequest(sdk.AddSecurityGroupRulesRequest{
+			Rule: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "security_group_rule", "", err, httpResp)
+
 		return
 	}
 
@@ -100,6 +115,7 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -115,10 +131,12 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleID).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group_rule", "", err, httpResp)
+
 		return
 	}
 
@@ -128,10 +146,15 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *securityGroupRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *securityGroupRuleResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -173,11 +196,13 @@ func (r *securityGroupRuleResource) Update(ctx context.Context, req resource.Upd
 		body.Policy = plan.Policy.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).UpdateSecurityGroupRulesRequest(sdk.UpdateSecurityGroupRulesRequest{
-		Rule: body,
-	}).Execute()
+	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).
+		UpdateSecurityGroupRulesRequest(sdk.UpdateSecurityGroupRulesRequest{
+			Rule: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "security_group_rule", "", err, httpResp)
+
 		return
 	}
 
@@ -187,10 +212,15 @@ func (r *securityGroupRuleResource) Update(ctx context.Context, req resource.Upd
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *securityGroupRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *securityGroupRuleResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -206,25 +236,35 @@ func (r *securityGroupRuleResource) Delete(ctx context.Context, req resource.Del
 	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "security_group_rule", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *securityGroupRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *securityGroupRuleResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parts := strings.Split(req.ID, "/")
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Expected import ID in format 'security_group_id/rule_id', got %q", req.ID))
+		resp.Diagnostics.AddError("Invalid ID",
+			fmt.Sprintf("Expected import ID in format 'security_group_id/rule_id', got %q", req.ID))
+
 		return
 	}
 
 	sgID, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse security_group_id %q as integer: %s", parts[0], err))
+		resp.Diagnostics.AddError("Invalid ID",
+			fmt.Sprintf("Could not parse security_group_id %q as integer: %s", parts[0], err))
+
 		return
 	}
 	ruleID, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse rule_id %q as integer: %s", parts[1], err))
+
 		return
 	}
 

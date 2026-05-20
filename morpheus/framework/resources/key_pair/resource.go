@@ -40,6 +40,7 @@ func (r *keyPairResource) Create(ctx context.Context, req resource.CreateRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -65,6 +66,7 @@ func (r *keyPairResource) Create(ctx context.Context, req resource.CreateRequest
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "key_pair", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -86,6 +88,7 @@ func (r *keyPairResource) Read(ctx context.Context, req resource.ReadRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -100,10 +103,12 @@ func (r *keyPairResource) Read(ctx context.Context, req resource.ReadRequest, re
 	result, httpResp, err := client.KeyPairsAPI.GetKeyPairs(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "key_pair", "", err, httpResp)
+
 		return
 	}
 
@@ -133,6 +138,7 @@ func (r *keyPairResource) Delete(ctx context.Context, req resource.DeleteRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -147,14 +153,20 @@ func (r *keyPairResource) Delete(ctx context.Context, req resource.DeleteRequest
 	_, httpResp, err := client.KeyPairsAPI.RemoveKeyPairs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "key_pair", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *keyPairResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *keyPairResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

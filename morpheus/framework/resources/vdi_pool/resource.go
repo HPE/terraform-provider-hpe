@@ -40,6 +40,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -100,6 +101,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -108,12 +110,14 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	listResult, httpResp, err := client.VDIAPI.ListVDIPools(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	pools := listResult.GetVdiPools()
 	if len(pools) == 0 {
 		resp.Diagnostics.AddError("VDI Pool Not Found", "Could not find the newly created VDI pool by name.")
+
 		return
 	}
 
@@ -124,6 +128,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	readResult, httpResp, err := client.VDIAPI.GetVDIPools(ctx, poolID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -137,6 +142,7 @@ func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -151,10 +157,12 @@ func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, re
 	result, httpResp, err := client.VDIAPI.GetVDIPools(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", "", err, httpResp)
+
 		return
 	}
 
@@ -168,6 +176,7 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -216,6 +225,7 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -223,6 +233,7 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 	result, httpResp, err := client.VDIAPI.GetVDIPools(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -236,6 +247,7 @@ func (r *vdiPoolResource) Delete(ctx context.Context, req resource.DeleteRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -250,14 +262,20 @@ func (r *vdiPoolResource) Delete(ctx context.Context, req resource.DeleteRequest
 	_, httpResp, err := client.VDIAPI.RemoveVDIPools(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_pool", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *vdiPoolResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *vdiPoolResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

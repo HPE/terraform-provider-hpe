@@ -69,6 +69,7 @@ func testAccCredentialConfig(name, credType, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`  description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_credential" "test" {
   name     = %q

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &executeScheduleResource{}
 }
 
-func (r *executeScheduleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *executeScheduleResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_execute_schedule"
 }
 
@@ -36,10 +40,15 @@ func (r *executeScheduleResource) Schema(ctx context.Context, _ resource.SchemaR
 	resp.Schema = ExecuteScheduleSchema(ctx)
 }
 
-func (r *executeScheduleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *executeScheduleResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -68,11 +77,13 @@ func (r *executeScheduleResource) Create(ctx context.Context, req resource.Creat
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.AutomationAPI.AddExecuteSchedules(ctx).AddExecuteSchedulesRequest(sdk.AddExecuteSchedulesRequest{
-		Schedule: body,
-	}).Execute()
+	result, httpResp, err := client.AutomationAPI.AddExecuteSchedules(ctx).
+		AddExecuteSchedulesRequest(sdk.AddExecuteSchedulesRequest{
+			Schedule: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "execute_schedule", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -86,6 +97,7 @@ func (r *executeScheduleResource) Read(ctx context.Context, req resource.ReadReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -100,10 +112,12 @@ func (r *executeScheduleResource) Read(ctx context.Context, req resource.ReadReq
 	result, httpResp, err := client.AutomationAPI.GetExecuteSchedules(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "execute_schedule", "", err, httpResp)
+
 		return
 	}
 
@@ -113,10 +127,15 @@ func (r *executeScheduleResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *executeScheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *executeScheduleResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -148,11 +167,13 @@ func (r *executeScheduleResource) Update(ctx context.Context, req resource.Updat
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.AutomationAPI.UpdateExecuteSchedules(ctx, id).UpdateExecuteSchedulesRequest(sdk.UpdateExecuteSchedulesRequest{
-		Schedule: body,
-	}).Execute()
+	result, httpResp, err := client.AutomationAPI.UpdateExecuteSchedules(ctx, id).
+		UpdateExecuteSchedulesRequest(sdk.UpdateExecuteSchedulesRequest{
+			Schedule: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "execute_schedule", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -162,10 +183,15 @@ func (r *executeScheduleResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *executeScheduleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *executeScheduleResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -180,14 +206,20 @@ func (r *executeScheduleResource) Delete(ctx context.Context, req resource.Delet
 	_, httpResp, err := client.AutomationAPI.RemoveExecuteSchedules(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "execute_schedule", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *executeScheduleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *executeScheduleResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

@@ -63,6 +63,7 @@ func testAccStorageBucketConfig(name, providerType, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`  description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_bucket" "test" {
   name          = %q

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &userSourceResource{}
 }
 
-func (r *userSourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *userSourceResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_user_source"
 }
 
@@ -40,6 +44,7 @@ func (r *userSourceResource) Create(ctx context.Context, req resource.CreateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -66,6 +71,7 @@ func (r *userSourceResource) Create(ctx context.Context, req resource.CreateRequ
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "user_source", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -83,6 +89,7 @@ func (r *userSourceResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if id == 0 {
 		resp.Diagnostics.AddError("Create Error", "Could not determine ID from create response")
+
 		return
 	}
 
@@ -90,6 +97,7 @@ func (r *userSourceResource) Create(ctx context.Context, req resource.CreateRequ
 	readResp, httpResp, err := client.IdentitySourcesAPI.GetIdentitySources(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_source", "", err, httpResp)
+
 		return
 	}
 
@@ -102,6 +110,7 @@ func (r *userSourceResource) Read(ctx context.Context, req resource.ReadRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -116,10 +125,12 @@ func (r *userSourceResource) Read(ctx context.Context, req resource.ReadRequest,
 	readResp, httpResp, err := client.IdentitySourcesAPI.GetIdentitySources(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_source", "", err, httpResp)
+
 		return
 	}
 
@@ -132,6 +143,7 @@ func (r *userSourceResource) Update(ctx context.Context, req resource.UpdateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -159,6 +171,7 @@ func (r *userSourceResource) Update(ctx context.Context, req resource.UpdateRequ
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "user_source", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -166,6 +179,7 @@ func (r *userSourceResource) Update(ctx context.Context, req resource.UpdateRequ
 	readResp, httpResp, err := client.IdentitySourcesAPI.GetIdentitySources(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_source", "", err, httpResp)
+
 		return
 	}
 
@@ -178,6 +192,7 @@ func (r *userSourceResource) Delete(ctx context.Context, req resource.DeleteRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -192,14 +207,20 @@ func (r *userSourceResource) Delete(ctx context.Context, req resource.DeleteRequ
 	_, httpResp, err := client.IdentitySourcesAPI.RemoveIdentitySources(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "user_source", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *userSourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *userSourceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
@@ -216,6 +237,7 @@ func mapGetUserSourceToModel(model *userSourceModel, resp *sdk.GetIdentitySource
 		if resp.AdditionalProperties != nil {
 			extractUserSourceFromMap(model, resp.AdditionalProperties)
 		}
+
 		return
 	}
 

@@ -40,6 +40,7 @@ func (r *jobResource) Create(ctx context.Context, req resource.CreateRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -78,6 +79,7 @@ func (r *jobResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "job", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -91,6 +93,7 @@ func (r *jobResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -105,10 +108,12 @@ func (r *jobResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	result, httpResp, err := client.JobsAPI.GetJobs(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "job", "", err, httpResp)
+
 		return
 	}
 
@@ -122,6 +127,7 @@ func (r *jobResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -151,6 +157,7 @@ func (r *jobResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "job", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -158,6 +165,7 @@ func (r *jobResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	getResult, httpResp, err := client.JobsAPI.GetJobs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "job", "", err, httpResp)
+
 		return
 	}
 
@@ -171,6 +179,7 @@ func (r *jobResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -185,14 +194,20 @@ func (r *jobResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	_, httpResp, err := client.JobsAPI.RemoveJobs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "job", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *jobResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *jobResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

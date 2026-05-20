@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &powerScheduleResource{}
 }
 
-func (r *powerScheduleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *powerScheduleResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_power_schedule"
 }
 
@@ -40,6 +44,7 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -111,6 +116,7 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 	result, httpResp, err := client.AutomationAPI.AddPowerSchedules(ctx).AddPowerSchedulesRequest(reqBody).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "power_schedule", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -124,6 +130,7 @@ func (r *powerScheduleResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -138,10 +145,12 @@ func (r *powerScheduleResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "power_schedule", "", err, httpResp)
+
 		return
 	}
 
@@ -155,6 +164,7 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -224,11 +234,13 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).UpdatePowerSchedulesRequest(sdk.UpdatePowerSchedulesRequest{
-		Schedule: body,
-	}).Execute()
+	result, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
+		UpdatePowerSchedulesRequest(sdk.UpdatePowerSchedulesRequest{
+			Schedule: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "power_schedule", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -242,6 +254,7 @@ func (r *powerScheduleResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -256,14 +269,20 @@ func (r *powerScheduleResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "power_schedule", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *powerScheduleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *powerScheduleResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
@@ -290,7 +309,15 @@ func mapAddResponseToModel(model *powerScheduleModel, schedule *sdk.AddPowerSche
 	if schedule.Enabled != nil {
 		model.Enabled = types.BoolValue(*schedule.Enabled)
 	}
-	mapTimeFields(model, schedule.MondayOnTime, schedule.MondayOffTime, schedule.TuesdayOnTime, schedule.TuesdayOffTime, schedule.WednesdayOnTime, schedule.WednesdayOffTime, schedule.ThursdayOnTime, schedule.ThursdayOffTime, schedule.FridayOnTime, schedule.FridayOffTime, schedule.SaturdayOnTime, schedule.SaturdayOffTime, schedule.SundayOnTime, schedule.SundayOffTime)
+	mapTimeFields(model,
+		schedule.MondayOnTime, schedule.MondayOffTime,
+		schedule.TuesdayOnTime, schedule.TuesdayOffTime,
+		schedule.WednesdayOnTime, schedule.WednesdayOffTime,
+		schedule.ThursdayOnTime, schedule.ThursdayOffTime,
+		schedule.FridayOnTime, schedule.FridayOffTime,
+		schedule.SaturdayOnTime, schedule.SaturdayOffTime,
+		schedule.SundayOnTime, schedule.SundayOffTime,
+	)
 	if schedule.TotalMonthlyHoursSaved != nil {
 		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
 	} else {
@@ -319,7 +346,15 @@ func mapGetResponseToModel(model *powerScheduleModel, schedule *sdk.GetPowerSche
 	if schedule.Enabled != nil {
 		model.Enabled = types.BoolValue(*schedule.Enabled)
 	}
-	mapTimeFields(model, schedule.MondayOnTime, schedule.MondayOffTime, schedule.TuesdayOnTime, schedule.TuesdayOffTime, schedule.WednesdayOnTime, schedule.WednesdayOffTime, schedule.ThursdayOnTime, schedule.ThursdayOffTime, schedule.FridayOnTime, schedule.FridayOffTime, schedule.SaturdayOnTime, schedule.SaturdayOffTime, schedule.SundayOnTime, schedule.SundayOffTime)
+	mapTimeFields(model,
+		schedule.MondayOnTime, schedule.MondayOffTime,
+		schedule.TuesdayOnTime, schedule.TuesdayOffTime,
+		schedule.WednesdayOnTime, schedule.WednesdayOffTime,
+		schedule.ThursdayOnTime, schedule.ThursdayOffTime,
+		schedule.FridayOnTime, schedule.FridayOffTime,
+		schedule.SaturdayOnTime, schedule.SaturdayOffTime,
+		schedule.SundayOnTime, schedule.SundayOffTime,
+	)
 	if schedule.TotalMonthlyHoursSaved != nil {
 		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
 	} else {
@@ -348,7 +383,15 @@ func mapUpdateResponseToModel(model *powerScheduleModel, schedule *sdk.UpdatePow
 	if schedule.Enabled != nil {
 		model.Enabled = types.BoolValue(*schedule.Enabled)
 	}
-	mapTimeFields(model, schedule.MondayOnTime, schedule.MondayOffTime, schedule.TuesdayOnTime, schedule.TuesdayOffTime, schedule.WednesdayOnTime, schedule.WednesdayOffTime, schedule.ThursdayOnTime, schedule.ThursdayOffTime, schedule.FridayOnTime, schedule.FridayOffTime, schedule.SaturdayOnTime, schedule.SaturdayOffTime, schedule.SundayOnTime, schedule.SundayOffTime)
+	mapTimeFields(model,
+		schedule.MondayOnTime, schedule.MondayOffTime,
+		schedule.TuesdayOnTime, schedule.TuesdayOffTime,
+		schedule.WednesdayOnTime, schedule.WednesdayOffTime,
+		schedule.ThursdayOnTime, schedule.ThursdayOffTime,
+		schedule.FridayOnTime, schedule.FridayOffTime,
+		schedule.SaturdayOnTime, schedule.SaturdayOffTime,
+		schedule.SundayOnTime, schedule.SundayOffTime,
+	)
 	if schedule.TotalMonthlyHoursSaved != nil {
 		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
 	} else {
@@ -356,7 +399,23 @@ func mapUpdateResponseToModel(model *powerScheduleModel, schedule *sdk.UpdatePow
 	}
 }
 
-func mapTimeFields(model *powerScheduleModel, mondayOn, mondayOff, tuesdayOn, tuesdayOff, wednesdayOn, wednesdayOff, thursdayOn, thursdayOff, fridayOn, fridayOff, saturdayOn, saturdayOff, sundayOn, sundayOff *string) {
+func mapTimeFields(
+	model *powerScheduleModel,
+	mondayOn,
+	mondayOff,
+	tuesdayOn,
+	tuesdayOff,
+	wednesdayOn,
+	wednesdayOff,
+	thursdayOn,
+	thursdayOff,
+	fridayOn,
+	fridayOff,
+	saturdayOn,
+	saturdayOff,
+	sundayOn,
+	sundayOff *string,
+) {
 	model.MondayOnTime = ptrToStringValue(mondayOn)
 	model.MondayOffTime = ptrToStringValue(mondayOff)
 	model.TuesdayOnTime = ptrToStringValue(tuesdayOn)
@@ -377,5 +436,6 @@ func ptrToStringValue(s *string) types.String {
 	if s != nil {
 		return types.StringValue(*s)
 	}
+
 	return types.StringNull()
 }

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &storageVolumeResource{}
 }
 
-func (r *storageVolumeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *storageVolumeResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_storage_volume"
 }
 
@@ -40,6 +44,7 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -70,11 +75,13 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		body.Config = config
 	}
 
-	result, httpResp, err := client.StorageAPI.AddStorageVolumes(ctx).AddStorageVolumesRequest(sdk.AddStorageVolumesRequest{
-		StorageVolume: body,
-	}).Execute()
+	result, httpResp, err := client.StorageAPI.AddStorageVolumes(ctx).
+		AddStorageVolumesRequest(sdk.AddStorageVolumesRequest{
+			StorageVolume: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "storage_volume", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -88,6 +95,7 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -103,10 +111,12 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_volume", "", err, httpResp)
+
 		return
 	}
 
@@ -120,6 +130,7 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -145,11 +156,13 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 		body.Config = config
 	}
 
-	_, httpResp, err := client.StorageAPI.UpdateStorageVolumes(ctx, idParam).UpdateStorageVolumesRequest(sdk.UpdateStorageVolumesRequest{
-		StorageVolume: body,
-	}).Execute()
+	_, httpResp, err := client.StorageAPI.UpdateStorageVolumes(ctx, idParam).
+		UpdateStorageVolumesRequest(sdk.UpdateStorageVolumesRequest{
+			StorageVolume: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "storage_volume", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -160,6 +173,7 @@ func (r *storageVolumeResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -175,14 +189,20 @@ func (r *storageVolumeResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_volume", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *storageVolumeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *storageVolumeResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

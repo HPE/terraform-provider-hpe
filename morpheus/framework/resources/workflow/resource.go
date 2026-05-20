@@ -41,6 +41,7 @@ func (r *workflowResource) Create(ctx context.Context, req resource.CreateReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -76,6 +77,7 @@ func (r *workflowResource) Create(ctx context.Context, req resource.CreateReques
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "workflow", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -89,6 +91,7 @@ func (r *workflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -103,10 +106,12 @@ func (r *workflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 	result, httpResp, err := client.AutomationAPI.GetWorkflows(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "workflow", "", err, httpResp)
+
 		return
 	}
 
@@ -120,6 +125,7 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -154,6 +160,7 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "workflow", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -161,6 +168,7 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 	getResult, httpResp, err := client.AutomationAPI.GetWorkflows(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "workflow", "", err, httpResp)
+
 		return
 	}
 
@@ -174,6 +182,7 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -188,20 +197,31 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 	_, httpResp, err := client.AutomationAPI.RemoveWorkflows(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "workflow", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *workflowResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *workflowResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(ctx context.Context, model *workflowModel, ts *sdk.AddWorkflows200ResponseAllOfTaskSet, diags *diag.Diagnostics) {
+func mapAddResponseToModel(
+	ctx context.Context,
+	model *workflowModel,
+	ts *sdk.AddWorkflows200ResponseAllOfTaskSet,
+	diags *diag.Diagnostics,
+) {
 	if ts.Id != nil {
 		model.ID = types.Int64Value(*ts.Id)
 	}
@@ -233,7 +253,12 @@ func mapAddResponseToModel(ctx context.Context, model *workflowModel, ts *sdk.Ad
 	}
 }
 
-func mapGetResponseToModel(ctx context.Context, model *workflowModel, ts *sdk.GetWorkflows200ResponseAllOfTaskSet, diags *diag.Diagnostics) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *workflowModel,
+	ts *sdk.GetWorkflows200ResponseAllOfTaskSet,
+	diags *diag.Diagnostics,
+) {
 	if ts.Id != nil {
 		model.ID = types.Int64Value(*ts.Id)
 	}

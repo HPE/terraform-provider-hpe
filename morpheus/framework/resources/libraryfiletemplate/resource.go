@@ -31,18 +31,31 @@ func NewResource() resource.Resource {
 	return &libraryFileTemplateResource{}
 }
 
-func (r *libraryFileTemplateResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryFileTemplateResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_file_template"
 }
 
-func (r *libraryFileTemplateResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *libraryFileTemplateResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = LibraryFileTemplateSchema(ctx)
 }
 
-func (r *libraryFileTemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *libraryFileTemplateResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -89,6 +102,7 @@ func (r *libraryFileTemplateResource) Create(ctx context.Context, req resource.C
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_file_template", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -106,12 +120,14 @@ func (r *libraryFileTemplateResource) Create(ctx context.Context, req resource.C
 
 	if plan.ID.ValueInt64() == 0 {
 		resp.Diagnostics.AddError("Create Failed", "Could not extract ID from API response")
+
 		return
 	}
 
 	// Read back the full resource
 	if err := readFileTemplateIntoModel(ctx, client, plan.ID.ValueInt64(), &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_file_template", plan.Name.ValueString(), err, nil)
+
 		return
 	}
 
@@ -122,6 +138,7 @@ func (r *libraryFileTemplateResource) Read(ctx context.Context, req resource.Rea
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -136,19 +153,26 @@ func (r *libraryFileTemplateResource) Read(ctx context.Context, req resource.Rea
 	if err := readFileTemplateIntoModel(ctx, client, id, &state, &resp.Diagnostics); err != nil {
 		if err.Error() == "not found" {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_file_template", "", err, nil)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryFileTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *libraryFileTemplateResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -192,27 +216,35 @@ func (r *libraryFileTemplateResource) Update(ctx context.Context, req resource.U
 		body.SettingCategory = plan.SettingCategory.ValueStringPointer()
 	}
 
-	_, httpResp, err := client.LibraryAPI.UpdateFileTemplate(ctx, id).UpdateFileTemplateRequest(sdk.UpdateFileTemplateRequest{
-		ContainerTemplate: &body,
-	}).Execute()
+	_, httpResp, err := client.LibraryAPI.UpdateFileTemplate(ctx, id).
+		UpdateFileTemplateRequest(sdk.UpdateFileTemplateRequest{
+			ContainerTemplate: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_file_template", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	// Read back the full resource
 	if err := readFileTemplateIntoModel(ctx, client, id, &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_file_template", plan.Name.ValueString(), err, nil)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryFileTemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *libraryFileTemplateResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -227,20 +259,31 @@ func (r *libraryFileTemplateResource) Delete(ctx context.Context, req resource.D
 	_, httpResp, err := client.LibraryAPI.DeleteFileTemplate(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_file_template", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryFileTemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryFileTemplateResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(ctx context.Context, model *libraryFileTemplateModel, tmpl *sdk.GetFileTemplate200ResponseContainerTemplate, diags *diag.Diagnostics) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *libraryFileTemplateModel,
+	tmpl *sdk.GetFileTemplate200ResponseContainerTemplate,
+	diags *diag.Diagnostics,
+) {
 	if tmpl.Id != nil {
 		model.ID = types.Int64Value(*tmpl.Id)
 	}
@@ -289,7 +332,13 @@ func mapGetResponseToModel(ctx context.Context, model *libraryFileTemplateModel,
 
 // readFileTemplateIntoModel calls GetFileTemplate and handles potential SDK
 // deserialization issues by falling back to raw JSON parsing.
-func readFileTemplateIntoModel(ctx context.Context, client *sdk.APIClient, id int64, model *libraryFileTemplateModel, diags *diag.Diagnostics) error {
+func readFileTemplateIntoModel(
+	ctx context.Context,
+	client *sdk.APIClient,
+	id int64,
+	model *libraryFileTemplateModel,
+	diags *diag.Diagnostics,
+) error {
 	result, httpResp, err := client.LibraryAPI.GetFileTemplate(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		return fmt.Errorf("not found")
@@ -299,6 +348,7 @@ func readFileTemplateIntoModel(ctx context.Context, client *sdk.APIClient, id in
 	if err == nil && result != nil {
 		tmpl := result.GetContainerTemplate()
 		mapGetResponseToModel(ctx, model, &tmpl, diags)
+
 		return nil
 	}
 
@@ -320,10 +370,16 @@ func readFileTemplateIntoModel(ctx context.Context, client *sdk.APIClient, id in
 	}
 
 	mapGenericTemplateToModel(ctx, model, raw.ContainerTemplate, diags)
+
 	return nil
 }
 
-func mapGenericTemplateToModel(ctx context.Context, model *libraryFileTemplateModel, m map[string]interface{}, diags *diag.Diagnostics) {
+func mapGenericTemplateToModel(
+	ctx context.Context,
+	model *libraryFileTemplateModel,
+	m map[string]interface{},
+	diags *diag.Diagnostics,
+) {
 	if id, ok := m["id"].(float64); ok {
 		model.ID = types.Int64Value(int64(id))
 	}

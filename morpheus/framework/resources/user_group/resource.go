@@ -40,6 +40,7 @@ func (r *userGroupResource) Create(ctx context.Context, req resource.CreateReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -67,6 +68,7 @@ func (r *userGroupResource) Create(ctx context.Context, req resource.CreateReque
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "user_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -80,6 +82,7 @@ func (r *userGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -94,10 +97,12 @@ func (r *userGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	result, httpResp, err := client.UsersAPI.GetUserGroup(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_group", "", err, httpResp)
+
 		return
 	}
 
@@ -111,6 +116,7 @@ func (r *userGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -140,6 +146,7 @@ func (r *userGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "user_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -153,6 +160,7 @@ func (r *userGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -167,14 +175,20 @@ func (r *userGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	_, httpResp, err := client.UsersAPI.DeleteUserGroup(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "user_group", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *userGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *userGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

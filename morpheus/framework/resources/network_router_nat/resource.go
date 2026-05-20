@@ -101,7 +101,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := int64(result.GetId())
+	id := result.GetId()
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &certificateResource{}
 }
 
-func (r *certificateResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *certificateResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_certificate"
 }
 
@@ -40,6 +44,7 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -66,6 +71,7 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "certificate", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -79,6 +85,7 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -93,10 +100,12 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 	result, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "certificate", "", err, httpResp)
+
 		return
 	}
 
@@ -110,6 +119,7 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -133,11 +143,13 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		body.DomainName = plan.DomainName.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).UpdateCertificateRequest(sdk.UpdateCertificateRequest{
-		Certificate: &body,
-	}).Execute()
+	result, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).
+		UpdateCertificateRequest(sdk.UpdateCertificateRequest{
+			Certificate: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "certificate", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -151,6 +163,7 @@ func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -165,14 +178,20 @@ func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteReq
 	_, httpResp, err := client.SSLCertificatesAPI.DeleteCertificate(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "certificate", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *certificateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *certificateResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

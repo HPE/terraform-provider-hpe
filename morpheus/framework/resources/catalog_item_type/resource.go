@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &catalogItemTypeResource{}
 }
 
-func (r *catalogItemTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *catalogItemTypeResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_catalog_item_type"
 }
 
@@ -36,10 +40,15 @@ func (r *catalogItemTypeResource) Schema(ctx context.Context, _ resource.SchemaR
 	resp.Schema = CatalogItemTypeSchema(ctx)
 }
 
-func (r *catalogItemTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *catalogItemTypeResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -84,6 +93,7 @@ func (r *catalogItemTypeResource) Create(ctx context.Context, req resource.Creat
 	result, httpResp, err := client.CatalogItemsAPI.AddCatalogItemType(ctx).AddCatalogItemTypeRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "catalog_item_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -95,6 +105,7 @@ func (r *catalogItemTypeResource) Create(ctx context.Context, req resource.Creat
 	readResult, httpResp, err := client.CatalogItemsAPI.GetCatalogItemType(ctx, plan.ID.ValueInt64()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "catalog_item_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -107,6 +118,7 @@ func (r *catalogItemTypeResource) Read(ctx context.Context, req resource.ReadReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -121,10 +133,12 @@ func (r *catalogItemTypeResource) Read(ctx context.Context, req resource.ReadReq
 	result, httpResp, err := client.CatalogItemsAPI.GetCatalogItemType(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "catalog_item_type", "", err, httpResp)
+
 		return
 	}
 
@@ -133,10 +147,15 @@ func (r *catalogItemTypeResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *catalogItemTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *catalogItemTypeResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -173,6 +192,7 @@ func (r *catalogItemTypeResource) Update(ctx context.Context, req resource.Updat
 	_, httpResp, err := client.CatalogItemsAPI.UpdateCatalogItemType(ctx, id).UpdateCatalogItemTypeRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "catalog_item_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -180,6 +200,7 @@ func (r *catalogItemTypeResource) Update(ctx context.Context, req resource.Updat
 	result, httpResp, err := client.CatalogItemsAPI.GetCatalogItemType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "catalog_item_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -188,10 +209,15 @@ func (r *catalogItemTypeResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *catalogItemTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *catalogItemTypeResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -206,14 +232,20 @@ func (r *catalogItemTypeResource) Delete(ctx context.Context, req resource.Delet
 	_, httpResp, err := client.CatalogItemsAPI.RemoveCatalogItemType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "catalog_item_type", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *catalogItemTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *catalogItemTypeResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

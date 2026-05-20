@@ -57,6 +57,7 @@ func TestAccClusterAffinityGroupResource_basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs := s.RootModule().Resources["hpe_morpheus_cluster_affinity_group.test"]
+
 					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
 				},
 			},
@@ -76,6 +77,7 @@ func testAccClusterAffinityGroupConfig(clusterID, name, description string) stri
 	if description != "" {
 		desc = fmt.Sprintf(`  description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_cluster_affinity_group" "test" {
   cluster_id = %q

@@ -1,7 +1,6 @@
 package subnet_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -30,7 +29,7 @@ func TestAccMorpheusSubnetBasic(t *testing.T) {
 	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem) //nolint:staticcheck // used after skip
 
 	_ = acctest.RandomWithPrefix("tf-acc-subnet")
 
@@ -44,12 +43,12 @@ func TestAccMorpheusSubnetBasic(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + fmt.Sprintf(`
+				Config: providerConfig + `
 resource "hpe_morpheus_subnet" "test" {
   type_id    = 1
   visibility = "private"
 }
-`),
+`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_subnet.test", "type_id", "1"),
 					resource.TestCheckResourceAttr("hpe_morpheus_subnet.test", "visibility", "private"),

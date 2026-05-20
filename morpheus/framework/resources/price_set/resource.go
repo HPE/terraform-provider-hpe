@@ -40,6 +40,7 @@ func (r *priceSetResource) Create(ctx context.Context, req resource.CreateReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -64,6 +65,7 @@ func (r *priceSetResource) Create(ctx context.Context, req resource.CreateReques
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "price_set", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -81,16 +83,18 @@ func (r *priceSetResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	if id == 0 {
 		resp.Diagnostics.AddError("Error creating price_set", "Could not determine ID from create response")
+
 		return
 	}
 	plan.ID = types.Int64Value(id)
 
 	// Read back the full object
-	readResult, readHttpResp, readErr := client.PriceSetsAPI.GetPriceSets(ctx, id).Execute()
+	readResult, readHTTPResp, readErr := client.PriceSetsAPI.GetPriceSets(ctx, id).Execute()
 	// Tolerate decode errors when HTTP response is OK (SDK type mismatch on 'account' field)
-	if readHttpResp != nil && readHttpResp.StatusCode >= 400 {
-		if err := errfmt.CheckResponse(readErr, readHttpResp); err != nil {
-			errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price_set", plan.Name.ValueString(), err, readHttpResp)
+	if readHTTPResp != nil && readHTTPResp.StatusCode >= 400 {
+		if err := errfmt.CheckResponse(readErr, readHTTPResp); err != nil {
+			errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price_set", plan.Name.ValueString(), err, readHTTPResp)
+
 			return
 		}
 	}
@@ -104,6 +108,7 @@ func (r *priceSetResource) Read(ctx context.Context, req resource.ReadRequest, r
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -118,17 +123,20 @@ func (r *priceSetResource) Read(ctx context.Context, req resource.ReadRequest, r
 	result, httpResp, err := client.PriceSetsAPI.GetPriceSets(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	// Tolerate decode errors when HTTP response is OK (SDK type mismatch on 'account' field)
 	if httpResp != nil && httpResp.StatusCode >= 400 {
 		if err := errfmt.CheckResponse(err, httpResp); err != nil {
 			errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "price_set", "", err, httpResp)
+
 			return
 		}
 	}
 	if result == nil {
 		resp.Diagnostics.AddError("Error reading price_set", fmt.Sprintf("nil response for id %d: %v", id, err))
+
 		return
 	}
 
@@ -142,6 +150,7 @@ func (r *priceSetResource) Update(ctx context.Context, req resource.UpdateReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -163,11 +172,13 @@ func (r *priceSetResource) Update(ctx context.Context, req resource.UpdateReques
 		body.RegionCode = plan.RegionCode.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.PriceSetsAPI.UpdatePriceSets(ctx, id).UpdatePriceSetsRequest(sdk.UpdatePriceSetsRequest{
-		PriceSet: body,
-	}).Execute()
+	result, httpResp, err := client.PriceSetsAPI.UpdatePriceSets(ctx, id).
+		UpdatePriceSetsRequest(sdk.UpdatePriceSetsRequest{
+			PriceSet: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "price_set", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -181,6 +192,7 @@ func (r *priceSetResource) Delete(ctx context.Context, req resource.DeleteReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -195,40 +207,23 @@ func (r *priceSetResource) Delete(ctx context.Context, req resource.DeleteReques
 	_, httpResp, err := client.PriceSetsAPI.DeactivatePriceSets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "price_set", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *priceSetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *priceSetResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapAddResponseToModel(model *priceSetModel, ps *sdk.AddPriceSets200ResponseAllOfBudget) {
-	if ps.Id != nil {
-		model.ID = types.Int64Value(*ps.Id)
-	}
-	if ps.Name != nil {
-		model.Name = types.StringValue(*ps.Name)
-	}
-	if ps.Code != nil {
-		model.Code = types.StringValue(*ps.Code)
-	}
-	if ps.PriceUnit != nil {
-		model.PriceUnit = types.StringValue(*ps.PriceUnit)
-	}
-	if ps.Type != nil {
-		model.Type = types.StringValue(*ps.Type)
-	}
-	if ps.RegionCode != nil {
-		model.RegionCode = types.StringValue(*ps.RegionCode)
-	} else {
-		model.RegionCode = types.StringNull()
-	}
 }
 
 func mapGetResponseToModel(model *priceSetModel, ps *sdk.GetPriceSets200ResponsePriceSet) {

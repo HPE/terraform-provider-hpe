@@ -91,6 +91,7 @@ func testAccProvisioningLicenseConfig(name, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_provisioning_license" "test" {
   name         = %q

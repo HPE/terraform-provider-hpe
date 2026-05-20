@@ -117,7 +117,9 @@ func (m stringUseStateForUnknown) MarkdownDescription(_ context.Context) string 
 	return "Use state value for unknown."
 }
 
-func (m stringUseStateForUnknown) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+func (m stringUseStateForUnknown) PlanModifyString(
+	_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse,
+) {
 	if !req.PlanValue.IsUnknown() {
 		return
 	}

@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &monitoringCheckResource{}
 }
 
-func (r *monitoringCheckResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *monitoringCheckResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_check"
 }
 
@@ -36,10 +40,15 @@ func (r *monitoringCheckResource) Schema(ctx context.Context, _ resource.SchemaR
 	resp.Schema = MonitoringCheckSchema(ctx)
 }
 
-func (r *monitoringCheckResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *monitoringCheckResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -54,10 +63,11 @@ func (r *monitoringCheckResource) Create(ctx context.Context, req resource.Creat
 	}
 	if !plan.CheckTypeID.IsNull() && !plan.CheckTypeID.IsUnknown() {
 		// Look up the check type code from the ID since the API requires code
-		ctResult, ctHttpResp, ctErr := client.ChecksAPI.GetCheckTypes(ctx, plan.CheckTypeID.ValueInt64()).Execute()
-		if ctErr != nil || (ctHttpResp != nil && ctHttpResp.StatusCode >= 400) {
+		ctResult, ctHTTPResp, ctErr := client.ChecksAPI.GetCheckTypes(ctx, plan.CheckTypeID.ValueInt64()).Execute()
+		if ctErr != nil || (ctHTTPResp != nil && ctHTTPResp.StatusCode >= 400) {
 			errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_check", plan.Name.ValueString(),
-				fmt.Errorf("failed to look up check type %d", plan.CheckTypeID.ValueInt64()), ctHttpResp)
+				fmt.Errorf("failed to look up check type %d", plan.CheckTypeID.ValueInt64()), ctHTTPResp)
+
 			return
 		}
 		ct := ctResult.GetCheckType()
@@ -71,7 +81,7 @@ func (r *monitoringCheckResource) Create(ctx context.Context, req resource.Creat
 		checkBody.Description = *desc
 	}
 	if !plan.CheckInterval.IsNull() {
-		interval := int32(plan.CheckInterval.ValueInt64())
+		interval := int32(plan.CheckInterval.ValueInt64()) //nolint:gosec // value range is safe
 		checkBody.CheckInterval = &interval
 	}
 	if !plan.InUptime.IsNull() {
@@ -91,6 +101,7 @@ func (r *monitoringCheckResource) Create(ctx context.Context, req resource.Creat
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -119,6 +130,7 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -133,10 +145,12 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 	result, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_check", "", err, httpResp)
+
 		return
 	}
 
@@ -168,10 +182,15 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *monitoringCheckResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *monitoringCheckResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -191,7 +210,7 @@ func (r *monitoringCheckResource) Update(ctx context.Context, req resource.Updat
 		checkBody.Description = *desc
 	}
 	if !plan.CheckInterval.IsNull() {
-		interval := int32(plan.CheckInterval.ValueInt64())
+		interval := int32(plan.CheckInterval.ValueInt64()) //nolint:gosec // value range is safe
 		checkBody.CheckInterval = &interval
 	}
 	if !plan.InUptime.IsNull() {
@@ -211,6 +230,7 @@ func (r *monitoringCheckResource) Update(ctx context.Context, req resource.Updat
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -235,10 +255,15 @@ func (r *monitoringCheckResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *monitoringCheckResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *monitoringCheckResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -253,14 +278,20 @@ func (r *monitoringCheckResource) Delete(ctx context.Context, req resource.Delet
 	_, httpResp, err := client.ChecksAPI.DeleteChecks(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_check", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *monitoringCheckResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *monitoringCheckResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

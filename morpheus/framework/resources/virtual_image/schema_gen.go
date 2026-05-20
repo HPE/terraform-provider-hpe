@@ -18,7 +18,7 @@ type virtualImageModel struct {
 	OsTypeId     types.Int64  `tfsdk:"os_type_id"`
 	IsCloudInit  types.Bool   `tfsdk:"is_cloud_init"`
 	InstallAgent types.Bool   `tfsdk:"install_agent"`
-	MinRam       types.Int64  `tfsdk:"min_ram"`
+	MinRAM       types.Int64  `tfsdk:"min_ram"`
 	MinDisk      types.Int64  `tfsdk:"min_disk"`
 	Labels       types.List   `tfsdk:"labels"`
 }

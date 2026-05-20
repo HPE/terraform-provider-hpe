@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &credentialResource{}
 }
 
-func (r *credentialResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *credentialResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_credential"
 }
 
@@ -40,6 +44,7 @@ func (r *credentialResource) Create(ctx context.Context, req resource.CreateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -80,6 +85,7 @@ func (r *credentialResource) Create(ctx context.Context, req resource.CreateRequ
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "credential", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -93,6 +99,7 @@ func (r *credentialResource) Read(ctx context.Context, req resource.ReadRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -107,10 +114,12 @@ func (r *credentialResource) Read(ctx context.Context, req resource.ReadRequest,
 	result, httpResp, err := client.CredentialsAPI.GetCredentials(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "credential", "", err, httpResp)
+
 		return
 	}
 
@@ -124,6 +133,7 @@ func (r *credentialResource) Update(ctx context.Context, req resource.UpdateRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -161,11 +171,13 @@ func (r *credentialResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	body := sdk.UpdateCredentialsRequestCredentialOneOfAsUpdateCredentialsRequestCredential(&inner)
 
-	_, httpResp, err := client.CredentialsAPI.UpdateCredentials(ctx, id).UpdateCredentialsRequest(sdk.UpdateCredentialsRequest{
-		Credential: body,
-	}).Execute()
+	_, httpResp, err := client.CredentialsAPI.UpdateCredentials(ctx, id).
+		UpdateCredentialsRequest(sdk.UpdateCredentialsRequest{
+			Credential: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "credential", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -173,6 +185,7 @@ func (r *credentialResource) Update(ctx context.Context, req resource.UpdateRequ
 	getResult, httpResp, err := client.CredentialsAPI.GetCredentials(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "credential", "", err, httpResp)
+
 		return
 	}
 
@@ -186,6 +199,7 @@ func (r *credentialResource) Delete(ctx context.Context, req resource.DeleteRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -200,14 +214,20 @@ func (r *credentialResource) Delete(ctx context.Context, req resource.DeleteRequ
 	_, httpResp, err := client.CredentialsAPI.RemoveCredentials(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "credential", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *credentialResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *credentialResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

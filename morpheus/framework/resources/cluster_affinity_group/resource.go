@@ -30,18 +30,31 @@ func NewResource() resource.Resource {
 	return &clusterAffinityGroupResource{}
 }
 
-func (r *clusterAffinityGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *clusterAffinityGroupResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_cluster_affinity_group"
 }
 
-func (r *clusterAffinityGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *clusterAffinityGroupResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = ClusterAffinityGroupSchema(ctx)
 }
 
-func (r *clusterAffinityGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *clusterAffinityGroupResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -65,9 +78,11 @@ func (r *clusterAffinityGroupResource) Create(ctx context.Context, req resource.
 		AffinityGroup: &ag,
 	}
 
-	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).SaveClusterAffinityGroupRequest(body).Execute()
+	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
+		SaveClusterAffinityGroupRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -78,10 +93,15 @@ func (r *clusterAffinityGroupResource) Create(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *clusterAffinityGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *clusterAffinityGroupResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -97,10 +117,12 @@ func (r *clusterAffinityGroupResource) Read(ctx context.Context, req resource.Re
 	result, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", "", err, httpResp)
+
 		return
 	}
 
@@ -117,10 +139,15 @@ func (r *clusterAffinityGroupResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *clusterAffinityGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *clusterAffinityGroupResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -146,19 +173,26 @@ func (r *clusterAffinityGroupResource) Update(ctx context.Context, req resource.
 		AffinityGroup: &ag,
 	}
 
-	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).UpdateClusterAffinityGroupRequest(body).Execute()
+	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).
+		UpdateClusterAffinityGroupRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *clusterAffinityGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *clusterAffinityGroupResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -174,25 +208,34 @@ func (r *clusterAffinityGroupResource) Delete(ctx context.Context, req resource.
 	_, httpResp, err := client.ClustersAPI.DeleteClusterAffinityGroup(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "cluster_affinity_group", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *clusterAffinityGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *clusterAffinityGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parts := strings.Split(req.ID, "/")
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Invalid Import ID", fmt.Sprintf("Expected format: cluster_id/affinity_group_id, got: %s", req.ID))
+		resp.Diagnostics.AddError("Invalid Import ID",
+			fmt.Sprintf("Expected format: cluster_id/affinity_group_id, got: %s", req.ID))
+
 		return
 	}
 
 	clusterID, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse cluster_id %q: %s", parts[0], err))
+
 		return
 	}
 	id, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse affinity_group_id %q: %s", parts[1], err))
+
 		return
 	}
 

@@ -28,18 +28,31 @@ func NewResource() resource.Resource {
 	return &libraryOptionTypeListResource{}
 }
 
-func (r *libraryOptionTypeListResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryOptionTypeListResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_option_type_list"
 }
 
-func (r *libraryOptionTypeListResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *libraryOptionTypeListResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = LibraryOptionTypeListSchema(ctx)
 }
 
-func (r *libraryOptionTypeListResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *libraryOptionTypeListResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -75,7 +88,9 @@ func (r *libraryOptionTypeListResource) Create(ctx context.Context, req resource
 		OptionTypeList: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_option_type_list", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_option_type_list",
+			plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -83,6 +98,7 @@ func (r *libraryOptionTypeListResource) Create(ctx context.Context, req resource
 	listResult, httpResp, err := client.LibraryAPI.ListOptionLists(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_option_type_list", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -94,11 +110,13 @@ func (r *libraryOptionTypeListResource) Create(ctx context.Context, req resource
 				if firstMap, ok := listsSlice[0].(map[string]interface{}); ok {
 					mapOptionTypeListFromRaw(&plan, firstMap)
 					resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
 					return
 				}
 			}
 		}
 		resp.Diagnostics.AddError("Not Found", "Option type list not found after creation")
+
 		return
 	}
 
@@ -108,10 +126,15 @@ func (r *libraryOptionTypeListResource) Create(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryOptionTypeListResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *libraryOptionTypeListResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -126,10 +149,12 @@ func (r *libraryOptionTypeListResource) Read(ctx context.Context, req resource.R
 	result, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_option_type_list", "", err, httpResp)
+
 		return
 	}
 
@@ -140,10 +165,12 @@ func (r *libraryOptionTypeListResource) Read(ctx context.Context, req resource.R
 			if olMap, ok := rawOL.(map[string]interface{}); ok {
 				mapOptionTypeListFromRaw(&state, olMap)
 				resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
 				return
 			}
 		}
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -153,10 +180,15 @@ func (r *libraryOptionTypeListResource) Read(ctx context.Context, req resource.R
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryOptionTypeListResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *libraryOptionTypeListResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -194,17 +226,24 @@ func (r *libraryOptionTypeListResource) Update(ctx context.Context, req resource
 		OptionTypeList: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_option_type_list", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_option_type_list",
+			plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryOptionTypeListResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *libraryOptionTypeListResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -219,20 +258,29 @@ func (r *libraryOptionTypeListResource) Delete(ctx context.Context, req resource
 	_, httpResp, err := client.LibraryAPI.DeleteOptionList(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_option_type_list", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryOptionTypeListResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryOptionTypeListResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapListOptionListToModel(model *libraryOptionTypeListModel, ol *sdk.ListOptionLists200ResponseAllOfOptionTypesInner) {
+func mapListOptionListToModel(
+	model *libraryOptionTypeListModel,
+	ol *sdk.ListOptionLists200ResponseAllOfOptionTypesInner,
+) {
 	if ol.Id != nil {
 		model.ID = types.Int64Value(*ol.Id)
 	}

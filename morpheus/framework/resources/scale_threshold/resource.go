@@ -29,7 +29,11 @@ func NewResource() resource.Resource {
 	return &scaleThresholdResource{}
 }
 
-func (r *scaleThresholdResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *scaleThresholdResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_scale_threshold"
 }
 
@@ -37,10 +41,15 @@ func (r *scaleThresholdResource) Schema(ctx context.Context, _ resource.SchemaRe
 	resp.Schema = ScaleThresholdSchema(ctx)
 }
 
-func (r *scaleThresholdResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *scaleThresholdResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -63,22 +72,22 @@ func (r *scaleThresholdResource) Create(ctx context.Context, req resource.Create
 		body.ScaleThreshold.AutoDown = plan.AutoDownscale.ValueBoolPointer()
 	}
 	if !plan.MinCount.IsNull() {
-		v := int32(plan.MinCount.ValueInt64())
+		v := int32(plan.MinCount.ValueInt64()) //nolint:gosec // value range is safe
 		body.ScaleThreshold.MinCount = &v
 	}
 	if !plan.MaxCount.IsNull() {
-		v := int32(plan.MaxCount.ValueInt64())
+		v := int32(plan.MaxCount.ValueInt64()) //nolint:gosec // value range is safe
 		body.ScaleThreshold.MaxCount = &v
 	}
-	if !plan.CpuEnabled.IsNull() {
-		body.ScaleThreshold.CpuEnabled = plan.CpuEnabled.ValueBoolPointer()
+	if !plan.CPUEnabled.IsNull() {
+		body.ScaleThreshold.CpuEnabled = plan.CPUEnabled.ValueBoolPointer()
 	}
-	if !plan.MinCpu.IsNull() {
-		v := plan.MinCpu.ValueFloat64()
+	if !plan.MinCPU.IsNull() {
+		v := plan.MinCPU.ValueFloat64()
 		body.ScaleThreshold.MinCpu = &v
 	}
-	if !plan.MaxCpu.IsNull() {
-		v := plan.MaxCpu.ValueFloat64()
+	if !plan.MaxCPU.IsNull() {
+		v := plan.MaxCPU.ValueFloat64()
 		body.ScaleThreshold.MaxCpu = &v
 	}
 	if !plan.MemoryEnabled.IsNull() {
@@ -96,6 +105,7 @@ func (r *scaleThresholdResource) Create(ctx context.Context, req resource.Create
 	result, httpResp, err := client.AutomationAPI.AddScaleThresholds(ctx).AddScaleThresholdsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "scale_threshold", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -110,6 +120,7 @@ func (r *scaleThresholdResource) Read(ctx context.Context, req resource.ReadRequ
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -124,10 +135,12 @@ func (r *scaleThresholdResource) Read(ctx context.Context, req resource.ReadRequ
 	result, httpResp, err := client.AutomationAPI.GetScaleThresholds(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "scale_threshold", "", err, httpResp)
+
 		return
 	}
 
@@ -150,13 +163,13 @@ func (r *scaleThresholdResource) Read(ctx context.Context, req resource.ReadRequ
 			state.MaxCount = types.Int64Value(*st.MaxCount)
 		}
 		if st.CpuEnabled != nil {
-			state.CpuEnabled = types.BoolValue(*st.CpuEnabled)
+			state.CPUEnabled = types.BoolValue(*st.CpuEnabled)
 		}
 		if st.MinCpu != nil {
-			state.MinCpu = types.Float64Value(float64(*st.MinCpu))
+			state.MinCPU = types.Float64Value(float64(*st.MinCpu))
 		}
 		if st.MaxCpu != nil {
-			state.MaxCpu = types.Float64Value(float64(*st.MaxCpu))
+			state.MaxCPU = types.Float64Value(float64(*st.MaxCpu))
 		}
 		if st.MemoryEnabled != nil {
 			state.MemoryEnabled = types.BoolValue(*st.MemoryEnabled)
@@ -172,10 +185,15 @@ func (r *scaleThresholdResource) Read(ctx context.Context, req resource.ReadRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *scaleThresholdResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *scaleThresholdResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -201,22 +219,22 @@ func (r *scaleThresholdResource) Update(ctx context.Context, req resource.Update
 		body.ScaleThreshold.AutoDown = plan.AutoDownscale.ValueBoolPointer()
 	}
 	if !plan.MinCount.IsNull() {
-		v := int32(plan.MinCount.ValueInt64())
+		v := int32(plan.MinCount.ValueInt64()) //nolint:gosec // value range is safe
 		body.ScaleThreshold.MinCount = &v
 	}
 	if !plan.MaxCount.IsNull() {
-		v := int32(plan.MaxCount.ValueInt64())
+		v := int32(plan.MaxCount.ValueInt64()) //nolint:gosec // value range is safe
 		body.ScaleThreshold.MaxCount = &v
 	}
-	if !plan.CpuEnabled.IsNull() {
-		body.ScaleThreshold.CpuEnabled = plan.CpuEnabled.ValueBoolPointer()
+	if !plan.CPUEnabled.IsNull() {
+		body.ScaleThreshold.CpuEnabled = plan.CPUEnabled.ValueBoolPointer()
 	}
-	if !plan.MinCpu.IsNull() {
-		v := float32(plan.MinCpu.ValueFloat64())
+	if !plan.MinCPU.IsNull() {
+		v := float32(plan.MinCPU.ValueFloat64())
 		body.ScaleThreshold.MinCpu = &v
 	}
-	if !plan.MaxCpu.IsNull() {
-		v := float32(plan.MaxCpu.ValueFloat64())
+	if !plan.MaxCPU.IsNull() {
+		v := float32(plan.MaxCPU.ValueFloat64())
 		body.ScaleThreshold.MaxCpu = &v
 	}
 	if !plan.MemoryEnabled.IsNull() {
@@ -234,16 +252,22 @@ func (r *scaleThresholdResource) Update(ctx context.Context, req resource.Update
 	_, httpResp, err := client.AutomationAPI.UpdateScaleThresholds(ctx, id).UpdateScaleThresholdsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "scale_threshold", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *scaleThresholdResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *scaleThresholdResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -258,14 +282,20 @@ func (r *scaleThresholdResource) Delete(ctx context.Context, req resource.Delete
 	_, httpResp, err := client.AutomationAPI.RemoveScaleThresholds(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "scale_threshold", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *scaleThresholdResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *scaleThresholdResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

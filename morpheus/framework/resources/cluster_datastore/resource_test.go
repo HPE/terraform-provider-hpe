@@ -57,6 +57,7 @@ func TestAccClusterDatastoreResource_basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs := s.RootModule().Resources["hpe_morpheus_cluster_datastore.test"]
+
 					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
 				},
 			},

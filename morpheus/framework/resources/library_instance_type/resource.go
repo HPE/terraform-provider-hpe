@@ -29,18 +29,31 @@ func NewResource() resource.Resource {
 	return &libraryInstanceTypeResource{}
 }
 
-func (r *libraryInstanceTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryInstanceTypeResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_instance_type"
 }
 
-func (r *libraryInstanceTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *libraryInstanceTypeResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = LibraryInstanceTypeSchema(ctx)
 }
 
-func (r *libraryInstanceTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *libraryInstanceTypeResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -82,6 +95,7 @@ func (r *libraryInstanceTypeResource) Create(ctx context.Context, req resource.C
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_instance_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -91,12 +105,14 @@ func (r *libraryInstanceTypeResource) Create(ctx context.Context, req resource.C
 	listResult, httpResp, err := client.LibraryAPI.ListInstanceTypes(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_instance_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	instanceTypes := listResult.GetInstanceTypes()
 	if len(instanceTypes) == 0 {
 		resp.Diagnostics.AddError("Not Found", "Instance type not found after creation")
+
 		return
 	}
 
@@ -113,6 +129,7 @@ func (r *libraryInstanceTypeResource) Read(ctx context.Context, req resource.Rea
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -127,10 +144,12 @@ func (r *libraryInstanceTypeResource) Read(ctx context.Context, req resource.Rea
 	result, httpResp, err := client.LibraryAPI.GetInstanceType(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_instance_type", "", err, httpResp)
+
 		return
 	}
 
@@ -140,10 +159,15 @@ func (r *libraryInstanceTypeResource) Read(ctx context.Context, req resource.Rea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryInstanceTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *libraryInstanceTypeResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -182,11 +206,13 @@ func (r *libraryInstanceTypeResource) Update(ctx context.Context, req resource.U
 		body.Labels = labels
 	}
 
-	_, httpResp, err := client.LibraryAPI.UpdateInstanceType(ctx, id).UpdateInstanceTypeRequest(sdk.UpdateInstanceTypeRequest{
-		InstanceType: &body,
-	}).Execute()
+	_, httpResp, err := client.LibraryAPI.UpdateInstanceType(ctx, id).
+		UpdateInstanceTypeRequest(sdk.UpdateInstanceTypeRequest{
+			InstanceType: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_instance_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -194,6 +220,7 @@ func (r *libraryInstanceTypeResource) Update(ctx context.Context, req resource.U
 	result, httpResp, err := client.LibraryAPI.GetInstanceType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_instance_type", "", err, httpResp)
+
 		return
 	}
 
@@ -203,10 +230,15 @@ func (r *libraryInstanceTypeResource) Update(ctx context.Context, req resource.U
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryInstanceTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *libraryInstanceTypeResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -221,20 +253,31 @@ func (r *libraryInstanceTypeResource) Delete(ctx context.Context, req resource.D
 	_, httpResp, err := client.LibraryAPI.DeleteInstanceType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_instance_type", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryInstanceTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryInstanceTypeResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapListInstanceTypeToModel(ctx context.Context, model *libraryInstanceTypeModel, it *sdk.ListInstanceTypes200ResponseAllOfInstanceTypesInner, diags *diag.Diagnostics) {
+func mapListInstanceTypeToModel(
+	ctx context.Context,
+	model *libraryInstanceTypeModel,
+	it *sdk.ListInstanceTypes200ResponseAllOfInstanceTypesInner,
+	diags *diag.Diagnostics,
+) {
 	if it.Id != nil {
 		model.ID = types.Int64Value(*it.Id)
 	}
@@ -271,7 +314,12 @@ func mapListInstanceTypeToModel(ctx context.Context, model *libraryInstanceTypeM
 	}
 }
 
-func mapGetInstanceTypeToModel(ctx context.Context, model *libraryInstanceTypeModel, it *sdk.GetInstanceType200ResponseInstanceType, diags *diag.Diagnostics) {
+func mapGetInstanceTypeToModel(
+	ctx context.Context,
+	model *libraryInstanceTypeModel,
+	it *sdk.GetInstanceType200ResponseInstanceType,
+	diags *diag.Diagnostics,
+) {
 	if it.Id != nil {
 		model.ID = types.Int64Value(*it.Id)
 	}

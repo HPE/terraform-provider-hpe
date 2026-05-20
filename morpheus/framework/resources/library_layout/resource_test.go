@@ -64,6 +64,7 @@ func testAccLibraryLayoutConfig(itName, itCode, name, version, description strin
 	if description != "" {
 		desc = fmt.Sprintf(`description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_library_instance_type" "test" {
   name       = %q

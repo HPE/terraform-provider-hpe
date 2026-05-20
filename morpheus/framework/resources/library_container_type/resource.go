@@ -29,18 +29,31 @@ func NewResource() resource.Resource {
 	return &libraryContainerTypeResource{}
 }
 
-func (r *libraryContainerTypeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryContainerTypeResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_container_type"
 }
 
-func (r *libraryContainerTypeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *libraryContainerTypeResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = LibraryContainerTypeSchema(ctx)
 }
 
-func (r *libraryContainerTypeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *libraryContainerTypeResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -102,6 +115,7 @@ func (r *libraryContainerTypeResource) Create(ctx context.Context, req resource.
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_container_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -125,6 +139,7 @@ func (r *libraryContainerTypeResource) Create(ctx context.Context, req resource.
 	readResult, httpResp, err := client.LibraryAPI.GetNodeType(ctx, plan.ID.ValueInt64()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_type", "", err, httpResp)
+
 		return
 	}
 
@@ -134,10 +149,15 @@ func (r *libraryContainerTypeResource) Create(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryContainerTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *libraryContainerTypeResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -152,10 +172,12 @@ func (r *libraryContainerTypeResource) Read(ctx context.Context, req resource.Re
 	result, httpResp, err := client.LibraryAPI.GetNodeType(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_type", "", err, httpResp)
+
 		return
 	}
 
@@ -165,10 +187,15 @@ func (r *libraryContainerTypeResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryContainerTypeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *libraryContainerTypeResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -232,6 +259,7 @@ func (r *libraryContainerTypeResource) Update(ctx context.Context, req resource.
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_container_type", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -239,6 +267,7 @@ func (r *libraryContainerTypeResource) Update(ctx context.Context, req resource.
 	readResult, httpResp, err := client.LibraryAPI.GetNodeType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_type", "", err, httpResp)
+
 		return
 	}
 
@@ -248,10 +277,15 @@ func (r *libraryContainerTypeResource) Update(ctx context.Context, req resource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryContainerTypeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *libraryContainerTypeResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -266,20 +300,31 @@ func (r *libraryContainerTypeResource) Delete(ctx context.Context, req resource.
 	_, httpResp, err := client.LibraryAPI.DeleteNodeType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_container_type", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryContainerTypeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryContainerTypeResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetNodeTypeToModel(ctx context.Context, model *libraryContainerTypeModel, ct *sdk.GetNodeType200ResponseContainerType, diags *diag.Diagnostics) {
+func mapGetNodeTypeToModel(
+	ctx context.Context,
+	model *libraryContainerTypeModel,
+	ct *sdk.GetNodeType200ResponseContainerType,
+	diags *diag.Diagnostics,
+) {
 	if ct.Id != nil {
 		model.ID = types.Int64Value(int64(*ct.Id))
 	}

@@ -62,6 +62,7 @@ func testAccStorageServerConfig(name, serverType, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`  description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_server" "test" {
   name = %q

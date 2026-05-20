@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &monitoringAlertResource{}
 }
 
-func (r *monitoringAlertResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *monitoringAlertResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_alert"
 }
 
@@ -36,10 +40,15 @@ func (r *monitoringAlertResource) Schema(ctx context.Context, _ resource.SchemaR
 	resp.Schema = MonitoringAlertSchema(ctx)
 }
 
-func (r *monitoringAlertResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *monitoringAlertResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -56,7 +65,7 @@ func (r *monitoringAlertResource) Create(ctx context.Context, req resource.Creat
 		body.MinSeverity = plan.MinSeverity.ValueStringPointer()
 	}
 	if !plan.MinDuration.IsNull() {
-		dur := int32(plan.MinDuration.ValueInt64())
+		dur := int32(plan.MinDuration.ValueInt64()) //nolint:gosec // value range is safe
 		body.MinDuration = &dur
 	}
 	if !plan.Active.IsNull() {
@@ -74,6 +83,7 @@ func (r *monitoringAlertResource) Create(ctx context.Context, req resource.Creat
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -87,6 +97,7 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -101,10 +112,12 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 	result, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_alert", "", err, httpResp)
+
 		return
 	}
 
@@ -114,10 +127,15 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *monitoringAlertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *monitoringAlertResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -136,7 +154,7 @@ func (r *monitoringAlertResource) Update(ctx context.Context, req resource.Updat
 		body.MinSeverity = plan.MinSeverity.ValueStringPointer()
 	}
 	if !plan.MinDuration.IsNull() {
-		dur := int32(plan.MinDuration.ValueInt64())
+		dur := int32(plan.MinDuration.ValueInt64()) //nolint:gosec // value range is safe
 		body.MinDuration = &dur
 	}
 	if !plan.Active.IsNull() {
@@ -154,6 +172,7 @@ func (r *monitoringAlertResource) Update(ctx context.Context, req resource.Updat
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -163,10 +182,15 @@ func (r *monitoringAlertResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *monitoringAlertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *monitoringAlertResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -181,14 +205,20 @@ func (r *monitoringAlertResource) Delete(ctx context.Context, req resource.Delet
 	_, httpResp, err := client.AlertsAPI.DeleteAlerts(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_alert", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *monitoringAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *monitoringAlertResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

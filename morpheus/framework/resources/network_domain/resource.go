@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &networkDomainResource{}
 }
 
-func (r *networkDomainResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *networkDomainResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_network_domain"
 }
 
@@ -40,6 +44,7 @@ func (r *networkDomainResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -74,11 +79,13 @@ func (r *networkDomainResource) Create(ctx context.Context, req resource.CreateR
 		body.DcServer = plan.DcServer.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.NetworksAPI.CreateNetworkDomain(ctx).CreateNetworkDomainRequest(sdk.CreateNetworkDomainRequest{
-		NetworkDomain: &body,
-	}).Execute()
+	result, httpResp, err := client.NetworksAPI.CreateNetworkDomain(ctx).
+		CreateNetworkDomainRequest(sdk.CreateNetworkDomainRequest{
+			NetworkDomain: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_domain", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -92,6 +99,7 @@ func (r *networkDomainResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -106,10 +114,12 @@ func (r *networkDomainResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.NetworksAPI.GetNetworkDomain(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_domain", "", err, httpResp)
+
 		return
 	}
 
@@ -123,6 +133,7 @@ func (r *networkDomainResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -159,11 +170,13 @@ func (r *networkDomainResource) Update(ctx context.Context, req resource.UpdateR
 		body.DcServer = plan.DcServer.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.NetworksAPI.UpdateNetworkDomain(ctx, id).UpdateNetworkDomainRequest(sdk.UpdateNetworkDomainRequest{
-		NetworkDomain: &body,
-	}).Execute()
+	result, httpResp, err := client.NetworksAPI.UpdateNetworkDomain(ctx, id).
+		UpdateNetworkDomainRequest(sdk.UpdateNetworkDomainRequest{
+			NetworkDomain: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_domain", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -177,6 +190,7 @@ func (r *networkDomainResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -191,14 +205,20 @@ func (r *networkDomainResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.NetworksAPI.DeleteNetworkDomain(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_domain", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *networkDomainResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *networkDomainResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

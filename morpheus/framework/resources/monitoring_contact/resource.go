@@ -28,18 +28,31 @@ func NewResource() resource.Resource {
 	return &monitoringContactResource{}
 }
 
-func (r *monitoringContactResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *monitoringContactResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_contact"
 }
 
-func (r *monitoringContactResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *monitoringContactResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = MonitoringContactSchema(ctx)
 }
 
-func (r *monitoringContactResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *monitoringContactResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -67,6 +80,7 @@ func (r *monitoringContactResource) Create(ctx context.Context, req resource.Cre
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_contact", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -80,6 +94,7 @@ func (r *monitoringContactResource) Read(ctx context.Context, req resource.ReadR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -94,10 +109,12 @@ func (r *monitoringContactResource) Read(ctx context.Context, req resource.ReadR
 	result, httpResp, err := client.ContactsAPI.GetContacts(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_contact", "", err, httpResp)
+
 		return
 	}
 
@@ -107,10 +124,15 @@ func (r *monitoringContactResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *monitoringContactResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *monitoringContactResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -140,6 +162,7 @@ func (r *monitoringContactResource) Update(ctx context.Context, req resource.Upd
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "monitoring_contact", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -149,10 +172,15 @@ func (r *monitoringContactResource) Update(ctx context.Context, req resource.Upd
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *monitoringContactResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *monitoringContactResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -167,14 +195,20 @@ func (r *monitoringContactResource) Delete(ctx context.Context, req resource.Del
 	_, httpResp, err := client.ContactsAPI.DeleteContacts(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_contact", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *monitoringContactResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *monitoringContactResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
@@ -228,7 +262,10 @@ func mapGetContactResponseToModel(model *monitoringContactModel, contact *sdk.Ge
 	}
 }
 
-func mapUpdateContactResponseToModel(model *monitoringContactModel, contact *sdk.UpdateContacts200ResponseAllOfContact) {
+func mapUpdateContactResponseToModel(
+	model *monitoringContactModel,
+	contact *sdk.UpdateContacts200ResponseAllOfContact,
+) {
 	if contact.Id != nil {
 		model.ID = types.Int64Value(*contact.Id)
 	}

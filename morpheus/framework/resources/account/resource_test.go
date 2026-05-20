@@ -90,6 +90,7 @@ func testAccAccountConfig(name, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_account" "test" {
   name    = %q

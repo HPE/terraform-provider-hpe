@@ -66,6 +66,7 @@ resource "hpe_morpheus_network_router_firewall_rule" "test" {
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}
+
 					return rs.Primary.Attributes["router_id"] + "/" + rs.Primary.ID, nil
 				},
 			},

@@ -26,7 +26,14 @@ const (
 //
 //	Summary: "Error {operation} {resourceType}"
 //	Detail:  "{resourceType} \"{name}\" failed: {error details}"
-func DiagError(diags *diag.Diagnostics, op Operation, resourceType string, resourceName string, err error, httpResp *http.Response) {
+func DiagError(
+	diags *diag.Diagnostics,
+	op Operation,
+	resourceType string,
+	resourceName string,
+	err error,
+	httpResp *http.Response,
+) {
 	summary := fmt.Sprintf("Error %s %s", op, resourceType)
 	var detail string
 	if resourceName != "" {
@@ -65,6 +72,7 @@ func SafeErrMsg(err error, resp *http.Response) string {
 		if strings.Contains(msg, "failed to verify certificate") {
 			msg = msg + sslCertErrorMsg
 		}
+
 		return msg
 	}
 	// Both present
@@ -77,6 +85,7 @@ func SafeErrMsg(err error, resp *http.Response) string {
 	if body != "" {
 		return fmt.Sprintf("%s (%s): %s", msg, code, body)
 	}
+
 	return fmt.Sprintf("%s (%s)", msg, code)
 }
 
@@ -101,6 +110,7 @@ func CheckResponse(err error, httpResp *http.Response) error {
 	if httpResp != nil && httpResp.StatusCode >= 400 {
 		return fmt.Errorf("HTTP %d: %s", httpResp.StatusCode, safeReadBody(httpResp))
 	}
+
 	return nil
 }
 
@@ -113,5 +123,6 @@ func safeReadBody(resp *http.Response) string {
 	if err != nil || len(bodyBytes) == 0 {
 		return http.StatusText(resp.StatusCode)
 	}
+
 	return string(bodyBytes)
 }

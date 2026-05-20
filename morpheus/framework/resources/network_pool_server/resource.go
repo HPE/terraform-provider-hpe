@@ -28,18 +28,31 @@ func NewResource() resource.Resource {
 	return &networkPoolServerResource{}
 }
 
-func (r *networkPoolServerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *networkPoolServerResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_network_pool_server"
 }
 
-func (r *networkPoolServerResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *networkPoolServerResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = NetworkPoolServerSchema(ctx)
 }
 
-func (r *networkPoolServerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *networkPoolServerResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -78,11 +91,13 @@ func (r *networkPoolServerResource) Create(ctx context.Context, req resource.Cre
 
 	// TODO: The SDK uses a oneOf union for this request. If the above struct does not compile,
 	// the request may need to be constructed differently depending on the IPAM type.
-	result, httpResp, err := client.NetworksAPI.CreateNetworkPoolServer(ctx).CreateNetworkPoolServerRequest(sdk.CreateNetworkPoolServerRequest{
-		NetworkPoolServer: &serverReq,
-	}).Execute()
+	result, httpResp, err := client.NetworksAPI.CreateNetworkPoolServer(ctx).
+		CreateNetworkPoolServerRequest(sdk.CreateNetworkPoolServerRequest{
+			NetworkPoolServer: &serverReq,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_pool_server", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -96,6 +111,7 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -110,10 +126,12 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 	result, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool_server", "", err, httpResp)
+
 		return
 	}
 
@@ -123,10 +141,15 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *networkPoolServerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *networkPoolServerResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -159,11 +182,13 @@ func (r *networkPoolServerResource) Update(ctx context.Context, req resource.Upd
 
 	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(&infobloxUpdate)
 
-	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
-		NetworkPoolServer: &serverReq,
-	}).Execute()
+	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
+		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
+			NetworkPoolServer: &serverReq,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_pool_server", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -171,6 +196,7 @@ func (r *networkPoolServerResource) Update(ctx context.Context, req resource.Upd
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool_server", "", err, httpResp)
+
 		return
 	}
 
@@ -180,10 +206,15 @@ func (r *networkPoolServerResource) Update(ctx context.Context, req resource.Upd
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *networkPoolServerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *networkPoolServerResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -198,20 +229,29 @@ func (r *networkPoolServerResource) Delete(ctx context.Context, req resource.Del
 	_, httpResp, err := client.NetworksAPI.DeleteNetworkPoolServer(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_pool_server", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *networkPoolServerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *networkPoolServerResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *networkPoolServerModel, server *sdk.CreateNetworkPoolServer200ResponseAllOfNetworkPoolServer) {
+func mapCreateResponseToModel(
+	model *networkPoolServerModel,
+	server *sdk.CreateNetworkPoolServer200ResponseAllOfNetworkPoolServer,
+) {
 	if server.Id != nil {
 		model.ID = types.Int64Value(*server.Id)
 	}
@@ -237,7 +277,10 @@ func mapCreateResponseToModel(model *networkPoolServerModel, server *sdk.CreateN
 	}
 }
 
-func mapReadResponseToModel(model *networkPoolServerModel, server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer) {
+func mapReadResponseToModel(
+	model *networkPoolServerModel,
+	server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer,
+) {
 	if server.Id != nil {
 		model.ID = types.Int64Value(*server.Id)
 	}

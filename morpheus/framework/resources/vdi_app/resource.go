@@ -40,6 +40,7 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -64,6 +65,7 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_app", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -77,6 +79,7 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -91,10 +94,12 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 	result, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_app", "", err, httpResp)
+
 		return
 	}
 
@@ -108,6 +113,7 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -134,6 +140,7 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_app", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -147,6 +154,7 @@ func (r *vdiAppResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -161,14 +169,20 @@ func (r *vdiAppResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	_, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_app", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *vdiAppResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *vdiAppResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

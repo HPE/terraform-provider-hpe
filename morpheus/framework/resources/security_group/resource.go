@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &securityGroupResource{}
 }
 
-func (r *securityGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *securityGroupResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_security_group"
 }
 
@@ -40,6 +44,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -62,11 +67,13 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		body.Active = plan.Active.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroups(ctx).AddSecurityGroupsRequest(sdk.AddSecurityGroupsRequest{
-		SecurityGroup: body,
-	}).Execute()
+	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroups(ctx).
+		AddSecurityGroupsRequest(sdk.AddSecurityGroupsRequest{
+			SecurityGroup: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "security_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -80,6 +87,7 @@ func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -94,10 +102,12 @@ func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroups(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group", "", err, httpResp)
+
 		return
 	}
 
@@ -111,6 +121,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -132,11 +143,13 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		body.Active = plan.Active.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).UpdateSecurityGroupsRequest(sdk.UpdateSecurityGroupsRequest{
-		SecurityGroup: body,
-	}).Execute()
+	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
+		UpdateSecurityGroupsRequest(sdk.UpdateSecurityGroupsRequest{
+			SecurityGroup: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "security_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -150,6 +163,7 @@ func (r *securityGroupResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -164,14 +178,20 @@ func (r *securityGroupResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "security_group", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *securityGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *securityGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

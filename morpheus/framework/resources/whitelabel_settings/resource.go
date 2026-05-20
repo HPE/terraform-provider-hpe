@@ -25,19 +25,32 @@ func NewResource() resource.Resource {
 	return &whitelabelSettingsResource{}
 }
 
-func (r *whitelabelSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *whitelabelSettingsResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_whitelabel_settings"
 }
 
-func (r *whitelabelSettingsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *whitelabelSettingsResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = WhitelabelSettingsSchema(ctx)
 }
 
-func (r *whitelabelSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *whitelabelSettingsResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Singleton resource: Create applies the settings via Update.
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -49,9 +62,11 @@ func (r *whitelabelSettingsResource) Create(ctx context.Context, req resource.Cr
 
 	body := buildUpdateRequest(&plan)
 
-	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).UpdateWhitelabelSettingsRequest(body).Execute()
+	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
+		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "whitelabel_settings", "settings", err, httpResp)
+
 		return
 	}
 
@@ -70,6 +85,7 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -82,6 +98,7 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 	result, httpResp, err := client.WhitelabelSettingsAPI.ListWhitelabelSettings(ctx).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "whitelabel_settings", "", err, httpResp)
+
 		return
 	}
 
@@ -91,10 +108,15 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *whitelabelSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *whitelabelSettingsResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -106,9 +128,11 @@ func (r *whitelabelSettingsResource) Update(ctx context.Context, req resource.Up
 
 	body := buildUpdateRequest(&plan)
 
-	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).UpdateWhitelabelSettingsRequest(body).Execute()
+	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
+		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "whitelabel_settings", "settings", err, httpResp)
+
 		return
 	}
 
@@ -123,11 +147,16 @@ func (r *whitelabelSettingsResource) Update(ctx context.Context, req resource.Up
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *whitelabelSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *whitelabelSettingsResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Singleton resource: Delete resets settings to defaults.
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -143,23 +172,31 @@ func (r *whitelabelSettingsResource) Delete(ctx context.Context, req resource.De
 		},
 	}
 
-	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).UpdateWhitelabelSettingsRequest(body).Execute()
+	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
+		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "whitelabel_settings", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *whitelabelSettingsResource) readIntoModel(ctx context.Context, model *whitelabelSettingsModel, diagnostics *diag.Diagnostics) {
+func (r *whitelabelSettingsResource) readIntoModel(
+	ctx context.Context,
+	model *whitelabelSettingsModel,
+	diagnostics *diag.Diagnostics,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(diagnostics, err)
+
 		return
 	}
 
 	result, httpResp, err := client.WhitelabelSettingsAPI.ListWhitelabelSettings(ctx).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(diagnostics, errfmt.OpRead, "whitelabel_settings", "", err, httpResp)
+
 		return
 	}
 
@@ -181,12 +218,16 @@ func buildUpdateRequest(plan *whitelabelSettingsModel) sdk.UpdateWhitelabelSetti
 	if !plan.SecondaryColor.IsNull() {
 		settings.HeaderFgColor = plan.SecondaryColor.ValueStringPointer()
 	}
+
 	return sdk.UpdateWhitelabelSettingsRequest{
 		WhitelabelSettings: &settings,
 	}
 }
 
-func mapResponseToModel(model *whitelabelSettingsModel, settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings) {
+func mapResponseToModel(
+	model *whitelabelSettingsModel,
+	settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings,
+) {
 	model.ID = types.StringValue("settings")
 	if settings.Enabled != nil {
 		model.Enabled = types.BoolValue(*settings.Enabled)

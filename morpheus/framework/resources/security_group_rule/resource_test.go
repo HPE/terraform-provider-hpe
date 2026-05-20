@@ -69,6 +69,7 @@ resource "hpe_morpheus_security_group_rule" "test" {
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}
+
 					return rs.Primary.Attributes["security_group_id"] + "/" + rs.Primary.ID, nil
 				},
 			},

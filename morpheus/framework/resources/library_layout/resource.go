@@ -29,7 +29,11 @@ func NewResource() resource.Resource {
 	return &libraryLayoutResource{}
 }
 
-func (r *libraryLayoutResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryLayoutResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_layout"
 }
 
@@ -41,6 +45,7 @@ func (r *libraryLayoutResource) Create(ctx context.Context, req resource.CreateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -111,6 +116,7 @@ func (r *libraryLayoutResource) Create(ctx context.Context, req resource.CreateR
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_layout", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -134,6 +140,7 @@ func (r *libraryLayoutResource) Create(ctx context.Context, req resource.CreateR
 	readResult, httpResp, err := client.LibraryAPI.GetLayout(ctx, plan.ID.ValueInt64()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_layout", "", err, httpResp)
+
 		return
 	}
 
@@ -147,6 +154,7 @@ func (r *libraryLayoutResource) Read(ctx context.Context, req resource.ReadReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -161,10 +169,12 @@ func (r *libraryLayoutResource) Read(ctx context.Context, req resource.ReadReque
 	result, httpResp, err := client.LibraryAPI.GetLayout(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_layout", "", err, httpResp)
+
 		return
 	}
 
@@ -178,6 +188,7 @@ func (r *libraryLayoutResource) Update(ctx context.Context, req resource.UpdateR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -248,6 +259,7 @@ func (r *libraryLayoutResource) Update(ctx context.Context, req resource.UpdateR
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_layout", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -255,6 +267,7 @@ func (r *libraryLayoutResource) Update(ctx context.Context, req resource.UpdateR
 	readResult, httpResp, err := client.LibraryAPI.GetLayout(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_layout", "", err, httpResp)
+
 		return
 	}
 
@@ -268,6 +281,7 @@ func (r *libraryLayoutResource) Delete(ctx context.Context, req resource.DeleteR
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -282,20 +296,31 @@ func (r *libraryLayoutResource) Delete(ctx context.Context, req resource.DeleteR
 	_, httpResp, err := client.LibraryAPI.DeleteLayout(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_layout", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryLayoutResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryLayoutResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetLayoutToModel(ctx context.Context, model *libraryLayoutModel, lt *sdk.GetLayout200ResponseInstanceTypeLayout, diags *diag.Diagnostics) {
+func mapGetLayoutToModel(
+	ctx context.Context,
+	model *libraryLayoutModel,
+	lt *sdk.GetLayout200ResponseInstanceTypeLayout,
+	diags *diag.Diagnostics,
+) {
 	if lt.Id != nil {
 		model.ID = types.Int64Value(*lt.Id)
 	}

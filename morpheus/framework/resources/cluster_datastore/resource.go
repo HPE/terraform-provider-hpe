@@ -30,18 +30,31 @@ func NewResource() resource.Resource {
 	return &clusterDatastoreResource{}
 }
 
-func (r *clusterDatastoreResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *clusterDatastoreResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_cluster_datastore"
 }
 
-func (r *clusterDatastoreResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *clusterDatastoreResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = ClusterDatastoreSchema(ctx)
 }
 
-func (r *clusterDatastoreResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *clusterDatastoreResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -69,12 +82,14 @@ func (r *clusterDatastoreResource) Create(ctx context.Context, req resource.Crea
 	// This is an adopt-style resource; we use UpdateClusterDatastore to manage an existing datastore.
 	// The ID must be provided via import or known ahead of time.
 	// For create, we use SaveClusterDatastore if available, otherwise error.
-	result, httpResp, err := client.ClustersAPI.SaveClusterDatastore(ctx, clusterID).SaveClusterDatastoreRequest(sdk.SaveClusterDatastoreRequest{
-		Datastore: &sdk.SaveClusterDatastoreRequestDatastore{},
-	}).Execute()
+	result, httpResp, err := client.ClustersAPI.SaveClusterDatastore(ctx, clusterID).
+		SaveClusterDatastoreRequest(sdk.SaveClusterDatastoreRequest{
+			Datastore: &sdk.SaveClusterDatastoreRequestDatastore{},
+		}).Execute()
 	_ = body
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "cluster_datastore", "", err, httpResp)
+
 		return
 	}
 
@@ -92,6 +107,7 @@ func (r *clusterDatastoreResource) Read(ctx context.Context, req resource.ReadRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -107,10 +123,12 @@ func (r *clusterDatastoreResource) Read(ctx context.Context, req resource.ReadRe
 	result, httpResp, err := client.ClustersAPI.GetClusterDatastore(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_datastore", "", err, httpResp)
+
 		return
 	}
 
@@ -133,10 +151,15 @@ func (r *clusterDatastoreResource) Read(ctx context.Context, req resource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *clusterDatastoreResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *clusterDatastoreResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -162,19 +185,26 @@ func (r *clusterDatastoreResource) Update(ctx context.Context, req resource.Upda
 		Datastore: &ds,
 	}
 
-	_, httpResp, err := client.ClustersAPI.UpdateClusterDatastore(ctx, clusterID, id).UpdateClusterDatastoreRequest(body).Execute()
+	_, httpResp, err := client.ClustersAPI.UpdateClusterDatastore(ctx, clusterID, id).
+		UpdateClusterDatastoreRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "cluster_datastore", "", err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *clusterDatastoreResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *clusterDatastoreResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -190,25 +220,34 @@ func (r *clusterDatastoreResource) Delete(ctx context.Context, req resource.Dele
 	_, httpResp, err := client.ClustersAPI.DeleteClusterDatastore(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "cluster_datastore", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *clusterDatastoreResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *clusterDatastoreResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parts := strings.Split(req.ID, "/")
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Invalid Import ID", fmt.Sprintf("Expected format: cluster_id/datastore_id, got: %s", req.ID))
+		resp.Diagnostics.AddError("Invalid Import ID",
+			fmt.Sprintf("Expected format: cluster_id/datastore_id, got: %s", req.ID))
+
 		return
 	}
 
 	clusterID, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse cluster_id %q: %s", parts[0], err))
+
 		return
 	}
 	id, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse datastore_id %q: %s", parts[1], err))
+
 		return
 	}
 

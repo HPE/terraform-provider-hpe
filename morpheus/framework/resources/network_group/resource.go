@@ -28,7 +28,11 @@ func NewResource() resource.Resource {
 	return &networkGroupResource{}
 }
 
-func (r *networkGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *networkGroupResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_network_group"
 }
 
@@ -40,6 +44,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -56,11 +61,13 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
-		NetworkGroup: &body,
-	}).Execute()
+	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).
+		CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
+			NetworkGroup: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -79,6 +86,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	if newID == 0 {
 		resp.Diagnostics.AddError("Failed to extract ID", "Could not determine network group ID from create response")
+
 		return
 	}
 
@@ -86,6 +94,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, newID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_group", "", err, httpResp)
+
 		return
 	}
 
@@ -99,6 +108,7 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -113,10 +123,12 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 	result, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_group", "", err, httpResp)
+
 		return
 	}
 
@@ -130,6 +142,7 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -148,11 +161,13 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).UpdateNetworkGroupRequest(sdk.UpdateNetworkGroupRequest{
-		NetworkGroup: &body,
-	}).Execute()
+	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).
+		UpdateNetworkGroupRequest(sdk.UpdateNetworkGroupRequest{
+			NetworkGroup: &body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_group", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -160,6 +175,7 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_group", "", err, httpResp)
+
 		return
 	}
 
@@ -173,6 +189,7 @@ func (r *networkGroupResource) Delete(ctx context.Context, req resource.DeleteRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -187,14 +204,20 @@ func (r *networkGroupResource) Delete(ctx context.Context, req resource.DeleteRe
 	_, httpResp, err := client.NetworksAPI.DeleteNetworkGroup(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "network_group", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *networkGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *networkGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

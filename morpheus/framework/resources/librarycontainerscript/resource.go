@@ -31,18 +31,31 @@ func NewResource() resource.Resource {
 	return &libraryContainerScriptResource{}
 }
 
-func (r *libraryContainerScriptResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *libraryContainerScriptResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_library_container_script"
 }
 
-func (r *libraryContainerScriptResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *libraryContainerScriptResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = LibraryContainerScriptSchema(ctx)
 }
 
-func (r *libraryContainerScriptResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *libraryContainerScriptResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -91,7 +104,9 @@ func (r *libraryContainerScriptResource) Create(ctx context.Context, req resourc
 		ContainerScript: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_container_script", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_container_script",
+			plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -117,22 +132,29 @@ func (r *libraryContainerScriptResource) Create(ctx context.Context, req resourc
 	}
 	if scriptID == 0 {
 		resp.Diagnostics.AddError("Error creating library_container_script", "Could not extract ID from response")
+
 		return
 	}
 
 	// Read back the full resource
 	if err := readScriptIntoModel(ctx, client, scriptID, &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_script", plan.Name.ValueString(), err, nil)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryContainerScriptResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *libraryContainerScriptResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -147,19 +169,26 @@ func (r *libraryContainerScriptResource) Read(ctx context.Context, req resource.
 	if err := readScriptIntoModel(ctx, client, id, &state, &resp.Diagnostics); err != nil {
 		if err.Error() == "not found" {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_script", "", err, nil)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryContainerScriptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *libraryContainerScriptResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -209,23 +238,31 @@ func (r *libraryContainerScriptResource) Update(ctx context.Context, req resourc
 		ContainerScript: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_container_script", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_container_script",
+			plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	// Read back
 	if err := readScriptIntoModel(ctx, client, id, &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_container_script", plan.Name.ValueString(), err, nil)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryContainerScriptResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *libraryContainerScriptResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -240,20 +277,31 @@ func (r *libraryContainerScriptResource) Delete(ctx context.Context, req resourc
 	_, httpResp, err := client.LibraryAPI.DeleteScript(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_container_script", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *libraryContainerScriptResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *libraryContainerScriptResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(ctx context.Context, model *libraryContainerScriptModel, script *sdk.GetScript200ResponseContainerScript, diags *diag.Diagnostics) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *libraryContainerScriptModel,
+	script *sdk.GetScript200ResponseContainerScript,
+	diags *diag.Diagnostics,
+) {
 	if script.Id != nil {
 		model.ID = types.Int64Value(*script.Id)
 	}
@@ -302,7 +350,13 @@ func mapGetResponseToModel(ctx context.Context, model *libraryContainerScriptMod
 // readScriptIntoModel calls GetScript and handles the SDK deserialization error
 // caused by the 'account' field being an object in the API response but typed as
 // a string in the SDK. When the SDK fails, it falls back to raw JSON parsing.
-func readScriptIntoModel(ctx context.Context, client *sdk.APIClient, id int64, model *libraryContainerScriptModel, diags *diag.Diagnostics) error {
+func readScriptIntoModel(
+	ctx context.Context,
+	client *sdk.APIClient,
+	id int64,
+	model *libraryContainerScriptModel,
+	diags *diag.Diagnostics,
+) error {
 	result, httpResp, err := client.LibraryAPI.GetScript(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		return fmt.Errorf("not found")
@@ -312,6 +366,7 @@ func readScriptIntoModel(ctx context.Context, client *sdk.APIClient, id int64, m
 	if err == nil && result != nil {
 		script := result.GetContainerScript()
 		mapGetResponseToModel(ctx, model, &script, diags)
+
 		return nil
 	}
 
@@ -334,10 +389,16 @@ func readScriptIntoModel(ctx context.Context, client *sdk.APIClient, id int64, m
 	}
 
 	mapGenericScriptToModel(ctx, model, raw.ContainerScript, diags)
+
 	return nil
 }
 
-func mapGenericScriptToModel(ctx context.Context, model *libraryContainerScriptModel, m map[string]interface{}, diags *diag.Diagnostics) {
+func mapGenericScriptToModel(
+	ctx context.Context,
+	model *libraryContainerScriptModel,
+	m map[string]interface{},
+	diags *diag.Diagnostics,
+) {
 	if id, ok := m["id"].(float64); ok {
 		model.ID = types.Int64Value(int64(id))
 	}

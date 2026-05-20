@@ -729,7 +729,7 @@ func getInstanceConfigGeneric(
 	for k, v := range apiConfigForConfig {
 		if v != nil {
 			vType := reflect.TypeOf(v)
-			if vType != nil && vType.Kind() == reflect.Ptr {
+			if vType != nil && vType.Kind() == reflect.Pointer {
 				vValue := reflect.ValueOf(v)
 				if !vValue.IsNil() {
 					if vValue.Elem().Kind() == reflect.Struct {
@@ -770,7 +770,7 @@ func convertStructToMap(s any) map[string]any {
 		field := typ.Field(i)
 
 		fieldValue := val.Field(i).Interface()
-		if reflect.TypeOf(fieldValue).Kind() == reflect.Ptr {
+		if reflect.TypeOf(fieldValue).Kind() == reflect.Pointer {
 			if !reflect.ValueOf(fieldValue).IsNil() {
 				fieldValue = reflect.ValueOf(fieldValue).Elem().Interface()
 			} else {

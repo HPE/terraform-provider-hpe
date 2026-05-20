@@ -68,6 +68,7 @@ func testAccCatalogItemTypeConfig(name string, enabled bool, description string)
 	if description != "" {
 		desc = fmt.Sprintf(`  description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_catalog_item_type" "test" {
   name    = %q

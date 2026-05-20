@@ -40,6 +40,7 @@ func (r *backupResource) Create(ctx context.Context, req resource.CreateRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -79,6 +80,7 @@ func (r *backupResource) Create(ctx context.Context, req resource.CreateRequest,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "backup", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -92,6 +94,7 @@ func (r *backupResource) Read(ctx context.Context, req resource.ReadRequest, res
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -106,10 +109,12 @@ func (r *backupResource) Read(ctx context.Context, req resource.ReadRequest, res
 	result, httpResp, err := client.BackupsAPI.GetBackups(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup", "", err, httpResp)
+
 		return
 	}
 
@@ -123,6 +128,7 @@ func (r *backupResource) Update(ctx context.Context, req resource.UpdateRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -146,6 +152,7 @@ func (r *backupResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "backup", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -159,6 +166,7 @@ func (r *backupResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -173,14 +181,20 @@ func (r *backupResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	_, httpResp, err := client.BackupsAPI.RemoveBackups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "backup", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *backupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *backupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)

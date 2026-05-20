@@ -86,6 +86,7 @@ func testAccLibraryOptionTypeConfig(name, description string) string {
 	if description != "" {
 		desc = fmt.Sprintf(`description = %q`, description)
 	}
+
 	return fmt.Sprintf(`
 resource "hpe_morpheus_library_option_type" "test" {
   name        = %q

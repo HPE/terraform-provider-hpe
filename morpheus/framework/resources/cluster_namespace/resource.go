@@ -30,18 +30,31 @@ func NewResource() resource.Resource {
 	return &clusterNamespaceResource{}
 }
 
-func (r *clusterNamespaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *clusterNamespaceResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_morpheus_cluster_namespace"
 }
 
-func (r *clusterNamespaceResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *clusterNamespaceResource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = ClusterNamespaceSchema(ctx)
 }
 
-func (r *clusterNamespaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *clusterNamespaceResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -68,9 +81,11 @@ func (r *clusterNamespaceResource) Create(ctx context.Context, req resource.Crea
 		Namespace: &ns,
 	}
 
-	result, httpResp, err := client.ClustersAPI.AddClusterNamespace(ctx, clusterID).AddClusterNamespaceRequest(body).Execute()
+	result, httpResp, err := client.ClustersAPI.AddClusterNamespace(ctx, clusterID).
+		AddClusterNamespaceRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -85,6 +100,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -100,10 +116,12 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	result, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_namespace", "", err, httpResp)
+
 		return
 	}
 
@@ -123,10 +141,15 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *clusterNamespaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *clusterNamespaceResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -156,19 +179,26 @@ func (r *clusterNamespaceResource) Update(ctx context.Context, req resource.Upda
 		Namespace: &ns,
 	}
 
-	_, httpResp, err := client.ClustersAPI.UpdateClusterNamespace(ctx, clusterID, id).UpdateClusterNamespaceRequest(body).Execute()
+	_, httpResp, err := client.ClustersAPI.UpdateClusterNamespace(ctx, clusterID, id).
+		UpdateClusterNamespaceRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *clusterNamespaceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *clusterNamespaceResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -184,25 +214,34 @@ func (r *clusterNamespaceResource) Delete(ctx context.Context, req resource.Dele
 	_, httpResp, err := client.ClustersAPI.DeleteClusterNamespace(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "cluster_namespace", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *clusterNamespaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *clusterNamespaceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parts := strings.Split(req.ID, "/")
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Invalid Import ID", fmt.Sprintf("Expected format: cluster_id/namespace_id, got: %s", req.ID))
+		resp.Diagnostics.AddError("Invalid Import ID",
+			fmt.Sprintf("Expected format: cluster_id/namespace_id, got: %s", req.ID))
+
 		return
 	}
 
 	clusterID, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse cluster_id %q: %s", parts[0], err))
+
 		return
 	}
 	id, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse namespace_id %q: %s", parts[1], err))
+
 		return
 	}
 

@@ -40,6 +40,7 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -68,6 +69,7 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "backup_job", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -81,6 +83,7 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -95,10 +98,12 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 	result, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup_job", "", err, httpResp)
+
 		return
 	}
 
@@ -112,6 +117,7 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -137,11 +143,13 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
 	}
 
-	result, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).UpdateBackupJobsRequest(sdk.UpdateBackupJobsRequest{
-		Job: body,
-	}).Execute()
+	result, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
+		UpdateBackupJobsRequest(sdk.UpdateBackupJobsRequest{
+			Job: body,
+		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "backup_job", plan.Name.ValueString(), err, httpResp)
+
 		return
 	}
 
@@ -155,6 +163,7 @@ func (r *backupJobResource) Delete(ctx context.Context, req resource.DeleteReque
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
+
 		return
 	}
 
@@ -169,14 +178,20 @@ func (r *backupJobResource) Delete(ctx context.Context, req resource.DeleteReque
 	_, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "backup_job", "", err, httpResp)
+
 		return
 	}
 }
 
-func (r *backupJobResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *backupJobResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	id, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
