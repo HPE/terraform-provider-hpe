@@ -94,8 +94,10 @@ func WaitForStatus(ctx context.Context, cfg Config, fn StatusFunc) (string, erro
 			if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
 				return "", backoff.Permanent(fmt.Errorf("resource not found during status poll"))
 			}
+
 			return "", backoff.Permanent(err)
 		}
+
 		return status, checkStatus(status, cfg.TargetStatuses, cfg.ErrorStatuses)
 	}
 
@@ -117,6 +119,7 @@ func WaitForDeletion(ctx context.Context, cfg Config, fn ExistenceFunc) error {
 		if !exists {
 			return struct{}{}, nil
 		}
+
 		return struct{}{}, fmt.Errorf("resource still exists")
 	}
 
@@ -125,6 +128,7 @@ func WaitForDeletion(ctx context.Context, cfg Config, fn ExistenceFunc) error {
 		backoff.WithBackOff(backoff.NewConstantBackOff(cfg.Interval)),
 		backoff.WithMaxElapsedTime(cfg.MaxTimeout),
 	)
+
 	return err
 }
 
@@ -137,8 +141,10 @@ func WaitForStatusOrDeletion(ctx context.Context, cfg Config, fn StatusFunc) (st
 			if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
 				return "deleted", nil
 			}
+
 			return "", backoff.Permanent(err)
 		}
+
 		return status, checkStatus(status, cfg.TargetStatuses, cfg.ErrorStatuses)
 	}
 
@@ -161,5 +167,6 @@ func checkStatus(status string, targets, errors []string) error {
 			return nil
 		}
 	}
+
 	return fmt.Errorf("status %q not yet in target set", status)
 }

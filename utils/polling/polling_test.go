@@ -15,6 +15,7 @@ func TestWaitForStatus_Success(t *testing.T) {
 		if callCount < 3 {
 			return "provisioning", nil, nil
 		}
+
 		return "running", nil, nil
 	}
 
@@ -101,6 +102,7 @@ func TestWaitForDeletion_Success(t *testing.T) {
 		if callCount < 3 {
 			return true, nil
 		}
+
 		return false, nil
 	}
 
