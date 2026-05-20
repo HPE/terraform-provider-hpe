@@ -18,18 +18,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_affinity_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_namespace"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/credential"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cypher"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/environment"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/execute_schedule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/job"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/key_pair"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/librarycontainerscript"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/libraryfiletemplate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_container_type"
@@ -46,7 +42,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_contact"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_domain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool_server"
@@ -62,11 +57,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/power_schedule"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/price"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/price_set"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/provisioning_license"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/scale_threshold"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group_rule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
@@ -76,7 +68,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/subnet"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user_source"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
@@ -116,11 +107,7 @@ func (s SubProvider) GetResources(
 		cluster.NewResource,
 
 		// Sprint 1: Simple resources
-		environment.NewResource,
-		key_pair.NewResource,
 		certificate.NewResource,
-		user_group.NewResource,
-		execute_schedule.NewResource,
 		power_schedule.NewResource,
 		vdi_app.NewResource,
 		vdi_gateway.NewResource,
@@ -128,7 +115,6 @@ func (s SubProvider) GetResources(
 		libraryfiletemplate.NewResource,
 
 		// Sprint 2: Networking
-		network_domain.NewResource,
 		network_group.NewResource,
 		network_pool.NewResource,
 		network_pool_server.NewResource,
@@ -142,13 +128,11 @@ func (s SubProvider) GetResources(
 		workflow.NewResource,
 		job.NewResource,
 		deployment.NewResource,
-		credential.NewResource,
 		integration.NewResource,
 		catalog_item_type.NewResource,
 		cypher.NewResource,
 
 		// Sprint 4: Infrastructure & Compute
-		scale_threshold.NewResource,
 		cluster_namespace.NewResource,
 		cluster_datastore.NewResource,
 		cluster_affinity_group.NewResource,
@@ -162,8 +146,6 @@ func (s SubProvider) GetResources(
 		monitoring_contact.NewResource,
 		monitoring_group.NewResource,
 		budget.NewResource,
-		price.NewResource,
-		price_set.NewResource,
 		backup.NewResource,
 		backup_job.NewResource,
 
