@@ -29,7 +29,7 @@ resource "hpe_morpheus_network" "azure" {
     "subnetCidr"      = "10.100.1.0/24"
     "location"        = "eastus"
   }
-  tenant_ids                 = [
+  tenant_ids = [
     data.hpe_morpheus_tenant.example.id,
   ]
 }

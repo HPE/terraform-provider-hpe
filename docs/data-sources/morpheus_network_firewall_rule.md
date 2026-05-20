@@ -12,14 +12,14 @@ description: |-
 
 ```terraform
 data "hpe_morpheus_network_firewall_rule" "example" {
-  id        = 99
+  id                     = 99
   network_integration_id = 1
 }
 ```
 
 ```terraform
 data "hpe_morpheus_network_firewall_rule" "example" {
-  name      = "Example name"
+  name                   = "Example name"
   network_integration_id = 1
 }
 ```

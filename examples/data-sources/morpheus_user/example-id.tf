@@ -1,3 +1,3 @@
 data "hpe_morpheus_user" "example" {
-    id = 99
+  id = 99
 }

@@ -16,7 +16,7 @@ Creating the groovy script task with local script content:
 resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_local" {
   name                = "tfexample_groovy_local"
   code                = "tfexample_groovy_local"
-  labels              = ["demo","terraform"]
+  labels              = ["demo", "terraform"]
   source_type         = "local"
   script_content      = <<EOF
 println "hello"
@@ -34,7 +34,7 @@ Creating the groovy script task with the script fetched from a url:
 resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_url" {
   name                = "tfexample_groovy_url"
   code                = "tfexample_groovy_url"
-  labels              = ["demo","terraform"]
+  labels              = ["demo", "terraform"]
   source_type         = "url"
   result_type         = "json"
   script_path         = "https://example.com/example.groovy"
@@ -51,7 +51,7 @@ Creating the groovy script task with the script fetch via git:
 resource "hpe_morpheus_task_groovy_script" "tfexample_groovy_git" {
   name                = "tfexample_groovy_git"
   code                = "tfexample_groovy_git"
-  labels              = ["demo","terraform"]
+  labels              = ["demo", "terraform"]
   source_type         = "repository"
   result_type         = "json"
   script_path         = "example.groovy"

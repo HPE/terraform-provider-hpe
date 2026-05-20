@@ -192,7 +192,7 @@ resource "hpe_morpheus_form" "example" {
     type                     = "select"
     field_label              = "Select Test"
     field_name               = "selectTest"
-    default_value             = "level1"
+    default_value            = "level1"
     placeholder              = "Testing 123"
     help_block               = "Select an option"
     option_list_id           = 1
@@ -333,12 +333,12 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name                     = "tf logo selector example"
-    code                     = "logo-selector-input"
-    description              = "Terraform logo selector example"
-    type                     = "logoSelector"
-    field_label              = "Select Logo"
-    field_name               = "logoSelector"
+    name        = "tf logo selector example"
+    code        = "logo-selector-input"
+    description = "Terraform logo selector example"
+    type        = "logoSelector"
+    field_label = "Select Logo"
+    field_name  = "logoSelector"
     // For just a logo without a label: jsonencode({ value = "/assets/branding/140x40/resource.svg" })
     default_value            = jsonencode({ value = "identicon", settings = { type = "identicon", iconLabel = "example" } })
     placeholder              = ""
@@ -462,27 +462,27 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name                         = "tf cloud example"
-    code                         = "cloud-input"
-    description                  = "Terraform cloud example"
-    type                         = "cloud"
-    field_label                  = "cloud input"
-    field_name                   = "cloudInput"
-    default_value                = "test123"
-    placeholder                  = "Select cloud"
-    help_block                   = "Select a cloud"
-    required                     = true
-    export_meta                  = true
-    display_value_on_details     = true
-    locked                       = true
-    hidden                       = false
-    exclude_from_search          = true
-    filter_from_resource         = true
-    group_field_type             = "value"
-    group_id                     = "1"
-    instance_type_field_type     = "value"
-    instance_type_code           = "apache"
-    cloud_type                   = "4"
+    name                     = "tf cloud example"
+    code                     = "cloud-input"
+    description              = "Terraform cloud example"
+    type                     = "cloud"
+    field_label              = "cloud input"
+    field_name               = "cloudInput"
+    default_value            = "test123"
+    placeholder              = "Select cloud"
+    help_block               = "Select a cloud"
+    required                 = true
+    export_meta              = true
+    display_value_on_details = true
+    locked                   = true
+    hidden                   = false
+    exclude_from_search      = true
+    filter_from_resource     = true
+    group_field_type         = "value"
+    group_id                 = "1"
+    instance_type_field_type = "value"
+    instance_type_code       = "apache"
+    cloud_type               = "4"
   }
 }
 ```
@@ -921,12 +921,12 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name                     = "tf byteSize example"
-    code                     = "bytesize-input"
-    description              = "Terraform byteSize example"
-    type                     = "byteSize"
-    field_label              = "Byte Size"
-    field_name               = "byteSize"
+    name        = "tf byteSize example"
+    code        = "bytesize-input"
+    description = "Terraform byteSize example"
+    type        = "byteSize"
+    field_label = "Byte Size"
+    field_name  = "byteSize"
     // Size in bytes
     default_value            = "48318382080"
     placeholder              = ""
@@ -1073,25 +1073,25 @@ resource "hpe_morpheus_form" "example" {
   labels      = ["terraform", "demo"]
 
   option_type {
-    name                     = "tf typeahead example"
-    code                     = "typeahead-input"
-    description              = "Terraform typeahead example"
-    type                     = "typeahead"
-    field_label              = "Typeahead"
-    field_name               = "typeahead"
-    default_value            = "test"
-    placeholder              = "Search..."
-    help_block               = "Select an option from the list"
-    option_list_id           = 1
-    required                 = true
-    export_meta              = true
-    display_value_on_details = true
-    locked                   = true
-    hidden                   = false
-    exclude_from_search      = true
-    sortable                 = true
-    allow_duplicates         = false
-    custom_data              = "{}"
+    name                      = "tf typeahead example"
+    code                      = "typeahead-input"
+    description               = "Terraform typeahead example"
+    type                      = "typeahead"
+    field_label               = "Typeahead"
+    field_name                = "typeahead"
+    default_value             = "test"
+    placeholder               = "Search..."
+    help_block                = "Select an option from the list"
+    option_list_id            = 1
+    required                  = true
+    export_meta               = true
+    display_value_on_details  = true
+    locked                    = true
+    hidden                    = false
+    exclude_from_search       = true
+    sortable                  = true
+    allow_duplicates          = false
+    custom_data               = "{}"
     allow_multiple_selections = false
   }
 }

@@ -1,3 +1,3 @@
 data "hpe_morpheus_instance_type_layout" "example" {
-  name = "Example name" 
+  name = "Example name"
 }

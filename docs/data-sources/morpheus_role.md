@@ -20,7 +20,7 @@ data "hpe_morpheus_role" "example" {
 
 ```terraform
 data "hpe_morpheus_role" "example" {
-  name =  "Example name"
+  name = "Example name"
 }
 ```
 

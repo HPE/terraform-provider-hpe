@@ -16,26 +16,26 @@ other types may be used through the generic config.
 
 ```terraform
 resource "hpe_morpheus_task" "example_task" {
-    name = "Example Conditional Workflow Task"
-    task_type_code = "conditionalWorkflow"
-    config_conditional_workflow = {
-        conditional_script = <<-EOT
+  name           = "Example Conditional Workflow Task"
+  task_type_code = "conditionalWorkflow"
+  config_conditional_workflow = {
+    conditional_script           = <<-EOT
         if (1 == true) {
             return true;
         }
 
         return false;
         EOT
-        if_operational_workflow_id   = "4090"
-        if_operational_workflow_name = "Example If Workflow"
+    if_operational_workflow_id   = "4090"
+    if_operational_workflow_name = "Example If Workflow"
 
-        else_operational_workflow_id   = "4091"
-        else_operational_workflow_name = "Example Else Workflow"
-    }
+    else_operational_workflow_id   = "4091"
+    else_operational_workflow_name = "Example Else Workflow"
+  }
 
-    execute_target = "local"
-    retryable = false
-    allow_custom_config = true
+  execute_target      = "local"
+  retryable           = false
+  allow_custom_config = true
 }
 ```
 
@@ -43,26 +43,26 @@ resource "hpe_morpheus_task" "example_task" {
 
 ```terraform
 resource "hpe_morpheus_task" "example_task" {
-    name = "Example Conditional Workflow Task"
-    task_type_code = "conditionalWorkflow"
-    config_conditional_workflow = {
-        conditional_script = <<-EOT
+  name           = "Example Conditional Workflow Task"
+  task_type_code = "conditionalWorkflow"
+  config_conditional_workflow = {
+    conditional_script           = <<-EOT
         if (1 == true) {
             return true;
         }
 
         return false;
         EOT
-        if_operational_workflow_id   = "4090"
-        if_operational_workflow_name = "Example If Workflow"
+    if_operational_workflow_id   = "4090"
+    if_operational_workflow_name = "Example If Workflow"
 
-        else_operational_workflow_id   = null
-        else_operational_workflow_name = null
-    }
+    else_operational_workflow_id   = null
+    else_operational_workflow_name = null
+  }
 
-    execute_target = "local"
-    retryable = false
-    allow_custom_config = true
+  execute_target      = "local"
+  retryable           = false
+  allow_custom_config = true
 }
 ```
 
@@ -70,16 +70,16 @@ resource "hpe_morpheus_task" "example_task" {
 
 ```terraform
 resource "hpe_morpheus_task" "example_task" {
-    name = "Example Generic Task"
-    task_type_code = "nestedWorkflow"
+  name           = "Example Generic Task"
+  task_type_code = "nestedWorkflow"
 
-    config = {
-        operationalWorkflowId = "4090"
-        operationalWorkflowName = "Example Workflow"
-    }
+  config = {
+    operationalWorkflowId   = "4090"
+    operationalWorkflowName = "Example Workflow"
+  }
 
-    execute_target = "local"
-    retryable = false
+  execute_target = "local"
+  retryable      = false
 }
 ```
 

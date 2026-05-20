@@ -1,5 +1,5 @@
 resource "hpe_morpheus_role" "example" {
-  name = "ExampleTenantRole"
+  name        = "ExampleTenantRole"
   description = "An example tenant role"
-  role_type = "tenant"
+  role_type   = "tenant"
 }

@@ -18,9 +18,9 @@ An OS type image maps a virtual image to an operating system type, optionally sc
 
 ```terraform
 resource "hpe_morpheus_os_type_image" "example" {
-  os_type_id       = 1
-  virtual_image_id = 42
-  cloud_id         = 10
+  os_type_id        = 1
+  virtual_image_id  = 42
+  cloud_id          = 10
   provision_type_id = 3
 }
 ```

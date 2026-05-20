@@ -16,7 +16,7 @@ Creating the email task with local email template content:
 resource "hpe_morpheus_task_email" "tfexample_email" {
   name                        = "tfexample_email"
   code                        = "tfexample_email"
-  labels                      = ["demo","terraform"]
+  labels                      = ["demo", "terraform"]
   email_address               = "<%=instance.createdByEmail%>"
   subject                     = "<%=instance.hostname%> provisioning complete"
   source                      = "local"
@@ -35,7 +35,7 @@ Creating the email task with the email template fetched from a url:
 resource "hpe_morpheus_task_email" "tfexample_email_url" {
   name                        = "tfexample_email_url"
   code                        = "tfexample_email_url"
-  labels                      = ["demo","terraform"]
+  labels                      = ["demo", "terraform"]
   email_address               = "<%=instance.createdByEmail%>"
   subject                     = "<%=instance.hostname%> provisioning complete"
   source                      = "url"
@@ -54,7 +54,7 @@ Creating the email task with the email template fetched via git:
 resource "hpe_morpheus_task_email" "tfexample_email_git" {
   name                        = "tfexample_email_git"
   code                        = "tfexample_email_git"
-  labels                      = ["demo","terraform"]
+  labels                      = ["demo", "terraform"]
   email_address               = "<%=instance.createdByEmail%>"
   subject                     = "<%=instance.hostname%> provisioning complete"
   source                      = "repository"

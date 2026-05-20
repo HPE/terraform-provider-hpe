@@ -20,13 +20,13 @@ data "hpe_morpheus_instance_type_layout" "example" {
 
 ```terraform
 data "hpe_morpheus_instance_type_layout" "example" {
-  name = "Example name" 
+  name = "Example name"
 }
 ```
 
 ```terraform
 data "hpe_morpheus_instance_type_layout" "example" {
-  name = "Example name" 
+  name    = "Example name"
   version = "1.2.3"
 }
 ```
