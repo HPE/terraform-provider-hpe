@@ -15,7 +15,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_affinity_group"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_namespace"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cypher"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
@@ -69,7 +68,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/virtual_image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/whitelabel_settings"
 )
 
@@ -127,7 +125,6 @@ func (s SubProvider) GetResources(
 
 		// Sprint 4: Infrastructure & Compute
 		cluster_namespace.NewResource,
-		cluster_datastore.NewResource,
 		cluster_affinity_group.NewResource,
 		storage_server.NewResource,
 		storage_volume.NewResource,
@@ -153,7 +150,6 @@ func (s SubProvider) GetResources(
 
 		// Sprint 7: Identity, VDI & Governance
 		vdi_pool.NewResource,
-		virtual_image.NewResource,
 		user_source.NewResource,
 		whitelabel_settings.NewResource,
 	}
