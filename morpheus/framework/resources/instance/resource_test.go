@@ -81,6 +81,75 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 	})
 }
 
+func TestAccMorpheusInstanceAzureExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	name := acctest.RandomWithPrefix(t.Name())
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
+
+	resourceConfig, err := instance.RenderInstanceAzureConfig(t, map[string]string{
+		"Name":         name,
+		"InstanceType": instanceTypeID,
+		"ResourcePool": resourcePool,
+		"AzureRegion":  "eastus",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"instance_type_id",
+			instanceTypeID,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.resource_pool_id",
+			resourcePool,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.create_user",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.azure_region",
+			"eastus",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
