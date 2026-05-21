@@ -3,6 +3,7 @@ package storage_server_test
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -134,6 +135,67 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "tenants.#", "1"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccStorageServerResource_planOnly validates the schema and config without
+// requiring a real Morpheus backend. This catches schema issues, conflictsWith
+// validation, and default value problems.
+func TestAccStorageServerResource_planOnly(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			// Validate local creds config plans successfully
+			{
+				Config:   providerConfig + testAccStorageServerConfig_localCreds(rName, "nfs", "testuser", "testpass"),
+				PlanOnly: true,
+			},
+			// Validate credential config plans successfully
+			{
+				Config:   providerConfig + testAccStorageServerConfig_credential(rName, "nfs", 1),
+				PlanOnly: true,
+			},
+			// Validate tenants config plans successfully
+			{
+				Config:   providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+// TestAccStorageServerResource_conflictsValidation verifies that credential_id
+// and service_username/service_password_wo cannot be set together.
+func TestAccStorageServerResource_conflictsValidation(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + fmt.Sprintf(`
+resource "hpe_morpheus_storage_server" "test" {
+  name            = %q
+  type            = "nfs"
+  credential_id   = 1
+  service_username = "user"
+}
+`, rName),
+				ExpectError: regexp.MustCompile(`(?i)conflict`),
 			},
 		},
 	})

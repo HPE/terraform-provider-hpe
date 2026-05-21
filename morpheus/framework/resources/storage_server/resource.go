@@ -138,7 +138,6 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		}
 		tenants := make([]sdk.AddStorageServersRequestStorageServerTenantsInner, 0, len(tenantIds))
 		for _, id := range tenantIds {
-			id := id
 			tenants = append(tenants, sdk.AddStorageServersRequestStorageServerTenantsInner{
 				Id: &id,
 			})
@@ -174,6 +173,9 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	waitForReady := func() (*sdk.GetStorageServers200Response, error) {
 		response, hresp, err := client.StorageAPI.GetStorageServers(ctx, id).Execute()
 		if err != nil {
+			// The SDK may return a non-nil error alongside a 200 response for
+			// non-fatal issues (e.g., response body warnings). Only treat as
+			// permanent failure if the status code is not 200.
 			if hresp == nil || hresp.StatusCode != http.StatusOK {
 				return nil, backoff.Permanent(err)
 			}
@@ -320,7 +322,6 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 		tenants := make([]sdk.UpdateStorageServersRequestStorageServerTenantsInner, 0, len(tenantIds))
 		for _, tid := range tenantIds {
-			tid := tid
 			tenants = append(tenants, sdk.UpdateStorageServersRequestStorageServerTenantsInner{
 				Id: &tid,
 			})
@@ -342,6 +343,9 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 	waitForReady := func() (*sdk.GetStorageServers200Response, error) {
 		response, hresp, err := client.StorageAPI.GetStorageServers(ctx, id).Execute()
 		if err != nil {
+			// The SDK may return a non-nil error alongside a 200 response for
+			// non-fatal issues (e.g., response body warnings). Only treat as
+			// permanent failure if the status code is not 200.
 			if hresp == nil || hresp.StatusCode != http.StatusOK {
 				return nil, backoff.Permanent(err)
 			}
@@ -517,6 +521,8 @@ func mapGetResponseToModel(ctx context.Context, model *StorageServerModel, ss *s
 		tenantList, d := types.ListValueFrom(ctx, types.Int64Type, tenantIds)
 		diags.Append(d...)
 		model.Tenants = tenantList
+	} else {
+		model.Tenants = types.ListNull(types.Int64Type)
 	}
 
 	// Write-only field (service_password_wo): preserve state value
