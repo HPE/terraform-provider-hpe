@@ -459,6 +459,9 @@ func getCloudAsState(
 		state.ConfigVmware = configVmware
 
 	case cloudType == azureCloud && (!plan.ConfigAzure.IsNull() || importing):
+		// Azure read uses GetClouds200ResponseZoneConfigAnyOf3 (the GET response model),
+		// while create uses AddCloudsRequestZoneConfigAnyOf1 (the POST request model).
+		// The AnyOf index differs between request/response specs but both are Azure.
 		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf3
 
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)

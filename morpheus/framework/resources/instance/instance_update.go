@@ -146,6 +146,9 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.SetTags([]sdk.UpdateInstanceRequestInstanceTagsInner{})
 	}
 
+	// Config update handling. Currently only Azure uses map-based config updates
+	// via AdditionalProperties. Other config types (HVM, VMware, AWS) use
+	// requires_replace on their config blocks so no update logic is needed.
 	switch {
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
 		updateConfig.AdditionalProperties = make(map[string]interface{})
@@ -191,7 +194,8 @@ func makeUpdateAPIcalls(
 		}
 
 		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
-			updateConfig.AdditionalProperties["diagnosticsStorageAccount"] = plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
+			updateConfig.AdditionalProperties["diagnosticsStorageAccount"] =
+				plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
 		}
 
 		hasConfigUpdate = len(updateConfig.AdditionalProperties) > 0

@@ -225,20 +225,42 @@ func TestAccMorpheusCloudExampleAzureOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	azureCfg := tfjsonpath.New("config_azure")
+
 	planChecks := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction("hpe_morpheus_cloud.example", plancheck.ResourceActionCreate),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("name"), knownvalue.StringExact(name)),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("code"), knownvalue.StringExact(code)),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("azure_region"), knownvalue.StringExact("eastus")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("subscriber_id"), knownvalue.StringExact("sub-12345-67890")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("tenant_id"), knownvalue.StringExact("tenant-12345-67890")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("client_id"), knownvalue.StringExact("client-abc-123")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("client_secret"), knownvalue.StringExact("secret-xyz-789")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("resource_group"), knownvalue.StringExact("my-resource-group")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("cloud_type"), knownvalue.StringExact("global")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("import_existing"), knownvalue.StringExact("on")),
-			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("rpc_mode"), knownvalue.StringExact("guestExec")),
+			plancheck.ExpectResourceAction(
+				"hpe_morpheus_cloud.example", plancheck.ResourceActionCreate),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				tfjsonpath.New("name"), knownvalue.StringExact(name)),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				tfjsonpath.New("code"), knownvalue.StringExact(code)),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("azure_region"), knownvalue.StringExact("eastus")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("subscriber_id"),
+				knownvalue.StringExact("sub-12345-67890")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("tenant_id"),
+				knownvalue.StringExact("tenant-12345-67890")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("client_id"),
+				knownvalue.StringExact("client-abc-123")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("client_secret"),
+				knownvalue.StringExact("secret-xyz-789")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("resource_group"),
+				knownvalue.StringExact("my-resource-group")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("cloud_type"),
+				knownvalue.StringExact("global")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("import_existing"),
+				knownvalue.StringExact("on")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
+				azureCfg.AtMapKey("rpc_mode"),
+				knownvalue.StringExact("guestExec")),
 		},
 	}
 

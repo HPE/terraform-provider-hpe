@@ -118,6 +118,7 @@ resource "hpe_morpheus_cloud" "example" {
   keyboard_layout = "us"
 
   config_azure = {
+    azure_region    = "eastus"
     subscriber_id   = "sub-12345"
     tenant_id       = "tenant-67890"
     client_id       = "client-abc"

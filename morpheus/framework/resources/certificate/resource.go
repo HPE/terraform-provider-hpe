@@ -206,8 +206,6 @@ func mapAddResponseToModel(model *certificateModel, cert *sdk.AddCertificate200R
 	}
 	if cert.Description.IsSet() && cert.Description.Get() != nil {
 		model.Description = types.StringValue(*cert.Description.Get())
-	} else if !model.Description.IsNull() {
-		// keep plan value
 	}
 	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
 		model.DomainName = types.StringValue(*cert.DomainName.Get())
@@ -252,8 +250,6 @@ func mapUpdateResponseToModel(model *certificateModel, cert *sdk.GetCertificate2
 	}
 	if cert.Description.IsSet() && cert.Description.Get() != nil {
 		model.Description = types.StringValue(*cert.Description.Get())
-	} else if !model.Description.IsNull() {
-		// keep plan value
 	}
 	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
 		model.DomainName = types.StringValue(*cert.DomainName.Get())
