@@ -340,21 +340,12 @@ func (g *Resource) Create(
 
 	// service_plan_options
 	if !plan.ServicePlanOptions.IsNull() {
-		servicePlanOptions := sdk.NewServicePlanOptionsWithDefaults()
+		servicePlanOptions := sdk.NewAddInstanceRequestServicePlanOptions()
 		memory := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
 		servicePlanOptions.MaxMemory = &memory
 		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
 		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
-		servicePlanOptionsMap, err := servicePlanOptions.ToMap()
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"error creating instance",
-				fmt.Sprintf("could not convert service plan options to map: %v", err),
-			)
-
-			return
-		}
-		reqInstance.ServicePlanOptions = servicePlanOptionsMap
+		reqInstance.ServicePlanOptions = servicePlanOptions
 	}
 
 	// tags
