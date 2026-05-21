@@ -25,6 +25,7 @@ import (
 
 const (
 	awsCode    = "amazon"
+	azureCode  = "azure"
 	hvmCode    = "mvm-cluster"
 	kvmCode    = "kvm"
 	vmwareCode = "vmware"
@@ -104,6 +105,7 @@ func getInstanceAsState(
 
 	// config
 	state.Config = types.DynamicNull()
+	state.ConfigAzure = NewConfigAzureValueNull()
 	state.ConfigHvm = NewConfigHvmValueNull()
 	state.ConfigVmware = NewConfigVmwareValueNull()
 
@@ -124,6 +126,14 @@ func getInstanceAsState(
 				return state, diags
 			}
 			state.ConfigAws = configAws
+
+		case azureCode:
+			configAzure, cdiags := getInstanceAzureConfig(ctx, id, apiConfig)
+			diags.Append(cdiags...)
+			if diags.HasError() {
+				return state, diags
+			}
+			state.ConfigAzure = configAzure
 
 		case hvmCode:
 			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
@@ -154,6 +164,9 @@ func getInstanceAsState(
 	// For normal reads, use the config from the plan if it's set.
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
 		state.ConfigAws = plan.ConfigAws
+
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		state.ConfigAzure = plan.ConfigAzure
 
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		state.ConfigHvm = plan.ConfigHvm
@@ -354,6 +367,47 @@ func getInstanceNetworkDomainId(
 	}
 
 	return convert.Int64ToType(networkDomainId), diags
+}
+
+func getInstanceAzureConfig(
+	ctx context.Context,
+	id int64,
+	apiConfig *apiConfigType,
+) (ConfigAzureValue, diag.Diagnostics) {
+	configAzure := ConfigAzureValue{}
+
+	createUser, cdiags := getCreateUser(id, apiConfig)
+	if cdiags.HasError() {
+		return configAzure, cdiags
+	}
+
+	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
+	if rdiags.HasError() {
+		return configAzure, rdiags
+	}
+
+	getAdditionalPropertyString := func(key string) types.String {
+		if v, ok := apiConfig.AdditionalProperties[key]; ok && v != nil {
+			return types.StringValue(fmt.Sprint(v))
+		}
+
+		return types.StringNull()
+	}
+
+	configAzure.AvailabilityOptions = getAdditionalPropertyString("availabilityOptions")
+	configAzure.AvailabilitySet = getAdditionalPropertyString("availabilitySet")
+	configAzure.AvailabilityZone = getAdditionalPropertyString("availabilityZone")
+	configAzure.AzureRegion = getAdditionalPropertyString("azureRegion")
+	configAzure.AzurefloatingIp = getAdditionalPropertyString("azurefloatingIp")
+	configAzure.AzuresecurityGroupId = getAdditionalPropertyString("azuresecurityGroupId")
+	configAzure.BootDiagnostics = getAdditionalPropertyString("bootDiagnostics")
+	configAzure.CreateUser = convert.BoolToType(createUser)
+	configAzure.DiagnosticsStorageAccount = getAdditionalPropertyString("diagnosticsStorageAccount")
+	configAzure.OsGuestDiagnostics = getAdditionalPropertyString("osGuestDiagnostics")
+	configAzure.ResourcePoolId = convert.StrToType(resourcePoolId)
+	configAzure.state = attr.ValueStateKnown
+
+	return configAzure, diag.Diagnostics{}
 }
 
 // getInstanceVMwareConfig builds the config_vmware block from the API response for vmware instances

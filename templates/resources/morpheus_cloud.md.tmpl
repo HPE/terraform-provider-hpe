@@ -11,7 +11,7 @@ description: |-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
--> A `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
+-> A `config_azure`, `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
 
 -> `cloud_type_code` must be set if using a generic `config` block.
 
@@ -25,6 +25,10 @@ HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 ## Example Usage (Generic)
 
 {{ tffile "examples/resources/morpheus_cloud/example_generic.tf" }}
+
+## Example Usage (Azure)
+
+{{ tffile "examples/resources/morpheus_cloud/example_azure.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 

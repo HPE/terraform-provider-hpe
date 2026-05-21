@@ -18,6 +18,7 @@ import (
 //go:generate ../../../../bin/render example_vmware_sp_options.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
 //go:generate ../../../../bin/render example_metal.tf.tmpl Name "TestInstance" CloudName "aCloud" EnvironmentName "anEnvironment" GroupName "aGroup" InstanceTypeLayout "Single ILO Server" Role "aRole" PlanName "G3i"
 //go:generate ../../../../bin/render example_aws.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284"
+//go:generate ../../../../bin/render example_azure.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284" AzureRegion "eastus"
 
 func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -50,6 +51,40 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 	}
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "example.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
+}
+
+func RenderInstanceAzureConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":         "TestInstance",
+		"InstanceType": "9",
+		"ResourcePool": "pool-12284",
+		"AzureRegion":  "eastus",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example_azure.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

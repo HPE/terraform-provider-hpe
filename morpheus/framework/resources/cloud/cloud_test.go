@@ -12,8 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	cloud "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
@@ -184,6 +188,66 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 				ImportStateVerify: true, // Check state post import
 				ResourceName:      "hpe_morpheus_cloud.example",
 				Check:             checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusCloudExampleAzureOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	resourceConfig, err := cloud.RenderCloudAzureConfig(t, map[string]string{
+		"Name":          name,
+		"Code":          code,
+		"TenantId":      "1",
+		"GroupId":       "1",
+		"Label":         "aLabel",
+		"ApplianceUrl":  "https://somewhere.com",
+		"SubscriberId":  "sub-12345-67890",
+		"AzureTenantId": "tenant-12345-67890",
+		"ClientId":      "client-abc-123",
+		"ClientSecret":  "secret-xyz-789",
+		"ResourceGroup": "my-resource-group",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	planChecks := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction("hpe_morpheus_cloud.example", plancheck.ResourceActionCreate),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("name"), knownvalue.StringExact(name)),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("code"), knownvalue.StringExact(code)),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("subscriber_id"), knownvalue.StringExact("sub-12345-67890")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("tenant_id"), knownvalue.StringExact("tenant-12345-67890")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("client_id"), knownvalue.StringExact("client-abc-123")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("client_secret"), knownvalue.StringExact("secret-xyz-789")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("resource_group"), knownvalue.StringExact("my-resource-group")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("cloud_type"), knownvalue.StringExact("global")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("import_existing"), knownvalue.StringExact("on")),
+			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example", tfjsonpath.New("config_azure").AtMapKey("rpc_mode"), knownvalue.StringExact("guestExec")),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+				ConfigPlanChecks:   planChecks,
 			},
 		},
 	})
