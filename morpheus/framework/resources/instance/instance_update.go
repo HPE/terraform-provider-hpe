@@ -194,8 +194,7 @@ func makeUpdateAPIcalls(
 		}
 
 		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
-			updateConfig.AdditionalProperties["diagnosticsStorageAccount"] =
-				plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
+			updateConfig.AdditionalProperties["diagnosticsStorageAccount"] = plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
 		}
 
 		hasConfigUpdate = len(updateConfig.AdditionalProperties) > 0
