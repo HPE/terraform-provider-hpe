@@ -44,7 +44,7 @@ func TestNetworkDataSourceExample(t *testing.T) {
 	}
 
 	// Use the standard provider config from testhelpers (no gock mocking)
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run

@@ -49,7 +49,7 @@ func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -86,7 +86,7 @@ func TestAccMorpheusPolicyValidationInvalidPolicyType(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -124,7 +124,7 @@ func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -165,7 +165,7 @@ func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	roleName := acctest.RandomWithPrefix(t.Name() + "-role")
@@ -222,7 +222,7 @@ func TestAccMorpheusPolicyValidationTenantsNotSupported(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -280,7 +280,7 @@ func TestAccMorpheusPolicyValidationApprovalWorkflowConflict(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -321,7 +321,7 @@ func TestAccMorpheusPolicyValidationApprovalFlowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -360,7 +360,7 @@ func TestAccMorpheusPolicyValidationApprovalWorkflowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -399,7 +399,7 @@ func TestAccMorpheusPolicyValidationLifecycleFlowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -438,7 +438,7 @@ func TestAccMorpheusPolicyValidationLifecycleWorkflowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -477,7 +477,7 @@ func TestAccMorpheusPolicyValidationShutdownFlowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -516,7 +516,7 @@ func TestAccMorpheusPolicyValidationShutdownWorkflowIdRequired(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -555,7 +555,7 @@ func TestAccMorpheusPolicyValidationConfigConflict(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 

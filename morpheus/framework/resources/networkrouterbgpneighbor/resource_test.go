@@ -36,7 +36,7 @@ func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -80,7 +80,7 @@ func TestAccNetworkRouterBgpNeighborCreate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -148,7 +148,7 @@ func TestAccNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -265,7 +265,7 @@ func TestAccNetworkRouterBgpNeighborUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -394,7 +394,7 @@ func TestAccNetworkRouterBgpNeighborImport(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -453,7 +453,7 @@ func TestAccNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -514,7 +514,7 @@ func TestAccNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())

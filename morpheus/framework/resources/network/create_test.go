@@ -23,7 +23,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -171,7 +171,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -299,7 +299,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -390,7 +390,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -510,7 +510,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -620,7 +620,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run

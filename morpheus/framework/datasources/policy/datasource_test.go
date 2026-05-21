@@ -58,7 +58,7 @@ func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -130,7 +130,7 @@ func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -202,7 +202,7 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	config := providerConfig + `
@@ -269,7 +269,7 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	config := providerConfig + `
@@ -314,7 +314,7 @@ func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	policyDescription := "Comprehensive test policy with all config fields"
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Create a single policy resource with ALL config fields combined for testing
@@ -719,7 +719,7 @@ func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Create dependency resources

@@ -31,7 +31,7 @@ func TestAccMorpheusUserSourceBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := acctest.RandomWithPrefix("tf-acc-test-usersource")

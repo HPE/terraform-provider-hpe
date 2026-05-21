@@ -165,7 +165,7 @@ func TestAccMorpheusInstanceDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig := `
@@ -193,7 +193,7 @@ func TestAccMorpheusInstanceDatasourceNoAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig := `

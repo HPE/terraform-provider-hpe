@@ -123,7 +123,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -252,7 +252,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -306,7 +306,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -360,7 +360,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -413,7 +413,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
