@@ -13,6 +13,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 )
 
+const resourceName = "hpe_morpheus_storage_server.test"
+
 func TestMain(m *testing.M) {
 	systemoverride.ParseFlags()
 	code := m.Run()
@@ -21,7 +23,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccStorageServerResource_basic(t *testing.T) {
-	t.Skip("Skipping: requires external storage infrastructure (no standalone storage server types available)")
+	t.Skip("Skipping: requires external storage infrastructure")
+
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
 
 	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
@@ -31,43 +36,166 @@ func TestAccStorageServerResource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			// Create
+			// Create with local credentials
 			{
-				Config: providerConfig + testAccStorageServerConfig(rName, "local", ""),
+				Config: providerConfig + testAccStorageServerConfig_localCreds(rName, "nfs", "testuser", "testpass"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_storage_server.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_server.test", "name", rName),
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_server.test", "type", "local"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "type", "nfs"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "visibility", "private"),
+					resource.TestCheckResourceAttr(resourceName, "service_username", "testuser"),
 				),
 			},
 			// ImportState
 			{
-				ResourceName:      "hpe_morpheus_storage_server.test",
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"service_password_wo_version",
+				},
 			},
-			// Update description
+			// Update description and visibility
 			{
-				Config: providerConfig + testAccStorageServerConfig(rName, "local", "updated description"),
+				Config: providerConfig + testAccStorageServerConfig_updated(rName, "nfs", "testuser", "testpass", "updated description", "public"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_server.test", "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceName, "description", "updated description"),
+					resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
 				),
 			},
 		},
 	})
 }
 
-func testAccStorageServerConfig(name, serverType, description string) string {
-	desc := ""
-	if description != "" {
-		desc = fmt.Sprintf(`  description = %q`, description)
+func TestAccStorageServerResource_credential(t *testing.T) {
+	t.Skip("Skipping: requires external storage infrastructure and stored credential")
+
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			// Create with stored credential
+			{
+				Config: providerConfig + testAccStorageServerConfig_credential(rName, "nfs", 1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "credential_id", "1"),
+				),
+			},
+			// ImportState
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"service_password_wo_version",
+				},
+			},
+		},
+	})
+}
+
+func TestAccStorageServerResource_tenants(t *testing.T) {
+	t.Skip("Skipping: requires external storage infrastructure and multiple tenants")
+
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
+	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+
+	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			// Create with tenants
+			{
+				Config: providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "tenants.#", "2"),
+				),
+			},
+			// Update tenants
+			{
+				Config: providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1}),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "tenants.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+// testAccStorageServerConfig_localCreds returns a config with local username/password auth.
+func testAccStorageServerConfig_localCreds(name, serverType, username, password string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_storage_server" "test" {
+  name                       = %q
+  type                       = %q
+  service_username           = %q
+  service_password_wo        = %q
+  service_password_wo_version = 1
+}
+`, name, serverType, username, password)
+}
+
+// testAccStorageServerConfig_updated returns a config with updated description and visibility.
+func testAccStorageServerConfig_updated(name, serverType, username, password, description, visibility string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_storage_server" "test" {
+  name                       = %q
+  type                       = %q
+  service_username           = %q
+  service_password_wo        = %q
+  service_password_wo_version = 1
+  description                = %q
+  visibility                 = %q
+}
+`, name, serverType, username, password, description, visibility)
+}
+
+// testAccStorageServerConfig_credential returns a config using a stored credential.
+func testAccStorageServerConfig_credential(name, serverType string, credentialID int) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_storage_server" "test" {
+  name          = %q
+  type          = %q
+  credential_id = %d
+}
+`, name, serverType, credentialID)
+}
+
+// testAccStorageServerConfig_tenants returns a config with a tenants list.
+func testAccStorageServerConfig_tenants(name, serverType, username, password string, tenants []int) string {
+	tenantStr := ""
+	for i, id := range tenants {
+		if i > 0 {
+			tenantStr += ", "
+		}
+		tenantStr += fmt.Sprintf("%d", id)
 	}
 
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_server" "test" {
-  name = %q
-  type = %q
-%s
+  name                       = %q
+  type                       = %q
+  service_username           = %q
+  service_password_wo        = %q
+  service_password_wo_version = 1
+  tenants                    = [%s]
 }
-`, name, serverType, desc)
+`, name, serverType, username, password, tenantStr)
 }
