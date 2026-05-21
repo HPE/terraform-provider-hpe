@@ -23,7 +23,7 @@ func TestAccMorpheusNetworkResourceImport(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run

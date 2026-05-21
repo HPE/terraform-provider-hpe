@@ -79,7 +79,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -176,7 +176,7 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -319,7 +319,7 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -371,7 +371,7 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -412,7 +412,7 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())

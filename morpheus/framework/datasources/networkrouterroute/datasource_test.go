@@ -41,7 +41,7 @@ func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterroute.RenderRouteByNameConfig(t, map[string]string{
@@ -76,7 +76,7 @@ func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterroute.RenderRouteByIdConfig(t, map[string]string{
@@ -111,7 +111,7 @@ func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterroute.RenderRouteByNameConfig(t,

@@ -34,7 +34,7 @@ func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	name := acctest.RandomWithPrefix(t.Name())

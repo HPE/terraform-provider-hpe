@@ -41,7 +41,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByIDConfig(t, nil)
@@ -79,7 +79,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByNameConfig(t, nil)
@@ -117,7 +117,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByNameConfig(t, map[string]string{

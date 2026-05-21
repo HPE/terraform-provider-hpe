@@ -23,7 +23,7 @@ func TestAccMorpheusPolicyUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "-updated"
@@ -122,7 +122,7 @@ func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
@@ -245,7 +245,7 @@ func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
@@ -361,7 +361,7 @@ func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())

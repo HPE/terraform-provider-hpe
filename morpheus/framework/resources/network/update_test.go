@@ -24,7 +24,7 @@ func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -428,7 +428,7 @@ func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique names for this test run
@@ -671,7 +671,7 @@ func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run
@@ -1000,7 +1000,7 @@ func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Generate unique name for this test run

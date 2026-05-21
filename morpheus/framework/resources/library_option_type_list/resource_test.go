@@ -29,7 +29,7 @@ func TestAccMorpheusLibraryOptionTypeListBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := acctest.RandomWithPrefix("tf-acc-optlist")
@@ -62,7 +62,7 @@ func TestAccMorpheusLibraryOptionTypeListUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := acctest.RandomWithPrefix("tf-acc-optlist")
