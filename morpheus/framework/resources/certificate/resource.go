@@ -204,6 +204,8 @@ func mapAddResponseToModel(model *certificateModel, cert *sdk.AddCertificate200R
 	if cert.Name != nil {
 		model.Name = types.StringValue(*cert.Name)
 	}
+	// Only update description if the API returns a value; otherwise keep the
+	// plan value (no-op by not modifying model.Description).
 	if cert.Description.IsSet() && cert.Description.Get() != nil {
 		model.Description = types.StringValue(*cert.Description.Get())
 	}
@@ -248,6 +250,8 @@ func mapUpdateResponseToModel(model *certificateModel, cert *sdk.GetCertificate2
 	if cert.Name != nil {
 		model.Name = types.StringValue(*cert.Name)
 	}
+	// Only update description if the API returns a value; otherwise keep the
+	// plan value (no-op by not modifying model.Description).
 	if cert.Description.IsSet() && cert.Description.Get() != nil {
 		model.Description = types.StringValue(*cert.Description.Get())
 	}
