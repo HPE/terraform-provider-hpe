@@ -12,7 +12,8 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware, AWS and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+-> Currently HVM, VMware, AWS, Azure and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Azure: `config_azure`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
@@ -594,6 +595,70 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
+## Azure Instance
+
+```terraform
+data "hpe_morpheus_cloud" "azure_cloud" {
+  name = "QA Azure"
+}
+
+data "hpe_morpheus_instance_type_layout" "azure" {
+  name    = "Azure VM"
+  version = "22.04"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.azure_cloud.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.azure.id
+  instance_type_id = 9
+
+  group_id = 28
+  plan_id  = 622
+
+  instance_context = "dev"
+  network_interfaces = [
+    {
+      network_id = 28
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 100
+      storage_type_id          = 23
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  tags = [
+    {
+      name  = "terraform"
+      value = "true"
+    },
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config_azure = {
+    resource_pool_id = "pool-12284"
+    create_user      = false
+    azure_region     = "eastus"
+  }
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+    update = "20m"
+    read   = "10m"
+  }
+}
+```
+
 ## BMaaS Instance
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
@@ -729,6 +794,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `cloud_id` (Number) The Cloud ID to provision the instance onto.
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `config_aws` (Attributes) Configuration options for AWS instances. (see [below for nested schema](#nestedatt--config_aws))
+- `config_azure` (Attributes) Configuration options for Azure instances. (see [below for nested schema](#nestedatt--config_azure))
 - `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `description` (String) A description of the instance.
@@ -817,6 +883,27 @@ Required:
 
 - `id` (String) id of the AWS security group to assign the instance to.
 
+
+
+<a id="nestedatt--config_azure"></a>
+### Nested Schema for `config_azure`
+
+Required:
+
+- `resource_pool_id` (String) The id of the Azure resource group to provision the instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.
+
+Optional:
+
+- `availability_options` (String) The availability option for the instance (zone, set).
+- `availability_set` (String) The availability set to use when availability_options is 'set'.
+- `availability_zone` (String) The availability zone to use when availability_options is 'zone'.
+- `azure_region` (String) The Azure region to provision the instance in.
+- `azurefloating_ip` (String) Whether to assign a public IP to the instance (on, off).
+- `azuresecurity_group_id` (String) The id of the Azure security group to assign the instance to.
+- `boot_diagnostics` (String) Boot diagnostics setting (enable, enable_custom_storage).
+- `create_user` (Boolean) Whether to create a user when provisioning the instance.
+- `diagnostics_storage_account` (String) The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.
+- `os_guest_diagnostics` (String) OS guest diagnostics setting (on, off).
 
 
 <a id="nestedatt--config_hvm"></a>

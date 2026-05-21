@@ -12,7 +12,8 @@ Instance is a virtual machine, bare metal machine or container deployed and mana
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently HVM, VMware, AWS and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+-> Currently HVM, VMware, AWS, Azure and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Azure: `config_azure`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
@@ -92,6 +93,10 @@ Some Service Plans have options that must be set at the time of creation of the 
 ## AWS Instance
 
 {{ tffile "morpheus/framework/resources/instance/example_aws.tf" }}
+
+## Azure Instance
+
+{{ tffile "morpheus/framework/resources/instance/example_azure.tf" }}
 
 ## BMaaS Instance
 

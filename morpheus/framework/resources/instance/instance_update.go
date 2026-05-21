@@ -105,6 +105,8 @@ func makeUpdateAPIcalls(
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
 	updateRequest := sdk.NewUpdateInstanceRequest()
 	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstance()
+	updateConfig := sdk.NewUpdateInstanceRequestConfig()
+	hasConfigUpdate := false
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
@@ -144,7 +146,64 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.SetTags([]sdk.UpdateInstanceRequestInstanceTagsInner{})
 	}
 
+	// Config update handling. Currently only Azure uses map-based config updates
+	// via AdditionalProperties. Other config types (HVM, VMware, AWS) use
+	// requires_replace on their config blocks so no update logic is needed.
+	switch {
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		updateConfig.AdditionalProperties = make(map[string]interface{})
+
+		if !plan.ConfigAzure.ResourcePoolId.IsNull() && !plan.ConfigAzure.ResourcePoolId.IsUnknown() {
+			updateConfig.AdditionalProperties["resourcePoolId"] = plan.ConfigAzure.ResourcePoolId.ValueString()
+		}
+
+		if !plan.ConfigAzure.CreateUser.IsNull() && !plan.ConfigAzure.CreateUser.IsUnknown() {
+			updateConfig.AdditionalProperties["createUser"] = plan.ConfigAzure.CreateUser.ValueBool()
+		}
+
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			updateConfig.AdditionalProperties["azureRegion"] = plan.ConfigAzure.AzureRegion.ValueString()
+		}
+
+		if !plan.ConfigAzure.AzuresecurityGroupId.IsNull() && !plan.ConfigAzure.AzuresecurityGroupId.IsUnknown() {
+			updateConfig.AdditionalProperties["azuresecurityGroupId"] = plan.ConfigAzure.AzuresecurityGroupId.ValueString()
+		}
+
+		if !plan.ConfigAzure.AvailabilityOptions.IsNull() && !plan.ConfigAzure.AvailabilityOptions.IsUnknown() {
+			updateConfig.AdditionalProperties["availabilityOptions"] = plan.ConfigAzure.AvailabilityOptions.ValueString()
+		}
+
+		if !plan.ConfigAzure.AvailabilitySet.IsNull() && !plan.ConfigAzure.AvailabilitySet.IsUnknown() {
+			updateConfig.AdditionalProperties["availabilitySet"] = plan.ConfigAzure.AvailabilitySet.ValueString()
+		}
+
+		if !plan.ConfigAzure.AvailabilityZone.IsNull() && !plan.ConfigAzure.AvailabilityZone.IsUnknown() {
+			updateConfig.AdditionalProperties["availabilityZone"] = plan.ConfigAzure.AvailabilityZone.ValueString()
+		}
+
+		if !plan.ConfigAzure.AzurefloatingIp.IsNull() && !plan.ConfigAzure.AzurefloatingIp.IsUnknown() {
+			updateConfig.AdditionalProperties["azurefloatingIp"] = plan.ConfigAzure.AzurefloatingIp.ValueString()
+		}
+
+		if !plan.ConfigAzure.BootDiagnostics.IsNull() && !plan.ConfigAzure.BootDiagnostics.IsUnknown() {
+			updateConfig.AdditionalProperties["bootDiagnostics"] = plan.ConfigAzure.BootDiagnostics.ValueString()
+		}
+
+		if !plan.ConfigAzure.OsGuestDiagnostics.IsNull() && !plan.ConfigAzure.OsGuestDiagnostics.IsUnknown() {
+			updateConfig.AdditionalProperties["osGuestDiagnostics"] = plan.ConfigAzure.OsGuestDiagnostics.ValueString()
+		}
+
+		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
+			updateConfig.AdditionalProperties["diagnosticsStorageAccount"] = plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
+		}
+
+		hasConfigUpdate = len(updateConfig.AdditionalProperties) > 0
+	}
+
 	updateRequest.SetInstance(*instanceUpdateRequest)
+	if hasConfigUpdate {
+		updateRequest.SetConfig(*updateConfig)
+	}
 	_, httpResp, err := updateInstance.UpdateInstanceRequest(*updateRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError("error updating instance", errfmt.ErrMsg(err, httpResp))
@@ -640,6 +699,11 @@ func isAPIUpdateNeeded(plan, state InstanceModel) bool {
 
 	// group_id
 	if !plan.GroupId.Equal(state.GroupId) {
+		return true
+	}
+
+	// config_azure
+	if !plan.ConfigAzure.Equal(state.ConfigAzure) {
 		return true
 	}
 
