@@ -24,6 +24,7 @@ resource "hpe_morpheus_cloud" "example" {
   keyboard_layout = "us"
 
   config_azure = {
+    azure_region    = "{{.AzureRegion}}"
     subscriber_id   = "{{.SubscriberId}}"
     tenant_id       = "{{.AzureTenantId}}"
     client_id       = "{{.ClientId}}"

@@ -370,6 +370,7 @@ func (r *Resource) Create(
 		cloudTypeCode = azureCloud
 
 		config := sdkfuncs.NewAzureCloudConfig()
+		config.AdditionalProperties = make(map[string]interface{})
 
 		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
 			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
@@ -389,6 +390,15 @@ func (r *Resource) Create(
 
 		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
 			config.SetConsoleKeymap(plan.KeyboardLayout.ValueString())
+		}
+
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			config.AdditionalProperties["azureRegion"] = plan.ConfigAzure.AzureRegion.ValueString()
+		}
+
+		if !plan.ConfigAzure.CmdbDiscovery.IsNull() && !plan.ConfigAzure.CmdbDiscovery.IsUnknown() {
+			config.AdditionalProperties["configCmdbDiscovery"] = convert.
+				BoolTypeToStringPointerOnOff(plan.ConfigAzure.CmdbDiscovery)
 		}
 
 		if !plan.ConfigAzure.SubscriberId.IsNull() && !plan.ConfigAzure.SubscriberId.IsUnknown() {

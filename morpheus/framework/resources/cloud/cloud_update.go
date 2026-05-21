@@ -339,6 +339,15 @@ func (r *Resource) Update(
 				BoolTypeToStringPointerOnOff(plan.ConfigVmware.HideHostSelection)
 		}
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			updateCloud.Config["azureRegion"] = plan.ConfigAzure.AzureRegion.ValueString()
+		}
+
+		if !plan.ConfigAzure.CmdbDiscovery.IsNull() && !plan.ConfigAzure.CmdbDiscovery.IsUnknown() {
+			updateCloud.Config["configCmdbDiscovery"] = convert.
+				BoolTypeToStringPointerOnOff(plan.ConfigAzure.CmdbDiscovery)
+		}
+
 		if !plan.ConfigAzure.SubscriberId.IsNull() && !plan.ConfigAzure.SubscriberId.IsUnknown() {
 			updateCloud.Config["subscriberId"] = plan.ConfigAzure.SubscriberId.ValueString()
 		}
