@@ -44,12 +44,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool_server"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_firewall_rule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_nat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -91,7 +91,7 @@ func (s SubProvider) GetResources(
 		networkdhcpserver.NewResource,
 		networkrouter.NewResource,
 		networkrouterbgpneighbor.NewResource,
-		networkrouterroute.NewResource,
+		network_router_route.NewResource,
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
