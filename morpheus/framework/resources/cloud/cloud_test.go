@@ -44,7 +44,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusCloudExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -200,7 +200,7 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusCloudExampleAzureOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Azure) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 
 // Tests that our example file template used for docs is a valid config.
 func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -138,7 +138,7 @@ resource "hpe_morpheus_os_type" "test" {
 
 // Tests creating with only the required attributes.
 func TestAccMorpheusOsTypeImageRequiredAttrsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

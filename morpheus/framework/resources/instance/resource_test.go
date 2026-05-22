@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusInstanceExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -85,7 +85,7 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusInstanceAzureExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Azure) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

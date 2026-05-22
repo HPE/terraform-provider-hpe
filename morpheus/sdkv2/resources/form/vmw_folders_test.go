@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusFormVmwFoldersOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.VMware) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
