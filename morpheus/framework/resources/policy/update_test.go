@@ -11,11 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // Test update of mutable attributes
 func TestAccMorpheusPolicyUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -23,8 +28,7 @@ func TestAccMorpheusPolicyUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "-updated"
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -113,6 +117,11 @@ resource "hpe_morpheus_policy" "update_test" {
 
 // Test that changing associated_resource_id triggers replacement
 func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -122,8 +131,7 @@ func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 
@@ -236,6 +244,11 @@ resource "hpe_morpheus_policy" "replace_test" {
 
 // Test that changing associated_resource_type triggers replacement
 func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -245,8 +258,7 @@ func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 
@@ -352,6 +364,11 @@ resource "hpe_morpheus_policy" "replace_test" {
 
 // Test that changing policy_type.code triggers replacement
 func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -361,8 +378,7 @@ func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
 
 	const resourceName = "hpe_morpheus_policy.replace_test"
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	groupName := acctest.RandomWithPrefix(t.Name())
 	policyName := acctest.RandomWithPrefix(t.Name())
 

@@ -11,9 +11,15 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsstorage "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/storage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Kubernetes, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

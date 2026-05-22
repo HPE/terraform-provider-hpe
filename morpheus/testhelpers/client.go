@@ -12,14 +12,13 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 )
 
 func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
 	t.Helper()
 
-	client, err := NewClientForServer(ctx, systemoverride.GetPreferred(t, ""))
+	client, err := NewClientForServer(ctx, "")
 	if err != nil {
 		t.Fatalf("failed to create test client: %v", err)
 	}
@@ -28,7 +27,7 @@ func newClient(ctx context.Context, t *testing.T) *sdk.APIClient {
 }
 
 // NewClientForServer constructs an API client using the same TF_VAR naming
-// convention as ProviderBlockForServer. When preferredSystem is empty, it uses
+// convention as ProviderBlock. When preferredSystem is empty, it uses
 // the non-server-specific test variable names.
 func NewClientForServer(ctx context.Context, preferredSystem string) (*sdk.APIClient, error) {
 	var username, password string
@@ -79,7 +78,7 @@ func NewClientForServer(ctx context.Context, preferredSystem string) (*sdk.APICl
 }
 
 // LookupProviderEnv looks up a TF_VAR provider input using the same naming
-// convention as ProviderBlock and ProviderBlockForServer, falling back to the
+// convention as ProviderBlock, falling back to the
 // shared non-server-specific name when a server-specific value is absent.
 func LookupProviderEnv(preferredSystem string, suffix string) (string, bool) {
 	if name := ProviderEnvName(preferredSystem, suffix); name != "" {

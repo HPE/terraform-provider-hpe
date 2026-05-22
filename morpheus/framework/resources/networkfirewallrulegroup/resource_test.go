@@ -15,17 +15,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -34,8 +38,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -115,6 +118,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -123,8 +131,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -244,6 +251,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -252,8 +264,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -298,6 +309,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -306,8 +322,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -352,6 +367,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -360,8 +380,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -405,6 +424,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -413,8 +437,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

@@ -11,7 +11,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 const providerConfigOffline = `
@@ -25,13 +25,17 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusFindDatastoreById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -39,8 +43,7 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-id.tf.tmpl",
@@ -87,6 +90,11 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -94,8 +102,7 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-name.tf.tmpl",
@@ -146,6 +153,11 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -153,8 +165,7 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_datastore" "test" {
@@ -183,6 +194,11 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -212,6 +228,11 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

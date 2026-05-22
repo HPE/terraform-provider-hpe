@@ -18,7 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 const providerConfigOffline = `
@@ -32,13 +32,17 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusImageDatasourceById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -48,8 +52,7 @@ func TestAccMorpheusImageDatasourceById(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	imageConfig, err := image.RenderImageConfig(t, map[string]string{
 		"Name":              name,
@@ -103,6 +106,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -112,8 +120,7 @@ func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	imageConfig, err := image.RenderImageConfig(t, map[string]string{
 		"Name":              name,
@@ -167,6 +174,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -177,8 +189,7 @@ func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	imageType := "qcow2"
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	imageConfig, err := image.RenderImageConfig(t, map[string]string{
 		"Name":              name,
@@ -235,6 +246,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 
 // verify that we get an error if `image_type` is specified without `name`
 func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -259,6 +275,11 @@ data "hpe_morpheus_image" "test" {
 
 // this should fail due to a conflict between id and name/image_type
 func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -20,6 +21,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusVdiAppBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -29,7 +35,7 @@ func TestAccMorpheusVdiAppBasic(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig := `
 resource "hpe_morpheus_vdi_app" "test" {
@@ -59,6 +65,11 @@ resource "hpe_morpheus_vdi_app" "test" {
 }
 
 func TestAccMorpheusVdiAppUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -68,7 +79,7 @@ func TestAccMorpheusVdiAppUpdate(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig := `
 resource "hpe_morpheus_vdi_app" "test" {

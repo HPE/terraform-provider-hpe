@@ -11,6 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // Test for updating all attributes of a user role, including permissions.
@@ -19,6 +20,11 @@ import (
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleUserUpdateAllAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.Ansible, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -796,6 +802,11 @@ resource "hpe_morpheus_role" "update_test" {
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleTenantUpdateAllAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.Ansible, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

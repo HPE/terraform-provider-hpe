@@ -18,12 +18,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -71,6 +70,11 @@ func checkDestroy(t *testing.T) resource.TestCheckFunc {
 }
 
 func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -79,8 +83,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -168,6 +171,11 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -176,8 +184,7 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -311,6 +318,11 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -319,8 +331,7 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -363,6 +374,11 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -371,8 +387,7 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -404,6 +419,11 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -412,8 +432,7 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

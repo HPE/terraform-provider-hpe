@@ -11,6 +11,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -33,6 +34,11 @@ QUOTQUOTQUOTQUOTQUOTQUOTQUOTQUOTQUOT
 -----END RSA PRIVATE KEY-----`
 
 func TestAccMorpheusCertificateBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -42,7 +48,7 @@ func TestAccMorpheusCertificateBasic(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig := `
 resource "hpe_morpheus_certificate" "test" {
@@ -77,6 +83,11 @@ EOT
 }
 
 func TestAccMorpheusCertificateUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -86,7 +97,7 @@ func TestAccMorpheusCertificateUpdate(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 	updatedName := name + "-updated"
 
 	createConfig := `

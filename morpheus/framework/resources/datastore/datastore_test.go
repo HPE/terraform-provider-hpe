@@ -17,12 +17,11 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -42,6 +41,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -51,8 +55,7 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 	t.Parallel()
 
 	t.Skip("Skipping all Feature data-store tests")
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -147,6 +150,11 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -156,8 +164,7 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 	t.Parallel()
 
 	t.Skip("Skipping all Feature data-store tests")
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	checksNotNested := []resource.TestCheckFunc{
@@ -527,6 +534,11 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -653,6 +665,11 @@ func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreValidationRequiredAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

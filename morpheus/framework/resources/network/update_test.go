@@ -12,20 +12,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // TestAccMorpheusNetworkResourceUpdateOk tests updating a network resource
 // with comprehensive validation of all updateable fields
 func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -422,14 +426,18 @@ resource "hpe_morpheus_network" "foo" {
 // TestAccMorpheusNetworkResourceUpdateNameChange tests that changing the name
 // attribute forces resource replacement due to the RequiresReplace plan modifier
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique names for this test run
 	initialName := acctest.RandomWithPrefix(t.Name() + "-initial")
@@ -665,14 +673,18 @@ resource "hpe_morpheus_network" "name_change_test" {
 // TestAccMorpheusNetworkResourceUpdateCidrChange tests that changing the cidr
 // or cidr_ipv6 attributes forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -994,14 +1006,18 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 // TestAccMorpheusNetworkResourceUpdateTenantIdsChange tests that changing the tenant_ids
 // attribute forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())

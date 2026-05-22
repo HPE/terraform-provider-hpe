@@ -16,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -36,6 +37,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -96,6 +102,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -144,6 +155,11 @@ resource "hpe_morpheus_user" "test_user" {
 }
 
 func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -182,6 +198,11 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -213,6 +234,11 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -253,6 +279,11 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 
 // Test to verify that all of the attributes from a created user can be read
 func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

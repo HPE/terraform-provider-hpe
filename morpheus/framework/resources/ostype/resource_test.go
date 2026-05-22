@@ -12,6 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -21,6 +22,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -118,6 +124,11 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusOsTypeUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

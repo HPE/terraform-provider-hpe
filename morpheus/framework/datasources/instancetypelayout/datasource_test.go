@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -38,6 +39,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -93,6 +99,11 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -148,6 +159,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -210,6 +226,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -261,6 +282,11 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -299,6 +325,11 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -330,6 +361,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 }
 
 func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -363,6 +399,11 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 }
 
 func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

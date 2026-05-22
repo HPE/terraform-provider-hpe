@@ -11,9 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -91,6 +97,11 @@ func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -168,6 +179,11 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterNSXTGatewayTier1UpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 

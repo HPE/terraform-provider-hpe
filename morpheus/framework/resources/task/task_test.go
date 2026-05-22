@@ -16,6 +16,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -45,6 +46,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -124,6 +130,11 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -248,6 +259,11 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 }
 
 func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -314,6 +330,11 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -388,6 +409,11 @@ func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskExampleConditionalNullElseUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

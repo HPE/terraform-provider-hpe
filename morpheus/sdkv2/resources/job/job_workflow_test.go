@@ -12,9 +12,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/workflow"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -131,6 +137,11 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -242,6 +253,11 @@ func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusJobWorkflowManualExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

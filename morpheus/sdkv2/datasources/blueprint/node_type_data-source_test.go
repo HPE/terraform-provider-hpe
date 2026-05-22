@@ -14,9 +14,15 @@ import (
 	dsblueprint "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusDataSourceNodeTypeExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

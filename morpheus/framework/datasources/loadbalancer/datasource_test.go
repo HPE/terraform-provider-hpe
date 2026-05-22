@@ -11,17 +11,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -29,8 +33,7 @@ func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := loadbalancer.RenderLoadBalancerDataSourceByNameConfig(t, nil)
 	if err != nil {
@@ -59,6 +62,11 @@ func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerDataSourceByIdExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -66,8 +74,7 @@ func TestAccMorpheusLoadBalancerDataSourceByIdExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := loadbalancer.RenderLoadBalancerDataSourceByIDConfig(t, nil)
 	if err != nil {
