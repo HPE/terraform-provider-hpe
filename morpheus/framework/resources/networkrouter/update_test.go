@@ -97,7 +97,7 @@ func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -179,7 +179,7 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterNSXTGatewayTier1UpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusImageDatasourceById(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -106,7 +106,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -174,7 +174,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

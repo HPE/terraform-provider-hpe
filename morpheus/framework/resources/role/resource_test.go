@@ -799,7 +799,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 // the difference between user and tenant role is that user roles can be assigned
 // group permissions while tenant roles can be assigned cloud permissions
 func TestAccMorpheusRoleTenantAllPermissionsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

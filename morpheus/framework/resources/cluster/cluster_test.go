@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 
 // Tests that our HVM example file template used for docs is a valid config
 func TestAccMorpheusClusterHVMExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -384,7 +384,7 @@ data "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

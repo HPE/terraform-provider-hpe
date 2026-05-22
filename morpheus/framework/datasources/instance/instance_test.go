@@ -43,7 +43,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 // Combining tests for both ID and Name under the same function as instance
 // creation can be time consuming, so we only want to create one instance.
 func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

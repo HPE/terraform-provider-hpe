@@ -19,7 +19,7 @@ import (
 var url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
 
 func TestAccMorpheusImageUpdate(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -226,7 +226,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageUpdatePassword(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

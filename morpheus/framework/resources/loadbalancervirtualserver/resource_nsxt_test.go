@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -123,7 +123,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -243,7 +243,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtConfigChangeRequiresReplace(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -372,7 +372,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerNsxtMinimalExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

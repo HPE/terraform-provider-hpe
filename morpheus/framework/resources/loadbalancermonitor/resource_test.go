@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerMonitorNsxtExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -106,7 +106,7 @@ func TestAccMorpheusLoadBalancerMonitorNsxtExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerMonitorNsxtUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

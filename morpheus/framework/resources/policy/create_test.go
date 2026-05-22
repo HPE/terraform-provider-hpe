@@ -102,7 +102,7 @@ resource "hpe_morpheus_policy" "required" {
 
 // Test creating policies with different policy types which apply to Bare Metal
 func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

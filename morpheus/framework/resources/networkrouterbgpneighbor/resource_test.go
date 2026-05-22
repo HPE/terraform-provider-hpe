@@ -463,7 +463,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -528,7 +528,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXV, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NSXV) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

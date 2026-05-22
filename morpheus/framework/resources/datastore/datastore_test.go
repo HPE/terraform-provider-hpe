@@ -41,7 +41,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -150,7 +150,7 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -534,7 +534,7 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -665,7 +665,7 @@ func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreValidationRequiredAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusFindDatastoreById(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -90,7 +90,7 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreByName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -153,7 +153,7 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -194,7 +194,7 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -228,7 +228,7 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

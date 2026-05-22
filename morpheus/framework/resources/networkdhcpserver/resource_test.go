@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -111,7 +111,7 @@ func TestAccMorpheusNetworkDhcpServerExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkDhcpServerDynamicConfigExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

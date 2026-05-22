@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.Alletra) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
