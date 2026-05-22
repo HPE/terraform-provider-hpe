@@ -5,6 +5,7 @@
 
 .PHONY: build linter lint test docs sweep build-render-tool
 
+# Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname
 SWEEP ?= all
 SWEEP_SYSTEMS ?= zodiac,feature
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
