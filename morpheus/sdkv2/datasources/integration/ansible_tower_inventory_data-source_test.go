@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AnsibleTower) {
+	if capabilities.Missing(t, capabilities.AnsibleTower) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

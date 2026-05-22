@@ -586,7 +586,7 @@ resource "hpe_morpheus_policy" "test" {
 
 // Test creating policies scoped to different resource types (Group, Cloud, User, Role)
 func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

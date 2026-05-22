@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccMorpheusNetworkResourceImport(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

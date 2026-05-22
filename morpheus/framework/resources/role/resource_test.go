@@ -199,7 +199,7 @@ resource "hpe_morpheus_role" "example_required" {
 
 // Check that we can create a role with all attributes specified
 func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Ansible, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -397,7 +397,7 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusRolePermissionsDefaultAccessPermissionsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -513,7 +513,7 @@ resource "hpe_morpheus_role" "default_access_permissions_ok" {
 // For now, the VDI pool section of the OpenAPI spec looks to be incorrect
 // and needs to be updated so that we can create one using the generated SDK.
 func TestAccMorpheusRoleAllPermissionsUserRoleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -799,7 +799,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 // the difference between user and tenant role is that user roles can be assigned
 // group permissions while tenant roles can be assigned cloud permissions
 func TestAccMorpheusRoleTenantAllPermissionsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusDataSourceIntegrationExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Ansible) {
+	if capabilities.Missing(t, capabilities.Ansible) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

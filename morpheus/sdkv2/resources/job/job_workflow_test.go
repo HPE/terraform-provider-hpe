@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+	if capabilities.Missing(t, capabilities.AWS) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -137,7 +137,7 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+	if capabilities.Missing(t, capabilities.AWS) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -253,7 +253,7 @@ func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusJobWorkflowManualExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+	if capabilities.Missing(t, capabilities.AWS) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -32,7 +32,7 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -71,7 +71,7 @@ func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -110,7 +110,7 @@ func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -149,7 +149,7 @@ func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterRouteNoSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

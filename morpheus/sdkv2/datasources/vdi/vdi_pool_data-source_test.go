@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

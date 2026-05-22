@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Docker) {
+	if capabilities.Missing(t, capabilities.Docker) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

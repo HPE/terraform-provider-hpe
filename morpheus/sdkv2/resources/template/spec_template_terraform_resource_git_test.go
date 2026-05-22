@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AWS) {
+	if capabilities.Missing(t, capabilities.AWS) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

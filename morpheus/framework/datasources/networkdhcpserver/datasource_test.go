@@ -32,7 +32,7 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -68,7 +68,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -104,7 +104,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -142,7 +142,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -170,7 +170,7 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

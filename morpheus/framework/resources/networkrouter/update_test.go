@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

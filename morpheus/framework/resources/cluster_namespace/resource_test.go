@@ -32,7 +32,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusClusterNamespaceResourceBasic(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Kubernetes) {
+	if capabilities.Missing(t, capabilities.Kubernetes) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

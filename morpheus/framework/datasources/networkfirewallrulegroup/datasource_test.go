@@ -32,7 +32,7 @@ provider "hpe" {
 `
 
 func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -74,7 +74,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -116,7 +116,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -152,7 +152,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupNoSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -180,7 +180,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupBothSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

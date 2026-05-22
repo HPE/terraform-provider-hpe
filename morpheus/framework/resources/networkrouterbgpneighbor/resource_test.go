@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -74,7 +74,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborCreate(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -146,7 +146,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -267,7 +267,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborUpdate(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -400,7 +400,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborImport(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

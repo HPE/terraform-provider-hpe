@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -118,7 +118,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -251,7 +251,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -309,7 +309,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -367,7 +367,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -424,7 +424,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

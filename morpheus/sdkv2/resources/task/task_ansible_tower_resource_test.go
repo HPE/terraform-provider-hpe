@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Ansible, capabilities.AnsibleTower) {
+	if capabilities.Missing(t, capabilities.Ansible, capabilities.AnsibleTower) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -279,7 +279,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 
 // Test to verify that all of the attributes from a created user can be read
 func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

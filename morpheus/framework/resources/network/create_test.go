@@ -169,7 +169,7 @@ resource "hpe_morpheus_network" "foo" {
 // with all available fields populated and validates that each field is set correctly
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Azure, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.Azure, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -301,7 +301,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 // TestAccMorpheusNetworkHostConfig tests creating a host network resource
 // with host-specific configuration and empty config object
 func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -396,7 +396,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 // resource with specific configuration including assignPublicIp and
 // availabilityZone settings using example files
 func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.AWS, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.AWS, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -520,7 +520,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 // TestAccMorpheusNetworkResourceCreateGcp tests creating a GCP network
 // resource with specific configuration including mtu and autoCreate settings
 func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.GCP, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.GCP, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -632,7 +632,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 // TestAccMorpheusNetworkResourceCreateOVSPortGroup tests creating an OVS Port Group network
 // for cloud ID 7714.
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

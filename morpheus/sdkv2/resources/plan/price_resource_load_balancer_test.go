@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusPriceLoadBalancerExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

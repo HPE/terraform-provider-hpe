@@ -70,7 +70,7 @@ func checkDestroy(t *testing.T) resource.TestCheckFunc {
 }
 
 func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -171,7 +171,7 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -318,7 +318,7 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -374,7 +374,7 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -419,7 +419,7 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkFirewall) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

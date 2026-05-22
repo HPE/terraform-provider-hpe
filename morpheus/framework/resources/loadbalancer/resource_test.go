@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerHAProxyExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -76,7 +76,7 @@ func TestAccMorpheusLoadBalancerHAProxyExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -133,7 +133,7 @@ func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
 
 // Test validation: permissions.all conflicts with permissions.groups
 func TestAccMorpheusLoadBalancerValidationPermissionsConflict(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.NetworkLoadBalancer) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All, capabilities.Puppet) {
+	if capabilities.Missing(t, capabilities.Puppet) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
