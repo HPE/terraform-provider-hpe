@@ -39,7 +39,6 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
-	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
 	# Find only resource packages with sweep_test.go and run sweepers in those
 	pkgs=$$(find ./morpheus/framework/resources -name sweep_test.go -exec dirname {} \; | sort -u); \
 	go test -v -run '^$$' $$pkgs -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
