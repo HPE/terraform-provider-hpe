@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccStorageVolumeResource_basic(t *testing.T) {
+func TestAccMorpheusStorageVolumeResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -29,8 +29,8 @@ func TestAccStorageVolumeResource_basic(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
-	rNameUpdated := fmt.Sprintf("tf-acc-test-%s-updated", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
+	rNameUpdated := acctest.RandomWithPrefix(t.Name() + "-updated")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),

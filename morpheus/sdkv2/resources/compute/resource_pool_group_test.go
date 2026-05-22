@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccResourcePoolGroupExampleOk(t *testing.T) {
+func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

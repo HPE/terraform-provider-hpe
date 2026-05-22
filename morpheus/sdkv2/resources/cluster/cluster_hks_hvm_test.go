@@ -16,7 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
-func TestAccClusterHKSHVMExampleOk(t *testing.T) {
+func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 

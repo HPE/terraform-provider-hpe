@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
+func TestAccMorpheusJobTaskDateAndTimeExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -137,7 +137,7 @@ func TestAccJobTaskDateAndTimeExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccJobTaskScheduleExampleOk(t *testing.T) {
+func TestAccMorpheusJobTaskScheduleExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -248,7 +248,7 @@ func TestAccJobTaskScheduleExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccJobTaskManualExampleOk(t *testing.T) {
+func TestAccMorpheusJobTaskManualExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

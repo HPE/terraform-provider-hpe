@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -73,7 +73,7 @@ func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborCreate(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborCreate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -145,7 +145,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -266,7 +266,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -399,7 +399,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborImport(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborImport(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -462,7 +462,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -527,7 +527,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXV, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 

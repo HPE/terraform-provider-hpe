@@ -15,7 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
-func TestAccWorkflowProvisioningExampleOk(t *testing.T) {
+func TestAccMorpheusWorkflowProvisioningExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

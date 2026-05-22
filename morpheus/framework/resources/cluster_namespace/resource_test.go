@@ -31,7 +31,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	},
 }
 
-func TestAccClusterNamespaceResource_basic(t *testing.T) {
+func TestAccMorpheusClusterNamespaceResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All, capabilities.Kubernetes) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -42,7 +42,7 @@ func TestAccClusterNamespaceResource_basic(t *testing.T) {
 		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set, skipping")
 	}
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccClusterHKSVsphereExampleOk(t *testing.T) {
+func TestAccMorpheusClusterHKSVsphereExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VMware, capabilities.Kubernetes, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 

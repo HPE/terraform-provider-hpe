@@ -51,7 +51,7 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
 
-func TestAccProviderBlockWithAccessToken(t *testing.T) {
+func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -90,7 +90,7 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockWithCredentials(t *testing.T) {
+func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -130,7 +130,7 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 }
 
 // if all access token and creds are provided, then it'll prefer access token
-func TestAccProviderBlockAllAuth(t *testing.T) {
+func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -170,7 +170,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingURL(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -214,7 +214,7 @@ func TestAccProviderBlockMissingURL(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingAuth(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -247,7 +247,7 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingUsername(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -295,7 +295,7 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingPassword(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -329,7 +329,7 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockNoneSet(t *testing.T) {
+func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
