@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccStorageServerResource_basic(t *testing.T) {
 	t.Skip("Skipping: requires external storage infrastructure (no standalone storage server types available)")
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))

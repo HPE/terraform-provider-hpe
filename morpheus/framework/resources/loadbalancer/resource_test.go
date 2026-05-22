@@ -127,7 +127,7 @@ func TestAccMorpheusLoadBalancerValidationPermissionsConflict(t *testing.T) {
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	name := acctest.RandomWithPrefix(t.Name())
 	name = name[0:16] + name[len(name)-16:]

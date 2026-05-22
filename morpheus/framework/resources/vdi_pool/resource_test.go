@@ -29,7 +29,7 @@ func TestAccMorpheusVdiPoolBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := acctest.RandomWithPrefix("tf-acc-vdipool")
@@ -62,7 +62,7 @@ func TestAccMorpheusVdiPoolUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	rName := acctest.RandomWithPrefix("tf-acc-vdipool")

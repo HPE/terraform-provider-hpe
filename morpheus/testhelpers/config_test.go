@@ -56,7 +56,7 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -91,7 +91,7 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -127,7 +127,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -161,7 +161,7 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 
 func TestAccProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -203,7 +203,7 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -232,7 +232,7 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -276,7 +276,7 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -306,7 +306,7 @@ func TestAccProviderBlockNoneSet(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 	resourceConfig := testhelpers.FakeResourceConfig()
 

@@ -17,7 +17,7 @@ import (
 func TestAccMorpheusNetworkResourceValidationMissingName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration missing the required 'name' field
@@ -50,7 +50,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingCloudId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration missing the required 'cloud_id' field
@@ -83,7 +83,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingGroupId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration missing the required 'group_id' field
@@ -116,7 +116,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration missing the required 'type_id' field
@@ -150,7 +150,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration with invalid config type
@@ -185,7 +185,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidPoolId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration with invalid pool_id type
@@ -220,7 +220,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidTenantIds(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration with invalid tenant_ids type
@@ -257,7 +257,7 @@ func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	// Configuration with valid null config

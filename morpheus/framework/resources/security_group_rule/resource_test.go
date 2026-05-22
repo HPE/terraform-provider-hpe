@@ -30,7 +30,7 @@ func TestAccMorpheusSecurityGroupRuleBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	sgName := acctest.RandomWithPrefix("tf-acc-sg-rule")
@@ -86,7 +86,7 @@ func TestAccMorpheusSecurityGroupRuleUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	sgName := acctest.RandomWithPrefix("tf-acc-sg-rule")

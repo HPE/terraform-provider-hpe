@@ -27,7 +27,7 @@ linters:
       keywords:
         - OPTIMIZE
     lll:
-      line-length: 120
+      line-length: 132
     revive:
       rules:
         - name: var-naming

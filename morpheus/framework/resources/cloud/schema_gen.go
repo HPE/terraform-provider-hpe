@@ -5,8 +5,6 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -69,8 +68,8 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Generic Cloud Configuration",
 				MarkdownDescription: "Generic Cloud Configuration",
 				Validators: []validator.Dynamic{
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
 				},
 			},
 			"config_aws": schema.SingleNestedAttribute{
@@ -295,6 +294,84 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Amazon Cloud",
 				MarkdownDescription: "Amazon Cloud",
+			},
+			"config_azure": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"azure_region": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure region associated with the cloud integration",
+						MarkdownDescription: "The Azure region associated with the cloud integration",
+					},
+					"client_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure client (application) ID",
+						MarkdownDescription: "The Azure client (application) ID",
+					},
+					"client_secret": schema.StringAttribute{
+						Required:            true,
+						WriteOnly:           true,
+						Description:         "The Azure client secret",
+						MarkdownDescription: "The Azure client secret",
+					},
+					"cloud_type": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The Azure cloud type (global, usgov, german, china)",
+						MarkdownDescription: "The Azure cloud type (global, usgov, german, china)",
+						Validators: []validator.String{
+							stringvalidator.OneOf("global", "usgov", "german", "china"),
+						},
+						Default: stringdefault.StaticString("global"),
+					},
+					"cmdb_discovery": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to enable CMDB discovery on the cloud",
+						MarkdownDescription: "Whether to enable CMDB discovery on the cloud",
+					},
+					"import_existing": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to import existing resources from the cloud (on, off)",
+						MarkdownDescription: "Whether to import existing resources from the cloud (on, off)",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+					},
+					"resource_group": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure resource group",
+						MarkdownDescription: "The Azure resource group",
+					},
+					"rpc_mode": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+						MarkdownDescription: "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+					},
+					"storage_account": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The Azure storage account to use",
+						MarkdownDescription: "The Azure storage account to use",
+					},
+					"subscriber_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure subscription ID",
+						MarkdownDescription: "The Azure subscription ID",
+					},
+					"tenant_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure Active Directory tenant ID",
+						MarkdownDescription: "The Azure Active Directory tenant ID",
+					},
+				},
+				CustomType: ConfigAzureType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAzureValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional: true,
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -555,6 +632,7 @@ type CloudModel struct {
 	Code                  types.String      `tfsdk:"code"`
 	Config                types.Dynamic     `tfsdk:"config"`
 	ConfigAws             ConfigAwsValue    `tfsdk:"config_aws"`
+	ConfigAzure           ConfigAzureValue  `tfsdk:"config_azure"`
 	ConfigHvm             ConfigHvmValue    `tfsdk:"config_hvm"`
 	ConfigVmware          ConfigVmwareValue `tfsdk:"config_vmware"`
 	CostingMode           types.String      `tfsdk:"costing_mode"`
@@ -612,8 +690,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`access_key is missing from object`,
-		)
+			`access_key is missing from object`)
 
 		return nil, diags
 	}
@@ -623,8 +700,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute),
-		)
+			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute))
 	}
 
 	apiProxyAttribute, ok := attributes["api_proxy"]
@@ -632,8 +708,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_proxy is missing from object`,
-		)
+			`api_proxy is missing from object`)
 
 		return nil, diags
 	}
@@ -643,8 +718,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute),
-		)
+			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute))
 	}
 
 	backupProviderAttribute, ok := attributes["backup_provider"]
@@ -652,8 +726,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`backup_provider is missing from object`,
-		)
+			`backup_provider is missing from object`)
 
 		return nil, diags
 	}
@@ -663,8 +736,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute),
-		)
+			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute))
 	}
 
 	bypassProxyAttribute, ok := attributes["bypass_proxy"]
@@ -672,8 +744,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`bypass_proxy is missing from object`,
-		)
+			`bypass_proxy is missing from object`)
 
 		return nil, diags
 	}
@@ -683,8 +754,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute),
-		)
+			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute))
 	}
 
 	changeManagementConfigAttribute, ok := attributes["change_management_config"]
@@ -692,8 +762,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`change_management_config is missing from object`,
-		)
+			`change_management_config is missing from object`)
 
 		return nil, diags
 	}
@@ -703,8 +772,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute),
-		)
+			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute))
 	}
 
 	cmdbConfigAttribute, ok := attributes["cmdb_config"]
@@ -712,8 +780,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cmdb_config is missing from object`,
-		)
+			`cmdb_config is missing from object`)
 
 		return nil, diags
 	}
@@ -723,8 +790,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute),
-		)
+			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute))
 	}
 
 	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
@@ -732,8 +798,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cmdb_discovery is missing from object`,
-		)
+			`cmdb_discovery is missing from object`)
 
 		return nil, diags
 	}
@@ -743,8 +808,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute),
-		)
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
 	}
 
 	configManagementIdAttribute, ok := attributes["config_management_id"]
@@ -752,8 +816,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`config_management_id is missing from object`,
-		)
+			`config_management_id is missing from object`)
 
 		return nil, diags
 	}
@@ -763,8 +826,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute),
-		)
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
 	}
 
 	costingAttribute, ok := attributes["costing"]
@@ -772,8 +834,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing is missing from object`,
-		)
+			`costing is missing from object`)
 
 		return nil, diags
 	}
@@ -783,8 +844,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute),
-		)
+			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute))
 	}
 
 	costingBucketAttribute, ok := attributes["costing_bucket"]
@@ -792,8 +852,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_bucket is missing from object`,
-		)
+			`costing_bucket is missing from object`)
 
 		return nil, diags
 	}
@@ -803,8 +862,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute),
-		)
+			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute))
 	}
 
 	costingFolderAttribute, ok := attributes["costing_folder"]
@@ -812,8 +870,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_folder is missing from object`,
-		)
+			`costing_folder is missing from object`)
 
 		return nil, diags
 	}
@@ -823,8 +880,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute),
-		)
+			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute))
 	}
 
 	costingKeyAttribute, ok := attributes["costing_key"]
@@ -832,8 +888,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_key is missing from object`,
-		)
+			`costing_key is missing from object`)
 
 		return nil, diags
 	}
@@ -843,8 +898,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute),
-		)
+			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute))
 	}
 
 	costingReportNameAttribute, ok := attributes["costing_report_name"]
@@ -852,8 +906,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_report_name is missing from object`,
-		)
+			`costing_report_name is missing from object`)
 
 		return nil, diags
 	}
@@ -863,8 +916,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute),
-		)
+			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute))
 	}
 
 	costingSecretAttribute, ok := attributes["costing_secret"]
@@ -872,8 +924,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_secret is missing from object`,
-		)
+			`costing_secret is missing from object`)
 
 		return nil, diags
 	}
@@ -883,8 +934,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute),
-		)
+			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute))
 	}
 
 	credentialsAttribute, ok := attributes["credentials"]
@@ -892,8 +942,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`credentials is missing from object`,
-		)
+			`credentials is missing from object`)
 
 		return nil, diags
 	}
@@ -903,8 +952,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute),
-		)
+			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute))
 	}
 
 	darkModeLogoAttribute, ok := attributes["dark_mode_logo"]
@@ -912,8 +960,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`dark_mode_logo is missing from object`,
-		)
+			`dark_mode_logo is missing from object`)
 
 		return nil, diags
 	}
@@ -923,8 +970,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute),
-		)
+			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute))
 	}
 
 	domainAttribute, ok := attributes["domain"]
@@ -932,8 +978,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`domain is missing from object`,
-		)
+			`domain is missing from object`)
 
 		return nil, diags
 	}
@@ -943,8 +988,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute),
-		)
+			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute))
 	}
 
 	ebsEncryptionAttribute, ok := attributes["ebs_encryption"]
@@ -952,8 +996,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ebs_encryption is missing from object`,
-		)
+			`ebs_encryption is missing from object`)
 
 		return nil, diags
 	}
@@ -963,8 +1006,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute),
-		)
+			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute))
 	}
 
 	endpointAttribute, ok := attributes["endpoint"]
@@ -972,8 +1014,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`endpoint is missing from object`,
-		)
+			`endpoint is missing from object`)
 
 		return nil, diags
 	}
@@ -983,8 +1024,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute),
-		)
+			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute))
 	}
 
 	guidanceAttribute, ok := attributes["guidance"]
@@ -992,8 +1032,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`guidance is missing from object`,
-		)
+			`guidance is missing from object`)
 
 		return nil, diags
 	}
@@ -1003,8 +1042,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute),
-		)
+			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute))
 	}
 
 	logoAttribute, ok := attributes["logo"]
@@ -1012,8 +1050,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`logo is missing from object`,
-		)
+			`logo is missing from object`)
 
 		return nil, diags
 	}
@@ -1023,8 +1060,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute),
-		)
+			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute))
 	}
 
 	networkModeAttribute, ok := attributes["network_mode"]
@@ -1032,8 +1068,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`network_mode is missing from object`,
-		)
+			`network_mode is missing from object`)
 
 		return nil, diags
 	}
@@ -1043,8 +1078,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute),
-		)
+			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute))
 	}
 
 	noProxyAttribute, ok := attributes["no_proxy"]
@@ -1052,8 +1086,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`no_proxy is missing from object`,
-		)
+			`no_proxy is missing from object`)
 
 		return nil, diags
 	}
@@ -1063,8 +1096,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute),
-		)
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
 	}
 
 	proxyAttribute, ok := attributes["proxy"]
@@ -1072,8 +1104,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`proxy is missing from object`,
-		)
+			`proxy is missing from object`)
 
 		return nil, diags
 	}
@@ -1083,8 +1114,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute),
-		)
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
 	}
 
 	regionAttribute, ok := attributes["region"]
@@ -1092,8 +1122,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`region is missing from object`,
-		)
+			`region is missing from object`)
 
 		return nil, diags
 	}
@@ -1103,8 +1132,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute),
-		)
+			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute))
 	}
 
 	replicationProviderAttribute, ok := attributes["replication_provider"]
@@ -1112,8 +1140,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`replication_provider is missing from object`,
-		)
+			`replication_provider is missing from object`)
 
 		return nil, diags
 	}
@@ -1123,8 +1150,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute),
-		)
+			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute))
 	}
 
 	roleArnAttribute, ok := attributes["role_arn"]
@@ -1132,8 +1158,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`role_arn is missing from object`,
-		)
+			`role_arn is missing from object`)
 
 		return nil, diags
 	}
@@ -1143,8 +1168,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute),
-		)
+			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute))
 	}
 
 	secretKeyAttribute, ok := attributes["secret_key"]
@@ -1152,8 +1176,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`secret_key is missing from object`,
-		)
+			`secret_key is missing from object`)
 
 		return nil, diags
 	}
@@ -1163,8 +1186,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute),
-		)
+			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute))
 	}
 
 	timezoneAttribute, ok := attributes["timezone"]
@@ -1172,8 +1194,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`timezone is missing from object`,
-		)
+			`timezone is missing from object`)
 
 		return nil, diags
 	}
@@ -1183,8 +1204,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute),
-		)
+			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute))
 	}
 
 	userDataAttribute, ok := attributes["user_data"]
@@ -1192,8 +1212,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`user_data is missing from object`,
-		)
+			`user_data is missing from object`)
 
 		return nil, diags
 	}
@@ -1203,8 +1222,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute),
-		)
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
 	}
 
 	vdiGatewayAttribute, ok := attributes["vdi_gateway"]
@@ -1212,8 +1230,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`vdi_gateway is missing from object`,
-		)
+			`vdi_gateway is missing from object`)
 
 		return nil, diags
 	}
@@ -1223,8 +1240,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute),
-		)
+			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute))
 	}
 
 	vpcAttribute, ok := attributes["vpc"]
@@ -1232,8 +1248,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`vpc is missing from object`,
-		)
+			`vpc is missing from object`)
 
 		return nil, diags
 	}
@@ -1243,8 +1258,7 @@ func (t ConfigAwsType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute),
-		)
+			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute))
 	}
 
 	if diags.HasError() {
@@ -1356,8 +1370,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`access_key is missing from object`,
-		)
+			`access_key is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1367,8 +1380,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute),
-		)
+			fmt.Sprintf(`access_key expected to be basetypes.StringValue, was: %T`, accessKeyAttribute))
 	}
 
 	apiProxyAttribute, ok := attributes["api_proxy"]
@@ -1376,8 +1388,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_proxy is missing from object`,
-		)
+			`api_proxy is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1387,8 +1398,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute),
-		)
+			fmt.Sprintf(`api_proxy expected to be basetypes.StringValue, was: %T`, apiProxyAttribute))
 	}
 
 	backupProviderAttribute, ok := attributes["backup_provider"]
@@ -1396,8 +1406,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`backup_provider is missing from object`,
-		)
+			`backup_provider is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1407,8 +1416,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute),
-		)
+			fmt.Sprintf(`backup_provider expected to be basetypes.StringValue, was: %T`, backupProviderAttribute))
 	}
 
 	bypassProxyAttribute, ok := attributes["bypass_proxy"]
@@ -1416,8 +1424,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`bypass_proxy is missing from object`,
-		)
+			`bypass_proxy is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1427,8 +1434,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute),
-		)
+			fmt.Sprintf(`bypass_proxy expected to be basetypes.BoolValue, was: %T`, bypassProxyAttribute))
 	}
 
 	changeManagementConfigAttribute, ok := attributes["change_management_config"]
@@ -1436,8 +1442,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`change_management_config is missing from object`,
-		)
+			`change_management_config is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1447,8 +1452,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute),
-		)
+			fmt.Sprintf(`change_management_config expected to be basetypes.StringValue, was: %T`, changeManagementConfigAttribute))
 	}
 
 	cmdbConfigAttribute, ok := attributes["cmdb_config"]
@@ -1456,8 +1460,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cmdb_config is missing from object`,
-		)
+			`cmdb_config is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1467,8 +1470,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute),
-		)
+			fmt.Sprintf(`cmdb_config expected to be basetypes.StringValue, was: %T`, cmdbConfigAttribute))
 	}
 
 	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
@@ -1476,8 +1478,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cmdb_discovery is missing from object`,
-		)
+			`cmdb_discovery is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1487,8 +1488,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute),
-		)
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
 	}
 
 	configManagementIdAttribute, ok := attributes["config_management_id"]
@@ -1496,8 +1496,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`config_management_id is missing from object`,
-		)
+			`config_management_id is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1507,8 +1506,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute),
-		)
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
 	}
 
 	costingAttribute, ok := attributes["costing"]
@@ -1516,8 +1514,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing is missing from object`,
-		)
+			`costing is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1527,8 +1524,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute),
-		)
+			fmt.Sprintf(`costing expected to be basetypes.StringValue, was: %T`, costingAttribute))
 	}
 
 	costingBucketAttribute, ok := attributes["costing_bucket"]
@@ -1536,8 +1532,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_bucket is missing from object`,
-		)
+			`costing_bucket is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1547,8 +1542,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute),
-		)
+			fmt.Sprintf(`costing_bucket expected to be basetypes.StringValue, was: %T`, costingBucketAttribute))
 	}
 
 	costingFolderAttribute, ok := attributes["costing_folder"]
@@ -1556,8 +1550,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_folder is missing from object`,
-		)
+			`costing_folder is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1567,8 +1560,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute),
-		)
+			fmt.Sprintf(`costing_folder expected to be basetypes.StringValue, was: %T`, costingFolderAttribute))
 	}
 
 	costingKeyAttribute, ok := attributes["costing_key"]
@@ -1576,8 +1568,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_key is missing from object`,
-		)
+			`costing_key is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1587,8 +1578,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute),
-		)
+			fmt.Sprintf(`costing_key expected to be basetypes.StringValue, was: %T`, costingKeyAttribute))
 	}
 
 	costingReportNameAttribute, ok := attributes["costing_report_name"]
@@ -1596,8 +1586,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_report_name is missing from object`,
-		)
+			`costing_report_name is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1607,8 +1596,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute),
-		)
+			fmt.Sprintf(`costing_report_name expected to be basetypes.StringValue, was: %T`, costingReportNameAttribute))
 	}
 
 	costingSecretAttribute, ok := attributes["costing_secret"]
@@ -1616,8 +1604,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`costing_secret is missing from object`,
-		)
+			`costing_secret is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1627,8 +1614,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute),
-		)
+			fmt.Sprintf(`costing_secret expected to be basetypes.StringValue, was: %T`, costingSecretAttribute))
 	}
 
 	credentialsAttribute, ok := attributes["credentials"]
@@ -1636,8 +1622,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`credentials is missing from object`,
-		)
+			`credentials is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1647,8 +1632,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute),
-		)
+			fmt.Sprintf(`credentials expected to be basetypes.StringValue, was: %T`, credentialsAttribute))
 	}
 
 	darkModeLogoAttribute, ok := attributes["dark_mode_logo"]
@@ -1656,8 +1640,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`dark_mode_logo is missing from object`,
-		)
+			`dark_mode_logo is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1667,8 +1650,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute),
-		)
+			fmt.Sprintf(`dark_mode_logo expected to be basetypes.StringValue, was: %T`, darkModeLogoAttribute))
 	}
 
 	domainAttribute, ok := attributes["domain"]
@@ -1676,8 +1658,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`domain is missing from object`,
-		)
+			`domain is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1687,8 +1668,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute),
-		)
+			fmt.Sprintf(`domain expected to be basetypes.StringValue, was: %T`, domainAttribute))
 	}
 
 	ebsEncryptionAttribute, ok := attributes["ebs_encryption"]
@@ -1696,8 +1676,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ebs_encryption is missing from object`,
-		)
+			`ebs_encryption is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1707,8 +1686,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute),
-		)
+			fmt.Sprintf(`ebs_encryption expected to be basetypes.StringValue, was: %T`, ebsEncryptionAttribute))
 	}
 
 	endpointAttribute, ok := attributes["endpoint"]
@@ -1716,8 +1694,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`endpoint is missing from object`,
-		)
+			`endpoint is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1727,8 +1704,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute),
-		)
+			fmt.Sprintf(`endpoint expected to be basetypes.StringValue, was: %T`, endpointAttribute))
 	}
 
 	guidanceAttribute, ok := attributes["guidance"]
@@ -1736,8 +1712,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`guidance is missing from object`,
-		)
+			`guidance is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1747,8 +1722,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute),
-		)
+			fmt.Sprintf(`guidance expected to be basetypes.StringValue, was: %T`, guidanceAttribute))
 	}
 
 	logoAttribute, ok := attributes["logo"]
@@ -1756,8 +1730,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`logo is missing from object`,
-		)
+			`logo is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1767,8 +1740,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute),
-		)
+			fmt.Sprintf(`logo expected to be basetypes.StringValue, was: %T`, logoAttribute))
 	}
 
 	networkModeAttribute, ok := attributes["network_mode"]
@@ -1776,8 +1748,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`network_mode is missing from object`,
-		)
+			`network_mode is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1787,8 +1758,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute),
-		)
+			fmt.Sprintf(`network_mode expected to be basetypes.StringValue, was: %T`, networkModeAttribute))
 	}
 
 	noProxyAttribute, ok := attributes["no_proxy"]
@@ -1796,8 +1766,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`no_proxy is missing from object`,
-		)
+			`no_proxy is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1807,8 +1776,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute),
-		)
+			fmt.Sprintf(`no_proxy expected to be basetypes.StringValue, was: %T`, noProxyAttribute))
 	}
 
 	proxyAttribute, ok := attributes["proxy"]
@@ -1816,8 +1784,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`proxy is missing from object`,
-		)
+			`proxy is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1827,8 +1794,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute),
-		)
+			fmt.Sprintf(`proxy expected to be basetypes.StringValue, was: %T`, proxyAttribute))
 	}
 
 	regionAttribute, ok := attributes["region"]
@@ -1836,8 +1802,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`region is missing from object`,
-		)
+			`region is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1847,8 +1812,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute),
-		)
+			fmt.Sprintf(`region expected to be basetypes.StringValue, was: %T`, regionAttribute))
 	}
 
 	replicationProviderAttribute, ok := attributes["replication_provider"]
@@ -1856,8 +1820,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`replication_provider is missing from object`,
-		)
+			`replication_provider is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1867,8 +1830,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute),
-		)
+			fmt.Sprintf(`replication_provider expected to be basetypes.StringValue, was: %T`, replicationProviderAttribute))
 	}
 
 	roleArnAttribute, ok := attributes["role_arn"]
@@ -1876,8 +1838,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`role_arn is missing from object`,
-		)
+			`role_arn is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1887,8 +1848,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute),
-		)
+			fmt.Sprintf(`role_arn expected to be basetypes.StringValue, was: %T`, roleArnAttribute))
 	}
 
 	secretKeyAttribute, ok := attributes["secret_key"]
@@ -1896,8 +1856,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`secret_key is missing from object`,
-		)
+			`secret_key is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1907,8 +1866,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute),
-		)
+			fmt.Sprintf(`secret_key expected to be basetypes.StringValue, was: %T`, secretKeyAttribute))
 	}
 
 	timezoneAttribute, ok := attributes["timezone"]
@@ -1916,8 +1874,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`timezone is missing from object`,
-		)
+			`timezone is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1927,8 +1884,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute),
-		)
+			fmt.Sprintf(`timezone expected to be basetypes.StringValue, was: %T`, timezoneAttribute))
 	}
 
 	userDataAttribute, ok := attributes["user_data"]
@@ -1936,8 +1892,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`user_data is missing from object`,
-		)
+			`user_data is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1947,8 +1902,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute),
-		)
+			fmt.Sprintf(`user_data expected to be basetypes.StringValue, was: %T`, userDataAttribute))
 	}
 
 	vdiGatewayAttribute, ok := attributes["vdi_gateway"]
@@ -1956,8 +1910,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`vdi_gateway is missing from object`,
-		)
+			`vdi_gateway is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1967,8 +1920,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute),
-		)
+			fmt.Sprintf(`vdi_gateway expected to be basetypes.StringValue, was: %T`, vdiGatewayAttribute))
 	}
 
 	vpcAttribute, ok := attributes["vpc"]
@@ -1976,8 +1928,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`vpc is missing from object`,
-		)
+			`vpc is missing from object`)
 
 		return NewConfigAwsValueUnknown(), diags
 	}
@@ -1987,8 +1938,7 @@ func NewConfigAwsValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute),
-		)
+			fmt.Sprintf(`vpc expected to be basetypes.StringValue, was: %T`, vpcAttribute))
 	}
 
 	if diags.HasError() {
@@ -2044,8 +1994,7 @@ func NewConfigAwsValueMust(attributeTypes map[string]attr.Type, attributes map[s
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigAwsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -2076,12 +2025,14 @@ func (t ConfigAwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -2180,6 +2131,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 32)
 
 		val, err = v.AccessKey.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2187,6 +2139,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["access_key"] = val
 
 		val, err = v.ApiProxy.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2194,6 +2147,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["api_proxy"] = val
 
 		val, err = v.BackupProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2201,6 +2155,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["backup_provider"] = val
 
 		val, err = v.BypassProxy.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2208,6 +2163,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["bypass_proxy"] = val
 
 		val, err = v.ChangeManagementConfig.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2215,6 +2171,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["change_management_config"] = val
 
 		val, err = v.CmdbConfig.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2222,6 +2179,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["cmdb_config"] = val
 
 		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2229,6 +2187,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["cmdb_discovery"] = val
 
 		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2236,6 +2195,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["config_management_id"] = val
 
 		val, err = v.Costing.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2243,6 +2203,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing"] = val
 
 		val, err = v.CostingBucket.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2250,6 +2211,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_bucket"] = val
 
 		val, err = v.CostingFolder.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2257,6 +2219,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_folder"] = val
 
 		val, err = v.CostingKey.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2264,6 +2227,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_key"] = val
 
 		val, err = v.CostingReportName.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2271,6 +2235,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_report_name"] = val
 
 		val, err = v.CostingSecret.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2278,6 +2243,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_secret"] = val
 
 		val, err = v.Credentials.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2285,6 +2251,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["credentials"] = val
 
 		val, err = v.DarkModeLogo.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2292,6 +2259,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["dark_mode_logo"] = val
 
 		val, err = v.Domain.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2299,6 +2267,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["domain"] = val
 
 		val, err = v.EbsEncryption.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2306,6 +2275,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["ebs_encryption"] = val
 
 		val, err = v.Endpoint.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2313,6 +2283,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["endpoint"] = val
 
 		val, err = v.Guidance.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2320,6 +2291,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["guidance"] = val
 
 		val, err = v.Logo.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2327,6 +2299,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["logo"] = val
 
 		val, err = v.NetworkMode.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2334,6 +2307,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["network_mode"] = val
 
 		val, err = v.NoProxy.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2341,6 +2315,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["no_proxy"] = val
 
 		val, err = v.Proxy.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2348,6 +2323,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["proxy"] = val
 
 		val, err = v.Region.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2355,6 +2331,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["region"] = val
 
 		val, err = v.ReplicationProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2362,6 +2339,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["replication_provider"] = val
 
 		val, err = v.RoleArn.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2369,6 +2347,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["role_arn"] = val
 
 		val, err = v.SecretKey.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2376,6 +2355,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["secret_key"] = val
 
 		val, err = v.Timezone.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2383,6 +2363,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["timezone"] = val
 
 		val, err = v.UserData.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2390,6 +2371,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["user_data"] = val
 
 		val, err = v.VdiGateway.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2397,6 +2379,7 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["vdi_gateway"] = val
 
 		val, err = v.Vpc.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2510,8 +2493,7 @@ func (v ConfigAwsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 			"user_data":                v.UserData,
 			"vdi_gateway":              v.VdiGateway,
 			"vpc":                      v.Vpc,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -2707,6 +2689,888 @@ func (v ConfigAwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	}
 }
 
+var _ basetypes.ObjectTypable = ConfigAzureType{}
+
+type ConfigAzureType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAzureType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAzureType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAzureType) String() string {
+	return "ConfigAzureType"
+}
+
+func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return nil, diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	clientIdAttribute, ok := attributes["client_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_id is missing from object`)
+
+		return nil, diags
+	}
+
+	clientIdVal, ok := clientIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_id expected to be basetypes.StringValue, was: %T`, clientIdAttribute))
+	}
+
+	clientSecretAttribute, ok := attributes["client_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret is missing from object`)
+
+		return nil, diags
+	}
+
+	clientSecretVal, ok := clientSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
+	}
+
+	cloudTypeAttribute, ok := attributes["cloud_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_type is missing from object`)
+
+		return nil, diags
+	}
+
+	cloudTypeVal, ok := cloudTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_type expected to be basetypes.StringValue, was: %T`, cloudTypeAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return nil, diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	importExistingAttribute, ok := attributes["import_existing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`import_existing is missing from object`)
+
+		return nil, diags
+	}
+
+	importExistingVal, ok := importExistingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`import_existing expected to be basetypes.StringValue, was: %T`, importExistingAttribute))
+	}
+
+	resourceGroupAttribute, ok := attributes["resource_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group is missing from object`)
+
+		return nil, diags
+	}
+
+	resourceGroupVal, ok := resourceGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group expected to be basetypes.StringValue, was: %T`, resourceGroupAttribute))
+	}
+
+	rpcModeAttribute, ok := attributes["rpc_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`rpc_mode is missing from object`)
+
+		return nil, diags
+	}
+
+	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
+	}
+
+	storageAccountAttribute, ok := attributes["storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_account is missing from object`)
+
+		return nil, diags
+	}
+
+	storageAccountVal, ok := storageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_account expected to be basetypes.StringValue, was: %T`, storageAccountAttribute))
+	}
+
+	subscriberIdAttribute, ok := attributes["subscriber_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subscriber_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subscriberIdVal, ok := subscriberIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subscriber_id expected to be basetypes.StringValue, was: %T`, subscriberIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return nil, diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.StringValue, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAzureValue{
+		AzureRegion:    azureRegionVal,
+		ClientId:       clientIdVal,
+		ClientSecret:   clientSecretVal,
+		CloudType:      cloudTypeVal,
+		CmdbDiscovery:  cmdbDiscoveryVal,
+		ImportExisting: importExistingVal,
+		ResourceGroup:  resourceGroupVal,
+		RpcMode:        rpcModeVal,
+		StorageAccount: storageAccountVal,
+		SubscriberId:   subscriberIdVal,
+		TenantId:       tenantIdVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueNull() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAzureValueUnknown() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAzureValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, a missing attribute value was detected. "+
+					"A ConfigAzureValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAzureValue Attribute Type",
+				"While creating a ConfigAzureValue value, an invalid attribute value was detected. "+
+					"A ConfigAzureValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, an extra attribute value was detected. "+
+					"A ConfigAzureValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAzureValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	clientIdAttribute, ok := attributes["client_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientIdVal, ok := clientIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_id expected to be basetypes.StringValue, was: %T`, clientIdAttribute))
+	}
+
+	clientSecretAttribute, ok := attributes["client_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientSecretVal, ok := clientSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
+	}
+
+	cloudTypeAttribute, ok := attributes["cloud_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_type is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	cloudTypeVal, ok := cloudTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_type expected to be basetypes.StringValue, was: %T`, cloudTypeAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	importExistingAttribute, ok := attributes["import_existing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`import_existing is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	importExistingVal, ok := importExistingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`import_existing expected to be basetypes.StringValue, was: %T`, importExistingAttribute))
+	}
+
+	resourceGroupAttribute, ok := attributes["resource_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	resourceGroupVal, ok := resourceGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group expected to be basetypes.StringValue, was: %T`, resourceGroupAttribute))
+	}
+
+	rpcModeAttribute, ok := attributes["rpc_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`rpc_mode is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
+	}
+
+	storageAccountAttribute, ok := attributes["storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_account is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	storageAccountVal, ok := storageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_account expected to be basetypes.StringValue, was: %T`, storageAccountAttribute))
+	}
+
+	subscriberIdAttribute, ok := attributes["subscriber_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subscriber_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	subscriberIdVal, ok := subscriberIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subscriber_id expected to be basetypes.StringValue, was: %T`, subscriberIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.StringValue, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	return ConfigAzureValue{
+		AzureRegion:    azureRegionVal,
+		ClientId:       clientIdVal,
+		ClientSecret:   clientSecretVal,
+		CloudType:      cloudTypeVal,
+		CmdbDiscovery:  cmdbDiscoveryVal,
+		ImportExisting: importExistingVal,
+		ResourceGroup:  resourceGroupVal,
+		RpcMode:        rpcModeVal,
+		StorageAccount: storageAccountVal,
+		SubscriberId:   subscriberIdVal,
+		TenantId:       tenantIdVal,
+		state:          attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAzureValue {
+	object, diags := NewConfigAzureValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAzureValueMust(ConfigAzureValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAzureValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAzureValue{}
+
+type ConfigAzureValue struct {
+	AzureRegion    basetypes.StringValue `tfsdk:"azure_region"`
+	ClientId       basetypes.StringValue `tfsdk:"client_id"`
+	ClientSecret   basetypes.StringValue `tfsdk:"client_secret"`
+	CloudType      basetypes.StringValue `tfsdk:"cloud_type"`
+	CmdbDiscovery  basetypes.BoolValue   `tfsdk:"cmdb_discovery"`
+	ImportExisting basetypes.StringValue `tfsdk:"import_existing"`
+	ResourceGroup  basetypes.StringValue `tfsdk:"resource_group"`
+	RpcMode        basetypes.StringValue `tfsdk:"rpc_mode"`
+	StorageAccount basetypes.StringValue `tfsdk:"storage_account"`
+	SubscriberId   basetypes.StringValue `tfsdk:"subscriber_id"`
+	TenantId       basetypes.StringValue `tfsdk:"tenant_id"`
+	state          attr.ValueState
+}
+
+func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 11)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["azure_region"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_secret"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cloud_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cmdb_discovery"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["import_existing"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["resource_group"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["rpc_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["storage_account"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subscriber_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["tenant_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 11)
+
+		val, err = v.AzureRegion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["azure_region"] = val
+
+		val, err = v.ClientId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_id"] = val
+
+		val, err = v.ClientSecret.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_secret"] = val
+
+		val, err = v.CloudType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cloud_type"] = val
+
+		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cmdb_discovery"] = val
+
+		val, err = v.ImportExisting.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["import_existing"] = val
+
+		val, err = v.ResourceGroup.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_group"] = val
+
+		val, err = v.RpcMode.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["rpc_mode"] = val
+
+		val, err = v.StorageAccount.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_account"] = val
+
+		val, err = v.SubscriberId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subscriber_id"] = val
+
+		val, err = v.TenantId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tenant_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAzureValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAzureValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAzureValue) String() string {
+	return "ConfigAzureValue"
+}
+
+func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"azure_region":    basetypes.StringType{},
+		"client_id":       basetypes.StringType{},
+		"client_secret":   basetypes.StringType{},
+		"cloud_type":      basetypes.StringType{},
+		"cmdb_discovery":  basetypes.BoolType{},
+		"import_existing": basetypes.StringType{},
+		"resource_group":  basetypes.StringType{},
+		"rpc_mode":        basetypes.StringType{},
+		"storage_account": basetypes.StringType{},
+		"subscriber_id":   basetypes.StringType{},
+		"tenant_id":       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"azure_region":    v.AzureRegion,
+			"client_id":       v.ClientId,
+			"client_secret":   v.ClientSecret,
+			"cloud_type":      v.CloudType,
+			"cmdb_discovery":  v.CmdbDiscovery,
+			"import_existing": v.ImportExisting,
+			"resource_group":  v.ResourceGroup,
+			"rpc_mode":        v.RpcMode,
+			"storage_account": v.StorageAccount,
+			"subscriber_id":   v.SubscriberId,
+			"tenant_id":       v.TenantId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAzureValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAzureValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AzureRegion.Equal(other.AzureRegion) {
+		return false
+	}
+
+	if !v.ClientId.Equal(other.ClientId) {
+		return false
+	}
+
+	if !v.ClientSecret.Equal(other.ClientSecret) {
+		return false
+	}
+
+	if !v.CloudType.Equal(other.CloudType) {
+		return false
+	}
+
+	if !v.CmdbDiscovery.Equal(other.CmdbDiscovery) {
+		return false
+	}
+
+	if !v.ImportExisting.Equal(other.ImportExisting) {
+		return false
+	}
+
+	if !v.ResourceGroup.Equal(other.ResourceGroup) {
+		return false
+	}
+
+	if !v.RpcMode.Equal(other.RpcMode) {
+		return false
+	}
+
+	if !v.StorageAccount.Equal(other.StorageAccount) {
+		return false
+	}
+
+	if !v.SubscriberId.Equal(other.SubscriberId) {
+		return false
+	}
+
+	if !v.TenantId.Equal(other.TenantId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
+	return ConfigAzureType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"azure_region":    basetypes.StringType{},
+		"client_id":       basetypes.StringType{},
+		"client_secret":   basetypes.StringType{},
+		"cloud_type":      basetypes.StringType{},
+		"cmdb_discovery":  basetypes.BoolType{},
+		"import_existing": basetypes.StringType{},
+		"resource_group":  basetypes.StringType{},
+		"rpc_mode":        basetypes.StringType{},
+		"storage_account": basetypes.StringType{},
+		"subscriber_id":   basetypes.StringType{},
+		"tenant_id":       basetypes.StringType{},
+	}
+}
+
 var _ basetypes.ObjectTypable = ConfigHvmType{}
 
 type ConfigHvmType struct {
@@ -2745,8 +3609,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`certificate_provider is missing from object`,
-		)
+			`certificate_provider is missing from object`)
 
 		return nil, diags
 	}
@@ -2756,8 +3619,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute),
-		)
+			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute))
 	}
 
 	enableNetworkTypeSelectionAttribute, ok := attributes["enable_network_type_selection"]
@@ -2765,8 +3627,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_network_type_selection is missing from object`,
-		)
+			`enable_network_type_selection is missing from object`)
 
 		return nil, diags
 	}
@@ -2776,8 +3637,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute))
 	}
 
 	if diags.HasError() {
@@ -2859,8 +3719,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`certificate_provider is missing from object`,
-		)
+			`certificate_provider is missing from object`)
 
 		return NewConfigHvmValueUnknown(), diags
 	}
@@ -2870,8 +3729,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute),
-		)
+			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute))
 	}
 
 	enableNetworkTypeSelectionAttribute, ok := attributes["enable_network_type_selection"]
@@ -2879,8 +3737,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_network_type_selection is missing from object`,
-		)
+			`enable_network_type_selection is missing from object`)
 
 		return NewConfigHvmValueUnknown(), diags
 	}
@@ -2890,8 +3747,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute))
 	}
 
 	if diags.HasError() {
@@ -2917,8 +3773,7 @@ func NewConfigHvmValueMust(attributeTypes map[string]attr.Type, attributes map[s
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigHvmValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -2949,12 +3804,14 @@ func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -2993,6 +3850,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3000,6 +3858,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["certificate_provider"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3053,8 +3912,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		map[string]attr.Value{
 			"certificate_provider":          v.CertificateProvider,
 			"enable_network_type_selection": v.EnableNetworkTypeSelection,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -3138,8 +3996,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_url is missing from object`,
-		)
+			`api_url is missing from object`)
 
 		return nil, diags
 	}
@@ -3149,8 +4006,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_url expected to be basetypes.StringValue, was: %T`, apiUrlAttribute),
-		)
+			fmt.Sprintf(`api_url expected to be basetypes.StringValue, was: %T`, apiUrlAttribute))
 	}
 
 	apiVersionAttribute, ok := attributes["api_version"]
@@ -3158,8 +4014,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_version is missing from object`,
-		)
+			`api_version is missing from object`)
 
 		return nil, diags
 	}
@@ -3169,8 +4024,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_version expected to be basetypes.StringValue, was: %T`, apiVersionAttribute),
-		)
+			fmt.Sprintf(`api_version expected to be basetypes.StringValue, was: %T`, apiVersionAttribute))
 	}
 
 	certificateProviderAttribute, ok := attributes["certificate_provider"]
@@ -3178,8 +4032,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`certificate_provider is missing from object`,
-		)
+			`certificate_provider is missing from object`)
 
 		return nil, diags
 	}
@@ -3189,8 +4042,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute),
-		)
+			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute))
 	}
 
 	clusterAttribute, ok := attributes["cluster"]
@@ -3198,8 +4050,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cluster is missing from object`,
-		)
+			`cluster is missing from object`)
 
 		return nil, diags
 	}
@@ -3209,8 +4060,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cluster expected to be basetypes.StringValue, was: %T`, clusterAttribute),
-		)
+			fmt.Sprintf(`cluster expected to be basetypes.StringValue, was: %T`, clusterAttribute))
 	}
 
 	configManagementIdAttribute, ok := attributes["config_management_id"]
@@ -3218,8 +4068,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`config_management_id is missing from object`,
-		)
+			`config_management_id is missing from object`)
 
 		return nil, diags
 	}
@@ -3229,8 +4078,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute),
-		)
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
 	}
 
 	datacenterAttribute, ok := attributes["datacenter"]
@@ -3238,8 +4086,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`datacenter is missing from object`,
-		)
+			`datacenter is missing from object`)
 
 		return nil, diags
 	}
@@ -3249,8 +4096,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`datacenter expected to be basetypes.StringValue, was: %T`, datacenterAttribute),
-		)
+			fmt.Sprintf(`datacenter expected to be basetypes.StringValue, was: %T`, datacenterAttribute))
 	}
 
 	enableDiskTypeSelectionAttribute, ok := attributes["enable_disk_type_selection"]
@@ -3258,8 +4104,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_disk_type_selection is missing from object`,
-		)
+			`enable_disk_type_selection is missing from object`)
 
 		return nil, diags
 	}
@@ -3269,8 +4114,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_disk_type_selection expected to be basetypes.BoolValue, was: %T`, enableDiskTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_disk_type_selection expected to be basetypes.BoolValue, was: %T`, enableDiskTypeSelectionAttribute))
 	}
 
 	enableNetworkTypeSelectionAttribute, ok := attributes["enable_network_type_selection"]
@@ -3278,8 +4122,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_network_type_selection is missing from object`,
-		)
+			`enable_network_type_selection is missing from object`)
 
 		return nil, diags
 	}
@@ -3289,8 +4132,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute))
 	}
 
 	enableStorageTypeSelectionAttribute, ok := attributes["enable_storage_type_selection"]
@@ -3298,8 +4140,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_storage_type_selection is missing from object`,
-		)
+			`enable_storage_type_selection is missing from object`)
 
 		return nil, diags
 	}
@@ -3309,8 +4150,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_storage_type_selection expected to be basetypes.BoolValue, was: %T`, enableStorageTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_storage_type_selection expected to be basetypes.BoolValue, was: %T`, enableStorageTypeSelectionAttribute))
 	}
 
 	enableVncAttribute, ok := attributes["enable_vnc"]
@@ -3318,8 +4158,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_vnc is missing from object`,
-		)
+			`enable_vnc is missing from object`)
 
 		return nil, diags
 	}
@@ -3329,8 +4168,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_vnc expected to be basetypes.BoolValue, was: %T`, enableVncAttribute),
-		)
+			fmt.Sprintf(`enable_vnc expected to be basetypes.BoolValue, was: %T`, enableVncAttribute))
 	}
 
 	hideHostSelectionAttribute, ok := attributes["hide_host_selection"]
@@ -3338,8 +4176,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`hide_host_selection is missing from object`,
-		)
+			`hide_host_selection is missing from object`)
 
 		return nil, diags
 	}
@@ -3349,8 +4186,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`hide_host_selection expected to be basetypes.BoolValue, was: %T`, hideHostSelectionAttribute),
-		)
+			fmt.Sprintf(`hide_host_selection expected to be basetypes.BoolValue, was: %T`, hideHostSelectionAttribute))
 	}
 
 	passwordAttribute, ok := attributes["password"]
@@ -3358,8 +4194,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`password is missing from object`,
-		)
+			`password is missing from object`)
 
 		return nil, diags
 	}
@@ -3369,8 +4204,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute),
-		)
+			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
 	resourcePoolAttribute, ok := attributes["resource_pool"]
@@ -3378,8 +4212,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`resource_pool is missing from object`,
-		)
+			`resource_pool is missing from object`)
 
 		return nil, diags
 	}
@@ -3389,8 +4222,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`resource_pool expected to be basetypes.StringValue, was: %T`, resourcePoolAttribute),
-		)
+			fmt.Sprintf(`resource_pool expected to be basetypes.StringValue, was: %T`, resourcePoolAttribute))
 	}
 
 	rpcModeAttribute, ok := attributes["rpc_mode"]
@@ -3398,8 +4230,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`rpc_mode is missing from object`,
-		)
+			`rpc_mode is missing from object`)
 
 		return nil, diags
 	}
@@ -3409,8 +4240,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute),
-		)
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
 	}
 
 	usernameAttribute, ok := attributes["username"]
@@ -3418,8 +4248,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`username is missing from object`,
-		)
+			`username is missing from object`)
 
 		return nil, diags
 	}
@@ -3429,8 +4258,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute),
-		)
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
 	}
 
 	if diags.HasError() {
@@ -3525,8 +4353,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_url is missing from object`,
-		)
+			`api_url is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3536,8 +4363,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_url expected to be basetypes.StringValue, was: %T`, apiUrlAttribute),
-		)
+			fmt.Sprintf(`api_url expected to be basetypes.StringValue, was: %T`, apiUrlAttribute))
 	}
 
 	apiVersionAttribute, ok := attributes["api_version"]
@@ -3545,8 +4371,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`api_version is missing from object`,
-		)
+			`api_version is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3556,8 +4381,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`api_version expected to be basetypes.StringValue, was: %T`, apiVersionAttribute),
-		)
+			fmt.Sprintf(`api_version expected to be basetypes.StringValue, was: %T`, apiVersionAttribute))
 	}
 
 	certificateProviderAttribute, ok := attributes["certificate_provider"]
@@ -3565,8 +4389,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`certificate_provider is missing from object`,
-		)
+			`certificate_provider is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3576,8 +4399,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute),
-		)
+			fmt.Sprintf(`certificate_provider expected to be basetypes.StringValue, was: %T`, certificateProviderAttribute))
 	}
 
 	clusterAttribute, ok := attributes["cluster"]
@@ -3585,8 +4407,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`cluster is missing from object`,
-		)
+			`cluster is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3596,8 +4417,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`cluster expected to be basetypes.StringValue, was: %T`, clusterAttribute),
-		)
+			fmt.Sprintf(`cluster expected to be basetypes.StringValue, was: %T`, clusterAttribute))
 	}
 
 	configManagementIdAttribute, ok := attributes["config_management_id"]
@@ -3605,8 +4425,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`config_management_id is missing from object`,
-		)
+			`config_management_id is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3616,8 +4435,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute),
-		)
+			fmt.Sprintf(`config_management_id expected to be basetypes.StringValue, was: %T`, configManagementIdAttribute))
 	}
 
 	datacenterAttribute, ok := attributes["datacenter"]
@@ -3625,8 +4443,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`datacenter is missing from object`,
-		)
+			`datacenter is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3636,8 +4453,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`datacenter expected to be basetypes.StringValue, was: %T`, datacenterAttribute),
-		)
+			fmt.Sprintf(`datacenter expected to be basetypes.StringValue, was: %T`, datacenterAttribute))
 	}
 
 	enableDiskTypeSelectionAttribute, ok := attributes["enable_disk_type_selection"]
@@ -3645,8 +4461,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_disk_type_selection is missing from object`,
-		)
+			`enable_disk_type_selection is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3656,8 +4471,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_disk_type_selection expected to be basetypes.BoolValue, was: %T`, enableDiskTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_disk_type_selection expected to be basetypes.BoolValue, was: %T`, enableDiskTypeSelectionAttribute))
 	}
 
 	enableNetworkTypeSelectionAttribute, ok := attributes["enable_network_type_selection"]
@@ -3665,8 +4479,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_network_type_selection is missing from object`,
-		)
+			`enable_network_type_selection is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3676,8 +4489,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_network_type_selection expected to be basetypes.BoolValue, was: %T`, enableNetworkTypeSelectionAttribute))
 	}
 
 	enableStorageTypeSelectionAttribute, ok := attributes["enable_storage_type_selection"]
@@ -3685,8 +4497,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_storage_type_selection is missing from object`,
-		)
+			`enable_storage_type_selection is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3696,8 +4507,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_storage_type_selection expected to be basetypes.BoolValue, was: %T`, enableStorageTypeSelectionAttribute),
-		)
+			fmt.Sprintf(`enable_storage_type_selection expected to be basetypes.BoolValue, was: %T`, enableStorageTypeSelectionAttribute))
 	}
 
 	enableVncAttribute, ok := attributes["enable_vnc"]
@@ -3705,8 +4515,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`enable_vnc is missing from object`,
-		)
+			`enable_vnc is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3716,8 +4525,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`enable_vnc expected to be basetypes.BoolValue, was: %T`, enableVncAttribute),
-		)
+			fmt.Sprintf(`enable_vnc expected to be basetypes.BoolValue, was: %T`, enableVncAttribute))
 	}
 
 	hideHostSelectionAttribute, ok := attributes["hide_host_selection"]
@@ -3725,8 +4533,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`hide_host_selection is missing from object`,
-		)
+			`hide_host_selection is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3736,8 +4543,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`hide_host_selection expected to be basetypes.BoolValue, was: %T`, hideHostSelectionAttribute),
-		)
+			fmt.Sprintf(`hide_host_selection expected to be basetypes.BoolValue, was: %T`, hideHostSelectionAttribute))
 	}
 
 	passwordAttribute, ok := attributes["password"]
@@ -3745,8 +4551,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`password is missing from object`,
-		)
+			`password is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3756,8 +4561,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute),
-		)
+			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
 	resourcePoolAttribute, ok := attributes["resource_pool"]
@@ -3765,8 +4569,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`resource_pool is missing from object`,
-		)
+			`resource_pool is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3776,8 +4579,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`resource_pool expected to be basetypes.StringValue, was: %T`, resourcePoolAttribute),
-		)
+			fmt.Sprintf(`resource_pool expected to be basetypes.StringValue, was: %T`, resourcePoolAttribute))
 	}
 
 	rpcModeAttribute, ok := attributes["rpc_mode"]
@@ -3785,8 +4587,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`rpc_mode is missing from object`,
-		)
+			`rpc_mode is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3796,8 +4597,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute),
-		)
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
 	}
 
 	usernameAttribute, ok := attributes["username"]
@@ -3805,8 +4605,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`username is missing from object`,
-		)
+			`username is missing from object`)
 
 		return NewConfigVmwareValueUnknown(), diags
 	}
@@ -3816,8 +4615,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute),
-		)
+			fmt.Sprintf(`username expected to be basetypes.StringValue, was: %T`, usernameAttribute))
 	}
 
 	if diags.HasError() {
@@ -3856,8 +4654,7 @@ func NewConfigVmwareValueMust(attributeTypes map[string]attr.Type, attributes ma
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigVmwareValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -3888,12 +4685,14 @@ func (t ConfigVmwareType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -3958,6 +4757,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 15)
 
 		val, err = v.ApiUrl.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3965,6 +4765,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_url"] = val
 
 		val, err = v.ApiVersion.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3972,6 +4773,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_version"] = val
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3979,6 +4781,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["certificate_provider"] = val
 
 		val, err = v.Cluster.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3986,6 +4789,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["cluster"] = val
 
 		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3993,6 +4797,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["config_management_id"] = val
 
 		val, err = v.Datacenter.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4000,6 +4805,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["datacenter"] = val
 
 		val, err = v.EnableDiskTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4007,6 +4813,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_disk_type_selection"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4014,6 +4821,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_network_type_selection"] = val
 
 		val, err = v.EnableStorageTypeSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4021,6 +4829,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_storage_type_selection"] = val
 
 		val, err = v.EnableVnc.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4028,6 +4837,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_vnc"] = val
 
 		val, err = v.HideHostSelection.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4035,6 +4845,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["hide_host_selection"] = val
 
 		val, err = v.Password.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4042,6 +4853,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["password"] = val
 
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4049,6 +4861,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["resource_pool"] = val
 
 		val, err = v.RpcMode.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4056,6 +4869,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["rpc_mode"] = val
 
 		val, err = v.Username.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4135,8 +4949,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"resource_pool":                 v.ResourcePool,
 			"rpc_mode":                      v.RpcMode,
 			"username":                      v.Username,
-		},
-	)
+		})
 
 	return objVal, diags
 }

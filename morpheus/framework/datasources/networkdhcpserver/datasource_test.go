@@ -41,7 +41,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t, nil)
@@ -73,7 +73,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, nil)
@@ -105,7 +105,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t,

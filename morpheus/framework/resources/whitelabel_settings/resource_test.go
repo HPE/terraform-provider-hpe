@@ -26,7 +26,7 @@ func TestAccMorpheusWhitelabelSettingsBasic(t *testing.T) {
 	}
 
 	t.Skip("Skipping: whitelabel settings requires an appropriate license (whitelabel not approved by license)")
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	resource.Test(t, resource.TestCase{
@@ -51,7 +51,7 @@ func TestAccMorpheusWhitelabelSettingsUpdate(t *testing.T) {
 	}
 
 	t.Skip("Skipping: whitelabel settings requires an appropriate license (whitelabel not approved by license)")
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	resource.Test(t, resource.TestCase{

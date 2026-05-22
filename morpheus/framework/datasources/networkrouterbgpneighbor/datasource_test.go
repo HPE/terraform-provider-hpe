@@ -41,7 +41,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t, nil)
@@ -73,7 +73,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, nil)
@@ -105,7 +105,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
+	testSystem := systemoverride.GetPreferred(t, "zodiac")
 	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t,
