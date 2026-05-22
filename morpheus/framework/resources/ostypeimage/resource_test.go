@@ -19,7 +19,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	systemoverride.ParseFlags()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)

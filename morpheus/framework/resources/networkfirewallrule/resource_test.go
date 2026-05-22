@@ -24,7 +24,7 @@ import (
 
 func TestMain(m *testing.M) {
 	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
