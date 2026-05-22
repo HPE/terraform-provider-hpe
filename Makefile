@@ -40,6 +40,12 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
-	# Find only resource packages with sweep_test.go and run sweepers in those
-	pkgs=$$(find ./morpheus/framework/resources -name sweep_test.go -exec dirname {} \; | sort -u); \
+	# When SWEEP=all, run every package with a sweep_test.go.
+	# When SWEEP=name1,name2,..., run only the packages whose sweeperName matches.
+	@if [ "$(SWEEP)" = "all" ]; then \
+		pkgs=$$(find ./morpheus/framework/resources -name sweep_test.go -exec dirname {} \; | sort -u); \
+	else \
+		pattern=$$(echo "$(SWEEP)" | tr ',' '|'); \
+		pkgs=$$(grep -rEl --include='sweep_test.go' "\"($$pattern)\"" ./morpheus/framework/resources | xargs dirname | sort -u); \
+	fi; \
 	go test -v -run '^$$' $$pkgs -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
