@@ -26,7 +26,6 @@ func TestAccMorpheusBackupBasic(t *testing.T) {
 		return
 	}
 	defer testhelpers.RecordResult(t)
-	t.Skip("requires instance infrastructure to create a backup")
 
 	t.Parallel()
 
@@ -54,13 +53,12 @@ func TestAccMorpheusBackupBasic(t *testing.T) {
 }
 
 func TestAccMorpheusBackupUpdate(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Backup) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-	t.Skip("requires instance infrastructure to create a backup")
 
 	t.Parallel()
 

@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusUserSourceBasic(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.LDAP) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -30,8 +30,6 @@ func TestAccMorpheusUserSourceBasic(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Skip("requires LDAP infrastructure")
 
 	t.Parallel()
 

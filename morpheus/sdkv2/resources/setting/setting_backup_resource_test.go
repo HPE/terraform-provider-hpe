@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Settings) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

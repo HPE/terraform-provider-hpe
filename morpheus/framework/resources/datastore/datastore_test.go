@@ -41,7 +41,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -54,7 +54,6 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	t.Skip("Skipping all Feature data-store tests")
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
@@ -150,7 +149,7 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -163,7 +162,6 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	t.Skip("Skipping all Feature data-store tests")
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 

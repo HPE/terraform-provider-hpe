@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Git) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -28,8 +28,6 @@ func TestAccMorpheusAppBlueprintTerraformGitExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Skip("Skipping due to missing git infrastructure in test environment")
 
 	providerConfig := testhelpers.ProviderBlock()
 

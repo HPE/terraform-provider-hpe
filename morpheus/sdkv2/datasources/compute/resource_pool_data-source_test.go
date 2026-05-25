@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusDataSourceResourcePoolExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.ResourcePool) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

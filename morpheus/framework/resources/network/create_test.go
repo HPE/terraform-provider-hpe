@@ -17,7 +17,7 @@ import (
 
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

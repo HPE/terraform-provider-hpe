@@ -47,6 +47,7 @@ const (
 	AWS       Capability = "aws"
 	Azure     Capability = "azure"
 	GCP       Capability = "gcp"
+	HVM       Capability = "hvm"
 	OpenStack Capability = "openstack"
 	Hyperv    Capability = "hyperv"
 
@@ -67,17 +68,23 @@ const (
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"
+	ARM          Capability = "arm"
 	Chef         Capability = "chef"
+	Git          Capability = "git"
+	LDAP         Capability = "ldap"
 	Puppet       Capability = "puppet"
 	ServiceNow   Capability = "service_now"
+	Task         Capability = "task"
+	VRO          Capability = "vro"
 
 	// Container/Orchestration
 	Kubernetes Capability = "kubernetes"
 	Docker     Capability = "docker"
 
 	// Storage
-	Alletra Capability = "alletra"
-	Backup  Capability = "backup"
+	Alletra      Capability = "alletra"
+	Backup       Capability = "backup"
+	ResourcePool Capability = "resource_pool"
 
 	// VDI
 	VDI Capability = "vdi"

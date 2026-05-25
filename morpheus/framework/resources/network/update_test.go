@@ -426,7 +426,7 @@ resource "hpe_morpheus_network" "foo" {
 // TestAccMorpheusNetworkResourceUpdateNameChange tests that changing the name
 // attribute forces resource replacement due to the RequiresReplace plan modifier
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -673,7 +673,7 @@ resource "hpe_morpheus_network" "name_change_test" {
 // TestAccMorpheusNetworkResourceUpdateCidrChange tests that changing the cidr
 // or cidr_ipv6 attributes forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -1006,7 +1006,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 // TestAccMorpheusNetworkResourceUpdateTenantIdsChange tests that changing the tenant_ids
 // attribute forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

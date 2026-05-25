@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.HVM, capabilities.Kubernetes) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
