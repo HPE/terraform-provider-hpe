@@ -39,7 +39,7 @@ func TestAccStorageServerResource_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with local credentials
 			{
-				Config: providerConfig + testAccStorageServerConfig_localCreds(rName, "nfs", "testuser", "testpass"),
+				Config: providerConfig + testAccStorageServerConfigLocalCreds(rName, "nfs", "testuser", "testpass"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -60,7 +60,8 @@ func TestAccStorageServerResource_basic(t *testing.T) {
 			},
 			// Update description and visibility
 			{
-				Config: providerConfig + testAccStorageServerConfig_updated(rName, "nfs", "testuser", "testpass", "updated description", "public"),
+				Config: providerConfig + testAccStorageServerConfigUpdated(
+					rName, "nfs", "testuser", "testpass", "updated description", "public"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "description", "updated description"),
 					resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
@@ -86,7 +87,7 @@ func TestAccStorageServerResource_credential(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with stored credential
 			{
-				Config: providerConfig + testAccStorageServerConfig_credential(rName, "nfs", 1),
+				Config: providerConfig + testAccStorageServerConfigCredential(rName, "nfs", 1),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -122,7 +123,7 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with tenants
 			{
-				Config: providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
+				Config: providerConfig + testAccStorageServerConfigTenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -131,7 +132,7 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 			},
 			// Update tenants
 			{
-				Config: providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1}),
+				Config: providerConfig + testAccStorageServerConfigTenants(rName, "nfs", "testuser", "testpass", []int{1}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "tenants.#", "1"),
 				),
@@ -156,17 +157,17 @@ func TestAccStorageServerResource_planOnly(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Validate local creds config plans successfully
 			{
-				Config:   providerConfig + testAccStorageServerConfig_localCreds(rName, "nfs", "testuser", "testpass"),
+				Config:   providerConfig + testAccStorageServerConfigLocalCreds(rName, "nfs", "testuser", "testpass"),
 				PlanOnly: true,
 			},
 			// Validate credential config plans successfully
 			{
-				Config:   providerConfig + testAccStorageServerConfig_credential(rName, "nfs", 1),
+				Config:   providerConfig + testAccStorageServerConfigCredential(rName, "nfs", 1),
 				PlanOnly: true,
 			},
 			// Validate tenants config plans successfully
 			{
-				Config:   providerConfig + testAccStorageServerConfig_tenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
+				Config:   providerConfig + testAccStorageServerConfigTenants(rName, "nfs", "testuser", "testpass", []int{1, 2}),
 				PlanOnly: true,
 			},
 		},
@@ -201,8 +202,8 @@ resource "hpe_morpheus_storage_server" "test" {
 	})
 }
 
-// testAccStorageServerConfig_localCreds returns a config with local username/password auth.
-func testAccStorageServerConfig_localCreds(name, serverType, username, password string) string {
+// testAccStorageServerConfigLocalCreds returns a config with local username/password auth.
+func testAccStorageServerConfigLocalCreds(name, serverType, username, password string) string {
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_server" "test" {
   name                       = %q
@@ -214,8 +215,8 @@ resource "hpe_morpheus_storage_server" "test" {
 `, name, serverType, username, password)
 }
 
-// testAccStorageServerConfig_updated returns a config with updated description and visibility.
-func testAccStorageServerConfig_updated(name, serverType, username, password, description, visibility string) string {
+// testAccStorageServerConfigUpdated returns a config with updated description and visibility.
+func testAccStorageServerConfigUpdated(name, serverType, username, password, description, visibility string) string {
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_server" "test" {
   name                       = %q
@@ -229,8 +230,8 @@ resource "hpe_morpheus_storage_server" "test" {
 `, name, serverType, username, password, description, visibility)
 }
 
-// testAccStorageServerConfig_credential returns a config using a stored credential.
-func testAccStorageServerConfig_credential(name, serverType string, credentialID int) string {
+// testAccStorageServerConfigCredential returns a config using a stored credential.
+func testAccStorageServerConfigCredential(name, serverType string, credentialID int) string {
 	return fmt.Sprintf(`
 resource "hpe_morpheus_storage_server" "test" {
   name          = %q
@@ -240,8 +241,8 @@ resource "hpe_morpheus_storage_server" "test" {
 `, name, serverType, credentialID)
 }
 
-// testAccStorageServerConfig_tenants returns a config with a tenants list.
-func testAccStorageServerConfig_tenants(name, serverType, username, password string, tenants []int) string {
+// testAccStorageServerConfigTenants returns a config with a tenants list.
+func testAccStorageServerConfigTenants(name, serverType, username, password string, tenants []int) string {
 	tenantStr := ""
 	for i, id := range tenants {
 		if i > 0 {

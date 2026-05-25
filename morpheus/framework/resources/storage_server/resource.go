@@ -471,7 +471,10 @@ func (r *storageServerResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(ctx context.Context, model *StorageServerModel, ss *sdk.GetStorageServers200ResponseStorageServer, diags *diag.Diagnostics) {
+func mapGetResponseToModel(
+	ctx context.Context, model *StorageServerModel,
+	ss *sdk.GetStorageServers200ResponseStorageServer, diags *diag.Diagnostics,
+) {
 	if ss.Id != nil {
 		model.Id = types.Int64Value(*ss.Id)
 	}
