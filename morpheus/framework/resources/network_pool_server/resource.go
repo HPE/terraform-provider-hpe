@@ -66,10 +66,9 @@ func (r *networkPoolServerResource) Create(
 	// concrete type because it is the superset of all pool server types (Infoblox, Bluecat,
 	// phpIPAM, SolarWinds). The API resolves the actual type from type_id, not from the
 	// "type" field in the request body. All common fields are accepted regardless of type.
-	infoblox := sdk.InfobloxNetworkPoolServer{
-		Type: "infoblox",
-		Name: plan.Name.ValueString(),
-	}
+	infoblox := sdk.NewInfobloxNetworkPoolServerWithDefaults()
+	infoblox.Type = "infoblox"
+	infoblox.Name = plan.Name.ValueString()
 	if !plan.ServiceUrl.IsNull() {
 		infoblox.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
 	}
@@ -105,13 +104,13 @@ func (r *networkPoolServerResource) Create(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		infoblox.Credential = &sdk.InfobloxNetworkPoolServerCredential{
-			Type: &idStr,
-		}
+		cred := sdk.NewInfobloxNetworkPoolServerCredentialWithDefaults()
+		cred.Type = &idStr
+		infoblox.Credential = cred
 	}
 
 	serverReq := sdk.CreateNetworkPoolServerRequestNetworkPoolServer{
-		InfobloxNetworkPoolServer: &infoblox,
+		InfobloxNetworkPoolServer: infoblox,
 	}
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkPoolServer(ctx).
@@ -184,9 +183,8 @@ func (r *networkPoolServerResource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	infobloxUpdate := sdk.InfobloxNetworkPoolServerUpdate{
-		Name: plan.Name.ValueStringPointer(),
-	}
+	infobloxUpdate := sdk.NewInfobloxNetworkPoolServerUpdateWithDefaults()
+	infobloxUpdate.Name = plan.Name.ValueStringPointer()
 	if !plan.ServiceUrl.IsNull() {
 		infobloxUpdate.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
 	}
@@ -222,12 +220,12 @@ func (r *networkPoolServerResource) Update(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		infobloxUpdate.Credential = &sdk.InfobloxNetworkPoolServerUpdateCredential{
-			Type: &idStr,
-		}
+		cred := sdk.NewInfobloxNetworkPoolServerUpdateCredentialWithDefaults()
+		cred.Type = &idStr
+		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(&infobloxUpdate)
+	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(infobloxUpdate)
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
