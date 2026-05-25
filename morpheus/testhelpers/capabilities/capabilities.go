@@ -54,6 +54,7 @@ const (
 	ACI  Capability = "aci"
 
 	// Network Features
+	Network             Capability = "network"
 	NetworkDHCP         Capability = "network_dhcp"
 	NetworkRouter       Capability = "network_router"
 	NetworkFirewall     Capability = "network_firewall"

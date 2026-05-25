@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -36,7 +37,14 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestNetworkDataSourceExample(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+
 	defer testhelpers.RecordResult(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
