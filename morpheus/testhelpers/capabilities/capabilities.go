@@ -40,6 +40,8 @@ const (
 	// On shared hardware, exclude these by not including "all" in TF_ACC_CAPABILITIES.
 	All Capability = "all"
 
+	Settings Capability = "settings"
+
 	// Cloud Types
 	VMware    Capability = "vmware"
 	AWS       Capability = "aws"
@@ -56,15 +58,18 @@ const (
 	// Network Features
 	Network             Capability = "network"
 	NetworkDHCP         Capability = "network_dhcp"
+	NetworkPool         Capability = "network_pool"
 	NetworkRouter       Capability = "network_router"
 	NetworkFirewall     Capability = "network_firewall"
 	NetworkLoadBalancer Capability = "network_loadbalancer"
+	Subnet              Capability = "subnet"
 
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"
 	Chef         Capability = "chef"
 	Puppet       Capability = "puppet"
+	ServiceNow   Capability = "service_now"
 
 	// Container/Orchestration
 	Kubernetes Capability = "kubernetes"
@@ -72,6 +77,7 @@ const (
 
 	// Storage
 	Alletra Capability = "alletra"
+	Backup  Capability = "backup"
 
 	// VDI
 	VDI Capability = "vdi"

@@ -102,7 +102,7 @@ resource "hpe_morpheus_policy" "required" {
 
 // Test creating policies with different policy types which apply to Bare Metal
 func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -832,7 +832,7 @@ resource "hpe_morpheus_network" "test" {
 
 // Test creating policies using static schema fields (config_* attributes)
 func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return

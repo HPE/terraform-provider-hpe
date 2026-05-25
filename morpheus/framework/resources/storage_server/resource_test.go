@@ -85,7 +85,7 @@ func TestAccStorageServerResource_credential(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -124,7 +124,7 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -158,7 +158,7 @@ func TestAccStorageServerResource_planOnly(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -190,7 +190,7 @@ func TestAccStorageServerResource_conflictsValidation(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),

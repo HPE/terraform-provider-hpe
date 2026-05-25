@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusBackupBasic(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.Backup) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
