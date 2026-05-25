@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkPoolServerBasic(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkPool) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -68,7 +68,7 @@ resource "hpe_morpheus_network_pool_server" "test" {
 	})
 }
 
-func TestAccMorpheusNetworkPoolServerUpdate(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkPool) {
 		t.Log("Skipping test due to missing capabilities")
 

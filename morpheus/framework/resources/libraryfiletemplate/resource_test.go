@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibraryFileTemplateBasic(t *testing.T) {
+func TestAccMorpheusLibraryFileTemplateResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -65,7 +65,7 @@ resource "hpe_morpheus_library_file_template" "test" {
 	})
 }
 
-func TestAccMorpheusLibraryFileTemplateUpdate(t *testing.T) {
+func TestAccMorpheusLibraryFileTemplateResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

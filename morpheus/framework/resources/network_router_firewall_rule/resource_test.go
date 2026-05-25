@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkRouterFirewallRuleBasic(t *testing.T) {
+func TestAccMorpheusNetworkRouterFirewallRuleResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -77,7 +77,7 @@ resource "hpe_morpheus_network_router_firewall_rule" "test" {
 	})
 }
 
-func TestAccMorpheusNetworkRouterFirewallRuleUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 

@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusMonitoringCheckBasic(t *testing.T) {
+func TestAccMorpheusMonitoringCheckResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -56,7 +56,7 @@ func TestAccMorpheusMonitoringCheckBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusMonitoringCheckUpdate(t *testing.T) {
+func TestAccMorpheusMonitoringCheckResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

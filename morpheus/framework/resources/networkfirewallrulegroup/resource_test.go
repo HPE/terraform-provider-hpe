@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -117,7 +117,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -250,7 +250,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -308,7 +308,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -366,7 +366,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -423,7 +423,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceImportInvalidFormatErr(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 

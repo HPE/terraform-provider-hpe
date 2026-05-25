@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusSecurityGroupBasic(t *testing.T) {
+func TestAccMorpheusSecurityGroupResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -60,7 +60,7 @@ resource "hpe_morpheus_security_group" "test" {
 	})
 }
 
-func TestAccMorpheusSecurityGroupUpdate(t *testing.T) {
+func TestAccMorpheusSecurityGroupResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibraryContainerTypeBasic(t *testing.T) {
+func TestAccMorpheusLibraryContainerTypeResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Docker) {
 		t.Log("Skipping test due to missing capabilities")
 

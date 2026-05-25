@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibrarySpecTemplateBasic(t *testing.T) {
+func TestAccMorpheusLibrarySpecTemplateResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -57,7 +57,7 @@ func TestAccMorpheusLibrarySpecTemplateBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusLibrarySpecTemplateUpdate(t *testing.T) {
+func TestAccMorpheusLibrarySpecTemplateResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

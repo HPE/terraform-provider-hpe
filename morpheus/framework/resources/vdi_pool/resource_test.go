@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusVdiPoolBasic(t *testing.T) {
+func TestAccMorpheusVdiPoolResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -56,7 +56,7 @@ func TestAccMorpheusVdiPoolBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusVdiPoolUpdate(t *testing.T) {
+func TestAccMorpheusVdiPoolResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 

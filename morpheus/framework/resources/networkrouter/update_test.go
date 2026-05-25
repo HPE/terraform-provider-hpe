@@ -14,7 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
-func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceGenericUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -96,7 +96,7 @@ func TestAccMorpheusNetworkRouterGenericUpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0UpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -178,7 +178,7 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier0UpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNSXTGatewayTier1UpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier1UpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 

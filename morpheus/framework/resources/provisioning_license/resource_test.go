@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusProvisioningLicenseBasic(t *testing.T) {
+func TestAccMorpheusProvisioningLicenseResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -57,7 +57,7 @@ func TestAccMorpheusProvisioningLicenseBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusProvisioningLicenseUpdate(t *testing.T) {
+func TestAccMorpheusProvisioningLicenseResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

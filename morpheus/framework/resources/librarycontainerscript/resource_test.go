@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibraryContainerScriptBasic(t *testing.T) {
+func TestAccMorpheusLibraryContainerScriptResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -65,7 +65,7 @@ resource "hpe_morpheus_library_container_script" "test" {
 	})
 }
 
-func TestAccMorpheusLibraryContainerScriptUpdate(t *testing.T) {
+func TestAccMorpheusLibraryContainerScriptResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

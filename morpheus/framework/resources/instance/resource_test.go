@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusInstanceExampleOk(t *testing.T) {
+func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -84,7 +84,7 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceAzureExampleOk(t *testing.T) {
+func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Azure) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -157,7 +157,7 @@ func TestAccMorpheusInstanceAzureExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateName(t *testing.T) {
+func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -217,7 +217,7 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
+func TestAccMorpheusInstanceResourceUpdateInstanceContext(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -278,7 +278,7 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
+func TestAccMorpheusInstanceResourceUpdateTags(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

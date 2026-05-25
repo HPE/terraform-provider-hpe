@@ -73,7 +73,7 @@ func TestAccMorpheusStorageServerResourceBasic(t *testing.T) {
 	})
 }
 
-func TestAccStorageServerResource_credential(t *testing.T) {
+func TestAccMorpheusStorageServerResourceCredential(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping: requires external storage infrastructure and stored credential")
 
@@ -112,7 +112,7 @@ func TestAccStorageServerResource_credential(t *testing.T) {
 	})
 }
 
-func TestAccStorageServerResource_tenants(t *testing.T) {
+func TestAccMorpheusStorageServerResourceTenants(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping: requires external storage infrastructure and multiple tenants")
 
@@ -149,10 +149,10 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 	})
 }
 
-// TestAccStorageServerResource_planOnly validates the schema and config without
+// TestAccMorpheusStorageServerResourcePlanOnly validates the schema and config without
 // requiring a real Morpheus backend. This catches schema issues, conflictsWith
 // validation, and default value problems.
-func TestAccStorageServerResource_planOnly(t *testing.T) {
+func TestAccMorpheusStorageServerResourcePlanOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -182,9 +182,9 @@ func TestAccStorageServerResource_planOnly(t *testing.T) {
 	})
 }
 
-// TestAccStorageServerResource_conflictsValidation verifies that credential_id
+// TestAccMorpheusStorageServerResourceConflictsValidation verifies that credential_id
 // and service_username/service_password_wo cannot be set together.
-func TestAccStorageServerResource_conflictsValidation(t *testing.T) {
+func TestAccMorpheusStorageServerResourceConflictsValidation(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

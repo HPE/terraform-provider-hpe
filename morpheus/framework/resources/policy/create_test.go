@@ -16,7 +16,7 @@ import (
 )
 
 // Test creating a policy with required attributes only
-func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceRequiredAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -101,7 +101,7 @@ resource "hpe_morpheus_policy" "required" {
 }
 
 // Test creating policies with different policy types which apply to Bare Metal
-func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceAllBareMetalPolicyTypesOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -831,7 +831,7 @@ resource "hpe_morpheus_network" "test" {
 }
 
 // Test creating policies using static schema fields (config_* attributes)
-func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceAllStaticSchemaOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
 

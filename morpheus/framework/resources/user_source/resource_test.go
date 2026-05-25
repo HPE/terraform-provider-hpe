@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusUserSourceBasic(t *testing.T) {
+func TestAccMorpheusUserSourceResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.LDAP) {
 		t.Log("Skipping test due to missing capabilities")
 

@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusSubnetBasic(t *testing.T) {
+func TestAccMorpheusSubnetResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Subnet) {
 		t.Log("Subnet tests require a configured cloud with networks - skipping in environment without infrastructure")
 

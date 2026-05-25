@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusVdiAppBasic(t *testing.T) {
+func TestAccMorpheusVdiAppResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -64,7 +64,7 @@ resource "hpe_morpheus_vdi_app" "test" {
 	})
 }
 
-func TestAccMorpheusVdiAppUpdate(t *testing.T) {
+func TestAccMorpheusVdiAppResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 

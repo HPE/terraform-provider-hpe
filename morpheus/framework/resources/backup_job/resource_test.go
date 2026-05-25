@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusBackupJobBasic(t *testing.T) {
+func TestAccMorpheusBackupJobResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -57,7 +57,7 @@ func TestAccMorpheusBackupJobBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusBackupJobUpdate(t *testing.T) {
+func TestAccMorpheusBackupJobResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

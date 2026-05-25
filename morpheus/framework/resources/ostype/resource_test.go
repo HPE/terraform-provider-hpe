@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
+func TestAccMorpheusOsTypeResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -123,7 +123,7 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusOsTypeUpdateOk(t *testing.T) {
+func TestAccMorpheusOsTypeResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

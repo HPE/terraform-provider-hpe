@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 // we skip the permissions import verification check.
 
 // Check that we can create a user role with only required attributes specified
-func TestAccMorpheusRoleUserRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusRoleResourceUserRequiredAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -115,7 +115,7 @@ resource "hpe_morpheus_role" "example_required" {
 }
 
 // Check that we can create a tenant role with only required attributes specified
-func TestAccMorpheusRoleTenantRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusRoleResourceTenantRequiredAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -198,7 +198,7 @@ resource "hpe_morpheus_role" "example_required" {
 }
 
 // Check that we can create a role with all attributes specified
-func TestAccMorpheusRoleAllAttrsOk(t *testing.T) {
+func TestAccMorpheusRoleResourceAllAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -326,7 +326,7 @@ resource "hpe_morpheus_role" "example_all" {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusRoleExampleOk(t *testing.T) {
+func TestAccMorpheusRoleResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -396,7 +396,7 @@ func TestAccMorpheusRoleExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusRolePermissionsDefaultAccessPermissionsOk(t *testing.T) {
+func TestAccMorpheusRoleResourcePermissionsDefaultAccessPermissionsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -512,7 +512,7 @@ resource "hpe_morpheus_role" "default_access_permissions_ok" {
 // we test all possible permissions EXCEPT VDI Pool.
 // For now, the VDI pool section of the OpenAPI spec looks to be incorrect
 // and needs to be updated so that we can create one using the generated SDK.
-func TestAccMorpheusRoleAllPermissionsUserRoleOk(t *testing.T) {
+func TestAccMorpheusRoleResourceAllPermissionsUserRoleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -798,7 +798,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 
 // the difference between user and tenant role is that user roles can be assigned
 // group permissions while tenant roles can be assigned cloud permissions
-func TestAccMorpheusRoleTenantAllPermissionsOk(t *testing.T) {
+func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 

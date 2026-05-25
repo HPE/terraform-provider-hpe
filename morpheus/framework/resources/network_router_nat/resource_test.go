@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkRouterNatBasic(t *testing.T) {
+func TestAccMorpheusNetworkRouterNatResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -77,7 +77,7 @@ resource "hpe_morpheus_network_router_nat" "test" {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNatUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterNatResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
 

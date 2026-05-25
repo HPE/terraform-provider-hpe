@@ -43,7 +43,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusCloudExampleOk(t *testing.T) {
+func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -199,7 +199,7 @@ func TestAccMorpheusCloudExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudExampleAzureOk(t *testing.T) {
+func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Azure) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -289,7 +289,7 @@ func TestAccMorpheusCloudExampleAzureOk(t *testing.T) {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
+func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -452,7 +452,7 @@ func TestAccMorpheusCloudExampleGenericOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudUpdate(t *testing.T) {
+func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1247,7 +1247,7 @@ func TestAccMorpheusCloudUpdate(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudValidationOneOf(t *testing.T) {
+func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1336,7 +1336,7 @@ func TestAccMorpheusCloudValidationOneOf(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusCloudValidationRequiredAttrs(t *testing.T) {
+func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

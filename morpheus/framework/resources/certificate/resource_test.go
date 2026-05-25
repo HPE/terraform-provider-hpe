@@ -33,7 +33,7 @@ MIIBogIBAAJBALujivoYYpHsHIwy/7bFc3IZRM8Y0iOtxEE7N2jn7iyQRoW1y1lZ
 QUOTQUOTQUOTQUOTQUOTQUOTQUOTQUOTQUOT
 -----END RSA PRIVATE KEY-----`
 
-func TestAccMorpheusCertificateBasic(t *testing.T) {
+func TestAccMorpheusCertificateResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -82,7 +82,7 @@ EOT
 	})
 }
 
-func TestAccMorpheusCertificateUpdate(t *testing.T) {
+func TestAccMorpheusCertificateResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

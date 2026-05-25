@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -122,7 +122,7 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtUpdateOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -242,7 +242,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtConfigChangeRequiresReplace(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresReplace(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -371,7 +371,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtMinimalExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
 

@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 }
 
 // Tests that our HVM example file template used for docs is a valid config
-func TestAccMorpheusClusterHVMExampleOk(t *testing.T) {
+func TestAccMorpheusClusterResourceHVMExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -211,7 +211,7 @@ data "hpe_morpheus_service_plan" "test" {
 }
 
 // Tests that our generic example file template used for docs is a valid config
-func TestAccMorpheusClusterGenericExampleOk(t *testing.T) {
+func TestAccMorpheusClusterResourceGenericExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -383,7 +383,7 @@ data "hpe_morpheus_service_plan" "test" {
 	})
 }
 
-func TestAccMorpheusClusterHVMUpdateOk(t *testing.T) {
+func TestAccMorpheusClusterResourceHVMUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -569,7 +569,7 @@ resource "hpe_morpheus_cluster" "test" {
 	})
 }
 
-func TestAccMorpheusClusterGenericUpdateOk(t *testing.T) {
+func TestAccMorpheusClusterResourceGenericUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

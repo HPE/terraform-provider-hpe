@@ -15,7 +15,7 @@ import (
 )
 
 // Test update of mutable attributes
-func TestAccMorpheusPolicyUpdateOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -363,7 +363,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 }
 
 // Test that changing policy_type.code triggers replacement
-func TestAccMorpheusPolicyTypeCodeChangeRequiresReplace(t *testing.T) {
+func TestAccMorpheusPolicyResourceTypeCodeChangeRequiresReplace(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

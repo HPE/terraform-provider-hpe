@@ -36,7 +36,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusServicePlanRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceRequiredAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -129,7 +129,7 @@ resource "hpe_morpheus_service_plan" "example_required" {
 	})
 }
 
-func TestAccMorpheusServicePlanAllAttrsOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceAllAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -365,7 +365,7 @@ resource "hpe_morpheus_service_plan" "example_all" {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 

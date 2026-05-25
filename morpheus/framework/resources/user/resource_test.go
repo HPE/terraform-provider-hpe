@@ -73,7 +73,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusUserExample(t *testing.T) {
+func TestAccMorpheusUserResourceExample(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -203,7 +203,7 @@ func TestAccMorpheusUserExample(t *testing.T) {
 // requires delete/recreate.
 // We may update this test once we can create a second tenant using
 // the provider.
-func TestAccMorpheusUserUpdateTestIdOk(t *testing.T) {
+func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -256,7 +256,7 @@ resource "hpe_morpheus_user" "foo" {
 
 // Check that we can create a user with only
 // required attributes specified
-func TestAccMorpheusUserRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusUserResourceRequiredAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -377,7 +377,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserUpdateOk(t *testing.T) {
+func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1077,7 +1077,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserUpdateNoTenantIdOk(t *testing.T) {
+func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1439,7 +1439,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserAllAttrsOk(t *testing.T) {
+func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1639,7 +1639,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserMissingRoles(t *testing.T) {
+func TestAccMorpheusUserResourceMissingRoles(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1680,7 +1680,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserMissingUsername(t *testing.T) {
+func TestAccMorpheusUserResourceMissingUsername(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1721,7 +1721,7 @@ resource "hpe_morpheus_user" "foo" {
 	})
 }
 
-func TestAccMorpheusUserMissingEmail(t *testing.T) {
+func TestAccMorpheusUserResourceMissingEmail(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1764,7 +1764,7 @@ resource "hpe_morpheus_user" "foo" {
 
 // password_wo is required for create (but not import) here we check that it is
 // correctly identified as missing during plan (i.e. before Create is called)
-func TestAccMorpheusUserMissingPasswordWo(t *testing.T) {
+func TestAccMorpheusUserResourceMissingPasswordWo(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -1814,7 +1814,7 @@ resource "hpe_morpheus_user" "foo" {
 // related tests in this file, but here we
 // are able to run plan after import, having
 // inherited the import state.
-func TestAccMorpheusUserImportOk(t *testing.T) {
+func TestAccMorpheusUserResourceImportOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -2038,7 +2038,7 @@ destroy = false
 
 // Test that when tenant_id is not set (use state for unknown)
 // updating last_name results in update operation, not delete/recreate
-func TestAccMorpheusUserUpdateLastNameWithoutTenantIdOk(t *testing.T) {
+func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
