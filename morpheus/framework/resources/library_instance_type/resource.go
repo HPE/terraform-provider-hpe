@@ -104,14 +104,24 @@ func (r *libraryInstanceTypeResource) Create(
 	// For now, use the list endpoint to find the newly created instance type
 	listResult, httpResp, err := client.LibraryAPI.ListInstanceTypes(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_instance_type", plan.Name.ValueString(), err, httpResp)
+		resp.Diagnostics.AddError(
+			"Read Error After Create",
+			"Instance type was created successfully but could not be read back. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}
 
 	instanceTypes := listResult.GetInstanceTypes()
 	if len(instanceTypes) == 0 {
-		resp.Diagnostics.AddError("Not Found", "Instance type not found after creation")
+		resp.Diagnostics.AddError(
+			"Not Found After Create",
+			"Instance type was created successfully but could not be found by name. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}

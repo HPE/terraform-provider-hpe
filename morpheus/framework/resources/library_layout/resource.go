@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -139,7 +140,13 @@ func (r *libraryLayoutResource) Create(ctx context.Context, req resource.CreateR
 	// Read back
 	readResult, httpResp, err := client.LibraryAPI.GetLayout(ctx, plan.ID.ValueInt64()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_layout", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_layout", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "library_layout",
+			ResourceID:   plan.ID.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}

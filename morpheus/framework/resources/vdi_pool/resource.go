@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -109,14 +110,24 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	// We need to list and find by name since the response doesn't cleanly expose the ID.
 	listResult, httpResp, err := client.VDIAPI.ListVDIPools(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+		resp.Diagnostics.AddError(
+			"Read Error After Create",
+			"VDI pool was created successfully but could not be read back. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}
 
 	pools := listResult.GetVdiPools()
 	if len(pools) == 0 {
-		resp.Diagnostics.AddError("VDI Pool Not Found", "Could not find the newly created VDI pool by name.")
+		resp.Diagnostics.AddError(
+			"VDI Pool Not Found",
+			"VDI pool was created successfully but could not be found by name. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}
@@ -128,6 +139,12 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	readResult, httpResp, err := client.VDIAPI.GetVDIPools(ctx, poolID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_pool",
+			ResourceID:   poolID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
