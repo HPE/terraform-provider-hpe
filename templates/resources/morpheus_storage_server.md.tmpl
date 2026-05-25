@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Note:** The service port defaults to 22 and cannot be changed via this resource.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_storage_server/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Storage servers can be imported using the resource ID, e.g.
+
+{{ codefile "shell" "examples/resources/morpheus_storage_server/import.sh" }}
