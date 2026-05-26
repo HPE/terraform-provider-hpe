@@ -18,7 +18,7 @@ import (
 const testResourceName = "hpe_morpheus_network_router.example"
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
