@@ -1,0 +1,3 @@
+resource "hpe_morpheus_network_group" "example" {
+  name = "Example Network Group"
+}

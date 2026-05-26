@@ -1,0 +1,3 @@
+resource "hpe_morpheus_library_container_script" "example" {
+  name = "Example Script"
+}
