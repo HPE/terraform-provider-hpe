@@ -7,7 +7,7 @@
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname
 SWEEP ?= all
-SWEEP_SYSTEMS ?= zodiac,feature
+SWEEP_SYSTEMS ?= zodiac
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 
 build:
