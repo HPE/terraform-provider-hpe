@@ -11,15 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_task/example.tf example.tf.tmpl Name "Example Task" TaskTypeCode "shellTask" ExecuteTarget "local"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow" ElseOperationalWorkflowId "4091" ElseOperationalWorkflowName "Example Else Workflow"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow_null_else.tf example_conditional_workflow_null_else.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow"
+//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task" OperationalWorkflowId "4090" OperationalWorkflowName "Example Workflow"
 
-func RenderTaskConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderTaskGenericConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Task",
-		"TaskTypeCode": "shellTask",
-		"ExecuteTarget": "local",
+		"Name":                    "Example Generic Task",
+		"OperationalWorkflowId":   "4090",
+		"OperationalWorkflowName": "Example Workflow",
 	}
 
 	for key, value := range overrides {
@@ -35,8 +37,44 @@ func RenderTaskConfig(t *testing.T, overrides map[string]string) (string, error)
 	if !ok {
 		return "", fmt.Errorf("unable to get current file path")
 	}
+
 	dir := filepath.Dir(filename)
-	templatePath := filepath.Join(dir, "example.tf.tmpl")
+	templatePath := filepath.Join(dir, "example_generic_config.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
+}
+
+func RenderTaskConditionalWorkflowConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":                        "Example Conditional Workflow Task",
+		"IfOperationalWorkflowId":     "4090",
+		"IfOperationalWorkflowName":   "Example If Workflow",
+		"ElseOperationalWorkflowId":   "4091",
+		"ElseOperationalWorkflowName": "Example Else Workflow",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example_conditional_workflow.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,
