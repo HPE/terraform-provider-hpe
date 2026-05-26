@@ -2,7 +2,7 @@ resource "hpe_morpheus_library_container_script" "example" {
   name          = "{{.Name}}"
   script_phase  = "{{.ScriptPhase}}"
   script_type   = "{{.ScriptType}}"
-  script        = "{{.Script}}"
+  script        = {{.Script}}
   sudo_user     = {{.SudoUser}}
   fail_on_error = {{.FailOnError}}
 }

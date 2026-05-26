@@ -3,5 +3,5 @@ resource "hpe_morpheus_library_file_template" "example" {
   file_name      = "{{.FileName}}"
   file_path      = "{{.FilePath}}"
   template_phase = "{{.TemplatePhase}}"
-  template       = "{{.Template}}"
+  template       = {{.Template}}
 }
