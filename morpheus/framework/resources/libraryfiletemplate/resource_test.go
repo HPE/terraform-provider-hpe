@@ -11,15 +11,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibraryFileTemplateBasic(t *testing.T) {
+func TestAccMorpheusLibraryFileTemplateResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -29,7 +35,7 @@ func TestAccMorpheusLibraryFileTemplateBasic(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig := `
 resource "hpe_morpheus_library_file_template" "test" {
@@ -59,7 +65,12 @@ resource "hpe_morpheus_library_file_template" "test" {
 	})
 }
 
-func TestAccMorpheusLibraryFileTemplateUpdate(t *testing.T) {
+func TestAccMorpheusLibraryFileTemplateResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -69,7 +80,7 @@ func TestAccMorpheusLibraryFileTemplateUpdate(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix("tf-acc")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig := `
 resource "hpe_morpheus_library_file_template" "test" {

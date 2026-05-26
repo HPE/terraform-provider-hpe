@@ -12,11 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -33,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkRouterByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,8 +45,7 @@ func TestAccMorpheusFindNetworkRouterByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouter.RenderNetworkRouterByNameConfig(t, map[string]string{
 		"Name": "Test-Router-Zodiac",
@@ -65,6 +68,11 @@ func TestAccMorpheusFindNetworkRouterByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -73,8 +81,7 @@ func TestAccMorpheusFindNetworkRouterById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouter.RenderNetworkRouterByIdConfig(t, map[string]string{
 		"Id": "3",
@@ -97,6 +104,11 @@ func TestAccMorpheusFindNetworkRouterById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -105,8 +117,7 @@ func TestAccMorpheusFindNetworkRouterNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouter.RenderNetworkRouterByNameConfig(t,
 		map[string]string{
@@ -131,6 +142,11 @@ func TestAccMorpheusFindNetworkRouterNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -153,6 +169,11 @@ func TestAccMorpheusFindNetworkRouterNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

@@ -12,9 +12,15 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusTaskVroExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.VRO) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -22,11 +28,6 @@ func TestAccMorpheusTaskVroExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	// t.Skip("Skipping due to API error")
-	// t.Skip("Skipping due to missing infrastructure in test environment")
-	// t.Skip("Skipping due to missing resource implementation")
-	t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
 
 	providerConfig := testhelpers.ProviderBlock()
 

@@ -14,11 +14,12 @@ import (
 
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -35,7 +36,12 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusServicePlanRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceRequiredAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -123,7 +129,12 @@ resource "hpe_morpheus_service_plan" "example_required" {
 	})
 }
 
-func TestAccMorpheusServicePlanAllAttrsOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceAllAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -354,7 +365,12 @@ resource "hpe_morpheus_service_plan" "example_all" {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusServicePlanExampleOk(t *testing.T) {
+func TestAccMorpheusServicePlanResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

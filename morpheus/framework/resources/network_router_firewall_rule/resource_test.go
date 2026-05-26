@@ -11,17 +11,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkRouterFirewallRuleBasic(t *testing.T) {
+func TestAccMorpheusNetworkRouterFirewallRuleResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -35,10 +39,9 @@ func TestAccMorpheusNetworkRouterFirewallRuleBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix("tf-acc-rtr-fw")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -74,7 +77,12 @@ resource "hpe_morpheus_network_router_firewall_rule" "test" {
 	})
 }
 
-func TestAccMorpheusNetworkRouterFirewallRuleUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -88,10 +96,9 @@ func TestAccMorpheusNetworkRouterFirewallRuleUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix("tf-acc-rtr-fw")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
