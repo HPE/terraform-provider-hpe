@@ -127,6 +127,11 @@ resource "hpe_morpheus_network_pool_server" "test" {
 }
 
 func TestAccMorpheusNetworkPoolServerCredential(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -135,8 +140,7 @@ func TestAccMorpheusNetworkPoolServerCredential(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
 
@@ -170,6 +174,11 @@ resource "hpe_morpheus_network_pool_server" "test" {
 }
 
 func TestAccMorpheusNetworkPoolServerWithFilters(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -178,8 +187,7 @@ func TestAccMorpheusNetworkPoolServerWithFilters(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
 
