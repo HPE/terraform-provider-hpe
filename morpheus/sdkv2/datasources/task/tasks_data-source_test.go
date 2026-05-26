@@ -15,6 +15,7 @@ import (
 	dstask "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -26,6 +27,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusDataSourceTasksExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

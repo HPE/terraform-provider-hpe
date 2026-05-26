@@ -15,18 +15,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	code := testhelpers.TestMain(m)
-	systemoverride.ParseFlags()
+	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 // Tests that our example file template used for docs is a valid config.
-func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
+func TestAccMorpheusOsTypeImageResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -34,8 +38,7 @@ func TestAccMorpheusOsTypeImageExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
@@ -134,15 +137,19 @@ resource "hpe_morpheus_os_type" "test" {
 }
 
 // Tests creating with only the required attributes.
-func TestAccMorpheusOsTypeImageRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusOsTypeImageResourceRequiredAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)

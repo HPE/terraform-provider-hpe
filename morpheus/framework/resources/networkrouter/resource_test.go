@@ -12,19 +12,23 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 const testResourceName = "hpe_morpheus_network_router.example"
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := testhelpers.TestMain(m)
+	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkRouterGenericExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceGenericExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -64,7 +68,12 @@ func TestAccMorpheusNetworkRouterGenericExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNSXTGatewayTier0ExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0ExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -104,7 +113,12 @@ func TestAccMorpheusNetworkRouterNSXTGatewayTier0ExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkRouterNSXTGatewayTier1ExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier1ExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 

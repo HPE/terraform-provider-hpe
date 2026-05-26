@@ -8,17 +8,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := testhelpers.TestMain(m)
+	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusWhitelabelSettingsBasic(t *testing.T) {
+func TestAccMorpheusWhitelabelSettingsResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Settings) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -26,8 +30,7 @@ func TestAccMorpheusWhitelabelSettingsBasic(t *testing.T) {
 	}
 
 	t.Skip("Skipping: whitelabel settings requires an appropriate license (whitelabel not approved by license)")
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -43,7 +46,12 @@ func TestAccMorpheusWhitelabelSettingsBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusWhitelabelSettingsUpdate(t *testing.T) {
+func TestAccMorpheusWhitelabelSettingsResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -51,8 +59,7 @@ func TestAccMorpheusWhitelabelSettingsUpdate(t *testing.T) {
 	}
 
 	t.Skip("Skipping: whitelabel settings requires an appropriate license (whitelabel not approved by license)")
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),

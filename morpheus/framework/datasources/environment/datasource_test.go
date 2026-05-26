@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -38,6 +39,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindEnvironmentById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -89,6 +95,11 @@ func TestAccMorpheusFindEnvironmentById(t *testing.T) {
 }
 
 func TestAccMorpheusFindIdbyName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -141,6 +152,11 @@ func TestAccMorpheusFindIdbyName(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -176,6 +192,11 @@ func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_environment" "test" {
@@ -205,6 +226,11 @@ func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_environment" "test" {

@@ -12,11 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -33,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,8 +45,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t, nil)
 	if err != nil {
@@ -65,6 +68,11 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -73,8 +81,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, nil)
 	if err != nil {
@@ -97,6 +104,11 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -105,8 +117,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t,
 		map[string]string{
@@ -131,6 +142,11 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -154,6 +170,11 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

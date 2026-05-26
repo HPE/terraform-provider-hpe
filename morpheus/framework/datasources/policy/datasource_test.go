@@ -19,7 +19,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -34,7 +34,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -51,6 +50,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -58,8 +62,7 @@ func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -123,6 +126,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 
 func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -130,8 +138,7 @@ func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	policyName := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -195,6 +202,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 
 func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -202,8 +214,7 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_policy" "test" {
@@ -234,6 +245,11 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -266,11 +282,15 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	config := providerConfig + `
       data "hpe_morpheus_policy" "test" {
@@ -303,6 +323,11 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -314,8 +339,7 @@ func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	policyDescription := "Comprehensive test policy with all config fields"
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Create a single policy resource with ALL config fields combined for testing
 	resourceConfig := `
@@ -712,6 +736,11 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 
 // Test datasource can find policies scoped to different resource types (Group, Cloud, User, Role)
 func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -719,8 +748,7 @@ func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Create dependency resources
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")

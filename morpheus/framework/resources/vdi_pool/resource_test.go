@@ -10,17 +10,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := testhelpers.TestMain(m)
+	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusVdiPoolBasic(t *testing.T) {
+func TestAccMorpheusVdiPoolResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -29,10 +33,9 @@ func TestAccMorpheusVdiPoolBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := acctest.RandomWithPrefix("tf-acc-vdipool")
+	rName := acctest.RandomWithPrefix(t.Name())
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
@@ -53,7 +56,12 @@ func TestAccMorpheusVdiPoolBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusVdiPoolUpdate(t *testing.T) {
+func TestAccMorpheusVdiPoolResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.VDI) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -62,10 +70,9 @@ func TestAccMorpheusVdiPoolUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := acctest.RandomWithPrefix("tf-acc-vdipool")
+	rName := acctest.RandomWithPrefix(t.Name())
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
