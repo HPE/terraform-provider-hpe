@@ -17,7 +17,7 @@ func RenderLibraryFileTemplateConfig(t *testing.T, overrides map[string]string) 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example File Template",
+		"Name":     "Example File Template",
 		"FileName": "config.yaml",
 	}
 

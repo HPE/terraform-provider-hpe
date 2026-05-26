@@ -17,7 +17,7 @@ func RenderCypherConfig(t *testing.T, overrides map[string]string) (string, erro
 	t.Helper()
 
 	defaults := map[string]string{
-		"Id": "secret/my-secret",
+		"Id":    "secret/my-secret",
 		"Value": "my-secret-value",
 	}
 

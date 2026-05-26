@@ -17,7 +17,7 @@ func RenderVdiGatewayConfig(t *testing.T, overrides map[string]string) (string, 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example VDI Gateway",
+		"Name":       "Example VDI Gateway",
 		"GatewayUrl": "https://vdi-gateway.example.com",
 	}
 

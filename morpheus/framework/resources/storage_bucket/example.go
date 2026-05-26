@@ -17,7 +17,7 @@ func RenderStorageBucketConfig(t *testing.T, overrides map[string]string) (strin
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Storage Bucket",
+		"Name":         "Example Storage Bucket",
 		"ProviderType": "s3",
 	}
 

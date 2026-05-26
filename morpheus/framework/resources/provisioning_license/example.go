@@ -17,9 +17,9 @@ func RenderProvisioningLicenseConfig(t *testing.T, overrides map[string]string) 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example License",
+		"Name":        "Example License",
 		"LicenseType": "win",
-		"LicenseKey": "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
+		"LicenseKey":  "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
 	}
 
 	for key, value := range overrides {

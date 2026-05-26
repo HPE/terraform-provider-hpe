@@ -17,7 +17,7 @@ func RenderNetworkPoolConfig(t *testing.T, overrides map[string]string) (string,
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Network Pool",
+		"Name":   "Example Network Pool",
 		"TypeId": "1",
 	}
 

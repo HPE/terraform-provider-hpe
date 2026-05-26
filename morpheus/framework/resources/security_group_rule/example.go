@@ -18,8 +18,8 @@ func RenderSecurityGroupRuleConfig(t *testing.T, overrides map[string]string) (s
 
 	defaults := map[string]string{
 		"SecurityGroupId": "1",
-		"Protocol": "tcp",
-		"RuleType": "ingress",
+		"Protocol":        "tcp",
+		"RuleType":        "ingress",
 	}
 
 	for key, value := range overrides {

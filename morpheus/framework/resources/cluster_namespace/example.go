@@ -18,7 +18,7 @@ func RenderClusterNamespaceConfig(t *testing.T, overrides map[string]string) (st
 
 	defaults := map[string]string{
 		"ClusterId": "1",
-		"Name": "example-namespace",
+		"Name":      "example-namespace",
 	}
 
 	for key, value := range overrides {

@@ -18,7 +18,7 @@ func RenderClusterAffinityGroupConfig(t *testing.T, overrides map[string]string)
 
 	defaults := map[string]string{
 		"ClusterId": "1",
-		"Name": "Example Affinity Group",
+		"Name":      "Example Affinity Group",
 	}
 
 	for key, value := range overrides {

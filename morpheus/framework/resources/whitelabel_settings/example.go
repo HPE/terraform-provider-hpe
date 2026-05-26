@@ -11,14 +11,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_whitelabel_settings/example.tf example.tf.tmpl 
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_whitelabel_settings/example.tf example.tf.tmpl
 
 func RenderWhitelabelSettingsConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
-	defaults := map[string]string{
-
-	}
+	defaults := map[string]string{}
 
 	for key, value := range overrides {
 		defaults[key] = value

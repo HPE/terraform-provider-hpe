@@ -17,9 +17,9 @@ func RenderLibraryContainerTypeConfig(t *testing.T, overrides map[string]string)
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Container Type",
-		"ShortName": "example",
-		"ContainerVersion": "1.0",
+		"Name":              "Example Container Type",
+		"ShortName":         "example",
+		"ContainerVersion":  "1.0",
 		"ProvisionTypeCode": "docker",
 	}
 

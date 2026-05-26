@@ -17,9 +17,9 @@ func RenderLibraryOptionTypeConfig(t *testing.T, overrides map[string]string) (s
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Option Type",
+		"Name":      "Example Option Type",
 		"FieldName": "exampleField",
-		"Type": "text",
+		"Type":      "text",
 	}
 
 	for key, value := range overrides {

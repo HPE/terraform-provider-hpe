@@ -17,8 +17,8 @@ func RenderNetworkRouterRouteConfig(t *testing.T, overrides map[string]string) (
 	t.Helper()
 
 	defaults := map[string]string{
-		"RouterId": "1",
-		"Source": "10.0.0.0/24",
+		"RouterId":    "1",
+		"Source":      "10.0.0.0/24",
 		"Destination": "192.168.1.0/24",
 	}
 

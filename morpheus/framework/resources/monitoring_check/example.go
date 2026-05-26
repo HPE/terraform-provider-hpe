@@ -17,7 +17,7 @@ func RenderMonitoringCheckConfig(t *testing.T, overrides map[string]string) (str
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Check",
+		"Name":        "Example Check",
 		"CheckTypeId": "1",
 	}
 

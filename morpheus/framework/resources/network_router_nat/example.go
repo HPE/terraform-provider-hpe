@@ -18,7 +18,7 @@ func RenderNetworkRouterNatConfig(t *testing.T, overrides map[string]string) (st
 
 	defaults := map[string]string{
 		"RouterId": "1",
-		"Name": "Example NAT Rule",
+		"Name":     "Example NAT Rule",
 	}
 
 	for key, value := range overrides {

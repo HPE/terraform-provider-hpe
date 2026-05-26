@@ -17,9 +17,9 @@ func RenderLibraryLayoutConfig(t *testing.T, overrides map[string]string) (strin
 	t.Helper()
 
 	defaults := map[string]string{
-		"InstanceTypeId": "1",
-		"Name": "Example Layout",
-		"InstanceVersion": "1.0",
+		"InstanceTypeId":    "1",
+		"Name":              "Example Layout",
+		"InstanceVersion":   "1.0",
 		"ProvisionTypeCode": "docker",
 	}
 

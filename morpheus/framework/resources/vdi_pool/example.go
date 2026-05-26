@@ -17,7 +17,7 @@ func RenderVdiPoolConfig(t *testing.T, overrides map[string]string) (string, err
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example VDI Pool",
+		"Name":        "Example VDI Pool",
 		"MaxPoolSize": "5",
 	}
 

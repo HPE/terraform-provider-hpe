@@ -18,7 +18,7 @@ func RenderNetworkRouterFirewallRuleConfig(t *testing.T, overrides map[string]st
 
 	defaults := map[string]string{
 		"RouterId": "1",
-		"Name": "Example Firewall Rule",
+		"Name":     "Example Firewall Rule",
 	}
 
 	for key, value := range overrides {

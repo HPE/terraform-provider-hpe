@@ -17,8 +17,8 @@ func RenderUserSourceConfig(t *testing.T, overrides map[string]string) (string, 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example User Source",
-		"Type": "ldap",
+		"Name":      "Example User Source",
+		"Type":      "ldap",
 		"AccountId": "1",
 	}
 
