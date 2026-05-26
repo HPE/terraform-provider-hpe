@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -30,13 +31,18 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	},
 }
 
-func TestAccClusterAffinityGroupResource_basic(t *testing.T) {
+func TestAccMorpheusClusterAffinityGroupResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
 	if clusterID == "" {
 		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set, skipping")
 	}
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

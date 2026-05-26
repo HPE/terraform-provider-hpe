@@ -12,11 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -33,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,8 +45,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t, nil)
 	if err != nil {
@@ -65,6 +68,11 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -73,8 +81,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, nil)
 	if err != nil {
@@ -97,6 +104,11 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -105,8 +117,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t,
 		map[string]string{
@@ -131,6 +142,11 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkRouterBgpNeighborNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

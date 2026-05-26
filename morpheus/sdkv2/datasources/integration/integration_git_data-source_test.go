@@ -12,9 +12,15 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsintegration "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestAccMorpheusDataSourceIntegrationGitExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Git) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -22,8 +28,6 @@ func TestAccMorpheusDataSourceIntegrationGitExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	providerConfig := testhelpers.ProviderBlock()
 

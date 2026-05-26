@@ -10,17 +10,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkPoolServerBasic(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -29,10 +33,9 @@ func TestAccMorpheusNetworkPoolServerBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -66,7 +69,12 @@ resource "hpe_morpheus_network_pool_server" "test" {
 	})
 }
 
-func TestAccMorpheusNetworkPoolServerUpdate(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -75,10 +83,9 @@ func TestAccMorpheusNetworkPoolServerUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -120,6 +127,11 @@ resource "hpe_morpheus_network_pool_server" "test" {
 }
 
 func TestAccMorpheusNetworkPoolServerCredential(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -128,8 +140,7 @@ func TestAccMorpheusNetworkPoolServerCredential(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
 
@@ -163,6 +174,11 @@ resource "hpe_morpheus_network_pool_server" "test" {
 }
 
 func TestAccMorpheusNetworkPoolServerWithFilters(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkPool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -171,8 +187,7 @@ func TestAccMorpheusNetworkPoolServerWithFilters(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
 

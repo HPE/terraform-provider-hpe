@@ -8,15 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/config"
+	testresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
-
-	"github.com/hashicorp/terraform-plugin-testing/config"
-	testresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 type SubProviderTest struct {
@@ -52,12 +51,16 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
 
-func TestAccProviderBlockWithAccessToken(t *testing.T) {
+func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -87,12 +90,16 @@ func TestAccProviderBlockWithAccessToken(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockWithCredentials(t *testing.T) {
+func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -123,12 +130,16 @@ func TestAccProviderBlockWithCredentials(t *testing.T) {
 }
 
 // if all access token and creds are provided, then it'll prefer access token
-func TestAccProviderBlockAllAuth(t *testing.T) {
+func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	checks := []testresource.TestCheckFunc{
@@ -159,10 +170,14 @@ func TestAccProviderBlockAllAuth(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingURL(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
@@ -199,12 +214,16 @@ func TestAccProviderBlockMissingURL(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingAuth(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -228,12 +247,16 @@ func TestAccProviderBlockMissingAuth(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingUsername(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expectedA := `Attribute "morpheus\[0\].(username|access_token)" must be specified`
@@ -272,12 +295,16 @@ func TestAccProviderBlockMissingUsername(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockMissingPassword(t *testing.T) {
+func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Attribute "morpheus\[0\].password" must be specified when\n` +
@@ -302,12 +329,16 @@ func TestAccProviderBlockMissingPassword(t *testing.T) {
 	})
 }
 
-func TestAccProviderBlockNoneSet(t *testing.T) {
+func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
 	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +

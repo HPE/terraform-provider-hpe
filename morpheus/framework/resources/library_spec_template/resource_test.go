@@ -10,17 +10,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusLibrarySpecTemplateBasic(t *testing.T) {
+func TestAccMorpheusLibrarySpecTemplateResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -29,10 +33,9 @@ func TestAccMorpheusLibrarySpecTemplateBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := acctest.RandomWithPrefix("tf-acc-spectempl")
+	rName := acctest.RandomWithPrefix(t.Name())
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
@@ -54,7 +57,12 @@ func TestAccMorpheusLibrarySpecTemplateBasic(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusLibrarySpecTemplateUpdate(t *testing.T) {
+func TestAccMorpheusLibrarySpecTemplateResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -63,10 +71,9 @@ func TestAccMorpheusLibrarySpecTemplateUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := acctest.RandomWithPrefix("tf-acc-spectempl")
+	rName := acctest.RandomWithPrefix(t.Name())
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
