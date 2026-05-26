@@ -37,9 +37,9 @@ func init() {
 					continue
 				}
 
-				neighborsResp, neighborsHTTPResp, listErr := client.NetworksAPI.GetNetworkRoutersBgpNeighbors(ctx, *routerID).Execute()
+				neighborsResp, _, listErr := client.NetworksAPI.GetNetworkRoutersBgpNeighbors(ctx, *routerID).Execute()
 				if listErr != nil || neighborsResp == nil {
-					return nil, neighborsHTTPResp, listErr
+					continue
 				}
 
 				for _, neighbor := range neighborsResp.GetNetworkRouterBgpNeighbors() {

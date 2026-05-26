@@ -37,9 +37,9 @@ func init() {
 					continue
 				}
 
-				natsResp, natsHTTPResp, listErr := client.NetworksAPI.GetNetworkRoutersNats(ctx, *routerID).Execute()
+				natsResp, _, listErr := client.NetworksAPI.GetNetworkRoutersNats(ctx, *routerID).Execute()
 				if listErr != nil || natsResp == nil {
-					return nil, natsHTTPResp, listErr
+					continue
 				}
 
 				for _, nat := range natsResp.GetNetworkRouterNATs() {

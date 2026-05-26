@@ -37,9 +37,9 @@ func init() {
 					continue
 				}
 
-				routesResp, routesHTTPResp, listErr := client.NetworksAPI.GetNetworkRoutersRoutes(ctx, *routerID).Execute()
+				routesResp, _, listErr := client.NetworksAPI.GetNetworkRoutersRoutes(ctx, *routerID).Execute()
 				if listErr != nil || routesResp == nil {
-					return nil, routesHTTPResp, listErr
+					continue
 				}
 
 				for _, route := range routesResp.GetNetworkRoutes() {

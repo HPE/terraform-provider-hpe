@@ -37,9 +37,9 @@ func init() {
 					continue
 				}
 
-				rulesResp, rulesHTTPResp, listErr := client.NetworksAPI.GetNetworkRoutersFirewallRules(ctx, *routerID).Execute()
+				rulesResp, _, listErr := client.NetworksAPI.GetNetworkRoutersFirewallRules(ctx, *routerID).Execute()
 				if listErr != nil || rulesResp == nil {
-					return nil, rulesHTTPResp, listErr
+					continue
 				}
 
 				for _, rule := range rulesResp.GetRules() {
