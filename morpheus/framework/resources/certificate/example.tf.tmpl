@@ -1,0 +1,5 @@
+resource "hpe_morpheus_certificate" "example" {
+  name = "{{.Name}}"
+  cert_file = {{.CertFile}}
+  key_file = {{.KeyFile}}
+}
