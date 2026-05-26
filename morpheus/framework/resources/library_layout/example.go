@@ -11,16 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_layout/example.tf example.tf.tmpl InstanceTypeId "1" Name "Example Layout" InstanceVersion "1.0" ProvisionTypeCode "docker"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_layout/example.tf example.tf.tmpl InstanceTypeId "1" Name "Single Node" InstanceVersion "1.0" ProvisionTypeCode "vmware" Description "Single node layout for VMware" Creatable "true"
 
 func RenderLibraryLayoutConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"InstanceTypeId":    "1",
-		"Name":              "Example Layout",
+		"Name":              "Single Node",
 		"InstanceVersion":   "1.0",
-		"ProvisionTypeCode": "docker",
+		"ProvisionTypeCode": "vmware",
+		"Description":       "Single node layout for VMware",
+		"Creatable":         "true",
 	}
 
 	for key, value := range overrides {

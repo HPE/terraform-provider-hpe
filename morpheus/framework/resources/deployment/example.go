@@ -11,13 +11,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_deployment/example.tf example.tf.tmpl Name "Example Deployment"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_deployment/example.tf example.tf.tmpl Name "webapp-v2" Description "Web application deployment version 2"
 
 func RenderDeploymentConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Deployment",
+		"Name":        "webapp-v2",
+		"Description": "Web application deployment version 2",
 	}
 
 	for key, value := range overrides {

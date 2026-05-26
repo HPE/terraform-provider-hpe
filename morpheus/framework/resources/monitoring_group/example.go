@@ -11,13 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_group/example.tf example.tf.tmpl Name "Example Monitoring Group"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_group/example.tf example.tf.tmpl Name "Production Services" Description "Monitoring group for production services" MinHappy "1" Severity "critical" Active "true"
 
 func RenderMonitoringGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Monitoring Group",
+		"Name":        "Production Services",
+		"Description": "Monitoring group for production services",
+		"MinHappy":    "1",
+		"Severity":    "critical",
+		"Active":      "true",
 	}
 
 	for key, value := range overrides {

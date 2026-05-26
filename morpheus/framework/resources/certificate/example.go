@@ -11,15 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_certificate/example.tf example.tf.tmpl Name "Example Certificate" CertFile file("/path-to-file") KeyFile file("/path-to-file")
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_certificate/example.tf example.tf.tmpl Name "wildcard-example-com" CertFile file("${path.module}/certs/wildcard.crt") KeyFile file("${path.module}/certs/wildcard.key") DomainName "*.example.com" Description "Wildcard certificate for example.com"
 
 func RenderCertificateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     "Example Certificate",
-		"CertFile": "\"-----BEGIN CERTIFICATE-----\nMIIB...\n-----END CERTIFICATE-----\"",
-		"KeyFile":  "\"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\"",
+		"Name":        "wildcard-example-com",
+		"CertFile":    "\"-----BEGIN CERTIFICATE-----\nMIIB...\n-----END CERTIFICATE-----\"",
+		"KeyFile":     "\"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\"",
+		"DomainName":  "*.example.com",
+		"Description": "Wildcard certificate for example.com",
 	}
 
 	for key, value := range overrides {

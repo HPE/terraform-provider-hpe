@@ -11,14 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_spec_template/example.tf example.tf.tmpl Name "Example Spec Template" Type "terraform"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_spec_template/example.tf example.tf.tmpl Name "Kubernetes Deployment" Type "kubernetes" Source "local" Content "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: example-app"
 
 func RenderLibrarySpecTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Spec Template",
-		"Type": "terraform",
+		"Name":    "Kubernetes Deployment",
+		"Type":    "kubernetes",
+		"Source":  "local",
+		"Content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: example-app",
 	}
 
 	for key, value := range overrides {

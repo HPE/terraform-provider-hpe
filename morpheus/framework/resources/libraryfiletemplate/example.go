@@ -11,14 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_file_template/example.tf example.tf.tmpl Name "Example File Template" FileName "config.yaml"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_file_template/example.tf example.tf.tmpl Name "Nginx Config" FileName "nginx.conf" FilePath "/etc/nginx" TemplatePhase "provision" Template "server {\n  listen 80;\n  server_name <%= instance.hostname %>;\n}"
 
 func RenderLibraryFileTemplateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":     "Example File Template",
-		"FileName": "config.yaml",
+		"Name":          "Nginx Config",
+		"FileName":      "nginx.conf",
+		"FilePath":      "/etc/nginx",
+		"TemplatePhase": "provision",
+		"Template":      "server {\n  listen 80;\n  server_name <%= instance.hostname %>;\n}",
 	}
 
 	for key, value := range overrides {

@@ -11,13 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_option_type_list/example.tf example.tf.tmpl Name "Example Option Type List"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_option_type_list/example.tf example.tf.tmpl Name "Region List" Description "List of available regions" Type "rest" SourceUrl "https://api.example.com/regions" Visibility "public" RealTime "false"
 
 func RenderLibraryOptionTypeListConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Option Type List",
+		"Name":        "Region List",
+		"Description": "List of available regions",
+		"Type":        "rest",
+		"SourceUrl":   "https://api.example.com/regions",
+		"Visibility":  "public",
+		"RealTime":    "false",
 	}
 
 	for key, value := range overrides {

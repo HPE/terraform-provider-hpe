@@ -11,15 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_provisioning_license/example.tf example.tf.tmpl Name "Example License" LicenseType "win" LicenseKey "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_provisioning_license/example.tf example.tf.tmpl Name "Windows Server 2022" LicenseType "win" LicenseKey "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" Description "Windows Server 2022 Standard license"
 
 func RenderProvisioningLicenseConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "Example License",
+		"Name":        "Windows Server 2022",
 		"LicenseType": "win",
 		"LicenseKey":  "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
+		"Description": "Windows Server 2022 Standard license",
 	}
 
 	for key, value := range overrides {

@@ -11,13 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_contact/example.tf example.tf.tmpl Name "Example Contact"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_contact/example.tf example.tf.tmpl Name "Ops Team" EmailAddress "ops-team@example.com" SmsAddress "+15551234567"
 
 func RenderMonitoringContactConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Contact",
+		"Name":         "Ops Team",
+		"EmailAddress": "ops-team@example.com",
+		"SmsAddress":   "+15551234567",
 	}
 
 	for key, value := range overrides {

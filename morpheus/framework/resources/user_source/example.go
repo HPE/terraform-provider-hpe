@@ -11,15 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_user_source/example.tf example.tf.tmpl Name "Example User Source" Type "ldap" AccountId "1"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_user_source/example.tf example.tf.tmpl Name "Corporate LDAP" Type "ldap" AccountId "1" Description "Corporate Active Directory integration" DefaultAccountRoleId "1"
 
 func RenderUserSourceConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":      "Example User Source",
-		"Type":      "ldap",
-		"AccountId": "1",
+		"Name":                  "Corporate LDAP",
+		"Type":                  "ldap",
+		"AccountId":            "1",
+		"Description":           "Corporate Active Directory integration",
+		"DefaultAccountRoleId": "1",
 	}
 
 	for key, value := range overrides {

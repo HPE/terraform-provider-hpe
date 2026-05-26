@@ -1,4 +1,8 @@
 resource "hpe_morpheus_monitoring_check" "example" {
-  name = "{{.Name}}"
-  check_type_id = {{.CheckTypeId}}
+  name           = "{{.Name}}"
+  check_type_id  = {{.CheckTypeId}}
+  description    = "{{.Description}}"
+  check_interval = {{.CheckInterval}}
+  active         = {{.Active}}
+  severity       = "{{.Severity}}"
 }

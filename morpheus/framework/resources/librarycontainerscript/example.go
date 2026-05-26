@@ -11,13 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_container_script/example.tf example.tf.tmpl Name "Example Script"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_container_script/example.tf example.tf.tmpl Name "Install Dependencies" ScriptPhase "provision" ScriptType "bash" Script "#!/bin/bash\napt-get update && apt-get install -y curl wget" SudoUser "true" FailOnError "true"
 
 func RenderLibraryContainerScriptConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Script",
+		"Name":        "Install Dependencies",
+		"ScriptPhase": "provision",
+		"ScriptType":  "bash",
+		"Script":      "#!/bin/bash\napt-get update && apt-get install -y curl wget",
+		"SudoUser":    "true",
+		"FailOnError": "true",
 	}
 
 	for key, value := range overrides {

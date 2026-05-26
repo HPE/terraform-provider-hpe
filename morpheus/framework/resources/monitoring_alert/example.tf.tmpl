@@ -1,3 +1,7 @@
 resource "hpe_morpheus_monitoring_alert" "example" {
-  name = "{{.Name}}"
+  name         = "{{.Name}}"
+  min_severity = "{{.MinSeverity}}"
+  min_duration = {{.MinDuration}}
+  active       = {{.Active}}
+  all_checks   = {{.AllChecks}}
 }

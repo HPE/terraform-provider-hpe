@@ -1,3 +1,5 @@
 resource "hpe_morpheus_security_group" "example" {
-  name = "{{.Name}}"
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  active      = {{.Active}}
 }

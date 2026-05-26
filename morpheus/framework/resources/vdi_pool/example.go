@@ -11,14 +11,20 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_vdi_pool/example.tf example.tf.tmpl Name "Example VDI Pool" MaxPoolSize "5"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_vdi_pool/example.tf example.tf.tmpl Name "Developer Desktops" Description "VDI pool for development team" MaxPoolSize "10" MinIdle "2" InitialPoolSize "3" Enabled "true" PersistentUser "true" IdleTimeout "30"
 
 func RenderVdiPoolConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "Example VDI Pool",
-		"MaxPoolSize": "5",
+		"Name":            "Developer Desktops",
+		"Description":     "VDI pool for development team",
+		"MaxPoolSize":     "10",
+		"MinIdle":         "2",
+		"InitialPoolSize": "3",
+		"Enabled":         "true",
+		"PersistentUser":  "true",
+		"IdleTimeout":     "30",
 	}
 
 	for key, value := range overrides {

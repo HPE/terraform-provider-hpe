@@ -1,4 +1,5 @@
 resource "hpe_morpheus_vdi_gateway" "example" {
-  name = "{{.Name}}"
+  name        = "{{.Name}}"
   gateway_url = "{{.GatewayUrl}}"
+  description = "{{.Description}}"
 }

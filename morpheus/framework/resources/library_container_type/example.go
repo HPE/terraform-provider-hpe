@@ -11,16 +11,19 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_container_type/example.tf example.tf.tmpl Name "Example Container Type" ShortName "example" ContainerVersion "1.0" ProvisionTypeCode "docker"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_container_type/example.tf example.tf.tmpl Name "App Node" ShortName "app-node" ContainerVersion "1.0" ProvisionTypeCode "vmware" Description "Application server node type" VirtualImageId "1" ServerType "vm"
 
 func RenderLibraryContainerTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":              "Example Container Type",
-		"ShortName":         "example",
+		"Name":              "App Node",
+		"ShortName":         "app-node",
 		"ContainerVersion":  "1.0",
-		"ProvisionTypeCode": "docker",
+		"ProvisionTypeCode": "vmware",
+		"Description":       "Application server node type",
+		"VirtualImageId":    "1",
+		"ServerType":        "vm",
 	}
 
 	for key, value := range overrides {

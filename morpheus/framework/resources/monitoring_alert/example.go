@@ -11,13 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_alert/example.tf example.tf.tmpl Name "Example Alert"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_alert/example.tf example.tf.tmpl Name "High Severity Alert" MinSeverity "critical" MinDuration "5" Active "true" AllChecks "true"
 
 func RenderMonitoringAlertConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Alert",
+		"Name":        "High Severity Alert",
+		"MinSeverity": "critical",
+		"MinDuration": "5",
+		"Active":      "true",
+		"AllChecks":   "true",
 	}
 
 	for key, value := range overrides {

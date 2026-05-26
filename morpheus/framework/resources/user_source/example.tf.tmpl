@@ -1,5 +1,7 @@
 resource "hpe_morpheus_user_source" "example" {
-  name = "{{.Name}}"
-  type = "{{.Type}}"
-  account_id = {{.AccountId}}
+  name                    = "{{.Name}}"
+  type                    = "{{.Type}}"
+  account_id              = {{.AccountId}}
+  description             = "{{.Description}}"
+  default_account_role_id = {{.DefaultAccountRoleId}}
 }

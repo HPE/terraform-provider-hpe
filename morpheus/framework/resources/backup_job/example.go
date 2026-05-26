@@ -11,13 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_backup_job/example.tf example.tf.tmpl Name "Example Backup Job"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_backup_job/example.tf example.tf.tmpl Name "Nightly Backup Job" Code "nightly-backup" ScheduleId "1" RetentionCount "14" Enabled "true"
 
 func RenderBackupJobConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Backup Job",
+		"Name":           "Nightly Backup Job",
+		"Code":           "nightly-backup",
+		"ScheduleId":     "1",
+		"RetentionCount": "14",
+		"Enabled":        "true",
 	}
 
 	for key, value := range overrides {

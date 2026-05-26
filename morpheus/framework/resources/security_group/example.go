@@ -11,13 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_security_group/example.tf example.tf.tmpl Name "Example Security Group"
+//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_security_group/example.tf example.tf.tmpl Name "web-servers" Description "Security group for web servers" Active "true"
 
 func RenderSecurityGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Security Group",
+		"Name":        "web-servers",
+		"Description": "Security group for web servers",
+		"Active":      "true",
 	}
 
 	for key, value := range overrides {
