@@ -9,17 +9,21 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusSubnetBasic(t *testing.T) {
+func TestAccMorpheusSubnetResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Subnet) {
+		t.Log("Subnet tests require a configured cloud with networks - skipping in environment without infrastructure")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -28,16 +32,9 @@ func TestAccMorpheusSubnetBasic(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem) //nolint:staticcheck // used after skip
+	providerConfig := testhelpers.ProviderBlock() //nolint:staticcheck // used after skip
 
-	_ = acctest.RandomWithPrefix("tf-acc-subnet")
-
-	// Subnet creation requires an existing network which requires a cloud (zone).
-	// Skip if no clouds are configured in the test environment.
-	t.Skip("Subnet tests require a configured cloud with networks - skipping in environment without infrastructure")
-
-	_ = acctest.RandomWithPrefix("tf-acc-subnet")
+	name := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -45,11 +42,13 @@ func TestAccMorpheusSubnetBasic(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "hpe_morpheus_subnet" "test" {
+	name       = "` + name + `"
   type_id    = 1
   visibility = "private"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_subnet.test", "name", name),
 					resource.TestCheckResourceAttr("hpe_morpheus_subnet.test", "type_id", "1"),
 					resource.TestCheckResourceAttr("hpe_morpheus_subnet.test", "visibility", "private"),
 					resource.TestCheckResourceAttrSet("hpe_morpheus_subnet.test", "id"),

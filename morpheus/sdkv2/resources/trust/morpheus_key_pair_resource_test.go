@@ -15,6 +15,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/trust"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // nolint: lll
@@ -57,6 +58,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusKeyPairExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

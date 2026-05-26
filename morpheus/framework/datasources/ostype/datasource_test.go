@@ -12,6 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -31,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindOsTypeByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -65,6 +71,11 @@ func TestAccMorpheusFindOsTypeByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindOsTypeById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -121,6 +132,11 @@ func TestAccMorpheusFindOsTypeById(t *testing.T) {
 }
 
 func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -159,6 +175,11 @@ func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindOsTypeNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -191,6 +212,11 @@ func TestAccMorpheusFindOsTypeNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindOsTypeBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

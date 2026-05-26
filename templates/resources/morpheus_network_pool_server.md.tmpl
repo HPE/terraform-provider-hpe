@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: "morpheus"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -8,16 +8,56 @@ description: |-
 
 {{ .Description | trimspace }}
 
+This resource supports multiple IPAM pool server types: Infoblox, Bluecat, phpIPAM, and SolarWinds.
+The `type_id` attribute determines which type of pool server is created. All types share common
+connection attributes, while some attributes only apply to specific types.
+
+## Attribute Applicability by Type
+
+| Attribute | Infoblox | Bluecat | phpIPAM | SolarWinds |
+|-----------|:--------:|:-------:|:-------:|:----------:|
+| `name` | Yes | Yes | Yes | Yes |
+| `type_id` | Yes | Yes | Yes | Yes |
+| `enabled` | Yes | Yes | Yes | Yes |
+| `service_url` | Yes | Yes | Yes | Yes |
+| `service_username` | Yes | Yes | Yes | Yes |
+| `service_password_wo` | Yes | Yes | Yes | Yes |
+| `credential_id` | Yes | Yes | Yes | Yes |
+| `ignore_ssl` | Yes | Yes | Yes | Yes |
+| `service_throttle_rate` | Yes | Yes | Yes | Yes |
+| `network_filter` | Yes | Yes | Yes | - |
+| `zone_filter` | Yes | - | - | - |
+| `tenant_match` | Yes | - | - | - |
+| `service_mode` | Yes | - | - | - |
+
 ## Example Usage
 
-{{ tffile "examples/resources/hpe_morpheus_network_pool_server/example.tf" }}
+### Infoblox
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_infoblox.tf" }}
+
+### Bluecat
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_bluecat.tf" }}
+
+### phpIPAM
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_phpipam.tf" }}
+
+### SolarWinds
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_solarwinds.tf" }}
+
+### Using a Stored Credential
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_credential.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
 
-Import is supported using the resource ID.
+Network pool servers can be imported using the pool server ID, e.g.
 
-```bash
-terraform import hpe_morpheus_network_pool_server.example 123
+```shell
+terraform import hpe_morpheus_network_pool_server.example 42
 ```

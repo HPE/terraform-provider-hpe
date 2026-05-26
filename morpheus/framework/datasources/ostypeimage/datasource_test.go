@@ -12,17 +12,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -30,8 +34,7 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := ostypeimage.RenderOsTypeImageDataSourceConfig(t, nil)
 	if err != nil {
@@ -78,6 +81,11 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -85,8 +93,7 @@ func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := ostypeimage.RenderOsTypeImageDataSourceConfig(t,
 		map[string]string{
@@ -138,6 +145,11 @@ func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 }
 
 func TestAccMorpheusOsTypeImageDataSourceNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -145,8 +157,7 @@ func TestAccMorpheusOsTypeImageDataSourceNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := ostypeimage.RenderOsTypeImageDataSourceConfig(t, map[string]string{
 		"VirtualImageName": "______nonexistent______",

@@ -11,28 +11,30 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 const resourceName = "hpe_morpheus_storage_server.test"
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccStorageServerResource_basic(t *testing.T) {
-	t.Skip("Skipping: requires external storage infrastructure")
+func TestAccMorpheusStorageServerResourceBasic(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping: requires external storage infrastructure and stored credential")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -71,16 +73,19 @@ func TestAccStorageServerResource_basic(t *testing.T) {
 	})
 }
 
-func TestAccStorageServerResource_credential(t *testing.T) {
-	t.Skip("Skipping: requires external storage infrastructure and stored credential")
+func TestAccMorpheusStorageServerResourceCredential(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping: requires external storage infrastructure and stored credential")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -107,16 +112,19 @@ func TestAccStorageServerResource_credential(t *testing.T) {
 	})
 }
 
-func TestAccStorageServerResource_tenants(t *testing.T) {
-	t.Skip("Skipping: requires external storage infrastructure and multiple tenants")
+func TestAccMorpheusStorageServerResourceTenants(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping: requires external storage infrastructure and multiple tenants")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -141,16 +149,16 @@ func TestAccStorageServerResource_tenants(t *testing.T) {
 	})
 }
 
-// TestAccStorageServerResource_planOnly validates the schema and config without
+// TestAccMorpheusStorageServerResourcePlanOnly validates the schema and config without
 // requiring a real Morpheus backend. This catches schema issues, conflictsWith
 // validation, and default value problems.
-func TestAccStorageServerResource_planOnly(t *testing.T) {
+func TestAccMorpheusStorageServerResourcePlanOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -174,15 +182,15 @@ func TestAccStorageServerResource_planOnly(t *testing.T) {
 	})
 }
 
-// TestAccStorageServerResource_conflictsValidation verifies that credential_id
+// TestAccMorpheusStorageServerResourceConflictsValidation verifies that credential_id
 // and service_username/service_password_wo cannot be set together.
-func TestAccStorageServerResource_conflictsValidation(t *testing.T) {
+func TestAccMorpheusStorageServerResourceConflictsValidation(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	rName := fmt.Sprintf("tf-acc-test-%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
+	rName := acctest.RandomWithPrefix(t.Name())
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),

@@ -12,7 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 const providerConfigOffline = `
@@ -26,7 +26,6 @@ provider "hpe" {
 `
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 
@@ -34,6 +33,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusFindClusterById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
@@ -79,6 +83,11 @@ func TestAccMorpheusFindClusterById(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
@@ -124,6 +133,11 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
@@ -156,6 +170,11 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -182,6 +201,11 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 

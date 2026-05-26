@@ -12,13 +12,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // nolint: lll
 var url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_alpine-3.22.2-x86_64-bios-cloudinit-r0.qcow2"
 
-func TestAccMorpheusImageUpdate(t *testing.T) {
+func TestAccMorpheusImageResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -27,8 +32,7 @@ func TestAccMorpheusImageUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	datasourceConfig := `
@@ -221,7 +225,12 @@ data "hpe_morpheus_storage_bucket" "test" {
 	})
 }
 
-func TestAccMorpheusImageUpdatePassword(t *testing.T) {
+func TestAccMorpheusImageResourceUpdatePassword(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -230,8 +239,7 @@ func TestAccMorpheusImageUpdatePassword(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	datasourceConfig := `

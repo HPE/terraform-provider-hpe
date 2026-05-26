@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -45,6 +46,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindGroupById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -88,6 +94,11 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -131,6 +142,11 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -167,6 +183,11 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
@@ -196,6 +217,11 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {

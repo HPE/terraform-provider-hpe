@@ -13,6 +13,7 @@ import (
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/compute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
@@ -23,12 +24,15 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccResourcePoolGroupExampleOk(t *testing.T) {
+func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.ResourcePool) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
-
-	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

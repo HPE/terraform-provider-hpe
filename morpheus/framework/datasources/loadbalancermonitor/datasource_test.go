@@ -14,17 +14,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	resourcemonitor "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 func TestAccMorpheusLoadBalancerMonitorDataSourceByIdOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -86,6 +90,11 @@ func TestAccMorpheusLoadBalancerMonitorDataSourceByIdOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerMonitorDataSourceByNameOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
