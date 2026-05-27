@@ -16,7 +16,7 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-const sweeperName = "hpe_morpheus_library_option_type_list"
+const sweeperName = "hpe_morpheus_option_list"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
