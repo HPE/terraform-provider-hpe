@@ -20,8 +20,14 @@ func RenderPolicyConfig(t *testing.T, overrides map[string]string) (string, erro
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Policy",
-		"Code": "maxContainers",
+		"ResourceName":           "example",
+		"Name":                   "Example Policy",
+		"Description":            "Example policy description",
+		"AssociatedResourceType": "Group",
+		"AssociatedResourceID":   "1",
+		"PolicyTypeCode":         "maxContainers",
+		"ConfigKey":              "maxContainers",
+		"ConfigValue":            "10",
 	}
 
 	for key, value := range overrides {
