@@ -2,13 +2,7 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
   network_integration_id = {{.NetworkIntegrationId}}
   name              = "{{.Name}}"
   external_type     = "{{.ExternalType}}"
-  {{- if ne .Description ""}}
   description       = "{{.Description}}"
-  {{- end}}
-  {{- if ne .Priority ""}}
   priority          = {{.Priority}}
-  {{- end}}
-  {{- if ne .GroupLayer ""}}
   group_layer       = "{{.GroupLayer}}"
-  {{- end}}
 }
