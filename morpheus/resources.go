@@ -10,26 +10,20 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/catalog_item_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_affinity_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_namespace"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cypher"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/container_script"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_container_type"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_instance_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_layout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_option_type"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_option_type_list"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_spec_template"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/librarycontainerscript"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/libraryfiletemplate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
@@ -49,6 +43,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_list"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -105,8 +100,7 @@ func (s SubProvider) GetResources(
 		power_schedule.NewResource,
 		vdi_app.NewResource,
 		vdi_gateway.NewResource,
-		librarycontainerscript.NewResource,
-		libraryfiletemplate.NewResource,
+		container_script.NewResource,
 
 		// Sprint 2: Networking
 		network_group.NewResource,
@@ -120,8 +114,6 @@ func (s SubProvider) GetResources(
 
 		// Sprint 3: Automation & Orchestration
 		deployment.NewResource,
-		catalog_item_type.NewResource,
-		cypher.NewResource,
 
 		// Sprint 4: Infrastructure & Compute
 		cluster_namespace.NewResource,
@@ -140,12 +132,10 @@ func (s SubProvider) GetResources(
 		backup_job.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		library_instance_type.NewResource,
 		library_layout.NewResource,
 		library_container_type.NewResource,
 		library_option_type.NewResource,
-		library_option_type_list.NewResource,
-		library_spec_template.NewResource,
+		option_list.NewResource,
 		provisioning_license.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance

@@ -1,0 +1,8 @@
+resource "hpe_morpheus_option_list" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  type        = "{{.Type}}"
+  source_url  = "{{.SourceUrl}}"
+  visibility  = "{{.Visibility}}"
+  real_time   = {{.RealTime}}
+}

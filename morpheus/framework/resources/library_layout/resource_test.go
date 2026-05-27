@@ -69,7 +69,7 @@ func testAccLibraryLayoutConfig(itName, itCode, name, version, description strin
 	}
 
 	return fmt.Sprintf(`
-resource "hpe_morpheus_library_instance_type" "test" {
+resource "hpe_morpheus_instance_type" "test" {
   name       = %q
   code       = %q
   category   = "os"
@@ -77,7 +77,7 @@ resource "hpe_morpheus_library_instance_type" "test" {
 }
 
 resource "hpe_morpheus_library_layout" "test" {
-  instance_type_id    = hpe_morpheus_library_instance_type.test.id
+  instance_type_id    = hpe_morpheus_instance_type.test.id
   name                = %q
   instance_version    = %q
   provision_type_code = "docker"
