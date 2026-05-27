@@ -16,12 +16,15 @@ Manages a Morpheus Cypher secret resource.
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `id` (String) The key path for the cypher secret (e.g. secret/mykey).
-- `value` (String, Sensitive) The secret value to store.
+- `value` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret value to store.
 
 ### Optional
 
 - `ttl` (Number) Time to live in seconds. 0 means no expiry.
+- `value_version` (Number) Value version. Used to determine if value has been updated.
 
 ### Read-Only
 

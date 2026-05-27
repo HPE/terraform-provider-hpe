@@ -46,7 +46,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
 - `hold_down` (Number) Hold-down timer in seconds
 - `hop_limit` (Number) Maximum hop limit
 - `keep_alive` (Number) Keep-alive interval in seconds
-- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password (Write Only)
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password (Write Only)
 - `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
 - `protocol_address` (String) Protocol address (NSX-V distributed router)
 - `remote_as` (String) Remote AS number
