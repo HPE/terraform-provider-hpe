@@ -6,7 +6,11 @@ resource "hpe_morpheus_network_dhcp_server" "example" {
 
   config_nsxt = {
     edge_cluster = "{{.EdgeCluster}}"
+    {{- if ne .ActiveEdgeNode ""}}
     active_edge_node = "{{.ActiveEdgeNode}}"
+    {{- end}}
+    {{- if ne .StandbyEdgeNode ""}}
     standby_edge_node = "{{.StandbyEdgeNode}}"
+    {{- end}}
   }
 }
