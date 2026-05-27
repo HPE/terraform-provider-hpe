@@ -8,11 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 )
 
 type cypherModel struct {
 	ID            types.String `tfsdk:"id"`
 	Value         types.String `tfsdk:"value"`
+	ValueVersion  types.Int64  `tfsdk:"value_version"`
 	TTL           types.Int64  `tfsdk:"ttl"`
 	LeaseDuration types.Int64  `tfsdk:"lease_duration"`
 }
@@ -31,7 +34,15 @@ func CypherSchema(_ context.Context) schema.Schema {
 			"value": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 				Description: "The secret value to store.",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
+			},
+			"value_version": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Value version. Used to determine if value has been updated.",
 			},
 			"ttl": schema.Int64Attribute{
 				Optional:    true,

@@ -5,8 +5,8 @@ package networkrouterbgpneighbor
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -21,9 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
-	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -163,6 +161,7 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "Password (Write Only)",
 				MarkdownDescription: "Password (Write Only)",
@@ -301,8 +300,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`source_addresses is missing from object`,
-		)
+			`source_addresses is missing from object`)
 
 		return nil, diags
 	}
@@ -312,8 +310,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`source_addresses expected to be basetypes.SetValue, was: %T`, sourceAddressesAttribute),
-		)
+			fmt.Sprintf(`source_addresses expected to be basetypes.SetValue, was: %T`, sourceAddressesAttribute))
 	}
 
 	if diags.HasError() {
@@ -394,8 +391,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`source_addresses is missing from object`,
-		)
+			`source_addresses is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -405,8 +401,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`source_addresses expected to be basetypes.SetValue, was: %T`, sourceAddressesAttribute),
-		)
+			fmt.Sprintf(`source_addresses expected to be basetypes.SetValue, was: %T`, sourceAddressesAttribute))
 	}
 
 	if diags.HasError() {
@@ -431,8 +426,7 @@ func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -463,12 +457,14 @@ func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -507,6 +503,7 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.SourceAddresses.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -580,8 +577,7 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 		attributeTypes,
 		map[string]attr.Value{
 			"source_addresses": sourceAddressesVal,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -662,8 +658,7 @@ func (t ConfigNsxvType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`interface is missing from object`,
-		)
+			`interface is missing from object`)
 
 		return nil, diags
 	}
@@ -673,8 +668,7 @@ func (t ConfigNsxvType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`interface expected to be basetypes.StringValue, was: %T`, interfaceAttribute),
-		)
+			fmt.Sprintf(`interface expected to be basetypes.StringValue, was: %T`, interfaceAttribute))
 	}
 
 	routerIdAttribute, ok := attributes["router_id"]
@@ -682,8 +676,7 @@ func (t ConfigNsxvType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`router_id is missing from object`,
-		)
+			`router_id is missing from object`)
 
 		return nil, diags
 	}
@@ -693,8 +686,7 @@ func (t ConfigNsxvType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`router_id expected to be basetypes.StringValue, was: %T`, routerIdAttribute),
-		)
+			fmt.Sprintf(`router_id expected to be basetypes.StringValue, was: %T`, routerIdAttribute))
 	}
 
 	if diags.HasError() {
@@ -776,8 +768,7 @@ func NewConfigNsxvValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`interface is missing from object`,
-		)
+			`interface is missing from object`)
 
 		return NewConfigNsxvValueUnknown(), diags
 	}
@@ -787,8 +778,7 @@ func NewConfigNsxvValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`interface expected to be basetypes.StringValue, was: %T`, interfaceAttribute),
-		)
+			fmt.Sprintf(`interface expected to be basetypes.StringValue, was: %T`, interfaceAttribute))
 	}
 
 	routerIdAttribute, ok := attributes["router_id"]
@@ -796,8 +786,7 @@ func NewConfigNsxvValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`router_id is missing from object`,
-		)
+			`router_id is missing from object`)
 
 		return NewConfigNsxvValueUnknown(), diags
 	}
@@ -807,8 +796,7 @@ func NewConfigNsxvValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`router_id expected to be basetypes.StringValue, was: %T`, routerIdAttribute),
-		)
+			fmt.Sprintf(`router_id expected to be basetypes.StringValue, was: %T`, routerIdAttribute))
 	}
 
 	if diags.HasError() {
@@ -834,8 +822,7 @@ func NewConfigNsxvValueMust(attributeTypes map[string]attr.Type, attributes map[
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxvValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -866,12 +853,14 @@ func (t ConfigNsxvType) ValueFromTerraform(ctx context.Context, in tftypes.Value
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -910,6 +899,7 @@ func (v ConfigNsxvValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Interface.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -917,6 +907,7 @@ func (v ConfigNsxvValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["interface"] = val
 
 		val, err = v.RouterId.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -970,8 +961,7 @@ func (v ConfigNsxvValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 		map[string]attr.Value{
 			"interface": v.Interface,
 			"router_id": v.RouterId,
-		},
-	)
+		})
 
 	return objVal, diags
 }

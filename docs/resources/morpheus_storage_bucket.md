@@ -27,12 +27,16 @@ resource "hpe_morpheus_storage_bucket" "example" {
 
 ### Optional
 
-- `access_key` (String, Sensitive) The access key for the storage bucket.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `access_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The access key for the storage bucket.
+- `access_key_version` (Number) Access key version. Used to determine if access_key has been updated.
 - `bucket_name` (String) The name of the bucket.
 - `default_backup_target` (Boolean) Whether this is the default backup target.
 - `endpoint` (String) The endpoint URL for the storage bucket.
 - `retention_days` (Number) The number of days to retain files before deletion.
-- `secret_key` (String, Sensitive) The secret key for the storage bucket.
+- `secret_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret key for the storage bucket.
+- `secret_key_version` (Number) Secret key version. Used to determine if secret_key has been updated.
 
 ### Read-Only
 

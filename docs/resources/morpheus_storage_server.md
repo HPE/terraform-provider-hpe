@@ -57,10 +57,10 @@ resource "hpe_morpheus_storage_server" "with_credential" {
 - `description` (String) The description of the storage server.
 - `enabled` (Boolean) Whether the storage server is enabled.
 - `service_host` (String) The host address of the storage server.
-- `service_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for the storage server. Conflicts with credential_id.
+- `service_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for the storage server. Conflicts with credential_id.
 - `service_password_wo_version` (Number) Service password version. Used to determine if service_password_wo has been updated.
 - `service_url` (String) The service URL of the storage server.
-- `service_username` (String, Sensitive) The service username for the storage server. Conflicts with credential_id.
+- `service_username` (String) The service username for the storage server. Conflicts with credential_id.
 - `tenants` (List of Number) List of tenant account IDs that are allowed access to this storage server.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `visibility` (String) The visibility of the storage server (private or public).

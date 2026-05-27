@@ -5,6 +5,7 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -309,9 +310,18 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"client_secret": schema.StringAttribute{
 						Required:            true,
+						Sensitive:           true,
 						WriteOnly:           true,
 						Description:         "The Azure client secret",
 						MarkdownDescription: "The Azure client secret",
+						PlanModifiers: []planmodifier.String{
+							modifiers.NullableStringUpdateModifier{},
+						},
+					},
+					"client_secret_version": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Client secret version. Used to determine if client secret has been updated.",
+						MarkdownDescription: "Client secret version. Used to determine if client secret has been updated.",
 					},
 					"cloud_type": schema.StringAttribute{
 						Optional:            true,
@@ -471,6 +481,14 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 						WriteOnly:           true,
 						Description:         "Password to apply to the user",
 						MarkdownDescription: "Password to apply to the user",
+						PlanModifiers: []planmodifier.String{
+							modifiers.NullableStringUpdateModifier{},
+						},
+					},
+					"password_version": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Password version. Used to determine if password has been updated.",
+						MarkdownDescription: "Password version. Used to determine if password has been updated.",
 					},
 					"resource_pool": schema.StringAttribute{
 						Optional:            true,
@@ -2824,6 +2842,24 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
 	}
 
+	clientSecretVersionAttribute, ok := attributes["client_secret_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret_version is missing from object`)
+
+		return nil, diags
+	}
+
+	clientSecretVersionVal, ok := clientSecretVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret_version expected to be basetypes.Int64Value, was: %T`, clientSecretVersionAttribute))
+	}
+
 	cloudTypeAttribute, ok := attributes["cloud_type"]
 
 	if !ok {
@@ -2973,18 +3009,19 @@ func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.Objec
 	}
 
 	return ConfigAzureValue{
-		AzureRegion:    azureRegionVal,
-		ClientId:       clientIdVal,
-		ClientSecret:   clientSecretVal,
-		CloudType:      cloudTypeVal,
-		CmdbDiscovery:  cmdbDiscoveryVal,
-		ImportExisting: importExistingVal,
-		ResourceGroup:  resourceGroupVal,
-		RpcMode:        rpcModeVal,
-		StorageAccount: storageAccountVal,
-		SubscriberId:   subscriberIdVal,
-		TenantId:       tenantIdVal,
-		state:          attr.ValueStateKnown,
+		AzureRegion:         azureRegionVal,
+		ClientId:            clientIdVal,
+		ClientSecret:        clientSecretVal,
+		ClientSecretVersion: clientSecretVersionVal,
+		CloudType:           cloudTypeVal,
+		CmdbDiscovery:       cmdbDiscoveryVal,
+		ImportExisting:      importExistingVal,
+		ResourceGroup:       resourceGroupVal,
+		RpcMode:             rpcModeVal,
+		StorageAccount:      storageAccountVal,
+		SubscriberId:        subscriberIdVal,
+		TenantId:            tenantIdVal,
+		state:               attr.ValueStateKnown,
 	}, diags
 }
 
@@ -3105,6 +3142,24 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
 	}
 
+	clientSecretVersionAttribute, ok := attributes["client_secret_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret_version is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientSecretVersionVal, ok := clientSecretVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret_version expected to be basetypes.Int64Value, was: %T`, clientSecretVersionAttribute))
+	}
+
 	cloudTypeAttribute, ok := attributes["cloud_type"]
 
 	if !ok {
@@ -3254,18 +3309,19 @@ func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[str
 	}
 
 	return ConfigAzureValue{
-		AzureRegion:    azureRegionVal,
-		ClientId:       clientIdVal,
-		ClientSecret:   clientSecretVal,
-		CloudType:      cloudTypeVal,
-		CmdbDiscovery:  cmdbDiscoveryVal,
-		ImportExisting: importExistingVal,
-		ResourceGroup:  resourceGroupVal,
-		RpcMode:        rpcModeVal,
-		StorageAccount: storageAccountVal,
-		SubscriberId:   subscriberIdVal,
-		TenantId:       tenantIdVal,
-		state:          attr.ValueStateKnown,
+		AzureRegion:         azureRegionVal,
+		ClientId:            clientIdVal,
+		ClientSecret:        clientSecretVal,
+		ClientSecretVersion: clientSecretVersionVal,
+		CloudType:           cloudTypeVal,
+		CmdbDiscovery:       cmdbDiscoveryVal,
+		ImportExisting:      importExistingVal,
+		ResourceGroup:       resourceGroupVal,
+		RpcMode:             rpcModeVal,
+		StorageAccount:      storageAccountVal,
+		SubscriberId:        subscriberIdVal,
+		TenantId:            tenantIdVal,
+		state:               attr.ValueStateKnown,
 	}, diags
 }
 
@@ -3337,22 +3393,23 @@ func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigAzureValue{}
 
 type ConfigAzureValue struct {
-	AzureRegion    basetypes.StringValue `tfsdk:"azure_region"`
-	ClientId       basetypes.StringValue `tfsdk:"client_id"`
-	ClientSecret   basetypes.StringValue `tfsdk:"client_secret"`
-	CloudType      basetypes.StringValue `tfsdk:"cloud_type"`
-	CmdbDiscovery  basetypes.BoolValue   `tfsdk:"cmdb_discovery"`
-	ImportExisting basetypes.StringValue `tfsdk:"import_existing"`
-	ResourceGroup  basetypes.StringValue `tfsdk:"resource_group"`
-	RpcMode        basetypes.StringValue `tfsdk:"rpc_mode"`
-	StorageAccount basetypes.StringValue `tfsdk:"storage_account"`
-	SubscriberId   basetypes.StringValue `tfsdk:"subscriber_id"`
-	TenantId       basetypes.StringValue `tfsdk:"tenant_id"`
-	state          attr.ValueState
+	AzureRegion         basetypes.StringValue `tfsdk:"azure_region"`
+	ClientId            basetypes.StringValue `tfsdk:"client_id"`
+	ClientSecret        basetypes.StringValue `tfsdk:"client_secret"`
+	ClientSecretVersion basetypes.Int64Value  `tfsdk:"client_secret_version"`
+	CloudType           basetypes.StringValue `tfsdk:"cloud_type"`
+	CmdbDiscovery       basetypes.BoolValue   `tfsdk:"cmdb_discovery"`
+	ImportExisting      basetypes.StringValue `tfsdk:"import_existing"`
+	ResourceGroup       basetypes.StringValue `tfsdk:"resource_group"`
+	RpcMode             basetypes.StringValue `tfsdk:"rpc_mode"`
+	StorageAccount      basetypes.StringValue `tfsdk:"storage_account"`
+	SubscriberId        basetypes.StringValue `tfsdk:"subscriber_id"`
+	TenantId            basetypes.StringValue `tfsdk:"tenant_id"`
+	state               attr.ValueState
 }
 
 func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 11)
+	attrTypes := make(map[string]tftypes.Type, 12)
 
 	var val tftypes.Value
 	var err error
@@ -3360,6 +3417,7 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 	attrTypes["azure_region"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["client_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["client_secret"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_secret_version"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["cloud_type"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["cmdb_discovery"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["import_existing"] = basetypes.StringType{}.TerraformType(ctx)
@@ -3373,7 +3431,7 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 11)
+		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.AzureRegion.ToTerraformValue(ctx)
 
@@ -3398,6 +3456,14 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		}
 
 		vals["client_secret"] = val
+
+		val, err = v.ClientSecretVersion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_secret_version"] = val
 
 		val, err = v.CloudType.ToTerraformValue(ctx)
 
@@ -3493,17 +3559,18 @@ func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"azure_region":    basetypes.StringType{},
-		"client_id":       basetypes.StringType{},
-		"client_secret":   basetypes.StringType{},
-		"cloud_type":      basetypes.StringType{},
-		"cmdb_discovery":  basetypes.BoolType{},
-		"import_existing": basetypes.StringType{},
-		"resource_group":  basetypes.StringType{},
-		"rpc_mode":        basetypes.StringType{},
-		"storage_account": basetypes.StringType{},
-		"subscriber_id":   basetypes.StringType{},
-		"tenant_id":       basetypes.StringType{},
+		"azure_region":          basetypes.StringType{},
+		"client_id":             basetypes.StringType{},
+		"client_secret":         basetypes.StringType{},
+		"client_secret_version": basetypes.Int64Type{},
+		"cloud_type":            basetypes.StringType{},
+		"cmdb_discovery":        basetypes.BoolType{},
+		"import_existing":       basetypes.StringType{},
+		"resource_group":        basetypes.StringType{},
+		"rpc_mode":              basetypes.StringType{},
+		"storage_account":       basetypes.StringType{},
+		"subscriber_id":         basetypes.StringType{},
+		"tenant_id":             basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -3517,17 +3584,18 @@ func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVa
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"azure_region":    v.AzureRegion,
-			"client_id":       v.ClientId,
-			"client_secret":   v.ClientSecret,
-			"cloud_type":      v.CloudType,
-			"cmdb_discovery":  v.CmdbDiscovery,
-			"import_existing": v.ImportExisting,
-			"resource_group":  v.ResourceGroup,
-			"rpc_mode":        v.RpcMode,
-			"storage_account": v.StorageAccount,
-			"subscriber_id":   v.SubscriberId,
-			"tenant_id":       v.TenantId,
+			"azure_region":          v.AzureRegion,
+			"client_id":             v.ClientId,
+			"client_secret":         v.ClientSecret,
+			"client_secret_version": v.ClientSecretVersion,
+			"cloud_type":            v.CloudType,
+			"cmdb_discovery":        v.CmdbDiscovery,
+			"import_existing":       v.ImportExisting,
+			"resource_group":        v.ResourceGroup,
+			"rpc_mode":              v.RpcMode,
+			"storage_account":       v.StorageAccount,
+			"subscriber_id":         v.SubscriberId,
+			"tenant_id":             v.TenantId,
 		})
 
 	return objVal, diags
@@ -3557,6 +3625,10 @@ func (v ConfigAzureValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.ClientSecret.Equal(other.ClientSecret) {
+		return false
+	}
+
+	if !v.ClientSecretVersion.Equal(other.ClientSecretVersion) {
 		return false
 	}
 
@@ -3605,17 +3677,18 @@ func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"azure_region":    basetypes.StringType{},
-		"client_id":       basetypes.StringType{},
-		"client_secret":   basetypes.StringType{},
-		"cloud_type":      basetypes.StringType{},
-		"cmdb_discovery":  basetypes.BoolType{},
-		"import_existing": basetypes.StringType{},
-		"resource_group":  basetypes.StringType{},
-		"rpc_mode":        basetypes.StringType{},
-		"storage_account": basetypes.StringType{},
-		"subscriber_id":   basetypes.StringType{},
-		"tenant_id":       basetypes.StringType{},
+		"azure_region":          basetypes.StringType{},
+		"client_id":             basetypes.StringType{},
+		"client_secret":         basetypes.StringType{},
+		"client_secret_version": basetypes.Int64Type{},
+		"cloud_type":            basetypes.StringType{},
+		"cmdb_discovery":        basetypes.BoolType{},
+		"import_existing":       basetypes.StringType{},
+		"resource_group":        basetypes.StringType{},
+		"rpc_mode":              basetypes.StringType{},
+		"storage_account":       basetypes.StringType{},
+		"subscriber_id":         basetypes.StringType{},
+		"tenant_id":             basetypes.StringType{},
 	}
 }
 
@@ -4255,6 +4328,24 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
+	passwordVersionAttribute, ok := attributes["password_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password_version is missing from object`)
+
+		return nil, diags
+	}
+
+	passwordVersionVal, ok := passwordVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password_version expected to be basetypes.Int64Value, was: %T`, passwordVersionAttribute))
+	}
+
 	resourcePoolAttribute, ok := attributes["resource_pool"]
 
 	if !ok {
@@ -4326,6 +4417,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		EnableVnc:                  enableVncVal,
 		HideHostSelection:          hideHostSelectionVal,
 		Password:                   passwordVal,
+		PasswordVersion:            passwordVersionVal,
 		ResourcePool:               resourcePoolVal,
 		RpcMode:                    rpcModeVal,
 		Username:                   usernameVal,
@@ -4612,6 +4704,24 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
+	passwordVersionAttribute, ok := attributes["password_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password_version is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	passwordVersionVal, ok := passwordVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password_version expected to be basetypes.Int64Value, was: %T`, passwordVersionAttribute))
+	}
+
 	resourcePoolAttribute, ok := attributes["resource_pool"]
 
 	if !ok {
@@ -4683,6 +4793,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 		EnableVnc:                  enableVncVal,
 		HideHostSelection:          hideHostSelectionVal,
 		Password:                   passwordVal,
+		PasswordVersion:            passwordVersionVal,
 		ResourcePool:               resourcePoolVal,
 		RpcMode:                    rpcModeVal,
 		Username:                   usernameVal,
@@ -4770,6 +4881,7 @@ type ConfigVmwareValue struct {
 	EnableVnc                  basetypes.BoolValue   `tfsdk:"enable_vnc"`
 	HideHostSelection          basetypes.BoolValue   `tfsdk:"hide_host_selection"`
 	Password                   basetypes.StringValue `tfsdk:"password"`
+	PasswordVersion            basetypes.Int64Value  `tfsdk:"password_version"`
 	ResourcePool               basetypes.StringValue `tfsdk:"resource_pool"`
 	RpcMode                    basetypes.StringValue `tfsdk:"rpc_mode"`
 	Username                   basetypes.StringValue `tfsdk:"username"`
@@ -4777,7 +4889,7 @@ type ConfigVmwareValue struct {
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 15)
+	attrTypes := make(map[string]tftypes.Type, 16)
 
 	var val tftypes.Value
 	var err error
@@ -4794,6 +4906,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	attrTypes["enable_vnc"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["hide_host_selection"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["password"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["password_version"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["resource_pool"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["rpc_mode"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["username"] = basetypes.StringType{}.TerraformType(ctx)
@@ -4802,7 +4915,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 15)
+		vals := make(map[string]tftypes.Value, 16)
 
 		val, err = v.ApiUrl.ToTerraformValue(ctx)
 
@@ -4900,6 +5013,14 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 		vals["password"] = val
 
+		val, err = v.PasswordVersion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["password_version"] = val
+
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -4966,6 +5087,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		"enable_vnc":                    basetypes.BoolType{},
 		"hide_host_selection":           basetypes.BoolType{},
 		"password":                      basetypes.StringType{},
+		"password_version":              basetypes.Int64Type{},
 		"resource_pool":                 basetypes.StringType{},
 		"rpc_mode":                      basetypes.StringType{},
 		"username":                      basetypes.StringType{},
@@ -4994,6 +5116,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"enable_vnc":                    v.EnableVnc,
 			"hide_host_selection":           v.HideHostSelection,
 			"password":                      v.Password,
+			"password_version":              v.PasswordVersion,
 			"resource_pool":                 v.ResourcePool,
 			"rpc_mode":                      v.RpcMode,
 			"username":                      v.Username,
@@ -5065,6 +5188,10 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.PasswordVersion.Equal(other.PasswordVersion) {
+		return false
+	}
+
 	if !v.ResourcePool.Equal(other.ResourcePool) {
 		return false
 	}
@@ -5102,6 +5229,7 @@ func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"enable_vnc":                    basetypes.BoolType{},
 		"hide_host_selection":           basetypes.BoolType{},
 		"password":                      basetypes.StringType{},
+		"password_version":              basetypes.Int64Type{},
 		"resource_pool":                 basetypes.StringType{},
 		"rpc_mode":                      basetypes.StringType{},
 		"username":                      basetypes.StringType{},
