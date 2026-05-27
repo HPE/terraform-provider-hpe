@@ -296,11 +296,11 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, "/", 2)
+	parts := strings.SplitN(req.ID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network router route resource",
-			"provided import ID '"+req.ID+"' is invalid, expected format 'router_id/route_id'",
+			"provided import ID '"+req.ID+"' is invalid, expected format 'router_id.route_id'",
 		)
 
 		return

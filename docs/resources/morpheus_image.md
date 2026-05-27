@@ -75,7 +75,7 @@ resource "hpe_morpheus_image" "example_image" {
 - `min_disk` (Number) Minimal required amount of disk space for provisioning in GB
 - `min_ram` (Number) Minimal required amount of RAM for provisioning in GB
 - `os_type_id` (Number) ID of the OS Type
-- `ssh_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
+- `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
 - `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
 - `ssh_username` (String) SSH Username
 - `storage_provider_id` (Number) ID of the storage provider where the image will be uploaded
@@ -96,7 +96,7 @@ resource "hpe_morpheus_image" "example_image" {
 - `id` (Number) The ID of this resource.
 - `owner_id` (Number) ID of the user which created this image
 - `raw_size` (Number) Size of image in bytes
-- `system_image` (Boolean)
+- `system_image` (Boolean) Is created by system?
 
 <a id="nestedatt--config_azure"></a>
 ### Nested Schema for `config_azure`

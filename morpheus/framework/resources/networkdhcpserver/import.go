@@ -16,12 +16,12 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ":", 2)
+	parts := strings.SplitN(req.ID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network dhcp server resource",
 			"provided import ID '"+req.ID+
-				"' is invalid, expected format 'network_integration_id:id'",
+				"' is invalid, expected format 'network_integration_id.id'",
 		)
 
 		return

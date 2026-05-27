@@ -36,8 +36,8 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
+Import is supported using `cluster_id.affinity_group_id`.
 
 ```bash
-terraform import hpe_morpheus_cluster_affinity_group.example 123
+terraform import hpe_morpheus_cluster_affinity_group.example 42.123
 ```

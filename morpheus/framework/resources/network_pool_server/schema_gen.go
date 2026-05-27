@@ -69,6 +69,7 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "The service password for authentication. Conflicts with credential_id.",
 				MarkdownDescription: "The service password for authentication. Conflicts with credential_id.",
@@ -98,7 +99,6 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_username": schema.StringAttribute{
 				Optional:            true,
-				Sensitive:           true,
 				Description:         "The service username for authentication. Conflicts with credential_id.",
 				MarkdownDescription: "The service username for authentication. Conflicts with credential_id.",
 				Validators: []validator.String{

@@ -82,12 +82,6 @@ variable "config_subnet_cidr" {
   default     = "10.100.1.0/24"
 }
 
-variable "config_location" {
-  description = "Location for network config"
-  type        = string
-  default     = "eastus"
-}
-
 variable "config_additional_field" {
   description = "Additional config field"
   type        = string
@@ -111,7 +105,6 @@ resource "hpe_morpheus_network" "all_attrs" {
     "resourceGroupId" = var.config_resource_group_id
     "subnetName"      = var.config_subnet_name
     "subnetCidr"      = var.config_subnet_cidr
-    "location"        = var.config_location
     "additionalField" = var.config_additional_field
   }
   tenant_ids = [1, 2, 3]

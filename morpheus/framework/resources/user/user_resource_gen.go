@@ -4,13 +4,11 @@ package user
 
 import (
 	"context"
-
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -60,6 +58,7 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"linux_password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "Linux password (Write Only)",
 				MarkdownDescription: "Linux password (Write Only)",
@@ -127,6 +126,7 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"windows_password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "Windows password (Write Only)",
 				MarkdownDescription: "Windows password (Write Only)",

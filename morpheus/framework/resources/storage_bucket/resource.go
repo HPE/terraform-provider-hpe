@@ -164,6 +164,18 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		retType := "delete"
 		body.RetentionPolicyType = &retType
 	}
+	if !plan.Endpoint.IsNull() || !plan.AccessKey.IsNull() || !plan.SecretKey.IsNull() {
+		body.AdditionalProperties = map[string]interface{}{}
+		if !plan.Endpoint.IsNull() {
+			body.AdditionalProperties["endpoint"] = plan.Endpoint.ValueString()
+		}
+		if !plan.AccessKey.IsNull() {
+			body.AdditionalProperties["accessKey"] = plan.AccessKey.ValueString()
+		}
+		if !plan.SecretKey.IsNull() {
+			body.AdditionalProperties["secretKey"] = plan.SecretKey.ValueString()
+		}
+	}
 
 	_, httpResp, err := client.StorageAPI.UpdateStorageBuckets(ctx, id).
 		UpdateStorageBucketsRequest(sdk.UpdateStorageBucketsRequest{
@@ -234,7 +246,6 @@ func mapCreateResponseToModel(model *storageBucketModel, sb *sdk.AddStorageBucke
 	if sb.DefaultBackupTarget != nil {
 		model.DefaultBackupTarget = types.BoolValue(*sb.DefaultBackupTarget)
 	}
-	// Sensitive fields (access_key, secret_key): preserve plan values
 }
 
 func mapGetResponseToModel(model *storageBucketModel, sb *sdk.GetStorageBuckets200ResponseStorageBucket) {
@@ -255,5 +266,4 @@ func mapGetResponseToModel(model *storageBucketModel, sb *sdk.GetStorageBuckets2
 	if sb.DefaultBackupTarget != nil {
 		model.DefaultBackupTarget = types.BoolValue(*sb.DefaultBackupTarget)
 	}
-	// Sensitive fields (access_key, secret_key): preserve state values
 }

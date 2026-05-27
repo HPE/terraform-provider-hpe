@@ -18,6 +18,34 @@ HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 -> Currently, a change to the `group_id` attribute will not be applied on update.<br/>
    We recommend managing group membership using a `group` resource.
 
+## Inventory Discovery Defaults
+
+The `default_*_sync_active` fields control whether newly discovered inventory items
+(datastores, networks, etc.) are automatically set to **active** during cloud sync.
+All default to `true`.
+
+Not all fields apply to every cloud type. Setting an inapplicable field is harmless
+(the API accepts and stores it) but has no runtime effect. The table below shows
+which fields are meaningful for each supported cloud type:
+
+| Cloud Type | datastores | networks | folders | pools | security_groups | plans |
+|------------|:----------:|:--------:|:-------:|:-----:|:---------------:|:-----:|
+| VMware     | ✓          | ✓        | ✓       | ✓     | ✓               | —     |
+| Azure      | ✓          | ✓        | —       | ✓     | ✓               | ✓     |
+| AWS        | —          | ✓        | —       | ✓     | ✓               | ✓     |
+| GCP        | —          | ✓        | —       | ✓     | —               | ✓     |
+| VCD        | ✓          | ✓        | —       | —     | —               | ✓     |
+| OpenStack  | —          | ✓        | —       | ✓     | —               | ✓     |
+| Oracle     | —          | ✓        | —       | ✓     | —               | ✓     |
+| SCVMM      | ✓          | ✓        | —       | ✓     | —               | —     |
+| HVM        | —          | —        | —       | —     | ✓               | —     |
+| ESXi       | ✓          | ✓        | —       | —     | —               | —     |
+| Hyper-V    | —          | ✓        | —       | —     | —               | —     |
+| Alibaba    | —          | ✓        | —       | ✓     | —               | ✓     |
+| UpCloud    | —          | —        | —       | —     | —               | ✓     |
+
+-> `default_folder_sync_active` is currently only utilized by VMware clouds.
+
 ## Example Usage (HVM)
 
 ```terraform
@@ -45,6 +73,9 @@ resource "hpe_morpheus_cloud" "example" {
   security_mode = "off"
 
   keyboard_layout = "us"
+
+  # Inventory discovery (only security_groups applies to HVM clouds)
+  default_security_group_sync_active = true
 
   config_hvm = {
     certificate_provider          = "internal"
@@ -82,6 +113,9 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
+  # Inventory discovery (only security_groups applies to standard clouds)
+  default_security_group_sync_active = true
+
   config = {
     certificateProvider        = "internal"
     enableNetworkTypeSelection = false
@@ -116,6 +150,13 @@ resource "hpe_morpheus_cloud" "example" {
   security_mode = "off"
 
   keyboard_layout = "us"
+
+  # Inventory discovery defaults (applicable to Azure)
+  default_datastore_sync_active      = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
 
   config_azure = {
     azure_region    = "eastus"
@@ -153,6 +194,12 @@ resource "hpe_morpheus_cloud" "example" {
 - `config_vmware` (Attributes) VSphere Cloud (see [below for nested schema](#nestedatt--config_vmware))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
+- `default_datastore_sync_active` (Boolean) Sets the default active state during discovery of new datastores.
+- `default_folder_sync_active` (Boolean) Sets the default active state during discovery of new folders.
+- `default_network_sync_active` (Boolean) Sets the default active state during discovery of new networks.
+- `default_plan_sync_active` (Boolean) Sets the default active state during discovery of new plans.
+- `default_pool_sync_active` (Boolean) Sets the default active state during discovery of new resource pools.
+- `default_security_group_sync_active` (Boolean) Sets the default active state during discovery of new security groups.
 - `enabled` (Boolean) Can be used to disable the cloud
 - `external_id` (String) The external id of the cloud
 - `group_id` (Number) Specifies which Server group this cloud should be assigned to
@@ -217,13 +264,14 @@ Required:
 
 - `azure_region` (String) The Azure region associated with the cloud integration
 - `client_id` (String) The Azure client (application) ID
-- `client_secret` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure client secret
+- `client_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure client secret
 - `resource_group` (String) The Azure resource group
 - `subscriber_id` (String) The Azure subscription ID
 - `tenant_id` (String) The Azure Active Directory tenant ID
 
 Optional:
 
+- `client_secret_version` (Number) Client secret version. Used to determine if client secret has been updated.
 - `cloud_type` (String) The Azure cloud type (global, usgov, german, china)
 - `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
 - `import_existing` (String) Whether to import existing resources from the cloud (on, off)
@@ -260,6 +308,7 @@ Optional:
 - `enable_vnc` (Boolean) Enable VNC access to the console.
 - `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
 - `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
+- `password_version` (Number) Password version. Used to determine if password has been updated.
 - `resource_pool` (String) The name of the vSphere resource pool
 - `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
 - `username` (String) Username.

@@ -160,11 +160,11 @@ resource "hpe_morpheus_network_pool_server" "with_credential" {
 - `ignore_ssl` (Boolean) Whether to ignore SSL certificate errors.
 - `network_filter` (String) Filter expression for which networks to sync from the pool server.
 - `service_mode` (String) The service mode (e.g. "static" or "dhcp"). Applies to Infoblox.
-- `service_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for authentication. Conflicts with credential_id.
+- `service_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for authentication. Conflicts with credential_id.
 - `service_password_wo_version` (Number) Service password version. Used to determine if service_password_wo has been updated.
 - `service_throttle_rate` (Number) Rate limit (in milliseconds) for API requests to the pool server.
 - `service_url` (String) The service URL for the IPAM integration.
-- `service_username` (String, Sensitive) The service username for authentication. Conflicts with credential_id.
+- `service_username` (String) The service username for authentication. Conflicts with credential_id.
 - `tenant_match` (String) Tenant matching expression for multi-tenancy (Infoblox only).
 - `zone_filter` (String) Filter expression for which DNS zones to sync (Infoblox only).
 
