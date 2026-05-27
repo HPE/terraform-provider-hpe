@@ -518,6 +518,25 @@ func (r *Resource) Create(
 		addCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
 	}
 
+	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
+		addCloud.SetDefaultDatastoreSyncActive(plan.DefaultDatastoreSyncActive.ValueBool())
+	}
+	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
+		addCloud.SetDefaultFolderSyncActive(plan.DefaultFolderSyncActive.ValueBool())
+	}
+	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
+		addCloud.SetDefaultNetworkSyncActive(plan.DefaultNetworkSyncActive.ValueBool())
+	}
+	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
+		addCloud.SetDefaultPlanSyncActive(plan.DefaultPlanSyncActive.ValueBool())
+	}
+	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
+		addCloud.SetDefaultPoolSyncActive(plan.DefaultPoolSyncActive.ValueBool())
+	}
+	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
+		addCloud.SetDefaultSecurityGroupSyncActive(plan.DefaultSecurityGroupSyncActive.ValueBool())
+	}
+
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
 		addCloud.SetCode(plan.Code.ValueString())
 	}

@@ -24,6 +24,14 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
+  # Inventory discovery defaults
+  default_datastore_sync_active      = true
+  default_folder_sync_active         = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
   config = {
     certificateProvider        = "internal"
     enableNetworkTypeSelection = false

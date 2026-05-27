@@ -46,6 +46,14 @@ resource "hpe_morpheus_cloud" "example" {
 
   keyboard_layout = "us"
 
+  # Inventory discovery defaults
+  default_datastore_sync_active      = true
+  default_folder_sync_active         = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
   config_hvm = {
     certificate_provider          = "internal"
     enable_network_type_selection = false
@@ -82,6 +90,14 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
+  # Inventory discovery defaults
+  default_datastore_sync_active      = true
+  default_folder_sync_active         = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
   config = {
     certificateProvider        = "internal"
     enableNetworkTypeSelection = false
@@ -116,6 +132,14 @@ resource "hpe_morpheus_cloud" "example" {
   security_mode = "off"
 
   keyboard_layout = "us"
+
+  # Inventory discovery defaults
+  default_datastore_sync_active      = true
+  default_folder_sync_active         = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
 
   config_azure = {
     azure_region    = "eastus"
@@ -153,6 +177,12 @@ resource "hpe_morpheus_cloud" "example" {
 - `config_vmware` (Attributes) VSphere Cloud (see [below for nested schema](#nestedatt--config_vmware))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
+- `default_datastore_sync_active` (Boolean) Sets the default active state during discovery of new datastores.
+- `default_folder_sync_active` (Boolean) Sets the default active state during discovery of new folders.
+- `default_network_sync_active` (Boolean) Sets the default active state during discovery of new networks.
+- `default_plan_sync_active` (Boolean) Sets the default active state during discovery of new plans.
+- `default_pool_sync_active` (Boolean) Sets the default active state during discovery of new resource pools.
+- `default_security_group_sync_active` (Boolean) Sets the default active state during discovery of new security groups.
 - `enabled` (Boolean) Can be used to disable the cloud
 - `external_id` (String) The external id of the cloud
 - `group_id` (Number) Specifies which Server group this cloud should be assigned to

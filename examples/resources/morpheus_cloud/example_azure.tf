@@ -23,6 +23,14 @@ resource "hpe_morpheus_cloud" "example" {
 
   keyboard_layout = "us"
 
+  # Inventory discovery defaults
+  default_datastore_sync_active      = true
+  default_folder_sync_active         = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
   config_azure = {
     azure_region    = "eastus"
     subscriber_id   = "sub-12345"
