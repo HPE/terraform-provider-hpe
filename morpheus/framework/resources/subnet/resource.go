@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package subnet
 
 import (
@@ -6,12 +8,14 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -33,7 +37,7 @@ func (r *subnetResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = SubnetSchema(ctx)
+	resp.Schema = SubnetResourceSchema(ctx)
 }
 
 func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -44,21 +48,42 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var plan subnetModel
+	var plan SubnetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	body := sdk.CreateSubnetRequestSubnet{
-		Type: &sdk.CreateSubnetRequestSubnetType{
-			Id: plan.TypeID.ValueInt64Pointer(),
-		},
+	body := sdk.NewCreateSubnetRequestSubnetWithDefaults()
+	body.Type = &sdk.CreateSubnetRequestSubnetType{
+		Id: plan.TypeId.ValueInt64Pointer(),
 	}
-	if !plan.Visibility.IsNull() {
+	body.NetworkId = plan.NetworkId.ValueInt64Pointer()
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		body.Description = plan.Description.ValueStringPointer()
+	}
+	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
+		body.Cidr = plan.Cidr.ValueStringPointer()
+	}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		body.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
+		body.DhcpServer = plan.DhcpServer.ValueBoolPointer()
+	}
+	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
+		body.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
+	}
+	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
+		body.Pool = &sdk.CreateSubnetRequestSubnetPool{
+			Id: plan.PoolId.ValueInt64Pointer(),
+		}
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if !plan.Labels.IsNull() {
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
 		var labels []string
 		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
 		if resp.Diagnostics.HasError() {
@@ -66,22 +91,69 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		body.Labels = labels
 	}
-	if !plan.Config.IsNull() {
-		var configMap map[string]string
-		resp.Diagnostics.Append(plan.Config.ElementsAs(ctx, &configMap, false)...)
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		cfg := make(map[string]interface{}, len(configMap))
-		for k, v := range configMap {
-			cfg[k] = v
+		tenants := make([]sdk.CreateSubnetRequestSubnetTenantsInner, len(tenantIDs))
+		for i, tid := range tenantIDs {
+			id := tid
+			tenants[i] = sdk.CreateSubnetRequestSubnetTenantsInner{Id: &id}
 		}
-		body.Config = cfg
+		body.Tenants = tenants
+	}
+	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+		configValue := plan.Config.UnderlyingValue()
+		configAny, err := convert.ValueToAny(ctx, configValue)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create subnet resource",
+				"failed to convert config: "+err.Error(),
+			)
+
+			return
+		}
+
+		configMap, ok := configAny.(map[string]any)
+		if !ok {
+			resp.Diagnostics.AddError(
+				"create subnet resource",
+				"config must be a valid object/map",
+			)
+
+			return
+		}
+		body.Config = configMap
 	}
 
-	result, httpResp, err := client.NetworksAPI.CreateSubnet(ctx).CreateSubnetRequest(sdk.CreateSubnetRequest{
-		Subnet: &body,
-	}).Execute()
+	createReq := sdk.CreateSubnetRequest{
+		Subnet: body,
+	}
+
+	// Resource permissions
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rp := &sdk.CreateSubnetRequestResourcePermission{
+			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.CreateSubnetRequestResourcePermissionSitesInner, len(groupIDs))
+			for i, gid := range groupIDs {
+				id := gid
+				sites[i] = sdk.CreateSubnetRequestResourcePermissionSitesInner{Id: &id}
+			}
+			rp.Sites = sites
+		}
+		createReq.ResourcePermission = rp
+	}
+
+	result, httpResp, err := client.NetworksAPI.CreateSubnet(ctx).CreateSubnetRequest(createReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "subnet", "", err, httpResp)
 
@@ -102,13 +174,13 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var state subnetModel
+	var state SubnetModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.NetworksAPI.GetSubnet(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -136,22 +208,90 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	var plan subnetModel
+	var plan SubnetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
-	body := sdk.UpdateSubnetRequest{}
-	if !plan.Visibility.IsNull() {
-		body.Subnet = &sdk.UpdateSubnetRequestSubnet{
-			Visibility: plan.Visibility.ValueStringPointer(),
+	body := sdk.NewUpdateSubnetRequestSubnetWithDefaults()
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		body.Description = plan.Description.ValueStringPointer()
+	}
+	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
+		body.Cidr = plan.Cidr.ValueStringPointer()
+	}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		body.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
+		body.DhcpServer = plan.DhcpServer.ValueBoolPointer()
+	}
+	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
+		body.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
+	}
+	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
+		body.Pool = &sdk.UpdateSubnetRequestSubnetPool{
+			Id: plan.PoolId.ValueInt64Pointer(),
 		}
 	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
+		var labels []string
+		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		body.Labels = labels
+	}
+	// Tenants — always send to avoid perpetual diff when user removes tenant_ids from config.
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]sdk.UpdateSubnetRequestSubnetTenantsInner, len(tenantIDs))
+		for i, tid := range tenantIDs {
+			id := tid
+			tenants[i] = sdk.UpdateSubnetRequestSubnetTenantsInner{Id: &id}
+		}
+		body.Tenants = tenants
+	} else {
+		body.Tenants = []sdk.UpdateSubnetRequestSubnetTenantsInner{}
+	}
 
-	result, httpResp, err := client.NetworksAPI.UpdateSubnet(ctx, id).UpdateSubnetRequest(body).Execute()
+	updateReq := sdk.UpdateSubnetRequest{
+		Subnet: body,
+	}
+
+	// Resource permissions
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rp := &sdk.UpdateSubnetRequestResourcePermission{
+			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.UpdateSubnetRequestResourcePermissionSitesInner, len(groupIDs))
+			for i, gid := range groupIDs {
+				id := gid
+				sites[i] = sdk.UpdateSubnetRequestResourcePermissionSitesInner{Id: &id}
+			}
+			rp.Sites = sites
+		}
+		updateReq.ResourcePermission = rp
+	}
+
+	result, httpResp, err := client.NetworksAPI.UpdateSubnet(ctx, id).UpdateSubnetRequest(updateReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "subnet", "", err, httpResp)
 
@@ -172,15 +312,18 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	var state subnetModel
+	var state SubnetModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.DeleteSubnet(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return
+	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "subnet", "", err, httpResp)
 
@@ -202,74 +345,186 @@ func (r *subnetResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *subnetModel, subnet *sdk.CreateSubnet200ResponseSubnet) {
+func mapCreateResponseToModel(model *SubnetModel, subnet *sdk.CreateSubnet200ResponseSubnet) {
 	if subnet.Id != nil {
-		model.ID = types.Int64Value(*subnet.Id)
+		model.Id = convert.Int64ToType(subnet.Id)
 	}
 	if subnet.Name != nil {
-		model.Name = types.StringValue(*subnet.Name)
+		model.Name = convert.StrToType(subnet.Name)
+	}
+	if subnet.Description.IsSet() && subnet.Description.Get() != nil {
+		model.Description = convert.StrToType(subnet.Description.Get())
 	}
 	if subnet.Cidr != nil {
-		model.Cidr = types.StringValue(*subnet.Cidr)
+		model.Cidr = convert.StrToType(subnet.Cidr)
 	}
 	if subnet.Gateway.IsSet() && subnet.Gateway.Get() != nil {
-		model.Gateway = types.StringValue(*subnet.Gateway.Get())
+		model.Gateway = convert.StrToType(subnet.Gateway.Get())
 	} else {
 		model.Gateway = types.StringNull()
 	}
 	if subnet.Netmask != nil {
-		model.Netmask = types.StringValue(*subnet.Netmask)
+		model.Netmask = convert.StrToType(subnet.Netmask)
 	}
 	if subnet.SubnetAddress != nil {
-		model.SubnetAddress = types.StringValue(*subnet.SubnetAddress)
+		model.SubnetAddress = convert.StrToType(subnet.SubnetAddress)
 	}
 	if subnet.Active != nil {
-		model.Active = types.BoolValue(*subnet.Active)
+		model.Active = convert.BoolToType(subnet.Active)
 	}
 	if subnet.DhcpServer != nil {
-		model.DhcpServer = types.BoolValue(*subnet.DhcpServer)
+		model.DhcpServer = convert.BoolToType(subnet.DhcpServer)
 	}
 	if subnet.Visibility != nil {
-		model.Visibility = types.StringValue(*subnet.Visibility)
+		model.Visibility = convert.StrToType(subnet.Visibility)
+	}
+	if subnet.Type != nil && subnet.Type.Id != nil {
+		model.TypeId = convert.Int64ToType(subnet.Type.Id)
+	}
+	if subnet.Network != nil && subnet.Network.Id != nil {
+		model.NetworkId = convert.Int64ToType(subnet.Network.Id)
+	}
+	if subnet.Pool != nil && subnet.Pool.Id != nil {
+		model.PoolId = convert.Int64ToType(subnet.Pool.Id)
+	} else {
+		model.PoolId = types.Int64Null()
+	}
+	if subnet.Zone != nil && subnet.Zone.Id != nil {
+		model.CloudId = convert.Int64ToType(subnet.Zone.Id)
+	} else {
+		model.CloudId = types.Int64Null()
 	}
 	if subnet.Labels != nil {
-		labels, _ := types.ListValueFrom(context.Background(), types.StringType, subnet.Labels)
+		labels, _ := types.SetValueFrom(context.Background(), types.StringType, subnet.Labels)
 		model.Labels = labels
+	}
+
+	// Tenants
+	if len(subnet.Tenants) > 0 {
+		tenantValues := make([]attr.Value, 0, len(subnet.Tenants))
+		for _, t := range subnet.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
+	} else {
+		model.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// Resource permissions
+	if subnet.ResourcePermission != nil {
+		model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
+		model.ResourcePermissionGroupIds = extractGroupIDsFromSites(subnet.ResourcePermission.Sites)
+	} else {
+		model.ResourcePermissionGroupsAll = types.BoolNull()
+		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
 	}
 }
 
-func mapResponseToModel(model *subnetModel, subnet *sdk.GetSubnet200ResponseSubnet) {
+func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubnet) {
 	if subnet.Id != nil {
-		model.ID = types.Int64Value(*subnet.Id)
+		model.Id = convert.Int64ToType(subnet.Id)
 	}
 	if subnet.Name != nil {
-		model.Name = types.StringValue(*subnet.Name)
+		model.Name = convert.StrToType(subnet.Name)
+	}
+	if subnet.Description.IsSet() && subnet.Description.Get() != nil {
+		model.Description = convert.StrToType(subnet.Description.Get())
+	} else {
+		model.Description = types.StringNull()
 	}
 	if subnet.Cidr != nil {
-		model.Cidr = types.StringValue(*subnet.Cidr)
+		model.Cidr = convert.StrToType(subnet.Cidr)
 	}
 	if subnet.Gateway.IsSet() && subnet.Gateway.Get() != nil {
-		model.Gateway = types.StringValue(*subnet.Gateway.Get())
+		model.Gateway = convert.StrToType(subnet.Gateway.Get())
 	} else {
 		model.Gateway = types.StringNull()
 	}
 	if subnet.Netmask != nil {
-		model.Netmask = types.StringValue(*subnet.Netmask)
+		model.Netmask = convert.StrToType(subnet.Netmask)
 	}
 	if subnet.SubnetAddress != nil {
-		model.SubnetAddress = types.StringValue(*subnet.SubnetAddress)
+		model.SubnetAddress = convert.StrToType(subnet.SubnetAddress)
 	}
 	if subnet.Active != nil {
-		model.Active = types.BoolValue(*subnet.Active)
+		model.Active = convert.BoolToType(subnet.Active)
 	}
 	if subnet.DhcpServer != nil {
-		model.DhcpServer = types.BoolValue(*subnet.DhcpServer)
+		model.DhcpServer = convert.BoolToType(subnet.DhcpServer)
 	}
 	if subnet.Visibility != nil {
-		model.Visibility = types.StringValue(*subnet.Visibility)
+		model.Visibility = convert.StrToType(subnet.Visibility)
+	}
+	if subnet.Type != nil && subnet.Type.Id != nil {
+		model.TypeId = convert.Int64ToType(subnet.Type.Id)
+	}
+	if subnet.Network != nil && subnet.Network.Id != nil {
+		model.NetworkId = convert.Int64ToType(subnet.Network.Id)
+	}
+	if subnet.Pool != nil && subnet.Pool.Id != nil {
+		model.PoolId = convert.Int64ToType(subnet.Pool.Id)
+	} else {
+		model.PoolId = types.Int64Null()
+	}
+	if subnet.Zone != nil && subnet.Zone.Id != nil {
+		model.CloudId = convert.Int64ToType(subnet.Zone.Id)
+	} else {
+		model.CloudId = types.Int64Null()
 	}
 	if subnet.Labels != nil {
-		labels, _ := types.ListValueFrom(context.Background(), types.StringType, subnet.Labels)
+		labels, _ := types.SetValueFrom(context.Background(), types.StringType, subnet.Labels)
 		model.Labels = labels
 	}
+
+	// Tenants
+	if len(subnet.Tenants) > 0 {
+		tenantValues := make([]attr.Value, 0, len(subnet.Tenants))
+		for _, t := range subnet.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
+	} else {
+		model.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// Resource permissions
+	if subnet.ResourcePermission != nil {
+		model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
+		model.ResourcePermissionGroupIds = extractGroupIDsFromSites(subnet.ResourcePermission.Sites)
+	} else {
+		model.ResourcePermissionGroupsAll = types.BoolNull()
+		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
+	}
+}
+
+// extractGroupIDsFromSites converts the untyped sites slice ([]map[string]interface{})
+// into a types.Set of Int64 group IDs.
+func extractGroupIDsFromSites(sites []map[string]interface{}) types.Set {
+	if len(sites) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	groupValues := make([]attr.Value, 0, len(sites))
+	for _, site := range sites {
+		if idVal, ok := site["id"]; ok && idVal != nil {
+			switch v := idVal.(type) {
+			case float64:
+				groupValues = append(groupValues, types.Int64Value(int64(v)))
+			case int64:
+				groupValues = append(groupValues, types.Int64Value(v))
+			}
+		}
+	}
+
+	if len(groupValues) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	result, _ := types.SetValue(types.Int64Type, groupValues)
+
+	return result
 }

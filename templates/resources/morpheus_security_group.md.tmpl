@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: "morpheus"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -8,15 +8,38 @@ description: |-
 
 {{ .Description | trimspace }}
 
+Security groups provide network-level access control for cloud resources. They can be created globally (without a `cloud_id`) to apply across all clouds, or scoped to a specific cloud integration such as Azure or NSX-T.
+
+## Multi-Tenancy and Permissions
+
+Security groups support multi-tenancy and group-based access control:
+
+| Attribute | Description |
+|---|---|
+| `visibility` | Controls whether the security group is visible to sub-tenants. Set to `"public"` for shared access or `"private"` (default) for owner-only |
+| `tenant_ids` | Grants specific tenants access to the security group |
+| `resource_permission_groups_all` | When `true`, all groups have access. When `false`, only groups listed in `resource_permission_group_ids` have access |
+| `resource_permission_group_ids` | Set of group IDs that have access (only applicable when `resource_permission_groups_all` is `false`) |
+
 ## Example Usage
 
+### Basic Security Group
+
 {{ tffile "examples/resources/morpheus_security_group/example.tf" }}
+
+### Azure Security Group
+
+{{ tffile "examples/resources/morpheus_security_group/example_azure.tf" }}
+
+### NSX-T Security Group
+
+{{ tffile "examples/resources/morpheus_security_group/example_nsxt.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
 
-Import is supported using the resource ID.
+Security groups can be imported using the security group ID, e.g.
 
 ```bash
 terraform import hpe_morpheus_security_group.example 123
