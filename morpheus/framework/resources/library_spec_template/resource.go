@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -109,7 +110,13 @@ func (r *librarySpecTemplateResource) Create(
 	// Read back to populate all fields
 	readResult, httpResp, err := client.LibraryAPI.GetSpecTemplate(ctx, plan.ID.ValueInt64()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_spec_template", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_spec_template", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "library_spec_template",
+			ResourceID:   plan.ID.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
