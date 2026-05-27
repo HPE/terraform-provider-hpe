@@ -246,10 +246,10 @@ func (r *securityGroupRuleResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.Split(req.ID, "/")
+	parts := strings.Split(req.ID, ".")
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Invalid ID",
-			fmt.Sprintf("Expected import ID in format 'security_group_id/rule_id', got %q", req.ID))
+			fmt.Sprintf("Expected import ID in format 'security_group_id.rule_id', got %q", req.ID))
 
 		return
 	}

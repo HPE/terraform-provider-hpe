@@ -218,10 +218,10 @@ func (r *clusterAffinityGroupResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.Split(req.ID, "/")
+	parts := strings.Split(req.ID, ".")
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Invalid Import ID",
-			fmt.Sprintf("Expected format: cluster_id/affinity_group_id, got: %s", req.ID))
+			fmt.Sprintf("Expected format: cluster_id.affinity_group_id, got: %s", req.ID))
 
 		return
 	}

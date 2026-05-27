@@ -42,8 +42,8 @@ resource "hpe_morpheus_network_router_firewall_rule" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
+Import is supported using `router_id.rule_id`.
 
 ```bash
-terraform import hpe_morpheus_network_router_firewall_rule.example 123
+terraform import hpe_morpheus_network_router_firewall_rule.example 42.123
 ```
