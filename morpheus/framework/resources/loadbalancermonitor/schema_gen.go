@@ -5,8 +5,7 @@ package loadbalancermonitor
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -15,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -123,9 +123,13 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"monitor_password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "The password for authenticated health checks (Write Only)",
 				MarkdownDescription: "The password for authenticated health checks (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 			"monitor_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
@@ -262,8 +266,7 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`monitor is missing from object`,
-		)
+			`monitor is missing from object`)
 
 		return nil, diags
 	}
@@ -273,8 +276,7 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`monitor expected to be basetypes.ObjectValue, was: %T`, monitorAttribute),
-		)
+			fmt.Sprintf(`monitor expected to be basetypes.ObjectValue, was: %T`, monitorAttribute))
 	}
 
 	monitorConfigAttribute, ok := attributes["monitor_config"]
@@ -282,8 +284,7 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`monitor_config is missing from object`,
-		)
+			`monitor_config is missing from object`)
 
 		return nil, diags
 	}
@@ -293,8 +294,7 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`monitor_config expected to be basetypes.DynamicValue, was: %T`, monitorConfigAttribute),
-		)
+			fmt.Sprintf(`monitor_config expected to be basetypes.DynamicValue, was: %T`, monitorConfigAttribute))
 	}
 
 	if diags.HasError() {
@@ -376,8 +376,7 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`monitor is missing from object`,
-		)
+			`monitor is missing from object`)
 
 		return NewConfigValueUnknown(), diags
 	}
@@ -387,8 +386,7 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`monitor expected to be basetypes.ObjectValue, was: %T`, monitorAttribute),
-		)
+			fmt.Sprintf(`monitor expected to be basetypes.ObjectValue, was: %T`, monitorAttribute))
 	}
 
 	monitorConfigAttribute, ok := attributes["monitor_config"]
@@ -396,8 +394,7 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`monitor_config is missing from object`,
-		)
+			`monitor_config is missing from object`)
 
 		return NewConfigValueUnknown(), diags
 	}
@@ -407,8 +404,7 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`monitor_config expected to be basetypes.DynamicValue, was: %T`, monitorConfigAttribute),
-		)
+			fmt.Sprintf(`monitor_config expected to be basetypes.DynamicValue, was: %T`, monitorConfigAttribute))
 	}
 
 	if diags.HasError() {
@@ -434,8 +430,7 @@ func NewConfigValueMust(attributeTypes map[string]attr.Type, attributes map[stri
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -466,12 +461,14 @@ func (t ConfigType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -512,6 +509,7 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Monitor.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -519,6 +517,7 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals["monitor"] = val
 
 		val, err = v.MonitorConfig.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -595,8 +594,7 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		map[string]attr.Value{
 			"monitor":        monitorVal,
 			"monitor_config": v.MonitorConfig,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -682,8 +680,7 @@ func (t MonitorType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return nil, diags
 	}
@@ -693,8 +690,7 @@ func (t MonitorType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	if diags.HasError() {
@@ -775,8 +771,7 @@ func NewMonitorValue(attributeTypes map[string]attr.Type, attributes map[string]
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return NewMonitorValueUnknown(), diags
 	}
@@ -786,8 +781,7 @@ func NewMonitorValue(attributeTypes map[string]attr.Type, attributes map[string]
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	if diags.HasError() {
@@ -812,8 +806,7 @@ func NewMonitorValueMust(attributeTypes map[string]attr.Type, attributes map[str
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewMonitorValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -844,12 +837,14 @@ func (t MonitorType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -886,6 +881,7 @@ func (v MonitorValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -937,8 +933,7 @@ func (v MonitorValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		attributeTypes,
 		map[string]attr.Value{
 			"id": v.Id,
-		},
-	)
+		})
 
 	return objVal, diags
 }
