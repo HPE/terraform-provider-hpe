@@ -375,6 +375,9 @@ func mapCreateResponseToModel(model *SubnetModel, subnet *sdk.CreateSubnet200Res
 	if subnet.Visibility != nil {
 		model.Visibility = convert.StrToType(subnet.Visibility)
 	}
+	if subnet.Type != nil && subnet.Type.Id != nil {
+		model.TypeId = convert.Int64ToType(subnet.Type.Id)
+	}
 	if subnet.Network != nil && subnet.Network.Id != nil {
 		model.NetworkId = convert.Int64ToType(subnet.Network.Id)
 	}
@@ -450,6 +453,9 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 	}
 	if subnet.Visibility != nil {
 		model.Visibility = convert.StrToType(subnet.Visibility)
+	}
+	if subnet.Type != nil && subnet.Type.Id != nil {
+		model.TypeId = convert.Int64ToType(subnet.Type.Id)
 	}
 	if subnet.Network != nil && subnet.Network.Id != nil {
 		model.NetworkId = convert.Int64ToType(subnet.Network.Id)

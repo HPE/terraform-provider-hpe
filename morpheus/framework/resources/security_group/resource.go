@@ -71,6 +71,14 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
+	// TODO: Add network_server_id (Optional, create-only) to schema and set body.NetworkServerId here.
+	// Use case: HVM/Standard clouds with multiple network integrations (e.g. both NSX-T and another
+	// network server). When cloud_id alone is insufficient to disambiguate which network server should
+	// own the security group, network_server_id lets the user target a specific one. Not needed for
+	// NSX-T clouds (where cloud_id automatically resolves to the single network server) or Azure.
+	// The field is create-only (not updatable) and not returned in the GET response, making it a
+	// WriteOnly attribute candidate. SDK field: AddSecurityGroupsRequestSecurityGroup.NetworkServerId.
+
 	// Tenant permissions
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []int64
