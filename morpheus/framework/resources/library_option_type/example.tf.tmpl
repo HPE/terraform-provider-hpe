@@ -1,0 +1,8 @@
+resource "hpe_morpheus_library_option_type" "example" {
+  name          = "{{.Name}}"
+  field_name    = "{{.FieldName}}"
+  type          = "{{.Type}}"
+  field_label   = "{{.FieldLabel}}"
+  default_value = "{{.DefaultValue}}"
+  required      = {{.Required}}
+}

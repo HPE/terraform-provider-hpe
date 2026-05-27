@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_os_type/example.tf example.tf.tmpl Name "Example OS Type" Code "example.os.type" Platform "linux" BitCount "64" Description "An example OS type" OsFamily "debian" OsVersion "22.04" InstallAgent "true" CloudInitVersion "2"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_os_type/example.tf example.tf.tmpl Name "Example OS Type" Code "example.os.type" Platform "linux" BitCount "64" Description "An example OS type" OsFamily "debian" OsVersion "22.04" InstallAgent "true" CloudInitVersion "2"
 
 func RenderOsTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
