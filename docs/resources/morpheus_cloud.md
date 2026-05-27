@@ -18,6 +18,34 @@ HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 -> Currently, a change to the `group_id` attribute will not be applied on update.<br/>
    We recommend managing group membership using a `group` resource.
 
+## Inventory Discovery Defaults
+
+The `default_*_sync_active` fields control whether newly discovered inventory items
+(datastores, networks, etc.) are automatically set to **active** during cloud sync.
+All default to `true`.
+
+Not all fields apply to every cloud type. Setting an inapplicable field is harmless
+(the API accepts and stores it) but has no runtime effect. The table below shows
+which fields are meaningful for each supported cloud type:
+
+| Cloud Type | datastores | networks | folders | pools | security_groups | plans |
+|------------|:----------:|:--------:|:-------:|:-----:|:---------------:|:-----:|
+| VMware     | ✓          | ✓        | ✓       | ✓     | ✓               | —     |
+| Azure      | ✓          | ✓        | —       | ✓     | ✓               | ✓     |
+| AWS        | —          | ✓        | —       | ✓     | ✓               | ✓     |
+| GCP        | —          | ✓        | —       | ✓     | —               | ✓     |
+| VCD        | ✓          | ✓        | —       | —     | —               | ✓     |
+| OpenStack  | —          | ✓        | —       | ✓     | —               | ✓     |
+| Oracle     | —          | ✓        | —       | ✓     | —               | ✓     |
+| SCVMM      | ✓          | ✓        | —       | ✓     | —               | —     |
+| HVM        | —          | —        | —       | —     | ✓               | —     |
+| ESXi       | ✓          | ✓        | —       | —     | —               | —     |
+| Hyper-V    | —          | ✓        | —       | —     | —               | —     |
+| Alibaba    | —          | ✓        | —       | ✓     | —               | ✓     |
+| UpCloud    | —          | —        | —       | —     | —               | ✓     |
+
+-> `default_folder_sync_active` is currently only utilized by VMware clouds.
+
 ## Example Usage (HVM)
 
 ```terraform
@@ -46,12 +74,7 @@ resource "hpe_morpheus_cloud" "example" {
 
   keyboard_layout = "us"
 
-  # Inventory discovery defaults
-  default_datastore_sync_active      = true
-  default_folder_sync_active         = true
-  default_network_sync_active        = true
-  default_plan_sync_active           = true
-  default_pool_sync_active           = true
+  # Inventory discovery (only security_groups applies to HVM clouds)
   default_security_group_sync_active = true
 
   config_hvm = {
@@ -90,12 +113,7 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
-  # Inventory discovery defaults
-  default_datastore_sync_active      = true
-  default_folder_sync_active         = true
-  default_network_sync_active        = true
-  default_plan_sync_active           = true
-  default_pool_sync_active           = true
+  # Inventory discovery (only security_groups applies to standard clouds)
   default_security_group_sync_active = true
 
   config = {
@@ -133,9 +151,8 @@ resource "hpe_morpheus_cloud" "example" {
 
   keyboard_layout = "us"
 
-  # Inventory discovery defaults
+  # Inventory discovery defaults (applicable to Azure)
   default_datastore_sync_active      = true
-  default_folder_sync_active         = true
   default_network_sync_active        = true
   default_plan_sync_active           = true
   default_pool_sync_active           = true
