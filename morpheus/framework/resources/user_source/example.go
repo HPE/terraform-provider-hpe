@@ -17,10 +17,10 @@ func RenderUserSourceConfig(t *testing.T, overrides map[string]string) (string, 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":                  "Corporate LDAP",
-		"Type":                  "ldap",
+		"Name":                 "Corporate LDAP",
+		"Type":                 "ldap",
 		"AccountId":            "1",
-		"Description":           "Corporate Active Directory integration",
+		"Description":          "Corporate Active Directory integration",
 		"DefaultAccountRoleId": "1",
 	}
 
