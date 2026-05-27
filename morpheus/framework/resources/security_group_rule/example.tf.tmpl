@@ -1,0 +1,11 @@
+resource "hpe_morpheus_security_group_rule" "example" {
+  security_group_id = {{.SecurityGroupId}}
+  name              = "{{.Name}}"
+  protocol          = "{{.Protocol}}"
+  rule_type         = "{{.RuleType}}"
+  direction         = "{{.Direction}}"
+  port_range        = "{{.PortRange}}"
+  source            = "{{.Source}}"
+  destination       = "{{.Destination}}"
+  policy            = "{{.Policy}}"
+}

@@ -1,0 +1,8 @@
+resource "hpe_morpheus_catalog_item_type" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  type        = "{{.Type}}"
+  enabled     = {{.Enabled}}
+  visibility  = "{{.Visibility}}"
+  featured    = {{.Featured}}
+}
