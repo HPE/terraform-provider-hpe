@@ -1,5 +1,10 @@
 resource "hpe_morpheus_network_router_route" "example" {
-  router_id = {{.RouterId}}
-  source = "{{.Source}}"
-  destination = "{{.Destination}}"
+  router_id     = {{.RouterId}}
+  name          = "{{.Name}}"
+  source        = "{{.Source}}"
+  destination   = "{{.Destination}}"
+  description   = "{{.Description}}"
+  network_mtu   = {{.NetworkMtu}}
+  enabled       = {{.Enabled}}
+  default_route = {{.DefaultRoute}}
 }

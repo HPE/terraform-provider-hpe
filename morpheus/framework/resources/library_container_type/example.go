@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_container_type/example.tf example.tf.tmpl Name "App Node" ShortName "app-node" ContainerVersion "1.0" ProvisionTypeCode "vmware" Description "Application server node type" VirtualImageId "1" ServerType "vm"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_library_container_type/example.tf example.tf.tmpl Name "App Node" ShortName "app-node" ContainerVersion "1.0" ProvisionTypeCode "vmware" Description "Application server node type" VirtualImageId "1" ServerType "vm"
 
 func RenderLibraryContainerTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

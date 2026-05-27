@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_budget/example.tf example.tf.tmpl Name "Q1 Cloud Budget" Description "First quarter cloud spending budget" Year "2025" Interval "year" Scope "account" Enabled "true"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_budget/example.tf example.tf.tmpl Name "Q1 Cloud Budget" Description "First quarter cloud spending budget" Year "2025" Interval "year" Scope "account" Enabled "true"
 
 func RenderBudgetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

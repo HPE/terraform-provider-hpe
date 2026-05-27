@@ -12,7 +12,9 @@ Manages a Morpheus Monitoring Contact resource.
 
 ```terraform
 resource "hpe_morpheus_monitoring_contact" "example" {
-  name = "Example Contact"
+  name          = "Ops Team"
+  email_address = "ops-team@example.com"
+  sms_address   = "+15551234567"
 }
 ```
 

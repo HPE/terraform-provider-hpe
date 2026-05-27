@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_vdi_app/example.tf example.tf.tmpl Name "Chrome Browser" Description "Google Chrome virtual application" LaunchPrefix "/usr/bin/google-chrome"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_vdi_app/example.tf example.tf.tmpl Name "Chrome Browser" Description "Google Chrome virtual application" LaunchPrefix "/usr/bin/google-chrome"
 
 func RenderVdiAppConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

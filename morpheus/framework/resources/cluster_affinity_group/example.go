@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_cluster_affinity_group/example.tf example.tf.tmpl ClusterId "1" Name "Example Affinity Group"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_cluster_affinity_group/example.tf example.tf.tmpl ClusterId "1" Name "Example Affinity Group"
 
 func RenderClusterAffinityGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

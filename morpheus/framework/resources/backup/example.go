@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_backup/example.tf example.tf.tmpl Name "DB Backup" InstanceId "1" BackupType "lvmSnapshot" RetentionCount "7" Enabled "true"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_backup/example.tf example.tf.tmpl Name "DB Backup" InstanceId "1" BackupType "lvmSnapshot" RetentionCount "7" Enabled "true"
 
 func RenderBackupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

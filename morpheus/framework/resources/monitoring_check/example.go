@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_monitoring_check/example.tf example.tf.tmpl Name "Website Health" CheckTypeId "1" Description "HTTP health check for production website" CheckInterval "60" Active "true" Severity "critical"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_monitoring_check/example.tf example.tf.tmpl Name "Website Health" CheckTypeId "1" Description "HTTP health check for production website" CheckInterval "60" Active "true" Severity "critical"
 
 func RenderMonitoringCheckConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

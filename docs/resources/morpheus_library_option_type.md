@@ -12,9 +12,12 @@ Manages a Morpheus Library Option Type resource.
 
 ```terraform
 resource "hpe_morpheus_library_option_type" "example" {
-  name       = "Example Option Type"
-  field_name = "exampleField"
-  type       = "text"
+  name          = "Environment Selector"
+  field_name    = "environment"
+  type          = "select"
+  field_label   = "Environment"
+  default_value = "development"
+  required      = true
 }
 ```
 

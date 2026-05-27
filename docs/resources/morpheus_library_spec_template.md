@@ -12,8 +12,10 @@ Manages a Morpheus Library Spec Template resource.
 
 ```terraform
 resource "hpe_morpheus_library_spec_template" "example" {
-  name = "Example Spec Template"
-  type = "terraform"
+  name    = "Kubernetes Deployment"
+  type    = "kubernetes"
+  source  = "local"
+  content = file("/path-to-file")
 }
 ```
 

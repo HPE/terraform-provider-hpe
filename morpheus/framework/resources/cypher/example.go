@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_cypher/example.tf example.tf.tmpl Id "secret/my-api-key" Value "sk-abc123def456" Ttl "0"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_cypher/example.tf example.tf.tmpl Id "secret/my-api-key" Value "sk-abc123def456" Ttl "0"
 
 func RenderCypherConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

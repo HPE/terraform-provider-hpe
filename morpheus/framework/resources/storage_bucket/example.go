@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_storage_bucket/example.tf example.tf.tmpl Name "Example Storage Bucket" ProviderType "s3"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_bucket/example.tf example.tf.tmpl Name "Example Storage Bucket" ProviderType "s3"
 
 func RenderStorageBucketConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

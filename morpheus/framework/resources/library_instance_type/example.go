@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_instance_type/example.tf example.tf.tmpl Name "Custom App Server" Code "custom-app-server" Description "Custom application server instance type" Category "web" Visibility "public"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_library_instance_type/example.tf example.tf.tmpl Name "Custom App Server" Code "custom-app-server" Description "Custom application server instance type" Category "web" Visibility "public"
 
 func RenderLibraryInstanceTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

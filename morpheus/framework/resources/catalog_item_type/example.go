@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_catalog_item_type/example.tf example.tf.tmpl Name "Ubuntu VM" Description "Standard Ubuntu virtual machine" Type "instance" Enabled "true" Visibility "public" Featured "true"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_catalog_item_type/example.tf example.tf.tmpl Name "Ubuntu VM" Description "Standard Ubuntu virtual machine" Type "instance" Enabled "true" Visibility "public" Featured "true"
 
 func RenderCatalogItemTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

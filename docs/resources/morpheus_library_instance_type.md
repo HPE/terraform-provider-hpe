@@ -12,7 +12,11 @@ Manages a Morpheus Library Instance Type resource.
 
 ```terraform
 resource "hpe_morpheus_library_instance_type" "example" {
-  name = "Example Instance Type"
+  name        = "Custom App Server"
+  code        = "custom-app-server"
+  description = "Custom application server instance type"
+  category    = "web"
+  visibility  = "public"
 }
 ```
 

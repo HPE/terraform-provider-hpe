@@ -1,3 +1,4 @@
 resource "hpe_morpheus_deployment" "example" {
-  name = "Example Deployment"
+  name        = "webapp-v2"
+  description = "Web application deployment version 2"
 }

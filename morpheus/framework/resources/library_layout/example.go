@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_library_layout/example.tf example.tf.tmpl InstanceTypeId "1" Name "Single Node" InstanceVersion "1.0" ProvisionTypeCode "vmware" Description "Single node layout for VMware" Creatable "true"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_library_layout/example.tf example.tf.tmpl InstanceTypeId "1" Name "Single Node" InstanceVersion "1.0" ProvisionTypeCode "vmware" Description "Single node layout for VMware" Creatable "true"
 
 func RenderLibraryLayoutConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

@@ -11,15 +11,20 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_router_route/example.tf example.tf.tmpl RouterId "1" Source "10.0.0.0/24" Destination "192.168.1.0/24"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_route/example.tf example.tf.tmpl RouterId "42" Name "example-route" Source "10.0.0.0/24" Destination "10.0.0.1" Description "Example route" NetworkMtu "1500" Enabled "true" DefaultRoute "false"
 
 func RenderNetworkRouterRouteConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"RouterId":    "1",
-		"Source":      "10.0.0.0/24",
-		"Destination": "192.168.1.0/24",
+		"RouterId":     "42",
+		"Name":         "example-route",
+		"Source":       "10.0.0.0/24",
+		"Destination":  "10.0.0.1",
+		"Description":  "Example route",
+		"NetworkMtu":   "1500",
+		"Enabled":      "true",
+		"DefaultRoute": "false",
 	}
 
 	for key, value := range overrides {

@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_certificate/example.tf example.tf.tmpl Name "wildcard-example-com" CertFile file("${path.module}/certs/wildcard.crt") KeyFile file("${path.module}/certs/wildcard.key") DomainName "*.example.com" Description "Wildcard certificate for example.com"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_certificate/example.tf example.tf.tmpl Name "wildcard-example-com" CertFile file("${path.module}/certs/wildcard.crt") KeyFile file("${path.module}/certs/wildcard.key") DomainName "*.example.com" Description "Wildcard certificate for example.com"
 
 func RenderCertificateConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

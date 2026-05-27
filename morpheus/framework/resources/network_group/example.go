@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_group/example.tf example.tf.tmpl Name "Production Networks" Description "Network group for production workloads"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_group/example.tf example.tf.tmpl Name "Production Networks" Description "Network group for production workloads"
 
 func RenderNetworkGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

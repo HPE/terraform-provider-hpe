@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_vdi_gateway/example.tf example.tf.tmpl Name "Primary VDI Gateway" GatewayUrl "https://vdi-gateway.example.com" Description "Main VDI gateway for remote access"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_vdi_gateway/example.tf example.tf.tmpl Name "Primary VDI Gateway" GatewayUrl "https://vdi-gateway.example.com" Description "Main VDI gateway for remote access"
 
 func RenderVdiGatewayConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

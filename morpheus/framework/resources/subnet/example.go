@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_subnet/example.tf example.tf.tmpl TypeId "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_subnet/example.tf example.tf.tmpl TypeId "1"
 
 func RenderSubnetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

@@ -12,7 +12,11 @@ Manages a Morpheus Monitoring Group (Check Group) resource.
 
 ```terraform
 resource "hpe_morpheus_monitoring_group" "example" {
-  name = "Example Monitoring Group"
+  name        = "Production Services"
+  description = "Monitoring group for production services"
+  min_happy   = 1
+  severity    = "critical"
+  active      = true
 }
 ```
 

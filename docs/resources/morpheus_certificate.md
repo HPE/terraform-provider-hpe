@@ -12,9 +12,11 @@ Manages a Morpheus Certificate resource.
 
 ```terraform
 resource "hpe_morpheus_certificate" "example" {
-  name      = "Example Certificate"
-  cert_file = file("/path-to-file")
-  key_file  = file("/path-to-file")
+  name        = "wildcard-example-com"
+  cert_file   = file("/certs/wildcard.crt")
+  key_file    = file("/certs/wildcard.key")
+  domain_name = "*.example.com"
+  description = "Wildcard certificate for example.com"
 }
 ```
 

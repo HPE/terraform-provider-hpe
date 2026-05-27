@@ -12,7 +12,12 @@ Manages a Morpheus Library Container Script resource.
 
 ```terraform
 resource "hpe_morpheus_library_container_script" "example" {
-  name = "Example Script"
+  name          = "Install Dependencies"
+  script_phase  = "provision"
+  script_type   = "bash"
+  script        = file("/path-to-file")
+  sudo_user     = true
+  fail_on_error = true
 }
 ```
 
