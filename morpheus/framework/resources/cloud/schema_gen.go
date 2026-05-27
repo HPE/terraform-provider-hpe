@@ -539,6 +539,48 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "A custom name used to reference the datacenter for the cloud.",
 				MarkdownDescription: "A custom name used to reference the datacenter for the cloud.",
 			},
+			"default_datastore_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new datastores.",
+				MarkdownDescription: "Sets the default active state during discovery of new datastores.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_folder_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new folders.",
+				MarkdownDescription: "Sets the default active state during discovery of new folders.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_network_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new networks.",
+				MarkdownDescription: "Sets the default active state during discovery of new networks.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_plan_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new plans.",
+				MarkdownDescription: "Sets the default active state during discovery of new plans.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_pool_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new resource pools.",
+				MarkdownDescription: "Sets the default active state during discovery of new resource pools.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_security_group_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new security groups.",
+				MarkdownDescription: "Sets the default active state during discovery of new security groups.",
+				Default:             booldefault.StaticBool(true),
+			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -643,31 +685,37 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type CloudModel struct {
-	AgentInstallMode      types.String      `tfsdk:"agent_install_mode"`
-	ApplianceUrl          types.String      `tfsdk:"appliance_url"`
-	AutoRecoverPowerState types.Bool        `tfsdk:"auto_recover_power_state"`
-	CloudTypeCode         types.String      `tfsdk:"cloud_type_code"`
-	Code                  types.String      `tfsdk:"code"`
-	Config                types.Dynamic     `tfsdk:"config"`
-	ConfigAws             ConfigAwsValue    `tfsdk:"config_aws"`
-	ConfigAzure           ConfigAzureValue  `tfsdk:"config_azure"`
-	ConfigHvm             ConfigHvmValue    `tfsdk:"config_hvm"`
-	ConfigVmware          ConfigVmwareValue `tfsdk:"config_vmware"`
-	CostingMode           types.String      `tfsdk:"costing_mode"`
-	DataCenterName        types.String      `tfsdk:"data_center_name"`
-	Enabled               types.Bool        `tfsdk:"enabled"`
-	ExternalId            types.String      `tfsdk:"external_id"`
-	GroupId               types.Int64       `tfsdk:"group_id"`
-	GuidanceMode          types.String      `tfsdk:"guidance_mode"`
-	Id                    types.Int64       `tfsdk:"id"`
-	ImportExistingVms     types.String      `tfsdk:"import_existing_vms"`
-	KeyboardLayout        types.String      `tfsdk:"keyboard_layout"`
-	Labels                types.Set         `tfsdk:"labels"`
-	Location              types.String      `tfsdk:"location"`
-	Name                  types.String      `tfsdk:"name"`
-	SecurityMode          types.String      `tfsdk:"security_mode"`
-	TenantId              types.Int64       `tfsdk:"tenant_id"`
-	Visibility            types.String      `tfsdk:"visibility"`
+	AgentInstallMode               types.String      `tfsdk:"agent_install_mode"`
+	ApplianceUrl                   types.String      `tfsdk:"appliance_url"`
+	AutoRecoverPowerState          types.Bool        `tfsdk:"auto_recover_power_state"`
+	CloudTypeCode                  types.String      `tfsdk:"cloud_type_code"`
+	Code                           types.String      `tfsdk:"code"`
+	Config                         types.Dynamic     `tfsdk:"config"`
+	ConfigAws                      ConfigAwsValue    `tfsdk:"config_aws"`
+	ConfigAzure                    ConfigAzureValue  `tfsdk:"config_azure"`
+	ConfigHvm                      ConfigHvmValue    `tfsdk:"config_hvm"`
+	ConfigVmware                   ConfigVmwareValue `tfsdk:"config_vmware"`
+	CostingMode                    types.String      `tfsdk:"costing_mode"`
+	DataCenterName                 types.String      `tfsdk:"data_center_name"`
+	DefaultDatastoreSyncActive     types.Bool        `tfsdk:"default_datastore_sync_active"`
+	DefaultFolderSyncActive        types.Bool        `tfsdk:"default_folder_sync_active"`
+	DefaultNetworkSyncActive       types.Bool        `tfsdk:"default_network_sync_active"`
+	DefaultPlanSyncActive          types.Bool        `tfsdk:"default_plan_sync_active"`
+	DefaultPoolSyncActive          types.Bool        `tfsdk:"default_pool_sync_active"`
+	DefaultSecurityGroupSyncActive types.Bool        `tfsdk:"default_security_group_sync_active"`
+	Enabled                        types.Bool        `tfsdk:"enabled"`
+	ExternalId                     types.String      `tfsdk:"external_id"`
+	GroupId                        types.Int64       `tfsdk:"group_id"`
+	GuidanceMode                   types.String      `tfsdk:"guidance_mode"`
+	Id                             types.Int64       `tfsdk:"id"`
+	ImportExistingVms              types.String      `tfsdk:"import_existing_vms"`
+	KeyboardLayout                 types.String      `tfsdk:"keyboard_layout"`
+	Labels                         types.Set         `tfsdk:"labels"`
+	Location                       types.String      `tfsdk:"location"`
+	Name                           types.String      `tfsdk:"name"`
+	SecurityMode                   types.String      `tfsdk:"security_mode"`
+	TenantId                       types.Int64       `tfsdk:"tenant_id"`
+	Visibility                     types.String      `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

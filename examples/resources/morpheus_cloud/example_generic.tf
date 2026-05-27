@@ -24,6 +24,9 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
+  # Inventory discovery (only security_groups applies to standard clouds)
+  default_security_group_sync_active = true
+
   config = {
     certificateProvider        = "internal"
     enableNetworkTypeSelection = false
