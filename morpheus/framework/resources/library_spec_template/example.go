@@ -20,7 +20,7 @@ func RenderLibrarySpecTemplateConfig(t *testing.T, overrides map[string]string) 
 		"Name":    "Kubernetes Deployment",
 		"Type":    "kubernetes",
 		"Source":  "local",
-		"Content": "apiVersion: apps/v1",
+		"Content": "\"apiVersion: apps/v1\"",
 	}
 
 	for key, value := range overrides {

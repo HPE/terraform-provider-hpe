@@ -21,7 +21,7 @@ func RenderLibraryFileTemplateConfig(t *testing.T, overrides map[string]string) 
 		"FileName":      "nginx.conf",
 		"FilePath":      "/etc/nginx",
 		"TemplatePhase": "provision",
-		"Template":      "server { listen 80; }",
+		"Template":      "\"server { listen 80; }\"",
 	}
 
 	for key, value := range overrides {

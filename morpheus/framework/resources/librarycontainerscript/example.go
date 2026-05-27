@@ -20,7 +20,7 @@ func RenderLibraryContainerScriptConfig(t *testing.T, overrides map[string]strin
 		"Name":        "Install Dependencies",
 		"ScriptPhase": "provision",
 		"ScriptType":  "bash",
-		"Script":      "apt-get update && apt-get install -y curl wget",
+		"Script":      "\"apt-get update && apt-get install -y curl wget\"",
 		"SudoUser":    "true",
 		"FailOnError": "true",
 	}
