@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -93,7 +94,13 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	// Re-read to get full object
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, newID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_group", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_group", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_group",
+			ResourceID:   newID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}

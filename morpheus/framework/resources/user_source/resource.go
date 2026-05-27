@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -96,7 +97,13 @@ func (r *userSourceResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read back
 	readResp, httpResp, err := client.IdentitySourcesAPI.GetIdentitySources(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_source", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "user_source", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "user_source",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}

@@ -8,6 +8,10 @@ description: |-
 
 
 
+### Networks vs Subnets
+
+For most network types in Morpheus, the network itself is the deployable unit -- there is no separate subnet creation step. Only Azure and Google support a two-level model where subnets can be created independently within a network using the [`hpe_morpheus_subnet`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_subnet) resource. For all other types (NSX-T, OpenStack, Amazon, OVS, VCD, ACI, etc.), use this resource to create the full network object including its addressing configuration.
+
 ~> **Note** Some network types (for example, Amazon) update the network `name`
 and some other attributes a few minutes after creation. This requires using a
 `lifecycle` block as shown below. If this `lifecycle` block is missing, then
@@ -78,6 +82,16 @@ resource "hpe_morpheus_network" "aws" {
 
 ### Azure Network
 
+The `config` block for Azure networks (VNets) accepts the following properties:
+
+| Config Key | Required | Description |
+|---|---|---|
+| `resourceGroupId` | Yes | The ID of the Azure Resource Group to deploy the VNet into |
+| `subnetName` | Yes | Name of the default subnet created with the VNet |
+| `subnetCidr` | Yes | CIDR for the default subnet (e.g. `192.168.1.0/24`). Must be contained within the VNet's `cidr` address space |
+
+~> **Note** The Azure region is automatically derived from the Cloud zone or Resource Group — it is not specified in the config block.
+
 ```terraform
 data "hpe_morpheus_cloud" "example" {
   name = "Azure Cloud"
@@ -108,7 +122,6 @@ resource "hpe_morpheus_network" "azure" {
     "resourceGroupId" = all-attrs-resource-group
     "subnetName"      = "all-attrs-subnet"
     "subnetCidr"      = "10.100.1.0/24"
-    "location"        = "eastus"
   }
   tenant_ids = [
     data.hpe_morpheus_tenant.example.id,
@@ -152,6 +165,53 @@ resource "hpe_morpheus_network" "gcp" {
   cidr         = "10.0.0.0/8"
   zone_pool_id = 85990
   labels       = ["terraform", "example"]
+}
+```
+
+### NSX-T Segment
+
+NSX-T segments are created as networks in Morpheus (type code `nsxtLogicalSwitch`). The `config` block accepts the following properties:
+
+| Config Key | Required | Description |
+|---|---|---|
+| `connectedGateway` | Yes | Connectivity path to the Tier-1 gateway (e.g. `/infra/tier-1s/my-gw`) |
+| `vlanIDs` | No | Comma-separated VLAN IDs for VLAN-backed segments. Leave empty for overlay segments |
+| `subnetIpManagementType` | No | DHCP type: `dhcpLocal`, `gatewayDhcp`, `dhcpRelay`, or empty for no DHCP |
+| `subnetIpServerId` | No | Path to the DHCP server or relay (required when `subnetIpManagementType` is set) |
+| `subnetDhcpServerAddress` | No | DHCP server address in CIDR format (e.g. `172.16.10.2/24`). Required for `dhcpLocal` |
+| `dhcpRange` | No | DHCP IP range (e.g. `172.16.10.100-172.16.10.200`) |
+| `subnetDhcpLeaseTime` | No | DHCP lease time in seconds (default `86400`) |
+
+~> **Note** The top-level `cidr` and `gateway` fields define the segment's subnet addressing. NSX-T subnets are not created separately -- the segment itself is the network object in Morpheus.
+
+```terraform
+data "hpe_morpheus_cloud" "nsxt" {
+  name = "NSX-T Cloud"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "Example Group"
+}
+
+resource "hpe_morpheus_network" "nsxt_segment" {
+  name         = "example-terraform-nsxt-segment"
+  display_name = "Example NSX-T Segment"
+  description  = "NSX-T overlay segment managed by Terraform"
+  cloud_id     = data.hpe_morpheus_cloud.nsxt.id
+  group_id     = data.hpe_morpheus_group.example.id
+  type_id      = 7
+  cidr         = "172.16.10.0/24"
+  gateway      = "172.16.10.1"
+  active       = true
+  dhcp_server  = true
+  config = {
+    "connectedGateway"        = "/infra/tier-1s/my-tier1-gw"
+    "vlanIDs"                 = ""
+    "subnetIpManagementType"  = "dhcpLocal"
+    "subnetDhcpServerAddress" = "172.16.10.2/24"
+    "dhcpRange"               = "172.16.10.100-172.16.10.200"
+    "subnetDhcpLeaseTime"     = "86400"
+  }
 }
 ```
 

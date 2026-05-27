@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-//go:generate ../../../../bin/render -out examples/resources/hpe_morpheus_network_router_bgp_neighbor/resource.tf example.tf.tmpl RouterId "42" IpAddress "10.0.0.1" Description "Example BGP neighbor" RemoteAs "65001" Weight "100" KeepAlive "60" HoldDown "180"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_bgp_neighbor/resource.tf example.tf.tmpl RouterId "42" IpAddress "10.0.0.1" Description "Example BGP neighbor" RemoteAs "65001" Weight "100" KeepAlive "60" HoldDown "180"
 
 package networkrouterbgpneighbor
 

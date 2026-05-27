@@ -97,7 +97,12 @@ func (r *libraryOptionTypeListResource) Create(
 	// Find the created resource by listing
 	listResult, httpResp, err := client.LibraryAPI.ListOptionLists(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "library_option_type_list", plan.Name.ValueString(), err, httpResp)
+		resp.Diagnostics.AddError(
+			"Read Error After Create",
+			"Option type list was created successfully but could not be read back. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}
@@ -115,7 +120,12 @@ func (r *libraryOptionTypeListResource) Create(
 				}
 			}
 		}
-		resp.Diagnostics.AddError("Not Found", "Option type list not found after creation")
+		resp.Diagnostics.AddError(
+			"Not Found After Create",
+			"Option type list was created successfully but could not be found by name. "+
+				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+				"'terraform import <resource_type>.<name> <id>'",
+		)
 
 		return
 	}

@@ -27,7 +27,6 @@ resource "hpe_morpheus_network" "azure" {
     "resourceGroupId" = {{.ResourceGroupId}}
     "subnetName"      = "{{.SubnetName}}"
     "subnetCidr"      = "{{.SubnetCIDR}}"
-    "location"        = "{{.Location}}"
   }
   tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,
