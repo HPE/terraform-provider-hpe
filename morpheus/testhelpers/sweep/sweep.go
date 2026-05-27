@@ -38,13 +38,15 @@ type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, it
 type typedSweepConfig[T any] struct {
 	filter             TypedSweepFilter[T]
 	ignoreListStatuses []int
+	dependencies       []string
 }
 
-func registerSweeper(resourceName string, sweep func(string) error) {
+func registerSweeper(resourceName string, dependencies []string, sweep func(string) error) {
 	resource.AddTestSweepers(
 		resourceName,
 		&resource.Sweeper{
-			Name: resourceName,
+			Name:         resourceName,
+			Dependencies: dependencies,
 			F: func(system string) (retErr error) {
 				defer recoverSweepPanic(resourceName, &retErr)
 
@@ -74,7 +76,7 @@ func RegisterTypedAPISweeper[T any](
 		option(&config)
 	}
 
-	registerSweeper(resourceName, func(system string) error {
+	registerSweeper(resourceName, config.dependencies, func(system string) error {
 		ctx := context.Background()
 
 		client, err := testhelpers.NewClientForServer(ctx, system)
@@ -159,6 +161,13 @@ func WithFilter[T any](filter TypedSweepFilter[T]) TypedSweepOption[T] {
 func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
 	return func(config *typedSweepConfig[T]) {
 		config.ignoreListStatuses = append(config.ignoreListStatuses, statuses...)
+	}
+}
+
+// WithDependencies declares sweeper names that must run before this sweeper.
+func WithDependencies[T any](deps ...string) TypedSweepOption[T] {
+	return func(config *typedSweepConfig[T]) {
+		config.dependencies = append(config.dependencies, deps...)
 	}
 }
 
