@@ -59,5 +59,8 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
+		testsweep.WithDependencies[sdk.ListSecurityGroups200ResponseAllOfSecurityGroupsInner](
+			"hpe_morpheus_security_group_rule",
+		),
 	)
 }

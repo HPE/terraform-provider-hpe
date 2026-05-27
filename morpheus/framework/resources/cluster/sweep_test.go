@@ -60,5 +60,10 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
+		testsweep.WithDependencies[sdk.ListClusters200ResponseAllOfClustersInner](
+			"hpe_morpheus_cluster_affinity_group",
+			"hpe_morpheus_cluster_datastore",
+			"hpe_morpheus_cluster_namespace",
+		),
 	)
 }

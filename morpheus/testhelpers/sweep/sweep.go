@@ -38,13 +38,15 @@ type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, it
 type typedSweepConfig[T any] struct {
 	filter             TypedSweepFilter[T]
 	ignoreListStatuses []int
+	dependencies       []string
 }
 
-func registerSweeper(resourceName string, sweep func(string) error) {
+func registerSweeper(resourceName string, dependencies []string, sweep func(string) error) {
 	resource.AddTestSweepers(
 		resourceName,
 		&resource.Sweeper{
-			Name: resourceName,
+			Name:         resourceName,
+			Dependencies: dependencies,
 			F: func(system string) (retErr error) {
 				defer recoverSweepPanic(resourceName, &retErr)
 
@@ -74,7 +76,7 @@ func RegisterTypedAPISweeper[T any](
 		option(&config)
 	}
 
-	registerSweeper(resourceName, func(system string) error {
+	registerSweeper(resourceName, config.dependencies, func(system string) error {
 		ctx := context.Background()
 
 		client, err := testhelpers.NewClientForServer(ctx, system)
@@ -145,6 +147,15 @@ func RegisterTypedAPISweeper[T any](
 
 		return sweepErr
 	})
+}
+
+// WithDependencies declares sweepers that must run before this one.
+// The Hashicorp sweep framework will run each named dependency sweeper first,
+// ensuring parent resources are cleaned up before child resources are attempted.
+func WithDependencies[T any](deps ...string) TypedSweepOption[T] {
+	return func(config *typedSweepConfig[T]) {
+		config.dependencies = append(config.dependencies, deps...)
+	}
 }
 
 // WithFilter adds an optional post-check before deleteResource is called.

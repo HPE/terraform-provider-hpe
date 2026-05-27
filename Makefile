@@ -41,11 +41,15 @@ docs: build-render-tool
 
 sweep:
 	# When SWEEP=all, run every package with a sweep_test.go.
-	# When SWEEP=name1,name2,..., run only the packages whose sweeperName matches.
+	# When SWEEP=name1,name2,..., run only the packages whose sweeperName matches,
+	# plus any packages whose sweeper names are listed as dependencies of those packages
+	# (so that dependent sweepers are registered in the same test binary).
 	@if [ "$(SWEEP)" = "all" ]; then \
 		pkgs=$$(find ./morpheus/framework/resources -name sweep_test.go -exec dirname {} \; | sort -u); \
 	else \
 		pattern=$$(echo "$(SWEEP)" | tr ',' '|'); \
-		pkgs=$$(grep -rEl --include='sweep_test.go' "\"($$pattern)\"" ./morpheus/framework/resources | xargs dirname | sort -u); \
+		pass1=$$(grep -rEl --include='sweep_test.go' "\"($$pattern)\"" ./morpheus/framework/resources); \
+		dep_pattern=$$(echo "$$pass1" | xargs grep -hEo '"hpe_morpheus_[a-z_]+"' 2>/dev/null | tr -d '"' | sort -u | tr '\n' '|' | sed 's/|$$//'); \
+		pkgs=$$(grep -rEl --include='sweep_test.go' "\"($$dep_pattern)\"" ./morpheus/framework/resources | xargs dirname | sort -u); \
 	fi; \
 	go test -v -run '^$$' $$pkgs -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)

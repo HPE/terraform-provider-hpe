@@ -55,5 +55,11 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.GetNetworkRouters200ResponseNetworkRoutersInner](
+			"hpe_morpheus_network_router_route",
+			"hpe_morpheus_network_router_firewall_rule",
+			"hpe_morpheus_network_router_bgp_neighbor",
+			"hpe_morpheus_network_router_nat",
+		),
 	)
 }

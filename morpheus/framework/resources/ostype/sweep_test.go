@@ -55,5 +55,8 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.ListOsTypes200ResponseAllOfOsTypesInner](
+			"hpe_morpheus_os_type_image",
+		),
 	)
 }

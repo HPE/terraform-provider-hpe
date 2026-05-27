@@ -69,6 +69,10 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner](
+			"hpe_morpheus_load_balancer_monitor",
+			"hpe_morpheus_load_balancer_virtual_server",
+		),
 	)
 
 	// Register a second sweeper that runs after load balancers are deleted.
