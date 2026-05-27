@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,7 +38,7 @@ func (r *securityGroupResource) Metadata(
 }
 
 func (r *securityGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = SecurityGroupSchema(ctx)
+	resp.Schema = SecurityGroupResourceSchema(ctx)
 }
 
 func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -48,7 +49,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var plan securityGroupModel
+	var plan SecurityGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -57,14 +58,50 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	body := sdk.AddSecurityGroupsRequestSecurityGroup{
 		Name: plan.Name.ValueString(),
 	}
-	if !plan.ZoneID.IsNull() && !plan.ZoneID.IsUnknown() {
-		body.ZoneId = plan.ZoneID.ValueInt64()
+	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
+		body.ZoneId = plan.CloudId.ValueInt64()
 	}
-	if !plan.Description.IsNull() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		body.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	// Tenant permissions
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		body.TenantPermissions = &sdk.AddSecurityGroupsRequestSecurityGroupTenantPermissions{
+			Accounts: tenantIDs,
+		}
+	}
+
+	// Resource permissions
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rp := &sdk.AddSecurityGroupsRequestSecurityGroupResourcePermissions{
+			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
+			for i, gid := range groupIDs {
+				id := gid
+				sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
+			}
+			rp.Sites = sites
+		}
+		body.ResourcePermissions = rp
 	}
 
 	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroups(ctx).
@@ -91,13 +128,13 @@ func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	var state securityGroupModel
+	var state SecurityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroups(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -125,22 +162,58 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	var plan securityGroupModel
+	var plan SecurityGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateSecurityGroupsRequestSecurityGroup{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		body.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	// Tenant permissions
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
+			Accounts: tenantIDs,
+		}
+	}
+
+	// Resource permissions
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rp := &sdk.UpdateSecurityGroupsRequestSecurityGroupResourcePermissions{
+			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
+			for i, gid := range groupIDs {
+				id := gid
+				sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
+			}
+			rp.Sites = sites
+		}
+		body.ResourcePermissions = rp
 	}
 
 	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
@@ -167,13 +240,13 @@ func (r *securityGroupResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	var state securityGroupModel
+	var state SecurityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -197,9 +270,12 @@ func (r *securityGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *securityGroupModel, sg *sdk.AddSecurityGroups200ResponseSecurityGroup) {
+func mapCreateResponseToModel(
+	model *SecurityGroupModel,
+	sg *sdk.AddSecurityGroups200ResponseSecurityGroup,
+) {
 	if sg.Id != nil {
-		model.ID = types.Int64Value(*sg.Id)
+		model.Id = types.Int64Value(*sg.Id)
 	}
 	if sg.Name != nil {
 		model.Name = types.StringValue(*sg.Name)
@@ -217,13 +293,40 @@ func mapCreateResponseToModel(model *securityGroupModel, sg *sdk.AddSecurityGrou
 	}
 	zone := sg.GetZone()
 	if zone.Id != nil {
-		model.ZoneID = types.Int64Value(*zone.Id)
+		model.CloudId = types.Int64Value(*zone.Id)
+	}
+
+	// Tenants
+	if len(sg.Tenants) > 0 {
+		tenantValues := make([]attr.Value, 0, len(sg.Tenants))
+		for _, t := range sg.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
+	} else {
+		model.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// Resource permissions
+	if sg.ResourcePermission != nil {
+		if sg.ResourcePermission.All != nil {
+			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
+		}
+		model.ResourcePermissionGroupIds = extractGroupIDsFromCreateSites(sg.ResourcePermission.Sites)
+	} else {
+		model.ResourcePermissionGroupsAll = types.BoolNull()
+		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
 	}
 }
 
-func mapResponseToModel(model *securityGroupModel, sg *sdk.GetSecurityGroups200ResponseSecurityGroup) {
+func mapResponseToModel(
+	model *SecurityGroupModel,
+	sg *sdk.GetSecurityGroups200ResponseSecurityGroup,
+) {
 	if sg.Id != nil {
-		model.ID = types.Int64Value(*sg.Id)
+		model.Id = types.Int64Value(*sg.Id)
 	}
 	if sg.Name != nil {
 		model.Name = types.StringValue(*sg.Name)
@@ -241,13 +344,40 @@ func mapResponseToModel(model *securityGroupModel, sg *sdk.GetSecurityGroups200R
 	}
 	zone := sg.GetZone()
 	if zone.Id != nil {
-		model.ZoneID = types.Int64Value(*zone.Id)
+		model.CloudId = types.Int64Value(*zone.Id)
+	}
+
+	// Tenants
+	if len(sg.Tenants) > 0 {
+		tenantValues := make([]attr.Value, 0, len(sg.Tenants))
+		for _, t := range sg.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
+	} else {
+		model.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// Resource permissions
+	if sg.ResourcePermission != nil {
+		if sg.ResourcePermission.All != nil {
+			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
+		}
+		model.ResourcePermissionGroupIds = extractGroupIDsFromCreateSites(sg.ResourcePermission.Sites)
+	} else {
+		model.ResourcePermissionGroupsAll = types.BoolNull()
+		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
 	}
 }
 
-func mapUpdateResponseToModel(model *securityGroupModel, sg *sdk.UpdateSecurityGroups200ResponseSecurityGroup) {
+func mapUpdateResponseToModel(
+	model *SecurityGroupModel,
+	sg *sdk.UpdateSecurityGroups200ResponseSecurityGroup,
+) {
 	if sg.Id != nil {
-		model.ID = types.Int64Value(*sg.Id)
+		model.Id = types.Int64Value(*sg.Id)
 	}
 	if sg.Name != nil {
 		model.Name = types.StringValue(*sg.Name)
@@ -265,6 +395,76 @@ func mapUpdateResponseToModel(model *securityGroupModel, sg *sdk.UpdateSecurityG
 	}
 	zone := sg.GetZone()
 	if zone.Id != nil {
-		model.ZoneID = types.Int64Value(*zone.Id)
+		model.CloudId = types.Int64Value(*zone.Id)
 	}
+
+	// Tenants
+	if len(sg.Tenants) > 0 {
+		tenantValues := make([]attr.Value, 0, len(sg.Tenants))
+		for _, t := range sg.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
+	} else {
+		model.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// Resource permissions
+	if sg.ResourcePermission != nil {
+		if sg.ResourcePermission.All != nil {
+			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
+		}
+		model.ResourcePermissionGroupIds = extractGroupIDsFromUpdateSites(sg.ResourcePermission.Sites)
+	} else {
+		model.ResourcePermissionGroupsAll = types.BoolNull()
+		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
+	}
+}
+
+func extractGroupIDsFromCreateSites(
+	sites []sdk.AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner,
+) types.Set {
+	if len(sites) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	groupValues := make([]attr.Value, 0, len(sites))
+	for _, site := range sites {
+		if site.Id != nil {
+			groupValues = append(groupValues, types.Int64Value(*site.Id))
+		}
+	}
+
+	if len(groupValues) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	result, _ := types.SetValue(types.Int64Type, groupValues)
+
+	return result
+}
+
+func extractGroupIDsFromUpdateSites(
+	sites []sdk.UpdateSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner,
+) types.Set {
+	if len(sites) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	groupValues := make([]attr.Value, 0, len(sites))
+	for _, site := range sites {
+		if site.Id != nil {
+			groupValues = append(groupValues, types.Int64Value(*site.Id))
+		}
+	}
+
+	if len(groupValues) == 0 {
+		return types.SetNull(types.Int64Type)
+	}
+
+	result, _ := types.SetValue(types.Int64Type, groupValues)
+
+	return result
 }
