@@ -76,6 +76,12 @@ func getCloudAsState(
 		state.Code = convert.StrToType(cloud.Code)
 	}
 	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	state.DefaultDatastoreSyncActive = convert.BoolToType(cloud.DefaultDatastoreSyncActive)
+	state.DefaultFolderSyncActive = convert.BoolToType(cloud.DefaultFolderSyncActive)
+	state.DefaultNetworkSyncActive = convert.BoolToType(cloud.DefaultNetworkSyncActive)
+	state.DefaultPlanSyncActive = convert.BoolToType(cloud.DefaultPlanSyncActive)
+	state.DefaultPoolSyncActive = convert.BoolToType(cloud.DefaultPoolSyncActive)
+	state.DefaultSecurityGroupSyncActive = convert.BoolToType(cloud.DefaultSecurityGroupSyncActive)
 	state.Enabled = convert.BoolToType(cloud.Enabled)
 	state.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
 	state.Id = convert.Int64ToType(cloud.Id)

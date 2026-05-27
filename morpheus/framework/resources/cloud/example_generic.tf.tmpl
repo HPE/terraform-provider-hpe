@@ -18,11 +18,14 @@ resource "hpe_morpheus_cloud" "example" {
 
   security_mode = "off"
 
-  appliance_url            = "{{.ApplianceUrl}}"
-  keyboard_layout = "us"
+  appliance_url    = "{{.ApplianceUrl}}"
+  keyboard_layout  = "us"
   data_center_name = "aDatacenter"
   external_id      = "{{.Code}}"
-  import_existing_vms      = "off"
+  import_existing_vms = "off"
+
+  # Inventory discovery (only security_groups applies to standard clouds)
+  default_security_group_sync_active = true
 
   config = {
     certificateProvider          = "internal"

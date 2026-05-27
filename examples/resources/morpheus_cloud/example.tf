@@ -23,6 +23,9 @@ resource "hpe_morpheus_cloud" "example" {
 
   keyboard_layout = "us"
 
+  # Inventory discovery (only security_groups applies to HVM clouds)
+  default_security_group_sync_active = true
+
   config_hvm = {
     certificate_provider          = "internal"
     enable_network_type_selection = false
