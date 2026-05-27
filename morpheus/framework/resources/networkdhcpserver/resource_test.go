@@ -101,7 +101,7 @@ func TestAccMorpheusNetworkDhcpServerResourceExampleOk(t *testing.T) {
 					}
 
 					return rs.Primary.Attributes["network_integration_id"] +
-						":" + rs.Primary.Attributes["id"], nil
+						"." + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_dhcp_server.example",
 				Check:        checkFn,
@@ -182,7 +182,7 @@ func TestAccMorpheusNetworkDhcpServerResourceDynamicConfigExampleOk(t *testing.T
 					}
 
 					return rs.Primary.Attributes["network_integration_id"] +
-						":" + rs.Primary.Attributes["id"], nil
+						"." + rs.Primary.Attributes["id"], nil
 				},
 				ResourceName: "hpe_morpheus_network_dhcp_server.dynamic_example",
 				Check: resource.ComposeAggregateTestCheckFunc(

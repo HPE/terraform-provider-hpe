@@ -64,7 +64,7 @@ func TestAccMorpheusClusterNamespaceResourceBasic(t *testing.T) {
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs := s.RootModule().Resources["hpe_morpheus_cluster_namespace.test"]
 
-					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
+					return fmt.Sprintf("%s.%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
 				},
 			},
 		},

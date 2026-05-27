@@ -43,8 +43,8 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
+Import is supported using `router_id.nat_id`.
 
 ```bash
-terraform import hpe_morpheus_network_router_nat.example 123
+terraform import hpe_morpheus_network_router_nat.example 42.123
 ```

@@ -36,8 +36,8 @@ resource "hpe_morpheus_cluster_namespace" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
+Import is supported using `cluster_id.namespace_id`.
 
 ```bash
-terraform import hpe_morpheus_cluster_namespace.example 123
+terraform import hpe_morpheus_cluster_namespace.example 42.123
 ```

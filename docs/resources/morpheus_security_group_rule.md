@@ -50,8 +50,8 @@ resource "hpe_morpheus_security_group_rule" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
+Import is supported using `security_group_id.rule_id`.
 
 ```bash
-terraform import hpe_morpheus_security_group_rule.example 123
+terraform import hpe_morpheus_security_group_rule.example 42.123
 ```
