@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_library_option_type Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_option_type Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Manages a Morpheus Library Option Type resource.
+  Manages a Morpheus Option Type resource.
 ---
-# hpe_morpheus_library_option_type (Resource)
+# hpe_morpheus_option_type (Resource)
 
-Manages a Morpheus Library Option Type resource.
+Manages a Morpheus Option Type resource.
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_library_option_type" "example" {
+resource "hpe_morpheus_option_type" "example" {
   name          = "Environment Selector"
   field_name    = "environment"
   type          = "select"
@@ -48,5 +48,5 @@ resource "hpe_morpheus_library_option_type" "example" {
 Import is supported using the resource ID.
 
 ```bash
-terraform import hpe_morpheus_library_option_type.example 123
+terraform import hpe_morpheus_option_type.example 123
 ```

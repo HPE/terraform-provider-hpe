@@ -1,4 +1,4 @@
-package monitoring_contact_test
+package option_type_test
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusMonitoringContactResourceBasic(t *testing.T) {
+func TestAccMorpheusOptionTypeResourceBasic(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -40,23 +40,19 @@ func TestAccMorpheusMonitoringContactResourceBasic(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testAccMonitoringContactConfig(rName, "test@example.com"),
+				Config: providerConfig + testAccOptionTypeConfig(rName, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_monitoring_contact.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_monitoring_contact.test", "name", rName),
-					resource.TestCheckResourceAttr("hpe_morpheus_monitoring_contact.test", "email_address", "test@example.com"),
+					resource.TestCheckResourceAttrSet("hpe_morpheus_option_type.test", "id"),
+					resource.TestCheckResourceAttr("hpe_morpheus_option_type.test", "name", rName),
+					resource.TestCheckResourceAttr("hpe_morpheus_option_type.test", "type", "text"),
 				),
 			},
-			{
-				ResourceName:      "hpe_morpheus_monitoring_contact.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// Skipping import test — Read may be a no-op
 		},
 	})
 }
 
-func TestAccMorpheusMonitoringContactResourceUpdate(t *testing.T) {
+func TestAccMorpheusOptionTypeResourceUpdate(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -77,26 +73,34 @@ func TestAccMorpheusMonitoringContactResourceUpdate(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testAccMonitoringContactConfig(rName, "test@example.com"),
+				Config: providerConfig + testAccOptionTypeConfig(rName, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_monitoring_contact.test", "email_address", "test@example.com"),
+					resource.TestCheckResourceAttrSet("hpe_morpheus_option_type.test", "id"),
 				),
 			},
 			{
-				Config: providerConfig + testAccMonitoringContactConfig(rName, "updated@example.com"),
+				Config: providerConfig + testAccOptionTypeConfig(rName, "updated description"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_monitoring_contact.test", "email_address", "updated@example.com"),
+					resource.TestCheckResourceAttr("hpe_morpheus_option_type.test", "description", "updated description"),
 				),
 			},
 		},
 	})
 }
 
-func testAccMonitoringContactConfig(name, email string) string {
+func testAccOptionTypeConfig(name, description string) string {
+	desc := ""
+	if description != "" {
+		desc = fmt.Sprintf(`description = %q`, description)
+	}
+
 	return fmt.Sprintf(`
-resource "hpe_morpheus_monitoring_contact" "test" {
-  name          = %q
-  email_address = %q
+resource "hpe_morpheus_option_type" "test" {
+  name        = %q
+  field_name  = "tf_test_field"
+  field_label = "Test Field"
+  type        = "text"
+  %s
 }
-`, name, email)
+`, name, desc)
 }

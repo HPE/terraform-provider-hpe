@@ -16,12 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-const sweeperName = "hpe_morpheus_library_option_type"
+const sweeperName = "hpe_morpheus_option_type"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
-		// List library option type resources.
+		// List option type resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListInputs200ResponseAllOfOptionTypesInner,
 			*http.Response,
@@ -34,7 +34,7 @@ func init() {
 
 			return resp.GetOptionTypes(), hresp, err
 		},
-		// Is this a test library option type?
+		// Is this a test option type?
 		func(item sdk.ListInputs200ResponseAllOfOptionTypesInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -43,7 +43,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
-		// Delete the test library option type.
+		// Delete the test option type.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
