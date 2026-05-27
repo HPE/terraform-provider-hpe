@@ -11,13 +11,15 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_subnet/example.tf example.tf.tmpl TypeId "1"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_subnet/example.tf example.tf.tmpl Name "Example Subnet" TypeId "1" Visibility "private"
 
 func RenderSubnetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"TypeId": "1",
+		"Name":       "Example Subnet",
+		"TypeId":     "1",
+		"Visibility": "private",
 	}
 
 	for key, value := range overrides {

@@ -1,3 +1,5 @@
 resource "hpe_morpheus_subnet" "example" {
-  type_id = 1
+  name       = "Example Subnet"
+  type_id    = 1
+  visibility = "private"
 }

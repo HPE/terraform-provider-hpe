@@ -1,3 +1,5 @@
 resource "hpe_morpheus_subnet" "example" {
-  type_id = {{.TypeId}}
+  name       = "{{.Name}}"
+  type_id    = {{.TypeId}}
+  visibility = "{{.Visibility}}"
 }

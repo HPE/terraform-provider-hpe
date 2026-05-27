@@ -1,4 +1,6 @@
 resource "hpe_morpheus_network_router_nat" "example" {
-  router_id = {{.RouterId}}
-  name = "{{.Name}}"
+  router_id      = {{.RouterId}}
+  name           = "{{.Name}}"
+  source_network = "{{.SourceNetwork}}"
+  description    = "{{.Description}}"
 }

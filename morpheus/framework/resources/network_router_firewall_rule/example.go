@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_firewall_rule/example.tf example.tf.tmpl RouterId "1" Name "Example Firewall Rule"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_firewall_rule/example.tf example.tf.tmpl RouterId "1" Name "Example Firewall Rule" Policy "accept" Enabled "true"
 
 func RenderNetworkRouterFirewallRuleConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -19,6 +19,8 @@ func RenderNetworkRouterFirewallRuleConfig(t *testing.T, overrides map[string]st
 	defaults := map[string]string{
 		"RouterId": "1",
 		"Name":     "Example Firewall Rule",
+		"Policy":   "accept",
+		"Enabled":  "true",
 	}
 
 	for key, value := range overrides {

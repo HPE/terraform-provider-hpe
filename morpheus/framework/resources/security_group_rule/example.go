@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_security_group_rule/example.tf example.tf.tmpl SecurityGroupId "1" Name "Allow HTTPS" Protocol "tcp" RuleType "customRule" Direction "ingress" PortRange "443" Source "0.0.0.0/0" Policy "accept"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_security_group_rule/example.tf example.tf.tmpl SecurityGroupId "1" Name "Allow HTTPS" Protocol "tcp" RuleType "customRule" Direction "ingress" PortRange "443" Source "0.0.0.0/0" Destination "0.0.0.0/0" Policy "accept"
 
 func RenderSecurityGroupRuleConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -24,6 +24,7 @@ func RenderSecurityGroupRuleConfig(t *testing.T, overrides map[string]string) (s
 		"Direction":       "ingress",
 		"PortRange":       "443",
 		"Source":          "0.0.0.0/0",
+		"Destination":     "0.0.0.0/0",
 		"Policy":          "accept",
 	}
 
