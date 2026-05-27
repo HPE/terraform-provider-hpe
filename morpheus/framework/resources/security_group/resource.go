@@ -190,7 +190,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	// Tenant permissions
+	// Tenant permissions — always send to avoid perpetual diff when user removes tenant_ids from config.
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []int64
 		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
@@ -199,6 +199,10 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		}
 		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
 			Accounts: tenantIDs,
+		}
+	} else {
+		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
+			Accounts: []int64{},
 		}
 	}
 

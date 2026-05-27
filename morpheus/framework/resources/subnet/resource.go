@@ -249,6 +249,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 		body.Labels = labels
 	}
+	// Tenants — always send to avoid perpetual diff when user removes tenant_ids from config.
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []int64
 		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
@@ -261,6 +262,8 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 			tenants[i] = sdk.UpdateSubnetRequestSubnetTenantsInner{Id: &id}
 		}
 		body.Tenants = tenants
+	} else {
+		body.Tenants = []sdk.UpdateSubnetRequestSubnetTenantsInner{}
 	}
 
 	updateReq := sdk.UpdateSubnetRequest{
