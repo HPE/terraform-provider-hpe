@@ -54,12 +54,11 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	body := sdk.CreateSubnetRequestSubnet{
-		Type: &sdk.CreateSubnetRequestSubnetType{
-			Id: plan.TypeId.ValueInt64Pointer(),
-		},
-		NetworkId: plan.NetworkId.ValueInt64Pointer(),
+	body := sdk.NewCreateSubnetRequestSubnetWithDefaults()
+	body.Type = &sdk.CreateSubnetRequestSubnetType{
+		Id: plan.TypeId.ValueInt64Pointer(),
 	}
+	body.NetworkId = plan.NetworkId.ValueInt64Pointer()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
@@ -130,7 +129,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	createReq := sdk.CreateSubnetRequest{
-		Subnet: &body,
+		Subnet: body,
 	}
 
 	// Resource permissions
@@ -217,7 +216,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.UpdateSubnetRequestSubnet{}
+	body := sdk.NewUpdateSubnetRequestSubnetWithDefaults()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
@@ -265,7 +264,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	updateReq := sdk.UpdateSubnetRequest{
-		Subnet: &body,
+		Subnet: body,
 	}
 
 	// Resource permissions
@@ -319,6 +318,9 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.DeleteSubnet(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return
+	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "subnet", "", err, httpResp)
 
@@ -406,9 +408,7 @@ func mapCreateResponseToModel(model *SubnetModel, subnet *sdk.CreateSubnet200Res
 
 	// Resource permissions
 	if subnet.ResourcePermission != nil {
-		if subnet.ResourcePermission.All != nil {
-			model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
-		}
+		model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
 		model.ResourcePermissionGroupIds = extractGroupIDsFromSites(subnet.ResourcePermission.Sites)
 	} else {
 		model.ResourcePermissionGroupsAll = types.BoolNull()
@@ -484,9 +484,7 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 
 	// Resource permissions
 	if subnet.ResourcePermission != nil {
-		if subnet.ResourcePermission.All != nil {
-			model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
-		}
+		model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
 		model.ResourcePermissionGroupIds = extractGroupIDsFromSites(subnet.ResourcePermission.Sites)
 	} else {
 		model.ResourcePermissionGroupsAll = types.BoolNull()

@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -55,9 +56,8 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	body := sdk.AddSecurityGroupsRequestSecurityGroup{
-		Name: plan.Name.ValueString(),
-	}
+	body := sdk.NewAddSecurityGroupsRequestSecurityGroupWithDefaults()
+	body.Name = plan.Name.ValueString()
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
 		body.ZoneId = plan.CloudId.ValueInt64()
 	}
@@ -106,7 +106,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 
 	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroups(ctx).
 		AddSecurityGroupsRequest(sdk.AddSecurityGroupsRequest{
-			SecurityGroup: body,
+			SecurityGroup: *body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "security_group", plan.Name.ValueString(), err, httpResp)
@@ -170,9 +170,8 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.UpdateSecurityGroupsRequestSecurityGroup{
-		Name: plan.Name.ValueStringPointer(),
-	}
+	body := sdk.NewUpdateSecurityGroupsRequestSecurityGroupWithDefaults()
+	body.Name = plan.Name.ValueStringPointer()
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
@@ -218,7 +217,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
 		UpdateSecurityGroupsRequest(sdk.UpdateSecurityGroupsRequest{
-			SecurityGroup: body,
+			SecurityGroup: *body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "security_group", plan.Name.ValueString(), err, httpResp)
@@ -249,6 +248,9 @@ func (r *securityGroupResource) Delete(ctx context.Context, req resource.DeleteR
 	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroups(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return
+	}
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "security_group", "", err, httpResp)
 
@@ -274,27 +276,17 @@ func mapCreateResponseToModel(
 	model *SecurityGroupModel,
 	sg *sdk.AddSecurityGroups200ResponseSecurityGroup,
 ) {
-	if sg.Id != nil {
-		model.Id = types.Int64Value(*sg.Id)
-	}
-	if sg.Name != nil {
-		model.Name = types.StringValue(*sg.Name)
-	}
-	if sg.Description.IsSet() && sg.Description.Get() != nil {
-		model.Description = types.StringValue(*sg.Description.Get())
+	model.Id = convert.Int64ToType(sg.Id)
+	model.Name = convert.StrToType(sg.Name)
+	if sg.Description.IsSet() {
+		model.Description = convert.StrToType(sg.Description.Get())
 	} else {
 		model.Description = types.StringNull()
 	}
-	if sg.Active != nil {
-		model.Active = types.BoolValue(*sg.Active)
-	}
-	if sg.Visibility != nil {
-		model.Visibility = types.StringValue(*sg.Visibility)
-	}
+	model.Active = convert.BoolToType(sg.Active)
+	model.Visibility = convert.StrToType(sg.Visibility)
 	zone := sg.GetZone()
-	if zone.Id != nil {
-		model.CloudId = types.Int64Value(*zone.Id)
-	}
+	model.CloudId = convert.Int64ToType(zone.Id)
 
 	// Tenants
 	if len(sg.Tenants) > 0 {
@@ -311,9 +303,7 @@ func mapCreateResponseToModel(
 
 	// Resource permissions
 	if sg.ResourcePermission != nil {
-		if sg.ResourcePermission.All != nil {
-			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
-		}
+		model.ResourcePermissionGroupsAll = convert.BoolToType(sg.ResourcePermission.All)
 		model.ResourcePermissionGroupIds = extractGroupIDsFromCreateSites(sg.ResourcePermission.Sites)
 	} else {
 		model.ResourcePermissionGroupsAll = types.BoolNull()
@@ -325,27 +315,17 @@ func mapResponseToModel(
 	model *SecurityGroupModel,
 	sg *sdk.GetSecurityGroups200ResponseSecurityGroup,
 ) {
-	if sg.Id != nil {
-		model.Id = types.Int64Value(*sg.Id)
-	}
-	if sg.Name != nil {
-		model.Name = types.StringValue(*sg.Name)
-	}
-	if sg.Description.IsSet() && sg.Description.Get() != nil {
-		model.Description = types.StringValue(*sg.Description.Get())
+	model.Id = convert.Int64ToType(sg.Id)
+	model.Name = convert.StrToType(sg.Name)
+	if sg.Description.IsSet() {
+		model.Description = convert.StrToType(sg.Description.Get())
 	} else {
 		model.Description = types.StringNull()
 	}
-	if sg.Active != nil {
-		model.Active = types.BoolValue(*sg.Active)
-	}
-	if sg.Visibility != nil {
-		model.Visibility = types.StringValue(*sg.Visibility)
-	}
+	model.Active = convert.BoolToType(sg.Active)
+	model.Visibility = convert.StrToType(sg.Visibility)
 	zone := sg.GetZone()
-	if zone.Id != nil {
-		model.CloudId = types.Int64Value(*zone.Id)
-	}
+	model.CloudId = convert.Int64ToType(zone.Id)
 
 	// Tenants
 	if len(sg.Tenants) > 0 {
@@ -362,9 +342,7 @@ func mapResponseToModel(
 
 	// Resource permissions
 	if sg.ResourcePermission != nil {
-		if sg.ResourcePermission.All != nil {
-			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
-		}
+		model.ResourcePermissionGroupsAll = convert.BoolToType(sg.ResourcePermission.All)
 		model.ResourcePermissionGroupIds = extractGroupIDsFromCreateSites(sg.ResourcePermission.Sites)
 	} else {
 		model.ResourcePermissionGroupsAll = types.BoolNull()
@@ -376,27 +354,17 @@ func mapUpdateResponseToModel(
 	model *SecurityGroupModel,
 	sg *sdk.UpdateSecurityGroups200ResponseSecurityGroup,
 ) {
-	if sg.Id != nil {
-		model.Id = types.Int64Value(*sg.Id)
-	}
-	if sg.Name != nil {
-		model.Name = types.StringValue(*sg.Name)
-	}
-	if sg.Description.IsSet() && sg.Description.Get() != nil {
-		model.Description = types.StringValue(*sg.Description.Get())
+	model.Id = convert.Int64ToType(sg.Id)
+	model.Name = convert.StrToType(sg.Name)
+	if sg.Description.IsSet() {
+		model.Description = convert.StrToType(sg.Description.Get())
 	} else {
 		model.Description = types.StringNull()
 	}
-	if sg.Active != nil {
-		model.Active = types.BoolValue(*sg.Active)
-	}
-	if sg.Visibility != nil {
-		model.Visibility = types.StringValue(*sg.Visibility)
-	}
+	model.Active = convert.BoolToType(sg.Active)
+	model.Visibility = convert.StrToType(sg.Visibility)
 	zone := sg.GetZone()
-	if zone.Id != nil {
-		model.CloudId = types.Int64Value(*zone.Id)
-	}
+	model.CloudId = convert.Int64ToType(zone.Id)
 
 	// Tenants
 	if len(sg.Tenants) > 0 {
@@ -413,9 +381,7 @@ func mapUpdateResponseToModel(
 
 	// Resource permissions
 	if sg.ResourcePermission != nil {
-		if sg.ResourcePermission.All != nil {
-			model.ResourcePermissionGroupsAll = types.BoolValue(*sg.ResourcePermission.All)
-		}
+		model.ResourcePermissionGroupsAll = convert.BoolToType(sg.ResourcePermission.All)
 		model.ResourcePermissionGroupIds = extractGroupIDsFromUpdateSites(sg.ResourcePermission.Sites)
 	} else {
 		model.ResourcePermissionGroupsAll = types.BoolNull()
