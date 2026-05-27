@@ -49,7 +49,7 @@ func TestAccMorpheusCypherResourceBasic(t *testing.T) {
 				ResourceName:            "hpe_morpheus_cypher.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"value"},
+				ImportStateVerifyIgnore: []string{"value", "value_version"},
 			},
 		},
 	})

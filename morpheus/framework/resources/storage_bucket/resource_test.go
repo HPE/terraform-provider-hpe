@@ -48,7 +48,7 @@ func TestAccMorpheusStorageBucketResourceBasic(t *testing.T) {
 				ResourceName:            "hpe_morpheus_storage_bucket.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"access_key", "secret_key"},
+				ImportStateVerifyIgnore: []string{"access_key", "secret_key", "access_key_version", "secret_key_version"},
 			},
 			// Update description
 			{
