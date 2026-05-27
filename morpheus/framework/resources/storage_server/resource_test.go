@@ -17,7 +17,7 @@ import (
 const resourceName = "hpe_morpheus_storage_server.test"
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
