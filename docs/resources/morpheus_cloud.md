@@ -217,13 +217,14 @@ Required:
 
 - `azure_region` (String) The Azure region associated with the cloud integration
 - `client_id` (String) The Azure client (application) ID
-- `client_secret` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure client secret
+- `client_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure client secret
 - `resource_group` (String) The Azure resource group
 - `subscriber_id` (String) The Azure subscription ID
 - `tenant_id` (String) The Azure Active Directory tenant ID
 
 Optional:
 
+- `client_secret_version` (Number) Client secret version. Used to determine if client secret has been updated.
 - `cloud_type` (String) The Azure cloud type (global, usgov, german, china)
 - `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
 - `import_existing` (String) Whether to import existing resources from the cloud (on, off)
@@ -260,6 +261,7 @@ Optional:
 - `enable_vnc` (Boolean) Enable VNC access to the console.
 - `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
 - `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
+- `password_version` (Number) Password version. Used to determine if password has been updated.
 - `resource_pool` (String) The name of the vSphere resource pool
 - `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
 - `username` (String) Username.

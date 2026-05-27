@@ -102,7 +102,7 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
 - `max_retry` (Number) The number of retries before the health check is considered failed
 - `monitor_destination` (String) The target path or URL for the health check (e.g. /health)
 - `monitor_interval` (Number) The interval in seconds at which the monitor checks target health
-- `monitor_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password for authenticated health checks (Write Only)
+- `monitor_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password for authenticated health checks (Write Only)
 - `monitor_password_wo_version` (Number) Monitor password version. Used to determine if monitor_password_wo has been updated.
 - `monitor_timeout` (Number) The maximum time in seconds to wait for a health check response before marking as failed
 - `monitor_type` (String) The monitor protocol type. Valid values are: dns, http, https, icmp, ldap, mssql, passive, tcp, udp. The provider maps these to the appropriate load-balancer-specific value based on the load balancer type (e.g. http becomes LBHttpMonitorProfile for NSX-T).

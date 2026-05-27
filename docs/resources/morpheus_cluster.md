@@ -171,6 +171,7 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 
 ### Read-Only
 
+- `cpu_placement_mode` (String) Cluster CPU placement mode
 - `id` (Number) The ID of the cluster
 - `service_url` (String)
 - `uuid` (String)
@@ -195,7 +196,7 @@ It should be passed as an array of Objects with the following attributes (see [b
 - `service_plan_id` (Number) ID of the cluster server service plan.
 - `ssh_hosts` (Attributes Set) Array of Host IPs and Names. This is used in conjunction with sshUsername and sshPassword/sshKeyPair to add existing hosts such as with HPE VM clusters. (see [below for nested schema](#nestedatt--server--ssh_hosts))
 - `ssh_key_pair_id` (Number) SSH Key Pair ID.
-- `ssh_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
+- `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
 - `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
 - `ssh_port` (Number) The port which the worker's SSH server is listening on.
 - `ssh_username` (String) SSH Username
