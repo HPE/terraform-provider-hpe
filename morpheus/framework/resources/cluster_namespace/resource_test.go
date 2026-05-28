@@ -1,20 +1,18 @@
 package cluster_namespace_test
 
 import (
-	"fmt"
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_namespace"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
@@ -23,59 +21,117 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hpe": func() (tfprotov6.ProviderServer, error) {
-		return providerserver.NewProtocol6WithError(
-			provider.New("test", morpheus.New())(),
-		)()
-	},
-}
-
-func TestAccMorpheusClusterNamespaceResourceBasic(t *testing.T) {
+func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Kubernetes) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
 	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
 	if clusterID == "" {
-		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set, skipping")
+		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
 	}
 
-	rName := acctest.RandomWithPrefix(t.Name())
+	providerConfig := testhelpers.ProviderBlock()
+	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+
+	resourceConfig, err := cluster_namespace.RenderClusterNamespaceConfig(t, map[string]string{
+		"ClusterId": clusterID,
+		"Name":      name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet("hpe_morpheus_cluster_namespace.example", "id"),
+		resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.example", "cluster_id", clusterID),
+		resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.example", "name", name),
+	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: testAccClusterNamespaceConfig(clusterID, rName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_cluster_namespace.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.test", "cluster_id", clusterID),
-					resource.TestCheckResourceAttr("hpe_morpheus_cluster_namespace.test", "name", rName),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
-			// ImportState with composite ID
 			{
-				ResourceName:      "hpe_morpheus_cluster_namespace.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs := s.RootModule().Resources["hpe_morpheus_cluster_namespace.test"]
-
-					return fmt.Sprintf("%s.%s", rs.Primary.Attributes["cluster_id"], rs.Primary.Attributes["id"]), nil
-				},
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
 		},
 	})
 }
 
-func testAccClusterNamespaceConfig(clusterID, name string) string {
-	return fmt.Sprintf(`
-resource "hpe_morpheus_cluster_namespace" "test" {
-  cluster_id = %q
-  name       = %q
-}
-`, clusterID, name)
+func TestAccMorpheusClusterNamespaceResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Kubernetes) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
+	if clusterID == "" {
+		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+	updatedName := name + "-updated"
+
+	createConfig, err := cluster_namespace.RenderClusterNamespaceConfig(t, map[string]string{
+		"ClusterId": clusterID,
+		"Name":      name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateConfig, err := cluster_namespace.RenderClusterNamespaceConfig(t, map[string]string{
+		"ClusterId": clusterID,
+		"Name":      updatedName,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_cluster_namespace.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
+		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{Config: providerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
 }

@@ -1,5 +1,3 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-
 package vdi_app_test
 
 import (
@@ -8,8 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -20,97 +20,108 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusVdiAppResourceBasic(t *testing.T) {
+func TestAccMorpheusVdiAppResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig := `
-resource "hpe_morpheus_vdi_app" "test" {
-  name          = "` + name + `"
-  launch_prefix = "||/usr/bin/app"
-}
-`
+	resourceConfig, err := vdi_app.RenderVdiAppConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet("hpe_morpheus_vdi_app.example", "id"),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "name", name),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "description", "Google Chrome virtual application"),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "launch_prefix", "/usr/bin/google-chrome"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + createConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_vdi_app.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.test", "name", name),
-					resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.test", "launch_prefix", "||/usr/bin/app"),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
 			{
-				ResourceName:      "hpe_morpheus_vdi_app.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
 		},
 	})
 }
 
-func TestAccMorpheusVdiAppResourceUpdate(t *testing.T) {
+func TestAccMorpheusVdiAppResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.VDI) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig := `
-resource "hpe_morpheus_vdi_app" "test" {
-  name          = "` + name + `"
-  launch_prefix = "||/usr/bin/app"
-}
-`
+	createConfig, err := vdi_app.RenderVdiAppConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	updateConfig := `
-resource "hpe_morpheus_vdi_app" "test" {
-  name          = "` + name + `"
-  launch_prefix = "||/usr/bin/app"
-  description   = "Updated description"
-}
-`
+	updateConfig, err := vdi_app.RenderVdiAppConfig(t, map[string]string{
+		"Name":         name,
+		"Description":  "Updated Chrome virtual application",
+		"LaunchPrefix": "/usr/bin/chromium-browser",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_vdi_app.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Google Chrome virtual application"),
+		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "/usr/bin/google-chrome"),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated Chrome virtual application"),
+		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "/usr/bin/chromium-browser"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + createConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.test", "name", name),
-				),
-			},
-			{
-				Config: providerConfig + updateConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.test", "description", "Updated description"),
-				),
-			},
+			{Config: providerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
 }
