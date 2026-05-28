@@ -145,6 +145,55 @@ func (g *Resource) Create(
 			VMWareInstanceConfiguration2: configVMware,
 		}
 
+	// Azure config
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		configAzure := sdk.NewAzureInstanceConfiguration2()
+		configAzure.SetResourcePoolId(plan.ConfigAzure.ResourcePoolId.ValueString())
+		configAzure.SetCreateUser(plan.ConfigAzure.CreateUser.ValueBool())
+
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			configAzure.SetAzureRegion(plan.ConfigAzure.AzureRegion.ValueString())
+		}
+
+		if !plan.ConfigAzure.AzuresecurityGroupId.IsNull() && !plan.ConfigAzure.AzuresecurityGroupId.IsUnknown() {
+			configAzure.SetAzuresecurityGroupId(plan.ConfigAzure.AzuresecurityGroupId.ValueString())
+		}
+
+		if !plan.ConfigAzure.AvailabilityOptions.IsNull() && !plan.ConfigAzure.AvailabilityOptions.IsUnknown() {
+			configAzure.SetAvailabilityOptions(plan.ConfigAzure.AvailabilityOptions.ValueString())
+		}
+
+		if !plan.ConfigAzure.AvailabilitySet.IsNull() && !plan.ConfigAzure.AvailabilitySet.IsUnknown() {
+			configAzure.SetAvailabilitySet(plan.ConfigAzure.AvailabilitySet.ValueString())
+		}
+
+		if !plan.ConfigAzure.AvailabilityZone.IsNull() && !plan.ConfigAzure.AvailabilityZone.IsUnknown() {
+			if configAzure.AdditionalProperties == nil {
+				configAzure.AdditionalProperties = make(map[string]interface{})
+			}
+			configAzure.AdditionalProperties["availabilityZone"] = plan.ConfigAzure.AvailabilityZone.ValueString()
+		}
+
+		if !plan.ConfigAzure.AzurefloatingIp.IsNull() && !plan.ConfigAzure.AzurefloatingIp.IsUnknown() {
+			configAzure.SetAzurefloatingIp(plan.ConfigAzure.AzurefloatingIp.ValueString())
+		}
+
+		if !plan.ConfigAzure.BootDiagnostics.IsNull() && !plan.ConfigAzure.BootDiagnostics.IsUnknown() {
+			configAzure.SetBootDiagnostics(plan.ConfigAzure.BootDiagnostics.ValueString())
+		}
+
+		if !plan.ConfigAzure.OsGuestDiagnostics.IsNull() && !plan.ConfigAzure.OsGuestDiagnostics.IsUnknown() {
+			configAzure.SetOsGuestDiagnostics(plan.ConfigAzure.OsGuestDiagnostics.ValueString())
+		}
+
+		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
+			configAzure.SetDiagnosticsStorageAccount(plan.ConfigAzure.DiagnosticsStorageAccount.ValueString())
+		}
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			AzureInstanceConfiguration2: configAzure,
+		}
+
 	// Generic config
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
@@ -291,21 +340,12 @@ func (g *Resource) Create(
 
 	// service_plan_options
 	if !plan.ServicePlanOptions.IsNull() {
-		servicePlanOptions := sdk.NewServicePlanOptionsWithDefaults()
+		servicePlanOptions := sdk.NewAddInstanceRequestServicePlanOptions()
 		memory := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
 		servicePlanOptions.MaxMemory = &memory
 		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
 		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
-		servicePlanOptionsMap, err := servicePlanOptions.ToMap()
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"error creating instance",
-				fmt.Sprintf("could not convert service plan options to map: %v", err),
-			)
-
-			return
-		}
-		reqInstance.ServicePlanOptions = servicePlanOptionsMap
+		reqInstance.ServicePlanOptions = servicePlanOptions
 	}
 
 	// tags

@@ -4,7 +4,7 @@ go 1.25.8
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260519114622-05016d74fdfe
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.58.0
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.61.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0

@@ -1,4 +1,7 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+
+//go:build sweep
 
 package sweep
 
@@ -14,12 +17,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
-const testDhcpServerPrefix = "TestAccMorpheusNetworkDhcpServer"
+const sweeperName = "hpe_morpheus_network_dhcp_server"
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_network_dhcp_server",
-		// List all DHCP servers across all network servers.
+		sweeperName,
+		// List DHCP server resources by iterating network servers.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner,
 			*http.Response,
@@ -69,7 +72,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testDhcpServerPrefix)
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test DHCP server.
 		func(

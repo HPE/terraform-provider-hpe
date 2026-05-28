@@ -12,11 +12,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // Test creating a policy with required attributes only
-func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceRequiredAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -24,8 +29,7 @@ func TestAccMorpheusPolicyRequiredAttrsOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 
@@ -97,7 +101,12 @@ resource "hpe_morpheus_policy" "required" {
 }
 
 // Test creating policies with different policy types which apply to Bare Metal
-func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceAllBareMetalPolicyTypesOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.ServiceNow) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -105,8 +114,7 @@ func TestAccMorpheusPolicyAllBareMetalPolicyTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
@@ -578,6 +586,11 @@ resource "hpe_morpheus_policy" "test" {
 
 // Test creating policies scoped to different resource types (Group, Cloud, User, Role)
 func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -585,8 +598,7 @@ func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Create dependency resources
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
@@ -667,7 +679,8 @@ resource "hpe_morpheus_network" "test" {
 	policyNamePlan := acctest.RandomWithPrefix(t.Name() + "-plan-policy")
 	policyNameNetwork := acctest.RandomWithPrefix(t.Name() + "-network-policy")
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "group_policy",
 		"Name", policyNameGroup,
 		"Description", "Example group-scoped policy",
@@ -681,7 +694,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	cloudResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	cloudResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "cloud_policy",
 		"Name", policyNameCloud,
 		"Description", "Example cloud-scoped policy",
@@ -695,7 +709,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	roleResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	roleResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "role_policy",
 		"Name", policyNameRole,
 		"Description", "Example role-scoped policy",
@@ -709,7 +724,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	userResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	userResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "user_policy",
 		"Name", policyNameUser,
 		"Description", "Example user-scoped policy",
@@ -723,7 +739,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	planResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	planResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "plan_policy",
 		"Name", policyNamePlan,
 		"Description", "Example plan-scoped policy",
@@ -737,7 +754,8 @@ resource "hpe_morpheus_network" "test" {
 		t.Fatal(err)
 	}
 
-	networkResourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	networkResourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"ResourceName", "network_policy",
 		"Name", policyNameNetwork,
 		"Description", "Example network-scoped policy",
@@ -813,7 +831,12 @@ resource "hpe_morpheus_network" "test" {
 }
 
 // Test creating policies using static schema fields (config_* attributes)
-func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
+func TestAccMorpheusPolicyResourceAllStaticSchemaOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.ServiceNow) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -821,8 +844,7 @@ func TestAccMorpheusPolicyAllStaticSchemaOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	namePrefix := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 

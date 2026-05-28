@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -13,10 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_network_router"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_network_router",
-		// List all network router resources.
+		sweeperName,
+		// List network router resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.GetNetworkRouters200ResponseNetworkRoutersInner,
 			*http.Response,
@@ -29,7 +34,7 @@ func init() {
 
 			return resp.GetNetworkRouters(), hresp, err
 		},
-		// Is this a test router?
+		// Is this a test network router?
 		func(item sdk.GetNetworkRouters200ResponseNetworkRoutersInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -38,7 +43,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
-		// Delete the test router.
+		// Delete the test network router.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
@@ -53,5 +58,11 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.GetNetworkRouters200ResponseNetworkRoutersInner](
+			"hpe_morpheus_network_router_route",
+			"hpe_morpheus_network_router_firewall_rule",
+			"hpe_morpheus_network_router_bgp_neighbor",
+			"hpe_morpheus_network_router_nat",
+		),
 	)
 }

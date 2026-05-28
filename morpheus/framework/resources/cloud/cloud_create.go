@@ -366,6 +366,79 @@ func (r *Resource) Create(
 
 		addCloudConfig.AddCloudsRequestZoneConfigAnyOf3 = config
 
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		cloudTypeCode = azureCloud
+
+		config := sdkfuncs.NewAzureCloudConfig()
+		config.AdditionalProperties = make(map[string]interface{})
+
+		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+			config.SetApplianceUrl(plan.ApplianceUrl.ValueString())
+		}
+
+		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+			config.SetDatacenterName(plan.DataCenterName.ValueString())
+		}
+
+		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+			config.SetExternalId(plan.ExternalId.ValueString())
+		}
+
+		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+			config.SetInventoryLevel(plan.ImportExistingVms.ValueString())
+		}
+
+		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+			config.SetConsoleKeymap(plan.KeyboardLayout.ValueString())
+		}
+
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			config.AdditionalProperties["azureRegion"] = plan.ConfigAzure.AzureRegion.ValueString()
+		}
+
+		if !plan.ConfigAzure.CmdbDiscovery.IsNull() && !plan.ConfigAzure.CmdbDiscovery.IsUnknown() {
+			config.AdditionalProperties["configCmdbDiscovery"] = convert.
+				BoolTypeToStringPointerOnOff(plan.ConfigAzure.CmdbDiscovery)
+		}
+
+		if !plan.ConfigAzure.SubscriberId.IsNull() && !plan.ConfigAzure.SubscriberId.IsUnknown() {
+			config.SubscriberId = plan.ConfigAzure.SubscriberId.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.TenantId.IsNull() && !plan.ConfigAzure.TenantId.IsUnknown() {
+			config.TenantId = plan.ConfigAzure.TenantId.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.ClientId.IsNull() && !plan.ConfigAzure.ClientId.IsUnknown() {
+			config.ClientId = plan.ConfigAzure.ClientId.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.ClientSecret.IsNull() && !plan.ConfigAzure.ClientSecret.IsUnknown() {
+			config.ClientSecret = plan.ConfigAzure.ClientSecret.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.ResourceGroup.IsNull() && !plan.ConfigAzure.ResourceGroup.IsUnknown() {
+			config.ResourceGroup = plan.ConfigAzure.ResourceGroup.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.CloudType.IsNull() && !plan.ConfigAzure.CloudType.IsUnknown() {
+			config.CloudType = plan.ConfigAzure.CloudType.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.ImportExisting.IsNull() && !plan.ConfigAzure.ImportExisting.IsUnknown() {
+			config.ImportExisting = plan.ConfigAzure.ImportExisting.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.StorageAccount.IsNull() && !plan.ConfigAzure.StorageAccount.IsUnknown() {
+			config.StorageAccount = plan.ConfigAzure.StorageAccount.ValueStringPointer()
+		}
+
+		if !plan.ConfigAzure.RpcMode.IsNull() && !plan.ConfigAzure.RpcMode.IsUnknown() {
+			config.RpcMode.Set(plan.ConfigAzure.RpcMode.ValueStringPointer())
+		}
+
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf1 = config
+
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		if plan.CloudTypeCode.IsNull() || plan.CloudTypeCode.IsUnknown() {
 			resp.Diagnostics.AddError(
@@ -443,6 +516,25 @@ func (r *Resource) Create(
 
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
 		addCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
+	}
+
+	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
+		addCloud.SetDefaultDatastoreSyncActive(plan.DefaultDatastoreSyncActive.ValueBool())
+	}
+	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
+		addCloud.SetDefaultFolderSyncActive(plan.DefaultFolderSyncActive.ValueBool())
+	}
+	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
+		addCloud.SetDefaultNetworkSyncActive(plan.DefaultNetworkSyncActive.ValueBool())
+	}
+	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
+		addCloud.SetDefaultPlanSyncActive(plan.DefaultPlanSyncActive.ValueBool())
+	}
+	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
+		addCloud.SetDefaultPoolSyncActive(plan.DefaultPoolSyncActive.ValueBool())
+	}
+	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
+		addCloud.SetDefaultSecurityGroupSyncActive(plan.DefaultSecurityGroupSyncActive.ValueBool())
 	}
 
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {

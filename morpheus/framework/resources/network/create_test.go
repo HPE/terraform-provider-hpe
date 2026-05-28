@@ -12,19 +12,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -108,38 +112,53 @@ resource "hpe_morpheus_network" "foo" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "name", uniqueName),
+						"hpe_morpheus_network.foo", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cloud_id", "4617"),
+						"hpe_morpheus_network.foo", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "group_id", "1"),
+						"hpe_morpheus_network.foo", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "type_id", "35"),
+						"hpe_morpheus_network.foo", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8"),
+						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.resourceGroupId", "morph-qa"),
+						"hpe_morpheus_network.foo", "config.resourceGroupId", "morph-qa",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetName", "example-subnet"),
+						"hpe_morpheus_network.foo", "config.subnetName", "example-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetCidr", "10.0.1.0/24"),
+						"hpe_morpheus_network.foo", "config.subnetCidr", "10.0.1.0/24",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "labels.#", "4"),
+						"hpe_morpheus_network.foo", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "terraform"),
+						"hpe_morpheus_network.foo", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "acctest"),
+						"hpe_morpheus_network.foo", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.foo", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "sweepable"),
+						"hpe_morpheus_network.foo", "labels.*", "sweepable",
+					),
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "resource_permissions.all"),
+						"hpe_morpheus_network.foo", "resource_permissions.all",
+					),
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "id"),
+						"hpe_morpheus_network.foo", "id",
+					),
 				),
 			},
 		},
@@ -150,14 +169,18 @@ resource "hpe_morpheus_network" "foo" {
 // with all available fields populated and validates that each field is set correctly
 // Uses Azure
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Azure, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -186,59 +209,81 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Check basic required fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "name", uniqueName),
+						"hpe_morpheus_network.all_attrs", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "description", "Network with all attributes set"),
+						"hpe_morpheus_network.all_attrs", "description", "Network with all attributes set",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "cloud_id", "4617"),
+						"hpe_morpheus_network.all_attrs", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "pool_id", "6446"),
+						"hpe_morpheus_network.all_attrs", "pool_id", "6446",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "group_id", "1"),
+						"hpe_morpheus_network.all_attrs", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "type_id", "35"),
+						"hpe_morpheus_network.all_attrs", "type_id", "35",
+					),
 
 					// Check network configuration fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "cidr", "10.100.0.0/16"),
+						"hpe_morpheus_network.all_attrs", "cidr", "10.100.0.0/16",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "visibility", "public"),
+						"hpe_morpheus_network.all_attrs", "visibility", "public",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "active", "true"),
+						"hpe_morpheus_network.all_attrs", "active", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "dhcp_server", "true"),
+						"hpe_morpheus_network.all_attrs", "dhcp_server", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "appliance_url_proxy_bypass", "false"),
+						"hpe_morpheus_network.all_attrs", "appliance_url_proxy_bypass", "false",
+					),
 
 					// Check config object fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.resourceGroupId", "all-attrs-resource-group"),
+						"hpe_morpheus_network.all_attrs", "config.resourceGroupId", "all-attrs-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.subnetName", "all-attrs-subnet"),
+						"hpe_morpheus_network.all_attrs", "config.subnetName", "all-attrs-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.subnetCidr", "10.100.1.0/24"),
+						"hpe_morpheus_network.all_attrs", "config.subnetCidr", "10.100.1.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.location", "eastus"),
+						"hpe_morpheus_network.all_attrs", "config.location", "eastus",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.additionalField", "test-value"),
+						"hpe_morpheus_network.all_attrs", "config.additionalField", "test-value",
+					),
 
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.all_attrs", "resource_permissions.all"),
+						"hpe_morpheus_network.all_attrs", "resource_permissions.all",
+					),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "tenant_ids.#", "3"),
+						"hpe_morpheus_network.all_attrs", "tenant_ids.#", "3",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "2"),
+						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "2",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "3"),
+						"hpe_morpheus_network.all_attrs", "tenant_ids.*", "3",
+					),
 
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.all_attrs", "id"),
+						"hpe_morpheus_network.all_attrs", "id",
+					),
 				),
 			},
 		},
@@ -256,14 +301,18 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 // TestAccMorpheusNetworkHostConfig tests creating a host network resource
 // with host-specific configuration and empty config object
 func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -291,37 +340,52 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "name", uniqueName),
+						"hpe_morpheus_network.host", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "description", "A test host network"),
+						"hpe_morpheus_network.host", "description", "A test host network",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "cloud_id", "17"),
+						"hpe_morpheus_network.host", "cloud_id", "17",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "pool_id", "6446"),
+						"hpe_morpheus_network.host", "pool_id", "6446",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "group_id", "1"),
+						"hpe_morpheus_network.host", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "type_id", "1"),
+						"hpe_morpheus_network.host", "type_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "active", "true"),
+						"hpe_morpheus_network.host", "active", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "dhcp_server", "false"),
+						"hpe_morpheus_network.host", "dhcp_server", "false",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "appliance_url_proxy_bypass", "true"),
+						"hpe_morpheus_network.host", "appliance_url_proxy_bypass", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "visibility", "private"),
+						"hpe_morpheus_network.host", "visibility", "private",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "cidr", "10.0.0.0/8"),
+						"hpe_morpheus_network.host", "cidr", "10.0.0.0/8",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.host", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.host", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.host", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.host", "tenant_ids.*", "1",
+					),
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.host", "resource_permissions.all"),
+						"hpe_morpheus_network.host", "resource_permissions.all",
+					),
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.host", "id"),
+						"hpe_morpheus_network.host", "id",
+					),
 				),
 			},
 		},
@@ -332,14 +396,18 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 // resource with specific configuration including assignPublicIp and
 // availabilityZone settings using example files
 func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
+	if capabilities.Missing(t, capabilities.AWS, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -369,62 +437,80 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 					// Check basic required fields
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "name",
-						uniqueName),
+						uniqueName,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "description",
-						"AWS subnet"),
+						"AWS subnet",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "cloud_id",
-						"207"),
+						"207",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.aws", "pool_id", "6446"),
+						"hpe_morpheus_network.aws", "pool_id", "6446",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.aws", "group_id", "1"),
+						"hpe_morpheus_network.aws", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.aws", "type_id", "36"),
+						"hpe_morpheus_network.aws", "type_id", "36",
+					),
 
 					// Check network configuration fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.aws", "active", "true"),
+						"hpe_morpheus_network.aws", "active", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "dhcp_server",
-						"true"),
+						"true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws",
-						"appliance_url_proxy_bypass", "true"),
+						"appliance_url_proxy_bypass", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "visibility",
-						"private"),
+						"private",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "cidr",
-						"10.200.99.0/24"),
+						"10.200.99.0/24",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "zone_pool_id",
-						"12329"),
+						"12329",
+					),
 
 					// Check config object fields specific to AWS
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws",
-						"config.assignPublicIp", "true"),
+						"config.assignPublicIp", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws",
-						"config.availabilityZone", "us-west-1a"),
+						"config.availabilityZone", "us-west-1a",
+					),
 
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.aws", "resource_permissions.all"),
+						"hpe_morpheus_network.aws", "resource_permissions.all",
+					),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws", "tenant_ids.#",
-						"1"),
+						"1",
+					),
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.aws", "tenant_ids.*",
-						"1"),
+						"1",
+					),
 
 					// Check that the resource was created with an ID
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.aws", "id"),
+						"hpe_morpheus_network.aws", "id",
+					),
 				),
 			},
 		},
@@ -434,14 +520,18 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 // TestAccMorpheusNetworkResourceCreateGcp tests creating a GCP network
 // resource with specific configuration including mtu and autoCreate settings
 func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
+	if capabilities.Missing(t, capabilities.GCP, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -518,7 +608,8 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 
 					// Check resource permissions (computed-only)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.gcp", "resource_permissions.all"),
+						"hpe_morpheus_network.gcp", "resource_permissions.all",
+					),
 
 					// Check tenant_ids
 					resource.TestCheckResourceAttr(
@@ -541,6 +632,11 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 // TestAccMorpheusNetworkResourceCreateOVSPortGroup tests creating an OVS Port Group network
 // for cloud ID 7714.
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -549,8 +645,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -579,46 +674,64 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					// Standard checks
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "name", uniqueName),
+						"hpe_morpheus_network.ovs_port_group", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "description", "OVS Port Group network"),
+						"hpe_morpheus_network.ovs_port_group", "description", "OVS Port Group network",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "cloud_id", "7714"),
+						"hpe_morpheus_network.ovs_port_group", "cloud_id", "7714",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "pool_id", "3251"),
+						"hpe_morpheus_network.ovs_port_group", "pool_id", "3251",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "group_id", "1"),
+						"hpe_morpheus_network.ovs_port_group", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "type_id", "63"),
+						"hpe_morpheus_network.ovs_port_group", "type_id", "63",
+					),
 					// Check OVS-specific fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "switch_id", "Compute"),
+						"hpe_morpheus_network.ovs_port_group", "switch_id", "Compute",
+					),
 					// Additional standard checks
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "active", "true"),
+						"hpe_morpheus_network.ovs_port_group", "active", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "dhcp_server", "false"),
+						"hpe_morpheus_network.ovs_port_group", "dhcp_server", "false",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "appliance_url_proxy_bypass", "true"),
+						"hpe_morpheus_network.ovs_port_group", "appliance_url_proxy_bypass", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "visibility", "public"),
+						"hpe_morpheus_network.ovs_port_group", "visibility", "public",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "cidr", "10.32.148.0/22"),
+						"hpe_morpheus_network.ovs_port_group", "cidr", "10.32.148.0/22",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "zone_pool_id", "62299"),
+						"hpe_morpheus_network.ovs_port_group", "zone_pool_id", "62299",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "vlan_id", "43"),
+						"hpe_morpheus_network.ovs_port_group", "vlan_id", "43",
+					),
 					// Check permissions
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.ovs_port_group", "resource_permissions.all"),
+						"hpe_morpheus_network.ovs_port_group", "resource_permissions.all",
+					),
 					// Check tenant IDs
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.ovs_port_group", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.ovs_port_group", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.ovs_port_group", "tenant_ids.*", "1",
+					),
 					// ID check
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.ovs_port_group", "id"),
+						"hpe_morpheus_network.ovs_port_group", "id",
+					),
 				),
 			},
 		},

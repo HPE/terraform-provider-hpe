@@ -12,18 +12,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusImageExampleOk(t *testing.T) {
+func TestAccMorpheusImageResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -32,8 +36,7 @@ func TestAccMorpheusImageExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -47,7 +50,8 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 `
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
 		"Name", name,
 		"StorageProviderId", "data.hpe_morpheus_storage_bucket.test.id",
 		"OsTypeId", "data.hpe_morpheus_os_type.test.id",

@@ -4,4 +4,6 @@
 
 package role
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role/sweep"
+)

@@ -1,0 +1,11 @@
+resource "hpe_morpheus_power_schedule" "example" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  schedule_type     = "{{.ScheduleType}}"
+  schedule_timezone = "{{.ScheduleTimezone}}"
+  enabled           = {{.Enabled}}
+  monday_on_time    = "{{.MondayOnTime}}"
+  monday_off_time   = "{{.MondayOffTime}}"
+  tuesday_on_time   = "{{.TuesdayOnTime}}"
+  tuesday_off_time  = "{{.TuesdayOffTime}}"
+}

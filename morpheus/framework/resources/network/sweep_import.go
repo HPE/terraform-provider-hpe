@@ -4,4 +4,6 @@
 
 package network
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network/sweep"
+)

@@ -46,8 +46,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
 					validators.ValidObjectMap(),
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure")}...),
 				},
 			},
 			"config_aws": schema.SingleNestedAttribute{
@@ -131,6 +131,90 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Configuration options for AWS instances.",
 				MarkdownDescription: "Configuration options for AWS instances.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+			},
+			"config_azure": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"availability_options": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The availability option for the instance (zone, set).",
+						MarkdownDescription: "The availability option for the instance (zone, set).",
+						Validators: []validator.String{
+							stringvalidator.OneOf("zone", "set"),
+						},
+					},
+					"availability_set": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The availability set to use when availability_options is 'set'.",
+						MarkdownDescription: "The availability set to use when availability_options is 'set'.",
+					},
+					"availability_zone": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The availability zone to use when availability_options is 'zone'.",
+						MarkdownDescription: "The availability zone to use when availability_options is 'zone'.",
+					},
+					"azure_region": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The Azure region to provision the instance in.",
+						MarkdownDescription: "The Azure region to provision the instance in.",
+					},
+					"azurefloating_ip": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Whether to assign a public IP to the instance (on, off).",
+						MarkdownDescription: "Whether to assign a public IP to the instance (on, off).",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+					},
+					"azuresecurity_group_id": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The id of the Azure security group to assign the instance to.",
+						MarkdownDescription: "The id of the Azure security group to assign the instance to.",
+					},
+					"boot_diagnostics": schema.StringAttribute{
+						Optional:            true,
+						Description:         "Boot diagnostics setting (enable, enable_custom_storage).",
+						MarkdownDescription: "Boot diagnostics setting (enable, enable_custom_storage).",
+						Validators: []validator.String{
+							stringvalidator.OneOf("enable", "enable_custom_storage"),
+						},
+					},
+					"create_user": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to create a user when provisioning the instance.",
+						MarkdownDescription: "Whether to create a user when provisioning the instance.",
+						Default:             booldefault.StaticBool(true),
+					},
+					"diagnostics_storage_account": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.",
+						MarkdownDescription: "The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.",
+					},
+					"os_guest_diagnostics": schema.StringAttribute{
+						Optional:            true,
+						Description:         "OS guest diagnostics setting (on, off).",
+						MarkdownDescription: "OS guest diagnostics setting (on, off).",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+					},
+					"resource_pool_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The id of the Azure resource group to provision the instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.",
+						MarkdownDescription: "The id of the Azure resource group to provision the instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.",
+					},
+				},
+				CustomType: ConfigAzureType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAzureValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration options for Azure instances.",
+				MarkdownDescription: "Configuration options for Azure instances.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
@@ -655,6 +739,7 @@ type InstanceModel struct {
 	CloudId            types.Int64             `tfsdk:"cloud_id"`
 	Config             types.Dynamic           `tfsdk:"config"`
 	ConfigAws          ConfigAwsValue          `tfsdk:"config_aws"`
+	ConfigAzure        ConfigAzureValue        `tfsdk:"config_azure"`
 	ConfigHvm          ConfigHvmValue          `tfsdk:"config_hvm"`
 	ConfigVmware       ConfigVmwareValue       `tfsdk:"config_vmware"`
 	ConnectionInfo     types.List              `tfsdk:"connection_info"`
@@ -1814,6 +1899,888 @@ func (v SecurityGroupsValue) Type(ctx context.Context) attr.Type {
 func (v SecurityGroupsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"id": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigAzureType{}
+
+type ConfigAzureType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAzureType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAzureType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAzureType) String() string {
+	return "ConfigAzureType"
+}
+
+func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	availabilityOptionsAttribute, ok := attributes["availability_options"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_options is missing from object`)
+
+		return nil, diags
+	}
+
+	availabilityOptionsVal, ok := availabilityOptionsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_options expected to be basetypes.StringValue, was: %T`, availabilityOptionsAttribute))
+	}
+
+	availabilitySetAttribute, ok := attributes["availability_set"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_set is missing from object`)
+
+		return nil, diags
+	}
+
+	availabilitySetVal, ok := availabilitySetAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_set expected to be basetypes.StringValue, was: %T`, availabilitySetAttribute))
+	}
+
+	availabilityZoneAttribute, ok := attributes["availability_zone"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_zone is missing from object`)
+
+		return nil, diags
+	}
+
+	availabilityZoneVal, ok := availabilityZoneAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_zone expected to be basetypes.StringValue, was: %T`, availabilityZoneAttribute))
+	}
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return nil, diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	azurefloatingIpAttribute, ok := attributes["azurefloating_ip"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azurefloating_ip is missing from object`)
+
+		return nil, diags
+	}
+
+	azurefloatingIpVal, ok := azurefloatingIpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azurefloating_ip expected to be basetypes.StringValue, was: %T`, azurefloatingIpAttribute))
+	}
+
+	azuresecurityGroupIdAttribute, ok := attributes["azuresecurity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azuresecurity_group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	azuresecurityGroupIdVal, ok := azuresecurityGroupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azuresecurity_group_id expected to be basetypes.StringValue, was: %T`, azuresecurityGroupIdAttribute))
+	}
+
+	bootDiagnosticsAttribute, ok := attributes["boot_diagnostics"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`boot_diagnostics is missing from object`)
+
+		return nil, diags
+	}
+
+	bootDiagnosticsVal, ok := bootDiagnosticsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`boot_diagnostics expected to be basetypes.StringValue, was: %T`, bootDiagnosticsAttribute))
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	diagnosticsStorageAccountAttribute, ok := attributes["diagnostics_storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`diagnostics_storage_account is missing from object`)
+
+		return nil, diags
+	}
+
+	diagnosticsStorageAccountVal, ok := diagnosticsStorageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`diagnostics_storage_account expected to be basetypes.StringValue, was: %T`, diagnosticsStorageAccountAttribute))
+	}
+
+	osGuestDiagnosticsAttribute, ok := attributes["os_guest_diagnostics"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`os_guest_diagnostics is missing from object`)
+
+		return nil, diags
+	}
+
+	osGuestDiagnosticsVal, ok := osGuestDiagnosticsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`os_guest_diagnostics expected to be basetypes.StringValue, was: %T`, osGuestDiagnosticsAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAzureValue{
+		AvailabilityOptions:       availabilityOptionsVal,
+		AvailabilitySet:           availabilitySetVal,
+		AvailabilityZone:          availabilityZoneVal,
+		AzureRegion:               azureRegionVal,
+		AzurefloatingIp:           azurefloatingIpVal,
+		AzuresecurityGroupId:      azuresecurityGroupIdVal,
+		BootDiagnostics:           bootDiagnosticsVal,
+		CreateUser:                createUserVal,
+		DiagnosticsStorageAccount: diagnosticsStorageAccountVal,
+		OsGuestDiagnostics:        osGuestDiagnosticsVal,
+		ResourcePoolId:            resourcePoolIdVal,
+		state:                     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueNull() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAzureValueUnknown() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAzureValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, a missing attribute value was detected. "+
+					"A ConfigAzureValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAzureValue Attribute Type",
+				"While creating a ConfigAzureValue value, an invalid attribute value was detected. "+
+					"A ConfigAzureValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, an extra attribute value was detected. "+
+					"A ConfigAzureValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAzureValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	availabilityOptionsAttribute, ok := attributes["availability_options"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_options is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	availabilityOptionsVal, ok := availabilityOptionsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_options expected to be basetypes.StringValue, was: %T`, availabilityOptionsAttribute))
+	}
+
+	availabilitySetAttribute, ok := attributes["availability_set"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_set is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	availabilitySetVal, ok := availabilitySetAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_set expected to be basetypes.StringValue, was: %T`, availabilitySetAttribute))
+	}
+
+	availabilityZoneAttribute, ok := attributes["availability_zone"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`availability_zone is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	availabilityZoneVal, ok := availabilityZoneAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`availability_zone expected to be basetypes.StringValue, was: %T`, availabilityZoneAttribute))
+	}
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	azurefloatingIpAttribute, ok := attributes["azurefloating_ip"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azurefloating_ip is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azurefloatingIpVal, ok := azurefloatingIpAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azurefloating_ip expected to be basetypes.StringValue, was: %T`, azurefloatingIpAttribute))
+	}
+
+	azuresecurityGroupIdAttribute, ok := attributes["azuresecurity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azuresecurity_group_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azuresecurityGroupIdVal, ok := azuresecurityGroupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azuresecurity_group_id expected to be basetypes.StringValue, was: %T`, azuresecurityGroupIdAttribute))
+	}
+
+	bootDiagnosticsAttribute, ok := attributes["boot_diagnostics"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`boot_diagnostics is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	bootDiagnosticsVal, ok := bootDiagnosticsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`boot_diagnostics expected to be basetypes.StringValue, was: %T`, bootDiagnosticsAttribute))
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	diagnosticsStorageAccountAttribute, ok := attributes["diagnostics_storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`diagnostics_storage_account is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	diagnosticsStorageAccountVal, ok := diagnosticsStorageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`diagnostics_storage_account expected to be basetypes.StringValue, was: %T`, diagnosticsStorageAccountAttribute))
+	}
+
+	osGuestDiagnosticsAttribute, ok := attributes["os_guest_diagnostics"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`os_guest_diagnostics is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	osGuestDiagnosticsVal, ok := osGuestDiagnosticsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`os_guest_diagnostics expected to be basetypes.StringValue, was: %T`, osGuestDiagnosticsAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	return ConfigAzureValue{
+		AvailabilityOptions:       availabilityOptionsVal,
+		AvailabilitySet:           availabilitySetVal,
+		AvailabilityZone:          availabilityZoneVal,
+		AzureRegion:               azureRegionVal,
+		AzurefloatingIp:           azurefloatingIpVal,
+		AzuresecurityGroupId:      azuresecurityGroupIdVal,
+		BootDiagnostics:           bootDiagnosticsVal,
+		CreateUser:                createUserVal,
+		DiagnosticsStorageAccount: diagnosticsStorageAccountVal,
+		OsGuestDiagnostics:        osGuestDiagnosticsVal,
+		ResourcePoolId:            resourcePoolIdVal,
+		state:                     attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAzureValue {
+	object, diags := NewConfigAzureValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAzureValueMust(ConfigAzureValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAzureValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAzureValue{}
+
+type ConfigAzureValue struct {
+	AvailabilityOptions       basetypes.StringValue `tfsdk:"availability_options"`
+	AvailabilitySet           basetypes.StringValue `tfsdk:"availability_set"`
+	AvailabilityZone          basetypes.StringValue `tfsdk:"availability_zone"`
+	AzureRegion               basetypes.StringValue `tfsdk:"azure_region"`
+	AzurefloatingIp           basetypes.StringValue `tfsdk:"azurefloating_ip"`
+	AzuresecurityGroupId      basetypes.StringValue `tfsdk:"azuresecurity_group_id"`
+	BootDiagnostics           basetypes.StringValue `tfsdk:"boot_diagnostics"`
+	CreateUser                basetypes.BoolValue   `tfsdk:"create_user"`
+	DiagnosticsStorageAccount basetypes.StringValue `tfsdk:"diagnostics_storage_account"`
+	OsGuestDiagnostics        basetypes.StringValue `tfsdk:"os_guest_diagnostics"`
+	ResourcePoolId            basetypes.StringValue `tfsdk:"resource_pool_id"`
+	state                     attr.ValueState
+}
+
+func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 11)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["availability_options"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["availability_set"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["availability_zone"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["azure_region"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["azurefloating_ip"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["azuresecurity_group_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["boot_diagnostics"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["diagnostics_storage_account"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["os_guest_diagnostics"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 11)
+
+		val, err = v.AvailabilityOptions.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["availability_options"] = val
+
+		val, err = v.AvailabilitySet.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["availability_set"] = val
+
+		val, err = v.AvailabilityZone.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["availability_zone"] = val
+
+		val, err = v.AzureRegion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["azure_region"] = val
+
+		val, err = v.AzurefloatingIp.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["azurefloating_ip"] = val
+
+		val, err = v.AzuresecurityGroupId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["azuresecurity_group_id"] = val
+
+		val, err = v.BootDiagnostics.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["boot_diagnostics"] = val
+
+		val, err = v.CreateUser.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user"] = val
+
+		val, err = v.DiagnosticsStorageAccount.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["diagnostics_storage_account"] = val
+
+		val, err = v.OsGuestDiagnostics.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["os_guest_diagnostics"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAzureValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAzureValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAzureValue) String() string {
+	return "ConfigAzureValue"
+}
+
+func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"availability_options":        basetypes.StringType{},
+		"availability_set":            basetypes.StringType{},
+		"availability_zone":           basetypes.StringType{},
+		"azure_region":                basetypes.StringType{},
+		"azurefloating_ip":            basetypes.StringType{},
+		"azuresecurity_group_id":      basetypes.StringType{},
+		"boot_diagnostics":            basetypes.StringType{},
+		"create_user":                 basetypes.BoolType{},
+		"diagnostics_storage_account": basetypes.StringType{},
+		"os_guest_diagnostics":        basetypes.StringType{},
+		"resource_pool_id":            basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"availability_options":        v.AvailabilityOptions,
+			"availability_set":            v.AvailabilitySet,
+			"availability_zone":           v.AvailabilityZone,
+			"azure_region":                v.AzureRegion,
+			"azurefloating_ip":            v.AzurefloatingIp,
+			"azuresecurity_group_id":      v.AzuresecurityGroupId,
+			"boot_diagnostics":            v.BootDiagnostics,
+			"create_user":                 v.CreateUser,
+			"diagnostics_storage_account": v.DiagnosticsStorageAccount,
+			"os_guest_diagnostics":        v.OsGuestDiagnostics,
+			"resource_pool_id":            v.ResourcePoolId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAzureValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAzureValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AvailabilityOptions.Equal(other.AvailabilityOptions) {
+		return false
+	}
+
+	if !v.AvailabilitySet.Equal(other.AvailabilitySet) {
+		return false
+	}
+
+	if !v.AvailabilityZone.Equal(other.AvailabilityZone) {
+		return false
+	}
+
+	if !v.AzureRegion.Equal(other.AzureRegion) {
+		return false
+	}
+
+	if !v.AzurefloatingIp.Equal(other.AzurefloatingIp) {
+		return false
+	}
+
+	if !v.AzuresecurityGroupId.Equal(other.AzuresecurityGroupId) {
+		return false
+	}
+
+	if !v.BootDiagnostics.Equal(other.BootDiagnostics) {
+		return false
+	}
+
+	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.DiagnosticsStorageAccount.Equal(other.DiagnosticsStorageAccount) {
+		return false
+	}
+
+	if !v.OsGuestDiagnostics.Equal(other.OsGuestDiagnostics) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
+	return ConfigAzureType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"availability_options":        basetypes.StringType{},
+		"availability_set":            basetypes.StringType{},
+		"availability_zone":           basetypes.StringType{},
+		"azure_region":                basetypes.StringType{},
+		"azurefloating_ip":            basetypes.StringType{},
+		"azuresecurity_group_id":      basetypes.StringType{},
+		"boot_diagnostics":            basetypes.StringType{},
+		"create_user":                 basetypes.BoolType{},
+		"diagnostics_storage_account": basetypes.StringType{},
+		"os_guest_diagnostics":        basetypes.StringType{},
+		"resource_pool_id":            basetypes.StringType{},
 	}
 }
 

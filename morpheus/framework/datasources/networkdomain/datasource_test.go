@@ -12,11 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -33,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,8 +45,7 @@ func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t, nil)
 	if err != nil {
@@ -64,6 +67,11 @@ func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -72,8 +80,7 @@ func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdomain.RenderNetworkDomainByIdConfig(t, nil)
 	if err != nil {
@@ -105,6 +112,11 @@ func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -113,8 +125,7 @@ func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkdomain.RenderNetworkDomainByNameConfig(t,
 		map[string]string{
@@ -139,6 +150,11 @@ func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDomainNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -161,6 +177,11 @@ func TestAccMorpheusFindNetworkDomainNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkDomainBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

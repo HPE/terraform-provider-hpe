@@ -4,4 +4,6 @@
 
 package policy
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy/sweep"
+)

@@ -18,10 +18,10 @@ Used to create and delete Router routes.
 resource "hpe_morpheus_network_router_route" "example" {
   router_id     = 42
   name          = "example-route"
-  network       = "10.0.0.0/24"
-  next_hop      = "10.0.0.1"
+  source        = "10.0.0.0/24"
+  destination   = "10.0.0.1"
   description   = "Example route"
-  mtu           = 1500
+  network_mtu   = 1500
   enabled       = true
   default_route = false
 }
@@ -33,26 +33,21 @@ resource "hpe_morpheus_network_router_route" "example" {
 
 ### Required
 
-- `name` (String) The name of the route.
-- `network` (String) Source IPV4 address or CIDR range.
-- `next_hop` (String) Destination IPV4 address or CIDR range.
-- `router_id` (Number) ID of the parent router.
+- `destination` (String) Destination / next hop
+- `router_id` (Number) The ID of the parent network router
+- `source` (String) Source network (CIDR)
 
 ### Optional
 
-- `default_route` (Boolean) Can be used to set as default route.
-- `description` (String) Route description
-- `enabled` (Boolean) Can be used to enable / disable the route.
-- `mtu` (Number) Maximum Transmission Unit (MTU).
+- `default_route` (Boolean) Whether this is the default route
+- `description` (String) Description of the route
+- `enabled` (Boolean) Whether the route is enabled
+- `name` (String) Name of the route
+- `network_mtu` (Number) Network MTU
 
 ### Read-Only
 
-- `code` (String)
-- `external_id` (String)
-- `id` (Number) The ID of this resource.
-- `provider_id` (String)
-- `route_type` (String)
-- `source_type` (String)
+- `id` (Number) The ID of the route
 
 ## Import
 

@@ -27,7 +27,6 @@ resource "hpe_morpheus_network" "azure" {
     "resourceGroupId" = all-attrs-resource-group
     "subnetName"      = "all-attrs-subnet"
     "subnetCidr"      = "10.100.1.0/24"
-    "location"        = "eastus"
   }
   tenant_ids = [
     data.hpe_morpheus_tenant.example.id,

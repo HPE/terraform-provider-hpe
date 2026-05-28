@@ -21,6 +21,7 @@ import (
 const (
 	standardCloud = "standard"
 	awsCloud      = "amazon"
+	azureCloud    = "azure"
 	vmwareCloud   = "vmware"
 	readOperation = "read cloud resource"
 )
@@ -75,6 +76,12 @@ func getCloudAsState(
 		state.Code = convert.StrToType(cloud.Code)
 	}
 	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
+	state.DefaultDatastoreSyncActive = convert.BoolToType(cloud.DefaultDatastoreSyncActive)
+	state.DefaultFolderSyncActive = convert.BoolToType(cloud.DefaultFolderSyncActive)
+	state.DefaultNetworkSyncActive = convert.BoolToType(cloud.DefaultNetworkSyncActive)
+	state.DefaultPlanSyncActive = convert.BoolToType(cloud.DefaultPlanSyncActive)
+	state.DefaultPoolSyncActive = convert.BoolToType(cloud.DefaultPoolSyncActive)
+	state.DefaultSecurityGroupSyncActive = convert.BoolToType(cloud.DefaultSecurityGroupSyncActive)
 	state.Enabled = convert.BoolToType(cloud.Enabled)
 	state.GuidanceMode = convert.StrToType(cloud.GuidanceMode.Get())
 	state.Id = convert.Int64ToType(cloud.Id)
@@ -456,6 +463,93 @@ func getCloudAsState(
 		}
 
 		state.ConfigVmware = configVmware
+
+	case cloudType == azureCloud && (!plan.ConfigAzure.IsNull() || importing):
+		// Azure read uses GetClouds200ResponseZoneConfigAnyOf3 (the GET response model),
+		// while create uses AddCloudsRequestZoneConfigAnyOf1 (the POST request model).
+		// The AnyOf index differs between request/response specs but both are Azure.
+		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf3
+
+		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
+		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
+
+		attrTypes := ConfigAzureValue{}.AttributeTypes(ctx)
+		attrValues := make(map[string]attr.Value)
+
+		if azureRegion, ok := cfg.AdditionalProperties["azureRegion"].(string); ok {
+			attrValues["azure_region"] = types.StringValue(azureRegion)
+		} else {
+			attrValues["azure_region"] = types.StringNull()
+		}
+
+		if cfg.ClientId != nil {
+			attrValues["client_id"] = convert.StrToType(cfg.ClientId)
+		} else {
+			attrValues["client_id"] = types.StringNull()
+		}
+
+		attrValues["client_secret"] = types.StringNull()
+
+		if cfg.CloudType != nil {
+			attrValues["cloud_type"] = convert.StrToType(cfg.CloudType)
+		} else {
+			attrValues["cloud_type"] = types.StringNull()
+		}
+
+		if cfg.ConfigCmdbDiscovery != nil {
+			attrValues["cmdb_discovery"] = convert.BoolToType(cfg.ConfigCmdbDiscovery)
+		} else {
+			attrValues["cmdb_discovery"] = types.BoolNull()
+		}
+
+		if cfg.ImportExisting != nil {
+			attrValues["import_existing"] = convert.StrToType(cfg.ImportExisting)
+		} else {
+			attrValues["import_existing"] = types.StringNull()
+		}
+
+		if cfg.ResourceGroup != nil {
+			attrValues["resource_group"] = convert.StrToType(cfg.ResourceGroup)
+		} else {
+			attrValues["resource_group"] = types.StringNull()
+		}
+
+		if cfg.RpcMode != nil {
+			attrValues["rpc_mode"] = convert.StrToType(cfg.RpcMode)
+		} else {
+			attrValues["rpc_mode"] = types.StringNull()
+		}
+
+		if cfg.StorageAccount != nil {
+			attrValues["storage_account"] = convert.StrToType(cfg.StorageAccount)
+		} else {
+			attrValues["storage_account"] = types.StringNull()
+		}
+
+		if cfg.SubscriberId != nil {
+			attrValues["subscriber_id"] = convert.StrToType(cfg.SubscriberId)
+		} else {
+			attrValues["subscriber_id"] = types.StringNull()
+		}
+
+		if cfg.TenantId != nil {
+			attrValues["tenant_id"] = convert.StrToType(cfg.TenantId)
+		} else {
+			attrValues["tenant_id"] = types.StringNull()
+		}
+
+		configAzure, diagsAzure := NewConfigAzureValue(attrTypes, attrValues)
+		if diagsAzure.HasError() {
+			diags.Append(diagsAzure...)
+			diags.AddError(
+				readOperation,
+				fmt.Sprintf("cloud %d: failed to decode Azure configuration", id),
+			)
+
+			return state, diags
+		}
+
+		state.ConfigAzure = configAzure
 	case !plan.Config.IsNull() || importing:
 		state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
 

@@ -87,8 +87,8 @@ Optional:
 
 ## Import
 
-Network firewall rules can be imported using the `network_integration_id:rule_id`, e.g.
+Network firewall rules can be imported using the `network_integration_id.rule_id`, e.g.
 
 ```bash
-terraform import hpe_morpheus_network_firewall_rule.example 1:123
+terraform import hpe_morpheus_network_firewall_rule.example 1.123
 ```

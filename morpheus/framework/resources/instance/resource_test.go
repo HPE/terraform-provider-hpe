@@ -12,18 +12,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusInstanceExampleOk(t *testing.T) {
+func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -32,8 +36,7 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	instanceTypeID := "34"
@@ -81,7 +84,12 @@ func TestAccMorpheusInstanceExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateName(t *testing.T) {
+func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Azure) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -90,8 +98,80 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
+
+	resourceConfig, err := instance.RenderInstanceAzureConfig(t, map[string]string{
+		"Name":         name,
+		"InstanceType": instanceTypeID,
+		"ResourcePool": resourcePool,
+		"AzureRegion":  "eastus",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"instance_type_id",
+			instanceTypeID,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.resource_pool_id",
+			resourcePool,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.create_user",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.azure_region",
+			"eastus",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	updatedName := name + "-updated"
@@ -137,7 +217,12 @@ func TestAccMorpheusInstanceUpdateName(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
+func TestAccMorpheusInstanceResourceUpdateInstanceContext(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -146,8 +231,7 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -194,7 +278,12 @@ func TestAccMorpheusInstanceUpdateInstanceContext(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
+func TestAccMorpheusInstanceResourceUpdateTags(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -203,8 +292,7 @@ func TestAccMorpheusInstanceUpdateTags(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 

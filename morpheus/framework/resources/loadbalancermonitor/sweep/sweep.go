@@ -1,89 +1,101 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-func init() {
-	resource.AddTestSweepers(
-		"hpe_morpheus_load_balancer_monitor",
-		&resource.Sweeper{
-			Name: "hpe_morpheus_load_balancer_monitor",
-			F:    sweepLoadBalancerMonitors,
-		},
-	)
+const sweeperName = "hpe_morpheus_load_balancer_monitor"
+
+// loadBalancerMonitorSweepItem pairs a monitor with its parent load balancer ID.
+type loadBalancerMonitorSweepItem struct {
+	loadBalancerID int64
+	id             int64
+	name           string
 }
 
-func sweepLoadBalancerMonitors(system string) error {
-	ctx := context.Background()
-
-	client, err := testhelpers.NewClientForServer(ctx, system)
-	if err != nil {
-		log.Printf("[WARN] Cannot create sweep client for %q: %v", system, err)
-
-		return nil
-	}
-
-	// List all load balancers to iterate their monitors.
-	lbResp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to list load balancers: %s", errfmt.ErrMsg(err, hresp))
-	}
-
-	for _, lb := range lbResp.GetLoadBalancers() {
-		if lb.Id == nil {
-			continue
-		}
-
-		lbID := *lb.Id
-
-		monResp, hresp, err := client.LoadBalancersAPI.
-			ListLoadBalancerMonitors(ctx, lbID).Execute()
-		if err != nil || hresp.StatusCode != http.StatusOK {
-			log.Printf("[WARN] Failed to list monitors for LB %d: %s",
-				*lb.Id, errfmt.ErrMsg(err, hresp))
-
-			continue
-		}
-
-		for _, mon := range monResp.GetLoadBalancerMonitors() {
-			name, ok := mon.GetNameOk()
-			if !ok || name == nil {
-				continue
+func init() {
+	testsweep.RegisterTypedAPISweeper(
+		sweeperName,
+		// List load balancer monitor resources.
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]loadBalancerMonitorSweepItem,
+			*http.Response,
+			error,
+		) {
+			lbResp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
+			if err != nil {
+				return nil, hresp, err
 			}
 
-			if !strings.HasPrefix(*name, testsweep.TestResourcePrefix) {
-				continue
+			var items []loadBalancerMonitorSweepItem
+
+			for _, lb := range lbResp.GetLoadBalancers() {
+				lbID, ok := lb.GetIdOk()
+				if !ok || lbID == nil {
+					continue
+				}
+
+				monResp, _, err := client.LoadBalancersAPI.
+					ListLoadBalancerMonitors(ctx, *lbID).Execute()
+				if err != nil || monResp == nil {
+					continue
+				}
+
+				for _, mon := range monResp.GetLoadBalancerMonitors() {
+					id, ok := mon.GetIdOk()
+					if !ok || id == nil {
+						continue
+					}
+
+					name, ok := mon.GetNameOk()
+					if !ok || name == nil {
+						continue
+					}
+
+					items = append(items, loadBalancerMonitorSweepItem{
+						loadBalancerID: *lbID,
+						id:             *id,
+						name:           *name,
+					})
+				}
 			}
 
-			id, ok := mon.GetIdOk()
-			if !ok || id == nil {
-				continue
+			return items, hresp, nil
+		},
+		// Is this a test load balancer monitor?
+		func(item loadBalancerMonitorSweepItem) bool {
+			return strings.HasPrefix(item.name, testsweep.TestResourcePrefix)
+		},
+		// Delete the test load balancer monitor.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item loadBalancerMonitorSweepItem,
+		) (*http.Response, error) {
+			if item.id == 0 {
+				return nil, fmt.Errorf("could not get ID")
 			}
-
-			log.Printf("[INFO] Sweeping load balancer monitor %q (ID %d, LB %d)",
-				*name, *id, *lb.Id)
 
 			_, hresp, err := client.LoadBalancersAPI.
-				DeleteLoadBalancerMonitor(ctx, lbID, *id).Execute()
-			if err != nil {
-				log.Printf("[ERROR] Failed to delete monitor %d: %s",
-					*id, errfmt.ErrMsg(err, hresp))
-			}
-		}
-	}
+				DeleteLoadBalancerMonitor(ctx, item.loadBalancerID, item.id).Execute()
 
-	return nil
+			return hresp, err
+		},
+		testsweep.WithIgnoreListStatuses[loadBalancerMonitorSweepItem](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
+	)
 }

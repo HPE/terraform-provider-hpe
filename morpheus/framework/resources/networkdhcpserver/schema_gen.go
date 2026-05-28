@@ -5,6 +5,8 @@ package networkdhcpserver
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -16,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -145,7 +146,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`active_edge_node is missing from object`)
+			`active_edge_node is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -155,7 +157,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute))
+			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute),
+		)
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -163,7 +166,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`)
+			`edge_cluster is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -173,7 +177,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
+		)
 	}
 
 	standbyEdgeNodeAttribute, ok := attributes["standby_edge_node"]
@@ -181,7 +186,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`standby_edge_node is missing from object`)
+			`standby_edge_node is missing from object`,
+		)
 
 		return nil, diags
 	}
@@ -191,7 +197,8 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute))
+			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -274,7 +281,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`active_edge_node is missing from object`)
+			`active_edge_node is missing from object`,
+		)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -284,7 +292,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute))
+			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute),
+		)
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -292,7 +301,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`)
+			`edge_cluster is missing from object`,
+		)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -302,7 +312,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
+		)
 	}
 
 	standbyEdgeNodeAttribute, ok := attributes["standby_edge_node"]
@@ -310,7 +321,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`standby_edge_node is missing from object`)
+			`standby_edge_node is missing from object`,
+		)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -320,7 +332,8 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute))
+			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute),
+		)
 	}
 
 	if diags.HasError() {
@@ -347,7 +360,8 @@ func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail()))
+				diagnostic.Detail(),
+			))
 		}
 
 		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -378,14 +392,12 @@ func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -426,7 +438,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.ActiveEdgeNode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -434,7 +445,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["active_edge_node"] = val
 
 		val, err = v.EdgeCluster.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -442,7 +452,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["edge_cluster"] = val
 
 		val, err = v.StandbyEdgeNode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -498,7 +507,8 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 			"active_edge_node":  v.ActiveEdgeNode,
 			"edge_cluster":      v.EdgeCluster,
 			"standby_edge_node": v.StandbyEdgeNode,
-		})
+		},
+	)
 
 	return objVal, diags
 }

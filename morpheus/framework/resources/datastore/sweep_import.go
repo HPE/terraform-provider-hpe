@@ -4,4 +4,6 @@
 
 package datastore
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore/sweep"
+)

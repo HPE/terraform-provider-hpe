@@ -1,9 +1,5 @@
 package task_test
 
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow.tf example_conditional_workflow.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow" ElseOperationalWorkflowId "4091" ElseOperationalWorkflowName "Example Else Workflow"
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_conditional_workflow_null_else.tf example_conditional_workflow_null_else.tf.tmpl Name "Example Conditional Workflow Task" IfOperationalWorkflowId "4090" IfOperationalWorkflowName "Example If Workflow"
-//go:generate go run ../../../../cmd/render -out examples/resources/morpheus_task/example_generic_config.tf example_generic_config.tf.tmpl Name "Example Generic Task" OperationalWorkflowId "4090" OperationalWorkflowName "Example Workflow"
-
 import (
 	"os"
 	"testing"
@@ -16,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -27,7 +24,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -44,7 +41,12 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
-func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
+func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -56,7 +58,8 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
@@ -122,7 +125,12 @@ func TestAccMorpheusTaskExampleConditionalOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
+func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -134,7 +142,8 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"ElseOperationalWorkflowId", testElseOperationalWorkflowId,
@@ -245,7 +254,12 @@ func TestAccMorpheusTaskConditionalWorkflowUpdate(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
+func TestAccMorpheusTaskResourceExampleGenericNestedOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -257,7 +271,8 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_generic_config.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_generic_config.tf.tmpl",
 		"Name", name,
 		"OperationalWorkflowId", testElseOperationalWorkflowId,
 		"OperationalWorkflowName", testWorkflowName,
@@ -310,7 +325,12 @@ func TestAccMorpheusTaskExampleGenericNestedOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
+func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -322,7 +342,8 @@ func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"IfOperationalWorkflowName", testFailureWorkflowName,
@@ -383,7 +404,12 @@ func TestAccMorpheusTaskExampleConditionalNullElseOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusTaskExampleConditionalNullElseUpdateOk(t *testing.T) {
+func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -395,7 +421,8 @@ func TestAccMorpheusTaskExampleConditionalNullElseUpdateOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	resourceConfig, err := testhelpers.RenderExample(t, "example_conditional_workflow_null_else.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_conditional_workflow_null_else.tf.tmpl",
 		"Name", name,
 		"IfOperationalWorkflowId", testIfOperationalWorkflowId,
 		"IfOperationalWorkflowName", testFailureWorkflowName,

@@ -12,20 +12,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // TestAccMorpheusNetworkResourceUpdateOk tests updating a network resource
 // with comprehensive validation of all updateable fields
 func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -341,54 +345,77 @@ resource "hpe_morpheus_network" "foo" {
 				Check: resource.ComposeTestCheckFunc(
 					// Verify all updated fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "name", uniqueName), // Name unchanged
+						"hpe_morpheus_network.foo", "name", uniqueName,
+					), // Name unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "description", "Comprehensive update test"),
+						"hpe_morpheus_network.foo", "description", "Comprehensive update test",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "pool_id", "17709"),
+						"hpe_morpheus_network.foo", "pool_id", "17709",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16"), // CIDR unchanged
+						"hpe_morpheus_network.foo", "cidr", "10.50.0.0/16",
+					), // CIDR unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "visibility", "public"),
+						"hpe_morpheus_network.foo", "visibility", "public",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "active", "false"),
+						"hpe_morpheus_network.foo", "active", "false",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "dhcp_server", "true"),
+						"hpe_morpheus_network.foo", "dhcp_server", "true",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "false"),
+						"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "false",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.resourceGroupId", "updated-resource-group"),
+						"hpe_morpheus_network.foo", "config.resourceGroupId", "updated-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetName", "updated-subnet"),
+						"hpe_morpheus_network.foo", "config.subnetName", "updated-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetCidr", "10.99.1.0/24"),
+						"hpe_morpheus_network.foo", "config.subnetCidr", "10.99.1.0/24",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "resource_permissions.all"),
+						"hpe_morpheus_network.foo", "resource_permissions.all",
+					),
 					// Check tenant_ids unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.foo", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.foo", "tenant_ids.*", "1",
+					),
 					// Verify fields that shouldn't change
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "cloud_id", "4617"),
+						"hpe_morpheus_network.foo", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "group_id", "1"),
+						"hpe_morpheus_network.foo", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "type_id", "35"),
+						"hpe_morpheus_network.foo", "type_id", "35",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "labels.#", "4"),
+						"hpe_morpheus_network.foo", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "terraform"),
+						"hpe_morpheus_network.foo", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "acctest"),
+						"hpe_morpheus_network.foo", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.foo", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "labels.*", "sweepable"),
+						"hpe_morpheus_network.foo", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.foo", "id"),
+						"hpe_morpheus_network.foo", "id",
+					),
 				),
 				PlanOnly: false,
 			},
@@ -399,14 +426,18 @@ resource "hpe_morpheus_network" "foo" {
 // TestAccMorpheusNetworkResourceUpdateNameChange tests that changing the name
 // attribute forces resource replacement due to the RequiresReplace plan modifier
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique names for this test run
 	initialName := acctest.RandomWithPrefix(t.Name() + "-initial")
@@ -491,42 +522,59 @@ resource "hpe_morpheus_network" "name_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "name", initialName),
+						"hpe_morpheus_network.name_change_test", "name", initialName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.name_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "group_id", "1"),
+						"hpe_morpheus_network.name_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "type_id", "35"),
+						"hpe_morpheus_network.name_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8"),
+						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
-						"name-change-resource-group"),
+						"name-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet"),
+						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24"),
+						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.name_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.name_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.name_change_test", "resource_permissions.all",
+					),
 					// Check that the resource was created with an ID and store it
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.name_change_test", "id"),
+						"hpe_morpheus_network.name_change_test", "id",
+					),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
 						resourceName := "hpe_morpheus_network.name_change_test"
@@ -548,43 +596,60 @@ resource "hpe_morpheus_network" "name_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "name", updatedName),
+						"hpe_morpheus_network.name_change_test", "name", updatedName,
+					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.name_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "group_id", "1"),
+						"hpe_morpheus_network.name_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "type_id", "35"),
+						"hpe_morpheus_network.name_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8"),
+						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
-						"name-change-resource-group"),
+						"name-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet"),
+						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24"),
+						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.name_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.name_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.name_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.name_change_test", "resource_permissions.all",
+					),
 					// Check that the resource has a new ID (replacement occurred)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.name_change_test", "id"),
+						"hpe_morpheus_network.name_change_test", "id",
+					),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.name_change_test"]
@@ -608,14 +673,18 @@ resource "hpe_morpheus_network" "name_change_test" {
 // TestAccMorpheusNetworkResourceUpdateCidrChange tests that changing the cidr
 // or cidr_ipv6 attributes forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -706,44 +775,62 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "name", uniqueName),
+						"hpe_morpheus_network.cidr_change_test", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "group_id", "1"),
+						"hpe_morpheus_network.cidr_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "type_id", "35"),
+						"hpe_morpheus_network.cidr_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr", "10.1.0.0/16"),
+						"hpe_morpheus_network.cidr_change_test", "cidr", "10.1.0.0/16",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32"),
+						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group"),
+						"cidr-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.cidr_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all",
+					),
 					// Check that the resource was created with an ID and store it
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "id"),
+						"hpe_morpheus_network.cidr_change_test", "id",
+					),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.cidr_change_test"]
@@ -765,46 +852,64 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "name", uniqueName),
+						"hpe_morpheus_network.cidr_change_test", "name", uniqueName,
+					),
 					// Verify the CIDR changed
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16"),
+						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16",
+					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "group_id", "1"),
+						"hpe_morpheus_network.cidr_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "type_id", "35"),
+						"hpe_morpheus_network.cidr_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32"), // unchanged
+						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32",
+					), // unchanged
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group"),
+						"cidr-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.cidr_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.cidr_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all",
+					),
 					// Check that the resource has a new ID (replacement occurred)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "id"),
+						"hpe_morpheus_network.cidr_change_test", "id",
+					),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.cidr_change_test"]
@@ -832,35 +937,48 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "name", uniqueName),
+						"hpe_morpheus_network.cidr_change_test", "name", uniqueName,
+					),
 					// Verify the IPv6 CIDR changed
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db9::/32"),
+						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db9::/32",
+					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.cidr_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "group_id", "1"),
+						"hpe_morpheus_network.cidr_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "type_id", "35"),
+						"hpe_morpheus_network.cidr_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16"), // unchanged from step 2
+						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16",
+					), // unchanged from step 2
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group"),
+						"cidr-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24"),
+						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all",
+					),
 					// Check that the resource has a new ID (replacement occurred)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.cidr_change_test", "id"),
+						"hpe_morpheus_network.cidr_change_test", "id",
+					),
 					// Verify the ID changed again (resource was replaced)
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.cidr_change_test"]
@@ -888,14 +1006,18 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 // TestAccMorpheusNetworkResourceUpdateTenantIdsChange tests that changing the tenant_ids
 // attribute forces resource replacement due to RequiresReplace
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// nolint: goconst
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())
@@ -985,44 +1107,62 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "name", uniqueName),
+						"hpe_morpheus_network.tenant_change_test", "name", uniqueName,
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "group_id", "1"),
+						"hpe_morpheus_network.tenant_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "type_id", "35"),
+						"hpe_morpheus_network.tenant_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16"),
+						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "2"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "2",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
-						"tenant-change-resource-group"),
+						"tenant-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet"),
+						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24"),
+						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.tenant_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all",
+					),
 					// Check that the resource was created with an ID and store it
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "id"),
+						"hpe_morpheus_network.tenant_change_test", "id",
+					),
 					// Store the initial ID for comparison
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.tenant_change_test"]
@@ -1046,46 +1186,64 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "name", uniqueName),
+						"hpe_morpheus_network.tenant_change_test", "name", uniqueName,
+					),
 					// Verify the tenant_ids changed
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3",
+					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "group_id", "1"),
+						"hpe_morpheus_network.tenant_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "type_id", "35"),
+						"hpe_morpheus_network.tenant_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16"), // unchanged
+						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16",
+					), // unchanged
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
-						"tenant-change-resource-group"),
+						"tenant-change-resource-group",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet"),
+						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24"),
+						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24",
+					),
 					// Check labels
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.#", "4"),
+						"hpe_morpheus_network.tenant_change_test", "labels.#", "4",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "terraform"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "terraform",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "acctest"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "acctest",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "hpe_morpheus_network"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "hpe_morpheus_network",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "labels.*", "sweepable"),
+						"hpe_morpheus_network.tenant_change_test", "labels.*", "sweepable",
+					),
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all",
+					),
 					// Check that the resource has a new ID (replacement occurred)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "id"),
+						"hpe_morpheus_network.tenant_change_test", "id",
+					),
 					// Verify the ID changed (resource was replaced)
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.tenant_change_test"]
@@ -1114,30 +1272,41 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "name", uniqueName),
+						"hpe_morpheus_network.tenant_change_test", "name", uniqueName,
+					),
 					// Verify the tenant_ids changed again
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "3"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "3",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3",
+					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "4"),
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "4",
+					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617"),
+						"hpe_morpheus_network.tenant_change_test", "cloud_id", "4617",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "group_id", "1"),
+						"hpe_morpheus_network.tenant_change_test", "group_id", "1",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "type_id", "35"),
+						"hpe_morpheus_network.tenant_change_test", "type_id", "35",
+					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16"), // unchanged
+						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16",
+					), // unchanged
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all"),
+						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all",
+					),
 					// Check that the resource has a new ID (replacement occurred again)
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network.tenant_change_test", "id"),
+						"hpe_morpheus_network.tenant_change_test", "id",
+					),
 					// Verify the ID changed again (resource was replaced)
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.tenant_change_test"]

@@ -4,4 +4,6 @@
 
 package group
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group/sweep"
+)

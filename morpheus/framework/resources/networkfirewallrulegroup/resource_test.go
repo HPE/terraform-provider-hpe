@@ -15,17 +15,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -34,12 +38,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "zodiac")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -113,7 +117,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -122,12 +131,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "Initial description",
@@ -141,7 +150,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	updateConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":        updatedName,
 			"Description": "Updated description",
@@ -240,7 +250,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupUpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -249,12 +264,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":       name,
 			"GroupLayer": "Application",
@@ -264,7 +279,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":       name,
 			"GroupLayer": "Ethernet",
@@ -292,7 +308,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -301,12 +322,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":         name,
 			"ExternalType": "SecurityPolicy",
@@ -316,7 +337,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":         name,
 			"ExternalType": "GatewayPolicy",
@@ -344,7 +366,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceExternalTypeOk(t *tes
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -353,12 +380,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	createConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -367,7 +394,8 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 		t.Fatal(err)
 	}
 
-	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	replaceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name":                 name,
 			"NetworkIntegrationId": "999",
@@ -395,7 +423,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupRequiresReplaceNetworkIntegrationIdO
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleGroupResourceImportInvalidFormatErr(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -404,12 +437,12 @@ func TestAccMorpheusNetworkFirewallRuleGroupImportInvalidFormatErr(t *testing.T)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(t,
+	resourceConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},

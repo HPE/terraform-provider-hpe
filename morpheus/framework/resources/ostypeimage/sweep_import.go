@@ -4,4 +4,6 @@
 
 package ostypeimage
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage/sweep"
+)

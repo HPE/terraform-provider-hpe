@@ -4,4 +4,6 @@
 
 package networkfirewallrule
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule/sweep"
+)

@@ -5,6 +5,7 @@ package loadbalancermonitor
 import (
 	"context"
 	"fmt"
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -122,9 +123,13 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"monitor_password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "The password for authenticated health checks (Write Only)",
 				MarkdownDescription: "The password for authenticated health checks (Write Only)",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
 			},
 			"monitor_password_wo_version": schema.Int64Attribute{
 				Optional:            true,

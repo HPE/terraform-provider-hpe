@@ -4,4 +4,6 @@
 
 package user
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user/sweep"
+)

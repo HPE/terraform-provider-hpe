@@ -11,12 +11,42 @@ description: |-
 Clouds are integrations or connections to public, private, hybrid clouds, or bare metal servers. Clouds can belong to many groups and contain many hosts.
 HPE Morpheus Enterprise supports most Public Clouds and Private Clouds.
 
--> A `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
+-> A `config_azure`, `config_hvm`, `config_vmware` or `config` block is required. They can be empty.
 
 -> `cloud_type_code` must be set if using a generic `config` block.
 
 -> Currently, a change to the `group_id` attribute will not be applied on update.<br/>
    We recommend managing group membership using a `group` resource.
+
+## Inventory Discovery Defaults
+
+The `default_*_sync_active` fields control whether newly discovered inventory items
+(datastores, networks, etc.) are automatically set to **active** during cloud sync.
+All default to `true`.
+
+Not all fields apply to every cloud type. Setting an inapplicable field is harmless
+(the API accepts and stores it) but has no runtime effect. The table below shows
+which fields are meaningful for each supported cloud type:
+
+| Cloud Type | datastores | networks | folders | pools | security_groups | plans |
+|------------|:----------:|:--------:|:-------:|:-----:|:---------------:|:-----:|
+| VMware     | ✓          | ✓        | ✓       | ✓     | ✓               | —     |
+| Azure      | ✓          | ✓        | —       | ✓     | ✓               | ✓     |
+| AWS        | —          | ✓        | —       | ✓     | ✓               | ✓     |
+| GCP        | —          | ✓        | —       | ✓     | —               | ✓     |
+| VCD        | ✓          | ✓        | —       | —     | —               | ✓     |
+| OpenStack  | —          | ✓        | —       | ✓     | —               | ✓     |
+| Oracle     | —          | ✓        | —       | ✓     | —               | ✓     |
+| SCVMM      | ✓          | ✓        | —       | ✓     | —               | —     |
+| HVM        | —          | —        | —       | —     | ✓               | —     |
+| ESXi       | ✓          | ✓        | —       | —     | —               | —     |
+| Hyper-V    | —          | ✓        | —       | —     | —               | —     |
+| Alibaba    | —          | ✓        | —       | ✓     | —               | ✓     |
+| UpCloud    | —          | —        | —       | —     | —               | ✓     |
+
+-> `default_folder_sync_active` is currently only utilized by VMware clouds.
+
+-> `default_security_group_sync_active` only affects security groups **discovered** from the cloud provider during sync. Security groups created via [`hpe_morpheus_security_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_security_group) are unaffected by this setting.
 
 ## Example Usage (HVM)
 
@@ -45,6 +75,9 @@ resource "hpe_morpheus_cloud" "example" {
   security_mode = "off"
 
   keyboard_layout = "us"
+
+  # Inventory discovery (only security_groups applies to HVM clouds)
+  default_security_group_sync_active = true
 
   config_hvm = {
     certificate_provider          = "internal"
@@ -82,9 +115,61 @@ resource "hpe_morpheus_cloud" "example" {
   external_id         = "aCode"
   import_existing_vms = "off"
 
+  # Inventory discovery (only security_groups applies to standard clouds)
+  default_security_group_sync_active = true
+
   config = {
     certificateProvider        = "internal"
     enableNetworkTypeSelection = false
+  }
+}
+```
+
+## Example Usage (Azure)
+
+```terraform
+resource "hpe_morpheus_cloud" "example" {
+  name      = "TestCloud"
+  tenant_id = 1
+  group_id  = 1
+
+  code             = "aCode"
+  external_id      = "aCode"
+  labels           = ["aLabel1", "aLabel2"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  agent_install_mode       = "ssh"
+  appliance_url            = "https://somewhere.com"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  security_mode = "off"
+
+  keyboard_layout = "us"
+
+  # Inventory discovery defaults (applicable to Azure)
+  default_datastore_sync_active      = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
+  config_azure = {
+    azure_region    = "eastus"
+    subscriber_id   = "sub-12345"
+    tenant_id       = "tenant-67890"
+    client_id       = "client-abc"
+    client_secret   = "secret-xyz"
+    resource_group  = "my-rg"
+    cloud_type      = "global"
+    import_existing = "on"
+    rpc_mode        = "guestExec"
   }
 }
 ```
@@ -106,10 +191,17 @@ resource "hpe_morpheus_cloud" "example" {
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
 - `config_aws` (Attributes) Amazon Cloud (see [below for nested schema](#nestedatt--config_aws))
+- `config_azure` (Attributes) (see [below for nested schema](#nestedatt--config_azure))
 - `config_hvm` (Attributes) HVM Cloud (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) VSphere Cloud (see [below for nested schema](#nestedatt--config_vmware))
 - `costing_mode` (String) Whether to enable costing on the cloud (off, costing, reservations, full)
 - `data_center_name` (String) A custom name used to reference the datacenter for the cloud.
+- `default_datastore_sync_active` (Boolean) Sets the default active state during discovery of new datastores.
+- `default_folder_sync_active` (Boolean) Sets the default active state during discovery of new folders.
+- `default_network_sync_active` (Boolean) Sets the default active state during discovery of new networks.
+- `default_plan_sync_active` (Boolean) Sets the default active state during discovery of new plans.
+- `default_pool_sync_active` (Boolean) Sets the default active state during discovery of new resource pools.
+- `default_security_group_sync_active` (Boolean) Sets the default active state during discovery of new security groups.
 - `enabled` (Boolean) Can be used to disable the cloud
 - `external_id` (String) The external id of the cloud
 - `group_id` (Number) Specifies which Server group this cloud should be assigned to
@@ -167,6 +259,28 @@ Optional:
 - `vpc` (String) The VPC ID for a specific VPC
 
 
+<a id="nestedatt--config_azure"></a>
+### Nested Schema for `config_azure`
+
+Required:
+
+- `azure_region` (String) The Azure region associated with the cloud integration
+- `client_id` (String) The Azure client (application) ID
+- `client_secret` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure client secret
+- `resource_group` (String) The Azure resource group
+- `subscriber_id` (String) The Azure subscription ID
+- `tenant_id` (String) The Azure Active Directory tenant ID
+
+Optional:
+
+- `client_secret_version` (Number) Client secret version. Used to determine if client secret has been updated.
+- `cloud_type` (String) The Azure cloud type (global, usgov, german, china)
+- `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
+- `import_existing` (String) Whether to import existing resources from the cloud (on, off)
+- `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
+- `storage_account` (String) The Azure storage account to use
+
+
 <a id="nestedatt--config_hvm"></a>
 ### Nested Schema for `config_hvm`
 
@@ -196,6 +310,7 @@ Optional:
 - `enable_vnc` (Boolean) Enable VNC access to the console.
 - `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
 - `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
+- `password_version` (Number) Password version. Used to determine if password has been updated.
 - `resource_pool` (String) The name of the vSphere resource pool
 - `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
 - `username` (String) Username.

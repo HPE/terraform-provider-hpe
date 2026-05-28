@@ -18,13 +18,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -70,7 +69,12 @@ func checkDestroy(t *testing.T) resource.TestCheckFunc {
 	}
 }
 
-func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -79,12 +83,12 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "test description",
@@ -166,7 +170,12 @@ func TestAccMorpheusNetworkFirewallRuleExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -175,12 +184,12 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	createConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        name,
 			"Description": "initial description",
@@ -193,7 +202,8 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	updateConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":        updatedName,
 			"Direction":   "Egress",
@@ -307,7 +317,12 @@ func TestAccMorpheusNetworkFirewallRuleUpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleResourceNestedAttributesOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -316,12 +331,12 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name":           name,
 			"DestinationIds": `"ANY"`,
@@ -358,7 +373,12 @@ func TestAccMorpheusNetworkFirewallRuleNestedAttributesOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleResourceImportBadIDError(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -367,12 +387,12 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},
@@ -398,7 +418,12 @@ func TestAccMorpheusNetworkFirewallRuleImportBadIDError(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
+func TestAccMorpheusNetworkFirewallRuleResourceImportNonNumericIDError(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -407,12 +432,12 @@ func TestAccMorpheusNetworkFirewallRuleImportNonNumericIDError(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t,
+	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+		t,
 		map[string]string{
 			"Name": name,
 		},

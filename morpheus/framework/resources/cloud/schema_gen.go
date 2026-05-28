@@ -5,8 +5,7 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -69,8 +69,8 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Generic Cloud Configuration",
 				MarkdownDescription: "Generic Cloud Configuration",
 				Validators: []validator.Dynamic{
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_aws"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware")}...),
 				},
 			},
 			"config_aws": schema.SingleNestedAttribute{
@@ -296,6 +296,93 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Amazon Cloud",
 				MarkdownDescription: "Amazon Cloud",
 			},
+			"config_azure": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"azure_region": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure region associated with the cloud integration",
+						MarkdownDescription: "The Azure region associated with the cloud integration",
+					},
+					"client_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure client (application) ID",
+						MarkdownDescription: "The Azure client (application) ID",
+					},
+					"client_secret": schema.StringAttribute{
+						Required:            true,
+						Sensitive:           true,
+						WriteOnly:           true,
+						Description:         "The Azure client secret",
+						MarkdownDescription: "The Azure client secret",
+						PlanModifiers: []planmodifier.String{
+							modifiers.NullableStringUpdateModifier{},
+						},
+					},
+					"client_secret_version": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Client secret version. Used to determine if client secret has been updated.",
+						MarkdownDescription: "Client secret version. Used to determine if client secret has been updated.",
+					},
+					"cloud_type": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The Azure cloud type (global, usgov, german, china)",
+						MarkdownDescription: "The Azure cloud type (global, usgov, german, china)",
+						Validators: []validator.String{
+							stringvalidator.OneOf("global", "usgov", "german", "china"),
+						},
+						Default: stringdefault.StaticString("global"),
+					},
+					"cmdb_discovery": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to enable CMDB discovery on the cloud",
+						MarkdownDescription: "Whether to enable CMDB discovery on the cloud",
+					},
+					"import_existing": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to import existing resources from the cloud (on, off)",
+						MarkdownDescription: "Whether to import existing resources from the cloud (on, off)",
+						Validators: []validator.String{
+							stringvalidator.OneOf("on", "off"),
+						},
+					},
+					"resource_group": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure resource group",
+						MarkdownDescription: "The Azure resource group",
+					},
+					"rpc_mode": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+						MarkdownDescription: "The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))",
+					},
+					"storage_account": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "The Azure storage account to use",
+						MarkdownDescription: "The Azure storage account to use",
+					},
+					"subscriber_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure subscription ID",
+						MarkdownDescription: "The Azure subscription ID",
+					},
+					"tenant_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The Azure Active Directory tenant ID",
+						MarkdownDescription: "The Azure Active Directory tenant ID",
+					},
+				},
+				CustomType: ConfigAzureType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAzureValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional: true,
+			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"certificate_provider": schema.StringAttribute{
@@ -394,6 +481,14 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 						WriteOnly:           true,
 						Description:         "Password to apply to the user",
 						MarkdownDescription: "Password to apply to the user",
+						PlanModifiers: []planmodifier.String{
+							modifiers.NullableStringUpdateModifier{},
+						},
+					},
+					"password_version": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "Password version. Used to determine if password has been updated.",
+						MarkdownDescription: "Password version. Used to determine if password has been updated.",
 					},
 					"resource_pool": schema.StringAttribute{
 						Optional:            true,
@@ -443,6 +538,48 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "A custom name used to reference the datacenter for the cloud.",
 				MarkdownDescription: "A custom name used to reference the datacenter for the cloud.",
+			},
+			"default_datastore_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new datastores.",
+				MarkdownDescription: "Sets the default active state during discovery of new datastores.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_folder_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new folders.",
+				MarkdownDescription: "Sets the default active state during discovery of new folders.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_network_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new networks.",
+				MarkdownDescription: "Sets the default active state during discovery of new networks.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_plan_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new plans.",
+				MarkdownDescription: "Sets the default active state during discovery of new plans.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_pool_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new resource pools.",
+				MarkdownDescription: "Sets the default active state during discovery of new resource pools.",
+				Default:             booldefault.StaticBool(true),
+			},
+			"default_security_group_sync_active": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Sets the default active state during discovery of new security groups.",
+				MarkdownDescription: "Sets the default active state during discovery of new security groups.",
+				Default:             booldefault.StaticBool(true),
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
@@ -548,30 +685,37 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type CloudModel struct {
-	AgentInstallMode      types.String      `tfsdk:"agent_install_mode"`
-	ApplianceUrl          types.String      `tfsdk:"appliance_url"`
-	AutoRecoverPowerState types.Bool        `tfsdk:"auto_recover_power_state"`
-	CloudTypeCode         types.String      `tfsdk:"cloud_type_code"`
-	Code                  types.String      `tfsdk:"code"`
-	Config                types.Dynamic     `tfsdk:"config"`
-	ConfigAws             ConfigAwsValue    `tfsdk:"config_aws"`
-	ConfigHvm             ConfigHvmValue    `tfsdk:"config_hvm"`
-	ConfigVmware          ConfigVmwareValue `tfsdk:"config_vmware"`
-	CostingMode           types.String      `tfsdk:"costing_mode"`
-	DataCenterName        types.String      `tfsdk:"data_center_name"`
-	Enabled               types.Bool        `tfsdk:"enabled"`
-	ExternalId            types.String      `tfsdk:"external_id"`
-	GroupId               types.Int64       `tfsdk:"group_id"`
-	GuidanceMode          types.String      `tfsdk:"guidance_mode"`
-	Id                    types.Int64       `tfsdk:"id"`
-	ImportExistingVms     types.String      `tfsdk:"import_existing_vms"`
-	KeyboardLayout        types.String      `tfsdk:"keyboard_layout"`
-	Labels                types.Set         `tfsdk:"labels"`
-	Location              types.String      `tfsdk:"location"`
-	Name                  types.String      `tfsdk:"name"`
-	SecurityMode          types.String      `tfsdk:"security_mode"`
-	TenantId              types.Int64       `tfsdk:"tenant_id"`
-	Visibility            types.String      `tfsdk:"visibility"`
+	AgentInstallMode               types.String      `tfsdk:"agent_install_mode"`
+	ApplianceUrl                   types.String      `tfsdk:"appliance_url"`
+	AutoRecoverPowerState          types.Bool        `tfsdk:"auto_recover_power_state"`
+	CloudTypeCode                  types.String      `tfsdk:"cloud_type_code"`
+	Code                           types.String      `tfsdk:"code"`
+	Config                         types.Dynamic     `tfsdk:"config"`
+	ConfigAws                      ConfigAwsValue    `tfsdk:"config_aws"`
+	ConfigAzure                    ConfigAzureValue  `tfsdk:"config_azure"`
+	ConfigHvm                      ConfigHvmValue    `tfsdk:"config_hvm"`
+	ConfigVmware                   ConfigVmwareValue `tfsdk:"config_vmware"`
+	CostingMode                    types.String      `tfsdk:"costing_mode"`
+	DataCenterName                 types.String      `tfsdk:"data_center_name"`
+	DefaultDatastoreSyncActive     types.Bool        `tfsdk:"default_datastore_sync_active"`
+	DefaultFolderSyncActive        types.Bool        `tfsdk:"default_folder_sync_active"`
+	DefaultNetworkSyncActive       types.Bool        `tfsdk:"default_network_sync_active"`
+	DefaultPlanSyncActive          types.Bool        `tfsdk:"default_plan_sync_active"`
+	DefaultPoolSyncActive          types.Bool        `tfsdk:"default_pool_sync_active"`
+	DefaultSecurityGroupSyncActive types.Bool        `tfsdk:"default_security_group_sync_active"`
+	Enabled                        types.Bool        `tfsdk:"enabled"`
+	ExternalId                     types.String      `tfsdk:"external_id"`
+	GroupId                        types.Int64       `tfsdk:"group_id"`
+	GuidanceMode                   types.String      `tfsdk:"guidance_mode"`
+	Id                             types.Int64       `tfsdk:"id"`
+	ImportExistingVms              types.String      `tfsdk:"import_existing_vms"`
+	KeyboardLayout                 types.String      `tfsdk:"keyboard_layout"`
+	Labels                         types.Set         `tfsdk:"labels"`
+	Location                       types.String      `tfsdk:"location"`
+	Name                           types.String      `tfsdk:"name"`
+	SecurityMode                   types.String      `tfsdk:"security_mode"`
+	TenantId                       types.Int64       `tfsdk:"tenant_id"`
+	Visibility                     types.String      `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}
@@ -2611,6 +2755,943 @@ func (v ConfigAwsValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	}
 }
 
+var _ basetypes.ObjectTypable = ConfigAzureType{}
+
+type ConfigAzureType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAzureType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAzureType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAzureType) String() string {
+	return "ConfigAzureType"
+}
+
+func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return nil, diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	clientIdAttribute, ok := attributes["client_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_id is missing from object`)
+
+		return nil, diags
+	}
+
+	clientIdVal, ok := clientIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_id expected to be basetypes.StringValue, was: %T`, clientIdAttribute))
+	}
+
+	clientSecretAttribute, ok := attributes["client_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret is missing from object`)
+
+		return nil, diags
+	}
+
+	clientSecretVal, ok := clientSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
+	}
+
+	clientSecretVersionAttribute, ok := attributes["client_secret_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret_version is missing from object`)
+
+		return nil, diags
+	}
+
+	clientSecretVersionVal, ok := clientSecretVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret_version expected to be basetypes.Int64Value, was: %T`, clientSecretVersionAttribute))
+	}
+
+	cloudTypeAttribute, ok := attributes["cloud_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_type is missing from object`)
+
+		return nil, diags
+	}
+
+	cloudTypeVal, ok := cloudTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_type expected to be basetypes.StringValue, was: %T`, cloudTypeAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return nil, diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	importExistingAttribute, ok := attributes["import_existing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`import_existing is missing from object`)
+
+		return nil, diags
+	}
+
+	importExistingVal, ok := importExistingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`import_existing expected to be basetypes.StringValue, was: %T`, importExistingAttribute))
+	}
+
+	resourceGroupAttribute, ok := attributes["resource_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group is missing from object`)
+
+		return nil, diags
+	}
+
+	resourceGroupVal, ok := resourceGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group expected to be basetypes.StringValue, was: %T`, resourceGroupAttribute))
+	}
+
+	rpcModeAttribute, ok := attributes["rpc_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`rpc_mode is missing from object`)
+
+		return nil, diags
+	}
+
+	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
+	}
+
+	storageAccountAttribute, ok := attributes["storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_account is missing from object`)
+
+		return nil, diags
+	}
+
+	storageAccountVal, ok := storageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_account expected to be basetypes.StringValue, was: %T`, storageAccountAttribute))
+	}
+
+	subscriberIdAttribute, ok := attributes["subscriber_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subscriber_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subscriberIdVal, ok := subscriberIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subscriber_id expected to be basetypes.StringValue, was: %T`, subscriberIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return nil, diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.StringValue, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAzureValue{
+		AzureRegion:         azureRegionVal,
+		ClientId:            clientIdVal,
+		ClientSecret:        clientSecretVal,
+		ClientSecretVersion: clientSecretVersionVal,
+		CloudType:           cloudTypeVal,
+		CmdbDiscovery:       cmdbDiscoveryVal,
+		ImportExisting:      importExistingVal,
+		ResourceGroup:       resourceGroupVal,
+		RpcMode:             rpcModeVal,
+		StorageAccount:      storageAccountVal,
+		SubscriberId:        subscriberIdVal,
+		TenantId:            tenantIdVal,
+		state:               attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueNull() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAzureValueUnknown() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAzureValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, a missing attribute value was detected. "+
+					"A ConfigAzureValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAzureValue Attribute Type",
+				"While creating a ConfigAzureValue value, an invalid attribute value was detected. "+
+					"A ConfigAzureValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, an extra attribute value was detected. "+
+					"A ConfigAzureValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAzureValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azureRegionAttribute, ok := attributes["azure_region"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`azure_region is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	azureRegionVal, ok := azureRegionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`azure_region expected to be basetypes.StringValue, was: %T`, azureRegionAttribute))
+	}
+
+	clientIdAttribute, ok := attributes["client_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientIdVal, ok := clientIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_id expected to be basetypes.StringValue, was: %T`, clientIdAttribute))
+	}
+
+	clientSecretAttribute, ok := attributes["client_secret"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientSecretVal, ok := clientSecretAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret expected to be basetypes.StringValue, was: %T`, clientSecretAttribute))
+	}
+
+	clientSecretVersionAttribute, ok := attributes["client_secret_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`client_secret_version is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	clientSecretVersionVal, ok := clientSecretVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`client_secret_version expected to be basetypes.Int64Value, was: %T`, clientSecretVersionAttribute))
+	}
+
+	cloudTypeAttribute, ok := attributes["cloud_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cloud_type is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	cloudTypeVal, ok := cloudTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cloud_type expected to be basetypes.StringValue, was: %T`, cloudTypeAttribute))
+	}
+
+	cmdbDiscoveryAttribute, ok := attributes["cmdb_discovery"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cmdb_discovery is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	cmdbDiscoveryVal, ok := cmdbDiscoveryAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cmdb_discovery expected to be basetypes.BoolValue, was: %T`, cmdbDiscoveryAttribute))
+	}
+
+	importExistingAttribute, ok := attributes["import_existing"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`import_existing is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	importExistingVal, ok := importExistingAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`import_existing expected to be basetypes.StringValue, was: %T`, importExistingAttribute))
+	}
+
+	resourceGroupAttribute, ok := attributes["resource_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	resourceGroupVal, ok := resourceGroupAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group expected to be basetypes.StringValue, was: %T`, resourceGroupAttribute))
+	}
+
+	rpcModeAttribute, ok := attributes["rpc_mode"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`rpc_mode is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	rpcModeVal, ok := rpcModeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`rpc_mode expected to be basetypes.StringValue, was: %T`, rpcModeAttribute))
+	}
+
+	storageAccountAttribute, ok := attributes["storage_account"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_account is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	storageAccountVal, ok := storageAccountAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_account expected to be basetypes.StringValue, was: %T`, storageAccountAttribute))
+	}
+
+	subscriberIdAttribute, ok := attributes["subscriber_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subscriber_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	subscriberIdVal, ok := subscriberIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subscriber_id expected to be basetypes.StringValue, was: %T`, subscriberIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.StringValue, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	return ConfigAzureValue{
+		AzureRegion:         azureRegionVal,
+		ClientId:            clientIdVal,
+		ClientSecret:        clientSecretVal,
+		ClientSecretVersion: clientSecretVersionVal,
+		CloudType:           cloudTypeVal,
+		CmdbDiscovery:       cmdbDiscoveryVal,
+		ImportExisting:      importExistingVal,
+		ResourceGroup:       resourceGroupVal,
+		RpcMode:             rpcModeVal,
+		StorageAccount:      storageAccountVal,
+		SubscriberId:        subscriberIdVal,
+		TenantId:            tenantIdVal,
+		state:               attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAzureValue {
+	object, diags := NewConfigAzureValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAzureValueMust(ConfigAzureValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAzureValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAzureValue{}
+
+type ConfigAzureValue struct {
+	AzureRegion         basetypes.StringValue `tfsdk:"azure_region"`
+	ClientId            basetypes.StringValue `tfsdk:"client_id"`
+	ClientSecret        basetypes.StringValue `tfsdk:"client_secret"`
+	ClientSecretVersion basetypes.Int64Value  `tfsdk:"client_secret_version"`
+	CloudType           basetypes.StringValue `tfsdk:"cloud_type"`
+	CmdbDiscovery       basetypes.BoolValue   `tfsdk:"cmdb_discovery"`
+	ImportExisting      basetypes.StringValue `tfsdk:"import_existing"`
+	ResourceGroup       basetypes.StringValue `tfsdk:"resource_group"`
+	RpcMode             basetypes.StringValue `tfsdk:"rpc_mode"`
+	StorageAccount      basetypes.StringValue `tfsdk:"storage_account"`
+	SubscriberId        basetypes.StringValue `tfsdk:"subscriber_id"`
+	TenantId            basetypes.StringValue `tfsdk:"tenant_id"`
+	state               attr.ValueState
+}
+
+func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 12)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["azure_region"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_secret"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["client_secret_version"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["cloud_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["cmdb_discovery"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["import_existing"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["resource_group"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["rpc_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["storage_account"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subscriber_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["tenant_id"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 12)
+
+		val, err = v.AzureRegion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["azure_region"] = val
+
+		val, err = v.ClientId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_id"] = val
+
+		val, err = v.ClientSecret.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_secret"] = val
+
+		val, err = v.ClientSecretVersion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["client_secret_version"] = val
+
+		val, err = v.CloudType.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cloud_type"] = val
+
+		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cmdb_discovery"] = val
+
+		val, err = v.ImportExisting.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["import_existing"] = val
+
+		val, err = v.ResourceGroup.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_group"] = val
+
+		val, err = v.RpcMode.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["rpc_mode"] = val
+
+		val, err = v.StorageAccount.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_account"] = val
+
+		val, err = v.SubscriberId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subscriber_id"] = val
+
+		val, err = v.TenantId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tenant_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAzureValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAzureValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAzureValue) String() string {
+	return "ConfigAzureValue"
+}
+
+func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"azure_region":          basetypes.StringType{},
+		"client_id":             basetypes.StringType{},
+		"client_secret":         basetypes.StringType{},
+		"client_secret_version": basetypes.Int64Type{},
+		"cloud_type":            basetypes.StringType{},
+		"cmdb_discovery":        basetypes.BoolType{},
+		"import_existing":       basetypes.StringType{},
+		"resource_group":        basetypes.StringType{},
+		"rpc_mode":              basetypes.StringType{},
+		"storage_account":       basetypes.StringType{},
+		"subscriber_id":         basetypes.StringType{},
+		"tenant_id":             basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"azure_region":          v.AzureRegion,
+			"client_id":             v.ClientId,
+			"client_secret":         v.ClientSecret,
+			"client_secret_version": v.ClientSecretVersion,
+			"cloud_type":            v.CloudType,
+			"cmdb_discovery":        v.CmdbDiscovery,
+			"import_existing":       v.ImportExisting,
+			"resource_group":        v.ResourceGroup,
+			"rpc_mode":              v.RpcMode,
+			"storage_account":       v.StorageAccount,
+			"subscriber_id":         v.SubscriberId,
+			"tenant_id":             v.TenantId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAzureValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAzureValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AzureRegion.Equal(other.AzureRegion) {
+		return false
+	}
+
+	if !v.ClientId.Equal(other.ClientId) {
+		return false
+	}
+
+	if !v.ClientSecret.Equal(other.ClientSecret) {
+		return false
+	}
+
+	if !v.ClientSecretVersion.Equal(other.ClientSecretVersion) {
+		return false
+	}
+
+	if !v.CloudType.Equal(other.CloudType) {
+		return false
+	}
+
+	if !v.CmdbDiscovery.Equal(other.CmdbDiscovery) {
+		return false
+	}
+
+	if !v.ImportExisting.Equal(other.ImportExisting) {
+		return false
+	}
+
+	if !v.ResourceGroup.Equal(other.ResourceGroup) {
+		return false
+	}
+
+	if !v.RpcMode.Equal(other.RpcMode) {
+		return false
+	}
+
+	if !v.StorageAccount.Equal(other.StorageAccount) {
+		return false
+	}
+
+	if !v.SubscriberId.Equal(other.SubscriberId) {
+		return false
+	}
+
+	if !v.TenantId.Equal(other.TenantId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
+	return ConfigAzureType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"azure_region":          basetypes.StringType{},
+		"client_id":             basetypes.StringType{},
+		"client_secret":         basetypes.StringType{},
+		"client_secret_version": basetypes.Int64Type{},
+		"cloud_type":            basetypes.StringType{},
+		"cmdb_discovery":        basetypes.BoolType{},
+		"import_existing":       basetypes.StringType{},
+		"resource_group":        basetypes.StringType{},
+		"rpc_mode":              basetypes.StringType{},
+		"storage_account":       basetypes.StringType{},
+		"subscriber_id":         basetypes.StringType{},
+		"tenant_id":             basetypes.StringType{},
+	}
+}
+
 var _ basetypes.ObjectTypable = ConfigHvmType{}
 
 type ConfigHvmType struct {
@@ -3247,6 +4328,24 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
+	passwordVersionAttribute, ok := attributes["password_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password_version is missing from object`)
+
+		return nil, diags
+	}
+
+	passwordVersionVal, ok := passwordVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password_version expected to be basetypes.Int64Value, was: %T`, passwordVersionAttribute))
+	}
+
 	resourcePoolAttribute, ok := attributes["resource_pool"]
 
 	if !ok {
@@ -3318,6 +4417,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		EnableVnc:                  enableVncVal,
 		HideHostSelection:          hideHostSelectionVal,
 		Password:                   passwordVal,
+		PasswordVersion:            passwordVersionVal,
 		ResourcePool:               resourcePoolVal,
 		RpcMode:                    rpcModeVal,
 		Username:                   usernameVal,
@@ -3604,6 +4704,24 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`password expected to be basetypes.StringValue, was: %T`, passwordAttribute))
 	}
 
+	passwordVersionAttribute, ok := attributes["password_version"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`password_version is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	passwordVersionVal, ok := passwordVersionAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`password_version expected to be basetypes.Int64Value, was: %T`, passwordVersionAttribute))
+	}
+
 	resourcePoolAttribute, ok := attributes["resource_pool"]
 
 	if !ok {
@@ -3675,6 +4793,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 		EnableVnc:                  enableVncVal,
 		HideHostSelection:          hideHostSelectionVal,
 		Password:                   passwordVal,
+		PasswordVersion:            passwordVersionVal,
 		ResourcePool:               resourcePoolVal,
 		RpcMode:                    rpcModeVal,
 		Username:                   usernameVal,
@@ -3762,6 +4881,7 @@ type ConfigVmwareValue struct {
 	EnableVnc                  basetypes.BoolValue   `tfsdk:"enable_vnc"`
 	HideHostSelection          basetypes.BoolValue   `tfsdk:"hide_host_selection"`
 	Password                   basetypes.StringValue `tfsdk:"password"`
+	PasswordVersion            basetypes.Int64Value  `tfsdk:"password_version"`
 	ResourcePool               basetypes.StringValue `tfsdk:"resource_pool"`
 	RpcMode                    basetypes.StringValue `tfsdk:"rpc_mode"`
 	Username                   basetypes.StringValue `tfsdk:"username"`
@@ -3769,7 +4889,7 @@ type ConfigVmwareValue struct {
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 15)
+	attrTypes := make(map[string]tftypes.Type, 16)
 
 	var val tftypes.Value
 	var err error
@@ -3786,6 +4906,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	attrTypes["enable_vnc"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["hide_host_selection"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["password"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["password_version"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["resource_pool"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["rpc_mode"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["username"] = basetypes.StringType{}.TerraformType(ctx)
@@ -3794,7 +4915,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 15)
+		vals := make(map[string]tftypes.Value, 16)
 
 		val, err = v.ApiUrl.ToTerraformValue(ctx)
 
@@ -3892,6 +5013,14 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 		vals["password"] = val
 
+		val, err = v.PasswordVersion.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["password_version"] = val
+
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -3958,6 +5087,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		"enable_vnc":                    basetypes.BoolType{},
 		"hide_host_selection":           basetypes.BoolType{},
 		"password":                      basetypes.StringType{},
+		"password_version":              basetypes.Int64Type{},
 		"resource_pool":                 basetypes.StringType{},
 		"rpc_mode":                      basetypes.StringType{},
 		"username":                      basetypes.StringType{},
@@ -3986,6 +5116,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"enable_vnc":                    v.EnableVnc,
 			"hide_host_selection":           v.HideHostSelection,
 			"password":                      v.Password,
+			"password_version":              v.PasswordVersion,
 			"resource_pool":                 v.ResourcePool,
 			"rpc_mode":                      v.RpcMode,
 			"username":                      v.Username,
@@ -4057,6 +5188,10 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.PasswordVersion.Equal(other.PasswordVersion) {
+		return false
+	}
+
 	if !v.ResourcePool.Equal(other.ResourcePool) {
 		return false
 	}
@@ -4094,6 +5229,7 @@ func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"enable_vnc":                    basetypes.BoolType{},
 		"hide_host_selection":           basetypes.BoolType{},
 		"password":                      basetypes.StringType{},
+		"password_version":              basetypes.Int64Type{},
 		"resource_pool":                 basetypes.StringType{},
 		"rpc_mode":                      basetypes.StringType{},
 		"username":                      basetypes.StringType{},

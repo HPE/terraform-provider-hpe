@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -13,6 +16,8 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_os_type_image"
+
 type osTypeImageSweepItem struct {
 	id               int64
 	virtualImageName string
@@ -20,8 +25,8 @@ type osTypeImageSweepItem struct {
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_os_type_image",
-		// List all os type image resources.
+		sweeperName,
+		// List OS type image resources by iterating OS types.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]osTypeImageSweepItem,
 			*http.Response,
@@ -71,11 +76,11 @@ func init() {
 
 			return items, hresp, nil
 		},
-		// Is this a test os type image?
+		// Is this a test OS type image?
 		func(item osTypeImageSweepItem) bool {
 			return strings.HasPrefix(item.virtualImageName, testsweep.TestResourcePrefix)
 		},
-		// Delete the test os type image.
+		// Delete the test OS type image.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

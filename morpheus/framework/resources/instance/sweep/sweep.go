@@ -1,4 +1,6 @@
-// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+//go:build sweep
 
 package sweep
 
@@ -13,10 +15,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_instance"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_instance",
-		// List all instance resources.
+		sweeperName,
+		// List instance resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListInstances200ResponseAllOfInstancesInner,
 			*http.Response,

@@ -1,4 +1,7 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+
+//go:build sweep
 
 package sweep
 
@@ -13,10 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_network"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_network",
-		// List all network resources.
+		sweeperName,
+		// List network resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListNetworks200ResponseAllOfNetworksInner,
 			*http.Response,

@@ -54,6 +54,25 @@ func (r *Resource) Update(
 		updateCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
 	}
 
+	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
+		updateCloud.SetDefaultDatastoreSyncActive(plan.DefaultDatastoreSyncActive.ValueBool())
+	}
+	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
+		updateCloud.SetDefaultFolderSyncActive(plan.DefaultFolderSyncActive.ValueBool())
+	}
+	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
+		updateCloud.SetDefaultNetworkSyncActive(plan.DefaultNetworkSyncActive.ValueBool())
+	}
+	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
+		updateCloud.SetDefaultPlanSyncActive(plan.DefaultPlanSyncActive.ValueBool())
+	}
+	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
+		updateCloud.SetDefaultPoolSyncActive(plan.DefaultPoolSyncActive.ValueBool())
+	}
+	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
+		updateCloud.SetDefaultSecurityGroupSyncActive(plan.DefaultSecurityGroupSyncActive.ValueBool())
+	}
+
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
 		updateCloud.SetCode(plan.Code.ValueString())
 	}
@@ -337,6 +356,51 @@ func (r *Resource) Update(
 		if !plan.ConfigVmware.HideHostSelection.IsNull() && !plan.ConfigVmware.HideHostSelection.IsUnknown() {
 			updateCloud.Config["hideHostSelection"] = convert.
 				BoolTypeToStringPointerOnOff(plan.ConfigVmware.HideHostSelection)
+		}
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			updateCloud.Config["azureRegion"] = plan.ConfigAzure.AzureRegion.ValueString()
+		}
+
+		if !plan.ConfigAzure.CmdbDiscovery.IsNull() && !plan.ConfigAzure.CmdbDiscovery.IsUnknown() {
+			updateCloud.Config["configCmdbDiscovery"] = convert.
+				BoolTypeToStringPointerOnOff(plan.ConfigAzure.CmdbDiscovery)
+		}
+
+		if !plan.ConfigAzure.SubscriberId.IsNull() && !plan.ConfigAzure.SubscriberId.IsUnknown() {
+			updateCloud.Config["subscriberId"] = plan.ConfigAzure.SubscriberId.ValueString()
+		}
+
+		if !plan.ConfigAzure.TenantId.IsNull() && !plan.ConfigAzure.TenantId.IsUnknown() {
+			updateCloud.Config["tenantId"] = plan.ConfigAzure.TenantId.ValueString()
+		}
+
+		if !plan.ConfigAzure.ClientId.IsNull() && !plan.ConfigAzure.ClientId.IsUnknown() {
+			updateCloud.Config["clientId"] = plan.ConfigAzure.ClientId.ValueString()
+		}
+
+		if !plan.ConfigAzure.ClientSecret.IsNull() && !plan.ConfigAzure.ClientSecret.IsUnknown() {
+			updateCloud.Config["clientSecret"] = plan.ConfigAzure.ClientSecret.ValueString()
+		}
+
+		if !plan.ConfigAzure.ResourceGroup.IsNull() && !plan.ConfigAzure.ResourceGroup.IsUnknown() {
+			updateCloud.Config["resourceGroup"] = plan.ConfigAzure.ResourceGroup.ValueString()
+		}
+
+		if !plan.ConfigAzure.CloudType.IsNull() && !plan.ConfigAzure.CloudType.IsUnknown() {
+			updateCloud.Config["cloudType"] = plan.ConfigAzure.CloudType.ValueString()
+		}
+
+		if !plan.ConfigAzure.ImportExisting.IsNull() && !plan.ConfigAzure.ImportExisting.IsUnknown() {
+			updateCloud.Config["importExisting"] = plan.ConfigAzure.ImportExisting.ValueString()
+		}
+
+		if !plan.ConfigAzure.StorageAccount.IsNull() && !plan.ConfigAzure.StorageAccount.IsUnknown() {
+			updateCloud.Config["storageAccount"] = plan.ConfigAzure.StorageAccount.ValueString()
+		}
+
+		if !plan.ConfigAzure.RpcMode.IsNull() && !plan.ConfigAzure.RpcMode.IsUnknown() {
+			updateCloud.Config["rpcMode"] = plan.ConfigAzure.RpcMode.ValueString()
 		}
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		if plan.CloudTypeCode.IsNull() || plan.CloudTypeCode.IsUnknown() {

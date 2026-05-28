@@ -195,8 +195,9 @@ func (m *morpheusConstraint) checkForAttributeUpdate(
 	resp.RequiresReplace = append(
 		resp.RequiresReplace, path.Root(m.hclAttribute),
 	)
-	resp.Diagnostics.AddWarning(fmt.Sprintf("%s change will trigger replace",
-		cases.Title(language.English, cases.NoLower).String(m.mnemonic)),
+	resp.Diagnostics.AddWarning(
+		fmt.Sprintf("%s change will trigger replace",
+			cases.Title(language.English, cases.NoLower).String(m.mnemonic)),
 		fmt.Sprintf("Morpheus version must be %s to allow %s updates without instance replacement",
 			m.constraint, m.mnemonic),
 	)

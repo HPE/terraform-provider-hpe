@@ -127,6 +127,11 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration for HVM cluster servers",
 				MarkdownDescription: "Configuration for HVM cluster servers",
 			},
+			"cpu_placement_mode": schema.StringAttribute{
+				Computed:            true,
+				Description:         "Cluster CPU placement mode",
+				MarkdownDescription: "Cluster CPU placement mode",
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Description of the cluster to be created",
@@ -291,6 +296,7 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"ssh_password_wo": schema.StringAttribute{
 						Optional:            true,
+						Sensitive:           true,
 						WriteOnly:           true,
 						Description:         "SSH password (Write Only)",
 						MarkdownDescription: "SSH password (Write Only)",
@@ -469,21 +475,22 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type ClusterModel struct {
-	CloudId         types.Int64    `tfsdk:"cloud_id"`
-	ClusterTypeCode types.String   `tfsdk:"cluster_type_code"`
-	Config          types.Dynamic  `tfsdk:"config"`
-	ConfigHvm       ConfigHvmValue `tfsdk:"config_hvm"`
-	Description     types.String   `tfsdk:"description"`
-	GroupId         types.Int64    `tfsdk:"group_id"`
-	Id              types.Int64    `tfsdk:"id"`
-	Labels          types.Set      `tfsdk:"labels"`
-	LayoutId        types.Int64    `tfsdk:"layout_id"`
-	Name            types.String   `tfsdk:"name"`
-	Server          ServerValue    `tfsdk:"server"`
-	ServiceUrl      types.String   `tfsdk:"service_url"`
-	Timeouts        timeouts.Value `tfsdk:"timeouts"`
-	Uuid            types.String   `tfsdk:"uuid"`
-	WorkflowId      types.Int64    `tfsdk:"workflow_id"`
+	CloudId          types.Int64    `tfsdk:"cloud_id"`
+	ClusterTypeCode  types.String   `tfsdk:"cluster_type_code"`
+	Config           types.Dynamic  `tfsdk:"config"`
+	ConfigHvm        ConfigHvmValue `tfsdk:"config_hvm"`
+	CpuPlacementMode types.String   `tfsdk:"cpu_placement_mode"`
+	Description      types.String   `tfsdk:"description"`
+	GroupId          types.Int64    `tfsdk:"group_id"`
+	Id               types.Int64    `tfsdk:"id"`
+	Labels           types.Set      `tfsdk:"labels"`
+	LayoutId         types.Int64    `tfsdk:"layout_id"`
+	Name             types.String   `tfsdk:"name"`
+	Server           ServerValue    `tfsdk:"server"`
+	ServiceUrl       types.String   `tfsdk:"service_url"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+	Uuid             types.String   `tfsdk:"uuid"`
+	WorkflowId       types.Int64    `tfsdk:"workflow_id"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHvmType{}

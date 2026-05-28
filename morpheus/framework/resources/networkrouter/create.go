@@ -238,7 +238,8 @@ func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*i
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"network router types GET failed: %s",
-			errfmt.ErrMsg(err, hresp))
+			errfmt.ErrMsg(err, hresp),
+		)
 	}
 
 	types := res.GetNetworkRouterTypes()

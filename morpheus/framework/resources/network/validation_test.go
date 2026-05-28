@@ -9,16 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 // TestAccMorpheusNetworkResourceValidationMissingName tests that the
 // resource fails validation when the required 'name' field is missing
 func TestAccMorpheusNetworkResourceValidationMissingName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration missing the required 'name' field
 	config := providerConfig + `
@@ -48,10 +52,14 @@ resource "hpe_morpheus_network" "test" {
 // TestAccMorpheusNetworkResourceValidationMissingCloudId tests that the
 // resource fails validation when the required 'cloud_id' field is missing
 func TestAccMorpheusNetworkResourceValidationMissingCloudId(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration missing the required 'cloud_id' field
 	config := providerConfig + `
@@ -81,10 +89,14 @@ resource "hpe_morpheus_network" "test" {
 // TestAccMorpheusNetworkResourceValidationMissingGroupId tests that the
 // resource fails validation when the required 'group_id' field is missing
 func TestAccMorpheusNetworkResourceValidationMissingGroupId(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration missing the required 'group_id' field
 	config := providerConfig + `
@@ -114,10 +126,14 @@ resource "hpe_morpheus_network" "test" {
 // TestAccMorpheusNetworkResourceValidationMissingTypeId tests that the
 // resource fails validation when the required 'type_id' field is missing
 func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration missing the required 'type_id' field
 	config := providerConfig + `
@@ -148,10 +164,14 @@ resource "hpe_morpheus_network" "test" {
 // resource fails validation when config field has invalid type (string
 // instead of object)
 func TestAccMorpheusNetworkResourceValidationInvalidConfig(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration with invalid config type
 	config := providerConfig + `
@@ -183,10 +203,14 @@ resource "hpe_morpheus_network" "test" {
 // resource fails validation when pool_id field has invalid type (string
 // instead of int)
 func TestAccMorpheusNetworkResourceValidationInvalidPoolId(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration with invalid pool_id type
 	config := providerConfig + `
@@ -218,10 +242,14 @@ resource "hpe_morpheus_network" "test" {
 // resource fails validation when tenant_ids field has invalid type
 // (string instead of set)
 func TestAccMorpheusNetworkResourceValidationInvalidTenantIds(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration with invalid tenant_ids type
 	config := providerConfig + `
@@ -252,13 +280,17 @@ resource "hpe_morpheus_network" "test" {
 // TestAccMorpheusNetworkResourceValidationValidConfigNull tests that the
 // resource accepts null config value without validation error
 func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Configuration with valid null config
 	config := providerConfig + `

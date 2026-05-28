@@ -16,17 +16,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -118,7 +122,12 @@ func TestAccMorpheusLoadBalancerVirtualServerNsxtExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtUpdateOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -233,7 +242,12 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtConfigChangeRequiresReplace(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresReplace(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -333,7 +347,8 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 			if rs.Primary.ID == initialResourceID {
 				return fmt.Errorf(
 					"expected resource ID to change due to config_nsxt change (RequiresReplace), "+
-						"but ID remained the same: %s", rs.Primary.ID)
+						"but ID remained the same: %s", rs.Primary.ID,
+				)
 			}
 
 			return nil
@@ -356,7 +371,12 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 	})
 }
 
-func TestAccMorpheusLoadBalancerVirtualServerNsxtMinimalExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 

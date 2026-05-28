@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -32,6 +35,7 @@ var lbTestInstanceNameRe = regexp.MustCompile(`^TestAccMorpheusL\d{16}$`)
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
+		// List load balancer resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 			*http.Response,
@@ -44,6 +48,7 @@ func init() {
 
 			return resp.GetLoadBalancers(), hresp, err
 		},
+		// Is this a test load balancer?
 		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) bool {
 			name, ok := item.GetNameOk()
 			if !ok || name == nil {
@@ -52,6 +57,7 @@ func init() {
 
 			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
 		},
+		// Delete the test load balancer.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,
@@ -66,6 +72,10 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner](
+			"hpe_morpheus_load_balancer_monitor",
+			"hpe_morpheus_load_balancer_virtual_server",
+		),
 	)
 
 	// Register a second sweeper that runs after load balancers are deleted.

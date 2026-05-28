@@ -161,6 +161,7 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				WriteOnly:           true,
 				Description:         "Password (Write Only)",
 				MarkdownDescription: "Password (Write Only)",

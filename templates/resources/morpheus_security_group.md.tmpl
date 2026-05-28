@@ -1,0 +1,54 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Security groups provide network-level access control for cloud resources. They can be created globally (without a `cloud_id`) to apply across all clouds, or scoped to a specific cloud integration such as Azure or NSX-T.
+
+## Multi-Tenancy and Permissions
+
+Security groups support multi-tenancy and group-based access control:
+
+| Attribute | Description |
+|---|---|
+| `visibility` | Controls whether the security group is visible to sub-tenants. Set to `"public"` for shared access or `"private"` (default) for owner-only |
+| `tenant_ids` | Grants specific tenants access to the security group |
+| `resource_permission_groups_all` | When `true`, all groups have access. When `false`, only groups listed in `resource_permission_group_ids` have access |
+| `resource_permission_group_ids` | Set of group IDs that have access (only applicable when `resource_permission_groups_all` is `false`) |
+
+## Example Usage
+
+### Basic Security Group
+
+{{ tffile "examples/resources/morpheus_security_group/example.tf" }}
+
+### Azure Security Group
+
+{{ tffile "examples/resources/morpheus_security_group/example_azure.tf" }}
+
+### NSX-T Security Group
+
+{{ tffile "examples/resources/morpheus_security_group/example_nsxt.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Security groups can be imported using the security group ID, e.g.
+
+```bash
+terraform import hpe_morpheus_security_group.example 123
+```
+
+## Notes
+
+### Cloud-Scoped Security Groups
+
+When `cloud_id` is set, Morpheus provisions the security group on the cloud provider (e.g., an AWS Security Group or Azure NSG is created via the provider's API). Without `cloud_id`, the security group exists only within Morpheus.
+
+Separately, security groups that already exist on a cloud provider are automatically discovered during cloud inventory sync. The [`default_security_group_sync_active`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud) attribute on the `hpe_morpheus_cloud` resource controls whether those discovered security groups are set to active by default.

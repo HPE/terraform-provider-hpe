@@ -4,4 +4,6 @@
 
 package loadbalancervirtualserver
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver/sweep"
+)

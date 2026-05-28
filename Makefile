@@ -1,12 +1,13 @@
-#(C) Copyright 2025 Hewlett Packard Enterprise Development LP
+#(C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 #
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
 .PHONY: build linter lint test docs sweep build-render-tool
 
+# Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname
 SWEEP ?= all
-SWEEP_SYSTEMS ?= zodiac,feature
+SWEEP_SYSTEMS ?= zodiac
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 
 build:
@@ -40,4 +41,3 @@ docs: build-render-tool
 
 sweep:
 	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)
-	go test -v ./... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)

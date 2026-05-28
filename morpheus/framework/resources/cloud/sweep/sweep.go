@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -13,10 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_cloud"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_cloud",
-		// List all cloud resources.
+		sweeperName,
+		// List cloud resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListClouds200ResponseAllOfZonesInner,
 			*http.Response,

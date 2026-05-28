@@ -1,110 +1,101 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-const testPrefix = testsweep.TestResourcePrefix
+const sweeperName = "hpe_morpheus_network_firewall_rule"
 
-func init() {
-	resource.AddTestSweepers(
-		"hpe_morpheus_network_firewall_rule",
-		&resource.Sweeper{
-			Name: "hpe_morpheus_network_firewall_rule",
-			F: func(_ string) error {
-				return sweepFirewallRules()
-			},
-		},
-	)
+// networkFirewallRuleSweepItem pairs a firewall rule with its parent network server ID.
+type networkFirewallRuleSweepItem struct {
+	serverID int64
+	id       int64
+	name     string
 }
 
-func sweepFirewallRules() error {
-	serverIDStr := os.Getenv("MORPHEUS_TEST_NETWORK_SERVER_ID")
-	if serverIDStr == "" {
-		log.Println("[WARN] MORPHEUS_TEST_NETWORK_SERVER_ID not set; skipping network firewall rule sweep")
+func init() {
+	testsweep.RegisterTypedAPISweeper(
+		sweeperName,
+		// List network firewall rule resources.
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]networkFirewallRuleSweepItem,
+			*http.Response,
+			error,
+		) {
+			serverResp, hresp, err := client.NetworksAPI.ListNetworkServers(ctx).Execute()
+			if err != nil {
+				return nil, hresp, err
+			}
 
-		return nil
-	}
+			var items []networkFirewallRuleSweepItem
 
-	serverID, err := strconv.ParseInt(serverIDStr, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid MORPHEUS_TEST_NETWORK_SERVER_ID: %w", err)
-	}
+			for _, server := range serverResp.GetNetworkServers() {
+				serverID, ok := server.GetIdOk()
+				if !ok || serverID == nil {
+					continue
+				}
 
-	ctx := context.Background()
+				ruleResp, _, err := client.NetworksAPI.
+					GetNetworkFirewallRules(ctx, *serverID).Execute()
+				if err != nil || ruleResp == nil {
+					continue
+				}
 
-	client, err := testhelpers.NewClientForServer(ctx, "")
-	if err != nil {
-		log.Printf("[WARN] Cannot create sweep client: %v", err)
+				for _, rule := range ruleResp.GetRules() {
+					id, ok := rule.GetIdOk()
+					if !ok || id == nil {
+						continue
+					}
 
-		return nil
-	}
+					name, ok := rule.GetNameOk()
+					if !ok || name == nil {
+						continue
+					}
 
-	resp, httpResp, err := client.NetworksAPI.
-		GetNetworkFirewallRules(ctx, serverID).Execute()
-	if err != nil || httpResp.StatusCode != http.StatusOK {
-		return fmt.Errorf("listing firewall rules failed: %s", errfmt.ErrMsg(err, httpResp))
-	}
+					items = append(items, networkFirewallRuleSweepItem{
+						serverID: *serverID,
+						id:       *id,
+						name:     *name,
+					})
+				}
+			}
 
-	rules := resp.GetRules()
+			return items, hresp, nil
+		},
+		// Is this a test network firewall rule?
+		func(item networkFirewallRuleSweepItem) bool {
+			return strings.HasPrefix(item.name, testsweep.TestResourcePrefix)
+		},
+		// Delete the test network firewall rule.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item networkFirewallRuleSweepItem,
+		) (*http.Response, error) {
+			if item.id == 0 {
+				return nil, fmt.Errorf("could not get ID")
+			}
 
-	// TODO: The SDK returns rules as interface{} (untyped), so we use a JSON
-	// round-trip to extract name/ID. Revisit when the SDK adds typed list responses.
-	rulesJSON, err := json.Marshal(rules)
-	if err != nil {
-		return fmt.Errorf("marshaling rules response: %w", err)
-	}
+			_, hresp, err := client.NetworksAPI.
+				DeleteNetworkFirewallRule(ctx, item.id, item.serverID).Execute()
 
-	var rulesList []map[string]interface{}
-	if err := json.Unmarshal(rulesJSON, &rulesList); err != nil {
-		return fmt.Errorf("decoding rules list: %w", err)
-	}
-
-	for _, rule := range rulesList {
-		name, _ := rule["name"].(string)
-		if !strings.HasPrefix(name, testPrefix) {
-			continue
-		}
-
-		idRaw, ok := rule["id"]
-		if !ok {
-			continue
-		}
-
-		var id int64
-
-		switch v := idRaw.(type) {
-		case float64:
-			id = int64(v)
-		case json.Number:
-			id, _ = v.Int64()
-		default:
-			continue
-		}
-
-		log.Printf("[INFO] Sweeping network firewall rule %q (id=%d)", name, id)
-
-		_, httpResp, err := client.NetworksAPI.
-			DeleteNetworkFirewallRule(ctx, id, serverID).Execute()
-		if err != nil {
-			log.Printf("[WARN] Failed to delete firewall rule %d: %s", id, errfmt.ErrMsg(err, httpResp))
-		}
-	}
-
-	return nil
+			return hresp, err
+		},
+		testsweep.WithIgnoreListStatuses[networkFirewallRuleSweepItem](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
+	)
 }

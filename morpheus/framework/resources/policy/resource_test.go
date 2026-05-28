@@ -1,10 +1,5 @@
 // (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 
-//go:generate ../../../../bin/render example.tf.tmpl ResourceName "group_policy" Name "TestMaxMemoryGroupPolicy" Description "Example group-scoped policy" AssociatedResourceType "Group" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "8"
-//go:generate ../../../../bin/render example.tf.tmpl ResourceName "cloud_policy" Name "TestMaxMemoryCloudPolicy" Description "Example cloud-scoped policy" AssociatedResourceType "Cloud" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "8"
-//go:generate ../../../../bin/render example.tf.tmpl ResourceName "user_policy" Name "TestMaxMemoryUserPolicy" Description "Example user-scoped policy" AssociatedResourceType "User" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "8"
-//go:generate ../../../../bin/render example.tf.tmpl ResourceName "role_policy" Name "TestMaxMemoryRolePolicy" Description "Example role-scoped policy" AssociatedResourceType "Role" AssociatedResourceID "1" PolicyTypeCode "maxMemory" ConfigKey "maxMemory" ConfigValue "8"
-
 package policy_test
 
 import (
@@ -20,13 +15,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -45,12 +39,16 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Test validation: associated_resource_id required when not Global
 func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -81,13 +79,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: invalid policy type code
-func TestAccMorpheusPolicyValidationInvalidPolicyType(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationInvalidPolicyType(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -120,12 +122,16 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: invalid associated_resource_type
 func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -158,6 +164,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: incompatible policy type and resource type (motd does not support User)
 func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -165,8 +176,7 @@ func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	roleName := acctest.RandomWithPrefix(t.Name() + "-role")
 	userName := acctest.RandomWithPrefix(t.Name() + "-user")
@@ -214,7 +224,12 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: tenants not supported for policy type
-func TestAccMorpheusPolicyValidationTenantsNotSupported(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationTenantsNotSupported(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -222,8 +237,7 @@ func TestAccMorpheusPolicyValidationTenantsNotSupported(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	groupName := acctest.RandomWithPrefix(t.Name() + "-group")
 	cloudName := acctest.RandomWithPrefix(t.Name() + "-cloud")
@@ -275,13 +289,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_approval flow_id and workflow_id conflict
-func TestAccMorpheusPolicyValidationApprovalWorkflowConflict(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationApprovalWorkflowConflict(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -316,13 +334,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_approval flow_id required when workflow_type is flow
-func TestAccMorpheusPolicyValidationApprovalFlowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationApprovalFlowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -355,13 +377,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_approval workflow_id required when workflow_type is workflow
-func TestAccMorpheusPolicyValidationApprovalWorkflowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationApprovalWorkflowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -394,13 +420,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_lifecycle flow_id required when workflow_type is flow
-func TestAccMorpheusPolicyValidationLifecycleFlowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationLifecycleFlowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -433,13 +463,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_lifecycle lifecycle_workflow_id required when workflow_type is workflow
-func TestAccMorpheusPolicyValidationLifecycleWorkflowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationLifecycleWorkflowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -472,13 +506,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_shutdown flow_id required when workflow_type is flow
-func TestAccMorpheusPolicyValidationShutdownFlowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationShutdownFlowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -511,13 +549,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config_shutdown shutdown_workflow_id required when workflow_type is workflow
-func TestAccMorpheusPolicyValidationShutdownWorkflowIdRequired(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationShutdownWorkflowIdRequired(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `
@@ -550,13 +592,17 @@ resource "hpe_morpheus_policy" "validation_test" {
 }
 
 // Test validation: config conflicts with config_* attributes
-func TestAccMorpheusPolicyValidationConfigConflict(t *testing.T) {
+func TestAccMorpheusPolicyResourceValidationConfigConflict(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig := `

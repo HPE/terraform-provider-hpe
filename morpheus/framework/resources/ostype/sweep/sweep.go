@@ -1,4 +1,7 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+
+//go:build sweep
 
 package sweep
 
@@ -13,10 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_os_type"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_os_type",
-		// List all OS type resources.
+		sweeperName,
+		// List OS type resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListOsTypes200ResponseAllOfOsTypesInner,
 			*http.Response,
@@ -53,5 +58,8 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithDependencies[sdk.ListOsTypes200ResponseAllOfOsTypesInner](
+			"hpe_morpheus_os_type_image",
+		),
 	)
 }

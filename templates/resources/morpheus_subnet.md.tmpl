@@ -1,0 +1,57 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Subnets represent network address spaces within a cloud integration. Only Azure and Google (GCP) support creating subnets as independent objects within an existing network.
+
+~> **Note** This resource only applies to Azure and Google subnet types. For all other network types (NSX-T, OpenStack, Amazon, OVS, VCD, ACI, etc.), the network and its addressing are created together as a single object using the [`hpe_morpheus_network`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_network) resource.
+
+### Creatable Subnet Types
+
+| Subnet Type | Code | CIDR Handling | Config Keys |
+|---|---|---|---|
+| **Azure** | `azure` | Derived from `config.subnetCidr` (top-level `cidr` ignored) | `subnetName`, `subnetCidr` |
+| **Google (GCP)** | `google` | Uses top-level `cidr` directly (`cidrRequired: true`) | `name`, `description`, `region` (via option types) |
+
+## Notes
+
+### Write-Only Config
+
+The `config` attribute is **write-only** -- it is sent to the Morpheus API when the subnet is created but is never stored in Terraform state or returned by the API on subsequent reads. This design reflects the API's behaviour: the Morpheus API accepts configuration properties on create but does not echo them back in GET responses. Because the value is not persisted in state, Terraform cannot detect drift in `config` on its own.
+
+To update the configuration, increment `config_version`. This triggers a destroy-and-recreate of the subnet resource, ensuring the new configuration is applied via a fresh create call.
+
+### Subnet Name
+
+The `name` attribute is read-only in Terraform state. For most subnet types, the subnet's name is determined by a property inside `config` (for example, `subnetName` for Azure subnets). After creation, the resulting name is populated in state from the API response. To change a subnet's name, update the relevant key in `config` and increment `config_version` to force replacement.
+
+### Config Properties by Subnet Type
+
+The keys accepted in `config` depend on the subnet type (identified by `type_id`). Below are common examples:
+
+#### Azure
+
+| Key | Description |
+|-----|-------------|
+| `subnetName` | The name of the subnet |
+| `subnetCidr` | The address range in CIDR notation (must fit within the VNet address space) |
+
+## Example Usage (Azure)
+
+{{ tffile "examples/resources/morpheus_subnet/example_azure.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Subnets can be imported using the subnet ID, e.g.
+
+```bash
+terraform import hpe_morpheus_subnet.example 123
+```

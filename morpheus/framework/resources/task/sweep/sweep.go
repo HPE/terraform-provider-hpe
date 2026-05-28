@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -14,10 +17,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_task"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_task",
-		// List all task resources.
+		sweeperName,
+		// List task resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListTasks200ResponseAllOfTasksInner,
 			*http.Response,

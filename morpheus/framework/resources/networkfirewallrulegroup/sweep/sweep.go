@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -14,6 +17,8 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_network_firewall_rule_group"
+
 // ruleGroupItem represents a firewall rule group item for sweep operations.
 type ruleGroupItem struct {
 	Id              int64
@@ -23,8 +28,8 @@ type ruleGroupItem struct {
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_network_firewall_rule_group",
-		// List all firewall rule groups across all network servers.
+		sweeperName,
+		// List network firewall rule group resources by iterating network servers.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]ruleGroupItem,
 			*http.Response,
@@ -81,11 +86,11 @@ func init() {
 
 			return allGroups, &http.Response{StatusCode: http.StatusOK}, nil
 		},
-		// Is this a test firewall rule group?
+		// Is this a test network firewall rule group?
 		func(item ruleGroupItem) bool {
 			return strings.HasPrefix(item.Name, testsweep.TestResourcePrefix)
 		},
-		// Delete the test firewall rule group.
+		// Delete the test network firewall rule group.
 		func(
 			ctx context.Context,
 			client *sdk.APIClient,

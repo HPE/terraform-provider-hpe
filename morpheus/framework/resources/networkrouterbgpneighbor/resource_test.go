@@ -14,12 +14,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-
 	code := testhelpers.TestMain(m)
 
 	testhelpers.WriteMergedResults()
@@ -27,7 +25,12 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -36,8 +39,7 @@ func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "192.168.10." + acctest.RandStringFromCharSet(2, "123456789")
@@ -71,7 +73,12 @@ func TestAccNetworkRouterBgpNeighborExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborCreate(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -80,8 +87,7 @@ func TestAccNetworkRouterBgpNeighborCreate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "192.168.1." + acctest.RandStringFromCharSet(2, "123456789")
@@ -111,29 +117,40 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"remote_as", "65001"),
+						"remote_as", "65001",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"weight", "60"),
+						"weight", "60",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"keep_alive", "60"),
+						"keep_alive", "60",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.test",
-						"hold_down", "180"),
+						"hold_down", "180",
+					),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -142,8 +159,7 @@ func TestAccNetworkRouterBgpNeighborCreateAllAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.0.0." + acctest.RandStringFromCharSet(2, "123456789")
@@ -182,59 +198,80 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.all_attrs", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.all_attrs", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"description", name),
+						"description", name,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"remote_as", "65002"),
+						"remote_as", "65002",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"weight", "100"),
+						"weight", "100",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"keep_alive", "30"),
+						"keep_alive", "30",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"hold_down", "90"),
+						"hold_down", "90",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_enabled", "true"),
+						"bfd_enabled", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_interval", "500"),
+						"bfd_interval", "500",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"bfd_multiple", "3"),
+						"bfd_multiple", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"allow_as_in", "true"),
+						"allow_as_in", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"hop_limit", "2"),
+						"hop_limit", "2",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"restart_mode", "HELPER_ONLY"),
+						"restart_mode", "HELPER_ONLY",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_type", "IPV4"),
+						"route_filtering_type", "IPV4",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_in", "filter-in"),
+						"route_filtering_in", "filter-in",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.all_attrs",
-						"route_filtering_out", "filter-out"),
+						"route_filtering_out", "filter-out",
+					),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborUpdate(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -243,8 +280,7 @@ func TestAccNetworkRouterBgpNeighborUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "172.16.0." + acctest.RandStringFromCharSet(2, "123456789")
@@ -298,13 +334,16 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.update_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.update_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"remote_as", "65001"),
+						"remote_as", "65001",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"weight", "60"),
+						"weight", "60",
+					),
 				),
 			},
 			{
@@ -312,44 +351,60 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"description", name+" updated"),
+						"description", name+" updated",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"remote_as", "65002"),
+						"remote_as", "65002",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"weight", "100"),
+						"weight", "100",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"keep_alive", "30"),
+						"keep_alive", "30",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"hold_down", "90"),
+						"hold_down", "90",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_enabled", "true"),
+						"bfd_enabled", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_interval", "500"),
+						"bfd_interval", "500",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"bfd_multiple", "3"),
+						"bfd_multiple", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"allow_as_in", "true"),
+						"allow_as_in", "true",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"hop_limit", "3"),
+						"hop_limit", "3",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"restart_mode", "GRACEFUL_RESTART"),
+						"restart_mode", "GRACEFUL_RESTART",
+					),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborImport(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -358,8 +413,7 @@ func TestAccNetworkRouterBgpNeighborImport(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.1.0." + acctest.RandStringFromCharSet(2, "123456789")
@@ -386,7 +440,8 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.import_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.import_test", "id",
+					),
 				),
 			},
 			{
@@ -407,7 +462,12 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXT) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -416,8 +476,7 @@ func TestAccNetworkRouterBgpNeighborWithNsxtConfig(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.2.0." + acctest.RandStringFromCharSet(2, "123456789")
@@ -448,23 +507,32 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"remote_as", "65010"),
+						"remote_as", "65010",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxt_test",
-						"config_nsxt.source_addresses.#", "2"),
+						"config_nsxt.source_addresses.#", "2",
+					),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
+func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxvConfig(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NSXV) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -473,8 +541,7 @@ func TestAccNetworkRouterBgpNeighborWithNsxvConfig(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.3.0." + acctest.RandStringFromCharSet(2, "123456789")
@@ -506,19 +573,24 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxv_test" {
 				Config: configText,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test", "id"),
+						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test", "id",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"ip_address", ipAddress),
+						"ip_address", ipAddress,
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"remote_as", "65020"),
+						"remote_as", "65020",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"config_nsxv.router_id", "10.0.0.1"),
+						"config_nsxv.router_id", "10.0.0.1",
+					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.nsxv_test",
-						"config_nsxv.interface", "vNic_0"),
+						"config_nsxv.interface", "vNic_0",
+					),
 				),
 			},
 		},

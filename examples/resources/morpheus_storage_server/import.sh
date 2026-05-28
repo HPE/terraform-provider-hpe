@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_storage_server.example 42

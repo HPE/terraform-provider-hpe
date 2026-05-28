@@ -4,4 +4,6 @@
 
 package serviceplan
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan/sweep"
+)

@@ -12,11 +12,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -33,6 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -41,8 +45,7 @@ func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleByNameConfig(t, nil)
 	if err != nil {
@@ -65,6 +68,11 @@ func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -73,8 +81,7 @@ func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleByIdConfig(t, nil)
 	if err != nil {
@@ -97,6 +104,11 @@ func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -105,8 +117,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleByNameConfig(t,
 		map[string]string{
@@ -131,6 +142,11 @@ func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -154,6 +170,11 @@ func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkFirewallRuleBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

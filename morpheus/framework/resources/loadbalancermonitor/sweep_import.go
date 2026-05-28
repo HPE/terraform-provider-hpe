@@ -4,4 +4,6 @@
 
 package loadbalancermonitor
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor/sweep"
+)

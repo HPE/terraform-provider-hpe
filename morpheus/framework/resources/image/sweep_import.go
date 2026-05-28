@@ -4,4 +4,6 @@
 
 package image
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image/sweep"
+)

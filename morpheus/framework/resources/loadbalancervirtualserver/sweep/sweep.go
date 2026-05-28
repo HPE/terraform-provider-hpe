@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -13,6 +16,8 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_load_balancer_virtual_server"
+
 type virtualServerSweepItem struct {
 	loadBalancerID int64
 	id             int64
@@ -21,8 +26,8 @@ type virtualServerSweepItem struct {
 
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_load_balancer_virtual_server",
-		// List all virtual server resources by iterating load balancers.
+		sweeperName,
+		// List load balancer virtual server resources by iterating load balancers.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]virtualServerSweepItem,
 			*http.Response,

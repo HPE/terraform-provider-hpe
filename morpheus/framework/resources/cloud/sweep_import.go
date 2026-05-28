@@ -4,4 +4,6 @@
 
 package cloud
 
-import _ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud/sweep"
+import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud/sweep"
+)

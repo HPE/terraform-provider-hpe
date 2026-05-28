@@ -1,5 +1,8 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
+
+//go:build sweep
+
 package sweep
 
 import (
@@ -13,10 +16,12 @@ import (
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )
 
+const sweeperName = "hpe_morpheus_cluster"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
-		"hpe_morpheus_cluster",
-		// List all cluster resources.
+		sweeperName,
+		// List cluster resources.
 		func(ctx context.Context, client *sdk.APIClient) (
 			[]sdk.ListClusters200ResponseAllOfClustersInner,
 			*http.Response,
@@ -57,6 +62,11 @@ func init() {
 		testsweep.WithIgnoreListStatuses[sdk.ListClusters200ResponseAllOfClustersInner](
 			http.StatusNotFound,
 			http.StatusForbidden,
+		),
+		testsweep.WithDependencies[sdk.ListClusters200ResponseAllOfClustersInner](
+			"hpe_morpheus_cluster_affinity_group",
+			"hpe_morpheus_cluster_datastore",
+			"hpe_morpheus_cluster_namespace",
 		),
 	)
 }

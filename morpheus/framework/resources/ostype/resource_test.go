@@ -12,15 +12,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	ostype "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
+func TestAccMorpheusOsTypeResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -34,7 +40,8 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := acctest.RandomWithPrefix("os.type")
 
-	resourceConfig, err := ostype.RenderOsTypeConfig(t,
+	resourceConfig, err := ostype.RenderOsTypeConfig(
+		t,
 		map[string]string{
 			"Name": name,
 			"Code": code,
@@ -116,7 +123,12 @@ func TestAccMorpheusOsTypeExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusOsTypeUpdateOk(t *testing.T) {
+func TestAccMorpheusOsTypeResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

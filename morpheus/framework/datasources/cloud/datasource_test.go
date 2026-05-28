@@ -16,6 +16,7 @@ import (
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud/consts"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -46,6 +47,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusFindCloudById(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -125,6 +131,11 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 }
 
 func TestAccMorpheusFindCloudByName(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -204,6 +215,11 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 }
 
 func TestAccMorpheusFindCloudNotFound(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -242,6 +258,11 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
@@ -273,6 +294,11 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 	t.Parallel()
 

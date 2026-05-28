@@ -17,13 +17,12 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -41,7 +40,12 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
+func TestAccMorpheusDatastoreResourceExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -50,13 +54,12 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	t.Skip("Skipping all Feature data-store tests")
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := testhelpers.RenderExample(t, "example_alletramp_hvm.tf.tmpl",
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example_alletramp_hvm.tf.tmpl",
 		"Name", name,
 		"ProviderConfig", providerConfig,
 		"AssociatedResourceID", "6032",
@@ -145,7 +148,12 @@ func TestAccMorpheusDatastoreExampleOk(t *testing.T) {
 }
 
 // Tests that our example file template used for docs is a valid config
-func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
+func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -154,9 +162,7 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 
 	t.Parallel()
 
-	t.Skip("Skipping all Feature data-store tests")
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	checksNotNested := []resource.TestCheckFunc{
@@ -201,7 +207,8 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 	checkFnAll := resource.ComposeAggregateTestCheckFunc(checksAll...)
 	checkFnNotNested := resource.ComposeAggregateTestCheckFunc(checksNotNested...)
 	checkFnNotNestedAndResourcePermissions := resource.ComposeAggregateTestCheckFunc(
-		checksNotNestedAndResourcePermissions...)
+		checksNotNestedAndResourcePermissions...,
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -524,7 +531,12 @@ func TestAccMorpheusDatastoreUpdateOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
+func TestAccMorpheusDatastoreResourceValidationOneOf(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -620,7 +632,8 @@ func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
                       }
 					}`,
 				ExpectError: regexp.MustCompile(
-					`Attribute config_alletramp_hvm.protocol_type value must be one of`),
+					`Attribute config_alletramp_hvm.protocol_type value must be one of`,
+				),
 			},
 			{
 				// checks plan fails when nfs source_version is invalid
@@ -649,7 +662,12 @@ func TestAccMorpheusDatastoreValidationOneOf(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusDatastoreValidationRequiredAttrs(t *testing.T) {
+func TestAccMorpheusDatastoreResourceValidationRequiredAttrs(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()

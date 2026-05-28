@@ -14,12 +14,11 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
@@ -38,14 +37,20 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestNetworkDataSourceExample(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+
 	defer testhelpers.RecordResult(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 
 	// Use the standard provider config from testhelpers (no gock mocking)
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
 	uniqueName := acctest.RandomWithPrefix(t.Name())

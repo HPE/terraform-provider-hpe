@@ -13,17 +13,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/systemoverride"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
 
 func TestMain(m *testing.M) {
-	systemoverride.ParseFlags()
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
 
-func TestAccMorpheusLoadBalancerHAProxyExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -71,7 +75,12 @@ func TestAccMorpheusLoadBalancerHAProxyExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
+func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
@@ -123,12 +132,16 @@ func TestAccMorpheusLoadBalancerHAProxyGenericExampleOk(t *testing.T) {
 }
 
 // Test validation: permissions.all conflicts with permissions.groups
-func TestAccMorpheusLoadBalancerValidationPermissionsConflict(t *testing.T) {
+func TestAccMorpheusLoadBalancerResourceValidationPermissionsConflict(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
-	testSystem := systemoverride.GetPreferred(t, "feature")
-	providerConfig := testhelpers.ProviderBlockForServer(testSystem)
+	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	name = name[0:16] + name[len(name)-16:]
 
