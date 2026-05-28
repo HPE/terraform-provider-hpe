@@ -34,10 +34,7 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	}
 	t.Parallel()
 
-	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
-	}
+	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -97,10 +94,7 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	}
 	t.Parallel()
 
-	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
-	}
+	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
