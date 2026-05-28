@@ -61,6 +61,11 @@ func TestAccMorpheusVdiGatewayResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_vdi_gateway.example",
+			},
 		},
 	})
 }

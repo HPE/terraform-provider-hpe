@@ -72,6 +72,12 @@ func TestAccMorpheusCertificateResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"cert_file", "key_file"},
+				ResourceName:            "hpe_morpheus_certificate.example",
+			},
 		},
 	})
 }

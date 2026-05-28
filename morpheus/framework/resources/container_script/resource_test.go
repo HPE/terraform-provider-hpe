@@ -64,6 +64,11 @@ func TestAccMorpheusContainerScriptResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_container_script.example",
+			},
 		},
 	})
 }

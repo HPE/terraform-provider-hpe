@@ -79,6 +79,12 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"service_username", "service_password_wo", "service_password_wo_version"},
+				ResourceName:            "hpe_morpheus_network_pool_server.example",
+			},
 		},
 	})
 }

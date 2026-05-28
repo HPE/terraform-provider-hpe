@@ -1,12 +1,14 @@
 package security_group_rule_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group_rule"
@@ -77,6 +79,19 @@ resource "hpe_morpheus_security_group" "test" {
 				Config:             providerConfig + securityGroupConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_security_group_rule.example",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_security_group_rule.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["security_group_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
 			},
 		},
 	})

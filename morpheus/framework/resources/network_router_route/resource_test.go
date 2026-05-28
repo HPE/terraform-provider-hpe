@@ -1,12 +1,14 @@
 package network_router_route_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
@@ -73,6 +75,19 @@ func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_network_router_route.example",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_route.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
 			},
 		},
 	})

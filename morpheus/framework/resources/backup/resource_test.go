@@ -63,6 +63,11 @@ func TestAccMorpheusBackupResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_backup.example",
+			},
 		},
 	})
 }

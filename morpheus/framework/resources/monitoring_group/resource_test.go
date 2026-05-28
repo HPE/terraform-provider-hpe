@@ -68,6 +68,11 @@ func TestAccMorpheusMonitoringGroupResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_monitoring_group.example",
+			},
 		},
 	})
 }
