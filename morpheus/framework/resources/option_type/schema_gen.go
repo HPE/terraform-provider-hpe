@@ -1,4 +1,4 @@
-package library_option_type
+package option_type
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type libraryOptionTypeModel struct {
+type optionTypeModel struct {
 	ID           types.Int64  `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
 	Description  types.String `tfsdk:"description"`
@@ -23,9 +23,9 @@ type libraryOptionTypeModel struct {
 	ExportMeta   types.Bool   `tfsdk:"export_meta"`
 }
 
-func LibraryOptionTypeSchema(_ context.Context) schema.Schema {
+func OptionTypeSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages a Morpheus Library Option Type resource.",
+		Description: "Manages a Morpheus Option Type resource.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.Int64Attribute{
 				Computed:    true,

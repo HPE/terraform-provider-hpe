@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package monitoring_contact
+package option_type
 
 import (
 	"fmt"
@@ -11,15 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_monitoring_contact/example.tf example.tf.tmpl Name "Ops Team" EmailAddress "ops-team@example.com" SmsAddress "+15551234567"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_option_type/example.tf example.tf.tmpl Name "Environment Selector" FieldName "environment" Type "select" FieldLabel "Environment" DefaultValue "development" Required "true"
 
-func RenderMonitoringContactConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderOptionTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         "Ops Team",
-		"EmailAddress": "ops-team@example.com",
-		"SmsAddress":   "+15551234567",
+		"Name":         "Environment Selector",
+		"FieldName":    "environment",
+		"Type":         "select",
+		"FieldLabel":   "Environment",
+		"DefaultValue": "development",
+		"Required":     "true",
 	}
 
 	for key, value := range overrides {
