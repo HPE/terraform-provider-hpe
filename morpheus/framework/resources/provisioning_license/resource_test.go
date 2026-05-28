@@ -45,7 +45,6 @@ func TestAccMorpheusProvisioningLicenseResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("hpe_morpheus_provisioning_license.example", "name", name),
 		resource.TestCheckResourceAttr("hpe_morpheus_provisioning_license.example", "license_type", "win"),
-		resource.TestCheckResourceAttrSet("hpe_morpheus_provisioning_license.example", "license_key"),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_provisioning_license.example",
 			"description",
@@ -99,7 +98,7 @@ func TestAccMorpheusProvisioningLicenseResourceUpdateOk(t *testing.T) {
 
 	updateConfig, err := provisioning_license.RenderProvisioningLicenseConfig(t, map[string]string{
 		"Name":        name,
-		"LicenseKey":  "YYYYY-YYYYY-YYYYY-YYYYY-YYYYY",
+		"LicenseKeyWo":  "YYYYY-YYYYY-YYYYY-YYYYY-YYYYY",
 		"Description": updatedDescription,
 	})
 	if err != nil {
@@ -110,13 +109,11 @@ func TestAccMorpheusProvisioningLicenseResourceUpdateOk(t *testing.T) {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "license_type", "win"),
-		resource.TestCheckResourceAttrSet(resourceName, "license_key"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Windows Server 2022 Standard license"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "license_type", "win"),
-		resource.TestCheckResourceAttrSet(resourceName, "license_key"),
 		resource.TestCheckResourceAttr(resourceName, "description", updatedDescription),
 	)
 

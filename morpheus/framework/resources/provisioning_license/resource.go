@@ -62,10 +62,16 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
+	var config provisioningLicenseModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.AddProvisioningLicenseRequestLicense{
 		Name:        plan.Name.ValueString(),
 		LicenseType: plan.LicenseType.ValueString(),
-		LicenseKey:  plan.LicenseKey.ValueString(),
+		LicenseKey:  config.LicenseKeyWo.ValueString(),
 	}
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
@@ -101,6 +107,7 @@ func (r *provisioningLicenseResource) Create(
 	if license.Id != nil {
 		plan.ID = types.Int64Value(*license.Id)
 	}
+	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -145,10 +152,6 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	} else {
 		state.Description = types.StringNull()
 	}
-	if license.LicenseKey != nil {
-		// API returns masked key - preserve the original value from state
-		// state.LicenseKey is already set from prior state
-	}
 	if license.LicenseType != nil && license.LicenseType.Code != nil {
 		state.LicenseType = types.StringValue(*license.LicenseType.Code)
 	}
@@ -170,6 +173,18 @@ func (r *provisioningLicenseResource) Update(
 
 	var plan provisioningLicenseModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var config provisioningLicenseModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state provisioningLicenseModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -198,6 +213,11 @@ func (r *provisioningLicenseResource) Update(
 		}
 		body.Tenants = tenants
 	}
+	if !plan.LicenseKeyWoVersion.Equal(state.LicenseKeyWoVersion) {
+		body.AdditionalProperties = map[string]interface{}{
+			"licenseKey": config.LicenseKeyWo.ValueString(),
+		}
+	}
 
 	_, httpResp, err := client.ProvisioningLicensesAPI.UpdateProvisioningLicense(ctx, id).
 		UpdateProvisioningLicenseRequest(sdk.UpdateProvisioningLicenseRequest{
@@ -208,6 +228,8 @@ func (r *provisioningLicenseResource) Update(
 
 		return
 	}
+
+	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
