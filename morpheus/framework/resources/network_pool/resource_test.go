@@ -38,8 +38,7 @@ func TestAccMorpheusNetworkPoolResourceExampleOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool.example"
 
 	resourceConfig, err := network_pool.RenderNetworkPoolConfig(t, map[string]string{
-		"Name":   name,
-		"TypeId": "1", // morpheus
+		"Name": name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +46,7 @@ func TestAccMorpheusNetworkPoolResourceExampleOk(t *testing.T) {
 
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "morpheus"),
 		resource.TestCheckResourceAttr(resourceName, "subnet_address", "10.0.1.0"),
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.1"),
@@ -96,8 +95,7 @@ func TestAccMorpheusNetworkPoolResourceUpdateOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool.example"
 
 	createConfig, err := network_pool.RenderNetworkPoolConfig(t, map[string]string{
-		"Name":   name,
-		"TypeId": "1", // morpheus
+		"Name": name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -106,7 +104,7 @@ func TestAccMorpheusNetworkPoolResourceUpdateOk(t *testing.T) {
 	updateConfig := `
 resource "hpe_morpheus_network_pool" "example" {
   name           = "` + name + `"
-  type_id        = 1
+  type_code      = "morpheus"
   subnet_address = "10.0.1.0"
   netmask        = "255.255.255.0"
   gateway        = "10.0.1.254"
@@ -121,7 +119,7 @@ resource "hpe_morpheus_network_pool" "example" {
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "morpheus"),
 		resource.TestCheckResourceAttr(resourceName, "subnet_address", "10.0.1.0"),
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.1"),
@@ -132,7 +130,7 @@ resource "hpe_morpheus_network_pool" "example" {
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "morpheus"),
 		resource.TestCheckResourceAttr(resourceName, "subnet_address", "10.0.1.0"),
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.254"),

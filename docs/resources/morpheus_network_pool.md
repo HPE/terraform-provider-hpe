@@ -13,7 +13,7 @@ Manages a Morpheus Network Pool resource.
 ```terraform
 resource "hpe_morpheus_network_pool" "example" {
   name           = "App Pool"
-  type_id        = 1
+  type_code      = "morpheus"
   subnet_address = "10.0.1.0"
   netmask        = "255.255.255.0"
   gateway        = "10.0.1.1"
@@ -33,7 +33,7 @@ resource "hpe_morpheus_network_pool" "example" {
 
 - `ip_ranges` (Attributes) The IPv4 IP address pool IP ranges. (see [below for nested schema](#nestedatt--ip_ranges))
 - `name` (String) The name of the network pool.
-- `type_id` (Number) The ID of the network pool type.
+- `type_code` (String) The code of the network pool type. Default available codes are morpheus, morpheusipv6, vcd, and nsx-t. Plugins can add additional pool types.
 
 ### Optional
 

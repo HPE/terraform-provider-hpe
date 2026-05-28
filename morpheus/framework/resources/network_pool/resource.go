@@ -59,7 +59,7 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 		Name: plan.Name.ValueStringPointer(),
 		Type: &sdk.CreateNetworkPoolRequestNetworkPoolType{
 			AdditionalProperties: map[string]interface{}{
-				"id": strconv.FormatInt(plan.TypeID.ValueInt64(), 10),
+				"code": plan.TypeCode.ValueString(),
 			},
 		},
 	}
@@ -306,8 +306,8 @@ func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200
 	if pool.Name != nil {
 		model.Name = types.StringValue(*pool.Name)
 	}
-	if t := pool.Type; t != nil && t.Id != nil {
-		model.TypeID = types.Int64Value(*t.Id)
+	if t := pool.Type; t != nil && t.Code != nil {
+		model.TypeCode = types.StringValue(*t.Code)
 	}
 	if pool.IpCount != nil {
 		model.IpCount = types.Int64Value(*pool.IpCount)

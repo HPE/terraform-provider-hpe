@@ -1,6 +1,6 @@
 resource "hpe_morpheus_network_pool" "example" {
   name           = "{{.Name}}"
-  type_id        = {{.TypeId}}
+  type_code      = "{{.TypeCode}}"
   subnet_address = "{{.SubnetAddress}}"
   netmask        = "{{.Netmask}}"
   gateway        = "{{.Gateway}}"

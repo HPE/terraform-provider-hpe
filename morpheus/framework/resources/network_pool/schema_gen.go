@@ -7,13 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type networkPoolModel struct {
 	ID            types.Int64  `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
-	TypeID        types.Int64  `tfsdk:"type_id"`
+	TypeCode      types.String `tfsdk:"type_code"`
 	IpCount       types.Int64  `tfsdk:"ip_count"`
 	FreeCount     types.Int64  `tfsdk:"free_count"`
 	PoolEnabled   types.Bool   `tfsdk:"pool_enabled"`
@@ -45,9 +46,13 @@ func NetworkPoolSchema(_ context.Context) schema.Schema {
 				Required:    true,
 				Description: "The name of the network pool.",
 			},
-			"type_id": schema.Int64Attribute{
-				Required:    true,
-				Description: "The ID of the network pool type.",
+			"type_code": schema.StringAttribute{
+				Required: true,
+				Description: "The code of the network pool type. Default available codes are " +
+					"morpheus, morpheusipv6, vcd, and nsx-t. Plugins can add additional pool types.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"ip_count": schema.Int64Attribute{
 				Computed:    true,
