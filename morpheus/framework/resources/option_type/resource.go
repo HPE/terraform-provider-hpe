@@ -1,4 +1,4 @@
-package library_option_type
+package option_type
 
 import (
 	"context"
@@ -15,36 +15,36 @@ import (
 )
 
 var (
-	_ resource.Resource                = &libraryOptionTypeResource{}
-	_ resource.ResourceWithConfigure   = &libraryOptionTypeResource{}
-	_ resource.ResourceWithImportState = &libraryOptionTypeResource{}
+	_ resource.Resource                = &optionTypeResource{}
+	_ resource.ResourceWithConfigure   = &optionTypeResource{}
+	_ resource.ResourceWithImportState = &optionTypeResource{}
 )
 
-type libraryOptionTypeResource struct {
+type optionTypeResource struct {
 	configure.ResourceWithMorpheusConfigure
 }
 
 func NewResource() resource.Resource {
-	return &libraryOptionTypeResource{}
+	return &optionTypeResource{}
 }
 
-func (r *libraryOptionTypeResource) Metadata(
+func (r *optionTypeResource) Metadata(
 	_ context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_library_option_type"
+	resp.TypeName = req.ProviderTypeName + "_morpheus_option_type"
 }
 
-func (r *libraryOptionTypeResource) Schema(
+func (r *optionTypeResource) Schema(
 	ctx context.Context,
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = LibraryOptionTypeSchema(ctx)
+	resp.Schema = OptionTypeSchema(ctx)
 }
 
-func (r *libraryOptionTypeResource) Create(
+func (r *optionTypeResource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
@@ -56,7 +56,7 @@ func (r *libraryOptionTypeResource) Create(
 		return
 	}
 
-	var plan libraryOptionTypeModel
+	var plan optionTypeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -94,7 +94,7 @@ func (r *libraryOptionTypeResource) Create(
 		OptionType: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "library_option_type", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "option_type", plan.Name.ValueString(), err, httpResp)
 
 		return
 	}
@@ -117,11 +117,11 @@ func (r *libraryOptionTypeResource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryOptionTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *optionTypeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// The SDK does not expose a GetOptionType endpoint.
 	// State is preserved from Create/Update. Import relies on the ID being set and
 	// a subsequent refresh via Update. This is a known SDK limitation.
-	var state libraryOptionTypeModel
+	var state optionTypeModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -130,7 +130,7 @@ func (r *libraryOptionTypeResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *libraryOptionTypeResource) Update(
+func (r *optionTypeResource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
@@ -142,7 +142,7 @@ func (r *libraryOptionTypeResource) Update(
 		return
 	}
 
-	var plan libraryOptionTypeModel
+	var plan optionTypeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -182,7 +182,7 @@ func (r *libraryOptionTypeResource) Update(
 		OptionType: &body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "library_option_type", plan.Name.ValueString(), err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "option_type", plan.Name.ValueString(), err, httpResp)
 
 		return
 	}
@@ -190,7 +190,7 @@ func (r *libraryOptionTypeResource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *libraryOptionTypeResource) Delete(
+func (r *optionTypeResource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
@@ -202,7 +202,7 @@ func (r *libraryOptionTypeResource) Delete(
 		return
 	}
 
-	var state libraryOptionTypeModel
+	var state optionTypeModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -212,13 +212,13 @@ func (r *libraryOptionTypeResource) Delete(
 
 	_, httpResp, err := client.LibraryAPI.DeleteOptionType(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "library_option_type", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "option_type", "", err, httpResp)
 
 		return
 	}
 }
 
-func (r *libraryOptionTypeResource) ImportState(
+func (r *optionTypeResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,

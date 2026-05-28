@@ -21,15 +21,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_container_type"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_layout"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/library_option_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_alert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_check"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_contact"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_group"
@@ -44,6 +40,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_list"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -59,7 +56,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/subnet"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user_source"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
@@ -125,22 +121,18 @@ func (s SubProvider) GetResources(
 		// Sprint 5: Monitoring & Operations
 		monitoring_check.NewResource,
 		monitoring_alert.NewResource,
-		monitoring_contact.NewResource,
 		monitoring_group.NewResource,
 		budget.NewResource,
 		backup.NewResource,
 		backup_job.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		library_layout.NewResource,
-		library_container_type.NewResource,
-		library_option_type.NewResource,
+		option_type.NewResource,
 		option_list.NewResource,
 		provisioning_license.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance
 		vdi_pool.NewResource,
-		user_source.NewResource,
 		whitelabel_settings.NewResource,
 	}
 

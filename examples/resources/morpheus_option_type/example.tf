@@ -1,4 +1,4 @@
-resource "hpe_morpheus_library_option_type" "example" {
+resource "hpe_morpheus_option_type" "example" {
   name          = "Environment Selector"
   field_name    = "environment"
   type          = "select"
