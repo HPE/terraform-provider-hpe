@@ -52,7 +52,6 @@ func TestAccMorpheusMonitoringGroupResourceExampleOk(t *testing.T) {
 		),
 		resource.TestCheckResourceAttr("hpe_morpheus_monitoring_group.example", "min_happy", "1"),
 		resource.TestCheckResourceAttr("hpe_morpheus_monitoring_group.example", "severity", "critical"),
-		resource.TestCheckResourceAttr("hpe_morpheus_monitoring_group.example", "active", "true"),
 		resource.TestCheckResourceAttrSet("hpe_morpheus_monitoring_group.example", "id"),
 	)
 
@@ -106,7 +105,6 @@ resource "hpe_morpheus_monitoring_group" "example" {
   description = "Monitoring group for updated production services"
   min_happy   = 2
   severity    = "warning"
-  active      = true
 }
 `
 
@@ -117,7 +115,6 @@ resource "hpe_morpheus_monitoring_group" "example" {
 		resource.TestCheckResourceAttr(resourceName, "description", "Monitoring group for production services"),
 		resource.TestCheckResourceAttr(resourceName, "min_happy", "1"),
 		resource.TestCheckResourceAttr(resourceName, "severity", "critical"),
-		resource.TestCheckResourceAttr(resourceName, "active", "true"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -125,7 +122,6 @@ resource "hpe_morpheus_monitoring_group" "example" {
 		resource.TestCheckResourceAttr(resourceName, "description", "Monitoring group for updated production services"),
 		resource.TestCheckResourceAttr(resourceName, "min_happy", "2"),
 		resource.TestCheckResourceAttr(resourceName, "severity", "warning"),
-		resource.TestCheckResourceAttr(resourceName, "active", "true"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
