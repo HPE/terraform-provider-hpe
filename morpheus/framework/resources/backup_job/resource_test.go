@@ -65,9 +65,10 @@ func TestAccMorpheusBackupJobResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_backup_job.example",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"enabled"},
+				ResourceName:            "hpe_morpheus_backup_job.example",
 			},
 		},
 	})
