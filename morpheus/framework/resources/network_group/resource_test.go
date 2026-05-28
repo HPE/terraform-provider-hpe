@@ -46,6 +46,8 @@ func TestAccMorpheusNetworkGroupResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("hpe_morpheus_network_group.example", "name", name),
 		resource.TestCheckResourceAttr("hpe_morpheus_network_group.example", "description", "Network group for production workloads"),
+		resource.TestCheckResourceAttr("hpe_morpheus_network_group.example", "visibility", "private"),
+		resource.TestCheckResourceAttr("hpe_morpheus_network_group.example", "active", "true"),
 		resource.TestCheckResourceAttrSet("hpe_morpheus_network_group.example", "id"),
 	)
 
@@ -97,6 +99,8 @@ func TestAccMorpheusNetworkGroupResourceUpdateOk(t *testing.T) {
 resource "hpe_morpheus_network_group" "example" {
   name        = "` + name + `"
   description = "Network group for updated production workloads"
+  visibility  = "public"
+  active      = false
 }
 `
 
@@ -105,11 +109,15 @@ resource "hpe_morpheus_network_group" "example" {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "Network group for production workloads"),
+		resource.TestCheckResourceAttr(resourceName, "visibility", "private"),
+		resource.TestCheckResourceAttr(resourceName, "active", "true"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "Network group for updated production workloads"),
+		resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
+		resource.TestCheckResourceAttr(resourceName, "active", "false"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{

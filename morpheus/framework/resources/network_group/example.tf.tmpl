@@ -1,4 +1,6 @@
 resource "hpe_morpheus_network_group" "example" {
   name        = "{{.Name}}"
   description = "{{.Description}}"
+  visibility  = "{{.Visibility}}"
+  active      = {{.Active}}
 }
