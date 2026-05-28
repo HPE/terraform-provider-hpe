@@ -48,7 +48,6 @@ func TestAccMorpheusBackupJobResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "code", code),
-		resource.TestCheckResourceAttr(resourceName, "schedule_id", "1"),
 		resource.TestCheckResourceAttr(resourceName, "retention_count", "14"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 	)
@@ -97,7 +96,6 @@ func TestAccMorpheusBackupJobResourceUpdateOk(t *testing.T) {
 resource "hpe_morpheus_backup_job" "example" {
   name            = "` + name + `"
   code            = "` + code + `"
-  schedule_id     = 1
   retention_count = 7
   enabled         = false
 }
@@ -107,14 +105,12 @@ resource "hpe_morpheus_backup_job" "example" {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "code", code),
-		resource.TestCheckResourceAttr(resourceName, "schedule_id", "1"),
 		resource.TestCheckResourceAttr(resourceName, "retention_count", "14"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "code", code),
-		resource.TestCheckResourceAttr(resourceName, "schedule_id", "1"),
 		resource.TestCheckResourceAttr(resourceName, "retention_count", "7"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
 	)
