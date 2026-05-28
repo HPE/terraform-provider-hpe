@@ -164,6 +164,7 @@ provider "hpe" {
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_virtual_server<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_dhcp_server<br>
