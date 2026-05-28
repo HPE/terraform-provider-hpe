@@ -5,4 +5,9 @@ resource "hpe_morpheus_network_pool" "example" {
   netmask        = "{{.Netmask}}"
   gateway        = "{{.Gateway}}"
   dns_domain     = "{{.DnsDomain}}"
+
+  ip_ranges = {
+    starting_address = "{{.StartingAddress}}"
+    ending_address   = "{{.EndingAddress}}"
+  }
 }

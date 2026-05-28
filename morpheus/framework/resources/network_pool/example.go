@@ -11,18 +11,20 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_pool/example.tf example.tf.tmpl Name "App Pool" TypeId "1" SubnetAddress "10.0.1.0" Netmask "255.255.255.0" Gateway "10.0.1.1" DnsDomain "example.com"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_pool/example.tf example.tf.tmpl Name "App Pool" TypeId "1" SubnetAddress "10.0.1.0" Netmask "255.255.255.0" Gateway "10.0.1.1" DnsDomain "example.com" StartingAddress "10.0.1.10" EndingAddress "10.0.1.50"
 
 func RenderNetworkPoolConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":          "App Pool",
-		"TypeId":        "1",
-		"SubnetAddress": "10.0.1.0",
-		"Netmask":       "255.255.255.0",
-		"Gateway":       "10.0.1.1",
-		"DnsDomain":     "example.com",
+		"Name":            "App Pool",
+		"TypeId":          "1",
+		"SubnetAddress":   "10.0.1.0",
+		"Netmask":         "255.255.255.0",
+		"Gateway":         "10.0.1.1",
+		"DnsDomain":       "example.com",
+		"StartingAddress": "10.0.1.10",
+		"EndingAddress":   "10.0.1.50",
 	}
 
 	for key, value := range overrides {

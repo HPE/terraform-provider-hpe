@@ -38,7 +38,8 @@ func TestAccMorpheusNetworkPoolResourceExampleOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool.example"
 
 	resourceConfig, err := network_pool.RenderNetworkPoolConfig(t, map[string]string{
-		"Name": name,
+		"Name":   name,
+		"TypeId": "1", // morpheus
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -51,6 +52,8 @@ func TestAccMorpheusNetworkPoolResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.1"),
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "example.com"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.10"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.50"),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 	)
 
@@ -93,7 +96,8 @@ func TestAccMorpheusNetworkPoolResourceUpdateOk(t *testing.T) {
 	resourceName := "hpe_morpheus_network_pool.example"
 
 	createConfig, err := network_pool.RenderNetworkPoolConfig(t, map[string]string{
-		"Name": name,
+		"Name":   name,
+		"TypeId": "1", // morpheus
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -107,6 +111,11 @@ resource "hpe_morpheus_network_pool" "example" {
   netmask        = "255.255.255.0"
   gateway        = "10.0.1.254"
   dns_domain     = "updated.example.com"
+
+  ip_ranges = {
+    starting_address = "10.0.1.20"
+    ending_address   = "10.0.1.100"
+  }
 }
 `
 
@@ -117,6 +126,8 @@ resource "hpe_morpheus_network_pool" "example" {
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.1"),
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "example.com"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.10"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.50"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -126,6 +137,8 @@ resource "hpe_morpheus_network_pool" "example" {
 		resource.TestCheckResourceAttr(resourceName, "netmask", "255.255.255.0"),
 		resource.TestCheckResourceAttr(resourceName, "gateway", "10.0.1.254"),
 		resource.TestCheckResourceAttr(resourceName, "dns_domain", "updated.example.com"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.starting_address", "10.0.1.20"),
+		resource.TestCheckResourceAttr(resourceName, "ip_ranges.ending_address", "10.0.1.100"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{

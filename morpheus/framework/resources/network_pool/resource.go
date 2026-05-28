@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -61,6 +62,37 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 				"id": strconv.FormatInt(plan.TypeID.ValueInt64(), 10),
 			},
 		},
+	}
+
+	additionalProps := map[string]interface{}{}
+	if !plan.PoolEnabled.IsNull() && !plan.PoolEnabled.IsUnknown() {
+		additionalProps["poolEnabled"] = plan.PoolEnabled.ValueBool()
+	}
+	if !plan.DNSDomain.IsNull() && !plan.DNSDomain.IsUnknown() {
+		additionalProps["dnsDomain"] = plan.DNSDomain.ValueString()
+	}
+	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
+		additionalProps["dhcpServer"] = plan.DhcpServer.ValueBool()
+	}
+	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
+		additionalProps["gateway"] = plan.Gateway.ValueString()
+	}
+	if !plan.Netmask.IsNull() && !plan.Netmask.IsUnknown() {
+		additionalProps["netmask"] = plan.Netmask.ValueString()
+	}
+	if !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown() {
+		additionalProps["subnetAddress"] = plan.SubnetAddress.ValueString()
+	}
+	if !plan.IpRanges.IsNull() && !plan.IpRanges.IsUnknown() {
+		attrs := plan.IpRanges.Attributes()
+		startAddr := attrs["starting_address"].(types.String).ValueString()
+		endAddr := attrs["ending_address"].(types.String).ValueString()
+		additionalProps["ipRanges"] = []map[string]interface{}{
+			{"startAddress": startAddr, "endAddress": endAddr},
+		}
+	}
+	if len(additionalProps) > 0 {
+		poolReq.AdditionalProperties = additionalProps
 	}
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkPool(ctx).
@@ -131,6 +163,37 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 
 	poolReq := sdk.UpdateNetworkPoolRequestNetworkPool{
 		Name: plan.Name.ValueStringPointer(),
+	}
+
+	additionalProps := map[string]interface{}{}
+	if !plan.PoolEnabled.IsNull() && !plan.PoolEnabled.IsUnknown() {
+		additionalProps["poolEnabled"] = plan.PoolEnabled.ValueBool()
+	}
+	if !plan.DNSDomain.IsNull() && !plan.DNSDomain.IsUnknown() {
+		additionalProps["dnsDomain"] = plan.DNSDomain.ValueString()
+	}
+	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
+		additionalProps["dhcpServer"] = plan.DhcpServer.ValueBool()
+	}
+	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
+		additionalProps["gateway"] = plan.Gateway.ValueString()
+	}
+	if !plan.Netmask.IsNull() && !plan.Netmask.IsUnknown() {
+		additionalProps["netmask"] = plan.Netmask.ValueString()
+	}
+	if !plan.SubnetAddress.IsNull() && !plan.SubnetAddress.IsUnknown() {
+		additionalProps["subnetAddress"] = plan.SubnetAddress.ValueString()
+	}
+	if !plan.IpRanges.IsNull() && !plan.IpRanges.IsUnknown() {
+		attrs := plan.IpRanges.Attributes()
+		startAddr := attrs["starting_address"].(types.String).ValueString()
+		endAddr := attrs["ending_address"].(types.String).ValueString()
+		additionalProps["ipRanges"] = []map[string]interface{}{
+			{"startAddress": startAddr, "endAddress": endAddr},
+		}
+	}
+	if len(additionalProps) > 0 {
+		poolReq.AdditionalProperties = additionalProps
 	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPool(ctx, id).
@@ -277,5 +340,31 @@ func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200
 		model.SubnetAddress = types.StringValue(*v)
 	} else {
 		model.SubnetAddress = types.StringNull()
+	}
+	if len(pool.IpRanges) > 0 {
+		r := pool.IpRanges[0]
+		startAddr := types.StringNull()
+		endAddr := types.StringNull()
+		if r.StartAddress.IsSet() && r.StartAddress.Get() != nil {
+			startAddr = types.StringValue(*r.StartAddress.Get())
+		}
+		if r.EndAddress.IsSet() && r.EndAddress.Get() != nil {
+			endAddr = types.StringValue(*r.EndAddress.Get())
+		}
+		model.IpRanges, _ = types.ObjectValue(
+			map[string]attr.Type{
+				"starting_address": types.StringType,
+				"ending_address":   types.StringType,
+			},
+			map[string]attr.Value{
+				"starting_address": startAddr,
+				"ending_address":   endAddr,
+			},
+		)
+	} else {
+		model.IpRanges = types.ObjectNull(map[string]attr.Type{
+			"starting_address": types.StringType,
+			"ending_address":   types.StringType,
+		})
 	}
 }

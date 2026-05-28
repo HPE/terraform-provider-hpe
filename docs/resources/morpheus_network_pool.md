@@ -18,6 +18,11 @@ resource "hpe_morpheus_network_pool" "example" {
   netmask        = "255.255.255.0"
   gateway        = "10.0.1.1"
   dns_domain     = "example.com"
+
+  ip_ranges = {
+    starting_address = "10.0.1.10"
+    ending_address   = "10.0.1.50"
+  }
 }
 ```
 
@@ -26,6 +31,7 @@ resource "hpe_morpheus_network_pool" "example" {
 
 ### Required
 
+- `ip_ranges` (Attributes) The IPv4 IP address pool IP ranges. (see [below for nested schema](#nestedatt--ip_ranges))
 - `name` (String) The name of the network pool.
 - `type_id` (Number) The ID of the network pool type.
 
@@ -33,9 +39,9 @@ resource "hpe_morpheus_network_pool" "example" {
 
 - `dhcp_server` (Boolean) Whether DHCP server is enabled.
 - `dns_domain` (String) The DNS domain for the network pool.
-- `gateway` (String) The gateway address.
+- `gateway` (String) The gateway IP address.
 - `netmask` (String) The netmask.
-- `subnet_address` (String) The subnet address.
+- `subnet_address` (String) The subnet IP address.
 
 ### Read-Only
 
@@ -43,6 +49,14 @@ resource "hpe_morpheus_network_pool" "example" {
 - `id` (Number) The ID of the network pool.
 - `ip_count` (Number) The total number of IPs in the pool.
 - `pool_enabled` (Boolean) Whether the pool is enabled.
+
+<a id="nestedatt--ip_ranges"></a>
+### Nested Schema for `ip_ranges`
+
+Required:
+
+- `ending_address` (String) The ending address of the IPv4 IP address pool IP range.
+- `starting_address` (String) The starting address of the IPv4 IP address pool IP range.
 
 ## Import
 
