@@ -127,3 +127,11 @@ Security groups can be imported using the security group ID, e.g.
 ```bash
 terraform import hpe_morpheus_security_group.example 123
 ```
+
+## Notes
+
+### Cloud-Scoped Security Groups
+
+When `cloud_id` is set, Morpheus provisions the security group on the cloud provider (e.g., an AWS Security Group or Azure NSG is created via the provider's API). Without `cloud_id`, the security group exists only within Morpheus.
+
+Separately, security groups that already exist on a cloud provider are automatically discovered during cloud inventory sync. The [`default_security_group_sync_active`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud) attribute on the `hpe_morpheus_cloud` resource controls whether those discovered security groups are set to active by default.

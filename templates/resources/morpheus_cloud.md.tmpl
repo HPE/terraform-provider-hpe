@@ -46,6 +46,8 @@ which fields are meaningful for each supported cloud type:
 
 -> `default_folder_sync_active` is currently only utilized by VMware clouds.
 
+-> `default_security_group_sync_active` only affects security groups **discovered** from the cloud provider during sync. Security groups created via [`hpe_morpheus_security_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_security_group) are unaffected by this setting.
+
 ## Example Usage (HVM)
 
 {{ tffile "examples/resources/morpheus_cloud/example.tf" }}
