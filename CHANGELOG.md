@@ -28,7 +28,6 @@ In this release (v1.4.0) we have added the following resources:
 - hpe_morpheus_budget
 - hpe_morpheus_monitoring_alert
 - hpe_morpheus_monitoring_check
-- hpe_morpheus_monitoring_contact
 - hpe_morpheus_monitoring_group
 
 ### Storage
@@ -40,10 +39,8 @@ In this release (v1.4.0) we have added the following resources:
 ### Library & Provisioning
 
 - hpe_morpheus_container_script
-- hpe_morpheus_library_container_type
-- hpe_morpheus_library_layout
-- hpe_morpheus_library_option_type
 - hpe_morpheus_option_list
+- hpe_morpheus_option_type
 - hpe_morpheus_provisioning_license
 
 ### VDI
@@ -59,7 +56,6 @@ In this release (v1.4.0) we have added the following resources:
 
 ### Identity & Governance
 
-- hpe_morpheus_user_source
 - hpe_morpheus_whitelabel_settings
 
 ### Other
