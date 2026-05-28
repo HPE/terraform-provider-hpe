@@ -35,13 +35,12 @@ func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 	}
 	t.Parallel()
 
-	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
-	}
+	clusterID := "571"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+	// to get around the 63-character name limitation
+	name = name[:63]
 
 	resourceConfig, err := cluster_namespace.RenderClusterNamespaceConfig(t, map[string]string{
 		"ClusterId": clusterID,
@@ -70,9 +69,10 @@ func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_cluster_namespace.example",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"active"},
+				ResourceName:            "hpe_morpheus_cluster_namespace.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_cluster_namespace.example"]
 					if !ok {
@@ -98,14 +98,15 @@ func TestAccMorpheusClusterNamespaceResourceUpdateOk(t *testing.T) {
 	}
 	t.Parallel()
 
-	clusterID := os.Getenv("TF_ACC_MORPHEUS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("TF_ACC_MORPHEUS_CLUSTER_ID not set")
-	}
+	clusterID := "571"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
-	updatedName := name + "-updated"
+	// to get around the 63-character name limitation
+	name = name[:62]
+
+	// 63 character name limit
+	updatedName := name + "u"
 
 	createConfig, err := cluster_namespace.RenderClusterNamespaceConfig(t, map[string]string{
 		"ClusterId": clusterID,

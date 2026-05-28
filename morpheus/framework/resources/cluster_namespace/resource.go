@@ -136,6 +136,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		if ns.Description != nil {
 			state.Description = types.StringValue(*ns.Description)
 		}
+		//NOTE: Active is not in the API GET at all.
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
