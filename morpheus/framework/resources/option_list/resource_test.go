@@ -46,8 +46,7 @@ func TestAccMorpheusOptionListResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "name", name),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "description", "List of available regions"),
-		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "type", "rest"),
-		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "source_url", "https://api.example.com/regions"),
+		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "type", "manual"),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "visibility", "public"),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "real_time", "false"),
 		resource.TestCheckResourceAttrSet("hpe_morpheus_option_list.example", "id"),
@@ -101,8 +100,7 @@ func TestAccMorpheusOptionListResourceUpdateOk(t *testing.T) {
 resource "hpe_morpheus_option_list" "example" {
   name        = "` + name + `"
   description = "Updated list of available regions"
-  type        = "rest"
-  source_url  = "https://api.example.com/regions"
+  type        = "manual"
   visibility  = "private"
   real_time   = true
 }
@@ -113,8 +111,7 @@ resource "hpe_morpheus_option_list" "example" {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "List of available regions"),
-		resource.TestCheckResourceAttr(resourceName, "type", "rest"),
-		resource.TestCheckResourceAttr(resourceName, "source_url", "https://api.example.com/regions"),
+		resource.TestCheckResourceAttr(resourceName, "type", "manual"),
 		resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
 		resource.TestCheckResourceAttr(resourceName, "real_time", "false"),
 	)
@@ -122,8 +119,7 @@ resource "hpe_morpheus_option_list" "example" {
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated list of available regions"),
-		resource.TestCheckResourceAttr(resourceName, "type", "rest"),
-		resource.TestCheckResourceAttr(resourceName, "source_url", "https://api.example.com/regions"),
+		resource.TestCheckResourceAttr(resourceName, "type", "manual"),
 		resource.TestCheckResourceAttr(resourceName, "visibility", "private"),
 		resource.TestCheckResourceAttr(resourceName, "real_time", "true"),
 	)
