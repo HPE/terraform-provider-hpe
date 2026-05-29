@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -161,7 +162,34 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	subnet := result.GetSubnet()
-	mapCreateResponseToModel(&plan, &subnet)
+	if subnet.Id == nil {
+		resp.Diagnostics.AddError("create subnet resource", "API returned a subnet with no ID")
+
+		return
+	}
+
+	id := *subnet.Id
+	plan.Id = convert.Int64ToType(&id)
+
+	// Re-read via GET to populate full state
+	readResult, readHTTPResp, readErr := client.NetworksAPI.GetSubnet(ctx, id).Execute()
+	if readErr := errfmt.CheckResponse(readErr, readHTTPResp); readErr != nil {
+		resp.Diagnostics.AddError(
+			"create subnet resource",
+			fmt.Sprintf("Subnet %d was created but could not be read: %s", id, readErr.Error()),
+		)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "subnet",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readSubnet := readResult.GetSubnet()
+	mapResponseToModel(&plan, &readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -291,15 +319,23 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		updateReq.ResourcePermission = rp
 	}
 
-	result, httpResp, err := client.NetworksAPI.UpdateSubnet(ctx, id).UpdateSubnetRequest(updateReq).Execute()
+	_, httpResp, err := client.NetworksAPI.UpdateSubnet(ctx, id).UpdateSubnetRequest(updateReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "subnet", "", err, httpResp)
 
 		return
 	}
 
-	subnet := result.GetSubnet()
-	mapResponseToModel(&plan, &subnet)
+	// Re-read via GET to populate full state
+	readResult, readHTTPResp, readErr := client.NetworksAPI.GetSubnet(ctx, id).Execute()
+	if readErr := errfmt.CheckResponse(readErr, readHTTPResp); readErr != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "subnet", "", readErr, readHTTPResp)
+
+		return
+	}
+
+	readSubnet := readResult.GetSubnet()
+	mapResponseToModel(&plan, &readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -343,83 +379,6 @@ func (r *subnetResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapCreateResponseToModel(model *SubnetModel, subnet *sdk.CreateSubnet200ResponseSubnet) {
-	if subnet.Id != nil {
-		model.Id = convert.Int64ToType(subnet.Id)
-	}
-	if subnet.Name != nil {
-		model.Name = convert.StrToType(subnet.Name)
-	}
-	if subnet.Description.IsSet() && subnet.Description.Get() != nil {
-		model.Description = convert.StrToType(subnet.Description.Get())
-	}
-	if subnet.Cidr != nil {
-		model.Cidr = convert.StrToType(subnet.Cidr)
-	}
-	if subnet.Gateway.IsSet() && subnet.Gateway.Get() != nil {
-		model.Gateway = convert.StrToType(subnet.Gateway.Get())
-	} else {
-		model.Gateway = types.StringNull()
-	}
-	if subnet.Netmask != nil {
-		model.Netmask = convert.StrToType(subnet.Netmask)
-	}
-	if subnet.SubnetAddress != nil {
-		model.SubnetAddress = convert.StrToType(subnet.SubnetAddress)
-	}
-	if subnet.Active != nil {
-		model.Active = convert.BoolToType(subnet.Active)
-	}
-	if subnet.DhcpServer != nil {
-		model.DhcpServer = convert.BoolToType(subnet.DhcpServer)
-	}
-	if subnet.Visibility != nil {
-		model.Visibility = convert.StrToType(subnet.Visibility)
-	}
-	if subnet.Type != nil && subnet.Type.Id != nil {
-		model.TypeId = convert.Int64ToType(subnet.Type.Id)
-	}
-	if subnet.Network != nil && subnet.Network.Id != nil {
-		model.NetworkId = convert.Int64ToType(subnet.Network.Id)
-	}
-	if subnet.Pool != nil && subnet.Pool.Id != nil {
-		model.PoolId = convert.Int64ToType(subnet.Pool.Id)
-	} else {
-		model.PoolId = types.Int64Null()
-	}
-	if subnet.Zone != nil && subnet.Zone.Id != nil {
-		model.CloudId = convert.Int64ToType(subnet.Zone.Id)
-	} else {
-		model.CloudId = types.Int64Null()
-	}
-	if subnet.Labels != nil {
-		labels, _ := types.SetValueFrom(context.Background(), types.StringType, subnet.Labels)
-		model.Labels = labels
-	}
-
-	// Tenants
-	if len(subnet.Tenants) > 0 {
-		tenantValues := make([]attr.Value, 0, len(subnet.Tenants))
-		for _, t := range subnet.Tenants {
-			if t.Id != nil {
-				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
-			}
-		}
-		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
-	} else {
-		model.TenantIds = types.SetNull(types.Int64Type)
-	}
-
-	// Resource permissions
-	if subnet.ResourcePermission != nil {
-		model.ResourcePermissionGroupsAll = convert.BoolToType(subnet.ResourcePermission.All)
-		model.ResourcePermissionGroupIds = extractGroupIDsFromSites(subnet.ResourcePermission.Sites)
-	} else {
-		model.ResourcePermissionGroupsAll = types.BoolNull()
-		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
-	}
 }
 
 func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubnet) {
@@ -478,18 +437,10 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 		model.Labels = labels
 	}
 
-	// Tenants
-	if len(subnet.Tenants) > 0 {
-		tenantValues := make([]attr.Value, 0, len(subnet.Tenants))
-		for _, t := range subnet.Tenants {
-			if t.Id != nil {
-				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
-			}
-		}
-		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
-	} else {
-		model.TenantIds = types.SetNull(types.Int64Type)
-	}
+	// Tenants — intentionally not updated from the API response.
+	// The API always includes the master tenant in the returned list even if it
+	// was not explicitly set in the configuration, which would cause a perpetual
+	// diff. We preserve the plan/state value instead.
 
 	// Resource permissions
 	if subnet.ResourcePermission != nil {
