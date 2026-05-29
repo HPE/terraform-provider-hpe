@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusVdiAppResourceExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -71,7 +71,7 @@ func TestAccMorpheusVdiAppResourceExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusVdiAppResourceUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
