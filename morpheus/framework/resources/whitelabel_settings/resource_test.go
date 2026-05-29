@@ -30,7 +30,6 @@ func TestAccMorpheusWhitelabelSettingsResourceExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	applianceName := acctest.RandomWithPrefix(t.Name())
@@ -76,7 +75,6 @@ func TestAccMorpheusWhitelabelSettingsResourceUpdateOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	applianceName := acctest.RandomWithPrefix(t.Name())

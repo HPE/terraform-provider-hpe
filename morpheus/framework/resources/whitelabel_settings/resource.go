@@ -160,11 +160,15 @@ func (r *whitelabelSettingsResource) Delete(
 		return
 	}
 
-	// Reset by disabling whitelabel and clearing fields.
+	// Reset by disabling whitelabel and clearing all fields to zero values.
 	enabled := false
+	emptyStr := ""
 	body := sdk.UpdateWhitelabelSettingsRequest{
 		WhitelabelSettings: &sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{
 			Enabled:         &enabled,
+			ApplianceName:   &emptyStr,
+			HeaderBgColor:   &emptyStr,
+			HeaderFgColor:   &emptyStr,
 			ResetHeaderLogo: boolPtr(true),
 			ResetFooterLogo: boolPtr(true),
 			ResetLoginLogo:  boolPtr(true),

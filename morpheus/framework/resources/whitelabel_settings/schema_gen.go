@@ -24,7 +24,8 @@ type whitelabelSettingsModel struct {
 
 func WhitelabelSettingsSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist.",
+		Description: "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. " +
+			"On destroy, all whitelabel settings will be reset to their zero values.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
