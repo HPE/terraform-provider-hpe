@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_whitelabel_settings Resource - terraform-provider-hpe"
+page_title: "hpe_morpheus_setting_whitelabel Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist.
+  Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. On destroy, all whitelabel settings will be reset to their zero values.
 ---
-# hpe_morpheus_whitelabel_settings (Resource)
+# hpe_morpheus_setting_whitelabel (Resource)
 
-Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist.
+Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. On destroy, all whitelabel settings will be reset to their zero values.
 
 ## Example Usage
 
 ```terraform
-resource "hpe_morpheus_whitelabel_settings" "example" {
+resource "hpe_morpheus_setting_whitelabel" "example" {
   enabled         = true
   appliance_name  = "Acme Cloud Platform"
   primary_color   = "#1a73e8"
@@ -40,8 +40,4 @@ resource "hpe_morpheus_whitelabel_settings" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
-
-```bash
-terraform import hpe_morpheus_whitelabel_settings.example 123
-```
+Import is not supported for this resource.

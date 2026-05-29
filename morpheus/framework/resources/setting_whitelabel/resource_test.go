@@ -1,17 +1,15 @@
-package cluster_affinity_group_test
+package setting_whitelabel_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_affinity_group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -22,8 +20,9 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+func TestAccMorpheusSettingWhitelabelResourceExampleOk(t *testing.T) {
+	// We can't run this test in parallel as it's a singleton resource in Morpheus.
+	if capabilities.Missing(t, capabilities.Settings) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -32,25 +31,23 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
-
-	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix(t.Name())
+	applianceName := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := cluster_affinity_group.RenderClusterAffinityGroupConfig(t, map[string]string{
-		"ClusterId": clusterID,
-		"Name":      name,
+	resourceConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"ApplianceName": applianceName,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrSet("hpe_morpheus_cluster_affinity_group.example", "id"),
-		resource.TestCheckResourceAttr("hpe_morpheus_cluster_affinity_group.example", "cluster_id", clusterID),
-		resource.TestCheckResourceAttr("hpe_morpheus_cluster_affinity_group.example", "name", name),
+		resource.TestCheckResourceAttrSet("hpe_morpheus_setting_whitelabel.example", "id"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "enabled", "true"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "appliance_name", applianceName),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "primary_color", "#1a73e8"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "secondary_color", "#ffffff"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -65,25 +62,13 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
-			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_cluster_affinity_group.example",
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources["hpe_morpheus_cluster_affinity_group.example"]
-					if !ok {
-						return "", fmt.Errorf("resource not found")
-					}
-
-					return rs.Primary.Attributes["cluster_id"] + "." + rs.Primary.Attributes["id"], nil
-				},
-			},
 		},
 	})
 }
 
-func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
+	// We can't run this test in parallel as it's a singleton resource in Morpheus.
+	if capabilities.Missing(t, capabilities.Settings) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -92,40 +77,41 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
-
-	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix(t.Name())
-	updatedName := name + "-updated"
+	applianceName := acctest.RandomWithPrefix(t.Name())
+	updatedApplianceName := applianceName + "-updated"
 
-	createConfig, err := cluster_affinity_group.RenderClusterAffinityGroupConfig(t, map[string]string{
-		"ClusterId": clusterID,
-		"Name":      name,
+	createConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"ApplianceName": applianceName,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	updateConfig, err := cluster_affinity_group.RenderClusterAffinityGroupConfig(t, map[string]string{
-		"ClusterId": clusterID,
-		"Name":      updatedName,
+	updateConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"ApplianceName":  updatedApplianceName,
+		"PrimaryColor":   "#0f62fe",
+		"SecondaryColor": "#161616",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resourceName := "hpe_morpheus_cluster_affinity_group.example"
+	resourceName := "hpe_morpheus_setting_whitelabel.example"
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
-		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
-		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "appliance_name", applianceName),
+		resource.TestCheckResourceAttr(resourceName, "primary_color", "#1a73e8"),
+		resource.TestCheckResourceAttr(resourceName, "secondary_color", "#ffffff"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
-		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
-		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "appliance_name", updatedApplianceName),
+		resource.TestCheckResourceAttr(resourceName, "primary_color", "#0f62fe"),
+		resource.TestCheckResourceAttr(resourceName, "secondary_color", "#161616"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{

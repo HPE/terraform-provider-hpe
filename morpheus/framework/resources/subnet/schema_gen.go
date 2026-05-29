@@ -166,6 +166,9 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The type ID of the subnet.",
 				MarkdownDescription: "The type ID of the subnet.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,

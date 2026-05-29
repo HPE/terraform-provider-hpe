@@ -17,9 +17,17 @@ func RenderCertificateConfig(t *testing.T, overrides map[string]string) (string,
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "wildcard-example-com",
-		"CertFile":    "\"-----BEGIN CERTIFICATE-----\nMIIB...\n-----END CERTIFICATE-----\"",
-		"KeyFile":     "\"-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\"",
+		"Name": "wildcard-example-com",
+		"CertFile": `<<EOF
+-----BEGIN CERTIFICATE-----
+MIIB...
+-----END CERTIFICATE-----
+EOF`,
+		"KeyFile": `<<EOF
+-----BEGIN PRIVATE KEY-----
+MIIE...
+-----END PRIVATE KEY-----
+EOF`,
 		"DomainName":  "*.example.com",
 		"Description": "Wildcard certificate for example.com",
 	}

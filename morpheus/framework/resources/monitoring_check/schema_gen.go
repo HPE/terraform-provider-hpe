@@ -41,6 +41,9 @@ func MonitoringCheckSchema(_ context.Context) schema.Schema {
 			"check_type_id": schema.Int64Attribute{
 				Required:    true,
 				Description: "The check type ID.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

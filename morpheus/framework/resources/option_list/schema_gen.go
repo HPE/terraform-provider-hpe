@@ -3,11 +3,13 @@ package option_list
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -44,6 +46,9 @@ func OptionListSchema(_ context.Context) schema.Schema {
 			"type": schema.StringAttribute{
 				Optional:    true,
 				Description: "The type of the option list (rest, manual, ldap, api).",
+				Validators: []validator.String{
+					stringvalidator.OneOf("rest", "manual", "ldap", "api"),
+				},
 			},
 			"source_url": schema.StringAttribute{
 				Optional:    true,

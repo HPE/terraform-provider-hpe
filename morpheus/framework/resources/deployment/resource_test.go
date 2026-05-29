@@ -1,14 +1,15 @@
 package deployment_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,62 +20,116 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusDeploymentResourceBasic(t *testing.T) {
+func TestAccMorpheusDeploymentResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	rName := acctest.RandomWithPrefix(t.Name())
+	resourceConfig, err := deployment.RenderDeploymentConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_deployment.example"
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Web application deployment version 2"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: providerConfig + testAccDeploymentConfig(rName, ""),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_deployment.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_deployment.test", "name", rName),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
-			// ImportState
 			{
-				ResourceName:      "hpe_morpheus_deployment.test",
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			// Update description
-			{
-				Config: providerConfig + testAccDeploymentConfig(rName, "updated description"),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_deployment.test", "description", "updated description"),
-				),
+				ResourceName:      "hpe_morpheus_deployment.example",
 			},
 		},
 	})
 }
 
-func testAccDeploymentConfig(name, description string) string {
-	desc := ""
-	if description != "" {
-		desc = fmt.Sprintf(`  description = %q`, description)
+func TestAccMorpheusDeploymentResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	createConfig, err := deployment.RenderDeploymentConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	return fmt.Sprintf(`
-resource "hpe_morpheus_deployment" "test" {
-  name = %q
-%s
+	updateConfig := `
+resource "hpe_morpheus_deployment" "example" {
+  name        = "` + name + `"
+  description = "Updated deployment description"
 }
-`, name, desc)
+`
+
+	resourceName := "hpe_morpheus_deployment.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Web application deployment version 2"),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated deployment description"),
+	)
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + createConfig,
+				Check:  createChecks,
+			},
+			{
+				Config:           providerConfig + updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             providerConfig + updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
 }

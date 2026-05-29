@@ -11,13 +11,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeId 1
 
 func RenderStorageVolumeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name": "Example Storage Volume",
+		"Name":   "Example Storage Volume",
+		"TypeId": "1",
 	}
 
 	for key, value := range overrides {

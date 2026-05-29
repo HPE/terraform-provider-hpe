@@ -12,10 +12,10 @@ Manages a Morpheus Provisioning License resource.
 
 ```terraform
 resource "hpe_morpheus_provisioning_license" "example" {
-  name         = "Windows Server 2022"
-  license_type = "win"
-  license_key  = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
-  description  = "Windows Server 2022 Standard license"
+  name           = "Windows Server 2022"
+  license_type   = "win"
+  license_key_wo = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+  description    = "Windows Server 2022 Standard license"
 }
 ```
 
@@ -24,13 +24,16 @@ resource "hpe_morpheus_provisioning_license" "example" {
 
 ### Required
 
-- `license_key` (String, Sensitive) The license key.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `license_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The license key.
 - `license_type` (String) The type of the license.
 - `name` (String) The name of the provisioning license.
 
 ### Optional
 
 - `description` (String) The description of the provisioning license.
+- `license_key_wo_version` (Number) License key version. Used to determine if license_key_wo has been updated.
 - `tenants` (List of Number) List of tenant IDs associated with the license.
 - `virtual_images` (List of Number) List of virtual image IDs associated with the license.
 

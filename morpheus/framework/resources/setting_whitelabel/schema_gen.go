@@ -1,4 +1,4 @@
-package whitelabel_settings
+package setting_whitelabel
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type whitelabelSettingsModel struct {
+type settingWhitelabelModel struct {
 	ID               types.String `tfsdk:"id"`
 	Enabled          types.Bool   `tfsdk:"enabled"`
 	ApplianceName    types.String `tfsdk:"appliance_name"`
@@ -22,9 +22,10 @@ type whitelabelSettingsModel struct {
 	SupportMenuLinks types.String `tfsdk:"support_menu_links"`
 }
 
-func WhitelabelSettingsSchema(_ context.Context) schema.Schema {
+func SettingWhitelabelSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist.",
+		Description: "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. " +
+			"On destroy, all whitelabel settings will be reset to their zero values.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
