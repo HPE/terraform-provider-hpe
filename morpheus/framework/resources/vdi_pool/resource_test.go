@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusVdiPoolResourceExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -48,6 +48,7 @@ func TestAccMorpheusVdiPoolResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "description", "VDI pool for development team"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "max_pool_size", "10"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "min_idle", "2"),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "max_idle", "5"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "initial_pool_size", "3"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "enabled", "true"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_pool.example", "persistent_user", "true"),
@@ -76,7 +77,7 @@ func TestAccMorpheusVdiPoolResourceExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusVdiPoolResourceUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.VDI) {
+	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -102,6 +103,7 @@ func TestAccMorpheusVdiPoolResourceUpdateOk(t *testing.T) {
 		"Description": "Updated VDI pool for development team",
 		"MaxPoolSize": "12",
 		"MinIdle":     "1",
+		"MaxIdle":     "3",
 		"Enabled":     "false",
 	})
 	if err != nil {
@@ -115,6 +117,7 @@ func TestAccMorpheusVdiPoolResourceUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "description", "VDI pool for development team"),
 		resource.TestCheckResourceAttr(resourceName, "max_pool_size", "10"),
 		resource.TestCheckResourceAttr(resourceName, "min_idle", "2"),
+		resource.TestCheckResourceAttr(resourceName, "max_idle", "5"),
 		resource.TestCheckResourceAttr(resourceName, "initial_pool_size", "3"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttr(resourceName, "persistent_user", "true"),
@@ -126,6 +129,7 @@ func TestAccMorpheusVdiPoolResourceUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated VDI pool for development team"),
 		resource.TestCheckResourceAttr(resourceName, "max_pool_size", "12"),
 		resource.TestCheckResourceAttr(resourceName, "min_idle", "1"),
+		resource.TestCheckResourceAttr(resourceName, "max_idle", "3"),
 		resource.TestCheckResourceAttr(resourceName, "initial_pool_size", "3"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
 		resource.TestCheckResourceAttr(resourceName, "persistent_user", "true"),
