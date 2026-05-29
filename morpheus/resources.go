@@ -40,7 +40,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_list"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -127,7 +126,6 @@ func (s SubProvider) GetResources(
 		backup_job.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		option_type.NewResource,
 		option_list.NewResource,
 		provisioning_license.NewResource,
 
