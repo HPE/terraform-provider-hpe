@@ -40,8 +40,4 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
 
 ## Import
 
-Import is supported using the resource ID.
-
-```bash
-terraform import hpe_morpheus_setting_whitelabel.example 123
-```
+Import is not supported for this resource.
