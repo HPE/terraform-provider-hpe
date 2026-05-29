@@ -155,6 +155,15 @@ func (d *DataSource) Read(
 			)
 		}
 
+		if res.Instance == nil {
+			resp.Diagnostics.AddError(
+				"get instance resource",
+				fmt.Sprintf("instance %d response missing instance data", id),
+			)
+
+			return
+		}
+
 		instance := *res.Instance
 
 		if d := parseAsData(ctx, instance, &data, config); d.HasError() {

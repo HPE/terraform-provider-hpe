@@ -80,7 +80,9 @@ func getCloudByID(
 
 	var groupIDs []int64
 	for _, g := range cloud.Groups {
-		groupIDs = append(groupIDs, (*g.Id))
+		if g.Id != nil {
+			groupIDs = append(groupIDs, *g.Id)
+		}
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
@@ -104,6 +106,9 @@ func getCloudByName(
 	clouds := sdk.NewListClouds200ResponseWithDefaults().Zones
 
 	for _, c := range cs.Zones {
+		if c.Name == nil {
+			continue
+		}
 		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", *c.Name))
 		if *c.Name == name {
 			clouds = append(clouds, c)
@@ -131,7 +136,9 @@ func getCloudByName(
 
 	var groupIDs []int64
 	for _, g := range cloud.Groups {
-		groupIDs = append(groupIDs, (*g.Id))
+		if g.Id != nil {
+			groupIDs = append(groupIDs, *g.Id)
+		}
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 

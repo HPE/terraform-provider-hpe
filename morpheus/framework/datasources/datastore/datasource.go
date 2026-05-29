@@ -122,12 +122,17 @@ func getDatastoreById(
 		return nil, fmt.Errorf("datastore %d missing ref type in response", id)
 	}
 
-	state.AssociatedResourceId = convert.Int64ToType(datastore.RefId)
+	refId := datastore.RefId
+	if refId == nil {
+		return nil, fmt.Errorf("datastore %d missing ref id in response", id)
+	}
+
+	state.AssociatedResourceId = convert.Int64ToType(refId)
 	switch *refType {
 	case cloudRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCloud)
 		tenants, resourcePermissions, err := populateCloudDatastoreInformation(
-			ctx, id, *datastore.RefId, client)
+			ctx, id, *refId, client)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +142,7 @@ func getDatastoreById(
 	case clusterRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCluster)
 		tenants, resourcePermissions, err := populateClusterDatastoreInformation(
-			ctx, id, *datastore.RefId, client)
+			ctx, id, *refId, client)
 		if err != nil {
 			return nil, err
 		}
@@ -278,10 +283,14 @@ func getDatastoreById(
 			func(
 				in sdk.GetDatastores200ResponseAllOfDatastoreDatastoresInner,
 			) DatastoresValue {
-				id64 := int64(*in.Id)
+				var datastoreID *int64
+				if in.Id != nil {
+					id64 := int64(*in.Id)
+					datastoreID = &id64
+				}
 
 				return DatastoresValue{
-					Id:    convert.Int64ToType(&id64),
+					Id:    convert.Int64ToType(datastoreID),
 					Name:  convert.StrToType(in.Name),
 					state: attr.ValueStateKnown,
 				}

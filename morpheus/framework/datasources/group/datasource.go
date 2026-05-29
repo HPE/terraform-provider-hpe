@@ -84,6 +84,10 @@ func getGroupByName(
 	}
 
 	if len(groups) == 1 {
+		if groups[0].Id == nil {
+			return nil, fmt.Errorf("GET failed for group %s", name)
+		}
+
 		return getGroupByID(ctx, *groups[0].Id, apiClient)
 	} else if len(groups) > 1 {
 		return nil, errors.New(consts.ErrorMultipleGroups)

@@ -294,6 +294,10 @@ func getNetworkRouterByID(
 		)
 	}
 
+	if r.NetworkRouter == nil {
+		return nil, fmt.Errorf("GET failed for network router %d: missing networkRouter payload", id)
+	}
+
 	router := *r.NetworkRouter
 
 	return &router, nil

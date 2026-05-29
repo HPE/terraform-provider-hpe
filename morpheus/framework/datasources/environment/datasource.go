@@ -92,7 +92,7 @@ func getEnvironmentByName(
 	environments := sdk.NewListEnvironments200ResponseWithDefaults().Environments
 
 	for _, e := range es.Environments {
-		if *e.Name == name {
+		if e.Name != nil && *e.Name == name {
 			environments = append(environments, e)
 		}
 	}

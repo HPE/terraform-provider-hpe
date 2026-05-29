@@ -113,6 +113,9 @@ func getInstanceTypeLayoutByName(
 
 	// We return the first layout which should have the highest display order (sortOrder)
 	if len(layouts) > 0 {
+		if layouts[0].Id == nil {
+			return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
+		}
 		return getInstanceTypeLayoutByID(ctx, *layouts[0].Id, apiClient)
 	}
 

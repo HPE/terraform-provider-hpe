@@ -93,6 +93,11 @@ func getUserByUsername(
 	}
 
 	user := users[0]
+	if user.Id == nil {
+		diags.AddError(summary, "user id missing from response")
+
+		return diags
+	}
 
 	return getUserByID(ctx, *user.Id, data, apiClient)
 }

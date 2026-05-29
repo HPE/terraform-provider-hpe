@@ -34,6 +34,9 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 	}
 
 	itID := its.InstanceTypes[len(its.InstanceTypes)-1].Id
+	if itID == nil {
+		return nil, errors.New("instance type id was nil")
+	}
 
 	var layouts []sdk.AddLayout200ResponseInstanceTypeLayout
 
@@ -52,6 +55,9 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 		l, resp, err := req.Execute()
 		if err != nil || resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("POST failed for instance layout %w", err)
+		}
+		if l == nil || l.InstanceTypeLayout == nil {
+			return nil, errors.New("POST returned no instance layout")
 		}
 
 		layouts = append(layouts, *l.InstanceTypeLayout)

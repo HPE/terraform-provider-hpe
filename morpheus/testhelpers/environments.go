@@ -40,6 +40,11 @@ func CreateEnvironment(t *testing.T) (*TestEnvironment, error) {
 		return nil, fmt.Errorf("POST failed for Environment %w", err)
 	}
 
+	if e == nil || e.Environment == nil || e.Environment.Id == nil ||
+		e.Environment.Name == nil || e.Environment.Code == nil {
+		return nil, fmt.Errorf("POST returned incomplete Environment")
+	}
+
 	environment := e.Environment
 
 	return &TestEnvironment{

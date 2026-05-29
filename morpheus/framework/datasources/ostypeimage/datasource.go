@@ -92,13 +92,17 @@ func (d *DataSource) Read(
 	var matchedSystemImageID int64
 	var matchedTenantImageID int64
 	for _, img := range osType.Images {
-		if *img.VirtualImageName == virtualImageName && *img.Account.Get() > 0 {
+		if img.VirtualImageName == nil || img.Id == nil || *img.VirtualImageName != virtualImageName {
+			continue
+		}
+
+		if account := img.Account.Get(); account != nil && *account > 0 {
 			matchedTenantImageID = *img.Id
 
 			break
-		} else if *img.VirtualImageName == virtualImageName {
-			matchedSystemImageID = *img.Id
 		}
+
+		matchedSystemImageID = *img.Id
 	}
 
 	if matchedSystemImageID == 0 && matchedTenantImageID == 0 {
@@ -136,20 +140,20 @@ func (d *DataSource) Read(
 	data.VirtualImageName = types.StringValue(virtualImageName)
 	data.OsTypeId = types.Int64Value(osTypeID)
 
-	if img.Zone.IsSet() {
-		data.CloudId = types.Int64Value(*img.Zone.Get())
+	if zone := img.Zone.Get(); zone != nil {
+		data.CloudId = types.Int64Value(*zone)
 	}
 
-	if img.ComputeZoneType.IsSet() {
-		data.CloudTypeId = types.Int64Value(*img.ComputeZoneType.Get())
+	if computeZoneType := img.ComputeZoneType.Get(); computeZoneType != nil {
+		data.CloudTypeId = types.Int64Value(*computeZoneType)
 	}
 
-	if img.ProvisionType.IsSet() {
-		data.ProvisionTypeId = types.Int64Value(*img.ProvisionType.Get())
+	if provisionType := img.ProvisionType.Get(); provisionType != nil {
+		data.ProvisionTypeId = types.Int64Value(*provisionType)
 	}
 
-	if img.Account.IsSet() {
-		data.TenantId = types.Int64Value(*img.Account.Get())
+	if account := img.Account.Get(); account != nil {
+		data.TenantId = types.Int64Value(*account)
 	}
 
 	diags = resp.State.Set(ctx, &data)

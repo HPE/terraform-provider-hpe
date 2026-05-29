@@ -504,7 +504,9 @@ func mapPolicyConfigToState(
 		}
 		// Handle NullableString for MotdTitle
 		if apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.IsSet() {
-			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.Get())
+			if motdTitle := apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.Get(); motdTitle != nil {
+				motdAttrs["motdtitle"] = types.StringValue(*motdTitle)
+			}
 		}
 
 		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
