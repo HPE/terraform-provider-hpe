@@ -37,7 +37,7 @@ func (c *CredsRoundTripper) GetToken(ctx context.Context) error {
 	}
 
 	c.client.GetConfig().AddDefaultHeader(
-		"Authorization", "Bearer "+token.GetAccessToken(),
+		"Authorization", "Bearer "+*token.AccessToken,
 	)
 
 	return nil

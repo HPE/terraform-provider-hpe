@@ -65,7 +65,7 @@ func getCloudByID(
 		return fmt.Errorf("GET failed for cloud %d", id)
 	}
 
-	cloud := c.GetZone()
+	cloud := c.Zone
 
 	data.Id = convert.Int64ToType(cloud.Id)
 	data.Name = convert.StrToType(cloud.Name)
@@ -101,11 +101,11 @@ func getCloudByName(
 		return fmt.Errorf("GET failed for cloud %s", name)
 	}
 
-	clouds := sdk.NewListClouds200Response().Zones
+	clouds := sdk.NewListClouds200ResponseWithDefaults().Zones
 
 	for _, c := range cs.Zones {
-		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", c.GetName()))
-		if c.GetName() == name {
+		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", *c.Name))
+		if *c.Name == name {
 			clouds = append(clouds, c)
 		}
 	}

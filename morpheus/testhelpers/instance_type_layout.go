@@ -39,12 +39,12 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 
 	for i := range count {
 		addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()
-		addLayout.SetName(name)
-		addLayout.SetInstanceVersion("1")
-		addLayout.SetProvisionTypeCode("kvm")
-		addLayout.SetSortOrder(i)
+		addLayout.Name = name
+		addLayout.InstanceVersion = "1"
+		addLayout.ProvisionTypeCode = "kvm"
+		addLayout.SortOrder = &i
 
-		addLayoutReq := sdk.NewAddLayoutRequest()
+		addLayoutReq := sdk.NewAddLayoutRequestWithDefaults()
 		addLayoutReq.InstanceTypeLayout = addLayout
 
 		req := client.LibraryAPI.AddLayout(ctx, *itID).AddLayoutRequest(*addLayoutReq)
@@ -54,7 +54,7 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 			return nil, fmt.Errorf("POST failed for instance layout %w", err)
 		}
 
-		layouts = append(layouts, l.GetInstanceTypeLayout())
+		layouts = append(layouts, *l.InstanceTypeLayout)
 	}
 
 	return layouts, nil

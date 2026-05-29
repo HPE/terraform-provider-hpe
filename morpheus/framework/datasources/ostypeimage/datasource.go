@@ -83,7 +83,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	osType := osTypeResp.GetOsType()
+	osType := osTypeResp.OsType
 
 	virtualImageName := data.VirtualImageName.ValueString()
 
@@ -91,13 +91,13 @@ func (d *DataSource) Read(
 	// if multiple images have the same virtual_image_name
 	var matchedSystemImageID int64
 	var matchedTenantImageID int64
-	for _, img := range osType.GetImages() {
-		if img.GetVirtualImageName() == virtualImageName && img.GetAccount() > 0 {
-			matchedTenantImageID = img.GetId()
+	for _, img := range osType.Images {
+		if *img.VirtualImageName == virtualImageName && *img.Account.Get() > 0 {
+			matchedTenantImageID = *img.Id
 
 			break
-		} else if img.GetVirtualImageName() == virtualImageName {
-			matchedSystemImageID = img.GetId()
+		} else if *img.VirtualImageName == virtualImageName {
+			matchedSystemImageID = *img.Id
 		}
 	}
 
@@ -129,7 +129,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	img := imgResp.GetOsTypeImage()
+	img := imgResp.OsTypeImage
 
 	data.Id = convert.Int64ToType(img.Id)
 	data.VirtualImageId = convert.Int64ToType(img.VirtualImageId)
@@ -137,19 +137,19 @@ func (d *DataSource) Read(
 	data.OsTypeId = types.Int64Value(osTypeID)
 
 	if img.Zone.IsSet() {
-		data.CloudId = types.Int64Value(img.GetZone())
+		data.CloudId = types.Int64Value(*img.Zone.Get())
 	}
 
 	if img.ComputeZoneType.IsSet() {
-		data.CloudTypeId = types.Int64Value(img.GetComputeZoneType())
+		data.CloudTypeId = types.Int64Value(*img.ComputeZoneType.Get())
 	}
 
 	if img.ProvisionType.IsSet() {
-		data.ProvisionTypeId = types.Int64Value(img.GetProvisionType())
+		data.ProvisionTypeId = types.Int64Value(*img.ProvisionType.Get())
 	}
 
 	if img.Account.IsSet() {
-		data.TenantId = types.Int64Value(img.GetAccount())
+		data.TenantId = types.Int64Value(*img.Account.Get())
 	}
 
 	diags = resp.State.Set(ctx, &data)

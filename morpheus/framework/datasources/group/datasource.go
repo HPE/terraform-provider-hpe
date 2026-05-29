@@ -62,9 +62,7 @@ func getGroupByID(
 		return nil, fmt.Errorf("GET failed for group %d", id)
 	}
 
-	group := g.GetGroup()
-
-	return &group, nil
+	return g.Group, nil
 }
 
 func getGroupByName(
@@ -80,7 +78,7 @@ func getGroupByName(
 	var groups []sdk.ListGroups200ResponseAllOfGroupsInner
 
 	for _, g := range gs.Groups {
-		if g.GetName() == name {
+		if g.Name != nil && *g.Name == name {
 			groups = append(groups, g)
 		}
 	}

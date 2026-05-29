@@ -71,12 +71,12 @@ func getUserByUsername(
 		return diags
 	}
 
-	users := us.GetUsers()
+	users := us.Users
 
 	// Additional filtering to ensure exact username match (API might return partial matches)
 	var filteredUsers []sdk.ListUsers200ResponseAllOfUsersInner
 	for _, u := range users {
-		if u.GetUsername() == data.Username.ValueString() {
+		if u.Username != nil && *u.Username == data.Username.ValueString() {
 			filteredUsers = append(filteredUsers, u)
 		}
 	}
@@ -94,7 +94,7 @@ func getUserByUsername(
 
 	user := users[0]
 
-	return getUserByID(ctx, user.GetId(), data, apiClient)
+	return getUserByID(ctx, *user.Id, data, apiClient)
 }
 
 func getUserByID(
@@ -116,16 +116,16 @@ func getUserByID(
 
 		return diags
 	}
-	user, ok := u.GetUserOk()
-	if !ok {
+	if u.User == nil {
 		diags.AddError(summary, consts.ErrorNoUserFound)
 
 		return diags
 	}
+	user := u.User
 
 	roleValues := []attr.Value{}
-	if roles, ok := user.GetRolesOk(); ok {
-		for _, role := range roles {
+	if user.Roles != nil {
+		for _, role := range user.Roles {
 			roleValue, roleDiags := NewRolesValue(
 				RolesValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
@@ -174,7 +174,7 @@ func getUserByID(
 	}
 	data.Access = access
 
-	if tenant, tenantOk := user.GetAccountOk(); tenantOk {
+	if tenant := user.Account; tenant != nil {
 		tenantValue, tenantDiags := NewTenantValue(
 			TenantValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
@@ -192,7 +192,7 @@ func getUserByID(
 		data.Tenant = NewTenantValueNull()
 	}
 
-	if defaultPersona, defaultPersonaOk := user.GetDefaultPersonaOk(); defaultPersonaOk {
+	if defaultPersona := user.DefaultPersona; defaultPersona != nil {
 		defaultPersonaValue, defaultPersonaDiags := NewDefaultPersonaValue(
 			DefaultPersonaValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
@@ -237,124 +237,124 @@ func getAccessAsState(
 ) (AccessValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	access, accessOk := user.GetAccessOk()
-	if !accessOk {
+	access := user.Access
+	if access == nil {
 		return NewAccessValueNull(), diags
 	}
 
 	// Collect element structs first
 	var blueprints []BlueprintsValue
-	for _, in := range access.GetAppTemplates() {
+	for _, in := range access.AppTemplates {
 		blueprints = append(blueprints, BlueprintsValue{
-			Access: types.StringValue(in.GetAccess()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var catalogItemTypes []CatalogItemTypesValue
-	for _, in := range access.GetCatalogItemTypes() {
+	for _, in := range access.CatalogItemTypes {
 		catalogItemTypes = append(catalogItemTypes, CatalogItemTypesValue{
-			Access: types.StringValue(in.GetAccess()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var features []FeaturesValue
-	for _, in := range access.GetFeatures() {
+	for _, in := range access.Features {
 		features = append(features, FeaturesValue{
-			Access:      types.StringValue(in.GetAccess()),
-			Code:        types.StringValue(in.GetCode()),
-			Name:        types.StringValue(in.GetName()),
-			SubCategory: types.StringValue(in.GetSubCategory()),
+			Access:      convert.StrToType(in.Access),
+			Code:        convert.StrToType(in.Code),
+			Name:        convert.StrToType(in.Name),
+			SubCategory: convert.StrToType(in.SubCategory),
 			state:       attr.ValueStateKnown,
 		})
 	}
 
 	var instanceTypes []InstanceTypesValue
-	for _, in := range access.GetInstanceTypes() {
+	for _, in := range access.InstanceTypes {
 		instanceTypes = append(instanceTypes, InstanceTypesValue{
-			Access: types.StringValue(in.GetAccess()),
-			Code:   types.StringValue(in.GetCode()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Code:   convert.StrToType(in.Code),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var personas []PersonasValue
-	for _, in := range access.GetPersonas() {
+	for _, in := range access.Personas {
 		personas = append(personas, PersonasValue{
-			Access: types.StringValue(in.GetAccess()),
-			Code:   types.StringValue(in.GetCode()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Code:   convert.StrToType(in.Code),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var reportTypes []ReportTypesValue
-	for _, in := range access.GetReportTypes() {
+	for _, in := range access.ReportTypes {
 		reportTypes = append(reportTypes, ReportTypesValue{
-			Access: types.StringValue(in.GetAccess()),
-			Code:   types.StringValue(in.GetCode()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Code:   convert.StrToType(in.Code),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var groups []GroupsValue
-	for _, in := range access.GetSites() {
+	for _, in := range access.Sites {
 		groups = append(groups, GroupsValue{
-			Access: types.StringValue(in.GetAccess()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var workflows []WorkflowsValue
-	for _, in := range access.GetTaskSets() {
+	for _, in := range access.TaskSets {
 		workflows = append(workflows, WorkflowsValue{
-			Access: types.StringValue(in.GetAccess()),
+			Access: convert.StrToType(in.Access),
 			Code:   convert.StrToType(in.Code.Get()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var tasks []TasksValue
-	for _, in := range access.GetTasks() {
+	for _, in := range access.Tasks {
 		tasks = append(tasks, TasksValue{
-			Access: types.StringValue(in.GetAccess()),
+			Access: convert.StrToType(in.Access),
 			Code:   convert.StrToType(in.Code.Get()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var vdiPools []VdiPoolsValue
-	for _, in := range access.GetVdiPools() {
+	for _, in := range access.VdiPools {
 		vdiPools = append(vdiPools, VdiPoolsValue{
-			Access: types.StringValue(in.GetAccess()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
 
 	var clouds []CloudsValue
-	for _, in := range access.GetZones() {
+	for _, in := range access.Zones {
 		clouds = append(clouds, CloudsValue{
-			Access: types.StringValue(in.GetAccess()),
-			Id:     types.Int64Value(in.GetId()),
-			Name:   types.StringValue(in.GetName()),
+			Access: convert.StrToType(in.Access),
+			Id:     convert.Int64ToType(in.Id),
+			Name:   convert.StrToType(in.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}

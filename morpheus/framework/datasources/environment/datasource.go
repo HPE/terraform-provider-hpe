@@ -66,7 +66,7 @@ func getEnvironmentByID(
 		return fmt.Errorf("GET failed for environment %d", id)
 	}
 
-	environment := e.GetEnvironment()
+	environment := e.Environment
 
 	data.Active = convert.BoolToType(environment.Active)
 	data.Code = convert.StrToType(environment.Code)
@@ -89,10 +89,10 @@ func getEnvironmentByName(
 		return fmt.Errorf("GET failed for environment %s", name)
 	}
 
-	environments := sdk.NewListEnvironments200Response().Environments
+	environments := sdk.NewListEnvironments200ResponseWithDefaults().Environments
 
 	for _, e := range es.Environments {
-		if e.GetName() == name {
+		if *e.Name == name {
 			environments = append(environments, e)
 		}
 	}

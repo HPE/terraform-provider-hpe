@@ -68,9 +68,7 @@ func getInstanceTypeLayoutByID(
 		return nil, fmt.Errorf("GET failed for instance layout %d", id)
 	}
 
-	layout := c.GetInstanceTypeLayout()
-
-	return &layout, nil
+	return c.InstanceTypeLayout, nil
 }
 
 func getInstanceTypeLayoutByName(
@@ -95,7 +93,7 @@ func getInstanceTypeLayoutByName(
 	var layouts []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 
 	for _, l := range ls.InstanceTypeLayouts {
-		if l.GetName() == name {
+		if l.Name != nil && *l.Name == name {
 			layouts = append(layouts, l)
 		}
 	}
@@ -105,7 +103,7 @@ func getInstanceTypeLayoutByName(
 
 		var filtered []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 		for _, l := range layouts {
-			if l.GetInstanceVersion() == version {
+			if l.InstanceVersion != nil && *l.InstanceVersion == version {
 				filtered = append(filtered, l)
 			}
 		}

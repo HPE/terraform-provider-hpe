@@ -294,7 +294,7 @@ func getNetworkRouterByID(
 		)
 	}
 
-	router := r.GetNetworkRouter()
+	router := *r.NetworkRouter
 
 	return &router, nil
 }
@@ -312,7 +312,7 @@ func getNetworkRouterByName(
 		)
 	}
 
-	raw, err := json.Marshal(rs.GetNetworkRouters())
+	raw, err := json.Marshal(rs.NetworkRouters)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling network routers list: %w", err)
 	}

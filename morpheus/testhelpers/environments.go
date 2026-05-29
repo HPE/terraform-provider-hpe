@@ -25,10 +25,11 @@ func CreateEnvironment(t *testing.T) (*TestEnvironment, error) {
 	name := fmt.Sprintf("testacc-%s-%s", t.Name(), rand.Text())
 
 	addEnvironment := sdk.NewAddEnvironmentsRequestEnvironmentWithDefaults()
-	addEnvironment.SetName(name)
-	addEnvironment.SetCode(strings.ToLower(name))
+	addEnvironment.Name = name
+	addEnvironment.Code = strings.ToLower(name)
 
-	addEnvironmentReq := sdk.NewAddEnvironmentsRequest(*addEnvironment)
+	addEnvironmentReq := sdk.NewAddEnvironmentsRequestWithDefaults()
+	addEnvironmentReq.Environment = *addEnvironment
 
 	ctx := context.TODO()
 	client := newClient(ctx, t)
@@ -39,12 +40,12 @@ func CreateEnvironment(t *testing.T) (*TestEnvironment, error) {
 		return nil, fmt.Errorf("POST failed for Environment %w", err)
 	}
 
-	environment := e.GetEnvironment()
+	environment := e.Environment
 
 	return &TestEnvironment{
-		ID:   environment.GetId(),
-		Name: environment.GetName(),
-		Code: environment.GetCode(),
+		ID:   *environment.Id,
+		Name: *environment.Name,
+		Code: *environment.Code,
 	}, nil
 }
 

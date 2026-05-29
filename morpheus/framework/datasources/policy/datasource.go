@@ -179,9 +179,14 @@ func mapPolicyConfigToState(
 
 	// 8. MaxMemoryPolicyTypeConfiguration -> max_memory
 	if apiConfig.MaxMemoryPolicyTypeConfiguration3 != nil {
+		excludeContainers := types.BoolNull()
+		if apiConfig.MaxMemoryPolicyTypeConfiguration3.ExcludeContainers != nil {
+			excludeContainers = convert.StringToBool(ctx, *apiConfig.MaxMemoryPolicyTypeConfiguration3.ExcludeContainers)
+		}
+
 		maxMemoryAttrs := map[string]attr.Value{
 			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration3.MaxMemory),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration3.GetExcludeContainers()),
+			"exclude_containers": excludeContainers,
 		}
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
@@ -194,9 +199,14 @@ func mapPolicyConfigToState(
 
 	// 9. MaxCoresPolicyTypeConfiguration3 -> max_cores
 	if apiConfig.MaxCoresPolicyTypeConfiguration3 != nil {
+		excludeContainers := types.BoolNull()
+		if apiConfig.MaxCoresPolicyTypeConfiguration3.ExcludeContainers != nil {
+			excludeContainers = convert.StringToBool(ctx, *apiConfig.MaxCoresPolicyTypeConfiguration3.ExcludeContainers)
+		}
+
 		maxCoresAttrs := map[string]attr.Value{
 			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration3.MaxCores),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration3.GetExcludeContainers()),
+			"exclude_containers": excludeContainers,
 		}
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
@@ -226,20 +236,23 @@ func mapPolicyConfigToState(
 
 	// 11. ExpirationPolicyTypeConfiguration3 -> lifecycle
 	if apiConfig.ExpirationPolicyTypeConfiguration3 != nil {
+		lifecycleAllowExtend := types.BoolNull()
+		if apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAllowExtend != nil {
+			lifecycleAllowExtend = convert.StringToBool(ctx, *apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAllowExtend)
+		}
+		lifecycleAutoRenew := types.BoolNull()
+		if apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAutoRenew != nil {
+			lifecycleAutoRenew = convert.StringToBool(ctx, *apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAutoRenew)
+		}
+
 		lifecycleAttrs := map[string]attr.Value{
 			"account_integration_id": convert.StrToType(
 				apiConfig.ExpirationPolicyTypeConfiguration3.AccountIntegrationId,
 			),
-			"flow_id":       convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.FlowId),
-			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAge),
-			"lifecycle_allow_extend": convert.StringToBool(
-				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAllowExtend(),
-			),
-			"lifecycle_auto_renew": convert.StringToBool(
-				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAutoRenew(),
-			),
+			"flow_id":                convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.FlowId),
+			"lifecycle_age":          convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAge),
+			"lifecycle_allow_extend": lifecycleAllowExtend,
+			"lifecycle_auto_renew":   lifecycleAutoRenew,
 			"lifecycle_extensions_before_approval": convert.StrToType(
 				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleExtensionsBeforeApproval,
 			),
@@ -421,11 +434,13 @@ func mapPolicyConfigToState(
 
 	// 21. MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 -> max_storage
 	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 != nil {
+		excludeContainers := types.BoolNull()
+		if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers != nil {
+			excludeContainers = convert.StringToBool(ctx, *apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers)
+		}
+
 		maxStorageAttrs := map[string]attr.Value{
-			"exclude_containers": convert.StringToBool(
-				ctx,
-				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.GetExcludeContainers(),
-			),
+			"exclude_containers": excludeContainers,
 			"max_storage": convert.StrToType(
 				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.MaxStorage,
 			),
@@ -585,20 +600,23 @@ func mapPolicyConfigToState(
 
 	// 28. ShutdownPolicyTypeConfiguration3 -> shutdown
 	if apiConfig.ShutdownPolicyTypeConfiguration3 != nil {
+		shutdownAllowExtend := types.BoolNull()
+		if apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAllowExtend != nil {
+			shutdownAllowExtend = convert.StringToBool(ctx, *apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAllowExtend)
+		}
+		shutdownAutoRenew := types.BoolNull()
+		if apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAutoRenew != nil {
+			shutdownAutoRenew = convert.StringToBool(ctx, *apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAutoRenew)
+		}
+
 		shutdownAttrs := map[string]attr.Value{
 			"account_integration_id": convert.StrToType(
 				apiConfig.ShutdownPolicyTypeConfiguration3.AccountIntegrationId,
 			),
-			"flow_id":      convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.FlowId),
-			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAge),
-			"shutdown_allow_extend": convert.StringToBool(
-				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAllowExtend(),
-			),
-			"shutdown_auto_renew": convert.StringToBool(
-				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAutoRenew(),
-			),
+			"flow_id":               convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.FlowId),
+			"shutdown_age":          convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAge),
+			"shutdown_allow_extend": shutdownAllowExtend,
+			"shutdown_auto_renew":   shutdownAutoRenew,
 			"shutdown_extensions_before_approval": convert.StrToType(
 				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownExtensionsBeforeApproval,
 			),
@@ -733,12 +751,12 @@ func getPolicyByName(
 		return diags
 	}
 
-	policies := ps.GetPolicies()
+	policies := ps.Policies
 
 	// Additional filtering to ensure exact name match (API might return partial matches)
 	var filteredPolicies []sdk.ListPolicies200ResponseAllOfPoliciesInner
 	for _, p := range policies {
-		if p.GetName() == data.Name.ValueString() {
+		if p.Name != nil && *p.Name == data.Name.ValueString() {
 			filteredPolicies = append(filteredPolicies, p)
 		}
 	}
@@ -755,8 +773,13 @@ func getPolicyByName(
 	}
 
 	policy := policies[0]
+	if policy.Id == nil {
+		diags.AddError(summary, consts.ErrorNoPolicyFound)
 
-	return getPolicyByID(ctx, policy.GetId(), data, apiClient)
+		return diags
+	}
+
+	return getPolicyByID(ctx, *policy.Id, data, apiClient)
 }
 
 func getPolicyByID(
@@ -774,8 +797,8 @@ func getPolicyByID(
 
 		return diags
 	}
-	policy, ok := p.GetPolicyOk()
-	if !ok {
+	policy := p.Policy
+	if policy == nil {
 		diags.AddError(summary, consts.ErrorNoPolicyFound)
 
 		return diags
@@ -790,7 +813,7 @@ func getPolicyByID(
 
 	// Handle AssociatedResourceId and AssociatedResourceType
 	if policy.RefId.IsSet() && policy.RefId.Get() != nil {
-		data.AssociatedResourceId = types.Int64Value(policy.GetRefId())
+		data.AssociatedResourceId = types.Int64Value(*policy.RefId.Get())
 	} else {
 		data.AssociatedResourceId = types.Int64Null()
 	}
@@ -885,9 +908,8 @@ func getPolicyByID(
 	}
 
 	// Handle Owner
-	owner := policy.GetOwner()
-
-	if owner.Id != nil {
+	if policy.Owner.IsSet() && policy.Owner.Get() != nil && policy.Owner.Get().Id != nil {
+		owner := policy.Owner.Get()
 		ownerValue, ownerDiags := NewOwnerValue(
 			OwnerValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
