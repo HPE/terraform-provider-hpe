@@ -45,8 +45,8 @@ func TestAccMorpheusVdiAppResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet("hpe_morpheus_vdi_app.example", "id"),
 		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "name", name),
-		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "description", "Google Chrome virtual application"),
-		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "launch_prefix", "/usr/bin/google-chrome"),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "description", "An example description"),
+		resource.TestCheckResourceAttr("hpe_morpheus_vdi_app.example", "launch_prefix", "||example-launch-prefix"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -94,8 +94,8 @@ func TestAccMorpheusVdiAppResourceUpdateOk(t *testing.T) {
 
 	updateConfig, err := vdi_app.RenderVdiAppConfig(t, map[string]string{
 		"Name":         name,
-		"Description":  "Updated Chrome virtual application",
-		"LaunchPrefix": "/usr/bin/chromium-browser",
+		"Description":  "Updated",
+		"LaunchPrefix": "||updated",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -105,14 +105,14 @@ func TestAccMorpheusVdiAppResourceUpdateOk(t *testing.T) {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "description", "Google Chrome virtual application"),
-		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "/usr/bin/google-chrome"),
+		resource.TestCheckResourceAttr(resourceName, "description", "An example description"),
+		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "||example-launch-prefix"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "description", "Updated Chrome virtual application"),
-		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "/usr/bin/chromium-browser"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated"),
+		resource.TestCheckResourceAttr(resourceName, "launch_prefix", "||updated"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
