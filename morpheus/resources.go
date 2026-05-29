@@ -59,7 +59,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/whitelabel_settings"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 )
 
 func (s SubProvider) GetResources(
@@ -133,7 +133,7 @@ func (s SubProvider) GetResources(
 
 		// Sprint 7: Identity, VDI & Governance
 		vdi_pool.NewResource,
-		whitelabel_settings.NewResource,
+		setting_whitelabel.NewResource,
 	}
 
 	return resources

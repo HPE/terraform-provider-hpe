@@ -1,4 +1,4 @@
-package whitelabel_settings_test
+package setting_whitelabel_test
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/whitelabel_settings"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -20,7 +20,8 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusWhitelabelSettingsResourceExampleOk(t *testing.T) {
+func TestAccMorpheusSettingWhitelabelResourceExampleOk(t *testing.T) {
+	// We can't run this test in parallel as it's a singleton resource in Morpheus.
 	if capabilities.Missing(t, capabilities.Settings) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -34,7 +35,7 @@ func TestAccMorpheusWhitelabelSettingsResourceExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	applianceName := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := whitelabel_settings.RenderWhitelabelSettingsConfig(t, map[string]string{
+	resourceConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
 		"ApplianceName": applianceName,
 	})
 	if err != nil {
@@ -42,11 +43,11 @@ func TestAccMorpheusWhitelabelSettingsResourceExampleOk(t *testing.T) {
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrSet("hpe_morpheus_whitelabel_settings.example", "id"),
-		resource.TestCheckResourceAttr("hpe_morpheus_whitelabel_settings.example", "enabled", "true"),
-		resource.TestCheckResourceAttr("hpe_morpheus_whitelabel_settings.example", "appliance_name", applianceName),
-		resource.TestCheckResourceAttr("hpe_morpheus_whitelabel_settings.example", "primary_color", "#1a73e8"),
-		resource.TestCheckResourceAttr("hpe_morpheus_whitelabel_settings.example", "secondary_color", "#ffffff"),
+		resource.TestCheckResourceAttrSet("hpe_morpheus_setting_whitelabel.example", "id"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "enabled", "true"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "appliance_name", applianceName),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "primary_color", "#1a73e8"),
+		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "secondary_color", "#ffffff"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -65,7 +66,8 @@ func TestAccMorpheusWhitelabelSettingsResourceExampleOk(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusWhitelabelSettingsResourceUpdateOk(t *testing.T) {
+func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
+	// We can't run this test in parallel as it's a singleton resource in Morpheus.
 	if capabilities.Missing(t, capabilities.Settings) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -80,14 +82,14 @@ func TestAccMorpheusWhitelabelSettingsResourceUpdateOk(t *testing.T) {
 	applianceName := acctest.RandomWithPrefix(t.Name())
 	updatedApplianceName := applianceName + "-updated"
 
-	createConfig, err := whitelabel_settings.RenderWhitelabelSettingsConfig(t, map[string]string{
+	createConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
 		"ApplianceName": applianceName,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	updateConfig, err := whitelabel_settings.RenderWhitelabelSettingsConfig(t, map[string]string{
+	updateConfig, err := setting_whitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
 		"ApplianceName":  updatedApplianceName,
 		"PrimaryColor":   "#0f62fe",
 		"SecondaryColor": "#161616",
@@ -96,7 +98,7 @@ func TestAccMorpheusWhitelabelSettingsResourceUpdateOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resourceName := "hpe_morpheus_whitelabel_settings.example"
+	resourceName := "hpe_morpheus_setting_whitelabel.example"
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),

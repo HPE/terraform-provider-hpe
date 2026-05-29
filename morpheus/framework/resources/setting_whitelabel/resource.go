@@ -1,4 +1,4 @@
-package whitelabel_settings
+package setting_whitelabel
 
 import (
 	"context"
@@ -13,35 +13,35 @@ import (
 )
 
 var (
-	_ resource.Resource              = &whitelabelSettingsResource{}
-	_ resource.ResourceWithConfigure = &whitelabelSettingsResource{}
+	_ resource.Resource              = &settingWhitelabelResource{}
+	_ resource.ResourceWithConfigure = &settingWhitelabelResource{}
 )
 
-type whitelabelSettingsResource struct {
+type settingWhitelabelResource struct {
 	configure.ResourceWithMorpheusConfigure
 }
 
 func NewResource() resource.Resource {
-	return &whitelabelSettingsResource{}
+	return &settingWhitelabelResource{}
 }
 
-func (r *whitelabelSettingsResource) Metadata(
+func (r *settingWhitelabelResource) Metadata(
 	_ context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_whitelabel_settings"
+	resp.TypeName = req.ProviderTypeName + "_morpheus_setting_whitelabel"
 }
 
-func (r *whitelabelSettingsResource) Schema(
+func (r *settingWhitelabelResource) Schema(
 	ctx context.Context,
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = WhitelabelSettingsSchema(ctx)
+	resp.Schema = SettingWhitelabelSchema(ctx)
 }
 
-func (r *whitelabelSettingsResource) Create(
+func (r *settingWhitelabelResource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
@@ -54,7 +54,7 @@ func (r *whitelabelSettingsResource) Create(
 		return
 	}
 
-	var plan whitelabelSettingsModel
+	var plan settingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -65,7 +65,7 @@ func (r *whitelabelSettingsResource) Create(
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "whitelabel_settings", "settings", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "setting_whitelabel", "settings", err, httpResp)
 
 		return
 	}
@@ -81,7 +81,7 @@ func (r *whitelabelSettingsResource) Create(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		errfmt.DiagClientError(&resp.Diagnostics, err)
@@ -89,7 +89,7 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	var state whitelabelSettingsModel
+	var state settingWhitelabelModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -97,7 +97,7 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 
 	result, httpResp, err := client.WhitelabelSettingsAPI.ListWhitelabelSettings(ctx).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "whitelabel_settings", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "setting_whitelabel", "", err, httpResp)
 
 		return
 	}
@@ -108,7 +108,7 @@ func (r *whitelabelSettingsResource) Read(ctx context.Context, req resource.Read
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *whitelabelSettingsResource) Update(
+func (r *settingWhitelabelResource) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
@@ -120,7 +120,7 @@ func (r *whitelabelSettingsResource) Update(
 		return
 	}
 
-	var plan whitelabelSettingsModel
+	var plan settingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -131,7 +131,7 @@ func (r *whitelabelSettingsResource) Update(
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "whitelabel_settings", "settings", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "setting_whitelabel", "settings", err, httpResp)
 
 		return
 	}
@@ -147,7 +147,7 @@ func (r *whitelabelSettingsResource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *whitelabelSettingsResource) Delete(
+func (r *settingWhitelabelResource) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
@@ -179,15 +179,15 @@ func (r *whitelabelSettingsResource) Delete(
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "whitelabel_settings", "", err, httpResp)
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "setting_whitelabel", "", err, httpResp)
 
 		return
 	}
 }
 
-func (r *whitelabelSettingsResource) readIntoModel(
+func (r *settingWhitelabelResource) readIntoModel(
 	ctx context.Context,
-	model *whitelabelSettingsModel,
+	model *settingWhitelabelModel,
 	diagnostics *diag.Diagnostics,
 ) {
 	client, err := r.NewClient(ctx)
@@ -199,7 +199,7 @@ func (r *whitelabelSettingsResource) readIntoModel(
 
 	result, httpResp, err := client.WhitelabelSettingsAPI.ListWhitelabelSettings(ctx).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(diagnostics, errfmt.OpRead, "whitelabel_settings", "", err, httpResp)
+		errfmt.DiagError(diagnostics, errfmt.OpRead, "setting_whitelabel", "", err, httpResp)
 
 		return
 	}
@@ -208,7 +208,7 @@ func (r *whitelabelSettingsResource) readIntoModel(
 	mapResponseToModel(model, &settings)
 }
 
-func buildUpdateRequest(plan *whitelabelSettingsModel) sdk.UpdateWhitelabelSettingsRequest {
+func buildUpdateRequest(plan *settingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
 	settings := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
 	if !plan.Enabled.IsNull() {
 		settings.Enabled = plan.Enabled.ValueBoolPointer()
@@ -229,7 +229,7 @@ func buildUpdateRequest(plan *whitelabelSettingsModel) sdk.UpdateWhitelabelSetti
 }
 
 func mapResponseToModel(
-	model *whitelabelSettingsModel,
+	model *settingWhitelabelModel,
 	settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings,
 ) {
 	model.ID = types.StringValue("settings")

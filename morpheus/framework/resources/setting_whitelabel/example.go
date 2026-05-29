@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package whitelabel_settings
+package setting_whitelabel
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_whitelabel_settings/example.tf example.tf.tmpl Enabled "true" ApplianceName "Acme Cloud Platform" PrimaryColor "#1a73e8" SecondaryColor "#ffffff"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_setting_whitelabel/example.tf example.tf.tmpl Enabled "true" ApplianceName "Acme Cloud Platform" PrimaryColor "#1a73e8" SecondaryColor "#ffffff"
 
-func RenderWhitelabelSettingsConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderSettingWhitelabelConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
