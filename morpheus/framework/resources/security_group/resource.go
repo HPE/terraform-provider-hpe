@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -123,43 +124,40 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	sg := result.GetSecurityGroup()
-	mapCreateResponseToModel(&plan, &sg)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-}
-
-func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		errfmt.DiagClientError(&resp.Diagnostics, err)
+	if sg.Id == nil {
+		resp.Diagnostics.AddError("Create Error", "Security group ID not returned")
 
 		return
 	}
 
+	state, diags := r.getSecurityGroupAsState(ctx, *sg.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+}
+
+func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state SecurityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.Id.ValueInt64()
-
-	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroups(ctx, id).Execute()
-	if errfmt.IsNotFound(httpResp) {
+	model, diags := r.getSecurityGroupAsState(ctx, state.Id.ValueInt64())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if model == nil {
 		resp.State.RemoveResource(ctx)
 
 		return
 	}
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group", "", err, httpResp)
 
-		return
-	}
-
-	sg := result.GetSecurityGroup()
-	mapResponseToModel(&state, &sg)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
 func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -227,7 +225,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		body.ResourcePermissions = rp
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
+	_, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
 		UpdateSecurityGroupsRequest(sdk.UpdateSecurityGroupsRequest{
 			SecurityGroup: *body,
 		}).Execute()
@@ -237,10 +235,25 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	sg := result.GetSecurityGroup()
-	mapUpdateResponseToModel(&plan, &sg)
+	state, diags := r.getSecurityGroupAsState(ctx, id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	// The GET after update may not return resourcePermission or tenants.
+	// Preserve plan values when the API doesn't return them.
+	if state.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsNull() {
+		state.ResourcePermissionGroupsAll = plan.ResourcePermissionGroupsAll
+	}
+	if state.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsNull() {
+		state.ResourcePermissionGroupIds = plan.ResourcePermissionGroupIds
+	}
+	if state.TenantIds.IsNull() && !plan.TenantIds.IsNull() {
+		state.TenantIds = plan.TenantIds
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *securityGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -284,43 +297,36 @@ func (r *securityGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(
-	model *SecurityGroupModel,
-	sg *sdk.AddSecurityGroups200ResponseSecurityGroup,
-) {
-	model.Id = convert.Int64ToType(sg.Id)
-	model.Name = convert.StrToType(sg.Name)
-	if sg.Description.IsSet() {
-		model.Description = convert.StrToType(sg.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	model.Active = convert.BoolToType(sg.Active)
-	model.Visibility = convert.StrToType(sg.Visibility)
-	zone := sg.GetZone()
-	model.CloudId = convert.Int64ToType(zone.Id)
+// getSecurityGroupAsState fetches a security group by ID and returns it as a model.
+// Returns nil model if the resource is not found (404).
+func (r *securityGroupResource) getSecurityGroupAsState(
+	ctx context.Context,
+	id int64,
+) (*SecurityGroupModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
-	// Tenants
-	if len(sg.Tenants) > 0 {
-		tenantValues := make([]attr.Value, 0, len(sg.Tenants))
-		for _, t := range sg.Tenants {
-			if t.Id != nil {
-				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
-			}
-		}
-		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
-	} else {
-		model.TenantIds = types.SetNull(types.Int64Type)
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		errfmt.DiagClientError(&diags, err)
+
+		return nil, diags
 	}
 
-	// Resource permissions
-	if sg.ResourcePermission != nil {
-		model.ResourcePermissionGroupsAll = convert.BoolToType(sg.ResourcePermission.All)
-		model.ResourcePermissionGroupIds = extractGroupIDsFromCreateSites(sg.ResourcePermission.Sites)
-	} else {
-		model.ResourcePermissionGroupsAll = types.BoolNull()
-		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
+	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroups(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return nil, diags
 	}
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&diags, errfmt.OpRead, "security_group", "", err, httpResp)
+
+		return nil, diags
+	}
+
+	sg := result.GetSecurityGroup()
+	var model SecurityGroupModel
+	mapResponseToModel(&model, &sg)
+
+	return &model, diags
 }
 
 func mapResponseToModel(
@@ -362,70 +368,8 @@ func mapResponseToModel(
 	}
 }
 
-func mapUpdateResponseToModel(
-	model *SecurityGroupModel,
-	sg *sdk.UpdateSecurityGroups200ResponseSecurityGroup,
-) {
-	model.Id = convert.Int64ToType(sg.Id)
-	model.Name = convert.StrToType(sg.Name)
-	if sg.Description.IsSet() {
-		model.Description = convert.StrToType(sg.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	model.Active = convert.BoolToType(sg.Active)
-	model.Visibility = convert.StrToType(sg.Visibility)
-	zone := sg.GetZone()
-	model.CloudId = convert.Int64ToType(zone.Id)
-
-	// Tenants
-	if len(sg.Tenants) > 0 {
-		tenantValues := make([]attr.Value, 0, len(sg.Tenants))
-		for _, t := range sg.Tenants {
-			if t.Id != nil {
-				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
-			}
-		}
-		model.TenantIds, _ = types.SetValue(types.Int64Type, tenantValues)
-	} else {
-		model.TenantIds = types.SetNull(types.Int64Type)
-	}
-
-	// Resource permissions
-	if sg.ResourcePermission != nil {
-		model.ResourcePermissionGroupsAll = convert.BoolToType(sg.ResourcePermission.All)
-		model.ResourcePermissionGroupIds = extractGroupIDsFromUpdateSites(sg.ResourcePermission.Sites)
-	} else {
-		model.ResourcePermissionGroupsAll = types.BoolNull()
-		model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
-	}
-}
-
 func extractGroupIDsFromCreateSites(
 	sites []sdk.AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner,
-) types.Set {
-	if len(sites) == 0 {
-		return types.SetNull(types.Int64Type)
-	}
-
-	groupValues := make([]attr.Value, 0, len(sites))
-	for _, site := range sites {
-		if site.Id != nil {
-			groupValues = append(groupValues, types.Int64Value(*site.Id))
-		}
-	}
-
-	if len(groupValues) == 0 {
-		return types.SetNull(types.Int64Type)
-	}
-
-	result, _ := types.SetValue(types.Int64Type, groupValues)
-
-	return result
-}
-
-func extractGroupIDsFromUpdateSites(
-	sites []sdk.UpdateSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner,
 ) types.Set {
 	if len(sites) == 0 {
 		return types.SetNull(types.Int64Type)
