@@ -1866,19 +1866,19 @@ func (r *Resource) Update(
 
 	// optional fields
 	if plan.DefaultPersonaCode.IsNull() {
-		updateRole.SetDefaultPersonaNil()
+		updateRole.DefaultPersona.Set(nil)
 	} else {
 		updateRole.SetDefaultPersona(plan.DefaultPersonaCode.ValueString())
 	}
 
 	if plan.Description.IsNull() {
-		updateRole.SetDescriptionNil()
+		updateRole.Description.Set(nil)
 	} else {
 		updateRole.SetDescription(plan.Description.ValueString())
 	}
 
 	if plan.LandingUrl.IsNull() {
-		updateRole.SetLandingUrlNil()
+		updateRole.LandingUrl.Set(nil)
 	} else {
 		updateRole.SetLandingUrl(plan.LandingUrl.ValueString())
 	}

@@ -328,31 +328,31 @@ func (r *Resource) Update(
 
 	// nullable
 	if plan.FirstName.IsNull() {
-		updateUser.SetFirstNameNil()
+		updateUser.FirstName.Set(nil)
 	} else {
 		updateUser.SetFirstName(plan.FirstName.ValueString())
 	}
 
 	if plan.LastName.IsNull() {
-		updateUser.SetLastNameNil()
+		updateUser.LastName.Set(nil)
 	} else {
 		updateUser.SetLastName(plan.LastName.ValueString())
 	}
 
 	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
-		updateUser.SetLinuxKeyPairIdNil()
+		updateUser.LinuxKeyPairId.Set(nil)
 	} else {
 		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
 	}
 
 	if plan.LinuxUsername.IsNull() {
-		updateUser.SetLinuxUsernameNil()
+		updateUser.LinuxUsername.Set(nil)
 	} else {
 		updateUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
 	}
 
 	if plan.WindowsUsername.IsNull() {
-		updateUser.SetWindowsUsernameNil()
+		updateUser.WindowsUsername.Set(nil)
 	} else {
 		updateUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
 	}
@@ -370,7 +370,7 @@ func (r *Resource) Update(
 			return
 		}
 		if plan.LinuxPasswordWo.IsNull() {
-			updateUser.SetLinuxPasswordNil()
+			updateUser.LinuxPassword.Set(nil)
 		} else {
 			updateUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
 		}
@@ -387,7 +387,7 @@ func (r *Resource) Update(
 			return
 		}
 		if plan.WindowsPasswordWo.IsNull() {
-			updateUser.SetWindowsPasswordNil()
+			updateUser.WindowsPassword.Set(nil)
 		} else {
 			updateUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
 		}

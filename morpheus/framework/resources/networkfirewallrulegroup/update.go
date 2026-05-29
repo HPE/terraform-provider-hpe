@@ -43,13 +43,13 @@ func (r *Resource) Update(
 	ruleGroup.SetName(plan.Name.ValueString())
 
 	if plan.Description.IsNull() {
-		ruleGroup.SetDescriptionNil()
+		ruleGroup.Description.Set(nil)
 	} else if !plan.Description.IsUnknown() {
 		ruleGroup.SetDescription(plan.Description.ValueString())
 	}
 
 	if plan.Priority.IsNull() {
-		ruleGroup.SetPriorityNil()
+		ruleGroup.Priority.Set(nil)
 	} else if !plan.Priority.IsUnknown() {
 		ruleGroup.SetPriority(plan.Priority.ValueInt64())
 	}

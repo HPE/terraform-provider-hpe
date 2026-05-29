@@ -48,7 +48,7 @@ func getCloudAsState(
 
 	cloud := c.GetZone()
 
-	if !cloud.IsSetConfig() {
+	if cloud.Config == nil {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cloud %d missing config", id),

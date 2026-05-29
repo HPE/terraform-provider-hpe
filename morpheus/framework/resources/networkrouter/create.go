@@ -131,7 +131,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if !result.IsSetId() || result.GetId() == 0 {
+	if !result.Id.IsSet() || result.GetId() == 0 {
 		resp.Diagnostics.AddError(
 			createOperation,
 			"network router "+name+": id is nil or zero",

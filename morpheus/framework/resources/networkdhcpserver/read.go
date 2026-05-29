@@ -277,9 +277,9 @@ func detectConfigFromResponse(
 // isNsxtConfig returns true when at least one NSXT-specific field is present
 // in the decoded config, distinguishing it from an arbitrary generic map.
 func isNsxtConfig(cfg *sdk.NetworkDhcpServerConfigNSX) bool {
-	return cfg.IsSetEdgeCluster() ||
-		cfg.IsSetPreferredEdgeNode1() ||
-		cfg.IsSetPreferredEdgeNode2()
+	return cfg.EdgeCluster.IsSet() ||
+		cfg.PreferredEdgeNode1.IsSet() ||
+		cfg.PreferredEdgeNode2.IsSet()
 }
 
 func (r *Resource) Read(
