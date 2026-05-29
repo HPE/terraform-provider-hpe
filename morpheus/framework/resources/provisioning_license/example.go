@@ -17,10 +17,10 @@ func RenderProvisioningLicenseConfig(t *testing.T, overrides map[string]string) 
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":        "Windows Server 2022",
-		"LicenseType": "win",
-		"LicenseKeyWo":  "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
-		"Description": "Windows Server 2022 Standard license",
+		"Name":         "Windows Server 2022",
+		"LicenseType":  "win",
+		"LicenseKeyWo": "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
+		"Description":  "Windows Server 2022 Standard license",
 	}
 
 	for key, value := range overrides {

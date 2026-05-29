@@ -48,6 +48,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group_rule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_bucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_server"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_volume"
@@ -57,7 +58,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 )
 
 func (s SubProvider) GetResources(

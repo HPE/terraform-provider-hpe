@@ -97,9 +97,9 @@ func TestAccMorpheusProvisioningLicenseResourceUpdateOk(t *testing.T) {
 	}
 
 	updateConfig, err := provisioning_license.RenderProvisioningLicenseConfig(t, map[string]string{
-		"Name":        name,
-		"LicenseKeyWo":  "YYYYY-YYYYY-YYYYY-YYYYY-YYYYY",
-		"Description": updatedDescription,
+		"Name":         name,
+		"LicenseKeyWo": "YYYYY-YYYYY-YYYYY-YYYYY-YYYYY",
+		"Description":  updatedDescription,
 	})
 	if err != nil {
 		t.Fatal(err)
