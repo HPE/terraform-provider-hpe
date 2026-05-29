@@ -44,6 +44,7 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "name", name),
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "type_id", "1"),
 	)
 
 	resource.Test(t, resource.TestCase{

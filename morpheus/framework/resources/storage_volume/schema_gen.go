@@ -13,7 +13,7 @@ import (
 type storageVolumeModel struct {
 	ID              types.Int64  `tfsdk:"id"`
 	Name            types.String `tfsdk:"name"`
-	Type            types.String `tfsdk:"type"`
+	TypeId          types.Int64  `tfsdk:"type_id"`
 	StorageServerID types.Int64  `tfsdk:"storage_server_id"`
 	MaxStorage      types.Int64  `tfsdk:"max_storage"`
 	Status          types.String `tfsdk:"status"`
@@ -34,9 +34,12 @@ func StorageVolumeSchema(_ context.Context) schema.Schema {
 				Required:    true,
 				Description: "The name of the storage volume.",
 			},
-			"type": schema.StringAttribute{
-				Optional:    true,
-				Description: "The storage type code or ID.",
+			"type_id": schema.Int64Attribute{
+				Required:    true,
+				Description: "The type ID of the storage volume.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"storage_server_id": schema.Int64Attribute{
 				Optional:    true,

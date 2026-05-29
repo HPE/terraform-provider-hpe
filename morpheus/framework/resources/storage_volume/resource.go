@@ -54,10 +54,7 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	volumeType := plan.Type.ValueString()
-	if volumeType == "" {
-		volumeType = "standard"
-	}
+	volumeType := strconv.FormatInt(plan.TypeId.ValueInt64(), 10)
 
 	storageServerID := plan.StorageServerID.ValueInt64()
 
@@ -146,8 +143,9 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 	body := sdk.UpdateStorageVolumesRequestStorageVolume{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Type.IsNull() {
-		body.Type = plan.Type.ValueStringPointer()
+	if !plan.TypeId.IsNull() {
+		typeStr := strconv.FormatInt(plan.TypeId.ValueInt64(), 10)
+		body.Type = &typeStr
 	}
 	if !plan.MaxStorage.IsNull() {
 		config := map[string]interface{}{
@@ -215,6 +213,9 @@ func mapCreateResponseToModel(model *storageVolumeModel, sv *sdk.AddStorageVolum
 	if sv.Name != nil {
 		model.Name = types.StringValue(*sv.Name)
 	}
+	if sv.TypeId != nil {
+		model.TypeId = types.Int64Value(*sv.TypeId)
+	}
 	if sv.MaxStorage != nil {
 		model.MaxStorage = types.Int64Value(*sv.MaxStorage)
 	}
@@ -229,6 +230,9 @@ func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes2
 	}
 	if sv.Name != nil {
 		model.Name = types.StringValue(*sv.Name)
+	}
+	if sv.TypeId != nil {
+		model.TypeId = types.Int64Value(*sv.TypeId)
 	}
 	if sv.MaxStorage != nil {
 		model.MaxStorage = types.Int64Value(*sv.MaxStorage)
