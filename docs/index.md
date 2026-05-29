@@ -16,7 +16,7 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
-->This v1.3.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+->This v1.4.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
 We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
@@ -29,7 +29,7 @@ See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider res
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v1.3.0).
+release notes for the current version (v1.4.0).
 
 ### Authentication
 
@@ -56,7 +56,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 1.4.0"
     }
   }
 }
@@ -80,7 +80,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 1.4.0"
     }
   }
 }
@@ -105,7 +105,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 1.4.0"
     }
   }
 }
@@ -128,7 +128,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 1.4.0"
     }
   }
 }
@@ -146,8 +146,15 @@ provider "hpe" {
 ## Release Notes
 
 ->The following resources use `WriteOnly` attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cluster<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_image<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_pool_server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_router_bgp_neighbor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_storage_bucket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_storage_server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_subnet<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_user<br><br>
 `WriteOnly` attributes are supported by Terraform versions 1.11 and later.
 
@@ -157,47 +164,121 @@ provider "hpe" {
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_virtual_server<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_policy<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_dhcp_server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_router<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_router_bgp_neighbor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_policy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_subnet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_task<br><br>
 This means that the `config` block can contain arbitrary nested attributes which
 will be evaluated at run-time.  Examples of these are shown in the documentation.<br><br>
 Note that the attributes in the `config` blocks must match those specified in the
 [Morpheus API documentation](https://apidocs.morpheusdata.com/reference/listactivity).
 That is, the attribute names are case-sensitive and must match exactly.
 
-### New functionality
+### New resources
 
-In this release (v1.3.0) we have added a notifier which issues a Warning if the provider version is less than the latest version available on the registry.
-This can be suppressed by upgrading to the latest version or setting the environment variable `HPE_IGNORE_VERSION_CHECK`.
+In this release (v1.4.0) we have added the following resources:
 
-In this release (v1.3.0) we have added the following resource functionality:
+#### Networking
 
-- hpe_morpheus_cluster a generalised cluster resource has been added with support for HVM clusters, and limited update functionality
-- hpe_morpheus_forms has comprehensive support for all option types
-- hpe_morpheus_instance has a static `config_aws` block for AWS instances
-- hpe_morpheus_instance supports Update of `network_interfaces` and `service_plan_options` for service plans that support the setting of
-  options for Morpheus versions >= 8.1.2, for earlier versions changes will force a new instance to be created
-- hpe_morpheus_load_balancer resource has been added
-- hpe_morpheus_os_type resource has been added
-- hpe_morpheus_os_type_image resource has been added
+- hpe_morpheus_load_balancer_monitor
+- hpe_morpheus_load_balancer_virtual_server
+- hpe_morpheus_network_dhcp_server
+- hpe_morpheus_network_firewall_rule
+- hpe_morpheus_network_firewall_rule_group
+- hpe_morpheus_network_group
+- hpe_morpheus_network_pool
+- hpe_morpheus_network_pool_server
+- hpe_morpheus_network_router
+- hpe_morpheus_network_router_bgp_neighbor
+- hpe_morpheus_network_router_firewall_rule
+- hpe_morpheus_network_router_nat
+- hpe_morpheus_network_router_route
+- hpe_morpheus_security_group
+- hpe_morpheus_security_group_rule
+- hpe_morpheus_subnet
 
-In this release (v1.3.0) we have added the following data source functionality:
+#### Monitoring & Operations
 
-- hpe_morpheus_cluster data source has been added
-- hpe_morpheus_load_balancer data source has been added
-- hpe_morpheus_os_type data source has been added
-- hpe_morpheus_os_type_image data source has been added
+- hpe_morpheus_backup
+- hpe_morpheus_backup_job
+- hpe_morpheus_budget
+- hpe_morpheus_monitoring_alert
+- hpe_morpheus_monitoring_check
+- hpe_morpheus_monitoring_group
 
-### New known issues
+#### Storage
 
-- hpe_morpheus_cluster_hks_hvm Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
+- hpe_morpheus_storage_bucket
+- hpe_morpheus_storage_server
+- hpe_morpheus_storage_volume
+
+#### Library & Provisioning
+
+- hpe_morpheus_container_script
+- hpe_morpheus_option_list
+- hpe_morpheus_option_type
+- hpe_morpheus_provisioning_license
+
+#### VDI
+
+- hpe_morpheus_vdi_app
+- hpe_morpheus_vdi_gateway
+- hpe_morpheus_vdi_pool
+
+#### Compute & Cluster
+
+- hpe_morpheus_cluster_affinity_group
+- hpe_morpheus_cluster_namespace
+
+#### Identity & Governance
+
+- hpe_morpheus_whitelabel_settings
+
+#### Other
+
+- hpe_morpheus_certificate
+- hpe_morpheus_deployment
+- hpe_morpheus_power_schedule
+
+### New data sources
+
+In this release (v1.4.0) we have added the following data sources:
+
+- hpe_morpheus_load_balancer_monitor
+- hpe_morpheus_load_balancer_virtual_server
+- hpe_morpheus_network_dhcp_server
+- hpe_morpheus_network_domain (reimplemented)
+- hpe_morpheus_network_firewall_rule
+- hpe_morpheus_network_firewall_rule_group
+- hpe_morpheus_network_router
+- hpe_morpheus_network_router_bgp_neighbor
+- hpe_morpheus_network_router_route
+
+### Enhancements to existing resources
+
+- hpe_morpheus_cloud — Added `config_azure` static config block; added 6 inventory discovery sync fields (`default_*_sync_active`)
+- hpe_morpheus_instance — Added `config_azure` static config block; added `network_domain_id` attribute (change forces recreation)
+- hpe_morpheus_load_balancer — Added tainting support; added `config` Dynamic attribute
+- hpe_morpheus_task — Allow null `else` in conditional_workflow task
+- All password/secret fields across 10 resources now enforce Sensitive + WriteOnly + PlanModifiers
 
 ### Resolved issues
 
-- `hpe_morpheus_instance` Update of `service_plan_options` fails silently
+- `hpe_morpheus_cloud` import fails with unknown values in static config blocks
+- `hpe_morpheus_task` conditional_workflow doesn't support null else clause
+- `hpe_morpheus_app_blueprint_kubernetes` YAML config not properly parsed
+- `hpe_morpheus_ansible_tower_inventory` data source type assertions fail intermittently
+- `hpe_morpheus_cluster` delete polling can report false failures
+- Import syntax standardised to dot-notation for multi-ID resources
 
-### Known issues from previous releases
+### Known issues
 
+- `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.
 - `hpe_morpheus_instance` updates fail when removing `evars`.
@@ -217,7 +298,7 @@ In this release (v1.3.0) we have added the following data source functionality:
 
 ## Automatic version checking
 
-As of v1.3.0, the provider will perform automatic version checking.
+The provider performs automatic version checking.
 
 If the version currently installed is less than the latest version available on the registry, the provider will
 display a message notifying the user that a new version is available.

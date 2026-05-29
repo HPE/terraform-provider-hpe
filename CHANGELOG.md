@@ -1,3 +1,118 @@
+# v1.4.0 Release Notes
+
+In this release (v1.4.0) we have added the following resources:
+
+### Networking
+
+- hpe_morpheus_load_balancer_monitor
+- hpe_morpheus_load_balancer_virtual_server
+- hpe_morpheus_network_dhcp_server
+- hpe_morpheus_network_firewall_rule
+- hpe_morpheus_network_firewall_rule_group
+- hpe_morpheus_network_group
+- hpe_morpheus_network_pool
+- hpe_morpheus_network_pool_server
+- hpe_morpheus_network_router
+- hpe_morpheus_network_router_bgp_neighbor
+- hpe_morpheus_network_router_firewall_rule
+- hpe_morpheus_network_router_nat
+- hpe_morpheus_network_router_route
+- hpe_morpheus_security_group
+- hpe_morpheus_security_group_rule
+- hpe_morpheus_subnet
+
+### Monitoring & Operations
+
+- hpe_morpheus_backup
+- hpe_morpheus_backup_job
+- hpe_morpheus_budget
+- hpe_morpheus_monitoring_alert
+- hpe_morpheus_monitoring_check
+- hpe_morpheus_monitoring_group
+
+### Storage
+
+- hpe_morpheus_storage_bucket
+- hpe_morpheus_storage_server
+- hpe_morpheus_storage_volume
+
+### Library & Provisioning
+
+- hpe_morpheus_container_script
+- hpe_morpheus_option_list
+- hpe_morpheus_option_type
+- hpe_morpheus_provisioning_license
+
+### VDI
+
+- hpe_morpheus_vdi_app
+- hpe_morpheus_vdi_gateway
+- hpe_morpheus_vdi_pool
+
+### Compute & Cluster
+
+- hpe_morpheus_cluster_affinity_group
+- hpe_morpheus_cluster_namespace
+
+### Identity & Governance
+
+- hpe_morpheus_whitelabel_settings
+
+### Other
+
+- hpe_morpheus_certificate
+- hpe_morpheus_deployment
+- hpe_morpheus_power_schedule
+
+In this release (v1.4.0) we have added the following data sources:
+
+- hpe_morpheus_load_balancer_monitor
+- hpe_morpheus_load_balancer_virtual_server
+- hpe_morpheus_network_dhcp_server
+- hpe_morpheus_network_domain (reimplemented)
+- hpe_morpheus_network_firewall_rule
+- hpe_morpheus_network_firewall_rule_group
+- hpe_morpheus_network_router
+- hpe_morpheus_network_router_bgp_neighbor
+- hpe_morpheus_network_router_route
+
+## Enhancements to existing resources
+
+- hpe_morpheus_cloud — Added `config_azure` static config block; added 6 inventory discovery sync fields (`default_*_sync_active`)
+- hpe_morpheus_instance — Added `config_azure` static config block; added `network_domain_id` attribute (change forces recreation)
+- hpe_morpheus_load_balancer — Added tainting support; added `config` Dynamic attribute
+- hpe_morpheus_task — Allow null `else` in conditional_workflow task
+- All password/secret fields across 10 resources now enforce Sensitive + WriteOnly + PlanModifiers
+
+## Resolved issues
+
+- `hpe_morpheus_cloud` import fails with unknown values in static config blocks
+- `hpe_morpheus_task` conditional_workflow doesn't support null else clause
+- `hpe_morpheus_app_blueprint_kubernetes` YAML config not properly parsed
+- `hpe_morpheus_ansible_tower_inventory` data source type assertions fail intermittently
+- `hpe_morpheus_cluster` delete polling can report false failures
+- Import syntax standardised to dot-notation for multi-ID resources
+
+## Known issues
+
+- `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
+
 # v1.3.0 Release Notes
 
 In this release (v1.3.0) we have added a notifier which issues a Warning if the provider version is less than the latest version available on the registry.
