@@ -44,6 +44,9 @@ func StorageVolumeSchema(_ context.Context) schema.Schema {
 			"storage_server_id": schema.Int64Attribute{
 				Optional:    true,
 				Description: "The ID of the storage server.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"max_storage": schema.Int64Attribute{
 				Optional:    true,
