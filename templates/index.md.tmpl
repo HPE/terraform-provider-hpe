@@ -196,6 +196,7 @@ In this release (v1.4.0) we have added the following data sources:
 
 ### Known issues
 
+- `hpe_morpheus_cluster_namespace`: `active` is not supported on import. `name` update is not supported.
 - `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.
