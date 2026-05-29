@@ -122,6 +122,9 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The ID of the network pool server type.",
 				MarkdownDescription: "The ID of the network pool server type.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"zone_filter": schema.StringAttribute{
 				Optional:            true,
