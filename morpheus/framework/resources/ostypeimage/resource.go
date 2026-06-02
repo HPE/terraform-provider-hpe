@@ -63,17 +63,26 @@ func getOsTypeImageAsState(
 		return state, diags
 	}
 
-	img := resp.GetOsTypeImage()
+	img := resp.OsTypeImage
+	if img == nil {
+		diags.AddError("read ostypeimage", fmt.Sprintf("GET osTypeImage %d returned no osTypeImage", id))
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(img.Id)
 	state.VirtualImageId = convert.Int64ToType(img.VirtualImageId)
 
-	if img.Zone.IsSet() {
-		state.CloudId = types.Int64Value(img.GetZone())
+	if zone := img.Zone.Get(); zone != nil {
+		state.CloudId = types.Int64Value(*zone)
 	}
 
-	if img.ProvisionType.IsSet() {
-		state.ProvisionTypeId = types.Int64Value(img.GetProvisionType())
+	if provisionType := img.ProvisionType.Get(); provisionType != nil {
+		state.ProvisionTypeId = types.Int64Value(*provisionType)
+	}
+
+	if img.VirtualImageId == nil {
+		return state, diags
 	}
 
 	// Resolve OsTypeId by fetching the virtual image and reading its osType.id.
@@ -86,9 +95,9 @@ func getOsTypeImageAsState(
 		return state, diags
 	}
 
-	vi := viResp.GetVirtualImage()
-	if osType, ok := vi.GetOsTypeOk(); ok {
-		state.OsTypeId = types.Int64Value(osType.GetId())
+	vi := viResp.VirtualImage
+	if vi != nil && vi.OsType != nil && vi.OsType.Id != nil {
+		state.OsTypeId = types.Int64Value(*vi.OsType.Id)
 	}
 
 	return state, diags
@@ -108,20 +117,19 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	osTypeImage := sdk.NewAddOsTypeImageRequestOsTypeImage(
-		plan.OsTypeId.ValueInt64(),
-		plan.VirtualImageId.ValueInt64(),
-	)
+	osTypeImage := &sdk.AddOsTypeImageRequestOsTypeImage{
+		OsType:       plan.OsTypeId.ValueInt64(),
+		VirtualImage: plan.VirtualImageId.ValueInt64(),
+	}
 
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
-		osTypeImage.SetZone(plan.CloudId.ValueInt64())
+		osTypeImage.Zone.Set(plan.CloudId.ValueInt64Pointer())
 	}
 	if !plan.ProvisionTypeId.IsNull() && !plan.ProvisionTypeId.IsUnknown() {
-		osTypeImage.SetProvisionType(plan.ProvisionTypeId.ValueInt64())
+		osTypeImage.ProvisionType.Set(plan.ProvisionTypeId.ValueInt64Pointer())
 	}
 
-	addReq := sdk.NewAddOsTypeImageRequest()
-	addReq.SetOsTypeImage(*osTypeImage)
+	addReq := &sdk.AddOsTypeImageRequest{OsTypeImage: osTypeImage}
 
 	// AddOsTypeImage returns (*http.Response, error) with no parsed body.
 	hresp, err := client.LibraryAPI.AddOsTypeImage(ctx).

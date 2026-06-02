@@ -123,8 +123,8 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapCreateResponseToModel(&plan, &server)
+	server := result.NetworkPoolServer
+	mapCreateResponseToModel(&plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -157,8 +157,8 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapReadResponseToModel(&state, &server)
+	server := result.NetworkPoolServer
+	mapReadResponseToModel(&state, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -225,7 +225,9 @@ func (r *networkPoolServerResource) Update(
 		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(infobloxUpdate)
+	serverReq := sdk.UpdateNetworkPoolServerRequestNetworkPoolServer{
+		InfobloxNetworkPoolServerUpdate: infobloxUpdate,
+	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
@@ -245,8 +247,8 @@ func (r *networkPoolServerResource) Update(
 		return
 	}
 
-	server := readResult.GetNetworkPoolServer()
-	mapReadResponseToModel(&plan, &server)
+	server := readResult.NetworkPoolServer
+	mapReadResponseToModel(&plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

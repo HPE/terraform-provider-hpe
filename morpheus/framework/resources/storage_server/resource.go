@@ -155,8 +155,13 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	ss := result.GetStorageServer()
-	id := ss.GetId()
+	ss := result.StorageServer
+	if ss == nil || ss.Id == nil {
+		resp.Diagnostics.AddError("Create Error", "Storage server ID not returned")
+
+		return
+	}
+	id := *ss.Id
 	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
@@ -181,8 +186,8 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 			}
 		}
 
-		ss := response.GetStorageServer()
-		if status, ok := ss.GetStatusOk(); ok && status != nil {
+		ss := response.StorageServer
+		if status := ss.Status.Get(); status != nil {
 			return response, checkStatusDone(*status)
 		}
 
@@ -197,8 +202,8 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	); err != nil {
 		var status string
 		if r != nil {
-			ss := r.GetStorageServer()
-			if s, ok := ss.GetStatusOk(); ok && s != nil {
+			ss := r.StorageServer
+			if s := ss.Status.Get(); s != nil {
 				status = *s
 			}
 		}
@@ -212,8 +217,8 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 
 		return
 	} else {
-		storageServer := r.GetStorageServer()
-		mapGetResponseToModel(ctx, &plan, &storageServer, &resp.Diagnostics)
+		storageServer := r.StorageServer
+		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -247,8 +252,8 @@ func (r *storageServerResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	ss := result.GetStorageServer()
-	mapGetResponseToModel(ctx, &state, &ss, &resp.Diagnostics)
+	ss := result.StorageServer
+	mapGetResponseToModel(ctx, &state, ss, &resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -351,8 +356,8 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 			}
 		}
 
-		ss := response.GetStorageServer()
-		if status, ok := ss.GetStatusOk(); ok && status != nil {
+		ss := response.StorageServer
+		if status := ss.Status.Get(); status != nil {
 			return response, checkStatusDone(*status)
 		}
 
@@ -367,8 +372,8 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 	); err != nil {
 		var status string
 		if r != nil {
-			ss := r.GetStorageServer()
-			if s, ok := ss.GetStatusOk(); ok && s != nil {
+			ss := r.StorageServer
+			if s := ss.Status.Get(); s != nil {
 				status = *s
 			}
 		}
@@ -387,8 +392,8 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 
 		return
 	} else {
-		storageServer := r.GetStorageServer()
-		mapGetResponseToModel(ctx, &plan, &storageServer, &resp.Diagnostics)
+		storageServer := r.StorageServer
+		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

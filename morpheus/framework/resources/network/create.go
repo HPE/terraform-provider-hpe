@@ -40,155 +40,181 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	createNetwork := sdk.NewCreateNetworksRequestNetworkWithDefaults()
-	createNetwork.SetName(name)
-	site := sdk.NewCreateNetworksRequestNetworkSite()
-	site.SetId(plan.GroupId.ValueInt64())
-	createNetwork.SetSite(*site)
-	createNetwork.SetZone(*sdk.NewCreateNetworksRequestNetworkZone(
-		plan.CloudId.ValueInt64(),
-	))
+	groupId := plan.GroupId.ValueInt64()
+	site := sdk.CreateNetworksRequestNetworkSite{
+		Id: &groupId,
+	}
+
+	createNetwork := &sdk.CreateNetworksRequestNetwork{
+		Name: name,
+		Site: site,
+		Zone: sdk.CreateNetworksRequestNetworkZone{
+			Id: plan.CloudId.ValueInt64(),
+		},
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		createNetwork.SetDescription(plan.Description.ValueString())
+		description := plan.Description.ValueString()
+		createNetwork.Description = *sdk.NewNullableString(&description)
 	}
 
 	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
-		createNetwork.SetDisplayName(plan.DisplayName.ValueString())
+		displayName := plan.DisplayName.ValueString()
+		createNetwork.DisplayName = &displayName
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		createNetwork.SetActive(plan.Active.ValueBool())
+		active := plan.Active.ValueBool()
+		createNetwork.Active = &active
 	}
 
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
-		createNetwork.SetCidr(plan.Cidr.ValueString())
+		cidr := plan.Cidr.ValueString()
+		createNetwork.Cidr = &cidr
 	}
 
 	if !plan.CidrIpv6.IsNull() && !plan.CidrIpv6.IsUnknown() {
-		createNetwork.SetCidrIPv6(plan.CidrIpv6.ValueString())
+		cidrIpv6 := plan.CidrIpv6.ValueString()
+		createNetwork.CidrIPv6 = &cidrIpv6
 	}
 
 	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
-		createNetwork.SetGateway(plan.Gateway.ValueString())
+		gateway := plan.Gateway.ValueString()
+		createNetwork.Gateway = &gateway
 	}
 
 	if !plan.GatewayIpv6.IsNull() && !plan.GatewayIpv6.IsUnknown() {
-		createNetwork.SetGatewayIPv6(plan.GatewayIpv6.ValueString())
+		gatewayIpv6 := plan.GatewayIpv6.ValueString()
+		createNetwork.GatewayIPv6 = *sdk.NewNullableString(&gatewayIpv6)
 	}
 
 	if !plan.DnsPrimary.IsNull() && !plan.DnsPrimary.IsUnknown() {
-		createNetwork.SetDnsPrimary(plan.DnsPrimary.ValueString())
+		dnsPrimary := plan.DnsPrimary.ValueString()
+		createNetwork.DnsPrimary = &dnsPrimary
 	}
 
 	if !plan.DnsSecondary.IsNull() && !plan.DnsSecondary.IsUnknown() {
-		createNetwork.SetDnsSecondary(plan.DnsSecondary.ValueString())
+		dnsSecondary := plan.DnsSecondary.ValueString()
+		createNetwork.DnsSecondary = &dnsSecondary
 	}
 
 	if !plan.DnsPrimaryIpv6.IsNull() && !plan.DnsPrimaryIpv6.IsUnknown() {
-		createNetwork.SetDnsPrimaryIPv6(plan.DnsPrimaryIpv6.ValueString())
+		dnsPrimaryIpv6 := plan.DnsPrimaryIpv6.ValueString()
+		createNetwork.DnsPrimaryIPv6 = *sdk.NewNullableString(&dnsPrimaryIpv6)
 	}
 
 	if !plan.DnsSecondaryIpv6.IsNull() &&
 		!plan.DnsSecondaryIpv6.IsUnknown() {
-		createNetwork.SetDnsSecondaryIPv6(plan.DnsSecondaryIpv6.ValueString())
+		dnsSecondaryIpv6 := plan.DnsSecondaryIpv6.ValueString()
+		createNetwork.DnsSecondaryIPv6 = *sdk.NewNullableString(&dnsSecondaryIpv6)
 	}
 
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
-		createNetwork.SetDhcpServer(plan.DhcpServer.ValueBool())
+		dhcpServer := plan.DhcpServer.ValueBool()
+		createNetwork.DhcpServer = &dhcpServer
 	}
 
 	if !plan.DhcpServerIpv6.IsNull() &&
 		!plan.DhcpServerIpv6.IsUnknown() {
-		createNetwork.SetDhcpServerIPv6(plan.DhcpServerIpv6.ValueBool())
+		dhcpServerIpv6 := plan.DhcpServerIpv6.ValueBool()
+		createNetwork.DhcpServerIPv6 = &dhcpServerIpv6
 	}
 
 	if !plan.AllowStaticOverride.IsNull() &&
 		!plan.AllowStaticOverride.IsUnknown() {
-		createNetwork.SetAllowStaticOverride(
-			plan.AllowStaticOverride.ValueBool(),
-		)
+		allowStaticOverride := plan.AllowStaticOverride.ValueBool()
+		createNetwork.AllowStaticOverride = &allowStaticOverride
 	}
 
 	if !plan.AssignPublicIp.IsNull() &&
 		!plan.AssignPublicIp.IsUnknown() {
-		createNetwork.SetAssignPublicIp(plan.AssignPublicIp.ValueBool())
+		assignPublicIp := plan.AssignPublicIp.ValueBool()
+		createNetwork.AssignPublicIp = &assignPublicIp
 	}
 
 	if !plan.ApplianceUrlProxyBypass.IsNull() &&
 		!plan.ApplianceUrlProxyBypass.IsUnknown() {
-		createNetwork.SetApplianceUrlProxyBypass(
-			plan.ApplianceUrlProxyBypass.ValueBool(),
-		)
+		applianceUrlProxyBypass := plan.ApplianceUrlProxyBypass.ValueBool()
+		createNetwork.ApplianceUrlProxyBypass = &applianceUrlProxyBypass
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		createNetwork.SetVisibility(plan.Visibility.ValueString())
+		visibility := plan.Visibility.ValueString()
+		createNetwork.Visibility = &visibility
 	}
 
 	if !plan.VlanId.IsNull() && !plan.VlanId.IsUnknown() {
-		createNetwork.SetVlanId(plan.VlanId.ValueInt64())
+		vlanId := plan.VlanId.ValueInt64()
+		createNetwork.VlanId = &vlanId
 	}
 
 	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-		createNetwork.SetPool(plan.PoolId.ValueInt64())
+		poolId := plan.PoolId.ValueInt64()
+		createNetwork.Pool = *sdk.NewNullableInt64(&poolId)
 	}
 
 	if !plan.PoolIpv6Id.IsNull() && !plan.PoolIpv6Id.IsUnknown() {
-		createNetwork.SetPoolIPv6(plan.PoolIpv6Id.ValueInt64())
+		poolIpv6Id := plan.PoolIpv6Id.ValueInt64()
+		createNetwork.PoolIPv6 = *sdk.NewNullableInt64(&poolIpv6Id)
 	}
 
 	if !plan.ZonePoolId.IsNull() && !plan.ZonePoolId.IsUnknown() {
-		zonePool := sdk.NewCreateNetworksRequestNetworkZonePool()
-		zonePool.SetId(plan.ZonePoolId.ValueInt64())
-		createNetwork.SetZonePool(*zonePool)
+		zonePoolId := plan.ZonePoolId.ValueInt64()
+		createNetwork.ZonePool = &sdk.CreateNetworksRequestNetworkZonePool{
+			Id: &zonePoolId,
+		}
 	}
 
 	if !plan.Ipv4enabled.IsNull() && !plan.Ipv4enabled.IsUnknown() {
-		createNetwork.SetIpv4Enabled(plan.Ipv4enabled.ValueBool())
+		ipv4Enabled := plan.Ipv4enabled.ValueBool()
+		createNetwork.Ipv4Enabled = &ipv4Enabled
 	}
 
 	if !plan.Ipv6enabled.IsNull() && !plan.Ipv6enabled.IsUnknown() {
-		createNetwork.SetIpv6Enabled(plan.Ipv6enabled.ValueBool())
+		ipv6Enabled := plan.Ipv6enabled.ValueBool()
+		createNetwork.Ipv6Enabled = &ipv6Enabled
 	}
 
 	if !plan.NetmaskIpv6.IsNull() && !plan.NetmaskIpv6.IsUnknown() {
-		createNetwork.SetNetmaskIPv6(plan.NetmaskIpv6.ValueString())
+		netmaskIpv6 := plan.NetmaskIpv6.ValueString()
+		createNetwork.NetmaskIPv6 = *sdk.NewNullableString(&netmaskIpv6)
 	}
 
 	if !plan.NoProxy.IsNull() && !plan.NoProxy.IsUnknown() {
-		createNetwork.SetNoProxy(plan.NoProxy.ValueString())
+		noProxy := plan.NoProxy.ValueString()
+		createNetwork.NoProxy = *sdk.NewNullableString(&noProxy)
 	}
 
 	if !plan.SearchDomains.IsNull() && !plan.SearchDomains.IsUnknown() {
-		createNetwork.SetSearchDomains(plan.SearchDomains.ValueString())
+		searchDomains := plan.SearchDomains.ValueString()
+		createNetwork.SearchDomains = &searchDomains
 	}
 
 	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
-		createNetwork.SetSwitchId(plan.SwitchId.ValueString())
+		switchId := plan.SwitchId.ValueString()
+		createNetwork.SwitchId = &switchId
 	}
 
 	if !plan.TypeId.IsNull() && !plan.TypeId.IsUnknown() {
-		networkType := sdk.NewCreateNetworksRequestNetworkType(
-			plan.TypeId.ValueInt64(),
-		)
-		createNetwork.SetType(*networkType)
+		createNetwork.Type = &sdk.CreateNetworksRequestNetworkType{
+			Id: plan.TypeId.ValueInt64(),
+		}
 	}
 
 	if !plan.NetworkDomainId.IsNull() &&
 		!plan.NetworkDomainId.IsUnknown() {
-		networkDomain := sdk.
-			NewCreateNetworksRequestNetworkNetworkDomain()
-		networkDomain.SetId(plan.NetworkDomainId.ValueInt64())
-		createNetwork.SetNetworkDomain(*networkDomain)
+		networkDomainId := plan.NetworkDomainId.ValueInt64()
+		createNetwork.NetworkDomain = &sdk.CreateNetworksRequestNetworkNetworkDomain{
+			Id: &networkDomainId,
+		}
 	}
 
 	if !plan.NetworkProxyId.IsNull() &&
 		!plan.NetworkProxyId.IsUnknown() {
-		networkProxy := sdk.
-			NewCreateNetworksRequestNetworkNetworkProxy()
-		networkProxy.SetId(plan.NetworkProxyId.ValueInt64())
-		createNetwork.SetNetworkProxy(*networkProxy)
+		networkProxyId := plan.NetworkProxyId.ValueInt64()
+		createNetwork.NetworkProxy = &sdk.CreateNetworksRequestNetworkNetworkProxy{
+			Id: &networkProxyId,
+		}
 	}
 
 	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
@@ -202,7 +228,7 @@ func (r *Resource) Create(
 
 			return
 		}
-		createNetwork.SetLabels(labels)
+		createNetwork.Labels = labels
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
@@ -222,7 +248,7 @@ func (r *Resource) Create(
 		if ok {
 			networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
 			networkConfig.MapmapOfStringAny = &configDataMap
-			createNetwork.SetConfig(networkConfig)
+			createNetwork.Config = &networkConfig
 		} else {
 			resp.Diagnostics.AddError(
 				"create network resource",
@@ -244,19 +270,22 @@ func (r *Resource) Create(
 
 		for _, idVal := range tenantIDs {
 			if !idVal.IsNull() {
+				tenantId := idVal.ValueInt64()
 				tenant := sdk.
-					CreateNetworksRequestNetworkTenantsInner{}
-				tenant.SetId(idVal.ValueInt64())
+					CreateNetworksRequestNetworkTenantsInner{
+					Id: &tenantId,
+				}
 				tenants = append(tenants, tenant)
 			}
 		}
 		if len(tenants) > 0 {
-			createNetwork.SetTenants(tenants)
+			createNetwork.Tenants = tenants
 		}
 	}
 
-	createNetworkReq := sdk.NewCreateNetworksRequest()
-	createNetworkReq.SetNetwork(*createNetwork)
+	createNetworkReq := &sdk.CreateNetworksRequest{
+		Network: createNetwork,
+	}
 
 	network, hresp, err := client.NetworksAPI.CreateNetworks(ctx).
 		CreateNetworksRequest(*createNetworkReq).Execute()
@@ -270,7 +299,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if network.GetNetwork().Id == nil {
+	if network.Network == nil || network.Network.Id == nil {
 		resp.Diagnostics.AddError(
 			"create network resource",
 			"network "+name+": id is nil",
@@ -279,7 +308,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *network.GetNetwork().Id
+	id := *network.Network.Id
 	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request

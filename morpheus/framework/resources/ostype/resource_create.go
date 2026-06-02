@@ -30,60 +30,60 @@ func (r *Resource) Create(
 		return
 	}
 
-	osType := sdk.NewAddOsTypesRequestOsType(
-		plan.Name.ValueString(),
-		plan.Platform.ValueString(),
-		plan.Code.ValueString(),
-		plan.BitCount.ValueInt64(),
-	)
+	osType := &sdk.AddOsTypesRequestOsType{
+		Name:     plan.Name.ValueString(),
+		Platform: plan.Platform.ValueString(),
+		Code:     plan.Code.ValueString(),
+		BitCount: plan.BitCount.ValueInt64(),
+	}
 
 	// category
 	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {
-		osType.SetCategory(plan.Category.ValueString())
+		osType.Category.Set(plan.Category.ValueStringPointer())
 	}
 
 	// cloud_init_version
 	if !plan.CloudInitVersion.IsNull() && !plan.CloudInitVersion.IsUnknown() {
-		osType.SetCloudInitVersion(plan.CloudInitVersion.ValueString())
+		osType.CloudInitVersion = plan.CloudInitVersion.ValueStringPointer()
 	}
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		osType.SetDescription(plan.Description.ValueString())
+		osType.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
-		osType.SetInstallAgent(plan.InstallAgent.ValueBool())
+		osType.InstallAgent.Set(plan.InstallAgent.ValueBoolPointer())
 	}
 
 	// os_codename
 	if !plan.OsCodename.IsNull() && !plan.OsCodename.IsUnknown() {
-		osType.SetOsCodename(plan.OsCodename.ValueString())
+		osType.OsCodename.Set(plan.OsCodename.ValueStringPointer())
 	}
 
 	// os_family
 	if !plan.OsFamily.IsNull() && !plan.OsFamily.IsUnknown() {
-		osType.SetOsFamily(plan.OsFamily.ValueString())
+		osType.OsFamily.Set(plan.OsFamily.ValueStringPointer())
 	}
 
 	// os_name
 	if !plan.OsName.IsNull() && !plan.OsName.IsUnknown() {
-		osType.SetOsName(plan.OsName.ValueString())
+		osType.OsName.Set(plan.OsName.ValueStringPointer())
 	}
 
 	// os_version
 	if !plan.OsVersion.IsNull() && !plan.OsVersion.IsUnknown() {
-		osType.SetOsVersion(plan.OsVersion.ValueString())
+		osType.OsVersion.Set(plan.OsVersion.ValueStringPointer())
 	}
 
 	// vendor
 	if !plan.Vendor.IsNull() && !plan.Vendor.IsUnknown() {
-		osType.SetVendor(plan.Vendor.ValueString())
+		osType.Vendor.Set(plan.Vendor.ValueStringPointer())
 	}
 
 	addReq := sdk.NewAddOsTypesRequestWithDefaults()
-	addReq.SetOsType(*osType)
+	addReq.OsType = osType
 
 	createResp, httpResp, err := client.LibraryAPI.AddOsTypes(ctx).
 		AddOsTypesRequest(*addReq).Execute()
@@ -96,7 +96,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	createdID := createResp.GetId()
+	createdID := int64(0)
+	if createResp.Id.Get() != nil {
+		createdID = *createResp.Id.Get()
+	}
 
 	state, diag := getOsTypeAsState(ctx, createdID, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {

@@ -63,7 +63,7 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	result, httpResp, err := client.VDIAPI.AddVDIGateways(ctx).AddVDIGatewaysRequest(sdk.AddVDIGatewaysRequest{
-		VdiGateway: sdk.AddVDIGatewaysRequestVdiGatewayOneOfAsAddVDIGatewaysRequestVdiGateway(&body),
+		VdiGateway: sdk.AddVDIGatewaysRequestVdiGateway{AddVDIGatewaysRequestVdiGatewayOneOf: &body},
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
@@ -71,8 +71,8 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	gw := result.AddVDIGateways200ResponseAnyOf.GetVdiGateway()
-	mapCreateResponseToModel(&plan, &gw)
+	gw := result.AddVDIGateways200ResponseAnyOf.VdiGateway
+	mapCreateResponseToModel(&plan, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -105,8 +105,8 @@ func (r *vdiGatewayResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	gw := result.GetVdiGateway()
-	mapGetResponseToModel(&state, &gw)
+	gw := result.VdiGateway
+	mapGetResponseToModel(&state, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -137,7 +137,7 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	result, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
 		UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
-			VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGatewayOneOfAsUpdateVDIGatewaysRequestVdiGateway(&body),
+			VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGateway{UpdateVDIGatewaysRequestVdiGatewayOneOf: &body},
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
@@ -145,8 +145,8 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	gw := result.UpdateVDIGateways200ResponseAnyOf.GetVdiGateway()
-	mapUpdateResponseToModel(&plan, &gw)
+	gw := result.UpdateVDIGateways200ResponseAnyOf.VdiGateway
+	mapUpdateResponseToModel(&plan, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -43,46 +43,55 @@ func (r *Resource) Update(
 
 	updateCloud := sdk.NewUpdateCloudsRequestZoneWithDefaults()
 	updateCloud.AdditionalProperties = make(map[string]any)
-	updateCloud.SetName(name)
+	updateCloud.Name = name
 
 	// This won't do anything with the current API.
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		updateCloud.SetGroupId(plan.GroupId.ValueInt64())
+		updateCloud.GroupId = plan.GroupId.ValueInt64()
 	}
 
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
-		updateCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
+		val := plan.AutoRecoverPowerState.ValueBool()
+		updateCloud.AutoRecoverPowerState = &val
 	}
 
 	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
-		updateCloud.SetDefaultDatastoreSyncActive(plan.DefaultDatastoreSyncActive.ValueBool())
+		val := plan.DefaultDatastoreSyncActive.ValueBool()
+		updateCloud.DefaultDatastoreSyncActive = &val
 	}
 	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
-		updateCloud.SetDefaultFolderSyncActive(plan.DefaultFolderSyncActive.ValueBool())
+		val := plan.DefaultFolderSyncActive.ValueBool()
+		updateCloud.DefaultFolderSyncActive = &val
 	}
 	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
-		updateCloud.SetDefaultNetworkSyncActive(plan.DefaultNetworkSyncActive.ValueBool())
+		val := plan.DefaultNetworkSyncActive.ValueBool()
+		updateCloud.DefaultNetworkSyncActive = &val
 	}
 	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
-		updateCloud.SetDefaultPlanSyncActive(plan.DefaultPlanSyncActive.ValueBool())
+		val := plan.DefaultPlanSyncActive.ValueBool()
+		updateCloud.DefaultPlanSyncActive = &val
 	}
 	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
-		updateCloud.SetDefaultPoolSyncActive(plan.DefaultPoolSyncActive.ValueBool())
+		val := plan.DefaultPoolSyncActive.ValueBool()
+		updateCloud.DefaultPoolSyncActive = &val
 	}
 	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
-		updateCloud.SetDefaultSecurityGroupSyncActive(plan.DefaultSecurityGroupSyncActive.ValueBool())
+		val := plan.DefaultSecurityGroupSyncActive.ValueBool()
+		updateCloud.DefaultSecurityGroupSyncActive = &val
 	}
 
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateCloud.SetCode(plan.Code.ValueString())
+		val := plan.Code.ValueString()
+		updateCloud.Code = &val
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		updateCloud.SetEnabled(plan.Enabled.ValueBool())
+		val := plan.Enabled.ValueBool()
+		updateCloud.Enabled = &val
 	}
 
 	if plan.Labels.IsNull() || plan.Labels.IsUnknown() {
-		updateCloud.SetLabels([]string{})
+		updateCloud.Labels = []string{}
 	} else {
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
@@ -94,19 +103,22 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateCloud.SetLabels(labels)
+		updateCloud.Labels = labels
 	}
 
 	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
-		updateCloud.SetLocation(plan.Location.ValueString())
+		val := plan.Location.ValueString()
+		updateCloud.Location = &val
 	}
 
 	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
-		updateCloud.SetSecurityMode(plan.SecurityMode.ValueString())
+		val := plan.SecurityMode.ValueString()
+		updateCloud.SecurityMode = &val
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateCloud.SetVisibility(plan.Visibility.ValueString())
+		val := plan.Visibility.ValueString()
+		updateCloud.Visibility = &val
 	}
 
 	// TODO: Update spec to generate setters
@@ -425,7 +437,7 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	updateCloudReq := sdk.NewUpdateCloudsRequest(*updateCloud)
+	updateCloudReq := &sdk.UpdateCloudsRequest{Zone: *updateCloud}
 
 	cloud, hresp, err := client.CloudsAPI.UpdateClouds(ctx, id).
 		UpdateCloudsRequest(*updateCloudReq).Execute()
@@ -438,7 +450,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	if cloud.GetZone().Id == nil {
+	if cloud.Zone == nil || cloud.Zone.Id == nil {
 		resp.Diagnostics.AddError(
 			updateOperation,
 			"cloud "+name+": id is nil",
@@ -447,7 +459,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newid := *cloud.GetZone().Id
+	newid := *cloud.Zone.Id
 	if newid != id {
 		resp.Diagnostics.AddError(
 			updateOperation,

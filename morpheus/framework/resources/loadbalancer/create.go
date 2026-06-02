@@ -40,31 +40,37 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	createLB := sdk.NewCreateLoadBalancerRequestLoadBalancerWithDefaults()
-	createLB.SetName(name)
+	createLB := &sdk.CreateLoadBalancerRequestLoadBalancer{
+		Name: &name,
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		createLB.SetDescription(plan.Description.ValueString())
+		desc := plan.Description.ValueString()
+		createLB.Description = &desc
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		createLB.SetVisibility(plan.Visibility.ValueString())
+		vis := plan.Visibility.ValueString()
+		createLB.Visibility = &vis
 	}
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		site := sdk.NewCreateLoadBalancerRequestLoadBalancerSite()
-		site.SetId(plan.GroupId.ValueInt64())
-		createLB.SetSite(*site)
+		groupID := plan.GroupId.ValueInt64()
+		createLB.Site = &sdk.CreateLoadBalancerRequestLoadBalancerSite{
+			Id: &groupID,
+		}
 	}
 
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
-		zone := sdk.NewCreateLoadBalancerRequestLoadBalancerZone()
-		zone.SetId(plan.CloudId.ValueInt64())
-		createLB.SetZone(*zone)
+		cloudID := plan.CloudId.ValueInt64()
+		createLB.Zone = &sdk.CreateLoadBalancerRequestLoadBalancerZone{
+			Id: &cloudID,
+		}
 	}
 
 	if !plan.NetworkServerId.IsNull() && !plan.NetworkServerId.IsUnknown() {
-		createLB.SetNetworkServerId(plan.NetworkServerId.ValueInt64())
+		nsID := plan.NetworkServerId.ValueInt64()
+		createLB.NetworkServerId = &nsID
 	}
 
 	if err := setCreateConfig(ctx, createLB, plan); err != nil {
@@ -85,8 +91,9 @@ func (r *Resource) Create(
 		return
 	}
 
-	createReq := sdk.NewCreateLoadBalancerRequest()
-	createReq.SetLoadBalancer(*createLB)
+	createReq := &sdk.CreateLoadBalancerRequest{
+		LoadBalancer: createLB,
+	}
 
 	lb, hresp, err := client.LoadBalancersAPI.CreateLoadBalancer(ctx).
 		CreateLoadBalancerRequest(*createReq).Execute()
@@ -100,7 +107,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if lb.GetLoadBalancer().Id == nil {
+	if lb.LoadBalancer.Id == nil {
 		resp.Diagnostics.AddError(
 			"create load balancer resource",
 			"load balancer "+name+": id is nil",
@@ -109,7 +116,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *lb.GetLoadBalancer().Id
+	id := *lb.LoadBalancer.Id
 	plan.Id = types.Int64Value(id)
 
 	taintResourceState := func(id int64) {
@@ -151,53 +158,66 @@ func setCreateConfig(
 ) error {
 	switch {
 	case !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown():
-		createLB.SetType(typeCodeHAProxy)
+		typeCode := typeCodeHAProxy
+		createLB.Type = &typeCode
 
-		haproxyConfig := sdk.NewHAProxyLoadBalancerConfigObject()
+		planID := plan.ConfigHaproxy.PlanId.ValueInt64()
+		planObj := &sdk.HAProxyLoadBalancerConfigObjectPlan{
+			Id: &planID,
+		}
 
-		planObj := sdk.NewHAProxyLoadBalancerConfigObjectPlan()
-		planObj.SetId(plan.ConfigHaproxy.PlanId.ValueInt64())
-		haproxyConfig.SetPlan(*planObj)
+		poolID := plan.ConfigHaproxy.Pool.ValueString()
+		poolObj := &sdk.HAProxyLoadBalancerConfigObjectPool{
+			Id: &poolID,
+		}
 
-		poolObj := sdk.NewHAProxyLoadBalancerConfigObjectPool()
-		poolObj.SetId(plan.ConfigHaproxy.Pool.ValueString())
-		haproxyConfig.SetPool(*poolObj)
+		haproxyConfig := &sdk.HAProxyLoadBalancerConfigObject{
+			Plan: planObj,
+			Pool: poolObj,
+		}
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
 		cfg.HAProxyLoadBalancerConfigObject = haproxyConfig
-		createLB.SetConfig(cfg)
+		createLB.Config = &cfg
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
 		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
-			createLB.SetType(plan.TypeCode.ValueString())
+			typeCode := plan.TypeCode.ValueString()
+			createLB.Type = &typeCode
 		} else {
-			createLB.SetType(typeCodeNSXT)
+			typeCode := typeCodeNSXT
+			createLB.Type = &typeCode
 		}
 
-		nsxtConfig := sdk.NewNSXTLoadBalancerConfigObject()
+		nsxtConfig := &sdk.NSXTLoadBalancerConfigObject{}
 
 		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
-			nsxtConfig.SetAdminState(plan.ConfigNsxt.AdminState.ValueBool())
+			adminState := plan.ConfigNsxt.AdminState.ValueBool()
+			nsxtConfig.AdminState = &adminState
 		}
 
 		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
-			nsxtConfig.SetLoglevel(plan.ConfigNsxt.LogLevel.ValueString())
+			logLevel := plan.ConfigNsxt.LogLevel.ValueString()
+			nsxtConfig.Loglevel = &logLevel
 		}
 
 		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
-			nsxtConfig.SetSize(plan.ConfigNsxt.Size.ValueString())
+			size := plan.ConfigNsxt.Size.ValueString()
+			nsxtConfig.Size = &size
 		}
 
 		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
-			nsxtConfig.SetTier1(plan.ConfigNsxt.Tier1Gateway.ValueString())
+			tier1 := plan.ConfigNsxt.Tier1Gateway.ValueString()
+			nsxtConfig.Tier1 = &tier1
 		}
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
 		cfg.NSXTLoadBalancerConfigObject = nsxtConfig
-		createLB.SetConfig(cfg)
+		createLB.Config = &cfg
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		createLB.SetType(plan.TypeCode.ValueString())
+		typeCode := plan.TypeCode.ValueString()
+		createLB.Type = &typeCode
 
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)
@@ -212,7 +232,7 @@ func setCreateConfig(
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
 		cfg.MapmapOfStringAny = &configDataMap
-		createLB.SetConfig(cfg)
+		createLB.Config = &cfg
 	}
 
 	return nil
@@ -235,14 +255,16 @@ func setCreateTenants(
 	var tenants []sdk.CreateLoadBalancerRequestLoadBalancerTenantsInner
 	for _, t := range tenantObjs {
 		if !t.Id.IsNull() && !t.Id.IsUnknown() {
-			tenant := sdk.CreateLoadBalancerRequestLoadBalancerTenantsInner{}
-			tenant.SetId(t.Id.ValueInt64())
+			tenantID := t.Id.ValueInt64()
+			tenant := sdk.CreateLoadBalancerRequestLoadBalancerTenantsInner{
+				Id: &tenantID,
+			}
 			tenants = append(tenants, tenant)
 		}
 	}
 
 	if len(tenants) > 0 {
-		createLB.SetTenants(tenants)
+		createLB.Tenants = tenants
 	}
 
 	return nil
@@ -257,23 +279,25 @@ func setCreatePermissions(
 		return nil
 	}
 
-	perms := sdk.NewCreateLoadBalancerRequestLoadBalancerResourcePermissions()
+	perms := &sdk.CreateLoadBalancerRequestLoadBalancerResourcePermissions{}
 
 	if !plan.Permissions.All.IsNull() && !plan.Permissions.All.IsUnknown() {
-		perms.SetAll(plan.Permissions.All.ValueBool())
+		allVal := plan.Permissions.All.ValueBool()
+		perms.All = &allVal
 	}
 
 	if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
-		perms.SetAll(false)
+		falseVal := false
+		perms.All = &falseVal
 		var groupIDs []int64
 		if diags := plan.Permissions.Groups.ElementsAs(ctx, &groupIDs, false); diags.HasError() {
 			return fmt.Errorf("failed to parse permission groups: %s", diags.Errors())
 		}
 
-		perms.SetSites(groupIDs)
+		perms.Sites = groupIDs
 	}
 
-	createLB.SetResourcePermissions(*perms)
+	createLB.ResourcePermissions = perms
 
 	return nil
 }

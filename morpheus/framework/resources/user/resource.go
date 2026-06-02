@@ -86,7 +86,7 @@ func getUserAsState(
 	}
 
 	roleIDValues := []attr.Value{}
-	for _, role := range u.GetUser().Roles {
+	for _, role := range u.User.Roles {
 		roleIDValues = append(roleIDValues, convert.Int64ToType(role.Id))
 	}
 
@@ -151,35 +151,35 @@ func (r *Resource) Create(
 
 	// required
 	username := plan.Username.ValueString()
-	addUser.SetUsername(username)
-	addUser.SetEmail(plan.Email.ValueString())
-	addUser.SetRoles(roles)
-	addUser.SetPassword(config.PasswordWo.ValueString())
+	addUser.Username = username
+	addUser.Email = plan.Email.ValueString()
+	addUser.Roles = roles
+	addUser.Password = config.PasswordWo.ValueString()
 
 	// optional
 	if !plan.FirstName.IsUnknown() {
-		addUser.SetFirstName(plan.FirstName.ValueString())
+		addUser.FirstName = sdk.PtrString(plan.FirstName.ValueString())
 	}
 	if !plan.LastName.IsUnknown() {
-		addUser.SetLastName(plan.LastName.ValueString())
+		addUser.LastName = sdk.PtrString(plan.LastName.ValueString())
 	}
 	if !plan.LinuxUsername.IsUnknown() {
-		addUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+		addUser.LinuxUsername = sdk.PtrString(plan.LinuxUsername.ValueString())
 	}
 	if !plan.LinuxPasswordWo.IsUnknown() {
-		addUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+		addUser.LinuxPassword = sdk.PtrString(plan.LinuxPasswordWo.ValueString())
 	}
 	if !plan.WindowsUsername.IsUnknown() {
-		addUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+		addUser.WindowsUsername = sdk.PtrString(plan.WindowsUsername.ValueString())
 	}
 	if !plan.WindowsPasswordWo.IsUnknown() {
-		addUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
+		addUser.WindowsPassword = sdk.PtrString(plan.WindowsPasswordWo.ValueString())
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
-		addUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+		addUser.LinuxKeyPairId = sdk.PtrInt64(plan.LinuxKeyPairId.ValueInt64())
 	}
 	if !plan.ReceiveNotifications.IsUnknown() {
-		addUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
+		addUser.ReceiveNotifications = sdk.PtrBool(plan.ReceiveNotifications.ValueBool())
 	}
 
 	client, err := r.NewClient(ctx)
@@ -197,7 +197,7 @@ func (r *Resource) Create(
 		apiAddUserReq = apiAddUserReq.AccountId(plan.TenantId.ValueInt64())
 	}
 
-	addUserReq := sdk.NewAddUserRequest(*addUser)
+	addUserReq := &sdk.AddUserRequest{User: *addUser}
 	user, hresp, err := apiAddUserReq.AddUserRequest(*addUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -209,7 +209,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if user.GetUser().Id == nil {
+	if user.User == nil || user.User.Id == nil {
 		resp.Diagnostics.AddError(
 			"create user resource",
 			"user "+username+": id is nil",
@@ -218,7 +218,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *user.GetUser().Id
+	id := *user.User.Id
 	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
@@ -299,7 +299,7 @@ func (r *Resource) Update(
 		roles = append(roles, rolevalue)
 	}
 
-	updateUser := sdk.NewUpdateUserRequestUser()
+	updateUser := sdk.NewUpdateUserRequestUserWithDefaults()
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -309,9 +309,9 @@ func (r *Resource) Update(
 	username := plan.Username.ValueString()
 
 	// non-nullable
-	updateUser.SetUsername(username)
-	updateUser.SetEmail(plan.Email.ValueString())
-	updateUser.SetRoles(roles)
+	updateUser.Username = sdk.PtrString(username)
+	updateUser.Email = sdk.PtrString(plan.Email.ValueString())
+	updateUser.Roles = roles
 
 	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
 		if config.PasswordWo.IsUnknown() {
@@ -323,41 +323,41 @@ func (r *Resource) Update(
 
 			return
 		}
-		updateUser.SetPassword(config.PasswordWo.ValueString())
+		updateUser.Password = sdk.PtrString(config.PasswordWo.ValueString())
 	}
 
 	// nullable
 	if plan.FirstName.IsNull() {
 		updateUser.FirstName.Set(nil)
 	} else {
-		updateUser.SetFirstName(plan.FirstName.ValueString())
+		updateUser.FirstName.Set(sdk.PtrString(plan.FirstName.ValueString()))
 	}
 
 	if plan.LastName.IsNull() {
 		updateUser.LastName.Set(nil)
 	} else {
-		updateUser.SetLastName(plan.LastName.ValueString())
+		updateUser.LastName.Set(sdk.PtrString(plan.LastName.ValueString()))
 	}
 
 	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.LinuxKeyPairId.Set(nil)
 	} else {
-		updateUser.SetLinuxKeyPairId(plan.LinuxKeyPairId.ValueInt64())
+		updateUser.LinuxKeyPairId.Set(sdk.PtrInt64(plan.LinuxKeyPairId.ValueInt64()))
 	}
 
 	if plan.LinuxUsername.IsNull() {
 		updateUser.LinuxUsername.Set(nil)
 	} else {
-		updateUser.SetLinuxUsername(plan.LinuxUsername.ValueString())
+		updateUser.LinuxUsername.Set(sdk.PtrString(plan.LinuxUsername.ValueString()))
 	}
 
 	if plan.WindowsUsername.IsNull() {
 		updateUser.WindowsUsername.Set(nil)
 	} else {
-		updateUser.SetWindowsUsername(plan.WindowsUsername.ValueString())
+		updateUser.WindowsUsername.Set(sdk.PtrString(plan.WindowsUsername.ValueString()))
 	}
 
-	updateUser.SetReceiveNotifications(plan.ReceiveNotifications.ValueBool())
+	updateUser.ReceiveNotifications = sdk.PtrBool(plan.ReceiveNotifications.ValueBool())
 
 	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
 		if config.LinuxPasswordWo.IsUnknown() {
@@ -372,7 +372,7 @@ func (r *Resource) Update(
 		if plan.LinuxPasswordWo.IsNull() {
 			updateUser.LinuxPassword.Set(nil)
 		} else {
-			updateUser.SetLinuxPassword(plan.LinuxPasswordWo.ValueString())
+			updateUser.LinuxPassword.Set(sdk.PtrString(plan.LinuxPasswordWo.ValueString()))
 		}
 	}
 
@@ -389,7 +389,7 @@ func (r *Resource) Update(
 		if plan.WindowsPasswordWo.IsNull() {
 			updateUser.WindowsPassword.Set(nil)
 		} else {
-			updateUser.SetWindowsPassword(plan.WindowsPasswordWo.ValueString())
+			updateUser.WindowsPassword.Set(sdk.PtrString(plan.WindowsPasswordWo.ValueString()))
 		}
 	}
 
@@ -417,7 +417,7 @@ func (r *Resource) Update(
 
 	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
 
-	updateUserReq := sdk.NewUpdateUserRequest(*updateUser)
+	updateUserReq := &sdk.UpdateUserRequest{User: *updateUser}
 	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -441,7 +441,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		if !newUserState.GetUser().LastUpdated.After(*originalUserState.GetUser().LastUpdated) {
+		if !newUserState.User.LastUpdated.After(*originalUserState.User.LastUpdated) {
 			resp.Diagnostics.AddError(
 				"update user resource",
 				fmt.Sprintf("user %d: resource was not updated", id),
@@ -449,12 +449,12 @@ func (r *Resource) Update(
 		}
 
 		innerUser := sdk.NewAddUser200ResponseAllOfUserWithDefaults()
-		innerUser.SetId(id)
-		user = sdk.NewUpdateUser200Response()
-		user.SetUser(*innerUser)
+		innerUser.Id = sdk.PtrInt64(id)
+		user = &sdk.UpdateUser200Response{}
+		user.User = innerUser
 	}
 
-	if user.GetUser().Id == nil {
+	if user.User == nil || user.User.Id == nil {
 		resp.Diagnostics.AddError(
 			"update user resource",
 			"user "+username+": id is nil",
@@ -463,7 +463,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newid := *user.GetUser().Id
+	newid := *user.User.Id
 	if newid != id {
 		resp.Diagnostics.AddError(
 			"update user resource",

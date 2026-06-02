@@ -45,14 +45,14 @@ func (r *Resource) Update(
 		return
 	}
 
-	monitor := sdk.NewUpdateLoadBalancerMonitorRequestLoadBalancerMonitorWithDefaults()
+	monitor := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitor{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		monitor.SetName(plan.Name.ValueString())
+		monitor.Name = sdk.PtrString(plan.Name.ValueString())
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.SetDescription(plan.Description.ValueString())
+		monitor.Description = sdk.PtrString(plan.Description.ValueString())
 	}
 
 	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
@@ -73,7 +73,7 @@ func (r *Resource) Update(
 		}
 
 		lbTypeCode := ""
-		if lb := lbResp.GetLoadBalancer(); lb.Type != nil {
+		if lb := lbResp.LoadBalancer; lb != nil && lb.Type != nil {
 			if code := lb.Type.Code; code != nil {
 				lbTypeCode = *code
 			}
@@ -104,39 +104,39 @@ func (r *Resource) Update(
 			}
 		}
 
-		monitor.SetMonitorType(monitorType)
+		monitor.MonitorType = sdk.PtrString(monitorType)
 	}
 
 	if !plan.MonitorInterval.IsNull() && !plan.MonitorInterval.IsUnknown() {
-		monitor.SetMonitorInterval(plan.MonitorInterval.ValueInt64())
+		monitor.MonitorInterval = sdk.PtrInt64(plan.MonitorInterval.ValueInt64())
 	}
 
 	if !plan.MonitorTimeout.IsNull() && !plan.MonitorTimeout.IsUnknown() {
-		monitor.SetMonitorTimeout(plan.MonitorTimeout.ValueInt64())
+		monitor.MonitorTimeout = sdk.PtrInt64(plan.MonitorTimeout.ValueInt64())
 	}
 
 	if !plan.SendData.IsNull() && !plan.SendData.IsUnknown() {
-		monitor.SetSendData(plan.SendData.ValueString())
+		monitor.SendData.Set(sdk.PtrString(plan.SendData.ValueString()))
 	}
 
 	if !plan.SendVersion.IsNull() && !plan.SendVersion.IsUnknown() {
-		monitor.SetSendVersion(plan.SendVersion.ValueString())
+		monitor.SendVersion.Set(sdk.PtrString(plan.SendVersion.ValueString()))
 	}
 
 	if !plan.SendType.IsNull() && !plan.SendType.IsUnknown() {
-		monitor.SetSendType(plan.SendType.ValueString())
+		monitor.SendType.Set(sdk.PtrString(plan.SendType.ValueString()))
 	}
 
 	if !plan.ReceiveData.IsNull() && !plan.ReceiveData.IsUnknown() {
-		monitor.SetReceiveData(plan.ReceiveData.ValueString())
+		monitor.ReceiveData.Set(sdk.PtrString(plan.ReceiveData.ValueString()))
 	}
 
 	if !plan.ReceiveCode.IsNull() && !plan.ReceiveCode.IsUnknown() {
-		monitor.SetReceiveCode(plan.ReceiveCode.ValueString())
+		monitor.ReceiveCode.Set(sdk.PtrString(plan.ReceiveCode.ValueString()))
 	}
 
 	if !plan.MonitorUsername.IsNull() && !plan.MonitorUsername.IsUnknown() {
-		monitor.SetMonitorUsername(plan.MonitorUsername.ValueString())
+		monitor.MonitorUsername.Set(sdk.PtrString(plan.MonitorUsername.ValueString()))
 	}
 
 	if !plan.MonitorPasswordWoVersion.Equal(currentState.MonitorPasswordWoVersion) {
@@ -149,47 +149,47 @@ func (r *Resource) Update(
 			return
 		}
 
-		monitor.SetMonitorPassword(config.MonitorPasswordWo.ValueString())
+		monitor.MonitorPassword.Set(sdk.PtrString(config.MonitorPasswordWo.ValueString()))
 	}
 
 	if !plan.MonitorDestination.IsNull() && !plan.MonitorDestination.IsUnknown() {
-		monitor.SetMonitorDestination(plan.MonitorDestination.ValueString())
+		monitor.MonitorDestination.Set(sdk.PtrString(plan.MonitorDestination.ValueString()))
 	}
 
 	if !plan.FallCount.IsNull() && !plan.FallCount.IsUnknown() {
-		monitor.SetFallCount(plan.FallCount.ValueInt64())
+		monitor.FallCount = sdk.PtrInt64(plan.FallCount.ValueInt64())
 	}
 
 	if !plan.RiseCount.IsNull() && !plan.RiseCount.IsUnknown() {
-		monitor.SetRiseCount(plan.RiseCount.ValueInt64())
+		monitor.RiseCount = sdk.PtrInt64(plan.RiseCount.ValueInt64())
 	}
 
 	if !plan.AliasPort.IsNull() && !plan.AliasPort.IsUnknown() {
-		monitor.SetAliasPort(plan.AliasPort.ValueInt64())
+		monitor.AliasPort = sdk.PtrInt64(plan.AliasPort.ValueInt64())
 	}
 
 	if !plan.DataLength.IsNull() && !plan.DataLength.IsUnknown() {
-		monitor.SetDataLength(plan.DataLength.ValueInt64())
+		monitor.DataLength = sdk.PtrInt64(plan.DataLength.ValueInt64())
 	}
 
 	if !plan.MaxRetry.IsNull() && !plan.MaxRetry.IsUnknown() {
-		monitor.SetMaxRetry(plan.MaxRetry.ValueInt64())
+		monitor.MaxRetry = sdk.PtrInt64(plan.MaxRetry.ValueInt64())
 	}
 
 	if !plan.ExtraConfig.IsNull() && !plan.ExtraConfig.IsUnknown() {
-		monitor.SetExtraConfig(plan.ExtraConfig.ValueString())
+		monitor.ExtraConfig.Set(sdk.PtrString(plan.ExtraConfig.ValueString()))
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		sdkConfig := sdk.NewUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfigWithDefaults()
+		sdkConfig := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
 
 		if !plan.Config.Monitor.IsNull() && !plan.Config.Monitor.IsUnknown() {
 			attrs := plan.Config.Monitor.Attributes()
 			if idAttr, ok := attrs["id"]; ok {
 				if idVal, ok := idAttr.(basetypes.Int64Value); ok && !idVal.IsNull() && !idVal.IsUnknown() {
-					configMonitor := sdk.NewUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitorWithDefaults()
-					configMonitor.SetId(idVal.ValueInt64())
-					sdkConfig.SetMonitor(*configMonitor)
+					sdkConfig.Monitor = &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitor{
+						Id: sdk.PtrInt64(idVal.ValueInt64()),
+					}
 				}
 			}
 		}
@@ -206,15 +206,14 @@ func (r *Resource) Update(
 			}
 
 			if s, ok := mcAny.(string); ok {
-				sdkConfig.SetMonitorConfig(s)
+				sdkConfig.MonitorConfig.Set(sdk.PtrString(s))
 			}
 		}
 
-		monitor.SetConfig(*sdkConfig)
+		monitor.Config = sdkConfig
 	}
 
-	updateReq := sdk.NewUpdateLoadBalancerMonitorRequestWithDefaults()
-	updateReq.SetLoadBalancerMonitor(*monitor)
+	updateReq := &sdk.UpdateLoadBalancerMonitorRequest{LoadBalancerMonitor: monitor}
 
 	id := currentState.Id.ValueInt64()
 

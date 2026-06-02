@@ -75,8 +75,8 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapAddResponseToModel(&plan, &cert)
+	cert := result.Certificate
+	mapAddResponseToModel(&plan, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -109,8 +109,8 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapGetResponseToModel(&state, &cert)
+	cert := result.Certificate
+	mapGetResponseToModel(&state, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -153,8 +153,8 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapUpdateResponseToModel(&plan, &cert)
+	cert := result.Certificate
+	mapUpdateResponseToModel(&plan, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

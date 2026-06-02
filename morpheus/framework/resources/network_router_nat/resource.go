@@ -101,7 +101,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	id := int64(*result.Id.Get())
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
@@ -139,53 +139,53 @@ func getNatAsState(
 		return state, diags
 	}
 
-	nat := resp.GetNetworkRouterNAT()
+	nat := resp.NetworkRouterNAT
 
-	if nat.Id != nil {
+	if nat != nil && nat.Id != nil {
 		state.Id = types.Int64Value(int64(*nat.Id))
 	}
 
 	state.RouterId = plan.RouterId
 
-	if nat.Name != nil {
+	if nat != nil && nat.Name != nil {
 		state.Name = types.StringValue(*nat.Name)
 	}
 
-	if nat.Description != nil {
+	if nat != nil && nat.Description != nil {
 		state.Description = types.StringValue(*nat.Description)
 	} else {
 		state.Description = types.StringNull()
 	}
 
-	if nat.Enabled != nil {
+	if nat != nil && nat.Enabled != nil {
 		state.Enabled = types.BoolValue(*nat.Enabled)
 	}
 
-	if nat.SourceNetwork != nil {
+	if nat != nil && nat.SourceNetwork != nil {
 		state.SourceNetwork = types.StringValue(*nat.SourceNetwork)
 	} else {
 		state.SourceNetwork = types.StringNull()
 	}
 
-	if nat.DestinationNetwork.IsSet() {
+	if nat != nil && nat.DestinationNetwork.IsSet() {
 		state.DestinationNetwork = types.StringValue(*nat.DestinationNetwork.Get())
 	} else {
 		state.DestinationNetwork = types.StringNull()
 	}
 
-	if nat.TranslatedNetwork != nil {
+	if nat != nil && nat.TranslatedNetwork != nil {
 		state.TranslatedNetwork = types.StringValue(*nat.TranslatedNetwork)
 	} else {
 		state.TranslatedNetwork = types.StringNull()
 	}
 
-	if nat.Priority != nil {
+	if nat != nil && nat.Priority != nil {
 		state.Priority = types.Int64Value(int64(*nat.Priority))
 	} else {
 		state.Priority = types.Int64Null()
 	}
 
-	if nat.Protocol.IsSet() {
+	if nat != nil && nat.Protocol.IsSet() {
 		state.Protocol = types.StringValue(*nat.Protocol.Get())
 	} else {
 		state.Protocol = types.StringNull()

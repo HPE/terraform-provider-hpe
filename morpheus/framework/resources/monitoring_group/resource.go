@@ -84,8 +84,8 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapAddGroupResponseToModel(&plan, &group)
+	group := result.CheckGroup
+	mapAddGroupResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -118,8 +118,8 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapGetGroupResponseToModel(&state, &group)
+	group := result.CheckGroup
+	mapGetGroupResponseToModel(&state, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -171,8 +171,8 @@ func (r *monitoringGroupResource) Update(
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapUpdateGroupResponseToModel(&plan, &group)
+	group := result.CheckGroup
+	mapUpdateGroupResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -125,9 +125,13 @@ func updateClouds(
 		clouds = append(clouds, cloud)
 	}
 
-	reqGrp := sdk.NewUpdateGroupsZonesRequestGroup(clouds)
+	reqGrp := &sdk.UpdateGroupsZonesRequestGroup{
+		Zones: clouds,
+	}
 
-	req := sdk.NewUpdateGroupsZonesRequest(*reqGrp)
+	req := &sdk.UpdateGroupsZonesRequest{
+		Group: *reqGrp,
+	}
 
 	_, hresp, err := client.GroupsAPI.UpdateGroupsZones(ctx, id).UpdateGroupsZonesRequest(*req).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -150,7 +154,9 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	addGroup := sdk.NewAddGroupsRequestGroup(name)
+	addGroup := &sdk.AddGroupsRequestGroup{
+		Name: name,
+	}
 
 	var config GroupModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -159,11 +165,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Code.IsUnknown() {
-		addGroup.SetCode(plan.Code.ValueString())
+		addGroup.Code = plan.Code.ValueStringPointer()
 	}
 
 	if !plan.Location.IsUnknown() {
-		addGroup.SetLocation(plan.Location.ValueString())
+		addGroup.Location = plan.Location.ValueStringPointer()
 	}
 
 	if !plan.Labels.IsUnknown() {
@@ -177,7 +183,7 @@ func (r *Resource) Create(
 			return
 		}
 
-		addGroup.SetLabels(labels)
+		addGroup.Labels = labels
 	}
 
 	client, err := r.NewClient(ctx)
@@ -190,7 +196,9 @@ func (r *Resource) Create(
 		return
 	}
 
-	addGroupReq := sdk.NewAddGroupsRequest(*addGroup)
+	addGroupReq := &sdk.AddGroupsRequest{
+		Group: *addGroup,
+	}
 
 	group, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -202,7 +210,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if group.GetGroup().Id == nil {
+	if group.Group.Id == nil {
 		resp.Diagnostics.AddError(
 			"create group resource",
 			"group "+name+": id is nil",
@@ -211,7 +219,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *group.GetGroup().Id
+	id := *group.Group.Id
 	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
@@ -282,7 +290,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateGroup := sdk.NewUpdateGroupsRequestGroupWithDefaults()
+	updateGroup := &sdk.UpdateGroupsRequestGroup{}
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -291,18 +299,20 @@ func (r *Resource) Update(
 
 	name := plan.Name.ValueString()
 
-	updateGroup.SetName(name)
+	updateGroup.Name = name
 
 	if !plan.Code.IsNull() {
-		updateGroup.SetCode(plan.Code.ValueString())
+		code := plan.Code.ValueString()
+		updateGroup.Code = &code
 	}
 
 	if !plan.Location.IsNull() {
-		updateGroup.SetLocation(plan.Location.ValueString())
+		location := plan.Location.ValueString()
+		updateGroup.Location = &location
 	}
 
 	if plan.Labels.IsNull() {
-		updateGroup.SetLabels([]string{})
+		updateGroup.Labels = []string{}
 	} else {
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
@@ -314,7 +324,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateGroup.SetLabels(labels)
+		updateGroup.Labels = labels
 	}
 
 	client, err := r.NewClient(ctx)
@@ -329,7 +339,9 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	updateGroupReq := sdk.NewUpdateGroupsRequest(*updateGroup)
+	updateGroupReq := &sdk.UpdateGroupsRequest{
+		Group: *updateGroup,
+	}
 
 	group, hresp, err := client.GroupsAPI.UpdateGroups(ctx, id).
 		UpdateGroupsRequest(*updateGroupReq).Execute()
@@ -342,7 +354,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	if group.GetGroup().Id == nil {
+	if group.Group.Id == nil {
 		resp.Diagnostics.AddError(
 			"update group resource",
 			"group "+name+": id is nil",
@@ -351,7 +363,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newid := *group.GetGroup().Id
+	newid := *group.Group.Id
 	if newid != id {
 		resp.Diagnostics.AddError(
 			"update group resource",

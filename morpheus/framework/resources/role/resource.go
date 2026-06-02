@@ -61,11 +61,11 @@ func populateGetRoleAsStatePermissions(
 	var features []FeaturePermissionsValue
 	for _, v := range r.FeaturePermissions {
 		features = append(features, FeaturePermissionsValue{
-			Code:        types.StringValue(v.GetCode()),
-			Access:      types.StringValue(v.GetAccess()),
-			Id:          types.Int64Value(v.GetId()),
-			Name:        types.StringValue(v.GetName()),
-			SubCategory: types.StringValue(v.GetSubCategory()),
+			Code:        convert.StrToType(v.Code),
+			Access:      convert.StrToType(v.Access),
+			Id:          convert.Int64ToType(v.Id),
+			Name:        convert.StrToType(v.Name),
+			SubCategory: convert.StrToType(v.SubCategory),
 			state:       attr.ValueStateKnown,
 		})
 	}
@@ -73,9 +73,9 @@ func populateGetRoleAsStatePermissions(
 	var blueprints []BlueprintPermissionsValue
 	for _, v := range r.AppTemplatePermissions {
 		blueprints = append(blueprints, BlueprintPermissionsValue{
-			Name:   types.StringValue(v.GetName()),
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
+			Name:   convert.StrToType(v.Name),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -83,9 +83,9 @@ func populateGetRoleAsStatePermissions(
 	var catalogItemTypes []CatalogItemTypePermissionsValue
 	for _, v := range r.CatalogItemTypePermissions {
 		catalogItemTypes = append(catalogItemTypes, CatalogItemTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -93,9 +93,9 @@ func populateGetRoleAsStatePermissions(
 	var clouds []CloudPermissionsValue
 	for _, v := range r.Zones {
 		clouds = append(clouds, CloudPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -103,9 +103,9 @@ func populateGetRoleAsStatePermissions(
 	var groups []GroupPermissionsValue
 	for _, v := range r.Sites {
 		groups = append(groups, GroupPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -113,9 +113,9 @@ func populateGetRoleAsStatePermissions(
 	var instanceTypes []InstanceTypePermissionsValue
 	for _, v := range r.InstanceTypePermissions {
 		instanceTypes = append(instanceTypes, InstanceTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -123,10 +123,10 @@ func populateGetRoleAsStatePermissions(
 	var personas []PersonaPermissionsValue
 	for _, v := range r.PersonaPermissions {
 		personas = append(personas, PersonaPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
-			Code:   types.StringValue(v.GetCode()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
+			Code:   convert.StrToType(v.Code),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -134,10 +134,10 @@ func populateGetRoleAsStatePermissions(
 	var reportTypes []ReportTypePermissionsValue
 	for _, v := range r.ReportTypePermissions {
 		reportTypes = append(reportTypes, ReportTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
-			Code:   types.StringValue(v.GetCode()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
+			Code:   convert.StrToType(v.Code),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -145,9 +145,9 @@ func populateGetRoleAsStatePermissions(
 	var tasks []TaskPermissionsValue
 	for _, v := range r.TaskPermissions {
 		tasks = append(tasks, TaskPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			Code:   types.StringPointerValue(v.Code.Get()),
 			state:  attr.ValueStateKnown,
 		})
@@ -156,9 +156,9 @@ func populateGetRoleAsStatePermissions(
 	var vdiPools []VdiPoolPermissionsValue
 	for _, v := range r.VdiPoolPermissions {
 		vdiPools = append(vdiPools, VdiPoolPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -166,9 +166,9 @@ func populateGetRoleAsStatePermissions(
 	var workflows []WorkflowPermissionsValue
 	for _, v := range r.TaskSetPermissions {
 		workflows = append(workflows, WorkflowPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -287,48 +287,46 @@ func setPermissionsInUpdate(
 	// So later in this function, we handle the reset logic for those
 	// permissions manually.
 
-	updateRole.SetResetAllAccess(true)
+	updateRole.ResetAllAccess = sdk.PtrBool(true)
 
 	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
-		updateRole.SetGlobalAppTemplateAccess(plan.Permissions.DefaultBlueprintAccess.ValueString())
+		updateRole.GlobalAppTemplateAccess = sdk.PtrString(plan.Permissions.DefaultBlueprintAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		updateRole.SetGlobalCatalogItemTypeAccess(
-			plan.Permissions.DefaultCatalogItemTypeAccess.ValueString(),
-		)
+		updateRole.GlobalCatalogItemTypeAccess = sdk.PtrString(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
-		updateRole.SetGlobalZoneAccess(plan.Permissions.DefaultCloudAccess.ValueString())
+		updateRole.GlobalZoneAccess = sdk.PtrString(plan.Permissions.DefaultCloudAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultGroupAccess.IsUnknown() {
-		updateRole.SetGlobalSiteAccess(plan.Permissions.DefaultGroupAccess.ValueString())
+		updateRole.GlobalSiteAccess = sdk.PtrString(plan.Permissions.DefaultGroupAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultInstanceTypeAccess.IsUnknown() {
-		updateRole.SetGlobalInstanceTypeAccess(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
+		updateRole.GlobalInstanceTypeAccess = sdk.PtrString(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultPersonaAccess.IsUnknown() {
-		updateRole.SetGlobalPersonaAccess(plan.Permissions.DefaultPersonaAccess.ValueString())
+		updateRole.GlobalPersonaAccess = sdk.PtrString(plan.Permissions.DefaultPersonaAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultReportTypeAccess.IsUnknown() {
-		updateRole.SetGlobalReportTypeAccess(plan.Permissions.DefaultReportTypeAccess.ValueString())
+		updateRole.GlobalReportTypeAccess = sdk.PtrString(plan.Permissions.DefaultReportTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultTaskAccess.IsUnknown() {
-		updateRole.SetGlobalTaskAccess(plan.Permissions.DefaultTaskAccess.ValueString())
+		updateRole.GlobalTaskAccess = sdk.PtrString(plan.Permissions.DefaultTaskAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultVdiPoolAccess.IsUnknown() {
-		updateRole.SetGlobalVdiPoolAccess(plan.Permissions.DefaultVdiPoolAccess.ValueString())
+		updateRole.GlobalVdiPoolAccess = sdk.PtrString(plan.Permissions.DefaultVdiPoolAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultWorkflowAccess.IsUnknown() {
-		updateRole.SetGlobalTaskSetAccess(plan.Permissions.DefaultWorkflowAccess.ValueString())
+		updateRole.GlobalTaskSetAccess = sdk.PtrString(plan.Permissions.DefaultWorkflowAccess.ValueString())
 	}
 
 	if !plan.Permissions.FeaturePermissions.IsUnknown() &&
@@ -350,7 +348,7 @@ func setPermissionsInUpdate(
 			)
 		}
 
-		updateRole.SetFeaturePermissions(updateRoleFeaturePermissions)
+		updateRole.FeaturePermissions = updateRoleFeaturePermissions
 	}
 
 	if !plan.Permissions.BlueprintPermissions.IsUnknown() {
@@ -401,7 +399,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
+			updateRole.AppTemplatePermissions = updateRoleBlueprintPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -416,7 +414,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetAppTemplatePermissions(updateRoleBlueprintPermissions)
+			updateRole.AppTemplatePermissions = updateRoleBlueprintPermissions
 		}
 	}
 
@@ -475,7 +473,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
+			updateRole.CatalogItemTypePermissions = updateRoleCatalogItemTypePermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -490,7 +488,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetCatalogItemTypePermissions(updateRoleCatalogItemTypePermissions)
+			updateRole.CatalogItemTypePermissions = updateRoleCatalogItemTypePermissions
 		}
 	}
 
@@ -538,7 +536,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetZones(updateRoleCloudPermissions)
+			updateRole.Zones = updateRoleCloudPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -553,7 +551,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetZones(updateRoleCloudPermissions)
+			updateRole.Zones = updateRoleCloudPermissions
 		}
 	}
 
@@ -601,7 +599,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetSites(updateRoleGroupPermissions)
+			updateRole.Sites = updateRoleGroupPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -616,7 +614,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetSites(updateRoleGroupPermissions)
+			updateRole.Sites = updateRoleGroupPermissions
 		}
 	}
 
@@ -675,7 +673,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
+			updateRole.InstanceTypePermissions = updateRoleInstanceTypePermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -690,7 +688,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetInstanceTypePermissions(updateRoleInstanceTypePermissions)
+			updateRole.InstanceTypePermissions = updateRoleInstanceTypePermissions
 		}
 	}
 
@@ -742,7 +740,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetPersonaPermissions(updateRolePersonaPermissions)
+			updateRole.PersonaPermissions = updateRolePersonaPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -757,7 +755,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetPersonaPermissions(updateRolePersonaPermissions)
+			updateRole.PersonaPermissions = updateRolePersonaPermissions
 		}
 	}
 
@@ -813,7 +811,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetReportTypePermissions(updateRoleReportTypePermissions)
+			updateRole.ReportTypePermissions = updateRoleReportTypePermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -828,7 +826,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetReportTypePermissions(updateRoleReportTypePermissions)
+			updateRole.ReportTypePermissions = updateRoleReportTypePermissions
 		}
 	}
 
@@ -876,7 +874,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetTaskPermissions(updateRoleTaskPermissions)
+			updateRole.TaskPermissions = updateRoleTaskPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -891,7 +889,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetTaskPermissions(updateRoleTaskPermissions)
+			updateRole.TaskPermissions = updateRoleTaskPermissions
 		}
 	}
 
@@ -943,7 +941,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
+			updateRole.VdiPoolPermissions = updateRoleVdiPoolPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -958,7 +956,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetVdiPoolPermissions(updateRoleVdiPoolPermissions)
+			updateRole.VdiPoolPermissions = updateRoleVdiPoolPermissions
 		}
 	}
 
@@ -1010,7 +1008,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetTaskSetPermissions(updateRoleWorkflowPermissions)
+			updateRole.TaskSetPermissions = updateRoleWorkflowPermissions
 
 		} else {
 			// For when we remove permissions from config.
@@ -1025,7 +1023,7 @@ func setPermissionsInUpdate(
 				)
 			}
 
-			updateRole.SetTaskSetPermissions(updateRoleWorkflowPermissions)
+			updateRole.TaskSetPermissions = updateRoleWorkflowPermissions
 		}
 	}
 
@@ -1041,45 +1039,43 @@ func setPermissionsInCreate(
 	var diags diag.Diagnostics
 
 	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
-		addRole.SetGlobalAppTemplateAccess(plan.Permissions.DefaultBlueprintAccess.ValueString())
+		addRole.GlobalAppTemplateAccess = sdk.PtrString(plan.Permissions.DefaultBlueprintAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		addRole.SetGlobalCatalogItemTypeAccess(
-			plan.Permissions.DefaultCatalogItemTypeAccess.ValueString(),
-		)
+		addRole.GlobalCatalogItemTypeAccess = sdk.PtrString(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
-		addRole.SetGlobalZoneAccess(plan.Permissions.DefaultCloudAccess.ValueString())
+		addRole.GlobalZoneAccess = sdk.PtrString(plan.Permissions.DefaultCloudAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultGroupAccess.IsUnknown() {
-		addRole.SetGlobalSiteAccess(plan.Permissions.DefaultGroupAccess.ValueString())
+		addRole.GlobalSiteAccess = sdk.PtrString(plan.Permissions.DefaultGroupAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultInstanceTypeAccess.IsUnknown() {
-		addRole.SetGlobalInstanceTypeAccess(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
+		addRole.GlobalInstanceTypeAccess = sdk.PtrString(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultPersonaAccess.IsUnknown() {
-		addRole.SetGlobalPersonaAccess(plan.Permissions.DefaultPersonaAccess.ValueString())
+		addRole.GlobalPersonaAccess = sdk.PtrString(plan.Permissions.DefaultPersonaAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultReportTypeAccess.IsUnknown() {
-		addRole.SetGlobalReportTypeAccess(plan.Permissions.DefaultReportTypeAccess.ValueString())
+		addRole.GlobalReportTypeAccess = sdk.PtrString(plan.Permissions.DefaultReportTypeAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultTaskAccess.IsUnknown() {
-		addRole.SetGlobalTaskAccess(plan.Permissions.DefaultTaskAccess.ValueString())
+		addRole.GlobalTaskAccess = sdk.PtrString(plan.Permissions.DefaultTaskAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultVdiPoolAccess.IsUnknown() {
-		addRole.SetGlobalVdiPoolAccess(plan.Permissions.DefaultVdiPoolAccess.ValueString())
+		addRole.GlobalVdiPoolAccess = sdk.PtrString(plan.Permissions.DefaultVdiPoolAccess.ValueString())
 	}
 
 	if !plan.Permissions.DefaultWorkflowAccess.IsUnknown() {
-		addRole.SetGlobalTaskSetAccess(plan.Permissions.DefaultWorkflowAccess.ValueString())
+		addRole.GlobalTaskSetAccess = sdk.PtrString(plan.Permissions.DefaultWorkflowAccess.ValueString())
 	}
 
 	if !plan.Permissions.FeaturePermissions.IsUnknown() {
@@ -1100,7 +1096,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetFeaturePermissions(addRoleFeaturePermissions)
+		addRole.FeaturePermissions = addRoleFeaturePermissions
 	}
 
 	if !plan.Permissions.BlueprintPermissions.IsUnknown() {
@@ -1121,7 +1117,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetAppTemplatePermissions(addRoleBlueprintPermissions)
+		addRole.AppTemplatePermissions = addRoleBlueprintPermissions
 	}
 
 	if !plan.Permissions.CatalogItemTypePermissions.IsUnknown() {
@@ -1146,7 +1142,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetCatalogItemTypePermissions(addRoleCatalogItemTypePermissions)
+		addRole.CatalogItemTypePermissions = addRoleCatalogItemTypePermissions
 	}
 
 	if !plan.Permissions.CloudPermissions.IsUnknown() {
@@ -1167,7 +1163,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetZones(addRoleCloudPermissions)
+		addRole.Zones = addRoleCloudPermissions
 	}
 
 	if !plan.Permissions.GroupPermissions.IsUnknown() {
@@ -1185,7 +1181,7 @@ func setPermissionsInCreate(
 			})
 		}
 
-		addRole.SetSites(addRoleGroupPermissions)
+		addRole.Sites = addRoleGroupPermissions
 	}
 
 	if !plan.Permissions.InstanceTypePermissions.IsUnknown() {
@@ -1206,7 +1202,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetInstanceTypePermissions(addRoleInstanceTypePermissions)
+		addRole.InstanceTypePermissions = addRoleInstanceTypePermissions
 	}
 
 	if !plan.Permissions.PersonaPermissions.IsUnknown() {
@@ -1227,7 +1223,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetPersonaPermissions(addRolePersonaPermissions)
+		addRole.PersonaPermissions = addRolePersonaPermissions
 	}
 
 	if !plan.Permissions.ReportTypePermissions.IsUnknown() {
@@ -1248,7 +1244,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetReportTypePermissions(addRoleReportTypePermissions)
+		addRole.ReportTypePermissions = addRoleReportTypePermissions
 	}
 
 	if !plan.Permissions.TaskPermissions.IsUnknown() {
@@ -1270,7 +1266,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetTaskPermissions(addRoleTaskPermissions)
+		addRole.TaskPermissions = addRoleTaskPermissions
 	}
 
 	if !plan.Permissions.VdiPoolPermissions.IsUnknown() {
@@ -1291,7 +1287,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetVdiPoolPermissions(addRoleVdiPoolPermissions)
+		addRole.VdiPoolPermissions = addRoleVdiPoolPermissions
 	}
 
 	if !plan.Permissions.WorkflowPermissions.IsUnknown() {
@@ -1312,7 +1308,7 @@ func setPermissionsInCreate(
 			)
 		}
 
-		addRole.SetTaskSetPermissions(addRoleWorkflowPermissions)
+		addRole.TaskSetPermissions = addRoleWorkflowPermissions
 	}
 
 	return diags
@@ -1344,7 +1340,10 @@ func getRoleAsState(
 
 	state.Id = convert.Int64ToType(r.Role.Id)
 	state.Name = convert.StrToType(r.Role.Name)
-	state.DefaultPersonaCode = convert.StrToType(r.Role.GetDefaultPersona().Code)
+	state.DefaultPersonaCode = types.StringNull()
+	if r.Role.DefaultPersona != nil {
+		state.DefaultPersonaCode = convert.StrToType(r.Role.DefaultPersona.Code)
+	}
 	state.Description = convert.StrToType(r.Role.Description.Get())
 	state.LandingUrl = convert.StrToType(r.Role.LandingUrl.Get())
 	state.Multitenant = convert.BoolToType(r.Role.Multitenant)
@@ -1376,40 +1375,40 @@ func (r *Resource) Create(
 	name := plan.Name.ValueString()
 
 	// required
-	addRole.SetAuthority(name)
+	addRole.Authority = name
 
 	// optional
 	if !plan.DefaultPersonaCode.IsUnknown() && !plan.DefaultPersonaCode.IsNull() {
-		addRole.SetDefaultPersona(plan.DefaultPersonaCode.ValueString())
+		addRole.DefaultPersona.Set(sdk.PtrString(plan.DefaultPersonaCode.ValueString()))
 	}
 
 	if !plan.Description.IsUnknown() {
-		addRole.SetDescription(plan.Description.ValueString())
+		addRole.Description.Set(sdk.PtrString(plan.Description.ValueString()))
 	}
 
 	if !plan.LandingUrl.IsUnknown() {
-		addRole.SetLandingUrl(plan.LandingUrl.ValueString())
+		addRole.LandingUrl.Set(sdk.PtrString(plan.LandingUrl.ValueString()))
 	}
 
 	// optional_computed
 	if !plan.Multitenant.IsUnknown() {
 		// default: false
-		addRole.SetMultitenant(plan.Multitenant.ValueBool())
+		addRole.Multitenant = sdk.PtrBool(plan.Multitenant.ValueBool())
 	}
 
 	if !plan.MultitenantLocked.IsUnknown() {
 		// default: false
-		addRole.SetMultitenantLocked(plan.MultitenantLocked.ValueBool())
+		addRole.MultitenantLocked = sdk.PtrBool(plan.MultitenantLocked.ValueBool())
 	}
 
 	if !plan.RoleType.IsUnknown() {
 		// default: user
 		if plan.RoleType.ValueString() == RoleTypeUser {
-			addRole.SetRoleType(plan.RoleType.ValueString())
+			addRole.RoleType = sdk.PtrString(plan.RoleType.ValueString())
 		}
 
 		if plan.RoleType.ValueString() == RoleTypeTenant {
-			addRole.SetRoleType(RoleTypeAccountAPI)
+			addRole.RoleType = sdk.PtrString(RoleTypeAccountAPI)
 		}
 	}
 
@@ -1423,7 +1422,7 @@ func (r *Resource) Create(
 		}
 	}
 
-	addRoleReq := sdk.NewAddRolesRequest(*addRole)
+	addRoleReq := &sdk.AddRolesRequest{Role: *addRole}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -1446,7 +1445,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if role.GetRole().Id == nil {
+	if role.Role == nil || role.Role.Id == nil {
 		resp.Diagnostics.AddError(
 			"create role resource",
 			"role "+name+": id is nil",
@@ -1455,7 +1454,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := *role.GetRole().Id
+	id := *role.Role.Id
 	plan.Id = types.Int64Value(id)
 
 	// Helper to taint the resource state on an error after the POST request
@@ -1862,33 +1861,33 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 
 	// required - authority (name)
-	updateRole.SetAuthority(plan.Name.ValueString())
+	updateRole.Authority = sdk.PtrString(plan.Name.ValueString())
 
 	// optional fields
 	if plan.DefaultPersonaCode.IsNull() {
 		updateRole.DefaultPersona.Set(nil)
 	} else {
-		updateRole.SetDefaultPersona(plan.DefaultPersonaCode.ValueString())
+		updateRole.DefaultPersona.Set(sdk.PtrString(plan.DefaultPersonaCode.ValueString()))
 	}
 
 	if plan.Description.IsNull() {
 		updateRole.Description.Set(nil)
 	} else {
-		updateRole.SetDescription(plan.Description.ValueString())
+		updateRole.Description.Set(sdk.PtrString(plan.Description.ValueString()))
 	}
 
 	if plan.LandingUrl.IsNull() {
 		updateRole.LandingUrl.Set(nil)
 	} else {
-		updateRole.SetLandingUrl(plan.LandingUrl.ValueString())
+		updateRole.LandingUrl.Set(sdk.PtrString(plan.LandingUrl.ValueString()))
 	}
 
 	if !plan.Multitenant.IsNull() {
-		updateRole.SetMultitenant(plan.Multitenant.ValueBool())
+		updateRole.Multitenant = sdk.PtrBool(plan.Multitenant.ValueBool())
 	}
 
 	if !plan.MultitenantLocked.IsNull() {
-		updateRole.SetMultitenantLocked(plan.MultitenantLocked.ValueBool())
+		updateRole.MultitenantLocked = sdk.PtrBool(plan.MultitenantLocked.ValueBool())
 	}
 
 	client, err := r.NewClient(ctx)
@@ -1932,7 +1931,7 @@ func (r *Resource) Update(
 	}
 
 	// 2. Perform a PUT to apply the permissions levels from the Terraform plan.
-	updateRoleReq := sdk.NewUpdateRoleRequest(*updateRole)
+	updateRoleReq := &sdk.UpdateRoleRequest{Role: *updateRole}
 
 	role, hresp, err := client.RolesAPI.UpdateRole(ctx, id).
 		UpdateRoleRequest(*updateRoleReq).Execute()
@@ -1946,7 +1945,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	if role.GetRole().Id == nil {
+	if role.Role == nil || role.Role.Id == nil {
 		resp.Diagnostics.AddError(
 			"update role resource",
 			fmt.Sprintf("role %d: id is nil", id),
@@ -1955,7 +1954,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newID := *role.GetRole().Id
+	newID := *role.Role.Id
 	if newID != id {
 		resp.Diagnostics.AddError(
 			"update role resource",

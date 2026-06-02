@@ -123,7 +123,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sg := result.GetSecurityGroup()
+	sg := result.SecurityGroup
 	if sg.Id == nil {
 		resp.Diagnostics.AddError("Create Error", "Security group ID not returned")
 
@@ -322,9 +322,9 @@ func (r *securityGroupResource) getSecurityGroupAsState(
 		return nil, diags
 	}
 
-	sg := result.GetSecurityGroup()
+	sg := result.SecurityGroup
 	var model SecurityGroupModel
-	mapResponseToModel(&model, &sg)
+	mapResponseToModel(&model, sg)
 
 	return &model, diags
 }
@@ -342,7 +342,7 @@ func mapResponseToModel(
 	}
 	model.Active = convert.BoolToType(sg.Active)
 	model.Visibility = convert.StrToType(sg.Visibility)
-	zone := sg.GetZone()
+	zone := sg.Zone
 	model.CloudId = convert.Int64ToType(zone.Id)
 
 	// Tenants

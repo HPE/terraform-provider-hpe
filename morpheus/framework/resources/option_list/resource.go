@@ -108,7 +108,7 @@ func (r *optionListResource) Create(
 	}
 
 	// SDK field mismatch: API returns "optionTypeLists" but SDK expects "optionTypes"
-	optionLists := listResult.GetOptionTypes()
+	optionLists := listResult.OptionTypes
 	if len(optionLists) == 0 {
 		if rawLists, ok := listResult.AdditionalProperties["optionTypeLists"]; ok {
 			if listsSlice, ok := rawLists.([]interface{}); ok && len(listsSlice) > 0 {
@@ -168,7 +168,7 @@ func (r *optionListResource) Read(
 		return
 	}
 
-	optionTypes := result.GetOptionTypes()
+	optionTypes := result.OptionTypes
 	if len(optionTypes) == 0 {
 		// SDK field mismatch: API returns "optionTypeList" but SDK expects "optionTypes"
 		if rawOL, ok := result.AdditionalProperties["optionTypeList"]; ok {

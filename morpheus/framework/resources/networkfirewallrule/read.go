@@ -76,9 +76,9 @@ func getNetworkFirewallRuleAsState(
 		return state, false, diags
 	}
 
-	rule := ruleResp.GetRule()
+	rule := ruleResp.Rule
 
-	state.Id = types.Int64Value(rule.GetId())
+	state.Id = types.Int64Value(*rule.Id)
 	state.NetworkIntegrationId = types.Int64Value(networkIntegrationId)
 	state.Name = convert.StrToType(rule.Name)
 	state.Direction = convert.StrToType(rule.Direction)

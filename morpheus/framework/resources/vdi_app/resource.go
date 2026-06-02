@@ -61,7 +61,7 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	result, httpResp, err := client.VDIAPI.AddVDIApps(ctx).AddVDIAppsRequest(sdk.AddVDIAppsRequest{
-		VdiApp: sdk.AddVDIAppsRequestVdiAppOneOfAsAddVDIAppsRequestVdiApp(&body),
+		VdiApp: sdk.AddVDIAppsRequestVdiApp{AddVDIAppsRequestVdiAppOneOf: &body},
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_app", plan.Name.ValueString(), err, httpResp)
@@ -69,8 +69,8 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	app := result.AddVDIApps200ResponseAnyOf.GetVdiApp()
-	mapCreateResponseToModel(&plan, &app)
+	app := result.AddVDIApps200ResponseAnyOf.VdiApp
+	mapCreateResponseToModel(&plan, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -103,8 +103,8 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	app := result.GetVdiApp()
-	mapGetResponseToModel(&state, &app)
+	app := result.VdiApp
+	mapGetResponseToModel(&state, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -136,7 +136,7 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	result, httpResp, err := client.VDIAPI.UpdateVDIApps(ctx, id).UpdateVDIAppsRequest(sdk.UpdateVDIAppsRequest{
-		VdiApp: sdk.UpdateVDIAppsRequestVdiAppOneOfAsUpdateVDIAppsRequestVdiApp(&body),
+		VdiApp: sdk.UpdateVDIAppsRequestVdiApp{UpdateVDIAppsRequestVdiAppOneOf: &body},
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_app", plan.Name.ValueString(), err, httpResp)
@@ -144,8 +144,8 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	app := result.UpdateVDIApps200ResponseAnyOf.GetVdiApp()
-	mapUpdateResponseToModel(&plan, &app)
+	app := result.UpdateVDIApps200ResponseAnyOf.VdiApp
+	mapUpdateResponseToModel(&plan, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

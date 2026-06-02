@@ -78,8 +78,8 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapAddResponseToModel(&plan, &budget)
+	budget := result.Budget
+	mapAddResponseToModel(&plan, budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -112,8 +112,8 @@ func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	budget := result.GetBudget()
-	mapGetResponseToModel(&state, &budget)
+	budget := result.Budget
+	mapGetResponseToModel(&state, budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -162,8 +162,8 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapUpdateResponseToModel(&plan, &budget)
+	budget := result.Budget
+	mapUpdateResponseToModel(&plan, budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

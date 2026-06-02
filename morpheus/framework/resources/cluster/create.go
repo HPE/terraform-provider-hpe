@@ -69,11 +69,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	addClusterReq.Cluster = sdk.NewAddClusterRequestClusterWithDefaults()
 
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
-		addClusterReq.Cluster.Cloud.SetId(plan.CloudId.ValueInt64())
+		addClusterReq.Cluster.Cloud.Id = plan.CloudId.ValueInt64Pointer()
 	}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		addClusterReq.Cluster.SetName(plan.Name.ValueString())
+		addClusterReq.Cluster.Name = plan.Name.ValueString()
 	}
 
 	// Cluster type code
@@ -82,29 +82,30 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	switch {
 	case !plan.Config.IsNull():
 		if !plan.ClusterTypeCode.IsNull() && !plan.ClusterTypeCode.IsUnknown() {
-			v := sdk.StringAsAddClusterRequestClusterType(plan.ClusterTypeCode.ValueStringPointer())
-			addClusterReq.Cluster.SetType(v)
+			v := plan.ClusterTypeCode.ValueString()
+			addClusterReq.Cluster.Type = sdk.AddClusterRequestClusterType{String: &v}
 		}
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		v := clusterTypeCodeMVM
-		addClusterReq.Cluster.SetType(sdk.StringAsAddClusterRequestClusterType(&v))
+		addClusterReq.Cluster.Type = sdk.AddClusterRequestClusterType{String: &v}
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		addClusterReq.Cluster.SetDescription(plan.Description.ValueString())
+		addClusterReq.Cluster.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		addClusterReq.Cluster.Group = sdk.NewAddClusterRequestClusterGroupWithDefaults()
-		addClusterReq.Cluster.Group.SetId(plan.GroupId.ValueInt64())
+		addClusterReq.Cluster.Group = &sdk.AddClusterRequestClusterGroup{
+			Id: plan.GroupId.ValueInt64Pointer(),
+		}
 	}
 
 	if !plan.LayoutId.IsNull() && !plan.LayoutId.IsUnknown() {
-		addClusterReq.Cluster.Layout.SetId(plan.LayoutId.ValueInt64())
+		addClusterReq.Cluster.Layout.Id = plan.LayoutId.ValueInt64Pointer()
 	}
 
 	if !plan.WorkflowId.IsNull() && !plan.WorkflowId.IsUnknown() {
-		addClusterReq.Cluster.SetTaskSetId(plan.WorkflowId.ValueInt64())
+		addClusterReq.Cluster.TaskSetId = plan.WorkflowId.ValueInt64Pointer()
 	}
 
 	// server
@@ -129,7 +130,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		addClusterReq.Cluster.SetLabels(labels)
+		addClusterReq.Cluster.Labels = labels
 	}
 
 	client, err := r.NewClient(ctx)
@@ -147,7 +148,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	clusterId := clusterResp.Cluster.GetId()
+	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
 
 	// write the ID now
@@ -175,14 +176,14 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		}
 
 		// Get cluster
-		cluster, ok := resp.GetClusterOk()
-		if !ok || cluster == nil {
+		cluster := resp.Cluster
+		if cluster == nil {
 			return "", backoff.Permanent(fmt.Errorf("cluster %d: GET returned empty cluster", clusterId))
 		}
 
 		// Get status
-		status, ok := cluster.GetStatusOk()
-		if !ok || status == nil {
+		status := cluster.Status
+		if status == nil {
 			return "", backoff.Permanent(fmt.Errorf("cluster %d: GET returned empty status", clusterId))
 		}
 
@@ -257,60 +258,64 @@ func buildCreateClusterServer(
 
 	// the basic types
 	if !plan.Server.Hostname.IsNull() && !plan.Server.Hostname.IsUnknown() {
-		server.SetHostname(plan.Server.Hostname.ValueString())
+		server.Hostname = *sdk.NewNullableString(plan.Server.Hostname.ValueStringPointer())
 	}
 
 	if !plan.Server.Name.IsNull() && !plan.Server.Name.IsUnknown() {
-		server.SetName(plan.Server.Name.ValueString())
+		server.Name = plan.Server.Name.ValueString()
 	}
 
 	if !plan.Server.NetworkDomain.IsNull() && !plan.Server.NetworkDomain.IsUnknown() {
-		server.SetNetworkDomain(plan.Server.NetworkDomain.ValueString())
+		server.NetworkDomain = *sdk.NewNullableString(plan.Server.NetworkDomain.ValueStringPointer())
 	}
 
 	if !plan.Server.ServicePlanId.IsNull() && !plan.Server.ServicePlanId.IsUnknown() {
-		server.Plan = *sdk.NewAddClusterRequestClusterServerPlan()
-		server.Plan.SetId(plan.Server.ServicePlanId.ValueInt64())
+		server.Plan = sdk.AddClusterRequestClusterServerPlan{
+			Id: plan.Server.ServicePlanId.ValueInt64Pointer(),
+		}
 	}
 
 	if !plan.Server.SshPort.IsNull() && !plan.Server.SshPort.IsUnknown() {
-		server.SetSshPort(plan.Server.SshPort.ValueInt64())
+		server.SshPort = plan.Server.SshPort.ValueInt64Pointer()
 	}
 
 	// need config for getting the value of ssh password - it's write-only so isn't in plan
 	if !config.Server.SshPasswordWo.IsNull() && !config.Server.SshPasswordWo.IsUnknown() {
-		server.SetSshPassword(config.Server.SshPasswordWo.ValueString())
+		server.SshPassword = *sdk.NewNullableString(config.Server.SshPasswordWo.ValueStringPointer())
 	}
 
 	if !plan.Server.SshUsername.IsNull() && !plan.Server.SshUsername.IsUnknown() {
-		server.SetSshUsername(plan.Server.SshUsername.ValueString())
+		server.SshUsername = plan.Server.SshUsername.ValueStringPointer()
 	}
 
 	if !plan.Server.SshKeyPairId.IsNull() && !plan.Server.SshKeyPairId.IsUnknown() {
-		server.SetSshKeyPair(sdk.AddClusterRequestClusterServerSshKeyPair{
+		server.SshKeyPair = &sdk.AddClusterRequestClusterServerSshKeyPair{
 			Id: plan.Server.SshKeyPairId.ValueInt64Pointer(),
-		})
+		}
 	}
 
 	if !plan.Server.UserGroupId.IsNull() && !plan.Server.UserGroupId.IsUnknown() {
-		server.UserGroup = sdk.NewAddClusterRequestClusterServerUserGroup()
-		server.UserGroup.SetId(plan.Server.UserGroupId.ValueInt64())
+		server.UserGroup = &sdk.AddClusterRequestClusterServerUserGroup{
+			Id: plan.Server.UserGroupId.ValueInt64Pointer(),
+		}
 	}
 
 	if !plan.Server.Visibility.IsNull() && !plan.Server.Visibility.IsUnknown() {
-		server.SetVisibility(plan.Server.Visibility.ValueString())
+		server.Visibility = plan.Server.Visibility.ValueStringPointer()
 	}
 
 	if !plan.Server.DataDevice.IsNull() && !plan.Server.DataDevice.IsUnknown() {
-		server.SetDataDevice(plan.Server.DataDevice.ValueString())
+		server.DataDevice = plan.Server.DataDevice.ValueStringPointer()
 	}
 
 	if !plan.Server.LvmEnabled.IsNull() && !plan.Server.LvmEnabled.IsUnknown() {
-		server.SetLvmEnabled(plan.Server.LvmEnabled.ValueBool())
+		server.LvmEnabled = plan.Server.LvmEnabled.ValueBoolPointer()
 	}
 
 	if !plan.Server.ManagementNetInterface.IsNull() && !plan.Server.ManagementNetInterface.IsUnknown() {
-		server.Network = sdk.NewAddClusterRequestClusterServerNetwork(plan.Server.ManagementNetInterface.ValueString())
+		server.Network = &sdk.AddClusterRequestClusterServerNetwork{
+			Name: plan.Server.ManagementNetInterface.ValueString(),
+		}
 	}
 
 	// the sets
@@ -322,7 +327,7 @@ func buildCreateClusterServer(
 			return diags
 		}
 
-		server.SetNetworkInterfaces(nis)
+		server.NetworkInterfaces = nis
 
 	}
 
@@ -335,7 +340,7 @@ func buildCreateClusterServer(
 			return diags
 		}
 
-		server.SetSecurityGroups(securityGroups)
+		server.SecurityGroups = securityGroups
 	}
 
 	// ssh hosts
@@ -345,7 +350,7 @@ func buildCreateClusterServer(
 			return diags
 		}
 
-		server.SetSshHosts(hosts)
+		server.SshHosts = hosts
 	}
 
 	// tags
@@ -365,7 +370,7 @@ func buildCreateClusterServer(
 			})
 		}
 
-		server.SetTags(addTags)
+		server.Tags = addTags
 
 	}
 
@@ -376,7 +381,7 @@ func buildCreateClusterServer(
 			return diags
 		}
 
-		server.SetVolumes(volumes)
+		server.Volumes = volumes
 	}
 
 	// set the server.config based off which config block is used...
@@ -410,39 +415,39 @@ func buildCreateClusterServer(
 		cfg := sdkfuncs.NewHvmClusterServerConfig()
 
 		if !plan.ConfigHvm.CpuArch.IsNull() && !plan.ConfigHvm.CpuArch.IsUnknown() {
-			cfg.SetCpuArch(plan.ConfigHvm.CpuArch.ValueString())
+			cfg.CpuArch = plan.ConfigHvm.CpuArch.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.CpuModel.IsNull() && !plan.ConfigHvm.CpuModel.IsUnknown() {
-			cfg.SetCpuModel(plan.ConfigHvm.CpuModel.ValueString())
+			cfg.CpuModel = plan.ConfigHvm.CpuModel.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.DynamicPlacement.IsNull() && !plan.ConfigHvm.DynamicPlacement.IsUnknown() {
-			cfg.SetDynamicPlacementMode(*convert.BoolTypeToStringPointerOnOff(plan.ConfigHvm.DynamicPlacement))
+			cfg.DynamicPlacementMode = convert.BoolTypeToStringPointerOnOff(plan.ConfigHvm.DynamicPlacement)
 		}
 
 		if !plan.ConfigHvm.PowerPolicy.IsNull() && !plan.ConfigHvm.PowerPolicy.IsUnknown() {
-			cfg.SetPowerPolicy(plan.ConfigHvm.PowerPolicy.ValueString())
+			cfg.PowerPolicy = plan.ConfigHvm.PowerPolicy.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.StorageInterfaceName.IsNull() && !plan.ConfigHvm.StorageInterfaceName.IsUnknown() {
-			cfg.SetStorageInterfaceName(plan.ConfigHvm.StorageInterfaceName.ValueString())
+			cfg.StorageInterfaceName = plan.ConfigHvm.StorageInterfaceName.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.ComputeInterfaceName.IsNull() && !plan.ConfigHvm.ComputeInterfaceName.IsUnknown() {
-			cfg.SetComputeInterfaceName(plan.ConfigHvm.ComputeInterfaceName.ValueString())
+			cfg.ComputeInterfaceName = plan.ConfigHvm.ComputeInterfaceName.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.ComputeVlans.IsNull() && !plan.ConfigHvm.ComputeVlans.IsUnknown() {
-			cfg.SetComputeVlans(plan.ConfigHvm.ComputeVlans.ValueString())
+			cfg.ComputeVlans = plan.ConfigHvm.ComputeVlans.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.OverlayInterfaceName.IsNull() && !plan.ConfigHvm.OverlayInterfaceName.IsUnknown() {
-			cfg.SetOverlayInterfaceName(plan.ConfigHvm.OverlayInterfaceName.ValueString())
+			cfg.OverlayInterfaceName = plan.ConfigHvm.OverlayInterfaceName.ValueStringPointer()
 		}
 
 		if !plan.ConfigHvm.CreateUser.IsNull() && !plan.ConfigHvm.CreateUser.IsUnknown() {
-			cfg.SetCreateUser(plan.ConfigHvm.CreateUser.ValueBool())
+			cfg.CreateUser = plan.ConfigHvm.CreateUser.ValueBoolPointer()
 		}
 
 		cfgAnyOf := sdkfuncs.NewHvmClusterServerConfigAsAnyOf(cfg)

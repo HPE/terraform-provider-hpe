@@ -83,27 +83,32 @@ func (r *Resource) Create(
 	routerID := plan.RouterId.ValueInt64()
 
 	route := sdk.CreateNetworkRouterRouteRequestNetworkRoute{}
-	route.SetSource(plan.Source.ValueString())
-	route.SetDestination(plan.Destination.ValueString())
+	route.Source = plan.Source.ValueString()
+	route.Destination = plan.Destination.ValueString()
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		route.SetName(plan.Name.ValueString())
+		name := plan.Name.ValueString()
+		route.Name = &name
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		route.SetDescription(plan.Description.ValueString())
+		description := plan.Description.ValueString()
+		route.Description = &description
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		route.SetEnabled(plan.Enabled.ValueBool())
+		enabled := plan.Enabled.ValueBool()
+		route.Enabled = &enabled
 	}
 
 	if !plan.DefaultRoute.IsNull() && !plan.DefaultRoute.IsUnknown() {
-		route.SetDefaultRoute(plan.DefaultRoute.ValueBool())
+		defaultRoute := plan.DefaultRoute.ValueBool()
+		route.DefaultRoute = &defaultRoute
 	}
 
 	if !plan.NetworkMtu.IsNull() && !plan.NetworkMtu.IsUnknown() {
-		route.SetNetworkMtu(float32(plan.NetworkMtu.ValueFloat64()))
+		networkMtu := float32(plan.NetworkMtu.ValueFloat64())
+		route.NetworkMtu = &networkMtu
 	}
 
 	createReq := sdk.CreateNetworkRouterRouteRequest{
@@ -122,7 +127,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	id := int64(*result.Id.Get())
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getRouteAsState(ctx, id, routerID, client, plan)
@@ -160,43 +165,43 @@ func getRouteAsState(
 		return state, diags
 	}
 
-	route := resp.GetNetworkRoute()
+	route := resp.NetworkRoute
 
-	if route.Id != nil {
+	if route != nil && route.Id != nil {
 		state.Id = types.Int64Value(*route.Id)
 	}
 
 	state.RouterId = plan.RouterId
 
-	if route.Name != nil {
+	if route != nil && route.Name != nil {
 		state.Name = types.StringValue(*route.Name)
 	} else {
 		state.Name = types.StringNull()
 	}
 
-	if route.Description.IsSet() {
+	if route != nil && route.Description.IsSet() {
 		state.Description = types.StringValue(*route.Description.Get())
 	} else {
 		state.Description = types.StringNull()
 	}
 
-	if route.Source != nil {
+	if route != nil && route.Source != nil {
 		state.Source = types.StringValue(*route.Source)
 	}
 
-	if route.Destination != nil {
+	if route != nil && route.Destination != nil {
 		state.Destination = types.StringValue(*route.Destination)
 	}
 
-	if route.DefaultRoute != nil {
+	if route != nil && route.DefaultRoute != nil {
 		state.DefaultRoute = types.BoolValue(*route.DefaultRoute)
 	}
 
-	if route.Enabled != nil {
+	if route != nil && route.Enabled != nil {
 		state.Enabled = types.BoolValue(*route.Enabled)
 	}
 
-	if route.NetworkMtu.IsSet() {
+	if route != nil && route.NetworkMtu.IsSet() {
 		state.NetworkMtu = types.Float64Value(float64(*route.NetworkMtu.Get()))
 	} else {
 		state.NetworkMtu = types.Float64Null()

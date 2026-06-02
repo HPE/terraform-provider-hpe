@@ -75,21 +75,32 @@ func (g *Resource) Create(
 	// cloud_id
 	reqInstance := sdk.NewAddInstanceRequestWithDefaults()
 	if !plan.CloudId.IsNull() {
-		reqInstance.SetZoneId(plan.CloudId.ValueInt64())
+		zoneId := plan.CloudId.ValueInt64()
+		reqInstance.ZoneId = &zoneId
 	}
 
 	// config
 	switch {
 	// AWS config
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
-		configAWS := sdk.NewAmazonInstanceConfiguration2()
-		configAWS.SetNoAgent(plan.ConfigAws.NoAgent.ValueBool())
-		configAWS.SetResourcePoolId(plan.ConfigAws.ResourcePoolId.ValueString())
-		configAWS.SetIsEC2(convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString())
-		configAWS.SetKmsKeyId(plan.ConfigAws.KmsKeyId.ValueString())
-		configAWS.SetInstanceProfile(plan.ConfigAws.InstanceProfile.ValueString())
-		configAWS.SetPublicIpType(plan.ConfigAws.PublicIpType.ValueString())
-		configAWS.SetAvailabilityId(plan.ConfigAws.AvailabilityZoneId.ValueString())
+		noAgent := plan.ConfigAws.NoAgent.ValueBool()
+		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
+		kmsKeyId := plan.ConfigAws.KmsKeyId.ValueString()
+		instanceProfile := plan.ConfigAws.InstanceProfile.ValueString()
+		publicIpType := plan.ConfigAws.PublicIpType.ValueString()
+		availabilityId := plan.ConfigAws.AvailabilityZoneId.ValueString()
+		resourcePoolId := plan.ConfigAws.ResourcePoolId.ValueString()
+
+		configAWS := &sdk.AmazonInstanceConfiguration2{
+			NoAgent:         *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:  &resourcePoolId,
+			IsEC2:           &isEC2,
+			KmsKeyId:        &kmsKeyId,
+			InstanceProfile: &instanceProfile,
+			PublicIpType:    &publicIpType,
+			AvailabilityId:  &availabilityId,
+		}
+
 		// Security Groups
 		if !plan.ConfigAws.SecurityGroups.IsNull() && !plan.ConfigAws.SecurityGroups.IsUnknown() {
 			securityGroups, diags := convert.FromListType(
@@ -109,7 +120,7 @@ func (g *Resource) Create(
 
 				return
 			}
-			reqInstance.SetSecurityGroups(securityGroups)
+			reqInstance.SecurityGroups = securityGroups
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -119,13 +130,21 @@ func (g *Resource) Create(
 	// HVM config
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		// The provisionTypeCode default is "mvm" which is the code for the HVM provisioning type.
-		configHvm := sdk.NewHVMInstanceConfigurationWithDefaults()
-		configHvm.SetCreateUser(plan.ConfigHvm.CreateUser.ValueBool())
-		configHvm.SetNestedVirtualization(plan.ConfigHvm.NestedVirtualization.ValueString())
-		configHvm.SetNoAgent(plan.ConfigHvm.NoAgent.ValueBool())
-		configHvm.SetResourcePoolId(plan.ConfigHvm.ResourcePoolId.ValueString())
+		createUser := plan.ConfigHvm.CreateUser.ValueBool()
+		nestedVirtualization := plan.ConfigHvm.NestedVirtualization.ValueString()
+		noAgent := plan.ConfigHvm.NoAgent.ValueBool()
+		resourcePoolId := plan.ConfigHvm.ResourcePoolId.ValueString()
+
+		configHvm := &sdk.HVMInstanceConfiguration{
+			CreateUser:           *sdk.NewNullableBool(&createUser),
+			NestedVirtualization: &nestedVirtualization,
+			NoAgent:              *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:       &resourcePoolId,
+		}
+
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
-			configHvm.SetKvmHostId(plan.ConfigHvm.KvmHostId.ValueInt64())
+			kvmHostId := plan.ConfigHvm.KvmHostId.ValueInt64()
+			configHvm.KvmHostId = &kvmHostId
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -134,12 +153,19 @@ func (g *Resource) Create(
 
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
-		configVMware := sdk.NewVMWareInstanceConfiguration2WithDefaults()
-		configVMware.SetNestedVirtualization(plan.ConfigVmware.NestedVirtualization.ValueString())
-		configVMware.SetCreateUser(plan.ConfigVmware.CreateUser.ValueBool())
-		configVMware.SetNoAgent(plan.ConfigVmware.NoAgent.ValueBool())
-		configVMware.SetResourcePoolId(plan.ConfigVmware.ResourcePoolId.ValueString())
-		configVMware.SetVmwareFolderId(plan.ConfigVmware.VmwareFolderId.ValueString())
+		nestedVirtualization := plan.ConfigVmware.NestedVirtualization.ValueString()
+		createUser := plan.ConfigVmware.CreateUser.ValueBool()
+		noAgent := plan.ConfigVmware.NoAgent.ValueBool()
+		resourcePoolId := plan.ConfigVmware.ResourcePoolId.ValueString()
+		vmwareFolderId := plan.ConfigVmware.VmwareFolderId.ValueString()
+
+		configVMware := &sdk.VMWareInstanceConfiguration2{
+			NestedVirtualization: &nestedVirtualization,
+			CreateUser:           *sdk.NewNullableBool(&createUser),
+			NoAgent:              *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:       &resourcePoolId,
+			VmwareFolderId:       &vmwareFolderId,
+		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
 			VMWareInstanceConfiguration2: configVMware,
@@ -147,24 +173,32 @@ func (g *Resource) Create(
 
 	// Azure config
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
-		configAzure := sdk.NewAzureInstanceConfiguration2()
-		configAzure.SetResourcePoolId(plan.ConfigAzure.ResourcePoolId.ValueString())
-		configAzure.SetCreateUser(plan.ConfigAzure.CreateUser.ValueBool())
+		createUser := plan.ConfigAzure.CreateUser.ValueBool()
+		resourcePoolId := plan.ConfigAzure.ResourcePoolId.ValueString()
+
+		configAzure := &sdk.AzureInstanceConfiguration2{
+			CreateUser:     &createUser,
+			ResourcePoolId: &resourcePoolId,
+		}
 
 		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
-			configAzure.SetAzureRegion(plan.ConfigAzure.AzureRegion.ValueString())
+			azureRegion := plan.ConfigAzure.AzureRegion.ValueString()
+			configAzure.AzureRegion = &azureRegion
 		}
 
 		if !plan.ConfigAzure.AzuresecurityGroupId.IsNull() && !plan.ConfigAzure.AzuresecurityGroupId.IsUnknown() {
-			configAzure.SetAzuresecurityGroupId(plan.ConfigAzure.AzuresecurityGroupId.ValueString())
+			azureSecGroupId := plan.ConfigAzure.AzuresecurityGroupId.ValueString()
+			configAzure.AzuresecurityGroupId = &azureSecGroupId
 		}
 
 		if !plan.ConfigAzure.AvailabilityOptions.IsNull() && !plan.ConfigAzure.AvailabilityOptions.IsUnknown() {
-			configAzure.SetAvailabilityOptions(plan.ConfigAzure.AvailabilityOptions.ValueString())
+			availabilityOptions := plan.ConfigAzure.AvailabilityOptions.ValueString()
+			configAzure.AvailabilityOptions = &availabilityOptions
 		}
 
 		if !plan.ConfigAzure.AvailabilitySet.IsNull() && !plan.ConfigAzure.AvailabilitySet.IsUnknown() {
-			configAzure.SetAvailabilitySet(plan.ConfigAzure.AvailabilitySet.ValueString())
+			availabilitySet := plan.ConfigAzure.AvailabilitySet.ValueString()
+			configAzure.AvailabilitySet = &availabilitySet
 		}
 
 		if !plan.ConfigAzure.AvailabilityZone.IsNull() && !plan.ConfigAzure.AvailabilityZone.IsUnknown() {
@@ -175,19 +209,23 @@ func (g *Resource) Create(
 		}
 
 		if !plan.ConfigAzure.AzurefloatingIp.IsNull() && !plan.ConfigAzure.AzurefloatingIp.IsUnknown() {
-			configAzure.SetAzurefloatingIp(plan.ConfigAzure.AzurefloatingIp.ValueString())
+			azureFloatingIp := plan.ConfigAzure.AzurefloatingIp.ValueString()
+			configAzure.AzurefloatingIp = &azureFloatingIp
 		}
 
 		if !plan.ConfigAzure.BootDiagnostics.IsNull() && !plan.ConfigAzure.BootDiagnostics.IsUnknown() {
-			configAzure.SetBootDiagnostics(plan.ConfigAzure.BootDiagnostics.ValueString())
+			bootDiagnostics := plan.ConfigAzure.BootDiagnostics.ValueString()
+			configAzure.BootDiagnostics = &bootDiagnostics
 		}
 
 		if !plan.ConfigAzure.OsGuestDiagnostics.IsNull() && !plan.ConfigAzure.OsGuestDiagnostics.IsUnknown() {
-			configAzure.SetOsGuestDiagnostics(plan.ConfigAzure.OsGuestDiagnostics.ValueString())
+			osGuestDiagnostics := plan.ConfigAzure.OsGuestDiagnostics.ValueString()
+			configAzure.OsGuestDiagnostics = &osGuestDiagnostics
 		}
 
 		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
-			configAzure.SetDiagnosticsStorageAccount(plan.ConfigAzure.DiagnosticsStorageAccount.ValueString())
+			diagnosticsStorageAccount := plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
+			configAzure.DiagnosticsStorageAccount = &diagnosticsStorageAccount
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -228,7 +266,8 @@ func (g *Resource) Create(
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		reqInstance.Instance.SetDescription(plan.Description.ValueString())
+		description := plan.Description.ValueString()
+		reqInstance.Instance.Description = &description
 	}
 
 	// evars
@@ -239,16 +278,17 @@ func (g *Resource) Create(
 
 		return
 	}
-	reqInstance.SetEvars(evars)
+	reqInstance.Evars = evars
 
 	// group_id
-	reqInstance.Instance.SetSite(
-		*sdk.NewAddInstanceRequestInstanceSite(plan.GroupId.ValueInt64()),
-	)
+	reqInstance.Instance.Site = sdk.AddInstanceRequestInstanceSite{
+		Id: plan.GroupId.ValueInt64(),
+	}
 
 	// instance_context
 	if !plan.InstanceContext.IsNull() {
-		reqInstance.Instance.SetInstanceContext(plan.InstanceContext.ValueString())
+		instanceContext := plan.InstanceContext.ValueString()
+		reqInstance.Instance.InstanceContext = &instanceContext
 	}
 
 	// instance_type_id
@@ -264,37 +304,35 @@ func (g *Resource) Create(
 			return
 		}
 
-		reqInstance.Instance.SetInstanceType(
-			*sdk.NewAddInstanceRequestInstanceInstanceType(
-				code,
-			),
-		)
+		reqInstance.Instance.InstanceType = sdk.AddInstanceRequestInstanceInstanceType{
+			Code: code,
+		}
 	}
 
 	// layout_id
 	if !plan.LayoutId.IsNull() {
-		reqInstance.Instance.SetLayout(
-			*sdk.NewAddInstanceRequestInstanceLayout(
-				plan.LayoutId.ValueInt64(),
-			),
-		)
+		reqInstance.Instance.Layout = sdk.AddInstanceRequestInstanceLayout{
+			Id: plan.LayoutId.ValueInt64(),
+		}
 	}
 
 	// layout_size
 	if !plan.LayoutSize.IsNull() {
-		reqInstance.SetLayoutSize(plan.LayoutSize.ValueInt64())
+		layoutSize := plan.LayoutSize.ValueInt64()
+		reqInstance.LayoutSize = &layoutSize
 	}
 
 	// name
 	if !plan.Name.IsNull() {
-		reqInstance.Instance.SetName(plan.Name.ValueString())
+		reqInstance.Instance.Name = plan.Name.ValueString()
 	}
 
 	// network_domain_id
 	if !plan.NetworkDomainId.IsNull() {
-		netDomain := sdk.NewAddInstanceRequestInstanceNetworkDomainWithDefaults()
-		netDomain.SetId(plan.NetworkDomainId.ValueInt64())
-		reqInstance.Instance.SetNetworkDomain(*netDomain)
+		netDomain := &sdk.AddInstanceRequestInstanceNetworkDomain{
+			Id: plan.NetworkDomainId.ValueInt64(),
+		}
+		reqInstance.Instance.NetworkDomain = netDomain
 	}
 
 	// network_interfaces
@@ -309,13 +347,13 @@ func (g *Resource) Create(
 
 		return
 	}
-	reqInstance.SetNetworkInterfaces(networkInterfaces)
+	reqInstance.NetworkInterfaces = networkInterfaces
 
 	// plan_id
 	if !plan.PlanId.IsNull() {
-		reqInstance.Instance.SetPlan(
-			sdk.AddInstanceRequestInstancePlan{Id: plan.PlanId.ValueInt64()},
-		)
+		reqInstance.Instance.Plan = sdk.AddInstanceRequestInstancePlan{
+			Id: plan.PlanId.ValueInt64(),
+		}
 	}
 
 	// ports
@@ -336,15 +374,16 @@ func (g *Resource) Create(
 
 		return
 	}
-	reqInstance.SetPorts(ports)
+	reqInstance.Ports = ports
 
 	// service_plan_options
 	if !plan.ServicePlanOptions.IsNull() {
-		servicePlanOptions := sdk.NewAddInstanceRequestServicePlanOptions()
 		memory := *plan.ServicePlanOptions.MaxMemory.ValueInt64Pointer() << 20
-		servicePlanOptions.MaxMemory = &memory
-		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
-		servicePlanOptions.CoresPerSocket = plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer()
+		servicePlanOptions := &sdk.AddInstanceRequestServicePlanOptions{
+			MaxMemory:      &memory,
+			MaxCores:       plan.ServicePlanOptions.MaxCores.ValueInt64Pointer(),
+			CoresPerSocket: plan.ServicePlanOptions.CoresPerSocket.ValueInt64Pointer(),
+		}
 		reqInstance.ServicePlanOptions = servicePlanOptions
 	}
 
@@ -356,11 +395,12 @@ func (g *Resource) Create(
 
 		return
 	}
-	reqInstance.SetTags(tags)
+	reqInstance.Tags = tags
 
 	// task_set_id
 	if !plan.TaskSetId.IsNull() {
-		reqInstance.SetTaskSetId(plan.TaskSetId.ValueInt64())
+		taskSetId := plan.TaskSetId.ValueInt64()
+		reqInstance.TaskSetId = &taskSetId
 	}
 
 	// volumes
@@ -371,7 +411,7 @@ func (g *Resource) Create(
 
 		return
 	}
-	reqInstance.SetVolumes(volumes)
+	reqInstance.Volumes = volumes
 
 	instance, httpResp, err := client.InstancesAPI.AddInstance(ctx).
 		AddInstanceRequest(*reqInstance).
@@ -382,9 +422,15 @@ func (g *Resource) Create(
 		return
 	}
 
+	if instance.Instance.Id == nil {
+		resp.Diagnostics.AddError("error creating instance", "POST returned empty instance ID")
+
+		return
+	}
+
 	// Store ID locally but not in state yet
 	plan.Id = convert.Int64ToType(instance.Instance.Id)
-	instanceId := instance.Instance.GetId()
+	instanceId := *instance.Instance.Id
 
 	// Helper to taint the resource state on an error after the POST request
 	taintResourceState := func(id int64) {
@@ -405,20 +451,17 @@ func (g *Resource) Create(
 			}
 		}
 
-		// Get instance
-		inst, ok := resp.GetInstanceOk()
-		if !ok || inst == nil {
+		inst := resp.Instance
+		if inst == nil {
 			return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty instance", instanceId))
 		}
 
-		// Get status
-		status, ok := inst.GetStatusOk()
-		if !ok || status == nil {
+		if inst.Status == nil {
 			return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", instanceId))
 		}
 
-		return *status, checkStatusDone(
-			*status,
+		return *inst.Status, checkStatusDone(
+			*inst.Status,
 			CreateTargetStatuses,
 			CreateErrorStatuses,
 		)

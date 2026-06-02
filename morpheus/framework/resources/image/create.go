@@ -47,38 +47,46 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() && !plan.AutoJoinDomain.IsUnknown() {
-		reqImage.VirtualImage.SetIsAutoJoinDomain(plan.AutoJoinDomain.ValueBool())
+		val := plan.AutoJoinDomain.ValueBool()
+		reqImage.VirtualImage.IsAutoJoinDomain = &val
 	}
 
 	// cloud_init
 	if !plan.CloudInit.IsNull() && !plan.CloudInit.IsUnknown() {
-		reqImage.VirtualImage.SetIsCloudInit(plan.CloudInit.ValueBool())
+		val := plan.CloudInit.ValueBool()
+		reqImage.VirtualImage.IsCloudInit = &val
 	}
 
 	// config_azure
 	if !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown() {
-		config := sdk.AddVirtualImageRequestVirtualImageConfig{}
-		config.AzureReferenceVirtualImageConfiguration1 = sdk.NewAzureReferenceVirtualImageConfiguration1WithDefaults()
-		config.AzureReferenceVirtualImageConfiguration1.SetPublisher(plan.ConfigAzure.Publisher.ValueString())
-		config.AzureReferenceVirtualImageConfiguration1.SetOffer(plan.ConfigAzure.Offer.ValueString())
-		config.AzureReferenceVirtualImageConfiguration1.SetVersion(plan.ConfigAzure.Version.ValueString())
-		config.AzureReferenceVirtualImageConfiguration1.SetSku(plan.ConfigAzure.Sku.ValueString())
-		reqImage.VirtualImage.SetConfig(config)
+		azureConfig := sdk.NewAzureReferenceVirtualImageConfiguration1WithDefaults()
+		azureConfig.Publisher = plan.ConfigAzure.Publisher.ValueString()
+		azureConfig.Offer = plan.ConfigAzure.Offer.ValueString()
+		azureConfig.Version = plan.ConfigAzure.Version.ValueString()
+		azureConfig.Sku = plan.ConfigAzure.Sku.ValueString()
+
+		config := sdk.AddVirtualImageRequestVirtualImageConfig{
+			AzureReferenceVirtualImageConfiguration1: azureConfig,
+		}
+		reqImage.VirtualImage.Config = &config
 	}
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		reqImage.VirtualImage.SetDescription(plan.Description.ValueString())
+		val := plan.Description.ValueString()
+		reqImage.VirtualImage.Description = &val
 	}
 
 	// fips_enabled
 	if !plan.FipsEnabled.IsNull() && !plan.FipsEnabled.IsUnknown() {
-		reqImage.VirtualImage.SetFipsEnabled(plan.FipsEnabled.ValueBool())
+		val := plan.FipsEnabled.ValueBool()
+		reqImage.VirtualImage.FipsEnabled = &val
 	}
 
 	// is_force_customization
 	if !plan.ForceCustomization.IsNull() && !plan.ForceCustomization.IsUnknown() {
-		reqImage.VirtualImage.SetIsForceCustomization(plan.ForceCustomization.ValueBool())
+		val := plan.ForceCustomization.ValueBool()
+		reqImage.VirtualImage.IsForceCustomization = &val
 	}
 
 	// uncomment when adding support for uploading files
@@ -93,11 +101,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// }
 
 	// image_type (required)
-	reqImage.VirtualImage.SetImageType(plan.ImageType.ValueString())
+	imageTypeVal := plan.ImageType.ValueString()
+	reqImage.VirtualImage.ImageType = &imageTypeVal
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
-		reqImage.VirtualImage.SetInstallAgent(plan.InstallAgent.ValueBool())
+		val := plan.InstallAgent.ValueBool()
+		reqImage.VirtualImage.InstallAgent = &val
 	}
 
 	// labels
@@ -112,48 +122,55 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		reqImage.VirtualImage.SetLabels(labels)
+		reqImage.VirtualImage.Labels = labels
 	}
 
-	// min_disk
-	if !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown() {
-		reqImage.VirtualImage.SetMinDisk(plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024)
-	}
+	// min_disk - field no longer exists in SDK, removing this section
+	// if !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown() {
+	// 	val := plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024
+	// 	reqImage.VirtualImage.MinDisk = &val
+	// }
 
-	// min_ram
-	if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
-		reqImage.VirtualImage.SetMinRam(plan.MinRam.ValueInt64() * 1024 * 1024 * 1024)
-	}
+	// min_ram - field no longer exists in SDK, removing this section
+	// if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
+	// 	val := plan.MinRam.ValueInt64() * 1024 * 1024 * 1024
+	// 	reqImage.VirtualImage.MinRam = &val
+	// }
 
 	// name (required)
-	reqImage.VirtualImage.SetName(plan.Name.ValueString())
+	nameVal := plan.Name.ValueString()
+	reqImage.VirtualImage.Name = &nameVal
 
 	// os_type_id
 	if !plan.OsTypeId.IsNull() && !plan.OsTypeId.IsUnknown() {
-		reqImage.VirtualImage.SetOsType(plan.OsTypeId.ValueInt64())
+		reqImage.VirtualImage.OsType.Set(plan.OsTypeId.ValueInt64Pointer())
 	}
 
 	// ssh_password_wo
 	if !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
-		reqImage.VirtualImage.SetSshPassword(config.SshPasswordWo.ValueString())
+		sshPwd := config.SshPasswordWo.ValueString()
+		reqImage.VirtualImage.SshPassword.Set(&sshPwd)
 	}
 
 	// ssh_username
 	if !plan.SshUsername.IsNull() && !plan.SshUsername.IsUnknown() {
-		reqImage.VirtualImage.SetSshUsername(plan.SshUsername.ValueString())
+		sshUser := plan.SshUsername.ValueString()
+		reqImage.VirtualImage.SshUsername.Set(&sshUser)
 	}
 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
 		storageProvider := sdk.NewAddVirtualImageRequestVirtualImageStorageProviderWithDefaults()
-		storageProvider.SetId(plan.StorageProviderId.ValueInt64())
+		providerID := plan.StorageProviderId.ValueInt64()
+		storageProvider.Id = &providerID
 
-		reqImage.VirtualImage.SetStorageProvider(*storageProvider)
+		reqImage.VirtualImage.StorageProvider = storageProvider
 	}
 
 	// sysprep
 	if !plan.Sysprep.IsNull() && !plan.Sysprep.IsUnknown() {
-		reqImage.VirtualImage.SetIsSysprep(plan.Sysprep.ValueBool())
+		val := plan.Sysprep.ValueBool()
+		reqImage.VirtualImage.IsSysprep = &val
 	}
 
 	// tags
@@ -164,7 +181,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 		return
 	}
-	reqImage.VirtualImage.SetTags(tags)
+	reqImage.VirtualImage.Tags = tags
 
 	// tenant_id
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
@@ -187,17 +204,20 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// trial_version
 	if !plan.TrialVersion.IsNull() && !plan.TrialVersion.IsUnknown() {
-		reqImage.VirtualImage.SetTrialVersion(plan.TrialVersion.ValueBool())
+		val := plan.TrialVersion.ValueBool()
+		reqImage.VirtualImage.TrialVersion = &val
 	}
 
 	// uefi
 	if !plan.Uefi.IsNull() && !plan.Uefi.IsUnknown() {
-		reqImage.VirtualImage.SetUefi(plan.Uefi.ValueBool())
+		val := plan.Uefi.ValueBool()
+		reqImage.VirtualImage.Uefi = &val
 	}
 
 	// url
 	if !plan.Url.IsNull() && !plan.Url.IsUnknown() {
-		reqImage.VirtualImage.SetUrl(plan.Url.ValueString())
+		val := plan.Url.ValueString()
+		reqImage.VirtualImage.Url = &val
 	}
 
 	// user_data
@@ -207,17 +227,20 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// virtio_supported
 	if !plan.VirtioSupported.IsNull() && !plan.VirtioSupported.IsUnknown() {
-		reqImage.VirtualImage.SetVirtioSupported(plan.VirtioSupported.ValueBool())
+		val := plan.VirtioSupported.ValueBool()
+		reqImage.VirtualImage.VirtioSupported = &val
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		reqImage.VirtualImage.SetVisibility(plan.Visibility.ValueString())
+		val := plan.Visibility.ValueString()
+		reqImage.VirtualImage.Visibility = &val
 	}
 
 	// vm_tools_installed
 	if !plan.VmToolsInstalled.IsNull() && !plan.VmToolsInstalled.IsUnknown() {
-		reqImage.VirtualImage.SetVmToolsInstalled(plan.VmToolsInstalled.ValueBool())
+		val := plan.VmToolsInstalled.ValueBool()
+		reqImage.VirtualImage.VmToolsInstalled = &val
 	}
 
 	image, httpResp, err := client.LibraryAPI.AddVirtualImage(ctx).
@@ -275,7 +298,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			}
 		}
 
-		status := resp.VirtualImage.GetStatus()
+		status := ""
+		if resp.VirtualImage != nil && resp.VirtualImage.Status != nil {
+			status = *resp.VirtualImage.Status
+		}
 
 		return status, checkStatusDone(
 			status,

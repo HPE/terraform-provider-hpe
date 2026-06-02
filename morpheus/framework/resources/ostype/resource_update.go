@@ -39,66 +39,67 @@ func (r *Resource) Update(
 
 	// bit_count
 	if !plan.BitCount.IsNull() && !plan.BitCount.IsUnknown() {
-		osType.SetBitCount(plan.BitCount.ValueInt64())
+		val := plan.BitCount.ValueInt64()
+		osType.BitCount = &val
 	}
 
 	// category
 	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {
-		osType.SetCategory(plan.Category.ValueString())
+		osType.Category.Set(plan.Category.ValueStringPointer())
 	}
 
 	// cloud_init_version
 	if !plan.CloudInitVersion.IsNull() && !plan.CloudInitVersion.IsUnknown() {
-		osType.SetCloudInitVersion(plan.CloudInitVersion.ValueString())
+		osType.CloudInitVersion = plan.CloudInitVersion.ValueStringPointer()
 	}
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		osType.SetDescription(plan.Description.ValueString())
+		osType.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
-		osType.SetInstallAgent(plan.InstallAgent.ValueBool())
+		osType.InstallAgent.Set(plan.InstallAgent.ValueBoolPointer())
 	}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		osType.SetName(plan.Name.ValueString())
+		osType.Name = plan.Name.ValueStringPointer()
 	}
 
 	// os_codename
 	if !plan.OsCodename.IsNull() && !plan.OsCodename.IsUnknown() {
-		osType.SetOsCodename(plan.OsCodename.ValueString())
+		osType.OsCodename.Set(plan.OsCodename.ValueStringPointer())
 	}
 
 	// os_family
 	if !plan.OsFamily.IsNull() && !plan.OsFamily.IsUnknown() {
-		osType.SetOsFamily(plan.OsFamily.ValueString())
+		osType.OsFamily.Set(plan.OsFamily.ValueStringPointer())
 	}
 
 	// os_name
 	if !plan.OsName.IsNull() && !plan.OsName.IsUnknown() {
-		osType.SetOsName(plan.OsName.ValueString())
+		osType.OsName.Set(plan.OsName.ValueStringPointer())
 	}
 
 	// os_version
 	if !plan.OsVersion.IsNull() && !plan.OsVersion.IsUnknown() {
-		osType.SetOsVersion(plan.OsVersion.ValueString())
+		osType.OsVersion.Set(plan.OsVersion.ValueStringPointer())
 	}
 
 	// platform
 	if !plan.Platform.IsNull() && !plan.Platform.IsUnknown() {
-		osType.SetPlatform(plan.Platform.ValueString())
+		osType.Platform = plan.Platform.ValueStringPointer()
 	}
 
 	// vendor
 	if !plan.Vendor.IsNull() && !plan.Vendor.IsUnknown() {
-		osType.SetVendor(plan.Vendor.ValueString())
+		osType.Vendor.Set(plan.Vendor.ValueStringPointer())
 	}
 
 	updateReq := sdk.NewUpdateOsTypeRequestWithDefaults()
-	updateReq.SetOsType(*osType)
+	updateReq.OsType = osType
 
 	id := currentState.Id.ValueInt64()
 

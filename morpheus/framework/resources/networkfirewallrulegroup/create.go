@@ -37,24 +37,29 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	ruleGroup := sdk.NewCreateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
-	ruleGroup.SetName(name)
-	ruleGroup.SetExternalType(plan.ExternalType.ValueString())
+	ruleGroup := &sdk.CreateNetworkFirewallRuleGroupRequestRuleGroup{
+		Name:         name,
+		ExternalType: plan.ExternalType.ValueString(),
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		ruleGroup.SetDescription(plan.Description.ValueString())
+		desc := plan.Description.ValueString()
+		ruleGroup.Description = &desc
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		ruleGroup.SetPriority(plan.Priority.ValueInt64())
+		priority := plan.Priority.ValueInt64()
+		ruleGroup.Priority = &priority
 	}
 
 	if !plan.GroupLayer.IsNull() && !plan.GroupLayer.IsUnknown() {
-		ruleGroup.SetGroupLayer(plan.GroupLayer.ValueString())
+		layer := plan.GroupLayer.ValueString()
+		ruleGroup.GroupLayer = &layer
 	}
 
-	createReq := sdk.NewCreateNetworkFirewallRuleGroupRequestWithDefaults()
-	createReq.SetRuleGroup(*ruleGroup)
+	createReq := &sdk.CreateNetworkFirewallRuleGroupRequest{
+		RuleGroup: ruleGroup,
+	}
 
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 
@@ -80,7 +85,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createdID := createResp.GetId()
+	createdID := *createResp.Id.Get()
 	plan.Id = types.Int64Value(createdID)
 
 	taintResourceState := func(id int64) {

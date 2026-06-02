@@ -55,7 +55,7 @@ func getNetworkDhcpServerAsState(
 		return state, diags
 	}
 
-	raw := dhcpResp.GetNetworkDhcpServer()
+	raw := dhcpResp.NetworkDhcpServer
 
 	encoded, err := json.Marshal(raw)
 	if err != nil {

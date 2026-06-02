@@ -76,20 +76,20 @@ func init() {
 }
 
 func getServerIDs(instance sdk.ListInstances200ResponseAllOfInstancesInner) ([]int64, error) {
-	containers, ok := instance.GetContainerDetailsOk()
-	if !ok || containers == nil {
+	containers := instance.ContainerDetails
+	if containers == nil {
 		return nil, fmt.Errorf("failed to get container details")
 	}
 
 	serverIDs := make([]int64, 0, len(containers))
 	for _, container := range containers {
-		server, ok := container.GetServerOk()
-		if !ok || server == nil {
+		server := container.Server
+		if server == nil {
 			return nil, fmt.Errorf("failed to get server details from container")
 		}
 
-		serverID, ok := server.GetIdOk()
-		if !ok || serverID == nil {
+		serverID := server.Id
+		if serverID == nil {
 			return nil, fmt.Errorf("failed to get server ID from container")
 		}
 

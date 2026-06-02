@@ -103,9 +103,9 @@ func makeUpdateAPIcalls(
 	resp *resource.UpdateResponse,
 ) ServicePlanOptionsValue {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
-	updateRequest := sdk.NewUpdateInstanceRequest()
-	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstance()
-	updateConfig := sdk.NewUpdateInstanceRequestConfig()
+	updateRequest := sdk.NewUpdateInstanceRequestWithDefaults()
+	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstanceWithDefaults()
+	updateConfig := sdk.NewUpdateInstanceRequestConfigWithDefaults()
 	hasConfigUpdate := false
 
 	// name
@@ -126,7 +126,7 @@ func makeUpdateAPIcalls(
 
 	// group_id
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		site := sdk.NewUpdateInstanceRequestInstanceSite()
+		site := sdk.NewUpdateInstanceRequestInstanceSiteWithDefaults()
 		site.Id = plan.GroupId.ValueInt64Pointer()
 		instanceUpdateRequest.Site = site
 	}
@@ -140,10 +140,10 @@ func makeUpdateAPIcalls(
 
 			return NewServicePlanOptionsValueNull()
 		}
-		instanceUpdateRequest.SetTags(tags)
+		instanceUpdateRequest.Tags = tags
 	} else {
 		// Morpheus will only remove tags if explicitly passed an empty list
-		instanceUpdateRequest.SetTags([]sdk.UpdateInstanceRequestInstanceTagsInner{})
+		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
 	}
 
 	// Config update handling. Currently only Azure uses map-based config updates
@@ -200,9 +200,9 @@ func makeUpdateAPIcalls(
 		hasConfigUpdate = len(updateConfig.AdditionalProperties) > 0
 	}
 
-	updateRequest.SetInstance(*instanceUpdateRequest)
+	updateRequest.Instance = instanceUpdateRequest
 	if hasConfigUpdate {
-		updateRequest.SetConfig(*updateConfig)
+		updateRequest.Config = updateConfig
 	}
 	_, httpResp, err := updateInstance.UpdateInstanceRequest(*updateRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
@@ -266,10 +266,10 @@ func createResizeRequest(
 
 	// plan_id
 	if !plan.PlanId.IsNull() || !plan.PlanId.IsUnknown() {
-		resizeRequest.Instance = sdk.NewResizeInstanceRequestInstance()
+		resizeRequest.Instance = sdk.NewResizeInstanceRequestInstanceWithDefaults()
 		resizeRequest.Instance.Id = state.Id.ValueInt64Pointer()
-		resizeRequest.Instance.Plan = sdk.NewResizeInstanceRequestInstancePlan()
-		resizeRequest.Instance.Plan.SetId(plan.PlanId.ValueInt64())
+		resizeRequest.Instance.Plan = sdk.NewResizeInstanceRequestInstancePlanWithDefaults()
+		resizeRequest.Instance.Plan.Id = plan.PlanId.ValueInt64Pointer()
 	}
 
 	return resizeRequest
@@ -328,7 +328,7 @@ func addVolumesToResizeRequest(
 			volumesForRequest[i] = updateVolumeMapper(v)
 		}
 
-		resizeRequest.SetVolumes(volumesForRequest)
+		resizeRequest.Volumes = volumesForRequest
 	}
 
 	return diag.Diagnostics{}
@@ -423,7 +423,7 @@ func addNetworkInterfacesToResizeRequest(
 			intfsForRequest[i] = mapper(intf)
 		}
 
-		resizeRequest.SetNetworkInterfaces(intfsForRequest)
+		resizeRequest.NetworkInterfaces = intfsForRequest
 	}
 
 	return diag.Diagnostics{}
@@ -601,7 +601,7 @@ func addServicePlanOptionsToResizeRequest(
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) {
 	// compare state and plan service_plan_options so we only resize if required
-	servicePlanOptions := sdk.NewResizeInstanceRequestServicePlanOptions()
+	servicePlanOptions := sdk.NewResizeInstanceRequestServicePlanOptionsWithDefaults()
 	if !plan.ServicePlanOptions.MaxCores.IsNull() && !plan.ServicePlanOptions.MaxCores.IsUnknown() {
 		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
 	}
@@ -613,7 +613,7 @@ func addServicePlanOptionsToResizeRequest(
 		servicePlanOptions.MaxMemory = &memoryInBytes
 	}
 
-	resizeRequest.SetServicePlanOptions(*servicePlanOptions)
+	resizeRequest.ServicePlanOptions = servicePlanOptions
 }
 
 func makeResizeRequestAndWaitForComplete(
@@ -641,20 +641,17 @@ func makeResizeRequestAndWaitForComplete(
 			}
 		}
 
-		// Get instance
-		inst, ok := resp.GetInstanceOk()
-		if !ok || inst == nil {
+		inst := resp.Instance
+		if inst == nil {
 			return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty instance", *resizeRequest.Instance.Id))
 		}
 
-		// Get status
-		status, ok := inst.GetStatusOk()
-		if !ok || status == nil {
+		if inst.Status == nil {
 			return "", backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", *resizeRequest.Instance.Id))
 		}
 
-		return *status, checkStatusDone(
-			*status,
+		return *inst.Status, checkStatusDone(
+			*inst.Status,
 			UpdateTargetStatuses,
 			UpdateErrorStatuses,
 		)

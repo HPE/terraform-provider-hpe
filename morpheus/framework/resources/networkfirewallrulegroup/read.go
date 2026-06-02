@@ -81,7 +81,7 @@ func getNetworkFirewallRuleGroupAsState(
 		return state, false, diags
 	}
 
-	ruleGroup := getResp.GetRuleGroup()
+	ruleGroup := getResp.RuleGroup
 
 	state.Id = convert.Int64ToType(ruleGroup.Id)
 	state.Name = convert.StrToType(ruleGroup.Name)

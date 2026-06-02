@@ -102,8 +102,8 @@ func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	settings := result.GetWhitelabelSettings()
-	mapResponseToModel(&state, &settings)
+	settings := result.WhitelabelSettings
+	mapResponseToModel(&state, settings)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -204,8 +204,8 @@ func (r *settingWhitelabelResource) readIntoModel(
 		return
 	}
 
-	settings := result.GetWhitelabelSettings()
-	mapResponseToModel(model, &settings)
+	settings := result.WhitelabelSettings
+	mapResponseToModel(model, settings)
 }
 
 func buildUpdateRequest(plan *settingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {

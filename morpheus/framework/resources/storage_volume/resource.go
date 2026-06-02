@@ -82,8 +82,8 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sv := result.GetStorageVolume()
-	mapCreateResponseToModel(&plan, &sv)
+	sv := result.StorageVolume
+	mapCreateResponseToModel(&plan, sv)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -103,7 +103,7 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	id := state.ID.ValueInt64()
-	idParam := sdk.Int64AsGetStorageVolumesIdParameter(&id)
+	idParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
 
 	result, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -117,8 +117,8 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	sv := result.GetStorageVolume()
-	mapGetResponseToModel(&state, &sv)
+	sv := result.StorageVolume
+	mapGetResponseToModel(&state, sv)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -138,7 +138,7 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	id := plan.ID.ValueInt64()
-	idParam := sdk.Int64AsUpdateStorageVolumesIdParameter(&id)
+	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
 	body := sdk.UpdateStorageVolumesRequestStorageVolume{
 		Name: plan.Name.ValueStringPointer(),
@@ -178,7 +178,7 @@ func (r *storageVolumeResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	id := state.ID.ValueInt64()
-	idParam := sdk.Int64AsUpdateStorageVolumesIdParameter(&id)
+	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
 	_, httpResp, err := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -212,7 +212,7 @@ func mapCreateResponseToModel(model *storageVolumeModel, sv *sdk.AddStorageVolum
 	if sv.TypeId != nil {
 		model.TypeId = types.Int64Value(*sv.TypeId)
 	}
-	if storageServer := sv.GetStorageServer(); storageServer != nil {
+	if storageServer := sv.StorageServer; storageServer != nil {
 		if id, ok := storageServer["id"].(float64); ok {
 			model.StorageServerID = types.Int64Value(int64(id))
 		}
@@ -235,7 +235,7 @@ func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes2
 	if sv.TypeId != nil {
 		model.TypeId = types.Int64Value(*sv.TypeId)
 	}
-	if storageServer := sv.GetStorageServer(); storageServer != nil {
+	if storageServer := sv.StorageServer; storageServer != nil {
 		if id, ok := storageServer["id"].(float64); ok {
 			model.StorageServerID = types.Int64Value(int64(id))
 		}

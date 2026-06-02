@@ -93,8 +93,8 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 			}
 		}
 	}
-	if newID == 0 {
-		newID = result.GetId()
+	if newID == 0 && result.Id.IsSet() && result.Id.Get() != nil {
+		newID = *result.Id.Get()
 	}
 	if newID == 0 {
 		resp.Diagnostics.AddError("Failed to extract ID", "Could not determine network group ID from create response")
@@ -116,8 +116,8 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	group := readResult.GetNetworkGroup()
-	mapResponseToModel(&plan, &group)
+	group := readResult.NetworkGroup
+	mapResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -150,8 +150,8 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	group := result.GetNetworkGroup()
-	mapResponseToModel(&state, &group)
+	group := result.NetworkGroup
+	mapResponseToModel(&state, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -208,8 +208,8 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	group := readResult.GetNetworkGroup()
-	mapResponseToModel(&plan, &group)
+	group := readResult.NetworkGroup
+	mapResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

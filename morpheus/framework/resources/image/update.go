@@ -52,12 +52,14 @@ func (r *Resource) Update(
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() {
-		updateImage.SetIsAutoJoinDomain(plan.AutoJoinDomain.ValueBool())
+		val := plan.AutoJoinDomain.ValueBool()
+		updateImage.IsAutoJoinDomain = &val
 	}
 
 	// cloud_init
 	if !plan.CloudInit.IsNull() {
-		updateImage.SetIsCloudInit(plan.CloudInit.ValueBool())
+		val := plan.CloudInit.ValueBool()
+		updateImage.IsCloudInit = &val
 	}
 
 	// config_azure
@@ -70,22 +72,26 @@ func (r *Resource) Update(
 
 	// fips_enabled
 	if !plan.FipsEnabled.IsNull() {
-		updateImage.SetFipsEnabled(plan.FipsEnabled.ValueBool())
+		val := plan.FipsEnabled.ValueBool()
+		updateImage.FipsEnabled = &val
 	}
 
 	// force_customization
 	if !plan.ForceCustomization.IsNull() {
-		updateImage.SetIsForceCustomization(plan.ForceCustomization.ValueBool())
+		val := plan.ForceCustomization.ValueBool()
+		updateImage.IsForceCustomization = &val
 	}
 
 	// image_type
 	if !plan.ImageType.IsNull() {
-		updateImage.SetImageType(plan.ImageType.ValueString())
+		val := plan.ImageType.ValueString()
+		updateImage.ImageType = &val
 	}
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() {
-		updateImage.SetInstallAgent(plan.InstallAgent.ValueBool())
+		val := plan.InstallAgent.ValueBool()
+		updateImage.InstallAgent = &val
 	}
 
 	// labels
@@ -100,27 +106,29 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateImage.SetLabels(labels)
+		updateImage.Labels = labels
 	}
 
 	// min_disk
 	if !plan.MinDisk.IsNull() {
-		updateImage.SetMinDisk(plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024)
+		val := plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024
+		updateImage.MinDisk.Set(&val)
 	}
 
 	// min_ram
 	if !plan.MinRam.IsNull() {
-		updateImage.SetMinRamGB(plan.MinRam.ValueInt64())
+		val := plan.MinRam.ValueInt64()
+		updateImage.MinRamGB.Set(&val)
 	}
 
 	// name
 	if !plan.Name.IsNull() {
-		updateImage.SetName(name)
+		updateImage.Name = &name
 	}
 
 	// os_type_id
 	if !plan.OsTypeId.IsNull() {
-		updateImage.SetOsType(plan.OsTypeId.ValueInt64())
+		updateImage.OsType.Set(plan.OsTypeId.ValueInt64Pointer())
 	}
 
 	// ssh_password_wo
@@ -134,25 +142,27 @@ func (r *Resource) Update(
 
 			return
 		}
-		updateImage.SetSshPassword(config.SshPasswordWo.ValueString())
+		updateImage.SshPassword.Set(config.SshPasswordWo.ValueStringPointer())
 	}
 
 	// ssh_username
 	if !plan.SshUsername.IsNull() {
-		updateImage.SetSshUsername(plan.SshUsername.ValueString())
+		updateImage.SshUsername.Set(plan.SshUsername.ValueStringPointer())
 	}
 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() {
 		storageProvider := sdk.NewUpdateVirtualImageRequestVirtualImageStorageProviderWithDefaults()
-		storageProvider.SetId(plan.StorageProviderId.ValueInt64())
+		storageProviderID := plan.StorageProviderId.ValueInt64()
+		storageProvider.Id = &storageProviderID
 
-		updateImage.SetStorageProvider(*storageProvider)
+		updateImage.StorageProvider = storageProvider
 	}
 
 	// sysprep
 	if !plan.Sysprep.IsNull() {
-		updateImage.SetIsSysprep(plan.Sysprep.ValueBool())
+		val := plan.Sysprep.ValueBool()
+		updateImage.IsSysprep = &val
 	}
 
 	// tags
@@ -163,7 +173,7 @@ func (r *Resource) Update(
 
 		return
 	}
-	updateImage.SetTags(tags)
+	updateImage.Tags = tags
 
 	// tenant_ids
 	if !plan.TenantIds.IsNull() {
@@ -184,12 +194,14 @@ func (r *Resource) Update(
 
 	// trial_version
 	if !plan.TrialVersion.IsNull() {
-		updateImage.SetTrialVersion(plan.TrialVersion.ValueBool())
+		val := plan.TrialVersion.ValueBool()
+		updateImage.TrialVersion = &val
 	}
 
 	// uefi
 	if !plan.Uefi.IsNull() {
-		updateImage.SetUefi(plan.Uefi.ValueBool())
+		val := plan.Uefi.ValueBool()
+		updateImage.Uefi = &val
 	}
 
 	// url
@@ -199,26 +211,29 @@ func (r *Resource) Update(
 
 	// user_data
 	if !plan.UserData.IsNull() {
-		updateImage.SetUserData(plan.UserData.ValueString())
+		updateImage.UserData.Set(plan.UserData.ValueStringPointer())
 	}
 
 	// virtio_supported
 	if !plan.VirtioSupported.IsNull() {
-		updateImage.SetVirtioSupported(plan.VirtioSupported.ValueBool())
+		val := plan.VirtioSupported.ValueBool()
+		updateImage.VirtioSupported = &val
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() {
-		updateImage.SetVisibility(plan.Visibility.ValueString())
+		val := plan.Visibility.ValueString()
+		updateImage.Visibility = &val
 	}
 
 	// vm_tools_installed
 	if !plan.VmToolsInstalled.IsNull() {
-		updateImage.SetVmToolsInstalled(plan.VmToolsInstalled.ValueBool())
+		val := plan.VmToolsInstalled.ValueBool()
+		updateImage.VmToolsInstalled = &val
 	}
 
 	// send the API request here
-	updateRequest.SetVirtualImage(*updateImage)
+	updateRequest.VirtualImage = *updateImage
 	image, httpResp, err := client.LibraryAPI.UpdateVirtualImage(ctx, state.Id.ValueInt64()).
 		UpdateVirtualImageRequest(*updateRequest).
 		Execute()
@@ -228,7 +243,9 @@ func (r *Resource) Update(
 		return
 	}
 	// set the ID value in state
-	plan.Id = convert.Int64ToType(image.GetVirtualImage().Id)
+	if image.VirtualImage != nil {
+		plan.Id = convert.Int64ToType(image.VirtualImage.Id)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {

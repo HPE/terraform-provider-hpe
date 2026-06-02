@@ -17,6 +17,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
+func stringOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
+}
+
 // mapPolicyConfigToState maps the API config structure to the resource schema structure
 func mapPolicyConfigToState(
 	ctx context.Context,
@@ -152,7 +160,7 @@ func mapPolicyConfigToState(
 	case "maxMemory":
 		maxMemoryAttrs := map[string]attr.Value{
 			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration3.MaxMemory),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxMemoryPolicyTypeConfiguration3.GetExcludeContainers()),
+			"exclude_containers": convert.StringToBool(ctx, stringOrEmpty(apiConfig.MaxMemoryPolicyTypeConfiguration3.ExcludeContainers)),
 		}
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
@@ -165,7 +173,7 @@ func mapPolicyConfigToState(
 	case "maxCores":
 		maxCoresAttrs := map[string]attr.Value{
 			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration3.MaxCores),
-			"exclude_containers": convert.StringToBool(ctx, apiConfig.MaxCoresPolicyTypeConfiguration3.GetExcludeContainers()),
+			"exclude_containers": convert.StringToBool(ctx, stringOrEmpty(apiConfig.MaxCoresPolicyTypeConfiguration3.ExcludeContainers)),
 		}
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
@@ -199,11 +207,11 @@ func mapPolicyConfigToState(
 			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAge),
 			"lifecycle_allow_extend": convert.StringToBool(
 				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAllowExtend(),
+				stringOrEmpty(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAllowExtend),
 			),
 			"lifecycle_auto_renew": convert.StringToBool(
 				ctx,
-				apiConfig.ExpirationPolicyTypeConfiguration3.GetLifecycleAutoRenew(),
+				stringOrEmpty(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAutoRenew),
 			),
 			"lifecycle_extensions_before_approval": convert.StrToType(
 				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleExtensionsBeforeApproval,
@@ -369,7 +377,7 @@ func mapPolicyConfigToState(
 		maxStorageAttrs := map[string]attr.Value{
 			"exclude_containers": convert.StringToBool(
 				ctx,
-				apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.GetExcludeContainers(),
+				stringOrEmpty(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers),
 			),
 			"max_storage": convert.StrToType(
 				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.MaxStorage,
@@ -519,11 +527,11 @@ func mapPolicyConfigToState(
 			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAge),
 			"shutdown_allow_extend": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAllowExtend(),
+				stringOrEmpty(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAllowExtend),
 			),
 			"shutdown_auto_renew": convert.StringToBool(
 				ctx,
-				apiConfig.ShutdownPolicyTypeConfiguration3.GetShutdownAutoRenew(),
+				stringOrEmpty(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAutoRenew),
 			),
 			"shutdown_extensions_before_approval": convert.StrToType(
 				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownExtensionsBeforeApproval,
@@ -651,7 +659,7 @@ func getPolicyAsState(
 
 	// Handle RefId - convert string to int64
 	if p.RefId.IsSet() && p.RefId.Get() != nil {
-		state.AssociatedResourceId = types.Int64Value(p.GetRefId())
+		state.AssociatedResourceId = types.Int64Value(*p.RefId.Get())
 	}
 
 	// Handle RefType
@@ -795,9 +803,9 @@ func getPolicyAsState(
 
 	// Set Owner if present
 	state.Owner = NewOwnerValueNull()
-	owner := p.GetOwner()
+	owner := p.Owner.Get()
 
-	if owner.Id != nil {
+	if owner != nil && owner.Id != nil {
 		ownerAttrs := map[string]attr.Value{}
 		if owner.Id != nil {
 			ownerAttrs["id"] = types.Int64Value(*owner.Id)

@@ -103,7 +103,7 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
-	license := result.GetLicense()
+	license := result.License
 	if license.Id != nil {
 		plan.ID = types.Int64Value(*license.Id)
 	}
@@ -140,7 +140,7 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	license := result.GetLicense()
+	license := result.License
 	if license.Id != nil {
 		state.ID = types.Int64Value(*license.Id)
 	}

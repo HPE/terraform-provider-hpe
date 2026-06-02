@@ -49,22 +49,24 @@ func (r *Resource) Update(
 	router := sdk.NewUpdateNetworkRouterRequestNetworkRouterWithDefaults()
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		router.SetName(plan.Name.ValueString())
+		name := plan.Name.ValueString()
+		router.Name = &name
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		router.SetEnabled(plan.Enabled.ValueBool())
+		enabled := plan.Enabled.ValueBool()
+		router.Enabled = &enabled
 	}
 
 	// Build config map for update
 	// Only generic config supports update
 	configMap := buildUpdateConfig(ctx, plan)
 	if configMap != nil {
-		router.SetConfig(configMap)
+		router.Config = configMap
 	}
 
 	updateReq := sdk.NewUpdateNetworkRouterRequestWithDefaults()
-	updateReq.SetNetworkRouter(*router)
+	updateReq.NetworkRouter = router
 
 	_, hresp, err := client.NetworksAPI.UpdateNetworkRouter(ctx, id).
 		UpdateNetworkRouterRequest(*updateReq).Execute()

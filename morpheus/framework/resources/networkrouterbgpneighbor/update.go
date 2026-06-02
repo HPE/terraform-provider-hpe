@@ -43,84 +43,84 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 	routerID := state.RouterId.ValueInt64()
 
-	neighbor := sdk.NewUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor()
+	neighbor := &sdk.UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor{}
 
 	if !plan.IpAddress.IsNull() && !plan.IpAddress.IsUnknown() {
-		neighbor.SetIpAddress(plan.IpAddress.ValueString())
+		neighbor.IpAddress = sdk.PtrString(plan.IpAddress.ValueString())
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		neighbor.SetDescription(plan.Description.ValueString())
+		neighbor.Description = sdk.PtrString(plan.Description.ValueString())
 	}
 
 	if !plan.ForwardingAddress.IsNull() && !plan.ForwardingAddress.IsUnknown() {
-		neighbor.SetForwardingAddress(plan.ForwardingAddress.ValueString())
+		neighbor.ForwardingAddress = sdk.PtrString(plan.ForwardingAddress.ValueString())
 	}
 
 	if !plan.ProtocolAddress.IsNull() && !plan.ProtocolAddress.IsUnknown() {
-		neighbor.SetProtocolAddress(plan.ProtocolAddress.ValueString())
+		neighbor.ProtocolAddress = sdk.PtrString(plan.ProtocolAddress.ValueString())
 	}
 
 	if !plan.RemoteAs.IsNull() && !plan.RemoteAs.IsUnknown() {
-		neighbor.SetRemoteAs(plan.RemoteAs.ValueString())
+		neighbor.RemoteAs = sdk.PtrString(plan.RemoteAs.ValueString())
 	}
 
 	if !plan.Weight.IsNull() && !plan.Weight.IsUnknown() {
-		neighbor.SetWeight(plan.Weight.ValueInt64())
+		neighbor.Weight = sdk.PtrInt64(plan.Weight.ValueInt64())
 	}
 
 	if !plan.KeepAlive.IsNull() && !plan.KeepAlive.IsUnknown() {
-		neighbor.SetKeepAlive(plan.KeepAlive.ValueInt64())
+		neighbor.KeepAlive = sdk.PtrInt64(plan.KeepAlive.ValueInt64())
 	}
 
 	if !plan.HoldDown.IsNull() && !plan.HoldDown.IsUnknown() {
-		neighbor.SetHoldDown(plan.HoldDown.ValueInt64())
+		neighbor.HoldDown = sdk.PtrInt64(plan.HoldDown.ValueInt64())
 	}
 
 	if !plan.PasswordWo.IsNull() && !plan.PasswordWo.IsUnknown() {
-		neighbor.SetPassword(plan.PasswordWo.ValueString())
+		neighbor.Password = sdk.PtrString(plan.PasswordWo.ValueString())
 	}
 
 	if !plan.RouteFilteringType.IsNull() && !plan.RouteFilteringType.IsUnknown() {
-		neighbor.SetRouteFilteringType(plan.RouteFilteringType.ValueString())
+		neighbor.RouteFilteringType = sdk.PtrString(plan.RouteFilteringType.ValueString())
 	}
 
 	if !plan.RouteFilteringIn.IsNull() && !plan.RouteFilteringIn.IsUnknown() {
-		neighbor.SetRouteFilteringIn(plan.RouteFilteringIn.ValueString())
+		neighbor.RouteFilteringIn = sdk.PtrString(plan.RouteFilteringIn.ValueString())
 	}
 
 	if !plan.RouteFilteringOut.IsNull() && !plan.RouteFilteringOut.IsUnknown() {
-		neighbor.SetRouteFilteringOut(plan.RouteFilteringOut.ValueString())
+		neighbor.RouteFilteringOut = sdk.PtrString(plan.RouteFilteringOut.ValueString())
 	}
 
 	if !plan.BfdEnabled.IsNull() && !plan.BfdEnabled.IsUnknown() {
 		bfdVal := sdk.UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborBfdEnabled{}
 		boolVal := plan.BfdEnabled.ValueBool()
 		bfdVal.Bool = &boolVal
-		neighbor.SetBfdEnabled(bfdVal)
+		neighbor.BfdEnabled = &bfdVal
 	}
 
 	if !plan.BfdInterval.IsNull() && !plan.BfdInterval.IsUnknown() {
-		neighbor.SetBfdInterval(plan.BfdInterval.ValueInt64())
+		neighbor.BfdInterval = sdk.PtrInt64(plan.BfdInterval.ValueInt64())
 	}
 
 	if !plan.BfdMultiple.IsNull() && !plan.BfdMultiple.IsUnknown() {
-		neighbor.SetBfdMultiple(plan.BfdMultiple.ValueInt64())
+		neighbor.BfdMultiple = sdk.PtrInt64(plan.BfdMultiple.ValueInt64())
 	}
 
 	if !plan.AllowAsIn.IsNull() && !plan.AllowAsIn.IsUnknown() {
 		allowVal := sdk.UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborAllowAsIn{}
 		boolVal := plan.AllowAsIn.ValueBool()
 		allowVal.Bool = &boolVal
-		neighbor.SetAllowAsIn(allowVal)
+		neighbor.AllowAsIn = &allowVal
 	}
 
 	if !plan.HopLimit.IsNull() && !plan.HopLimit.IsUnknown() {
-		neighbor.SetHopLimit(plan.HopLimit.ValueInt64())
+		neighbor.HopLimit = sdk.PtrInt64(plan.HopLimit.ValueInt64())
 	}
 
 	if !plan.RestartMode.IsNull() && !plan.RestartMode.IsUnknown() {
-		neighbor.SetRestartMode(plan.RestartMode.ValueString())
+		neighbor.RestartMode = sdk.PtrString(plan.RestartMode.ValueString())
 	}
 
 	updateConfig := buildUpdateConfig(ctx, plan, resp)
@@ -129,11 +129,11 @@ func (r *Resource) Update(
 	}
 
 	if updateConfig != nil {
-		neighbor.SetConfig(*updateConfig)
+		neighbor.Config = updateConfig
 	}
 
-	updateReq := sdk.NewUpdateNetworkRouterBgpNeighborRequest()
-	updateReq.SetNetworkRouterBgpNeighbor(*neighbor)
+	updateReq := &sdk.UpdateNetworkRouterBgpNeighborRequest{}
+	updateReq.NetworkRouterBgpNeighbor = neighbor
 
 	_, hresp, err := client.NetworksAPI.
 		UpdateNetworkRouterBgpNeighbor(ctx, id, routerID).
@@ -171,7 +171,7 @@ func buildUpdateConfig(
 
 	switch {
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		nsxtConfig := sdk.NewNSXTBGPNeighborConfig3()
+		nsxtConfig := &sdk.NSXTBGPNeighborConfig3{}
 
 		if !plan.ConfigNsxt.SourceAddresses.IsNull() &&
 			!plan.ConfigNsxt.SourceAddresses.IsUnknown() {
@@ -189,22 +189,22 @@ func buildUpdateConfig(
 				}
 			}
 
-			nsxtConfig.SetSourceAddresses(strAddrs)
+			nsxtConfig.SourceAddresses = strAddrs
 		}
 
 		config.NSXTBGPNeighborConfig3 = nsxtConfig
 
 	case !plan.ConfigNsxv.IsNull() && !plan.ConfigNsxv.IsUnknown():
-		nsxvConfig := sdk.NewNSXVBGPNeighborConfig3()
+		nsxvConfig := &sdk.NSXVBGPNeighborConfig3{}
 
 		if !plan.ConfigNsxv.RouterId.IsNull() &&
 			!plan.ConfigNsxv.RouterId.IsUnknown() {
-			nsxvConfig.SetRouterId(plan.ConfigNsxv.RouterId.ValueString())
+			nsxvConfig.RouterId = sdk.PtrString(plan.ConfigNsxv.RouterId.ValueString())
 		}
 
 		if !plan.ConfigNsxv.Interface.IsNull() &&
 			!plan.ConfigNsxv.Interface.IsUnknown() {
-			nsxvConfig.SetInterface(plan.ConfigNsxv.Interface.ValueString())
+			nsxvConfig.Interface = sdk.PtrString(plan.ConfigNsxv.Interface.ValueString())
 		}
 
 		config.NSXVBGPNeighborConfig3 = nsxvConfig

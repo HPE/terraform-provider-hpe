@@ -31,81 +31,97 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 	name := plan.Name.ValueString()
 
-	network := sdk.NewUpdateNetworkRequestNetwork()
+	network := &sdk.UpdateNetworkRequestNetwork{}
 
 	// Set all updateable fields from plan
 	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
-		network.SetDisplayName(plan.DisplayName.ValueString())
+		displayName := plan.DisplayName.ValueString()
+		network.DisplayName = &displayName
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		network.SetDescription(plan.Description.ValueString())
+		description := plan.Description.ValueString()
+		network.Description.Set(&description)
 	}
 
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
-		network.SetCidr(plan.Cidr.ValueString())
+		cidr := plan.Cidr.ValueString()
+		network.Cidr = &cidr
 	}
 
 	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
-		network.SetGateway(plan.Gateway.ValueString())
+		gateway := plan.Gateway.ValueString()
+		network.Gateway = &gateway
 	}
 
 	if !plan.DnsPrimary.IsNull() && !plan.DnsPrimary.IsUnknown() {
-		network.SetDnsPrimary(plan.DnsPrimary.ValueString())
+		dnsPrimary := plan.DnsPrimary.ValueString()
+		network.DnsPrimary = &dnsPrimary
 	}
 
 	if !plan.DnsSecondary.IsNull() && !plan.DnsSecondary.IsUnknown() {
-		network.SetDnsSecondary(plan.DnsSecondary.ValueString())
+		dnsSecondary := plan.DnsSecondary.ValueString()
+		network.DnsSecondary = &dnsSecondary
 	}
 
 	if !plan.VlanId.IsNull() && !plan.VlanId.IsUnknown() {
-		network.SetVlanId(plan.VlanId.ValueInt64())
+		vlanID := plan.VlanId.ValueInt64()
+		network.VlanId = &vlanID
 	}
 
 	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-		network.SetPool(plan.PoolId.ValueInt64())
+		poolID := plan.PoolId.ValueInt64()
+		network.Pool.Set(&poolID)
 	}
 
 	if !plan.ZonePoolId.IsNull() && !plan.ZonePoolId.IsUnknown() {
-		zonePool := sdk.NewUpdateNetworkRequestNetworkZonePool()
-		zonePool.SetId(plan.ZonePoolId.ValueInt64())
-		network.SetZonePool(*zonePool)
+		zonePoolID := plan.ZonePoolId.ValueInt64()
+		network.ZonePool = &sdk.UpdateNetworkRequestNetworkZonePool{Id: &zonePoolID}
 	}
 
 	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
-		network.SetAllowStaticOverride(plan.AllowStaticOverride.ValueBool())
+		allowStaticOverride := plan.AllowStaticOverride.ValueBool()
+		network.AllowStaticOverride = &allowStaticOverride
 	}
 
 	if !plan.AssignPublicIp.IsNull() && !plan.AssignPublicIp.IsUnknown() {
-		network.SetAssignPublicIp(plan.AssignPublicIp.ValueBool())
+		assignPublicIP := plan.AssignPublicIp.ValueBool()
+		network.AssignPublicIp = &assignPublicIP
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		network.SetActive(plan.Active.ValueBool())
+		active := plan.Active.ValueBool()
+		network.Active = &active
 	}
 
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
-		network.SetDhcpServer(plan.DhcpServer.ValueBool())
+		dhcpServer := plan.DhcpServer.ValueBool()
+		network.DhcpServer = &dhcpServer
 	}
 
 	if !plan.SearchDomains.IsNull() && !plan.SearchDomains.IsUnknown() {
-		network.SetSearchDomains(plan.SearchDomains.ValueString())
+		searchDomains := plan.SearchDomains.ValueString()
+		network.SearchDomains = &searchDomains
 	}
 
 	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
-		network.SetSwitchId(plan.SwitchId.ValueString())
+		switchID := plan.SwitchId.ValueString()
+		network.SwitchId = &switchID
 	}
 
 	if !plan.ApplianceUrlProxyBypass.IsNull() && !plan.ApplianceUrlProxyBypass.IsUnknown() {
-		network.SetApplianceUrlProxyBypass(plan.ApplianceUrlProxyBypass.ValueBool())
+		applianceURLProxyBypass := plan.ApplianceUrlProxyBypass.ValueBool()
+		network.ApplianceUrlProxyBypass = &applianceURLProxyBypass
 	}
 
 	if !plan.NoProxy.IsNull() && !plan.NoProxy.IsUnknown() {
-		network.SetNoProxy(plan.NoProxy.ValueString())
+		noProxy := plan.NoProxy.ValueString()
+		network.NoProxy.Set(&noProxy)
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		network.SetVisibility(plan.Visibility.ValueString())
+		visibility := plan.Visibility.ValueString()
+		network.Visibility = &visibility
 	}
 
 	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
@@ -122,7 +138,7 @@ func (r *Resource) Update(
 				labelStrings = append(labelStrings, label.ValueString())
 			}
 		}
-		network.SetLabels(labelStrings)
+		network.Labels = labelStrings
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
@@ -140,7 +156,7 @@ func (r *Resource) Update(
 
 		configDataMap, ok := configMap.(map[string]any)
 		if ok {
-			network.SetConfig(configDataMap)
+			network.Config = configDataMap
 		} else {
 			resp.Diagnostics.AddError(
 				"update network resource",
@@ -162,28 +178,25 @@ func (r *Resource) Update(
 		var tenants []sdk.UpdateNetworkRequestNetworkTenantsInner
 		for _, tenantID := range tenantIDs {
 			if !tenantID.IsNull() {
-				tenant := sdk.UpdateNetworkRequestNetworkTenantsInner{}
-				tenant.SetId(tenantID.ValueInt64())
+				id := tenantID.ValueInt64()
+				tenant := sdk.UpdateNetworkRequestNetworkTenantsInner{Id: &id}
 				tenants = append(tenants, tenant)
 			}
 		}
-		network.SetTenants(tenants)
+		network.Tenants = tenants
 	}
 
 	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
-		networkDomain := sdk.NewUpdateNetworkRequestNetworkNetworkDomain()
-		networkDomain.SetId(plan.NetworkDomainId.ValueInt64())
-		network.SetNetworkDomain(*networkDomain)
+		networkDomainID := plan.NetworkDomainId.ValueInt64()
+		network.NetworkDomain = &sdk.UpdateNetworkRequestNetworkNetworkDomain{Id: &networkDomainID}
 	}
 
 	if !plan.NetworkProxyId.IsNull() && !plan.NetworkProxyId.IsUnknown() {
-		networkProxy := sdk.NewUpdateNetworkRequestNetworkNetworkProxy()
-		networkProxy.SetId(plan.NetworkProxyId.ValueInt64())
-		network.SetNetworkProxy(*networkProxy)
+		networkProxyID := plan.NetworkProxyId.ValueInt64()
+		network.NetworkProxy = &sdk.UpdateNetworkRequestNetworkNetworkProxy{Id: &networkProxyID}
 	}
 
-	updateNetworkReq := sdk.NewUpdateNetworkRequest()
-	updateNetworkReq.SetNetwork(*network)
+	updateNetworkReq := &sdk.UpdateNetworkRequest{Network: network}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

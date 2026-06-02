@@ -31,7 +31,10 @@ func getLoadBalancerAsState(
 		)
 	}
 
-	data := lb.GetLoadBalancer()
+	data := lb.LoadBalancer
+	if data == nil {
+		return state, fmt.Errorf("load balancer %d not found in response", id)
+	}
 
 	if data.Cloud == nil {
 		return state, fmt.Errorf("load balancer %d cloud id not found", id)
@@ -72,7 +75,7 @@ func getLoadBalancerAsState(
 	// Set config based on the load balancer type code from the API.
 	switch {
 	case isHAProxy:
-		haproxyCfg, err := parseHAProxyConfig(ctx, data.GetConfig())
+		haproxyCfg, err := parseHAProxyConfig(ctx, data.Config)
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}
@@ -81,7 +84,7 @@ func getLoadBalancerAsState(
 		state.ConfigNsxt = NewConfigNsxtValueNull()
 		state.Config = types.DynamicNull()
 	case isNSXT:
-		nsxtCfg, err := parseNsxtConfig(ctx, data.GetConfig())
+		nsxtCfg, err := parseNsxtConfig(ctx, data.Config)
 		if err != nil {
 			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)
 		}
@@ -93,7 +96,7 @@ func getLoadBalancerAsState(
 		state.ConfigHaproxy = NewConfigHaproxyValueNull()
 		state.ConfigNsxt = NewConfigNsxtValueNull()
 
-		state.Config, err = convert.MapToDynamic(ctx, data.GetConfig())
+		state.Config, err = convert.MapToDynamic(ctx, data.Config)
 		if err != nil {
 			return state, fmt.Errorf("failed to convert generic config: %w", err)
 		}
@@ -120,8 +123,8 @@ func getLoadBalancerAsState(
 	state.Tenants = tenants
 
 	// Resource permissions
-	resourcePermission, ok := data.GetResourcePermissionOk()
-	if ok && resourcePermission != nil {
+	resourcePermission := data.ResourcePermission
+	if resourcePermission != nil {
 		perms, err := convertResourcePermissions(ctx, resourcePermission)
 		if err != nil {
 			return state, fmt.Errorf("failed to convert resource permissions: %w", err)
@@ -148,14 +151,11 @@ func convertResourcePermissions(
 ) (PermissionsValue, error) {
 	var groupIDValues []attr.Value
 
-	groups, ok := resourcePermission.GetSitesOk()
-	if ok {
-		for _, group := range groups {
-			if group.Id != nil {
-				groupIDValues = append(
-					groupIDValues, types.Int64Value(*group.Id),
-				)
-			}
+	for _, group := range resourcePermission.Sites {
+		if group.Id != nil {
+			groupIDValues = append(
+				groupIDValues, types.Int64Value(*group.Id),
+			)
 		}
 	}
 

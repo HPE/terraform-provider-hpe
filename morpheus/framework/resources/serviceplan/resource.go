@@ -166,8 +166,8 @@ func setProvisionTypeInCreate(
 
 	var matchingProvisionTypes []sdk.
 		ListProvisionTypes200ResponseAllOfProvisionTypesInner
-	for _, pt := range pTypes.GetProvisionTypes() {
-		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
+	for _, pt := range pTypes.ProvisionTypes {
+		if pt.Code != nil && *pt.Code == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
 		}
 	}
@@ -180,13 +180,12 @@ func setProvisionTypeInCreate(
 		return fmt.Errorf("multiple provision types with code %s found", provisionTypeCode)
 	}
 
-	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
-	if !ok {
+	if matchingProvisionTypes[0].Id == nil {
 		return fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
 	provisionType := sdk.AddServicePlansRequestServicePlanProvisionType{}
-	provisionType.Id = *pTypeID
+	provisionType.Id = *matchingProvisionTypes[0].Id
 	addServicePlan.ProvisionType = provisionType
 
 	return nil
@@ -211,8 +210,8 @@ func setProvisionTypeInUpdate(
 
 	var matchingProvisionTypes []sdk.
 		ListProvisionTypes200ResponseAllOfProvisionTypesInner
-	for _, pt := range pTypes.GetProvisionTypes() {
-		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
+	for _, pt := range pTypes.ProvisionTypes {
+		if pt.Code != nil && *pt.Code == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
 		}
 	}
@@ -225,13 +224,12 @@ func setProvisionTypeInUpdate(
 		return fmt.Errorf("multiple provision types with code %s found", provisionTypeCode)
 	}
 
-	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
-	if !ok {
+	if matchingProvisionTypes[0].Id == nil {
 		return fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
 	provisionType := &sdk.UpdateServicePlansRequestServicePlanProvisionType{}
-	provisionType.Id = *pTypeID
+	provisionType.Id = *matchingProvisionTypes[0].Id
 	updateServicePlan.ProvisionType = provisionType
 
 	return nil
@@ -243,7 +241,7 @@ func setConfigInCreate(
 	plan *ServicePlanModel,
 	addServicePlan *sdk.AddServicePlansRequestServicePlan,
 ) {
-	config := sdk.NewAddServicePlansRequestServicePlanConfig()
+	config := sdk.NewAddServicePlansRequestServicePlanConfigWithDefaults()
 
 	// top level fields first
 	if !plan.StorageSizeType.IsNull() {
@@ -255,7 +253,7 @@ func setConfigInCreate(
 
 	// ConfigRanges
 	if !plan.ConfigRanges.IsNull() {
-		ranges := sdk.NewAddServicePlansRequestServicePlanConfigRanges()
+		ranges := sdk.NewAddServicePlansRequestServicePlanConfigRangesWithDefaults()
 
 		if !plan.ConfigRanges.MinMemory.IsNull() {
 			ranges.MinMemory = plan.ConfigRanges.MinMemory.ValueInt64Pointer()
@@ -386,10 +384,10 @@ func (r *Resource) Create(
 	}
 
 	// required
-	addServicePlan.SetName(name)
-	addServicePlan.SetCode(plan.Code.ValueString())
-	addServicePlan.SetMaxMemory(plan.MaxMemory.ValueInt64())
-	addServicePlan.SetMaxStorage(plan.MaxStorage.ValueInt64())
+	addServicePlan.Name = name
+	addServicePlan.Code = plan.Code.ValueString()
+	addServicePlan.MaxMemory = plan.MaxMemory.ValueInt64()
+	addServicePlan.MaxStorage = plan.MaxStorage.ValueInt64()
 
 	err = setProvisionTypeInCreate(ctx, client, &plan, addServicePlan)
 	if err != nil {
@@ -468,7 +466,7 @@ func (r *Resource) Create(
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
-	addServicePlanRequest := sdk.NewAddServicePlansRequest(*addServicePlan)
+	addServicePlanRequest := &sdk.AddServicePlansRequest{ServicePlan: *addServicePlan}
 
 	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(
 		ctx,
@@ -543,7 +541,7 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
-	servicePlan := sdk.NewUpdateServicePlansRequestServicePlan()
+	servicePlan := &sdk.UpdateServicePlansRequestServicePlan{}
 	// Set all updateable fields from plan
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
 		servicePlan.Name = plan.Name.ValueStringPointer()
@@ -646,7 +644,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	updateServicePlanReq := sdk.NewUpdateServicePlansRequest(*servicePlan)
+	updateServicePlanReq := &sdk.UpdateServicePlansRequest{ServicePlan: *servicePlan}
 
 	_, hresp, err := client.ServicePlansAPI.UpdateServicePlans(ctx, id).
 		UpdateServicePlansRequest(*updateServicePlanReq).Execute()

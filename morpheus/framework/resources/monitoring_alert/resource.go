@@ -87,8 +87,8 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	alert := result.GetAlert()
-	mapAlertResponseToModel(&plan, &alert)
+	alert := result.Alert
+	mapAlertResponseToModel(&plan, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -121,8 +121,8 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	alert := result.GetAlert()
-	mapGetAlertResponseToModel(&state, &alert)
+	alert := result.Alert
+	mapGetAlertResponseToModel(&state, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -176,8 +176,8 @@ func (r *monitoringAlertResource) Update(
 		return
 	}
 
-	alert := result.GetAlert()
-	mapGetAlertResponseToModel(&plan, &alert)
+	alert := result.Alert
+	mapGetAlertResponseToModel(&plan, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

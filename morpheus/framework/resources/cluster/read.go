@@ -82,12 +82,24 @@ func getClusterAsState(
 		return state, diags
 	}
 
-	cluster := clusterResp.GetCluster()
+	cluster := clusterResp.Cluster
+	if cluster == nil {
+		diags.AddError(
+			readOperation,
+			fmt.Sprintf("cluster %d missing cluster in response", id),
+		)
+
+		return state, diags
+	}
 
 	// top-level fields
 	state.Id = convert.Int64ToType(cluster.Id)
 
-	clusterTypeCodeFromName := clusterTypeCodeForName(cluster.Type.GetName())
+	clusterTypeName := ""
+	if cluster.Type != nil && cluster.Type.Name != nil {
+		clusterTypeName = *cluster.Type.Name
+	}
+	clusterTypeCodeFromName := clusterTypeCodeForName(clusterTypeName)
 	state.ClusterTypeCode = convert.StrToType(&clusterTypeCodeFromName)
 
 	state.CloudId = convert.Int64ToType(cluster.Zone.Id)
@@ -191,7 +203,7 @@ func getClusterAsState(
 	case !plan.Config.IsNull() || importing:
 		state.Config = basetypes.NewDynamicNull()
 
-		cfg := cluster.GetConfig()
+		cfg := cluster.Config
 		if cfg == nil {
 			diags.AddError(
 				readOperation,
@@ -229,7 +241,7 @@ func getClusterAsState(
 	state.Server = server
 
 	// labels
-	respLabels := cluster.GetLabels()
+	respLabels := cluster.Labels
 	labels, err := convert.SetToStrSlice(plan.Labels)
 	if err != nil {
 		diags.AddError(

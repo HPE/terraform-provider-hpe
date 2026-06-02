@@ -43,39 +43,38 @@ func (r *Resource) Create(
 
 	dhcpServer := sdk.
 		NewCreateNetworkDhcpServerRequestNetworkDhcpServerWithDefaults()
-	dhcpServer.SetName(name)
-	dhcpServer.SetServerIpAddress(plan.ServerIpAddress.ValueString())
+	dhcpServer.Name = name
+	dhcpServer.ServerIpAddress = plan.ServerIpAddress.ValueString()
 
 	if !plan.LeaseTime.IsNull() && !plan.LeaseTime.IsUnknown() {
-		dhcpServer.SetLeaseTime(plan.LeaseTime.ValueInt64())
+		dhcpServer.LeaseTime = plan.LeaseTime.ValueInt64()
 	}
 
 	switch {
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		nsxConfig := sdk.NewNSXDHCPServerConfiguration1()
+		nsxConfig := sdk.NewNSXDHCPServerConfiguration1WithDefaults()
 
 		if !plan.ConfigNsxt.EdgeCluster.IsNull() &&
 			!plan.ConfigNsxt.EdgeCluster.IsUnknown() {
-			nsxConfig.SetEdgeCluster(plan.ConfigNsxt.EdgeCluster.ValueString())
+			edgeCluster := plan.ConfigNsxt.EdgeCluster.ValueString()
+			nsxConfig.EdgeCluster.Set(&edgeCluster)
 		}
 
 		if !plan.ConfigNsxt.ActiveEdgeNode.IsNull() &&
 			!plan.ConfigNsxt.ActiveEdgeNode.IsUnknown() {
-			nsxConfig.SetPreferredEdgeNode1(
-				plan.ConfigNsxt.ActiveEdgeNode.ValueString(),
-			)
+			activeEdgeNode := plan.ConfigNsxt.ActiveEdgeNode.ValueString()
+			nsxConfig.PreferredEdgeNode1.Set(&activeEdgeNode)
 		}
 
 		if !plan.ConfigNsxt.StandbyEdgeNode.IsNull() &&
 			!plan.ConfigNsxt.StandbyEdgeNode.IsUnknown() {
-			nsxConfig.SetPreferredEdgeNode2(
-				plan.ConfigNsxt.StandbyEdgeNode.ValueString(),
-			)
+			standbyEdgeNode := plan.ConfigNsxt.StandbyEdgeNode.ValueString()
+			nsxConfig.PreferredEdgeNode2.Set(&standbyEdgeNode)
 		}
 
-		dhcpServer.SetConfig(sdk.CreateNetworkDhcpServerRequestNetworkDhcpServerConfig{
+		dhcpServer.Config = sdk.CreateNetworkDhcpServerRequestNetworkDhcpServerConfig{
 			NSXDHCPServerConfiguration1: nsxConfig,
-		})
+		}
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
@@ -123,11 +122,11 @@ func (r *Resource) Create(
 			return
 		}
 
-		dhcpServer.SetConfig(config)
+		dhcpServer.Config = config
 	}
 
 	createReq := sdk.NewCreateNetworkDhcpServerRequestWithDefaults()
-	createReq.SetNetworkDhcpServer(*dhcpServer)
+	createReq.NetworkDhcpServer = dhcpServer
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 
 	createResp, hresp, err := client.NetworksAPI.
@@ -143,8 +142,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	idPtr, ok := createResp.GetIdOk()
-	if !ok || idPtr == nil {
+	if createResp.Id.Get() == nil {
 		resp.Diagnostics.AddError(
 			"create network dhcp server resource",
 			"network dhcp server "+name+": id is nil",
@@ -153,7 +151,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	dhcpServerID := *idPtr
+	dhcpServerID := int64(*createResp.Id.Get())
 	plan.Id = types.Int64Value(dhcpServerID)
 
 	taintResourceState := func(id int64) {

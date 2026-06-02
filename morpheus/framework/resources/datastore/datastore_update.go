@@ -43,9 +43,9 @@ func updateDatastore(
 	// written-out yet
 	switch plan.Visibility.IsUnknown() {
 	case true:
-		updateDatastore.SetVisibility(state.Visibility.ValueString())
+		updateDatastore.Visibility = state.Visibility.ValueStringPointer()
 	case false:
-		updateDatastore.SetVisibility(plan.Visibility.ValueString())
+		updateDatastore.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// If the plan has unknown value for Active, use the state values
@@ -54,14 +54,14 @@ func updateDatastore(
 	// written-out yet
 	switch plan.Active.IsUnknown() {
 	case true:
-		updateDatastore.SetActive(state.Active.ValueBool())
+		updateDatastore.Active = state.Active.ValueBoolPointer()
 	case false:
-		updateDatastore.SetActive(plan.Active.ValueBool())
+		updateDatastore.Active = plan.Active.ValueBoolPointer()
 	}
 
 	if !plan.ResourcePermissions.IsNull() {
 		resourcePermissions := resourcePermissionsUpdateFunc()
-		resourcePermissions.SetAll(plan.ResourcePermissions.All.ValueBool())
+		resourcePermissions.All = plan.ResourcePermissions.All.ValueBoolPointer()
 
 		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
 			var groupsValues []GroupsValue
@@ -74,14 +74,14 @@ func updateDatastore(
 			var sites []sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner
 			for _, groupsValue := range groupsValues {
 				site := sitesPermissionsUpdateFunc()
-				site.SetId(groupsValue.Id.ValueInt64())
+				site.Id = groupsValue.Id.ValueInt64Pointer()
 				sites = append(sites, *site)
 			}
 
-			resourcePermissions.SetSites(sites)
+			resourcePermissions.Sites = sites
 		}
 
-		resourcePermissions.SetAllPlans(plan.ResourcePermissions.AllPlans.ValueBool())
+		resourcePermissions.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
 		// nolint:duplicate
 		if !plan.ResourcePermissions.Plans.IsNull() && !plan.ResourcePermissions.Plans.IsUnknown() {
 			var plansValues []PlansValue
@@ -94,14 +94,14 @@ func updateDatastore(
 			var plans []sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
 				planItem := plansPermissionsUpdateFunc()
-				planItem.SetId(plansValue.Id.ValueInt64())
+				planItem.Id = plansValue.Id.ValueInt64Pointer()
 				plans = append(plans, *planItem)
 			}
 
-			resourcePermissions.SetPlans(plans)
+			resourcePermissions.Plans = plans
 		}
 
-		updateDatastore.SetResourcePermissions(*resourcePermissions)
+		updateDatastore.ResourcePermissions = resourcePermissions
 	}
 
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
@@ -119,11 +119,11 @@ func updateDatastore(
 			accounts = append(accounts, tenantsValue.Id.ValueInt64())
 		}
 		tenantPermissions.Accounts = accounts
-		updateDatastore.SetTenantPermissions(*tenantPermissions)
+		updateDatastore.TenantPermissions = tenantPermissions
 	}
 
 	updateDatastoreReq := sdk.NewUpdateDatastoresRequestWithDefaults()
-	updateDatastoreReq.SetDatastore(*updateDatastore)
+	updateDatastoreReq.Datastore = *updateDatastore
 
 	response, hresp, err := client.DatastoresAPI.UpdateDatastores(ctx, id).
 		UpdateDatastoresRequest(*updateDatastoreReq).Execute()
@@ -136,8 +136,8 @@ func updateDatastore(
 		return DatastoreModel{}, diags
 	}
 
-	datastore, ok := response.GetDatastoreOk()
-	if !ok {
+	datastore := response.Datastore
+	if datastore == nil {
 		diags.AddError(
 			"update datastore resource",
 			"datastore "+name+": could not get datastore from response",
@@ -145,8 +145,8 @@ func updateDatastore(
 
 		return DatastoreModel{}, diags
 	}
-	responseId, ok := datastore.GetIdOk()
-	if !ok || responseId == nil {
+	responseId := datastore.Id
+	if responseId == 0 {
 		diags.AddError(
 			"update datastore resource",
 			"datastore "+name+": could not get id",
@@ -155,10 +155,10 @@ func updateDatastore(
 		return DatastoreModel{}, diags
 	}
 
-	if *responseId != id {
+	if responseId != id {
 		diags.AddError(
 			"update datastore resource",
-			"datastore "+name+": id mismatch "+fmt.Sprintf("%d != %d", id, *responseId),
+			"datastore "+name+": id mismatch "+fmt.Sprintf("%d != %d", id, responseId),
 		)
 
 		return DatastoreModel{}, diags
@@ -173,7 +173,11 @@ func updateDatastore(
 			}
 		}
 
-		status := response.GetDatastore().Status
+		if response == nil || response.Datastore == nil {
+			return "", backoff.Permanent(fmt.Errorf("missing datastore in response"))
+		}
+
+		status := response.Datastore.Status
 
 		return status, checkStatusDone(
 			status,

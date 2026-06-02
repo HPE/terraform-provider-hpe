@@ -38,7 +38,15 @@ func getNetworkAsState(
 		return state, diags
 	}
 
-	net := network.GetNetwork()
+	net := network.Network
+	if net == nil {
+		diags.AddError(
+			"populate network resource",
+			fmt.Sprintf("network %d GET returned no network payload", id),
+		)
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(net.Id)
 	state.Name = convert.StrToType(net.Name)
@@ -176,9 +184,8 @@ func getNetworkAsState(
 		state.CloudId = types.Int64Null()
 	}
 
-	group, ok := net.GetGroupOk()
-	if ok && group.Id != nil {
-		state.GroupId = convert.Int64ToType(group.Id)
+	if net.Group != nil && net.Group.Id != nil {
+		state.GroupId = convert.Int64ToType(net.Group.Id)
 	} else {
 		state.GroupId = types.Int64Null()
 	}
@@ -211,9 +218,8 @@ func getNetworkAsState(
 
 	state.Visibility = convert.StrToType(net.Visibility)
 
-	resourcePermission, ok := net.GetResourcePermissionOk()
-	if ok {
-		resourcePermissions, d := convertResourcePermissions(ctx, resourcePermission)
+	if net.ResourcePermission != nil {
+		resourcePermissions, d := convertResourcePermissions(ctx, net.ResourcePermission)
 		diags.Append(d...)
 		if diags.HasError() {
 			return state, diags
@@ -233,9 +239,8 @@ func convertResourcePermissions(
 	var diags diag.Diagnostics
 
 	var groupValues []attr.Value
-	sites, ok := resourcePermission.GetSitesOk()
-	if ok {
-		for _, site := range sites {
+	if resourcePermission.Sites != nil {
+		for _, site := range resourcePermission.Sites {
 			if site.Id != nil {
 				groupValues = append(
 					groupValues, types.Int64Value(*site.Id),

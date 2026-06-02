@@ -73,8 +73,8 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapAddResponseToModel(&plan, &job)
+	job := result.Job
+	mapAddResponseToModel(&plan, job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -107,8 +107,8 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	job := result.GetJob()
-	mapGetResponseToModel(&state, &job)
+	job := result.Job
+	mapGetResponseToModel(&state, job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -153,8 +153,8 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapUpdateResponseToModel(&plan, &job)
+	job := result.Job
+	mapUpdateResponseToModel(&plan, job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

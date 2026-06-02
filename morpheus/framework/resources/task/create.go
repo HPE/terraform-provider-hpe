@@ -31,12 +31,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		addTaskReq.Task.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+		addTaskReq.Task.AllowCustomConfig = sdk.PtrBool(plan.AllowCustomConfig.ValueBool())
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		addTaskReq.Task.SetCode(plan.Code.ValueString())
+		addTaskReq.Task.Code = sdk.PtrString(plan.Code.ValueString())
 	}
 
 	taskOptionsSet := false
@@ -100,12 +100,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	if taskOptionsSet {
-		addTaskReq.Task.SetTaskOptions(*taskOptions)
+		addTaskReq.Task.TaskOptions = taskOptions
 	}
 
 	// execute_target
 	if !plan.ExecuteTarget.IsNull() && !plan.ExecuteTarget.IsUnknown() {
-		addTaskReq.Task.SetExecuteTarget(plan.ExecuteTarget.ValueString())
+		addTaskReq.Task.ExecuteTarget = plan.ExecuteTarget.ValueString()
 	}
 
 	// labels
@@ -120,42 +120,42 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		addTaskReq.Task.SetLabels(labels)
+		addTaskReq.Task.Labels = labels
 	}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		addTaskReq.Task.SetName(plan.Name.ValueString())
+		addTaskReq.Task.Name = plan.Name.ValueString()
 	}
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		addTaskReq.Task.SetResultType(plan.ResultType.ValueString())
+		addTaskReq.Task.ResultType.Set(sdk.PtrString(plan.ResultType.ValueString()))
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		addTaskReq.Task.SetRetryCount(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryCount = sdk.PtrInt64(plan.RetryCount.ValueInt64())
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		addTaskReq.Task.SetRetryDelaySeconds(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryDelaySeconds = sdk.PtrInt64(plan.RetryCount.ValueInt64())
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		addTaskReq.Task.SetRetryable(plan.Retryable.ValueBool())
+		addTaskReq.Task.Retryable = sdk.PtrBool(plan.Retryable.ValueBool())
 	}
 
 	// task_type_code
 	if !plan.TaskTypeCode.IsNull() && !plan.TaskTypeCode.IsUnknown() {
-		addTaskReq.Task.TaskType.SetCode(plan.TaskTypeCode.ValueString())
+		addTaskReq.Task.TaskType.Code = plan.TaskTypeCode.ValueString()
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		addTaskReq.Task.SetVisibility(plan.Visibility.ValueString())
+		addTaskReq.Task.Visibility = sdk.PtrString(plan.Visibility.ValueString())
 	}
 
 	// send the API request here
