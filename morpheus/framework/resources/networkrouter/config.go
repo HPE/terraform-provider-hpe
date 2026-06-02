@@ -10,7 +10,7 @@ import (
 
 // nsxTier0Config builds a typed NSX Tier-0 gateway config using the SDK struct.
 func nsxTier0Config(cfg ConfigNsxtGatewayTier0Value) sdk.CreateNetworkRouterRequestNetworkRouterConfig {
-	t0 := sdk.NewCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOfWithDefaults()
+	t0 := &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf{}
 
 	if !cfg.HaMode.IsNull() && !cfg.HaMode.IsUnknown() {
 		haMode := cfg.HaMode.ValueString()
@@ -137,7 +137,7 @@ func nsxTier0Config(cfg ConfigNsxtGatewayTier0Value) sdk.CreateNetworkRouterRequ
 
 // nsxTier1Config builds a typed NSX Tier-1 gateway config using the SDK struct.
 func nsxTier1Config(cfg ConfigNsxtGatewayTier1Value) sdk.CreateNetworkRouterRequestNetworkRouterConfig {
-	t1 := sdk.NewCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1WithDefaults()
+	t1 := &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1{}
 
 	if !cfg.Tier0Gateway.IsNull() && !cfg.Tier0Gateway.IsUnknown() {
 		tier0Gateway := cfg.Tier0Gateway.ValueString()

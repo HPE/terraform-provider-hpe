@@ -115,7 +115,7 @@ func createNetworkInterfaceMapper(
 			id = in.NetworkId.String()
 		}
 
-		ipPool := sdk.NewInstancesNetworkInterfaces2NetworkPoolWithDefaults()
+		ipPool := &sdk.InstancesNetworkInterfaces2NetworkPool{}
 		if !in.IpPool.IsNull() {
 			ipPool.Id = in.IpPool.ValueInt64Pointer()
 		}
@@ -157,7 +157,7 @@ func updateNetworkInterfaceMapper(
 			id = in.NetworkId.String()
 		}
 
-		ipPool := sdk.NewInstancesNetworkInterfaces3NetworkPoolWithDefaults()
+		ipPool := &sdk.InstancesNetworkInterfaces3NetworkPool{}
 		if !in.IpPool.IsNull() {
 			ipPool.Id = in.IpPool.ValueInt64Pointer()
 		}
@@ -204,7 +204,7 @@ func createChildNetworkInterfaceMapper(
 		id = in.NetworkId.String()
 	}
 
-	ipPool := sdk.NewInstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPoolWithDefaults()
+	ipPool := &sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
 		ipPool.Id = in.IpPool.ValueInt64Pointer()
 	}
@@ -238,7 +238,7 @@ func updateChildNetworkInterfaceMapper(
 		intfIdPtr = in.Id.ValueInt64Pointer()
 	}
 
-	ipPool := sdk.NewInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPoolWithDefaults()
+	ipPool := &sdk.InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
 		ipPool.Id = in.IpPool.ValueInt64Pointer()
 	}

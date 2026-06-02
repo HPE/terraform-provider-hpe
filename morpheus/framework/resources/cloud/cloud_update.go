@@ -41,7 +41,7 @@ func (r *Resource) Update(
 
 	name := plan.Name.ValueString()
 
-	updateCloud := sdk.NewUpdateCloudsRequestZoneWithDefaults()
+	updateCloud := &sdk.UpdateCloudsRequestZone{}
 	updateCloud.AdditionalProperties = make(map[string]any)
 	updateCloud.Name = name
 

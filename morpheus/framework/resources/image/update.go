@@ -47,8 +47,8 @@ func (r *Resource) Update(
 
 	name := plan.Name.ValueString()
 
-	updateRequest := sdk.NewUpdateVirtualImageRequestWithDefaults()
-	updateImage := sdk.NewUpdateVirtualImageRequestVirtualImageWithDefaults()
+	updateRequest := &sdk.UpdateVirtualImageRequest{}
+	updateImage := &sdk.UpdateVirtualImageRequestVirtualImage{}
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() {
@@ -152,7 +152,7 @@ func (r *Resource) Update(
 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() {
-		storageProvider := sdk.NewUpdateVirtualImageRequestVirtualImageStorageProviderWithDefaults()
+		storageProvider := &sdk.UpdateVirtualImageRequestVirtualImageStorageProvider{}
 		storageProviderID := plan.StorageProviderId.ValueInt64()
 		storageProvider.Id = &storageProviderID
 

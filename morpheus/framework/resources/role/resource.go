@@ -1371,7 +1371,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	addRole := sdk.NewAddRolesRequestRoleWithDefaults()
+	addRole := &sdk.AddRolesRequestRole{}
 	name := plan.Name.ValueString()
 
 	// required
@@ -1857,7 +1857,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateRole := sdk.NewUpdateRoleRequestRoleWithDefaults()
+	updateRole := &sdk.UpdateRoleRequestRole{}
 	id := plan.Id.ValueInt64()
 
 	// required - authority (name)

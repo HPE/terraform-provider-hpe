@@ -41,13 +41,13 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 	var layouts []sdk.AddLayout200ResponseInstanceTypeLayout
 
 	for i := range count {
-		addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()
+		addLayout := &sdk.AddLayoutRequestInstanceTypeLayout{}
 		addLayout.Name = name
 		addLayout.InstanceVersion = "1"
 		addLayout.ProvisionTypeCode = "kvm"
 		addLayout.SortOrder = &i
 
-		addLayoutReq := sdk.NewAddLayoutRequestWithDefaults()
+		addLayoutReq := &sdk.AddLayoutRequest{}
 		addLayoutReq.InstanceTypeLayout = addLayout
 
 		req := client.LibraryAPI.AddLayout(ctx, *itID).AddLayoutRequest(*addLayoutReq)

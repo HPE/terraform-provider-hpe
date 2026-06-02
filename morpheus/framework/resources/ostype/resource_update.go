@@ -35,7 +35,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	osType := sdk.NewUpdateOsTypeRequestOsTypeWithDefaults()
+	osType := &sdk.UpdateOsTypeRequestOsType{}
 
 	// bit_count
 	if !plan.BitCount.IsNull() && !plan.BitCount.IsUnknown() {
@@ -98,7 +98,7 @@ func (r *Resource) Update(
 		osType.Vendor.Set(plan.Vendor.ValueStringPointer())
 	}
 
-	updateReq := sdk.NewUpdateOsTypeRequestWithDefaults()
+	updateReq := &sdk.UpdateOsTypeRequest{}
 	updateReq.OsType = osType
 
 	id := currentState.Id.ValueInt64()

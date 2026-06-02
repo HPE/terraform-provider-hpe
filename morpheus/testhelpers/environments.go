@@ -24,11 +24,11 @@ func CreateEnvironment(t *testing.T) (*TestEnvironment, error) {
 
 	name := fmt.Sprintf("testacc-%s-%s", t.Name(), rand.Text())
 
-	addEnvironment := sdk.NewAddEnvironmentsRequestEnvironmentWithDefaults()
+	addEnvironment := &sdk.AddEnvironmentsRequestEnvironment{}
 	addEnvironment.Name = name
 	addEnvironment.Code = strings.ToLower(name)
 
-	addEnvironmentReq := sdk.NewAddEnvironmentsRequestWithDefaults()
+	addEnvironmentReq := &sdk.AddEnvironmentsRequest{}
 	addEnvironmentReq.Environment = *addEnvironment
 
 	ctx := context.TODO()

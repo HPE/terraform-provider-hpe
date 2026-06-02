@@ -103,9 +103,9 @@ func makeUpdateAPIcalls(
 	resp *resource.UpdateResponse,
 ) ServicePlanOptionsValue {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
-	updateRequest := sdk.NewUpdateInstanceRequestWithDefaults()
-	instanceUpdateRequest := sdk.NewUpdateInstanceRequestInstanceWithDefaults()
-	updateConfig := sdk.NewUpdateInstanceRequestConfigWithDefaults()
+	updateRequest := &sdk.UpdateInstanceRequest{}
+	instanceUpdateRequest := &sdk.UpdateInstanceRequestInstance{}
+	updateConfig := &sdk.UpdateInstanceRequestConfig{}
 	hasConfigUpdate := false
 
 	// name
@@ -126,7 +126,7 @@ func makeUpdateAPIcalls(
 
 	// group_id
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		site := sdk.NewUpdateInstanceRequestInstanceSiteWithDefaults()
+		site := &sdk.UpdateInstanceRequestInstanceSite{}
 		site.Id = plan.GroupId.ValueInt64Pointer()
 		instanceUpdateRequest.Site = site
 	}
@@ -262,13 +262,13 @@ func createResizeRequest(
 	plan InstanceModel,
 	state InstanceModel,
 ) *sdk.ResizeInstanceRequest {
-	resizeRequest := sdk.NewResizeInstanceRequestWithDefaults()
+	resizeRequest := &sdk.ResizeInstanceRequest{}
 
 	// plan_id
 	if !plan.PlanId.IsNull() || !plan.PlanId.IsUnknown() {
-		resizeRequest.Instance = sdk.NewResizeInstanceRequestInstanceWithDefaults()
+		resizeRequest.Instance = &sdk.ResizeInstanceRequestInstance{}
 		resizeRequest.Instance.Id = state.Id.ValueInt64Pointer()
-		resizeRequest.Instance.Plan = sdk.NewResizeInstanceRequestInstancePlanWithDefaults()
+		resizeRequest.Instance.Plan = &sdk.ResizeInstanceRequestInstancePlan{}
 		resizeRequest.Instance.Plan.Id = plan.PlanId.ValueInt64Pointer()
 	}
 
@@ -601,7 +601,7 @@ func addServicePlanOptionsToResizeRequest(
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) {
 	// compare state and plan service_plan_options so we only resize if required
-	servicePlanOptions := sdk.NewResizeInstanceRequestServicePlanOptionsWithDefaults()
+	servicePlanOptions := &sdk.ResizeInstanceRequestServicePlanOptions{}
 	if !plan.ServicePlanOptions.MaxCores.IsNull() && !plan.ServicePlanOptions.MaxCores.IsUnknown() {
 		servicePlanOptions.MaxCores = plan.ServicePlanOptions.MaxCores.ValueInt64Pointer()
 	}

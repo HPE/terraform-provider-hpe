@@ -41,7 +41,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	instance := sdk.NewCreateLoadBalancerVirtualServerRequestLoadBalancerInstanceWithDefaults()
+	instance := &sdk.CreateLoadBalancerVirtualServerRequestLoadBalancerInstance{}
 
 	if !plan.VipName.IsNull() && !plan.VipName.IsUnknown() {
 		val := plan.VipName.ValueString()
@@ -99,7 +99,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	createReq := sdk.NewCreateLoadBalancerVirtualServerRequestWithDefaults()
+	createReq := &sdk.CreateLoadBalancerVirtualServerRequest{}
 	createReq.LoadBalancerInstance = instance
 
 	createResp, hresp, err := client.LoadBalancersAPI.

@@ -109,7 +109,7 @@ func (r *Resource) Update(
 		}
 	}
 
-	updateReq := sdk.NewUpdateNetworkDhcpServerRequestWithDefaults()
+	updateReq := &sdk.UpdateNetworkDhcpServerRequest{}
 	updateReq.NetworkDhcpServer = dhcpServerMap
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 

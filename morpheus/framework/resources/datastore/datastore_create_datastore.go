@@ -14,13 +14,13 @@ import (
 )
 
 var (
-	permissionsFunc        = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsPlansFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults
-	permissionsSitesFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
-	tenantsFunc            = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
-	nfsConfigFunc          = sdk.NewNFSDatastoreConfiguration1WithDefaults
-	alletrampHvmConfigFunc = sdk.NewAlletraMPHVMDatastoreConfiguration1WithDefaults
-	storageServerFunc      = sdk.NewSaveDatastoreRequestDatastoreStorageServerWithDefaults
+	permissionsFunc        = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissions { return &sdk.SaveDatastoreRequestDatastoreResourcePermissions{} }
+	permissionsPlansFunc   = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner { return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner{} }
+	permissionsSitesFunc   = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner { return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner{} }
+	tenantsFunc            = func() *sdk.SaveDatastoreRequestDatastoreTenantPermissions { return &sdk.SaveDatastoreRequestDatastoreTenantPermissions{} }
+	nfsConfigFunc          = func() *sdk.NFSDatastoreConfiguration1 { return &sdk.NFSDatastoreConfiguration1{} }
+	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 { return &sdk.AlletraMPHVMDatastoreConfiguration1{} }
+	storageServerFunc      = func() *sdk.SaveDatastoreRequestDatastoreStorageServer { return &sdk.SaveDatastoreRequestDatastoreStorageServer{} }
 )
 
 type (
@@ -37,7 +37,7 @@ func datastoreCreateDatastore(ctx context.Context,
 	resp *resource.CreateResponse,
 ) int64 {
 	// datastoreCreate is used by the SDK to create the datastore
-	datastoreCreate := sdk.NewSaveDatastoreRequestDatastoreWithDefaults()
+	datastoreCreate := &sdk.SaveDatastoreRequestDatastore{}
 
 	// Set the required fields
 	datastoreCreate.Name = name
@@ -95,7 +95,7 @@ func datastoreCreateDatastore(ctx context.Context,
 		// removing for now
 		/*
 			case !plan.ConfigGfs2.IsNull() && !plan.ConfigGfs2.IsUnknown():
-				gfs2Config := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf1WithDefaults()
+				gfs2Config := &sdk.SaveClusterDatastoreRequestDatastoreConfigAnyOf1{}
 
 				if !plan.ConfigGfs2.BlockDevice.IsNull() {
 					gfs2Config.SetBlockDevice(plan.ConfigGfs2.BlockDevice.ValueString())
@@ -168,7 +168,7 @@ func datastoreCreateDatastore(ctx context.Context,
 		tenantPermissions := tenantsFunc()
 		var accounts []sdk.SaveDatastoreRequestDatastoreTenantPermissionsAccountsInner
 		for _, tenantsValue := range tenantsValues {
-			account := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsAccountsInnerWithDefaults()
+			account := &sdk.SaveDatastoreRequestDatastoreTenantPermissionsAccountsInner{}
 			account.Id = tenantsValue.Id.ValueInt64Pointer()
 			accounts = append(accounts, *account)
 		}
@@ -226,7 +226,7 @@ func datastoreCreateDatastore(ctx context.Context,
 	}
 
 	// Call API
-	datastoreRequest := sdk.NewSaveDatastoreRequestWithDefaults()
+	datastoreRequest := &sdk.SaveDatastoreRequest{}
 	datastoreRequest.Datastore = datastoreCreate
 
 	response, hresp, err := client.DatastoresAPI.SaveDatastore(ctx).SaveDatastoreRequest(*datastoreRequest).Execute()

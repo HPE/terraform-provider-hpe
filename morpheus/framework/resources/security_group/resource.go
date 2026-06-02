@@ -57,7 +57,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	body := sdk.NewAddSecurityGroupsRequestSecurityGroupWithDefaults()
+	body := &sdk.AddSecurityGroupsRequestSecurityGroup{}
 	body.Name = plan.Name.ValueString()
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
 		body.ZoneId = plan.CloudId.ValueInt64()
@@ -176,7 +176,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.NewUpdateSecurityGroupsRequestSecurityGroupWithDefaults()
+	body := &sdk.UpdateSecurityGroupsRequestSecurityGroup{}
 	body.Name = plan.Name.ValueStringPointer()
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()

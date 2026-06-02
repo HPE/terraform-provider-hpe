@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	resourcePermissionsUpdateFunc = sdk.NewUpdateDatastoresRequestDatastoreResourcePermissionsWithDefaults
-	sitesPermissionsUpdateFunc    = sdk.NewUpdateCloudFoldersRequestFolderResourcePermissionsSitesInnerWithDefaults
-	plansPermissionsUpdateFunc    = sdk.NewUpdateCloudFoldersRequestFolderResourcePermissionsPlansInnerWithDefaults
+	resourcePermissionsUpdateFunc = func() *sdk.UpdateDatastoresRequestDatastoreResourcePermissions { return &sdk.UpdateDatastoresRequestDatastoreResourcePermissions{} }
+	sitesPermissionsUpdateFunc    = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner { return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{} }
+	plansPermissionsUpdateFunc    = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner { return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner{} }
 )
 
 func updateDatastore(
@@ -34,7 +34,7 @@ func updateDatastore(
 
 	name := plan.Name.ValueString()
 
-	updateDatastore := sdk.NewUpdateDatastoresRequestDatastoreWithDefaults()
+	updateDatastore := &sdk.UpdateDatastoresRequestDatastore{}
 	updateDatastore.AdditionalProperties = make(map[string]any)
 
 	// If the plan has unknown value for Visibility, use the state values
@@ -112,8 +112,8 @@ func updateDatastore(
 			return DatastoreModel{}, diags
 		}
 
-		// tenantPermissions := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults()
-		tenantPermissions := sdk.NewUpdateDatastoresRequestDatastoreTenantPermissionsWithDefaults()
+		// tenantPermissions := &sdk.SaveDatastoreRequestDatastoreTenantPermissions{}
+		tenantPermissions := &sdk.UpdateDatastoresRequestDatastoreTenantPermissions{}
 		var accounts []int64
 		for _, tenantsValue := range tenantsValues {
 			accounts = append(accounts, tenantsValue.Id.ValueInt64())
@@ -122,7 +122,7 @@ func updateDatastore(
 		updateDatastore.TenantPermissions = tenantPermissions
 	}
 
-	updateDatastoreReq := sdk.NewUpdateDatastoresRequestWithDefaults()
+	updateDatastoreReq := &sdk.UpdateDatastoresRequest{}
 	updateDatastoreReq.Datastore = *updateDatastore
 
 	response, hresp, err := client.DatastoresAPI.UpdateDatastores(ctx, id).

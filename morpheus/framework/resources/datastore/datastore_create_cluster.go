@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	tenantsClusterFunc             = sdk.NewSaveClusterDatastoreRequestDatastoreTenantsInnerWithDefaults
-	resourcePermissionsClusterFunc = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsSitesClusterFunc    = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
-	datastoreTypeClusterFunc       = sdk.NewSaveClusterDatastoreRequestDatastoreDatastoreTypeWithDefaults
-	nfsConfigClusterFunc           = sdk.NewNFSDatastoreConfigurationWithDefaults
-	alletrampHvmConfigClusterFunc  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
+	tenantsClusterFunc             = func() *sdk.SaveClusterDatastoreRequestDatastoreTenantsInner { return &sdk.SaveClusterDatastoreRequestDatastoreTenantsInner{} }
+	resourcePermissionsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions { return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions{} }
+	permissionsSitesClusterFunc    = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner { return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{} }
+	datastoreTypeClusterFunc       = func() *sdk.SaveClusterDatastoreRequestDatastoreDatastoreType { return &sdk.SaveClusterDatastoreRequestDatastoreDatastoreType{} }
+	nfsConfigClusterFunc           = func() *sdk.NFSDatastoreConfiguration { return &sdk.NFSDatastoreConfiguration{} }
+	alletrampHvmConfigClusterFunc  = func() *sdk.AlletraMPHVMDatastoreConfiguration { return &sdk.AlletraMPHVMDatastoreConfiguration{} }
 )
 
 func datastoreCreateCluster(ctx context.Context,
@@ -31,7 +31,7 @@ func datastoreCreateCluster(ctx context.Context,
 	resp *resource.CreateResponse,
 ) int64 {
 	// datastoreCreate is used by the SDK to create the datastore
-	datastoreCreate := sdk.NewSaveClusterDatastoreRequestDatastoreWithDefaults()
+	datastoreCreate := &sdk.SaveClusterDatastoreRequestDatastore{}
 
 	// Set the required fields
 	datastoreCreate.Name = plan.Name.ValueStringPointer()
@@ -84,7 +84,7 @@ func datastoreCreateCluster(ctx context.Context,
 		// removing for now
 		/*
 			case !plan.ConfigGfs2.IsNull() && !plan.ConfigGfs2.IsUnknown():
-				gfs2Config := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf1WithDefaults()
+				gfs2Config := &sdk.SaveClusterDatastoreRequestDatastoreConfigAnyOf1{}
 
 				if !plan.ConfigGfs2.BlockDevice.IsNull() {
 					gfs2Config.SetBlockDevice(plan.ConfigGfs2.BlockDevice.ValueString())
@@ -129,7 +129,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 	// Optional fields
 	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
-		storageServerConfig := sdk.NewSaveClusterDatastoreRequestDatastoreStorageServerWithDefaults()
+		storageServerConfig := &sdk.SaveClusterDatastoreRequestDatastoreStorageServer{}
 		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
 		datastoreCreate.StorageServer = storageServerConfig
 	}
@@ -198,7 +198,7 @@ func datastoreCreateCluster(ctx context.Context,
 
 			var plans []sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
-				planItem := sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults()
+				planItem := &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInner{}
 				planItem.Id = plansValue.Id.ValueInt64Pointer()
 				planItem.Code = plansValue.Code.ValueStringPointer()
 				planItem.Name = plansValue.Name.ValueStringPointer()
@@ -212,7 +212,7 @@ func datastoreCreateCluster(ctx context.Context,
 	}
 
 	// Call API
-	datastoreRequest := sdk.NewSaveClusterDatastoreRequestWithDefaults()
+	datastoreRequest := &sdk.SaveClusterDatastoreRequest{}
 	datastoreRequest.Datastore = datastoreCreate
 
 	response, hresp, err := client.ClustersAPI.SaveClusterDatastore(ctx, associatedResourceId).

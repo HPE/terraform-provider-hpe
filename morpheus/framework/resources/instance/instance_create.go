@@ -73,7 +73,7 @@ func (g *Resource) Create(
 	}
 
 	// cloud_id
-	reqInstance := sdk.NewAddInstanceRequestWithDefaults()
+	reqInstance := &sdk.AddInstanceRequest{}
 	if !plan.CloudId.IsNull() {
 		zoneId := plan.CloudId.ValueInt64()
 		reqInstance.ZoneId = &zoneId

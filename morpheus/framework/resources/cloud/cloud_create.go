@@ -42,7 +42,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	addCloud := sdk.NewAddCloudsRequestZoneWithDefaults()
+	addCloud := &sdk.AddCloudsRequestZone{}
 	addCloud.Name = name
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {

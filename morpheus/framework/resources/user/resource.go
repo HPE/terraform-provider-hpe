@@ -141,7 +141,7 @@ func (r *Resource) Create(
 		roles = append(roles, rolevalue)
 	}
 
-	addUser := sdk.NewAddUserRequestUserWithDefaults()
+	addUser := &sdk.AddUserRequestUser{}
 
 	var config UserModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -299,7 +299,7 @@ func (r *Resource) Update(
 		roles = append(roles, rolevalue)
 	}
 
-	updateUser := sdk.NewUpdateUserRequestUserWithDefaults()
+	updateUser := &sdk.UpdateUserRequestUser{}
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -448,7 +448,7 @@ func (r *Resource) Update(
 			)
 		}
 
-		innerUser := sdk.NewAddUser200ResponseAllOfUserWithDefaults()
+		innerUser := &sdk.AddUser200ResponseAllOfUser{}
 		innerUser.Id = sdk.PtrInt64(id)
 		user = &sdk.UpdateUser200Response{}
 		user.User = innerUser

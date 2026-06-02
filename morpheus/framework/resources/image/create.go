@@ -42,8 +42,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	reqImage := sdk.NewAddVirtualImageRequestWithDefaults()
-	reqImage.VirtualImage = *sdk.NewAddVirtualImageRequestVirtualImageWithDefaults()
+	reqImage := &sdk.AddVirtualImageRequest{}
+	reqImage.VirtualImage = *&sdk.AddVirtualImageRequestVirtualImage{}
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() && !plan.AutoJoinDomain.IsUnknown() {
@@ -59,7 +59,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// config_azure
 	if !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown() {
-		azureConfig := sdk.NewAzureReferenceVirtualImageConfiguration1WithDefaults()
+		azureConfig := &sdk.AzureReferenceVirtualImageConfiguration1{}
 		azureConfig.Publisher = plan.ConfigAzure.Publisher.ValueString()
 		azureConfig.Offer = plan.ConfigAzure.Offer.ValueString()
 		azureConfig.Version = plan.ConfigAzure.Version.ValueString()
@@ -160,7 +160,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
-		storageProvider := sdk.NewAddVirtualImageRequestVirtualImageStorageProviderWithDefaults()
+		storageProvider := &sdk.AddVirtualImageRequestVirtualImageStorageProvider{}
 		providerID := plan.StorageProviderId.ValueInt64()
 		storageProvider.Id = &providerID
 

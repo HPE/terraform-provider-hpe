@@ -82,7 +82,7 @@ func (r *Resource) Create(
 		osType.Vendor.Set(plan.Vendor.ValueStringPointer())
 	}
 
-	addReq := sdk.NewAddOsTypesRequestWithDefaults()
+	addReq := &sdk.AddOsTypesRequest{}
 	addReq.OsType = osType
 
 	createResp, httpResp, err := client.LibraryAPI.AddOsTypes(ctx).

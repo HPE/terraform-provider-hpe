@@ -40,7 +40,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	monitor := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorWithDefaults()
+	monitor := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitor{}
 	val := plan.Name.ValueString()
 	monitor.Name = &val
 
@@ -192,13 +192,13 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		sdkConfig := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigWithDefaults()
+		sdkConfig := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
 
 		if !plan.Config.Monitor.IsNull() && !plan.Config.Monitor.IsUnknown() {
 			attrs := plan.Config.Monitor.Attributes()
 			if idAttr, ok := attrs["id"]; ok {
 				if idVal, ok := idAttr.(basetypes.Int64Value); ok && !idVal.IsNull() && !idVal.IsUnknown() {
-					configMonitor := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitorWithDefaults()
+					configMonitor := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitor{}
 					val := idVal.ValueInt64()
 					configMonitor.Id = &val
 					sdkConfig.Monitor = configMonitor
@@ -225,7 +225,7 @@ func (r *Resource) Create(
 		monitor.Config = sdkConfig
 	}
 
-	createReq := sdk.NewCreateLoadBalancerMonitorRequestWithDefaults()
+	createReq := &sdk.CreateLoadBalancerMonitorRequest{}
 	createReq.LoadBalancerMonitor = monitor
 
 	createResp, httpResp, err := client.LoadBalancersAPI.

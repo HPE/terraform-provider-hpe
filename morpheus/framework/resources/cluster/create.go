@@ -65,8 +65,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	ctx, cancel := context.WithTimeout(ctx, createTimeout)
 	defer cancel()
 
-	addClusterReq := sdk.NewAddClusterRequestWithDefaults()
-	addClusterReq.Cluster = sdk.NewAddClusterRequestClusterWithDefaults()
+	addClusterReq := &sdk.AddClusterRequest{}
+	addClusterReq.Cluster = &sdk.AddClusterRequestCluster{}
 
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
 		addClusterReq.Cluster.Cloud.Id = plan.CloudId.ValueInt64Pointer()
@@ -254,7 +254,7 @@ func buildCreateClusterServer(
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	name := plan.Name.ValueString()
-	server := sdk.NewAddClusterRequestClusterServerWithDefaults()
+	server := &sdk.AddClusterRequestClusterServer{}
 
 	// the basic types
 	if !plan.Server.Hostname.IsNull() && !plan.Server.Hostname.IsUnknown() {

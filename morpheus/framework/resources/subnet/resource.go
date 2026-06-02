@@ -55,7 +55,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	body := sdk.NewCreateSubnetRequestSubnetWithDefaults()
+	body := &sdk.CreateSubnetRequestSubnet{}
 	body.Type = &sdk.CreateSubnetRequestSubnetType{
 		Id: plan.TypeId.ValueInt64Pointer(),
 	}
@@ -244,7 +244,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.NewUpdateSubnetRequestSubnetWithDefaults()
+	body := &sdk.UpdateSubnetRequestSubnet{}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()

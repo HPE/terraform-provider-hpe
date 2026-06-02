@@ -41,8 +41,8 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateRequest := sdk.NewUpdateTasksRequestWithDefaults()
-	updateTask := sdk.NewUpdateTasksRequestTaskWithDefaults()
+	updateRequest := &sdk.UpdateTasksRequest{}
+	updateTask := &sdk.UpdateTasksRequestTask{}
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {

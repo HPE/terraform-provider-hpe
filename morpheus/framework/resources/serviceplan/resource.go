@@ -241,7 +241,7 @@ func setConfigInCreate(
 	plan *ServicePlanModel,
 	addServicePlan *sdk.AddServicePlansRequestServicePlan,
 ) {
-	config := sdk.NewAddServicePlansRequestServicePlanConfigWithDefaults()
+	config := &sdk.AddServicePlansRequestServicePlanConfig{}
 
 	// top level fields first
 	if !plan.StorageSizeType.IsNull() {
@@ -253,7 +253,7 @@ func setConfigInCreate(
 
 	// ConfigRanges
 	if !plan.ConfigRanges.IsNull() {
-		ranges := sdk.NewAddServicePlansRequestServicePlanConfigRangesWithDefaults()
+		ranges := &sdk.AddServicePlansRequestServicePlanConfigRanges{}
 
 		if !plan.ConfigRanges.MinMemory.IsNull() {
 			ranges.MinMemory = plan.ConfigRanges.MinMemory.ValueInt64Pointer()
@@ -371,7 +371,7 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	addServicePlan := sdk.NewAddServicePlansRequestServicePlanWithDefaults()
+	addServicePlan := &sdk.AddServicePlansRequestServicePlan{}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

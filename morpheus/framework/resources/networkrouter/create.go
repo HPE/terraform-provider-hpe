@@ -44,7 +44,7 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	router := sdk.NewCreateNetworkRouterRequestNetworkRouterWithDefaults()
+	router := &sdk.CreateNetworkRouterRequestNetworkRouter{}
 	router.Name = name
 
 	// Set type (required)
@@ -113,7 +113,7 @@ func (r *Resource) Create(
 		router.Config = routerConfig
 	}
 
-	createReq := sdk.NewCreateNetworkRouterRequestWithDefaults()
+	createReq := &sdk.CreateNetworkRouterRequest{}
 	createReq.NetworkRouter = router
 
 	result, hresp, err := client.NetworksAPI.CreateNetworkRouter(ctx).

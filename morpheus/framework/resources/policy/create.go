@@ -28,7 +28,7 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	addPolicy := sdk.NewAddPoliciesRequestPolicyWithDefaults()
+	addPolicy := &sdk.AddPoliciesRequestPolicy{}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -44,7 +44,7 @@ func (r *Resource) Create(
 	addPolicy.Name = name
 
 	policyTypeCode := plan.PolicyType.Code.ValueString()
-	policyType := sdk.NewAddPoliciesRequestPolicyPolicyTypeWithDefaults()
+	policyType := &sdk.AddPoliciesRequestPolicyPolicyType{}
 	policyType.Code = sdk.PtrString(policyTypeCode)
 	addPolicy.PolicyType = *policyType
 

@@ -33,7 +33,7 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 	name := plan.Name.ValueString()
 
-	updatePolicy := sdk.NewUpdatePoliciesRequestPolicyWithDefaults()
+	updatePolicy := &sdk.UpdatePoliciesRequestPolicy{}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

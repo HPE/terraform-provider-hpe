@@ -7,22 +7,22 @@ import "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 // Cloud
 
 func NewAwsCloudConfig(endpoint string) *sdk.AddCloudsRequestZoneConfigAnyOf {
-	cfg := sdk.NewAddCloudsRequestZoneConfigAnyOfWithDefaults()
+	cfg := &sdk.AddCloudsRequestZoneConfigAnyOf{}
 	cfg.Endpoint = endpoint
 
 	return cfg
 }
 
 func NewAzureCloudConfig() *sdk.AddCloudsRequestZoneConfigAnyOf1 {
-	return sdk.NewAddCloudsRequestZoneConfigAnyOf1WithDefaults()
+	return &sdk.AddCloudsRequestZoneConfigAnyOf1{}
 }
 
 func NewHvmCloudConfig() *sdk.AddCloudsRequestZoneConfigAnyOf2 {
-	return sdk.NewAddCloudsRequestZoneConfigAnyOf2WithDefaults()
+	return &sdk.AddCloudsRequestZoneConfigAnyOf2{}
 }
 
 func NewVmwareCloudConfig(apiUrl, apiVersion, datacenter string) *sdk.AddCloudsRequestZoneConfigAnyOf3 {
-	cfg := sdk.NewAddCloudsRequestZoneConfigAnyOf3WithDefaults()
+	cfg := &sdk.AddCloudsRequestZoneConfigAnyOf3{}
 	cfg.ApiUrl = apiUrl
 	cfg.ApiVersion = apiVersion
 	cfg.Datacenter = datacenter
@@ -33,7 +33,7 @@ func NewVmwareCloudConfig(apiUrl, apiVersion, datacenter string) *sdk.AddCloudsR
 // Cluster
 
 func NewHvmClusterServerConfig() *sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6 {
-	return sdk.NewAddClusterRequestClusterServerConfigAnyOfOneOf6WithDefaults()
+	return &sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6{}
 }
 
 func NewHvmClusterServerConfigAsAnyOf(

@@ -41,8 +41,7 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	dhcpServer := sdk.
-		NewCreateNetworkDhcpServerRequestNetworkDhcpServerWithDefaults()
+	dhcpServer := &sdk.CreateNetworkDhcpServerRequestNetworkDhcpServer{}
 	dhcpServer.Name = name
 	dhcpServer.ServerIpAddress = plan.ServerIpAddress.ValueString()
 
@@ -52,7 +51,7 @@ func (r *Resource) Create(
 
 	switch {
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		nsxConfig := sdk.NewNSXDHCPServerConfiguration1WithDefaults()
+		nsxConfig := &sdk.NSXDHCPServerConfiguration1{}
 
 		if !plan.ConfigNsxt.EdgeCluster.IsNull() &&
 			!plan.ConfigNsxt.EdgeCluster.IsUnknown() {
@@ -125,7 +124,7 @@ func (r *Resource) Create(
 		dhcpServer.Config = config
 	}
 
-	createReq := sdk.NewCreateNetworkDhcpServerRequestWithDefaults()
+	createReq := &sdk.CreateNetworkDhcpServerRequest{}
 	createReq.NetworkDhcpServer = dhcpServer
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 
