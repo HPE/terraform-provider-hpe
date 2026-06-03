@@ -116,6 +116,7 @@ func getInstanceTypeLayoutByName(
 		if layouts[0].Id == nil {
 			return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
 		}
+
 		return getInstanceTypeLayoutByID(ctx, *layouts[0].Id, apiClient)
 	}
 

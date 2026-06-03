@@ -710,6 +710,8 @@ func getCodeAndConfig(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get layout provision type code", id),
 		)
+
+		return nil, nil, diags
 	}
 
 	var code string

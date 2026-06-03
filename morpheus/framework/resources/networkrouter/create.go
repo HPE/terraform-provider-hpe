@@ -244,6 +244,7 @@ func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*i
 			if t.Id != nil {
 				return t.Id, nil
 			}
+
 			return nil, fmt.Errorf("Network router type id for code %s is nil", code)
 		}
 	}

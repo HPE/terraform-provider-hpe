@@ -43,7 +43,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	reqImage := &sdk.AddVirtualImageRequest{}
-	reqImage.VirtualImage = *&sdk.AddVirtualImageRequestVirtualImage{}
+	reqImage.VirtualImage = sdk.AddVirtualImageRequestVirtualImage{}
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() && !plan.AutoJoinDomain.IsUnknown() {

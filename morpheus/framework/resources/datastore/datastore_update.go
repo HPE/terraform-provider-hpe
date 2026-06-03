@@ -18,9 +18,15 @@ import (
 )
 
 var (
-	resourcePermissionsUpdateFunc = func() *sdk.UpdateDatastoresRequestDatastoreResourcePermissions { return &sdk.UpdateDatastoresRequestDatastoreResourcePermissions{} }
-	sitesPermissionsUpdateFunc    = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner { return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{} }
-	plansPermissionsUpdateFunc    = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner { return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner{} }
+	resourcePermissionsUpdateFunc = func() *sdk.UpdateDatastoresRequestDatastoreResourcePermissions {
+		return &sdk.UpdateDatastoresRequestDatastoreResourcePermissions{}
+	}
+	sitesPermissionsUpdateFunc = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner {
+		return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{}
+	}
+	plansPermissionsUpdateFunc = func() *sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner {
+		return &sdk.UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner{}
+	}
 )
 
 func updateDatastore(

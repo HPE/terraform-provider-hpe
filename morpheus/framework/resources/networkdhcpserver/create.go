@@ -150,7 +150,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	dhcpServerID := int64(*createResp.Id.Get())
+	dhcpServerID := *createResp.Id.Get()
 	plan.Id = types.Int64Value(dhcpServerID)
 
 	taintResourceState := func(id int64) {

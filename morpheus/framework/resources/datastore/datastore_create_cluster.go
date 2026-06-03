@@ -14,12 +14,24 @@ import (
 )
 
 var (
-	tenantsClusterFunc             = func() *sdk.SaveClusterDatastoreRequestDatastoreTenantsInner { return &sdk.SaveClusterDatastoreRequestDatastoreTenantsInner{} }
-	resourcePermissionsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions { return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions{} }
-	permissionsSitesClusterFunc    = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner { return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{} }
-	datastoreTypeClusterFunc       = func() *sdk.SaveClusterDatastoreRequestDatastoreDatastoreType { return &sdk.SaveClusterDatastoreRequestDatastoreDatastoreType{} }
-	nfsConfigClusterFunc           = func() *sdk.NFSDatastoreConfiguration { return &sdk.NFSDatastoreConfiguration{} }
-	alletrampHvmConfigClusterFunc  = func() *sdk.AlletraMPHVMDatastoreConfiguration { return &sdk.AlletraMPHVMDatastoreConfiguration{} }
+	tenantsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreTenantsInner {
+		return &sdk.SaveClusterDatastoreRequestDatastoreTenantsInner{}
+	}
+	resourcePermissionsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions {
+		return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions{}
+	}
+	permissionsSitesClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner {
+		return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{}
+	}
+	datastoreTypeClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreDatastoreType {
+		return &sdk.SaveClusterDatastoreRequestDatastoreDatastoreType{}
+	}
+	nfsConfigClusterFunc = func() *sdk.NFSDatastoreConfiguration {
+		return &sdk.NFSDatastoreConfiguration{}
+	}
+	alletrampHvmConfigClusterFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration {
+		return &sdk.AlletraMPHVMDatastoreConfiguration{}
+	}
 )
 
 func datastoreCreateCluster(ctx context.Context,

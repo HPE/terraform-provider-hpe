@@ -436,7 +436,8 @@ func mapPolicyConfigToState(
 	if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 != nil {
 		excludeContainers := types.BoolNull()
 		if apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers != nil {
-			excludeContainers = convert.StringToBool(ctx, *apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers)
+			excludeContainers = convert.StringToBool(
+				ctx, *apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers)
 		}
 
 		maxStorageAttrs := map[string]attr.Value{

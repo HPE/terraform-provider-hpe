@@ -126,7 +126,7 @@ func nsxTier0Config(cfg ConfigNsxtGatewayTier0Value) sdk.CreateNetworkRouterRequ
 		t0.INTER_SR_IBGP = &interSrIbgp
 	}
 
-	anyOf := sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf(*t0)
+	anyOf := *t0
 
 	return sdk.CreateNetworkRouterRequestNetworkRouterConfig{
 		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOf{
@@ -188,7 +188,7 @@ func nsxTier1Config(cfg ConfigNsxtGatewayTier1Value) sdk.CreateNetworkRouterRequ
 		t1.TIER1IPSECLOCALENDPOINT = &tier1IpsecLocalEndpoint
 	}
 
-	anyOf := sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1(*t1)
+	anyOf := *t1
 
 	return sdk.CreateNetworkRouterRequestNetworkRouterConfig{
 		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOf{

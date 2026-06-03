@@ -14,13 +14,27 @@ import (
 )
 
 var (
-	permissionsFunc        = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissions { return &sdk.SaveDatastoreRequestDatastoreResourcePermissions{} }
-	permissionsPlansFunc   = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner { return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner{} }
-	permissionsSitesFunc   = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner { return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner{} }
-	tenantsFunc            = func() *sdk.SaveDatastoreRequestDatastoreTenantPermissions { return &sdk.SaveDatastoreRequestDatastoreTenantPermissions{} }
-	nfsConfigFunc          = func() *sdk.NFSDatastoreConfiguration1 { return &sdk.NFSDatastoreConfiguration1{} }
-	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 { return &sdk.AlletraMPHVMDatastoreConfiguration1{} }
-	storageServerFunc      = func() *sdk.SaveDatastoreRequestDatastoreStorageServer { return &sdk.SaveDatastoreRequestDatastoreStorageServer{} }
+	permissionsFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissions {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissions{}
+	}
+	permissionsPlansFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner{}
+	}
+	permissionsSitesFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner{}
+	}
+	tenantsFunc = func() *sdk.SaveDatastoreRequestDatastoreTenantPermissions {
+		return &sdk.SaveDatastoreRequestDatastoreTenantPermissions{}
+	}
+	nfsConfigFunc = func() *sdk.NFSDatastoreConfiguration1 {
+		return &sdk.NFSDatastoreConfiguration1{}
+	}
+	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 {
+		return &sdk.AlletraMPHVMDatastoreConfiguration1{}
+	}
+	storageServerFunc = func() *sdk.SaveDatastoreRequestDatastoreStorageServer {
+		return &sdk.SaveDatastoreRequestDatastoreStorageServer{}
+	}
 )
 
 type (

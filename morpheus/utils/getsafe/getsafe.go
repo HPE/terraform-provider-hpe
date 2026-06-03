@@ -4,8 +4,10 @@ package getsafe
 func GetSafe[T any](v *T) T {
 	if v == nil {
 		var zero T
+
 		return zero
 	}
+
 	return *v
 }
 
@@ -14,5 +16,6 @@ func GetSafeOk[T any](v *T) (*T, bool) {
 	if v == nil {
 		return nil, false
 	}
+
 	return v, true
 }

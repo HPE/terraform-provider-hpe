@@ -3,8 +3,9 @@ package getsafe_test
 import (
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 // Mirrors SDK struct patterns: pointer fields with nested structs.
