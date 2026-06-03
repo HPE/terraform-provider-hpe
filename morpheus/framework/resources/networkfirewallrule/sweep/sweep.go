@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_firewall_rule"
@@ -41,8 +41,8 @@ func init() {
 
 			var items []networkFirewallRuleSweepItem
 
-			for _, server := range serverResp.GetNetworkServers() {
-				serverID, ok := server.GetIdOk()
+			for _, server := range serverResp.NetworkServers {
+				serverID, ok := getsafe.GetSafeOk(server.Id)
 				if !ok || serverID == nil {
 					continue
 				}
@@ -53,13 +53,13 @@ func init() {
 					continue
 				}
 
-				for _, rule := range ruleResp.GetRules() {
-					id, ok := rule.GetIdOk()
+				for _, rule := range ruleResp.Rules {
+					id, ok := getsafe.GetSafeOk(rule.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := rule.GetNameOk()
+					name, ok := getsafe.GetSafeOk(rule.Name)
 					if !ok || name == nil {
 						continue
 					}

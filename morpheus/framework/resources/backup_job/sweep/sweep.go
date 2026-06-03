@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_backup_job"
@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetJobs(), hresp, err
+			return getsafe.GetSafe(&resp.Jobs), hresp, err
 		},
 		// Is this a test backup job?
 		func(item sdk.ListBackupJobs200ResponseAllOfJobsInner) bool {
-			name, ok := item.GetNameOk()
+			name, ok := getsafe.GetSafeOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListBackupJobs200ResponseAllOfJobsInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
+			id, ok := getsafe.GetSafeOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

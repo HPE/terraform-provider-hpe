@@ -13,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_instance"
@@ -31,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetInstances(), hresp, err
+			return getsafe.GetSafe(&resp.Instances), hresp, err
 		},
 		// Is this a test instance?
 		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
-			name, ok := item.GetNameOk()
+			name, ok := getsafe.GetSafeOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}

@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_security_group_rule"
@@ -42,8 +42,8 @@ func init() {
 
 			var items []securityGroupRuleSweepItem
 
-			for _, sg := range sgResp.GetSecurityGroups() {
-				sgID, ok := sg.GetIdOk()
+			for _, sg := range sgResp.SecurityGroups {
+				sgID, ok := getsafe.GetSafeOk(sg.Id)
 				if !ok || sgID == nil {
 					continue
 				}
@@ -54,14 +54,18 @@ func init() {
 					continue
 				}
 
-				for _, rule := range ruleResp.GetRules() {
-					id, ok := rule.GetIdOk()
+				for _, rule := range ruleResp.Rules {
+					id, ok := getsafe.GetSafeOk(rule.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := rule.GetNameOk()
-					if !ok || name == nil {
+					if !rule.Name.IsSet() {
+						continue
+					}
+
+					name := rule.Name.Get()
+					if name == nil {
 						continue
 					}
 

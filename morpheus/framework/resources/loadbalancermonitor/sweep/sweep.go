@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_load_balancer_monitor"
@@ -41,8 +41,8 @@ func init() {
 
 			var items []loadBalancerMonitorSweepItem
 
-			for _, lb := range lbResp.GetLoadBalancers() {
-				lbID, ok := lb.GetIdOk()
+			for _, lb := range lbResp.LoadBalancers {
+				lbID, ok := getsafe.GetSafeOk(lb.Id)
 				if !ok || lbID == nil {
 					continue
 				}
@@ -53,13 +53,13 @@ func init() {
 					continue
 				}
 
-				for _, mon := range monResp.GetLoadBalancerMonitors() {
-					id, ok := mon.GetIdOk()
+				for _, mon := range monResp.LoadBalancerMonitors {
+					id, ok := getsafe.GetSafeOk(mon.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := mon.GetNameOk()
+					name, ok := getsafe.GetSafeOk(mon.Name)
 					if !ok || name == nil {
 						continue
 					}

@@ -15,6 +15,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_task"
@@ -33,7 +34,7 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetTasks(), hresp, err
+			return getsafe.GetSafe(&resp.Tasks), hresp, err
 		},
 		// Is this a test task?
 		func(item sdk.ListTasks200ResponseAllOfTasksInner) bool {

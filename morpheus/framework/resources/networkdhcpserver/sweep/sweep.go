@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -15,6 +14,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_dhcp_server"
@@ -39,8 +39,8 @@ func init() {
 
 			var allDhcpServers []sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner
 
-			for _, ns := range serversResp.GetNetworkServers() {
-				nsID, ok := ns.GetIdOk()
+			for _, ns := range serversResp.NetworkServers {
+				nsID, ok := getsafe.GetSafeOk(ns.Id)
 				if !ok || nsID == nil {
 					continue
 				}
@@ -60,14 +60,14 @@ func init() {
 					continue
 				}
 
-				allDhcpServers = append(allDhcpServers, dhcpResp.GetNetworkDhcpServers()...)
+				allDhcpServers = append(allDhcpServers, dhcpResp.NetworkDhcpServers...)
 			}
 
 			return allDhcpServers, &http.Response{StatusCode: http.StatusOK}, nil
 		},
 		// Is this a test DHCP server?
 		func(item sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner) bool {
-			name, ok := item.GetNameOk()
+			name, ok := getsafe.GetSafeOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -80,17 +80,17 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
+			id, ok := getsafe.GetSafeOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}
 
-			ns, ok := item.GetNetworkServerOk()
+			ns, ok := getsafe.GetSafeOk(item.NetworkServer)
 			if !ok || ns == nil {
 				return nil, fmt.Errorf("could not get network server")
 			}
 
-			nsID, ok := ns.GetIdOk()
+			nsID, ok := getsafe.GetSafeOk(ns.Id)
 			if !ok || nsID == nil {
 				return nil, fmt.Errorf("could not get network server ID")
 			}

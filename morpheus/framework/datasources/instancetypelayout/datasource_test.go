@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
@@ -59,11 +60,12 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
+	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
+
+	layoutName := getsafe.GetSafe(layout.Name)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -82,7 +84,7 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "ID", layoutID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,11 +121,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
+	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
+	layoutName := getsafe.GetSafe(layout.Name)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -179,12 +181,12 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", layout.GetId())
-	layoutName := layout.GetName()
-	layoutVersion := layout.GetInstanceVersion()
+	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
+	layoutName := getsafe.GetSafe(layout.Name)
+	layoutVersion := getsafe.GetSafe(layout.InstanceVersion)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -247,11 +249,11 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 
 	for _, layout := range layouts {
 		t.Cleanup(func() {
-			testhelpers.DeleteInstanceTypeLayout(t, layout.GetId())
+			testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
 		})
 	}
 
-	layoutID := fmt.Sprintf("%d", layouts[len(layouts)-1].GetId())
+	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layouts[len(layouts)-1].Id))
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

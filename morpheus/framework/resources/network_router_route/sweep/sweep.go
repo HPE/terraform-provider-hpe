@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -13,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_router_route"
@@ -34,8 +34,8 @@ func init() {
 
 			items := make([]routeSweeperItem, 0)
 
-			for _, router := range routersResp.GetNetworkRouters() {
-				routerID, ok := router.GetIdOk()
+			for _, router := range routersResp.NetworkRouters {
+				routerID, ok := getsafe.GetSafeOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -45,7 +45,7 @@ func init() {
 					continue
 				}
 
-				for _, route := range routesResp.GetNetworkRoutes() {
+				for _, route := range routesResp.NetworkRoutes {
 					items = append(items, routeSweeperItem{routerID: *routerID, route: route})
 				}
 			}
@@ -54,21 +54,22 @@ func init() {
 		},
 		// Is this a test network router route?
 		func(item routeSweeperItem) bool {
-			name, ok := item.route.GetNameOk()
+			name, ok := getsafe.GetSafeOk(item.route.Name)
 			if ok && name != nil && strings.HasPrefix(*name, testsweep.TestResourcePrefix) {
 				return true
 			}
 
-			desc, ok := item.route.GetDescriptionOk()
-			if ok && desc != nil && strings.HasPrefix(*desc, testsweep.TestResourcePrefix) {
-				return true
+			if item.route.Description.IsSet() {
+				if desc := item.route.Description.Get(); desc != nil && strings.HasPrefix(*desc, testsweep.TestResourcePrefix) {
+					return true
+				}
 			}
 
 			return false
 		},
 		// Delete the test network router route.
 		func(ctx context.Context, client *sdk.APIClient, item routeSweeperItem) (*http.Response, error) {
-			id, ok := item.route.GetIdOk()
+			id, ok := getsafe.GetSafeOk(item.route.Id)
 			if !ok || id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

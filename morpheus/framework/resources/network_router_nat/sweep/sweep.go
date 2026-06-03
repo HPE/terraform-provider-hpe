@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -13,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_router_nat"
@@ -34,8 +34,8 @@ func init() {
 
 			items := make([]natSweeperItem, 0)
 
-			for _, router := range routersResp.GetNetworkRouters() {
-				routerID, ok := router.GetIdOk()
+			for _, router := range routersResp.NetworkRouters {
+				routerID, ok := getsafe.GetSafeOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -45,7 +45,7 @@ func init() {
 					continue
 				}
 
-				for _, nat := range natsResp.GetNetworkRouterNATs() {
+				for _, nat := range natsResp.NetworkRouterNATs {
 					items = append(items, natSweeperItem{routerID: *routerID, nat: nat})
 				}
 			}
@@ -54,7 +54,7 @@ func init() {
 		},
 		// Is this a test network router NAT?
 		func(item natSweeperItem) bool {
-			name, ok := item.nat.GetNameOk()
+			name, ok := getsafe.GetSafeOk(item.nat.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -63,7 +63,7 @@ func init() {
 		},
 		// Delete the test network router NAT.
 		func(ctx context.Context, client *sdk.APIClient, item natSweeperItem) (*http.Response, error) {
-			id, ok := item.nat.GetIdOk()
+			id, ok := getsafe.GetSafeOk(item.nat.Id)
 			if !ok || id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

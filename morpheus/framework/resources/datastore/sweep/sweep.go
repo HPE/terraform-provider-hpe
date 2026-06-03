@@ -1,19 +1,18 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_datastore"
@@ -32,16 +31,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetDatastores(), hresp, err
+			return getsafe.GetSafe(&resp.Datastores), hresp, err
 		},
 		// Is this a test datastore?
 		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {
-			name, ok := item.GetNameOk()
-			if !ok || name == nil {
-				return false
-			}
-
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(item.Name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test datastore.
 		func(
@@ -49,12 +43,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListDatastores200ResponseAllOfDatastoresInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
-				return nil, fmt.Errorf("could not get ID")
-			}
-
-			_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, *id).Execute()
+			_, hresp, err := client.DatastoresAPI.DeleteDatastores(ctx, item.Id).Execute()
 
 			return hresp, err
 		},
