@@ -23,13 +23,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/role"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/server"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
@@ -54,13 +58,17 @@ func (SubProvider) GetDataSources(
 		networkdomain.NewDataSource,
 		networkfirewallrule.NewDataSource,
 		networkfirewallrulegroup.NewDataSource,
+		networkpool.NewDataSource,
 		networkrouter.NewDataSource,
 		networkrouterbgpneighbor.NewDataSource,
 		networkrouterroute.NewDataSource,
+		networktype.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,
 		role.NewDataSource,
+		securitygroup.NewDataSource,
+		server.NewDataSource,
 		serviceplan.NewDataSource,
 		user.NewDataSource,
 	}
