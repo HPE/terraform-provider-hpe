@@ -1,0 +1,25 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Manages a Morpheus load balancer pool.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus load balancer pool. A pool defines a group of backend servers that receive traffic distributed by a load balancer virtual server.
+
+For NSX-T load balancers, use the `config_nsxt` block to configure SNAT translation, TCP multiplexing, active/passive monitors, and member groups. For other load balancer types, use the generic `config` attribute.
+
+## Example Usage — NSX-T Pool
+
+{{ tffile "examples/resources/morpheus_load_balancer_pool/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Load balancer pools can be imported using the load balancer ID and pool ID separated by a slash, e.g.
+
+```shell
+terraform import hpe_morpheus_load_balancer_pool.example 1/42
+```
