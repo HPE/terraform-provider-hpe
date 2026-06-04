@@ -12,7 +12,8 @@ Manages a Morpheus Storage Volume resource.
 
 ```terraform
 resource "hpe_morpheus_storage_volume" "example" {
-  name = "Example Storage Volume"
+  name    = "Example Storage Volume"
+  type_id = 1
 }
 ```
 
@@ -22,12 +23,12 @@ resource "hpe_morpheus_storage_volume" "example" {
 ### Required
 
 - `name` (String) The name of the storage volume.
+- `type_id` (Number) The type ID of the storage volume.
 
 ### Optional
 
 - `max_storage` (Number) The maximum storage size in bytes.
 - `storage_server_id` (Number) The ID of the storage server.
-- `type` (String) The storage type code or ID.
 
 ### Read-Only
 

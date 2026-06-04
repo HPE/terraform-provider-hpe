@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package option_type
+package setting_whitelabel
 
 import (
 	"fmt"
@@ -11,18 +11,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_option_type/example.tf example.tf.tmpl Name "Environment Selector" FieldName "environment" Type "select" FieldLabel "Environment" DefaultValue "development" Required "true"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_setting_whitelabel/example.tf example.tf.tmpl Enabled "true" ApplianceName "Acme Cloud Platform" PrimaryColor "#1a73e8" SecondaryColor "#ffffff"
 
-func RenderOptionTypeConfig(t *testing.T, overrides map[string]string) (string, error) {
+func RenderSettingWhitelabelConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"Name":         "Environment Selector",
-		"FieldName":    "environment",
-		"Type":         "select",
-		"FieldLabel":   "Environment",
-		"DefaultValue": "development",
-		"Required":     "true",
+		"Enabled":        "true",
+		"ApplianceName":  "Acme Cloud Platform",
+		"PrimaryColor":   "#1a73e8",
+		"SecondaryColor": "#ffffff",
 	}
 
 	for key, value := range overrides {

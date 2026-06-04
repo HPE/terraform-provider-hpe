@@ -3,11 +3,16 @@ package cluster_namespace
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 )
 
 type clusterNamespaceModel struct {
@@ -38,7 +43,11 @@ func ClusterNamespaceSchema(_ context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the namespace.",
+				Description: "The name of the namespace. Must be 63 characters or less. Must be lower case.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(63),
+					validators.Lowercase(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
@@ -49,6 +58,9 @@ func ClusterNamespaceSchema(_ context.Context) schema.Schema {
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the namespace is active.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}

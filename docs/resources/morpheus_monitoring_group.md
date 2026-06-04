@@ -16,7 +16,6 @@ resource "hpe_morpheus_monitoring_group" "example" {
   description = "Monitoring group for production services"
   min_happy   = 1
   severity    = "critical"
-  active      = true
 }
 ```
 
@@ -29,7 +28,6 @@ resource "hpe_morpheus_monitoring_group" "example" {
 
 ### Optional
 
-- `active` (Boolean) Whether the group is active.
 - `description` (String) The description of the monitoring group.
 - `in_uptime` (Boolean) Whether the group affects account-wide availability calculations.
 - `min_happy` (Number) Minimum number of checks that must be happy to keep the group healthy.

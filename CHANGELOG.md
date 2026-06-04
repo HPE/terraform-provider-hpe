@@ -23,7 +23,6 @@ In this release (v1.4.0) we have added the following resources:
 
 ### Monitoring & Operations
 
-- hpe_morpheus_backup
 - hpe_morpheus_backup_job
 - hpe_morpheus_budget
 - hpe_morpheus_monitoring_alert
@@ -40,7 +39,6 @@ In this release (v1.4.0) we have added the following resources:
 
 - hpe_morpheus_container_script
 - hpe_morpheus_option_list
-- hpe_morpheus_option_type
 - hpe_morpheus_provisioning_license
 
 ### VDI
@@ -56,7 +54,7 @@ In this release (v1.4.0) we have added the following resources:
 
 ### Identity & Governance
 
-- hpe_morpheus_whitelabel_settings
+- hpe_morpheus_setting_whitelabel
 
 ### Other
 
@@ -95,6 +93,7 @@ In this release (v1.4.0) we have added the following data sources:
 
 ## Known issues
 
+- `hpe_morpheus_cluster_namespace`: `active` is not supported on import. `name` update is not supported.
 - `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
 - `hpe_morpheus_instance` updates fail when removing optional fields.
   This will be addressed in a future release.

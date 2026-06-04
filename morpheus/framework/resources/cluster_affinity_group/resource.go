@@ -70,9 +70,6 @@ func (r *clusterAffinityGroupResource) Create(
 	ag := sdk.SaveClusterAffinityGroupRequestAffinityGroup{
 		Name: &name,
 	}
-	if !plan.Enabled.IsNull() {
-		ag.Active = plan.Enabled.ValueBoolPointer()
-	}
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -164,9 +161,6 @@ func (r *clusterAffinityGroupResource) Update(
 	if !plan.Name.IsNull() {
 		v := plan.Name.ValueString()
 		ag.Name = &v
-	}
-	if !plan.Enabled.IsNull() {
-		ag.Active = plan.Enabled.ValueBoolPointer()
 	}
 
 	body := sdk.UpdateClusterAffinityGroupRequest{

@@ -1,14 +1,15 @@
 package storage_volume_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_volume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,51 +20,115 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusStorageVolumeResourceBasic(t *testing.T) {
+func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
-	t.Skip("Skipping: requires pre-existing storage server infrastructure")
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	rName := acctest.RandomWithPrefix(t.Name())
-	rNameUpdated := acctest.RandomWithPrefix(t.Name() + "-updated")
+	resourceConfig, err := storage_volume.RenderStorageVolumeConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "name", name),
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "type_id", "1"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: providerConfig + testAccStorageVolumeConfig(rName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_storage_volume.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.test", "name", rName),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
-			// ImportState
 			{
-				ResourceName:      "hpe_morpheus_storage_volume.test",
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			// Update name
-			{
-				Config: providerConfig + testAccStorageVolumeConfig(rNameUpdated),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.test", "name", rNameUpdated),
-				),
+				ResourceName:      "hpe_morpheus_storage_volume.example",
 			},
 		},
 	})
 }
 
-func testAccStorageVolumeConfig(name string) string {
-	return fmt.Sprintf(`
-resource "hpe_morpheus_storage_volume" "test" {
-  name = %q
-}
-`, name)
+func TestAccMorpheusStorageVolumeResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	updatedName := name + "-updated"
+
+	createConfig, err := storage_volume.RenderStorageVolumeConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateConfig, err := storage_volume.RenderStorageVolumeConfig(t, map[string]string{
+		"Name": updatedName,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_storage_volume.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + createConfig,
+				Check:  createChecks,
+			},
+			{
+				Config:           providerConfig + updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             providerConfig + updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
 }

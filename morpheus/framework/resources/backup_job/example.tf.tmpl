@@ -1,7 +1,6 @@
 resource "hpe_morpheus_backup_job" "example" {
   name            = "{{.Name}}"
   code            = "{{.Code}}"
-  schedule_id     = {{.ScheduleId}}
   retention_count = {{.RetentionCount}}
   enabled         = {{.Enabled}}
 }

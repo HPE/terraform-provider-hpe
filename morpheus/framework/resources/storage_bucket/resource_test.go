@@ -1,14 +1,15 @@
 package storage_bucket_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_bucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,59 +20,117 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusStorageBucketResourceBasic(t *testing.T) {
+func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
-	t.Skip("Skipping: requires external storage provider credentials (S3, etc.)")
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	rName := acctest.RandomWithPrefix(t.Name())
+	resourceConfig, err := storage_bucket.RenderStorageBucketConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_bucket.example", "name", name),
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_bucket.example", "provider_type", "s3"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			// Create
 			{
-				Config: providerConfig + testAccStorageBucketConfig(rName, "s3", ""),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_storage_bucket.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_bucket.test", "name", rName),
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_bucket.test", "provider_type", "s3"),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
-			// ImportState (ignore sensitive fields)
 			{
-				ResourceName:            "hpe_morpheus_storage_bucket.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"access_key", "secret_key", "access_key_version", "secret_key_version"},
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
-			// Update description
 			{
-				Config: providerConfig + testAccStorageBucketConfig(rName, "s3", "updated description"),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_storage_bucket.test", "description", "updated description"),
-				),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_storage_bucket.example",
 			},
 		},
 	})
 }
 
-func testAccStorageBucketConfig(name, providerType, description string) string {
-	desc := ""
-	if description != "" {
-		desc = fmt.Sprintf(`  description = %q`, description)
+func TestAccMorpheusStorageBucketResourceUpdateOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	updatedName := name + "-updated"
+
+	createConfig, err := storage_bucket.RenderStorageBucketConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	return fmt.Sprintf(`
-resource "hpe_morpheus_storage_bucket" "test" {
-  name          = %q
-  provider_type = %q
-%s
-}
-`, name, providerType, desc)
+	updateConfig, err := storage_bucket.RenderStorageBucketConfig(t, map[string]string{
+		"Name": updatedName,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_storage_bucket.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "provider_type", "s3"),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
+		resource.TestCheckResourceAttr(resourceName, "provider_type", "s3"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + createConfig,
+				Check:  createChecks,
+			},
+			{
+				Config:           providerConfig + updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             providerConfig + updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
 }

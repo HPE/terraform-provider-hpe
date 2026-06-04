@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_option_list/example.tf example.tf.tmpl Name "Region List" Description "List of available regions" Type "rest" SourceUrl "https://api.example.com/regions" Visibility "public" RealTime "false"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_option_list/example_manual.tf example.tf.tmpl Name "Region List" Description "List of available regions" Type "manual" Visibility "public" RealTime "false"
 
 func RenderOptionListConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -19,8 +19,7 @@ func RenderOptionListConfig(t *testing.T, overrides map[string]string) (string, 
 	defaults := map[string]string{
 		"Name":        "Region List",
 		"Description": "List of available regions",
-		"Type":        "rest",
-		"SourceUrl":   "https://api.example.com/regions",
+		"Type":        "manual",
 		"Visibility":  "public",
 		"RealTime":    "false",
 	}

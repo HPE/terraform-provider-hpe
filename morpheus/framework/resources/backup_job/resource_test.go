@@ -1,14 +1,15 @@
 package backup_job_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,85 +20,129 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusBackupJobResourceBasic(t *testing.T) {
+func TestAccMorpheusBackupJobResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	code := acctest.RandomWithPrefix("backup-job")
 
-	rName := acctest.RandomWithPrefix(t.Name())
+	resourceConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+		"Name": name,
+		"Code": code,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_backup_job.example"
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "code", code),
+		resource.TestCheckResourceAttr(resourceName, "retention_count", "14"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+	)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testAccBackupJobConfig(rName, true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("hpe_morpheus_backup_job.test", "id"),
-					resource.TestCheckResourceAttr("hpe_morpheus_backup_job.test", "name", rName),
-					resource.TestCheckResourceAttr("hpe_morpheus_backup_job.test", "enabled", "true"),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
 			},
 			{
-				ResourceName:            "hpe_morpheus_backup_job.test",
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"enabled"},
+				ResourceName:            "hpe_morpheus_backup_job.example",
 			},
 		},
 	})
 }
 
-func TestAccMorpheusBackupJobResourceUpdate(t *testing.T) {
+func TestAccMorpheusBackupJobResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	code := acctest.RandomWithPrefix("backup-job")
 
-	rName := acctest.RandomWithPrefix(t.Name())
+	createConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+		"Name": name,
+		"Code": code,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateConfig := `
+resource "hpe_morpheus_backup_job" "example" {
+  name            = "` + name + `"
+  code            = "` + code + `"
+  retention_count = 7
+  enabled         = false
+}
+`
+
+	resourceName := "hpe_morpheus_backup_job.example"
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "code", code),
+		resource.TestCheckResourceAttr(resourceName, "retention_count", "14"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+	)
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "code", code),
+		resource.TestCheckResourceAttr(resourceName, "retention_count", "7"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+	)
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testAccBackupJobConfig(rName, true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_backup_job.test", "enabled", "true"),
-				),
+				Config: providerConfig + createConfig,
+				Check:  createChecks,
 			},
 			{
-				Config: providerConfig + testAccBackupJobConfig(rName, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_backup_job.test", "enabled", "false"),
-				),
+				Config:           providerConfig + updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             providerConfig + updateConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
 		},
 	})
-}
-
-func testAccBackupJobConfig(name string, enabled bool) string {
-	return fmt.Sprintf(`
-resource "hpe_morpheus_backup_job" "test" {
-  name    = %q
-  enabled = %t
-}
-`, name, enabled)
 }

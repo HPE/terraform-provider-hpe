@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -157,11 +158,17 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Set of tenant IDs that are allowed access to the subnet.",
 				MarkdownDescription: "Set of tenant IDs that are allowed access to the subnet.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
 			},
 			"type_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The type ID of the subnet.",
 				MarkdownDescription: "The type ID of the subnet.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,

@@ -10,13 +10,14 @@ import (
 )
 
 type provisioningLicenseModel struct {
-	ID            types.Int64  `tfsdk:"id"`
-	Name          types.String `tfsdk:"name"`
-	LicenseType   types.String `tfsdk:"license_type"`
-	LicenseKey    types.String `tfsdk:"license_key"`
-	Description   types.String `tfsdk:"description"`
-	VirtualImages types.List   `tfsdk:"virtual_images"`
-	Tenants       types.List   `tfsdk:"tenants"`
+	ID                  types.Int64  `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	LicenseType         types.String `tfsdk:"license_type"`
+	LicenseKeyWo        types.String `tfsdk:"license_key_wo"`
+	LicenseKeyWoVersion types.Int64  `tfsdk:"license_key_wo_version"`
+	Description         types.String `tfsdk:"description"`
+	VirtualImages       types.List   `tfsdk:"virtual_images"`
+	Tenants             types.List   `tfsdk:"tenants"`
 }
 
 func ProvisioningLicenseSchema(_ context.Context) schema.Schema {
@@ -38,10 +39,15 @@ func ProvisioningLicenseSchema(_ context.Context) schema.Schema {
 				Required:    true,
 				Description: "The type of the license.",
 			},
-			"license_key": schema.StringAttribute{
+			"license_key_wo": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 				Description: "The license key.",
+			},
+			"license_key_wo_version": schema.Int64Attribute{
+				Optional:    true,
+				Description: "License key version. Used to determine if license_key_wo has been updated.",
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

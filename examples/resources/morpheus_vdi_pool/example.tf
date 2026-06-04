@@ -3,6 +3,7 @@ resource "hpe_morpheus_vdi_pool" "example" {
   description       = "VDI pool for development team"
   max_pool_size     = 10
   min_idle          = 2
+  max_idle          = 5
   initial_pool_size = 3
   enabled           = true
   persistent_user   = true

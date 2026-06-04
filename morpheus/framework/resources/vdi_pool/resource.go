@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
-	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -94,6 +94,10 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		v := float32(plan.MaxIdle.ValueInt64())
 		oneOf.MaxIdle = &v
 	}
+	if !plan.IdleTimeout.IsNull() {
+		v := float32(plan.IdleTimeout.ValueInt64())
+		oneOf.AllocationTimeoutMinutes = &v
+	}
 
 	vdiPool := sdk.AddVDIPoolsRequestVdiPoolOneOfAsAddVDIPoolsRequestVdiPool(&oneOf)
 
@@ -133,60 +137,35 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	poolID := pools[0].GetId()
-	plan.ID = types.Int64Value(poolID)
 
-	// Read the full pool
-	readResult, httpResp, err := client.VDIAPI.GetVDIPools(ctx, poolID).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
-		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
-			ResourceType: "vdi_pool",
-			ResourceID:   poolID,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
-
+	state, diags := r.getVdiPoolAsState(ctx, poolID)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	pool := readResult.GetVdiPool()
-	mapGetResponseToModel(&plan, &pool)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		errfmt.DiagClientError(&resp.Diagnostics, err)
-
-		return
-	}
-
 	var state vdiPoolModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
-
-	result, httpResp, err := client.VDIAPI.GetVDIPools(ctx, id).Execute()
-	if errfmt.IsNotFound(httpResp) {
+	model, diags := r.getVdiPoolAsState(ctx, state.ID.ValueInt64())
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if model == nil {
 		resp.State.RemoveResource(ctx)
 
 		return
 	}
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", "", err, httpResp)
 
-		return
-	}
-
-	pool := result.GetVdiPool()
-	mapGetResponseToModel(&state, &pool)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
 func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -236,6 +215,26 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.AutoCreateLocalUserOnReservation.IsNull() {
 		body.AutoCreateLocalUserOnReservation = plan.AutoCreateLocalUserOnReservation.ValueBoolPointer()
 	}
+	if !plan.MaxPoolSize.IsNull() {
+		v := float32(plan.MaxPoolSize.ValueInt64())
+		body.MaxPoolSize = &v
+	}
+	if !plan.MinIdle.IsNull() {
+		v := float32(plan.MinIdle.ValueInt64())
+		body.MinIdle = &v
+	}
+	if !plan.MaxIdle.IsNull() {
+		v := float32(plan.MaxIdle.ValueInt64())
+		body.MaxIdle = &v
+	}
+	if !plan.InitialPoolSize.IsNull() {
+		v := float32(plan.InitialPoolSize.ValueInt64())
+		body.InitialPoolSize = &v
+	}
+	if !plan.IdleTimeout.IsNull() {
+		v := float32(plan.IdleTimeout.ValueInt64())
+		body.AllocationTimeoutMinutes = &v
+	}
 
 	_, httpResp, err := client.VDIAPI.UpdateVDIPools(ctx, id).UpdateVDIPoolsRequest(sdk.UpdateVDIPoolsRequest{
 		VdiPool: body,
@@ -246,18 +245,13 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Re-read to get updated state
-	result, httpResp, err := client.VDIAPI.GetVDIPools(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_pool", plan.Name.ValueString(), err, httpResp)
-
+	state, diags := r.getVdiPoolAsState(ctx, id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	pool := result.GetVdiPool()
-	mapGetResponseToModel(&plan, &pool)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *vdiPoolResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -296,6 +290,36 @@ func (r *vdiPoolResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+}
+
+func (r *vdiPoolResource) getVdiPoolAsState(
+	ctx context.Context,
+	id int64,
+) (*vdiPoolModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		errfmt.DiagClientError(&diags, err)
+
+		return nil, diags
+	}
+
+	result, httpResp, err := client.VDIAPI.GetVDIPools(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return nil, diags
+	}
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&diags, errfmt.OpRead, "vdi_pool", "", err, httpResp)
+
+		return nil, diags
+	}
+
+	pool := result.GetVdiPool()
+	var model vdiPoolModel
+	mapGetResponseToModel(&model, &pool)
+
+	return &model, diags
 }
 
 func mapGetResponseToModel(model *vdiPoolModel, pool *sdk.GetVDIPools200ResponseVdiPool) {
@@ -348,8 +372,12 @@ func mapGetResponseToModel(model *vdiPoolModel, pool *sdk.GetVDIPools200Response
 	} else {
 		model.AllowFileshare = types.BoolNull()
 	}
-	// IdleTimeout and MaxSessionTimeout are not directly exposed in the Get response model
-	// so we preserve the plan values (they remain unchanged).
+	// IdleTimeout maps to AllocationTimeoutMinutes in the API response.
+	if pool.AllocationTimeoutMinutes != nil {
+		model.IdleTimeout = types.Int64Value(*pool.AllocationTimeoutMinutes)
+	} else {
+		model.IdleTimeout = types.Int64Null()
+	}
 	if pool.MaxPoolSize != nil {
 		model.MaxPoolSize = types.Int64Value(*pool.MaxPoolSize)
 	}

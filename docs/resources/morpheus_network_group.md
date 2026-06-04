@@ -14,6 +14,8 @@ Manages a Morpheus Network Group resource.
 resource "hpe_morpheus_network_group" "example" {
   name        = "Production Networks"
   description = "Network group for production workloads"
+  visibility  = "private"
+  active      = true
 }
 ```
 
@@ -26,13 +28,13 @@ resource "hpe_morpheus_network_group" "example" {
 
 ### Optional
 
+- `active` (Boolean) Whether the network group is active.
 - `description` (String) The description of the network group.
+- `visibility` (String) The visibility of the network group.
 
 ### Read-Only
 
-- `active` (Boolean) Whether the network group is active.
 - `id` (Number) The ID of the network group.
-- `visibility` (String) The visibility of the network group.
 
 ## Import
 
