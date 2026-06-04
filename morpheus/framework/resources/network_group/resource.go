@@ -62,6 +62,17 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		additionalProps["active"] = plan.Active.ValueBool()
+	}
+	if len(additionalProps) > 0 {
+		body.AdditionalProperties = additionalProps
+	}
+
 	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).
 		CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
 			NetworkGroup: &body,
@@ -166,6 +177,17 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
+	}
+
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		additionalProps["active"] = plan.Active.ValueBool()
+	}
+	if len(additionalProps) > 0 {
+		body.AdditionalProperties = additionalProps
 	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).

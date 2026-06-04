@@ -5,11 +5,16 @@ package security_group
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -55,14 +60,26 @@ func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
 			"resource_permission_groups_all": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
+				Default: booldefault.StaticBool(false),
 				Description:         "Whether all groups have access to the security group.",
 				MarkdownDescription: "Whether all groups have access to the security group.",
+				Validators: []validator.Bool{
+					boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids")),
+				},
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
+				Computed:            true,
 				Description:         "Set of tenant IDs that are allowed access to the security group.",
 				MarkdownDescription: "Set of tenant IDs that are allowed access to the security group.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.RequiresReplace(),
+				},
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,

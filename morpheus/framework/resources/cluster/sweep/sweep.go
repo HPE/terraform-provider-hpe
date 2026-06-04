@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -65,7 +64,6 @@ func init() {
 		),
 		testsweep.WithDependencies[sdk.ListClusters200ResponseAllOfClustersInner](
 			"hpe_morpheus_cluster_affinity_group",
-			"hpe_morpheus_cluster_datastore",
 			"hpe_morpheus_cluster_namespace",
 		),
 	)

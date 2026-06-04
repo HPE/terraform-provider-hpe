@@ -3,6 +3,7 @@ resource "hpe_morpheus_vdi_pool" "example" {
   description       = "{{.Description}}"
   max_pool_size     = {{.MaxPoolSize}}
   min_idle          = {{.MinIdle}}
+  max_idle          = {{.MaxIdle}}
   initial_pool_size = {{.InitialPoolSize}}
   enabled           = {{.Enabled}}
   persistent_user   = {{.PersistentUser}}

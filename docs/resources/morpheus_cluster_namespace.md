@@ -23,7 +23,7 @@ resource "hpe_morpheus_cluster_namespace" "example" {
 ### Required
 
 - `cluster_id` (Number) The ID of the cluster.
-- `name` (String) The name of the namespace.
+- `name` (String) The name of the namespace. Must be 63 characters or less. Must be lower case.
 
 ### Optional
 

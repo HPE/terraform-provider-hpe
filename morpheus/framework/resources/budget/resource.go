@@ -250,6 +250,11 @@ func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOf
 	if b.Enabled != nil {
 		model.Enabled = types.BoolValue(*b.Enabled)
 	}
+	if b.Year != nil {
+		if v, err := strconv.ParseInt(*b.Year, 10, 64); err == nil {
+			model.Year = types.Int64Value(v)
+		}
+	}
 }
 
 func mapUpdateResponseToModel(model *budgetModel, b *sdk.UpdateBudgets200ResponseAllOfBudget) {

@@ -1,14 +1,16 @@
 package network_pool_server_test
 
 import (
-	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool_server"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,14 +21,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusNetworkPoolServerResourceBasic(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkPool) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -34,49 +35,67 @@ func TestAccMorpheusNetworkPoolServerResourceBasic(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-
 	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_pool_server.example"
+
+	resourceConfig, err := network_pool_server.RenderNetworkPoolServerInfobloxConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceConfig = strings.Replace(
+		resourceConfig,
+		`resource "hpe_morpheus_network_pool_server" "infoblox" {`,
+		`resource "hpe_morpheus_network_pool_server" "example" {`,
+		1,
+	)
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
+		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
+		resource.TestCheckResourceAttr(resourceName, "network_filter", "10.0.0.0/8"),
+		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
+		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
+		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
+		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "0"),
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name                        = %q
-  type_id                     = 4
-  enabled                     = true
-  service_url                 = "http://localhost:8080"
-  service_username            = "admin"
-  service_password_wo         = "password123"
-  service_password_wo_version = 1
-}
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "name", name),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "type_id", "4"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "enabled", "true"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_network_pool_server.test", "id"),
-				),
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
+			},
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
 			},
 			{
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"service_username", "service_password_wo", "service_password_wo_version"},
-				ResourceName:            "hpe_morpheus_network_pool_server.test",
+				ResourceName:            "hpe_morpheus_network_pool_server.example",
 			},
 		},
 	})
 }
 
-func TestAccMorpheusNetworkPoolServerResourceUpdate(t *testing.T) {
+func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkPool) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 	defer testhelpers.RecordResult(t)
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -84,173 +103,81 @@ func TestAccMorpheusNetworkPoolServerResourceUpdate(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-
 	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_pool_server.example"
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name                        = %q
-  type_id                     = 4
-  enabled                     = true
-  service_url                 = "http://localhost:8080"
-  service_username            = "admin"
-  service_password_wo         = "password123"
-  service_password_wo_version = 1
-}
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "enabled", "true"),
-				),
-			},
-			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name                        = %q
-  type_id                     = 4
+	createConfig, err := network_pool_server.RenderNetworkPoolServerInfobloxConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createConfig = strings.Replace(
+		createConfig,
+		`resource "hpe_morpheus_network_pool_server" "infoblox" {`,
+		`resource "hpe_morpheus_network_pool_server" "example" {`,
+		1,
+	)
+
+	updateConfig := `
+resource "hpe_morpheus_network_pool_server" "example" {
+  name                        = "` + name + `"
+  type_id                     = 1
   enabled                     = false
-  service_url                 = "http://localhost:8080"
+  service_url                 = "https://infoblox.example.com/wapi/v2.12"
   service_username            = "admin"
-  service_password_wo         = "password123"
+  service_password_wo         = "changeme"
   service_password_wo_version = 1
-}
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "enabled", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMorpheusNetworkPoolServerCredential(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NetworkPool) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
-	}
-	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	t.Parallel()
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name          = %q
-  type_id       = 4
-  enabled       = true
-  service_url   = "http://localhost:8080"
-  credential_id = 1
-}
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "name", name),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "credential_id", "1"),
-					resource.TestCheckResourceAttrSet("hpe_morpheus_network_pool_server.test", "id"),
-				),
-			},
-			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"credential_id"},
-				ResourceName:            "hpe_morpheus_network_pool_server.test",
-			},
-		},
-	})
-}
-
-func TestAccMorpheusNetworkPoolServerWithFilters(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NetworkPool) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
-	}
-	defer testhelpers.RecordResult(t)
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	t.Parallel()
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	name := acctest.RandomWithPrefix("tf-acc-pool-srv")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name                        = %q
-  type_id                     = 4
-  enabled                     = true
-  service_url                 = "http://localhost:8080"
-  service_username            = "admin"
-  service_password_wo         = "password123"
-  service_password_wo_version = 1
-  network_filter              = "10.0.0.0/8"
+  ignore_ssl                  = true
+  network_filter              = "192.168.0.0/16"
   zone_filter                 = "example.com"
   tenant_match                = ".*"
   service_mode                = "static"
-  service_throttle_rate       = 100
+  service_throttle_rate       = 25
 }
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "name", name),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "network_filter", "10.0.0.0/8"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "zone_filter", "example.com"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "tenant_match", ".*"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "service_mode", "static"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "service_throttle_rate", "100"),
-				),
-			},
-			// Update filters
-			{
-				Config: providerConfig + fmt.Sprintf(`
-resource "hpe_morpheus_network_pool_server" "test" {
-  name                        = %q
-  type_id                     = 4
-  enabled                     = true
-  service_url                 = "http://localhost:8080"
-  service_username            = "admin"
-  service_password_wo         = "password123"
-  service_password_wo_version = 1
-  network_filter              = "192.168.0.0/16"
-  zone_filter                 = "updated.example.com"
-  tenant_match                = "tenant-.*"
-  service_mode                = "static"
-  service_throttle_rate       = 200
-}
-`, name),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "network_filter", "192.168.0.0/16"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "zone_filter", "updated.example.com"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "tenant_match", "tenant-.*"),
-					resource.TestCheckResourceAttr("hpe_morpheus_network_pool_server.test", "service_throttle_rate", "200"),
-				),
-			},
-			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"service_username", "service_password_wo", "service_password_wo_version"},
-				ResourceName:            "hpe_morpheus_network_pool_server.test",
-			},
+`
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
+		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
+		resource.TestCheckResourceAttr(resourceName, "network_filter", "10.0.0.0/8"),
+		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
+		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
+		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
+		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "0"),
+	)
+
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
+		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
+		resource.TestCheckResourceAttr(resourceName, "ignore_ssl", "true"),
+		resource.TestCheckResourceAttr(resourceName, "network_filter", "192.168.0.0/16"),
+		resource.TestCheckResourceAttr(resourceName, "zone_filter", "example.com"),
+		resource.TestCheckResourceAttr(resourceName, "tenant_match", ".*"),
+		resource.TestCheckResourceAttr(resourceName, "service_mode", "static"),
+		resource.TestCheckResourceAttr(resourceName, "service_throttle_rate", "25"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{Config: providerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
 }

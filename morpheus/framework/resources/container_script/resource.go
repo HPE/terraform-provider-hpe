@@ -99,6 +99,11 @@ func (r *containerScriptResource) Create(
 	if !plan.SudoUser.IsNull() && !plan.SudoUser.IsUnknown() {
 		body.SudoUser = plan.SudoUser.ValueBoolPointer()
 	}
+	if !plan.FailOnError.IsNull() && !plan.FailOnError.IsUnknown() {
+		body.AdditionalProperties = map[string]interface{}{
+			"failOnError": plan.FailOnError.ValueBool(),
+		}
+	}
 
 	result, httpResp, err := client.LibraryAPI.AddScript(ctx).AddScriptRequest(sdk.AddScriptRequest{
 		ContainerScript: &body,
@@ -232,6 +237,11 @@ func (r *containerScriptResource) Update(
 	}
 	if !plan.SudoUser.IsNull() && !plan.SudoUser.IsUnknown() {
 		body.SudoUser = plan.SudoUser.ValueBoolPointer()
+	}
+	if !plan.FailOnError.IsNull() && !plan.FailOnError.IsUnknown() {
+		body.AdditionalProperties = map[string]interface{}{
+			"failOnError": plan.FailOnError.ValueBool(),
+		}
 	}
 
 	_, httpResp, err := client.LibraryAPI.UpdateScript(ctx, id).UpdateScriptRequest(sdk.UpdateScriptRequest{

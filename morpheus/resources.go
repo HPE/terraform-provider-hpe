@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
@@ -40,7 +39,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_list"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_type"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
@@ -50,6 +48,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group_rule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_bucket"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_server"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_volume"
@@ -59,7 +58,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/whitelabel_settings"
 )
 
 func (s SubProvider) GetResources(
@@ -123,17 +121,15 @@ func (s SubProvider) GetResources(
 		monitoring_alert.NewResource,
 		monitoring_group.NewResource,
 		budget.NewResource,
-		backup.NewResource,
 		backup_job.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		option_type.NewResource,
 		option_list.NewResource,
 		provisioning_license.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance
 		vdi_pool.NewResource,
-		whitelabel_settings.NewResource,
+		setting_whitelabel.NewResource,
 	}
 
 	return resources

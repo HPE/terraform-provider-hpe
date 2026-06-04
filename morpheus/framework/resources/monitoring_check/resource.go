@@ -178,6 +178,9 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 	if check.Severity != nil {
 		state.Severity = types.StringValue(*check.Severity)
 	}
+	if check.CheckType != nil && check.CheckType.Id != nil {
+		state.CheckTypeID = types.Int64Value(*check.CheckType.Id)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

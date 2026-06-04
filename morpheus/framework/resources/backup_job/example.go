@@ -19,7 +19,6 @@ func RenderBackupJobConfig(t *testing.T, overrides map[string]string) (string, e
 	defaults := map[string]string{
 		"Name":           "Nightly Backup Job",
 		"Code":           "nightly-backup",
-		"ScheduleId":     "1",
 		"RetentionCount": "14",
 		"Enabled":        "true",
 	}

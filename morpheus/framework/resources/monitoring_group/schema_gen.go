@@ -18,7 +18,6 @@ type monitoringGroupModel struct {
 	MinHappy    types.Int64  `tfsdk:"min_happy"`
 	Severity    types.String `tfsdk:"severity"`
 	InUptime    types.Bool   `tfsdk:"in_uptime"`
-	Active      types.Bool   `tfsdk:"active"`
 }
 
 func MonitoringGroupSchema(_ context.Context) schema.Schema {
@@ -61,12 +60,6 @@ func MonitoringGroupSchema(_ context.Context) schema.Schema {
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether the group affects account-wide availability calculations.",
-			},
-			"active": schema.BoolAttribute{
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(true),
-				Description: "Whether the group is active.",
 			},
 		},
 	}

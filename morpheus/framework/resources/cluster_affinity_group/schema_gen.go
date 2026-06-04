@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,7 +14,6 @@ type clusterAffinityGroupModel struct {
 	ClusterID   types.Int64  `tfsdk:"cluster_id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
-	Enabled     types.Bool   `tfsdk:"enabled"`
 }
 
 func ClusterAffinityGroupSchema(_ context.Context) schema.Schema {
@@ -43,12 +41,6 @@ func ClusterAffinityGroupSchema(_ context.Context) schema.Schema {
 			"description": schema.StringAttribute{
 				Optional:    true,
 				Description: "The description of the affinity group.",
-			},
-			"enabled": schema.BoolAttribute{
-				Optional:    true,
-				Computed:    true,
-				Default:     booldefault.StaticBool(true),
-				Description: "Whether the affinity group is enabled.",
 			},
 		},
 	}

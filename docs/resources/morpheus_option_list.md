@@ -8,14 +8,13 @@ description: |-
 
 Manages a Morpheus Library Option Type List resource.
 
-## Example Usage
+## Example Usage (Manual)
 
 ```terraform
 resource "hpe_morpheus_option_list" "example" {
   name        = "Region List"
   description = "List of available regions"
-  type        = "rest"
-  source_url  = "https://api.example.com/regions"
+  type        = "manual"
   visibility  = "public"
   real_time   = false
 }

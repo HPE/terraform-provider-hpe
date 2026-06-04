@@ -229,6 +229,18 @@ func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200Respo
 	if job.Enabled != nil {
 		model.Enabled = types.BoolValue(*job.Enabled)
 	}
+
+	if code, ok := job.AdditionalProperties["code"].(string); ok {
+		model.Code = types.StringValue(code)
+	} else {
+		model.Code = types.StringNull()
+	}
+
+	if job.Schedule != nil && job.Schedule.Id != nil {
+		model.ScheduleID = types.Int64Value(*job.Schedule.Id)
+	} else {
+		model.ScheduleID = types.Int64Null()
+	}
 }
 
 func mapUpdateResponseToModel(model *backupJobModel, job *sdk.UpdateBackupJobs200ResponseAllOfJob) {

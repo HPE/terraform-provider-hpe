@@ -74,9 +74,6 @@ func (r *monitoringGroupResource) Create(
 	if !plan.InUptime.IsNull() {
 		body.InUptime = plan.InUptime.ValueBoolPointer()
 	}
-	if !plan.Active.IsNull() {
-		body.Active = plan.Active.ValueBoolPointer()
-	}
 
 	result, httpResp, err := client.ChecksAPI.AddCheckGroups(ctx).AddCheckGroupsRequest(sdk.AddCheckGroupsRequest{
 		CheckGroup: body,
@@ -162,9 +159,6 @@ func (r *monitoringGroupResource) Update(
 	}
 	if !plan.InUptime.IsNull() {
 		body.InUptime = plan.InUptime.ValueBoolPointer()
-	}
-	if !plan.Active.IsNull() {
-		body.Active = plan.Active.ValueBoolPointer()
 	}
 
 	result, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
