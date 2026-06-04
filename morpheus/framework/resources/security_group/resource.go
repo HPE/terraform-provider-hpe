@@ -342,8 +342,12 @@ func mapResponseToModel(
 	}
 	model.Active = convert.BoolToType(sg.Active)
 	model.Visibility = convert.StrToType(sg.Visibility)
-	zone := sg.Zone
-	model.CloudId = convert.Int64ToType(zone.Id)
+
+	if sg.Zone != nil {
+		model.CloudId = convert.Int64ToType(sg.Zone.Id)
+	} else {
+		model.CloudId = types.Int64Null()
+	}
 
 	// Tenants
 	if len(sg.Tenants) > 0 {

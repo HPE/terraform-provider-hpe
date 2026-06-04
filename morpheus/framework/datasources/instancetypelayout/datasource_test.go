@@ -84,7 +84,7 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "ID", layoutID)
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", layoutID)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -125,17 +125,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		reqImage.VirtualImage.Labels = labels
 	}
 
-	// min_disk - field no longer exists in SDK, removing this section
-	// if !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown() {
-	// 	val := plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024
-	// 	reqImage.VirtualImage.MinDisk = &val
-	// }
+	// min_disk
+	if !plan.MinDisk.IsNull() && !plan.MinDisk.IsUnknown() {
+		val := plan.MinDisk.ValueInt64() * 1024 * 1024 * 1024
+		reqImage.VirtualImage.MinDisk = *sdk.NewNullableInt64(&val)
+	}
 
-	// min_ram - field no longer exists in SDK, removing this section
-	// if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
-	// 	val := plan.MinRam.ValueInt64() * 1024 * 1024 * 1024
-	// 	reqImage.VirtualImage.MinRam = &val
-	// }
+	// min_ram
+	if !plan.MinRam.IsNull() && !plan.MinRam.IsUnknown() {
+		val := plan.MinRam.ValueInt64() * 1024 * 1024 * 1024
+		reqImage.VirtualImage.MinRam = *sdk.NewNullableInt64(&val)
+	}
 
 	// name (required)
 	nameVal := plan.Name.ValueString()

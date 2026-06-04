@@ -281,11 +281,20 @@ func roleAsState(
 		return state, diags
 	}
 
-	defaultPersona, diags := NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"code": convert.StrToType(role.Role.DefaultPersona.Code),
-		"id":   convert.Int64ToType(role.Role.DefaultPersona.Id),
-		"name": convert.StrToType(role.Role.DefaultPersona.Name),
-	})
+	var defaultPersona DefaultPersonaValue
+	if role.Role.DefaultPersona != nil {
+		defaultPersona, diags = NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
+			"code": convert.StrToType(role.Role.DefaultPersona.Code),
+			"id":   convert.Int64ToType(role.Role.DefaultPersona.Id),
+			"name": convert.StrToType(role.Role.DefaultPersona.Name),
+		})
+	} else {
+		defaultPersona, diags = NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
+			"code": types.StringNull(),
+			"id":   types.Int64Null(),
+			"name": types.StringNull(),
+		})
+	}
 	if diags.HasError() {
 		return state, diags
 	}

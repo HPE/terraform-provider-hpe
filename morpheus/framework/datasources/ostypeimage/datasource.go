@@ -154,6 +154,8 @@ func (d *DataSource) Read(
 
 	if account := img.Account.Get(); account != nil {
 		data.TenantId = types.Int64Value(*account)
+	} else {
+		data.TenantId = types.Int64Value(0)
 	}
 
 	diags = resp.State.Set(ctx, &data)
