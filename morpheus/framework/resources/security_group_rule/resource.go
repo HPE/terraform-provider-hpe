@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -104,8 +105,27 @@ func (r *securityGroupRuleResource) Create(
 		return
 	}
 
-	rule := result.GetRule()
-	mapCreateResponseToModel(&plan, &rule)
+	var id int64
+	if createRule := result.GetRule(); createRule.Id != nil {
+		id = *createRule.Id
+	}
+	ruleIDParam := float32(id) //nolint:gosec // value range is safe
+
+	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleIDParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group_rule", "", err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "security_group_rule",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readRule := readResult.GetRule()
+	mapResponseToModel(&plan, &readRule)
 	plan.SecurityGroupID = types.Int64Value(sgID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -196,7 +216,7 @@ func (r *securityGroupRuleResource) Update(
 		body.Policy = plan.Policy.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).
+	_, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).
 		UpdateSecurityGroupRulesRequest(sdk.UpdateSecurityGroupRulesRequest{
 			Rule: body,
 		}).Execute()
@@ -206,8 +226,15 @@ func (r *securityGroupRuleResource) Update(
 		return
 	}
 
-	rule := result.GetRule()
-	mapUpdateResponseToModel(&plan, &rule)
+	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleID).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group_rule", "", err, httpResp)
+
+		return
+	}
+
+	readRule := readResult.GetRule()
+	mapResponseToModel(&plan, &readRule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -120,8 +121,24 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	schedule := result.GetSchedule()
-	mapAddResponseToModel(&plan, &schedule)
+	createSchedule := result.GetSchedule()
+	id := (&createSchedule).GetId()
+
+	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "power_schedule", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "power_schedule",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readSchedule := readResult.GetSchedule()
+	mapGetResponseToModel(&plan, &readSchedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -234,7 +251,7 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
+	_, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
 		UpdatePowerSchedulesRequest(sdk.UpdatePowerSchedulesRequest{
 			Schedule: body,
 		}).Execute()
@@ -244,8 +261,15 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	schedule := result.GetSchedule()
-	mapUpdateResponseToModel(&plan, &schedule)
+	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "power_schedule", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readSchedule := readResult.GetSchedule()
+	mapGetResponseToModel(&plan, &readSchedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

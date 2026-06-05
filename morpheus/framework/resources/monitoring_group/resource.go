@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -84,8 +85,24 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapAddGroupResponseToModel(&plan, &group)
+	createGroup := result.GetCheckGroup()
+	id := (&createGroup).GetId()
+
+	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readGroup := readResult.GetCheckGroup()
+	mapGetGroupResponseToModel(&plan, &readGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -161,7 +178,7 @@ func (r *monitoringGroupResource) Update(
 		body.InUptime = plan.InUptime.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
+	_, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
 		UpdateCheckGroupsRequest(sdk.UpdateCheckGroupsRequest{
 			CheckGroup: body,
 		}).Execute()
@@ -171,8 +188,15 @@ func (r *monitoringGroupResource) Update(
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapUpdateGroupResponseToModel(&plan, &group)
+	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readGroup := readResult.GetCheckGroup()
+	mapGetGroupResponseToModel(&plan, &readGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

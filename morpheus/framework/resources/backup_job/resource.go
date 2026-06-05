@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -73,8 +74,24 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapAddResponseToModel(&plan, &job)
+	createJob := result.GetJob()
+	id := (&createJob).GetId()
+
+	readResult, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup_job", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "backup_job",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readJob := readResult.GetJob()
+	mapGetResponseToModel(&plan, &readJob)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -143,7 +160,7 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
 	}
 
-	result, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
+	_, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
 		UpdateBackupJobsRequest(sdk.UpdateBackupJobsRequest{
 			Job: body,
 		}).Execute()
@@ -153,8 +170,15 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapUpdateResponseToModel(&plan, &job)
+	readResult, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup_job", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readJob := readResult.GetJob()
+	mapGetResponseToModel(&plan, &readJob)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -70,8 +71,24 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapAddResponseToModel(&plan, &dep)
+	createDeployment := result.GetDeployment()
+	id := (&createDeployment).GetId()
+
+	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "deployment", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "deployment",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readDep := readResult.GetDeployment()
+	mapGetResponseToModel(&plan, &readDep)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -133,7 +150,7 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
+	_, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
 		UpdateDeploymentRequest(sdk.UpdateDeploymentRequest{
 			Deployment: &body,
 		}).Execute()
@@ -143,8 +160,15 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapUpdateResponseToModel(&plan, &dep)
+	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "deployment", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readDep := readResult.GetDeployment()
+	mapGetResponseToModel(&plan, &readDep)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

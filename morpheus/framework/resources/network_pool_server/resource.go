@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -123,8 +124,24 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapCreateResponseToModel(&plan, &server)
+	createServer := result.GetNetworkPoolServer()
+	id := (&createServer).GetId()
+
+	readResult, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool_server", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_pool_server",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	server := readResult.GetNetworkPoolServer()
+	mapReadResponseToModel(&plan, &server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

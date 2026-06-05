@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -71,8 +72,24 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	gw := result.AddVDIGateways200ResponseAnyOf.GetVdiGateway()
-	mapCreateResponseToModel(&plan, &gw)
+	createGw := result.AddVDIGateways200ResponseAnyOf.GetVdiGateway()
+	id := (&createGw).GetId()
+
+	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_gateway",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readGw := readResult.GetVdiGateway()
+	mapGetResponseToModel(&plan, &readGw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -135,7 +152,7 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
+	_, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
 		UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
 			VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGatewayOneOfAsUpdateVDIGatewaysRequestVdiGateway(&body),
 		}).Execute()
@@ -145,8 +162,15 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	gw := result.UpdateVDIGateways200ResponseAnyOf.GetVdiGateway()
-	mapUpdateResponseToModel(&plan, &gw)
+	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readGw := readResult.GetVdiGateway()
+	mapGetResponseToModel(&plan, &readGw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

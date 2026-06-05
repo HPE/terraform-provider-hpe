@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -75,8 +76,24 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapAddResponseToModel(&plan, &cert)
+	createCert := result.GetCertificate()
+	id := (&createCert).GetId()
+
+	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "certificate", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "certificate",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readCert := readResult.GetCertificate()
+	mapGetResponseToModel(&plan, &readCert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -143,7 +160,7 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		body.DomainName = plan.DomainName.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).
+	_, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).
 		UpdateCertificateRequest(sdk.UpdateCertificateRequest{
 			Certificate: &body,
 		}).Execute()
@@ -153,8 +170,15 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapUpdateResponseToModel(&plan, &cert)
+	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "certificate", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readCert := readResult.GetCertificate()
+	mapGetResponseToModel(&plan, &readCert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

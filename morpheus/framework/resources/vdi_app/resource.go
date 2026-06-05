@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -69,8 +70,24 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	app := result.AddVDIApps200ResponseAnyOf.GetVdiApp()
-	mapCreateResponseToModel(&plan, &app)
+	createApp := result.AddVDIApps200ResponseAnyOf.GetVdiApp()
+	id := (&createApp).GetId()
+
+	readResult, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_app", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_app",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readApp := readResult.GetVdiApp()
+	mapGetResponseToModel(&plan, &readApp)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -135,7 +152,7 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.LaunchPrefix = plan.LaunchPrefix.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.VDIAPI.UpdateVDIApps(ctx, id).UpdateVDIAppsRequest(sdk.UpdateVDIAppsRequest{
+	_, httpResp, err := client.VDIAPI.UpdateVDIApps(ctx, id).UpdateVDIAppsRequest(sdk.UpdateVDIAppsRequest{
 		VdiApp: sdk.UpdateVDIAppsRequestVdiAppOneOfAsUpdateVDIAppsRequestVdiApp(&body),
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -144,8 +161,15 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	app := result.UpdateVDIApps200ResponseAnyOf.GetVdiApp()
-	mapUpdateResponseToModel(&plan, &app)
+	readResult, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_app", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readApp := readResult.GetVdiApp()
+	mapGetResponseToModel(&plan, &readApp)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

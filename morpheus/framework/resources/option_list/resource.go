@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -94,7 +95,7 @@ func (r *optionListResource) Create(
 		return
 	}
 
-	// Find the created resource by listing
+	// Find the created resource by listing to extract the ID
 	listResult, httpResp, err := client.LibraryAPI.ListOptionLists(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
@@ -108,30 +109,72 @@ func (r *optionListResource) Create(
 	}
 
 	// SDK field mismatch: API returns "optionTypeLists" but SDK expects "optionTypes"
+	var id int64
 	optionLists := listResult.GetOptionTypes()
 	if len(optionLists) == 0 {
 		if rawLists, ok := listResult.AdditionalProperties["optionTypeLists"]; ok {
 			if listsSlice, ok := rawLists.([]interface{}); ok && len(listsSlice) > 0 {
 				if firstMap, ok := listsSlice[0].(map[string]interface{}); ok {
-					mapOptionTypeListFromRaw(&plan, firstMap)
-					resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-
-					return
+					if v, ok := firstMap["id"].(float64); ok {
+						id = int64(v)
+					}
 				}
+			}
+		}
+		if id == 0 {
+			resp.Diagnostics.AddError(
+				"Not Found After Create",
+				"Option type list was created successfully but could not be found by name. "+
+					"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+					"'terraform import <resource_type>.<name> <id>'",
+			)
+
+			return
+		}
+	} else {
+		ol := optionLists[0]
+		if ol.Id != nil {
+			id = *ol.Id
+		}
+	}
+
+	// GET by ID with SDK mismatch workaround (same as Read)
+	readResult, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "option_list", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "option_list",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readOptionTypes := readResult.GetOptionTypes()
+	if len(readOptionTypes) == 0 {
+		// SDK field mismatch: API returns "optionTypeList" but SDK expects "optionTypes"
+		if rawOL, ok := readResult.AdditionalProperties["optionTypeList"]; ok {
+			if olMap, ok := rawOL.(map[string]interface{}); ok {
+				mapOptionTypeListFromRaw(&plan, olMap)
+				resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+				return
 			}
 		}
 		resp.Diagnostics.AddError(
 			"Not Found After Create",
-			"Option type list was created successfully but could not be found by name. "+
-				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+			"Option type list was created but could not be read by ID. "+
+				"The resource may exist in Morpheus. Import manually if needed: "+
 				"'terraform import <resource_type>.<name> <id>'",
 		)
 
 		return
 	}
 
-	ol := optionLists[0]
-	mapListOptionListToModel(&plan, &ol)
+	readOL := readOptionTypes[0]
+	mapGetOptionListToModel(&plan, &readOL)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -241,6 +284,36 @@ func (r *optionListResource) Update(
 
 		return
 	}
+
+	// GET by ID with SDK mismatch workaround (same as Read)
+	readResult, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "option_list", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readOptionTypes := readResult.GetOptionTypes()
+	if len(readOptionTypes) == 0 {
+		// SDK field mismatch: API returns "optionTypeList" but SDK expects "optionTypes"
+		if rawOL, ok := readResult.AdditionalProperties["optionTypeList"]; ok {
+			if olMap, ok := rawOL.(map[string]interface{}); ok {
+				mapOptionTypeListFromRaw(&plan, olMap)
+				resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+				return
+			}
+		}
+		resp.Diagnostics.AddError(
+			"Read Error After Update",
+			"Option type list was updated successfully but could not be read back by ID.",
+		)
+
+		return
+	}
+
+	readOL := readOptionTypes[0]
+	mapGetOptionListToModel(&plan, &readOL)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -87,8 +88,24 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	alert := result.GetAlert()
-	mapAlertResponseToModel(&plan, &alert)
+	createAlert := result.GetAlert()
+	id := (&createAlert).GetId()
+
+	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_alert",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readAlert := readResult.GetAlert()
+	mapGetAlertResponseToModel(&plan, &readAlert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -167,7 +184,7 @@ func (r *monitoringAlertResource) Update(
 		body.AllGroups = plan.AllGroups.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.AlertsAPI.UpdateAlerts(ctx, id).UpdateAlertsRequest(sdk.UpdateAlertsRequest{
+	_, httpResp, err := client.AlertsAPI.UpdateAlerts(ctx, id).UpdateAlertsRequest(sdk.UpdateAlertsRequest{
 		Alert: body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -176,8 +193,15 @@ func (r *monitoringAlertResource) Update(
 		return
 	}
 
-	alert := result.GetAlert()
-	mapGetAlertResponseToModel(&plan, &alert)
+	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readAlert := readResult.GetAlert()
+	mapGetAlertResponseToModel(&plan, &readAlert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

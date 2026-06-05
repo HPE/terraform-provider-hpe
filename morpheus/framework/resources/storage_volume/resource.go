@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -82,8 +83,25 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sv := result.GetStorageVolume()
-	mapCreateResponseToModel(&plan, &sv)
+	createSV := result.GetStorageVolume()
+	id := (&createSV).GetId()
+	idParam := sdk.Int64AsGetStorageVolumesIdParameter(&id)
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_volume", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "storage_volume",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readSV := readResult.GetStorageVolume()
+	mapGetResponseToModel(&plan, &readSV)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -159,6 +177,18 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 
 		return
 	}
+
+	readIdParam := sdk.Int64AsGetStorageVolumesIdParameter(&id)
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, readIdParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_volume", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readSV := readResult.GetStorageVolume()
+	mapGetResponseToModel(&plan, &readSV)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

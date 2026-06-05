@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -93,8 +94,24 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sb := result.GetStorageBucket()
-	mapCreateResponseToModel(&plan, &sb)
+	createSB := result.GetStorageBucket()
+	id := (&createSB).GetId()
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "storage_bucket",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readSB := readResult.GetStorageBucket()
+	mapGetResponseToModel(&plan, &readSB)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -186,6 +203,16 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 
 		return
 	}
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readSB := readResult.GetStorageBucket()
+	mapGetResponseToModel(&plan, &readSB)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

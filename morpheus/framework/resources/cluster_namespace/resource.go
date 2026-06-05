@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -89,8 +90,36 @@ func (r *clusterNamespaceResource) Create(
 		return
 	}
 
+	var id int64
 	if result.Namespace != nil && result.Namespace.Id != nil {
-		plan.ID = types.Int64Value(*result.Namespace.Id)
+		id = *result.Namespace.Id
+	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "cluster_namespace",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readNs := readResult.Namespace
+	if readNs != nil {
+		if readNs.Id != nil {
+			plan.ID = types.Int64Value(*readNs.Id)
+		}
+		if readNs.Name != nil {
+			plan.Name = types.StringValue(*readNs.Name)
+		}
+		if readNs.Description != nil {
+			plan.Description = types.StringValue(*readNs.Description)
+		}
+		// NOTE: Active is not in the API GET at all.
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -186,6 +215,27 @@ func (r *clusterNamespaceResource) Update(
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
 
 		return
+	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readNs := readResult.Namespace
+	if readNs != nil {
+		if readNs.Id != nil {
+			plan.ID = types.Int64Value(*readNs.Id)
+		}
+		if readNs.Name != nil {
+			plan.Name = types.StringValue(*readNs.Name)
+		}
+		if readNs.Description != nil {
+			plan.Description = types.StringValue(*readNs.Description)
+		}
+		// NOTE: Active is not in the API GET at all.
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

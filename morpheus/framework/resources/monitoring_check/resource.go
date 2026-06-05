@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -105,10 +106,33 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	check := result.GetCheck()
-	plan.ID = types.Int64Value(*check.Id)
+	createCheck := result.GetCheck()
+	id := (&createCheck).GetId()
+
+	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_check",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	check := readResult.GetCheck()
+	if check.Id != nil {
+		plan.ID = types.Int64Value(*check.Id)
+	}
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)
+	}
+	if check.Description.IsSet() && check.Description.Get() != nil {
+		plan.Description = types.StringValue(*check.Description.Get())
+	} else {
+		plan.Description = types.StringNull()
 	}
 	if check.CheckInterval.IsSet() {
 		plan.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
@@ -121,6 +145,9 @@ func (r *monitoringCheckResource) Create(
 	}
 	if check.Severity != nil {
 		plan.Severity = types.StringValue(*check.Severity)
+	}
+	if check.CheckType != nil && check.CheckType.Id != nil {
+		plan.CheckTypeID = types.Int64Value(*check.CheckType.Id)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -228,7 +255,7 @@ func (r *monitoringCheckResource) Update(
 
 	checkReq := sdk.WebCheck1AsUpdateChecksRequestCheck(&checkBody)
 
-	result, httpResp, err := client.ChecksAPI.UpdateChecks(ctx, id).UpdateChecksRequest(sdk.UpdateChecksRequest{
+	_, httpResp, err := client.ChecksAPI.UpdateChecks(ctx, id).UpdateChecksRequest(sdk.UpdateChecksRequest{
 		Check: checkReq,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -237,10 +264,24 @@ func (r *monitoringCheckResource) Update(
 		return
 	}
 
-	check := result.GetCheck()
-	plan.ID = types.Int64Value(*check.Id)
+	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	check := readResult.GetCheck()
+	if check.Id != nil {
+		plan.ID = types.Int64Value(*check.Id)
+	}
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)
+	}
+	if check.Description.IsSet() && check.Description.Get() != nil {
+		plan.Description = types.StringValue(*check.Description.Get())
+	} else {
+		plan.Description = types.StringNull()
 	}
 	if check.CheckInterval.IsSet() {
 		plan.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
@@ -253,6 +294,9 @@ func (r *monitoringCheckResource) Update(
 	}
 	if check.Severity != nil {
 		plan.Severity = types.StringValue(*check.Severity)
+	}
+	if check.CheckType != nil && check.CheckType.Id != nil {
+		plan.CheckTypeID = types.Int64Value(*check.CheckType.Id)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

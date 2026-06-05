@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -78,8 +79,24 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapAddResponseToModel(&plan, &budget)
+	createBudget := result.GetBudget()
+	id := (&createBudget).GetId()
+
+	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "budget", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "budget",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readBudget := readResult.GetBudget()
+	mapGetResponseToModel(&plan, &readBudget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -153,7 +170,7 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.BudgetsAPI.UpdateBudgets(ctx, id).UpdateBudgetsRequest(sdk.UpdateBudgetsRequest{
+	_, httpResp, err := client.BudgetsAPI.UpdateBudgets(ctx, id).UpdateBudgetsRequest(sdk.UpdateBudgetsRequest{
 		Budget: body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -162,8 +179,15 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapUpdateResponseToModel(&plan, &budget)
+	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "budget", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readBudget := readResult.GetBudget()
+	mapGetResponseToModel(&plan, &readBudget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
