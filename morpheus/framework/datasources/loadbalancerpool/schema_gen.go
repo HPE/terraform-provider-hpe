@@ -43,25 +43,37 @@ func LoadBalancerPoolDataSourceSchema(ctx context.Context) schema.Schema {
 						Description:         "The ID of the active health monitor",
 						MarkdownDescription: "The ID of the active health monitor",
 					},
-					"member_group_ip_revision_filter": schema.StringAttribute{
+					"member_group": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"ip_revision_filter": schema.StringAttribute{
+								Computed:            true,
+								Description:         "IP revision filter for member group",
+								MarkdownDescription: "IP revision filter for member group",
+							},
+							"max_ip_list_size": schema.Int64Attribute{
+								Computed:            true,
+								Description:         "Maximum IP list size for member group",
+								MarkdownDescription: "Maximum IP list size for member group",
+							},
+							"path": schema.StringAttribute{
+								Computed:            true,
+								Description:         "NSX-T member group path",
+								MarkdownDescription: "NSX-T member group path",
+							},
+							"port": schema.Int64Attribute{
+								Computed:            true,
+								Description:         "Port for member group",
+								MarkdownDescription: "Port for member group",
+							},
+						},
+						CustomType: MemberGroupType{
+							ObjectType: types.ObjectType{
+								AttrTypes: MemberGroupValue{}.AttributeTypes(ctx),
+							},
+						},
 						Computed:            true,
-						Description:         "IP revision filter for member group",
-						MarkdownDescription: "IP revision filter for member group",
-					},
-					"member_group_max_ip_list_size": schema.Int64Attribute{
-						Computed:            true,
-						Description:         "Maximum IP list size for member group",
-						MarkdownDescription: "Maximum IP list size for member group",
-					},
-					"member_group_path": schema.StringAttribute{
-						Computed:            true,
-						Description:         "NSX-T member group path",
-						MarkdownDescription: "NSX-T member group path",
-					},
-					"member_group_port": schema.Int64Attribute{
-						Computed:            true,
-						Description:         "Port for member group",
-						MarkdownDescription: "Port for member group",
+						Description:         "NSX-T member group configuration",
+						MarkdownDescription: "NSX-T member group configuration",
 					},
 					"passive_monitor_path": schema.Int64Attribute{
 						Computed:            true,
@@ -416,76 +428,22 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 			fmt.Sprintf(`active_monitor_paths expected to be basetypes.Int64Value, was: %T`, activeMonitorPathsAttribute))
 	}
 
-	memberGroupIpRevisionFilterAttribute, ok := attributes["member_group_ip_revision_filter"]
+	memberGroupAttribute, ok := attributes["member_group"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`member_group_ip_revision_filter is missing from object`)
+			`member_group is missing from object`)
 
 		return nil, diags
 	}
 
-	memberGroupIpRevisionFilterVal, ok := memberGroupIpRevisionFilterAttribute.(basetypes.StringValue)
+	memberGroupVal, ok := memberGroupAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_ip_revision_filter expected to be basetypes.StringValue, was: %T`, memberGroupIpRevisionFilterAttribute))
-	}
-
-	memberGroupMaxIpListSizeAttribute, ok := attributes["member_group_max_ip_list_size"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_max_ip_list_size is missing from object`)
-
-		return nil, diags
-	}
-
-	memberGroupMaxIpListSizeVal, ok := memberGroupMaxIpListSizeAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_max_ip_list_size expected to be basetypes.Int64Value, was: %T`, memberGroupMaxIpListSizeAttribute))
-	}
-
-	memberGroupPathAttribute, ok := attributes["member_group_path"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_path is missing from object`)
-
-		return nil, diags
-	}
-
-	memberGroupPathVal, ok := memberGroupPathAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_path expected to be basetypes.StringValue, was: %T`, memberGroupPathAttribute))
-	}
-
-	memberGroupPortAttribute, ok := attributes["member_group_port"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_port is missing from object`)
-
-		return nil, diags
-	}
-
-	memberGroupPortVal, ok := memberGroupPortAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_port expected to be basetypes.Int64Value, was: %T`, memberGroupPortAttribute))
+			fmt.Sprintf(`member_group expected to be basetypes.ObjectValue, was: %T`, memberGroupAttribute))
 	}
 
 	passiveMonitorPathAttribute, ok := attributes["passive_monitor_path"]
@@ -583,17 +541,14 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	}
 
 	return ConfigNsxtValue{
-		ActiveMonitorPaths:          activeMonitorPathsVal,
-		MemberGroupIpRevisionFilter: memberGroupIpRevisionFilterVal,
-		MemberGroupMaxIpListSize:    memberGroupMaxIpListSizeVal,
-		MemberGroupPath:             memberGroupPathVal,
-		MemberGroupPort:             memberGroupPortVal,
-		PassiveMonitorPath:          passiveMonitorPathVal,
-		SnatIpAddresses:             snatIpAddressesVal,
-		SnatTranslationType:         snatTranslationTypeVal,
-		TcpMultiplexing:             tcpMultiplexingVal,
-		TcpMultiplexingNumber:       tcpMultiplexingNumberVal,
-		state:                       attr.ValueStateKnown,
+		ActiveMonitorPaths:    activeMonitorPathsVal,
+		MemberGroup:           memberGroupVal,
+		PassiveMonitorPath:    passiveMonitorPathVal,
+		SnatIpAddresses:       snatIpAddressesVal,
+		SnatTranslationType:   snatTranslationTypeVal,
+		TcpMultiplexing:       tcpMultiplexingVal,
+		TcpMultiplexingNumber: tcpMultiplexingNumberVal,
+		state:                 attr.ValueStateKnown,
 	}, diags
 }
 
@@ -678,76 +633,22 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 			fmt.Sprintf(`active_monitor_paths expected to be basetypes.Int64Value, was: %T`, activeMonitorPathsAttribute))
 	}
 
-	memberGroupIpRevisionFilterAttribute, ok := attributes["member_group_ip_revision_filter"]
+	memberGroupAttribute, ok := attributes["member_group"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`member_group_ip_revision_filter is missing from object`)
+			`member_group is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
 
-	memberGroupIpRevisionFilterVal, ok := memberGroupIpRevisionFilterAttribute.(basetypes.StringValue)
+	memberGroupVal, ok := memberGroupAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_ip_revision_filter expected to be basetypes.StringValue, was: %T`, memberGroupIpRevisionFilterAttribute))
-	}
-
-	memberGroupMaxIpListSizeAttribute, ok := attributes["member_group_max_ip_list_size"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_max_ip_list_size is missing from object`)
-
-		return NewConfigNsxtValueUnknown(), diags
-	}
-
-	memberGroupMaxIpListSizeVal, ok := memberGroupMaxIpListSizeAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_max_ip_list_size expected to be basetypes.Int64Value, was: %T`, memberGroupMaxIpListSizeAttribute))
-	}
-
-	memberGroupPathAttribute, ok := attributes["member_group_path"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_path is missing from object`)
-
-		return NewConfigNsxtValueUnknown(), diags
-	}
-
-	memberGroupPathVal, ok := memberGroupPathAttribute.(basetypes.StringValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_path expected to be basetypes.StringValue, was: %T`, memberGroupPathAttribute))
-	}
-
-	memberGroupPortAttribute, ok := attributes["member_group_port"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`member_group_port is missing from object`)
-
-		return NewConfigNsxtValueUnknown(), diags
-	}
-
-	memberGroupPortVal, ok := memberGroupPortAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`member_group_port expected to be basetypes.Int64Value, was: %T`, memberGroupPortAttribute))
+			fmt.Sprintf(`member_group expected to be basetypes.ObjectValue, was: %T`, memberGroupAttribute))
 	}
 
 	passiveMonitorPathAttribute, ok := attributes["passive_monitor_path"]
@@ -845,17 +746,14 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	}
 
 	return ConfigNsxtValue{
-		ActiveMonitorPaths:          activeMonitorPathsVal,
-		MemberGroupIpRevisionFilter: memberGroupIpRevisionFilterVal,
-		MemberGroupMaxIpListSize:    memberGroupMaxIpListSizeVal,
-		MemberGroupPath:             memberGroupPathVal,
-		MemberGroupPort:             memberGroupPortVal,
-		PassiveMonitorPath:          passiveMonitorPathVal,
-		SnatIpAddresses:             snatIpAddressesVal,
-		SnatTranslationType:         snatTranslationTypeVal,
-		TcpMultiplexing:             tcpMultiplexingVal,
-		TcpMultiplexingNumber:       tcpMultiplexingNumberVal,
-		state:                       attr.ValueStateKnown,
+		ActiveMonitorPaths:    activeMonitorPathsVal,
+		MemberGroup:           memberGroupVal,
+		PassiveMonitorPath:    passiveMonitorPathVal,
+		SnatIpAddresses:       snatIpAddressesVal,
+		SnatTranslationType:   snatTranslationTypeVal,
+		TcpMultiplexing:       tcpMultiplexingVal,
+		TcpMultiplexingNumber: tcpMultiplexingNumberVal,
+		state:                 attr.ValueStateKnown,
 	}, diags
 }
 
@@ -927,30 +825,26 @@ func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigNsxtValue{}
 
 type ConfigNsxtValue struct {
-	ActiveMonitorPaths          basetypes.Int64Value  `tfsdk:"active_monitor_paths"`
-	MemberGroupIpRevisionFilter basetypes.StringValue `tfsdk:"member_group_ip_revision_filter"`
-	MemberGroupMaxIpListSize    basetypes.Int64Value  `tfsdk:"member_group_max_ip_list_size"`
-	MemberGroupPath             basetypes.StringValue `tfsdk:"member_group_path"`
-	MemberGroupPort             basetypes.Int64Value  `tfsdk:"member_group_port"`
-	PassiveMonitorPath          basetypes.Int64Value  `tfsdk:"passive_monitor_path"`
-	SnatIpAddresses             basetypes.ListValue   `tfsdk:"snat_ip_addresses"`
-	SnatTranslationType         basetypes.StringValue `tfsdk:"snat_translation_type"`
-	TcpMultiplexing             basetypes.BoolValue   `tfsdk:"tcp_multiplexing"`
-	TcpMultiplexingNumber       basetypes.Int64Value  `tfsdk:"tcp_multiplexing_number"`
-	state                       attr.ValueState
+	ActiveMonitorPaths    basetypes.Int64Value  `tfsdk:"active_monitor_paths"`
+	MemberGroup           basetypes.ObjectValue `tfsdk:"member_group"`
+	PassiveMonitorPath    basetypes.Int64Value  `tfsdk:"passive_monitor_path"`
+	SnatIpAddresses       basetypes.ListValue   `tfsdk:"snat_ip_addresses"`
+	SnatTranslationType   basetypes.StringValue `tfsdk:"snat_translation_type"`
+	TcpMultiplexing       basetypes.BoolValue   `tfsdk:"tcp_multiplexing"`
+	TcpMultiplexingNumber basetypes.Int64Value  `tfsdk:"tcp_multiplexing_number"`
+	state                 attr.ValueState
 }
 
 func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["active_monitor_paths"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["member_group_ip_revision_filter"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["member_group_max_ip_list_size"] = basetypes.Int64Type{}.TerraformType(ctx)
-	attrTypes["member_group_path"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["member_group_port"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["member_group"] = basetypes.ObjectType{
+		AttrTypes: MemberGroupValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["passive_monitor_path"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["snat_ip_addresses"] = basetypes.ListType{
 		ElemType: types.StringType,
@@ -963,7 +857,7 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 7)
 
 		val, err = v.ActiveMonitorPaths.ToTerraformValue(ctx)
 
@@ -973,37 +867,13 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 
 		vals["active_monitor_paths"] = val
 
-		val, err = v.MemberGroupIpRevisionFilter.ToTerraformValue(ctx)
+		val, err = v.MemberGroup.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["member_group_ip_revision_filter"] = val
-
-		val, err = v.MemberGroupMaxIpListSize.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["member_group_max_ip_list_size"] = val
-
-		val, err = v.MemberGroupPath.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["member_group_path"] = val
-
-		val, err = v.MemberGroupPort.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["member_group_port"] = val
+		vals["member_group"] = val
 
 		val, err = v.PassiveMonitorPath.ToTerraformValue(ctx)
 
@@ -1074,6 +944,27 @@ func (v ConfigNsxtValue) String() string {
 func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	var memberGroupVal basetypes.ObjectValue
+
+	if v.MemberGroup.IsNull() {
+		memberGroupVal = types.ObjectNull(
+			MemberGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.MemberGroup.IsUnknown() {
+		memberGroupVal = types.ObjectUnknown(
+			MemberGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.MemberGroup.IsNull() && !v.MemberGroup.IsUnknown() {
+		memberGroupVal = types.ObjectValueMust(
+			MemberGroupValue{}.AttributeTypes(ctx),
+			v.MemberGroup.Attributes(),
+		)
+	}
+
 	var snatIpAddressesVal basetypes.ListValue
 	switch {
 	case v.SnatIpAddresses.IsUnknown():
@@ -1088,12 +979,11 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 
 	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
-			"active_monitor_paths":            basetypes.Int64Type{},
-			"member_group_ip_revision_filter": basetypes.StringType{},
-			"member_group_max_ip_list_size":   basetypes.Int64Type{},
-			"member_group_path":               basetypes.StringType{},
-			"member_group_port":               basetypes.Int64Type{},
-			"passive_monitor_path":            basetypes.Int64Type{},
+			"active_monitor_paths": basetypes.Int64Type{},
+			"member_group": basetypes.ObjectType{
+				AttrTypes: MemberGroupValue{}.AttributeTypes(ctx),
+			},
+			"passive_monitor_path": basetypes.Int64Type{},
 			"snat_ip_addresses": basetypes.ListType{
 				ElemType: types.StringType,
 			},
@@ -1104,12 +994,11 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 	}
 
 	attributeTypes := map[string]attr.Type{
-		"active_monitor_paths":            basetypes.Int64Type{},
-		"member_group_ip_revision_filter": basetypes.StringType{},
-		"member_group_max_ip_list_size":   basetypes.Int64Type{},
-		"member_group_path":               basetypes.StringType{},
-		"member_group_port":               basetypes.Int64Type{},
-		"passive_monitor_path":            basetypes.Int64Type{},
+		"active_monitor_paths": basetypes.Int64Type{},
+		"member_group": basetypes.ObjectType{
+			AttrTypes: MemberGroupValue{}.AttributeTypes(ctx),
+		},
+		"passive_monitor_path": basetypes.Int64Type{},
 		"snat_ip_addresses": basetypes.ListType{
 			ElemType: types.StringType,
 		},
@@ -1129,16 +1018,13 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"active_monitor_paths":            v.ActiveMonitorPaths,
-			"member_group_ip_revision_filter": v.MemberGroupIpRevisionFilter,
-			"member_group_max_ip_list_size":   v.MemberGroupMaxIpListSize,
-			"member_group_path":               v.MemberGroupPath,
-			"member_group_port":               v.MemberGroupPort,
-			"passive_monitor_path":            v.PassiveMonitorPath,
-			"snat_ip_addresses":               snatIpAddressesVal,
-			"snat_translation_type":           v.SnatTranslationType,
-			"tcp_multiplexing":                v.TcpMultiplexing,
-			"tcp_multiplexing_number":         v.TcpMultiplexingNumber,
+			"active_monitor_paths":    v.ActiveMonitorPaths,
+			"member_group":            memberGroupVal,
+			"passive_monitor_path":    v.PassiveMonitorPath,
+			"snat_ip_addresses":       snatIpAddressesVal,
+			"snat_translation_type":   v.SnatTranslationType,
+			"tcp_multiplexing":        v.TcpMultiplexing,
+			"tcp_multiplexing_number": v.TcpMultiplexingNumber,
 		})
 
 	return objVal, diags
@@ -1163,19 +1049,7 @@ func (v ConfigNsxtValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.MemberGroupIpRevisionFilter.Equal(other.MemberGroupIpRevisionFilter) {
-		return false
-	}
-
-	if !v.MemberGroupMaxIpListSize.Equal(other.MemberGroupMaxIpListSize) {
-		return false
-	}
-
-	if !v.MemberGroupPath.Equal(other.MemberGroupPath) {
-		return false
-	}
-
-	if !v.MemberGroupPort.Equal(other.MemberGroupPort) {
+	if !v.MemberGroup.Equal(other.MemberGroup) {
 		return false
 	}
 
@@ -1212,18 +1086,514 @@ func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"active_monitor_paths":            basetypes.Int64Type{},
-		"member_group_ip_revision_filter": basetypes.StringType{},
-		"member_group_max_ip_list_size":   basetypes.Int64Type{},
-		"member_group_path":               basetypes.StringType{},
-		"member_group_port":               basetypes.Int64Type{},
-		"passive_monitor_path":            basetypes.Int64Type{},
+		"active_monitor_paths": basetypes.Int64Type{},
+		"member_group": basetypes.ObjectType{
+			AttrTypes: MemberGroupValue{}.AttributeTypes(ctx),
+		},
+		"passive_monitor_path": basetypes.Int64Type{},
 		"snat_ip_addresses": basetypes.ListType{
 			ElemType: types.StringType,
 		},
 		"snat_translation_type":   basetypes.StringType{},
 		"tcp_multiplexing":        basetypes.BoolType{},
 		"tcp_multiplexing_number": basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = MemberGroupType{}
+
+type MemberGroupType struct {
+	basetypes.ObjectType
+}
+
+func (t MemberGroupType) Equal(o attr.Type) bool {
+	other, ok := o.(MemberGroupType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t MemberGroupType) String() string {
+	return "MemberGroupType"
+}
+
+func (t MemberGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewMemberGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMemberGroupValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	ipRevisionFilterAttribute, ok := attributes["ip_revision_filter"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_revision_filter is missing from object`)
+
+		return nil, diags
+	}
+
+	ipRevisionFilterVal, ok := ipRevisionFilterAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_revision_filter expected to be basetypes.StringValue, was: %T`, ipRevisionFilterAttribute))
+	}
+
+	maxIpListSizeAttribute, ok := attributes["max_ip_list_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_ip_list_size is missing from object`)
+
+		return nil, diags
+	}
+
+	maxIpListSizeVal, ok := maxIpListSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_ip_list_size expected to be basetypes.Int64Value, was: %T`, maxIpListSizeAttribute))
+	}
+
+	pathAttribute, ok := attributes["path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`path is missing from object`)
+
+		return nil, diags
+	}
+
+	pathVal, ok := pathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`path expected to be basetypes.StringValue, was: %T`, pathAttribute))
+	}
+
+	portAttribute, ok := attributes["port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`port is missing from object`)
+
+		return nil, diags
+	}
+
+	portVal, ok := portAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`port expected to be basetypes.Int64Value, was: %T`, portAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return MemberGroupValue{
+		IpRevisionFilter: ipRevisionFilterVal,
+		MaxIpListSize:    maxIpListSizeVal,
+		Path:             pathVal,
+		Port:             portVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMemberGroupValueNull() MemberGroupValue {
+	return MemberGroupValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewMemberGroupValueUnknown() MemberGroupValue {
+	return MemberGroupValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewMemberGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (MemberGroupValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing MemberGroupValue Attribute Value",
+				"While creating a MemberGroupValue value, a missing attribute value was detected. "+
+					"A MemberGroupValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MemberGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid MemberGroupValue Attribute Type",
+				"While creating a MemberGroupValue value, an invalid attribute value was detected. "+
+					"A MemberGroupValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("MemberGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("MemberGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra MemberGroupValue Attribute Value",
+				"While creating a MemberGroupValue value, an extra attribute value was detected. "+
+					"A MemberGroupValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra MemberGroupValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	ipRevisionFilterAttribute, ok := attributes["ip_revision_filter"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`ip_revision_filter is missing from object`)
+
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	ipRevisionFilterVal, ok := ipRevisionFilterAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`ip_revision_filter expected to be basetypes.StringValue, was: %T`, ipRevisionFilterAttribute))
+	}
+
+	maxIpListSizeAttribute, ok := attributes["max_ip_list_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`max_ip_list_size is missing from object`)
+
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	maxIpListSizeVal, ok := maxIpListSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`max_ip_list_size expected to be basetypes.Int64Value, was: %T`, maxIpListSizeAttribute))
+	}
+
+	pathAttribute, ok := attributes["path"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`path is missing from object`)
+
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	pathVal, ok := pathAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`path expected to be basetypes.StringValue, was: %T`, pathAttribute))
+	}
+
+	portAttribute, ok := attributes["port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`port is missing from object`)
+
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	portVal, ok := portAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`port expected to be basetypes.Int64Value, was: %T`, portAttribute))
+	}
+
+	if diags.HasError() {
+		return NewMemberGroupValueUnknown(), diags
+	}
+
+	return MemberGroupValue{
+		IpRevisionFilter: ipRevisionFilterVal,
+		MaxIpListSize:    maxIpListSizeVal,
+		Path:             pathVal,
+		Port:             portVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewMemberGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) MemberGroupValue {
+	object, diags := NewMemberGroupValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewMemberGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t MemberGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewMemberGroupValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewMemberGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewMemberGroupValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewMemberGroupValueMust(MemberGroupValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t MemberGroupType) ValueType(ctx context.Context) attr.Value {
+	return MemberGroupValue{}
+}
+
+var _ basetypes.ObjectValuable = MemberGroupValue{}
+
+type MemberGroupValue struct {
+	IpRevisionFilter basetypes.StringValue `tfsdk:"ip_revision_filter"`
+	MaxIpListSize    basetypes.Int64Value  `tfsdk:"max_ip_list_size"`
+	Path             basetypes.StringValue `tfsdk:"path"`
+	Port             basetypes.Int64Value  `tfsdk:"port"`
+	state            attr.ValueState
+}
+
+func (v MemberGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["ip_revision_filter"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["max_ip_list_size"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["path"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["port"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.IpRevisionFilter.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["ip_revision_filter"] = val
+
+		val, err = v.MaxIpListSize.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["max_ip_list_size"] = val
+
+		val, err = v.Path.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["path"] = val
+
+		val, err = v.Port.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["port"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v MemberGroupValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v MemberGroupValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v MemberGroupValue) String() string {
+	return "MemberGroupValue"
+}
+
+func (v MemberGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"ip_revision_filter": basetypes.StringType{},
+		"max_ip_list_size":   basetypes.Int64Type{},
+		"path":               basetypes.StringType{},
+		"port":               basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"ip_revision_filter": v.IpRevisionFilter,
+			"max_ip_list_size":   v.MaxIpListSize,
+			"path":               v.Path,
+			"port":               v.Port,
+		})
+
+	return objVal, diags
+}
+
+func (v MemberGroupValue) Equal(o attr.Value) bool {
+	other, ok := o.(MemberGroupValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.IpRevisionFilter.Equal(other.IpRevisionFilter) {
+		return false
+	}
+
+	if !v.MaxIpListSize.Equal(other.MaxIpListSize) {
+		return false
+	}
+
+	if !v.Path.Equal(other.Path) {
+		return false
+	}
+
+	if !v.Port.Equal(other.Port) {
+		return false
+	}
+
+	return true
+}
+
+func (v MemberGroupValue) Type(ctx context.Context) attr.Type {
+	return MemberGroupType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v MemberGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"ip_revision_filter": basetypes.StringType{},
+		"max_ip_list_size":   basetypes.Int64Type{},
+		"path":               basetypes.StringType{},
+		"port":               basetypes.Int64Type{},
 	}
 }
 

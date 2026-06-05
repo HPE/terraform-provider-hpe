@@ -6,10 +6,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -53,17 +53,7 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Port.IsNull() && !plan.Port.IsUnknown() {
-		portVal, parseErr := strconv.ParseInt(plan.Port.ValueString(), 10, 64)
-		if parseErr != nil {
-			resp.Diagnostics.AddError(
-				"error creating load balancer pool",
-				fmt.Sprintf("invalid port value %q: %s", plan.Port.ValueString(), parseErr),
-			)
-
-			return
-		}
-
-		pool.SetPort(portVal)
+		pool.SetPort(plan.Port.ValueInt64())
 	}
 
 	if !plan.VipSticky.IsNull() && !plan.VipSticky.IsUnknown() {
@@ -129,10 +119,6 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Preserve config from plan since the API may not return it in the same shape.
-	state.Config = plan.Config
-	state.ConfigNsxt = plan.ConfigNsxt
-
 	// Partition is write-only; preserve from plan.
 	state.Partition = plan.Partition
 
@@ -178,31 +164,31 @@ func setCreateConfig(
 			nsxConfig.SetTcpMultiplexingNumber(plan.ConfigNsxt.TcpMultiplexingNumber.ValueInt64())
 		}
 
-		// Build nested memberGroup if any member_group_* fields are set.
-		hasMemberGroup := (!plan.ConfigNsxt.MemberGroupPath.IsNull() && !plan.ConfigNsxt.MemberGroupPath.IsUnknown()) ||
-			(!plan.ConfigNsxt.MemberGroupIpRevisionFilter.IsNull() && !plan.ConfigNsxt.MemberGroupIpRevisionFilter.IsUnknown()) ||
-			(!plan.ConfigNsxt.MemberGroupMaxIpListSize.IsNull() && !plan.ConfigNsxt.MemberGroupMaxIpListSize.IsUnknown()) ||
-			(!plan.ConfigNsxt.MemberGroupPort.IsNull() && !plan.ConfigNsxt.MemberGroupPort.IsUnknown())
+		// Build nested memberGroup if member_group is set.
+		if !plan.ConfigNsxt.MemberGroup.IsNull() && !plan.ConfigNsxt.MemberGroup.IsUnknown() {
+			var memberGroup MemberGroupValue
 
-		if hasMemberGroup {
+			diags := plan.ConfigNsxt.MemberGroup.As(ctx, &memberGroup, basetypes.ObjectAsOptions{})
+			if diags.HasError() {
+				return fmt.Errorf("failed to extract member_group: %s", diags.Errors()[0].Detail())
+			}
+
 			mg := sdk.NewNSXTLoadBalancerPoolConfigObjectMemberGroupWithDefaults()
 
-			if !plan.ConfigNsxt.MemberGroupPath.IsNull() && !plan.ConfigNsxt.MemberGroupPath.IsUnknown() {
-				mg.SetPath(plan.ConfigNsxt.MemberGroupPath.ValueString())
+			if !memberGroup.Path.IsNull() && !memberGroup.Path.IsUnknown() {
+				mg.SetPath(memberGroup.Path.ValueString())
 			}
 
-			if !plan.ConfigNsxt.MemberGroupIpRevisionFilter.IsNull() &&
-				!plan.ConfigNsxt.MemberGroupIpRevisionFilter.IsUnknown() {
-				mg.SetIpRevisionFilter(plan.ConfigNsxt.MemberGroupIpRevisionFilter.ValueString())
+			if !memberGroup.IpRevisionFilter.IsNull() && !memberGroup.IpRevisionFilter.IsUnknown() {
+				mg.SetIpRevisionFilter(memberGroup.IpRevisionFilter.ValueString())
 			}
 
-			if !plan.ConfigNsxt.MemberGroupMaxIpListSize.IsNull() &&
-				!plan.ConfigNsxt.MemberGroupMaxIpListSize.IsUnknown() {
-				mg.SetMaxIpListSize(plan.ConfigNsxt.MemberGroupMaxIpListSize.ValueInt64())
+			if !memberGroup.MaxIpListSize.IsNull() && !memberGroup.MaxIpListSize.IsUnknown() {
+				mg.SetMaxIpListSize(memberGroup.MaxIpListSize.ValueInt64())
 			}
 
-			if !plan.ConfigNsxt.MemberGroupPort.IsNull() && !plan.ConfigNsxt.MemberGroupPort.IsUnknown() {
-				mg.SetPort(plan.ConfigNsxt.MemberGroupPort.ValueInt64())
+			if !memberGroup.Port.IsNull() && !memberGroup.Port.IsUnknown() {
+				mg.SetPort(memberGroup.Port.ValueInt64())
 			}
 
 			nsxConfig.SetMemberGroup(*mg)

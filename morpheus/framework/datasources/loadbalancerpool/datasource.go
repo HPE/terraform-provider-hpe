@@ -481,24 +481,45 @@ func populateLoadBalancerPoolState(
 				activeMonitorPaths = types.Int64Value(int64(v))
 			}
 
-			memberGroupIpRevisionFilter := types.StringNull()
-			if v, ok := configMap["memberGroupIpRevisionFilter"].(string); ok {
-				memberGroupIpRevisionFilter = types.StringValue(v)
+			memberGroupVal := NewMemberGroupValueNull()
+			if mgMap, ok := configMap["memberGroup"].(map[string]interface{}); ok {
+				mgPath := types.StringNull()
+				if v, ok := mgMap["path"].(string); ok {
+					mgPath = types.StringValue(v)
+				}
+
+				mgIpRevisionFilter := types.StringNull()
+				if v, ok := mgMap["ipRevisionFilter"].(string); ok {
+					mgIpRevisionFilter = types.StringValue(v)
+				}
+
+				mgMaxIpListSize := types.Int64Null()
+				if v, ok := mgMap["maxIpListSize"].(float64); ok {
+					mgMaxIpListSize = types.Int64Value(int64(v))
+				}
+
+				mgPort := types.Int64Null()
+				if v, ok := mgMap["port"].(float64); ok {
+					mgPort = types.Int64Value(int64(v))
+				}
+
+				mgVal, d := NewMemberGroupValue(
+					MemberGroupValue{}.AttributeTypes(ctx),
+					map[string]attr.Value{
+						"ip_revision_filter": mgIpRevisionFilter,
+						"max_ip_list_size":   mgMaxIpListSize,
+						"path":               mgPath,
+						"port":               mgPort,
+					},
+				)
+				if !d.HasError() {
+					memberGroupVal = mgVal
+				}
 			}
 
-			memberGroupMaxIpListSize := types.Int64Null()
-			if v, ok := configMap["memberGroupMaxIpListSize"].(float64); ok {
-				memberGroupMaxIpListSize = types.Int64Value(int64(v))
-			}
-
-			memberGroupPath := types.StringNull()
-			if v, ok := configMap["memberGroupPath"].(string); ok {
-				memberGroupPath = types.StringValue(v)
-			}
-
-			memberGroupPort := types.Int64Null()
-			if v, ok := configMap["memberGroupPort"].(float64); ok {
-				memberGroupPort = types.Int64Value(int64(v))
+			memberGroupObjVal, d := memberGroupVal.ToObjectValue(ctx)
+			if d.HasError() {
+				memberGroupObjVal = types.ObjectNull(MemberGroupValue{}.AttributeTypes(ctx))
 			}
 
 			passiveMonitorPath := types.Int64Null()
@@ -540,10 +561,7 @@ func populateLoadBalancerPoolState(
 				ConfigNsxtValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
 					"active_monitor_paths":            activeMonitorPaths,
-					"member_group_ip_revision_filter": memberGroupIpRevisionFilter,
-					"member_group_max_ip_list_size":   memberGroupMaxIpListSize,
-					"member_group_path":               memberGroupPath,
-					"member_group_port":               memberGroupPort,
+					"member_group":          memberGroupObjVal,
 					"passive_monitor_path":            passiveMonitorPath,
 					"snat_ip_addresses":               snatIpAddresses,
 					"snat_translation_type":           snatTranslationType,

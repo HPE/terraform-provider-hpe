@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -42,16 +43,6 @@ func (r *Resource) Read(
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
-	}
-
-	// Preserve config from prior state since the API returns config as a
-	// generic map that may not round-trip perfectly with the typed schema.
-	if !data.ConfigNsxt.IsNull() && !data.ConfigNsxt.IsUnknown() {
-		state.ConfigNsxt = data.ConfigNsxt
-	}
-
-	if !data.Config.IsNull() && !data.Config.IsUnknown() {
-		state.Config = data.Config
 	}
 
 	// Partition is write-only; preserve from prior state.
@@ -155,10 +146,15 @@ func getLoadBalancerPoolAsState(
 		state.MinUpMonitor = types.StringNull()
 	}
 
-	if p.Port.IsSet() {
-		state.Port = convert.StrToType(p.Port.Get())
+	if p.Port.IsSet() && p.Port.Get() != nil {
+		portVal, parseErr := strconv.ParseInt(*p.Port.Get(), 10, 64)
+		if parseErr == nil {
+			state.Port = types.Int64Value(portVal)
+		} else {
+			state.Port = types.Int64Null()
+		}
 	} else {
-		state.Port = types.StringNull()
+		state.Port = types.Int64Null()
 	}
 
 	if p.PortType.IsSet() {
@@ -235,26 +231,43 @@ func getLoadBalancerPoolAsState(
 	// Partition is write-only; not returned by the API.
 	state.Partition = types.StringNull()
 
-	// Config: the read response returns config as map[string]interface{}.
-	// We set it as dynamic here for import scenarios; callers preserve
-	// the typed config_nsxt from plan/state on normal operations.
-	if len(p.Config) > 0 {
-		dynVal, err := convert.MapToDynamic(ctx, p.Config)
-		if err != nil {
-			diags.AddError(
-				"error reading load balancer pool config",
-				fmt.Sprintf("failed to convert config map to dynamic: %s", err),
-			)
+	// Config: parse the config map from the API response into the appropriate
+	// typed block (config_nsxt) or dynamic fallback (config).
+	configMap := p.GetConfig()
 
-			return state, diags
+	lbTypeCode := ""
+	if p.LoadBalancer != nil {
+		if lbType, ok := p.LoadBalancer.GetTypeOk(); ok && lbType != nil {
+			if code, ok := lbType.GetCodeOk(); ok && code != nil {
+				lbTypeCode = *code
+			}
 		}
-
-		state.Config = dynVal
-	} else {
-		state.Config = types.DynamicNull()
 	}
 
-	state.ConfigNsxt = NewConfigNsxtValueNull()
+	switch lbTypeCode {
+	case "nsx-t":
+		state.Config = types.DynamicNull()
+		state.ConfigNsxt = parseConfigNsxt(ctx, configMap)
+
+	default:
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+
+		if len(configMap) > 0 {
+			dynVal, err := convert.MapToDynamic(ctx, configMap)
+			if err != nil {
+				diags.AddError(
+					"error reading load balancer pool config",
+					fmt.Sprintf("failed to convert config map to dynamic: %s", err),
+				)
+
+				return state, diags
+			}
+
+			state.Config = dynVal
+		} else {
+			state.Config = types.DynamicNull()
+		}
+	}
 
 	return state, diags
 }
@@ -304,4 +317,110 @@ func buildLoadBalancerValue(
 	}
 
 	return lbVal, nil
+}
+
+func parseConfigNsxt(ctx context.Context, configMap map[string]interface{}) ConfigNsxtValue {
+	if configMap == nil {
+		return NewConfigNsxtValueNull()
+	}
+
+	activeMonitorPaths := types.Int64Null()
+	if v, ok := configMap["activeMonitorPaths"].(float64); ok {
+		activeMonitorPaths = types.Int64Value(int64(v))
+	}
+
+	passiveMonitorPath := types.Int64Null()
+	if v, ok := configMap["passiveMonitorPath"].(float64); ok {
+		passiveMonitorPath = types.Int64Value(int64(v))
+	}
+
+	snatTranslationType := types.StringNull()
+	if v, ok := configMap["snatTranslationType"].(string); ok {
+		snatTranslationType = types.StringValue(v)
+	}
+
+	snatIpAddresses := types.SetNull(types.StringType)
+	if v, ok := configMap["snatIpAddresses"].([]interface{}); ok {
+		strVals := make([]attr.Value, 0, len(v))
+		for _, item := range v {
+			if s, ok := item.(string); ok {
+				strVals = append(strVals, types.StringValue(s))
+			}
+		}
+
+		setVal, d := types.SetValue(types.StringType, strVals)
+		if !d.HasError() {
+			snatIpAddresses = setVal
+		}
+	}
+
+	tcpMultiplexing := types.BoolNull()
+	if v, ok := configMap["tcpMultiplexing"].(bool); ok {
+		tcpMultiplexing = types.BoolValue(v)
+	}
+
+	tcpMultiplexingNumber := types.Int64Null()
+	if v, ok := configMap["tcpMultiplexingNumber"].(float64); ok {
+		tcpMultiplexingNumber = types.Int64Value(int64(v))
+	}
+
+	// Build the nested member_group object.
+	memberGroupVal := NewMemberGroupValueNull()
+	if mgMap, ok := configMap["memberGroup"].(map[string]interface{}); ok {
+		mgPath := types.StringNull()
+		if v, ok := mgMap["path"].(string); ok {
+			mgPath = types.StringValue(v)
+		}
+
+		mgIpRevisionFilter := types.StringNull()
+		if v, ok := mgMap["ipRevisionFilter"].(string); ok {
+			mgIpRevisionFilter = types.StringValue(v)
+		}
+
+		mgMaxIpListSize := types.Int64Null()
+		if v, ok := mgMap["maxIpListSize"].(float64); ok {
+			mgMaxIpListSize = types.Int64Value(int64(v))
+		}
+
+		mgPort := types.Int64Null()
+		if v, ok := mgMap["port"].(float64); ok {
+			mgPort = types.Int64Value(int64(v))
+		}
+
+		mgVal, d := NewMemberGroupValue(
+			MemberGroupValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"ip_revision_filter": mgIpRevisionFilter,
+				"max_ip_list_size":   mgMaxIpListSize,
+				"path":               mgPath,
+				"port":               mgPort,
+			},
+		)
+		if !d.HasError() {
+			memberGroupVal = mgVal
+		}
+	}
+
+	memberGroupObjVal, d := memberGroupVal.ToObjectValue(ctx)
+	if d.HasError() {
+		memberGroupObjVal = types.ObjectNull(MemberGroupValue{}.AttributeTypes(ctx))
+	}
+
+	nsxtVal, d := NewConfigNsxtValue(
+		ConfigNsxtValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"active_monitor_paths":  activeMonitorPaths,
+			"member_group":          memberGroupObjVal,
+			"passive_monitor_path":  passiveMonitorPath,
+			"snat_ip_addresses":     snatIpAddresses,
+			"snat_translation_type": snatTranslationType,
+			"tcp_multiplexing":      tcpMultiplexing,
+			"tcp_multiplexing_number": tcpMultiplexingNumber,
+		},
+	)
+	if d.HasError() {
+		return NewConfigNsxtValueNull()
+	}
+
+	return nsxtVal
 }
