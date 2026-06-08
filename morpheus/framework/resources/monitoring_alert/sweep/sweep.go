@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.Alerts), hresp, err
+			return getsafe.Get(&resp.Alerts), hresp, err
 		},
 		// Is this a test monitoring alert?
 		func(item sdk.ListAlerts200ResponseAllOfAlertsInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListAlerts200ResponseAllOfAlertsInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

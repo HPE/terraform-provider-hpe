@@ -39,7 +39,7 @@ func init() {
 
 			items := make([]osTypeImageSweepItem, 0)
 			for _, osType := range resp.OsTypes {
-				osTypeID, ok := getsafe.GetSafeOk(osType.Id)
+				osTypeID, ok := getsafe.GetOk(osType.Id)
 				if !ok || osTypeID == nil {
 					continue
 				}
@@ -54,15 +54,15 @@ func init() {
 					return nil, osTypeHresp, osTypeErr
 				}
 
-				osTypeDetail := getsafe.GetSafe(osTypeResp.OsType)
+				osTypeDetail := getsafe.Get(osTypeResp.OsType)
 
 				for _, image := range osTypeDetail.Images {
-					id, ok := getsafe.GetSafeOk(image.Id)
+					id, ok := getsafe.GetOk(image.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(image.VirtualImageName)
+					name, ok := getsafe.GetOk(image.VirtualImageName)
 					if !ok || name == nil {
 						continue
 					}

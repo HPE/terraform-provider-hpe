@@ -42,7 +42,7 @@ func init() {
 			var items []loadBalancerMonitorSweepItem
 
 			for _, lb := range lbResp.LoadBalancers {
-				lbID, ok := getsafe.GetSafeOk(lb.Id)
+				lbID, ok := getsafe.GetOk(lb.Id)
 				if !ok || lbID == nil {
 					continue
 				}
@@ -54,12 +54,12 @@ func init() {
 				}
 
 				for _, mon := range monResp.LoadBalancerMonitors {
-					id, ok := getsafe.GetSafeOk(mon.Id)
+					id, ok := getsafe.GetOk(mon.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(mon.Name)
+					name, ok := getsafe.GetOk(mon.Name)
 					if !ok || name == nil {
 						continue
 					}

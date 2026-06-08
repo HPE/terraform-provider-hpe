@@ -41,7 +41,7 @@ func init() {
 			items := make([]virtualServerSweepItem, 0)
 
 			for _, lb := range lbResp.LoadBalancers {
-				lbID, ok := getsafe.GetSafeOk(lb.Id)
+				lbID, ok := getsafe.GetOk(lb.Id)
 				if !ok || lbID == nil {
 					continue
 				}
@@ -53,12 +53,12 @@ func init() {
 				}
 
 				for _, vs := range vsResp.LoadBalancerInstances {
-					id, ok := getsafe.GetSafeOk(vs.Id)
+					id, ok := getsafe.GetOk(vs.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(vs.VipName)
+					name, ok := getsafe.GetOk(vs.VipName)
 					if !ok || name == nil {
 						continue
 					}

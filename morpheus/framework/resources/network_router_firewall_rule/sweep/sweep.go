@@ -35,7 +35,7 @@ func init() {
 			items := make([]firewallRuleSweeperItem, 0)
 
 			for _, router := range routersResp.NetworkRouters {
-				routerID, ok := getsafe.GetSafeOk(router.Id)
+				routerID, ok := getsafe.GetOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -54,7 +54,7 @@ func init() {
 		},
 		// Is this a test network router firewall rule?
 		func(item firewallRuleSweeperItem) bool {
-			name, ok := getsafe.GetSafeOk(item.rule.Name)
+			name, ok := getsafe.GetOk(item.rule.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -63,7 +63,7 @@ func init() {
 		},
 		// Delete the test network router firewall rule.
 		func(ctx context.Context, client *sdk.APIClient, item firewallRuleSweeperItem) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.rule.Id)
+			id, ok := getsafe.GetOk(item.rule.Id)
 			if !ok || id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

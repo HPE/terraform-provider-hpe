@@ -35,7 +35,7 @@ func init() {
 			items := make([]routeSweeperItem, 0)
 
 			for _, router := range routersResp.NetworkRouters {
-				routerID, ok := getsafe.GetSafeOk(router.Id)
+				routerID, ok := getsafe.GetOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -54,7 +54,7 @@ func init() {
 		},
 		// Is this a test network router route?
 		func(item routeSweeperItem) bool {
-			name, ok := getsafe.GetSafeOk(item.route.Name)
+			name, ok := getsafe.GetOk(item.route.Name)
 			if ok && name != nil && strings.HasPrefix(*name, testsweep.TestResourcePrefix) {
 				return true
 			}
@@ -69,7 +69,7 @@ func init() {
 		},
 		// Delete the test network router route.
 		func(ctx context.Context, client *sdk.APIClient, item routeSweeperItem) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.route.Id)
+			id, ok := getsafe.GetOk(item.route.Id)
 			if !ok || id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

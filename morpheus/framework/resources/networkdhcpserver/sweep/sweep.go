@@ -40,7 +40,7 @@ func init() {
 			var allDhcpServers []sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner
 
 			for _, ns := range serversResp.NetworkServers {
-				nsID, ok := getsafe.GetSafeOk(ns.Id)
+				nsID, ok := getsafe.GetOk(ns.Id)
 				if !ok || nsID == nil {
 					continue
 				}
@@ -67,7 +67,7 @@ func init() {
 		},
 		// Is this a test DHCP server?
 		func(item sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -80,17 +80,17 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}
 
-			ns, ok := getsafe.GetSafeOk(item.NetworkServer)
+			ns, ok := getsafe.GetOk(item.NetworkServer)
 			if !ok || ns == nil {
 				return nil, fmt.Errorf("could not get network server")
 			}
 
-			nsID, ok := getsafe.GetSafeOk(ns.Id)
+			nsID, ok := getsafe.GetOk(ns.Id)
 			if !ok || nsID == nil {
 				return nil, fmt.Errorf("could not get network server ID")
 			}

@@ -35,7 +35,7 @@ func init() {
 			items := make([]bgpNeighborSweeperItem, 0)
 
 			for _, router := range routersResp.NetworkRouters {
-				routerID, ok := getsafe.GetSafeOk(router.Id)
+				routerID, ok := getsafe.GetOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -58,7 +58,7 @@ func init() {
 		},
 		// Delete the test network router BGP neighbor.
 		func(ctx context.Context, client *sdk.APIClient, item bgpNeighborSweeperItem) (*http.Response, error) {
-			neighborID, ok := getsafe.GetSafeOk(item.neighbor.Id)
+			neighborID, ok := getsafe.GetOk(item.neighbor.Id)
 			if !ok || neighborID == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

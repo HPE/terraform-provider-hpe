@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.VdiGateways), hresp, err
+			return getsafe.Get(&resp.VdiGateways), hresp, err
 		},
 		// Is this a test VDI gateway?
 		func(item sdk.ListVDIGateways200ResponseAllOfVdiGatewaysInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListVDIGateways200ResponseAllOfVdiGatewaysInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

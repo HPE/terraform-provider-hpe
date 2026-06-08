@@ -31,7 +31,7 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.Datastores), hresp, err
+			return getsafe.Get(&resp.Datastores), hresp, err
 		},
 		// Is this a test datastore?
 		func(item sdk.ListDatastores200ResponseAllOfDatastoresInner) bool {

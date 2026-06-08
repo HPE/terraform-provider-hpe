@@ -34,7 +34,7 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.Tasks), hresp, err
+			return getsafe.Get(&resp.Tasks), hresp, err
 		},
 		// Is this a test task?
 		func(item sdk.ListTasks200ResponseAllOfTasksInner) bool {

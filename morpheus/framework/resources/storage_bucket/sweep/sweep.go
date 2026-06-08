@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.StorageBuckets), hresp, err
+			return getsafe.Get(&resp.StorageBuckets), hresp, err
 		},
 		// Is this a test storage bucket?
 		func(item sdk.ListStorageBuckets200ResponseAllOfStorageBucketsInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListStorageBuckets200ResponseAllOfStorageBucketsInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

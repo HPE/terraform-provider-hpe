@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.Instances), hresp, err
+			return getsafe.Get(&resp.Instances), hresp, err
 		},
 		// Is this a test instance?
 		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}

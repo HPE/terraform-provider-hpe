@@ -76,7 +76,7 @@ func getLoadBalancerAsState(
 	// Set config based on the load balancer type code from the API.
 	switch {
 	case isHAProxy:
-		haproxyCfg, err := parseHAProxyConfig(ctx, getsafe.GetSafe(&data.Config))
+		haproxyCfg, err := parseHAProxyConfig(ctx, getsafe.Get(&data.Config))
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}

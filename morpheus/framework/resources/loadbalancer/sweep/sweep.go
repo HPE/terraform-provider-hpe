@@ -46,11 +46,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.LoadBalancers), hresp, err
+			return getsafe.Get(&resp.LoadBalancers), hresp, err
 		},
 		// Is this a test load balancer?
 		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) bool {
-			name, ok := getsafe.GetSafeOk(item.Name)
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -63,7 +63,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}
@@ -154,13 +154,13 @@ func findOrphanedInstances(
 		hits := resp.Hits
 		result = append(result, hits...)
 
-		meta, ok := getsafe.GetSafeOk(resp.Meta)
+		meta, ok := getsafe.GetOk(resp.Meta)
 		if !ok || meta == nil {
 			break
 		}
 
 		offset += int64(len(hits))
-		if offset >= getsafe.GetSafe(meta.Total) {
+		if offset >= getsafe.Get(meta.Total) {
 			break
 		}
 	}
@@ -176,17 +176,17 @@ func sweepHitIfInstance(
 	client *sdk.APIClient,
 	hit *sdk.Search200ResponseHitsInner,
 ) (swept, errored int) {
-	hitType, ok := getsafe.GetSafeOk(hit.Type)
+	hitType, ok := getsafe.GetOk(hit.Type)
 	if !ok || hitType == nil || *hitType != "Instance" {
 		return 0, 0
 	}
 
-	name, ok := getsafe.GetSafeOk(hit.Name)
+	name, ok := getsafe.GetOk(hit.Name)
 	if !ok || name == nil || !lbTestInstanceNameRe.MatchString(*name) {
 		return 0, 0
 	}
 
-	idStr, ok := getsafe.GetSafeOk(hit.Id)
+	idStr, ok := getsafe.GetOk(hit.Id)
 	if !ok || idStr == nil {
 		return 0, 0
 	}

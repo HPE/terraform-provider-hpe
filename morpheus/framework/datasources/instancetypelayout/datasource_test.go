@@ -60,12 +60,12 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.Get(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
+	layoutID := fmt.Sprintf("%d", getsafe.Get(layout.Id))
 
-	layoutName := getsafe.GetSafe(layout.Name)
+	layoutName := getsafe.Get(layout.Name)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -121,11 +121,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.Get(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
-	layoutName := getsafe.GetSafe(layout.Name)
+	layoutID := fmt.Sprintf("%d", getsafe.Get(layout.Id))
+	layoutName := getsafe.Get(layout.Name)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -181,12 +181,12 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 	layout := layouts[0]
 
 	t.Cleanup(func() {
-		testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
+		testhelpers.DeleteInstanceTypeLayout(t, getsafe.Get(layout.Id))
 	})
 
-	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layout.Id))
-	layoutName := getsafe.GetSafe(layout.Name)
-	layoutVersion := getsafe.GetSafe(layout.InstanceVersion)
+	layoutID := fmt.Sprintf("%d", getsafe.Get(layout.Id))
+	layoutName := getsafe.Get(layout.Name)
+	layoutVersion := getsafe.Get(layout.InstanceVersion)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -249,11 +249,11 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 
 	for _, layout := range layouts {
 		t.Cleanup(func() {
-			testhelpers.DeleteInstanceTypeLayout(t, getsafe.GetSafe(layout.Id))
+			testhelpers.DeleteInstanceTypeLayout(t, getsafe.Get(layout.Id))
 		})
 	}
 
-	layoutID := fmt.Sprintf("%d", getsafe.GetSafe(layouts[len(layouts)-1].Id))
+	layoutID := fmt.Sprintf("%d", getsafe.Get(layouts[len(layouts)-1].Id))
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

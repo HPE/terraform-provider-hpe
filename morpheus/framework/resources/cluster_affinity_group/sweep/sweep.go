@@ -42,7 +42,7 @@ func init() {
 			var items []clusterAffinityGroupSweepItem
 
 			for _, cluster := range clusterResp.Clusters {
-				clusterID, ok := getsafe.GetSafeOk(cluster.Id)
+				clusterID, ok := getsafe.GetOk(cluster.Id)
 				if !ok || clusterID == nil {
 					continue
 				}
@@ -54,12 +54,12 @@ func init() {
 				}
 
 				for _, ag := range agResp.AffinityGroups {
-					id, ok := getsafe.GetSafeOk(ag.Id)
+					id, ok := getsafe.GetOk(ag.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(ag.Name)
+					name, ok := getsafe.GetOk(ag.Name)
 					if !ok || name == nil {
 						continue
 					}

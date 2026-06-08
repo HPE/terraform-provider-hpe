@@ -43,7 +43,7 @@ func init() {
 			var items []securityGroupRuleSweepItem
 
 			for _, sg := range sgResp.SecurityGroups {
-				sgID, ok := getsafe.GetSafeOk(sg.Id)
+				sgID, ok := getsafe.GetOk(sg.Id)
 				if !ok || sgID == nil {
 					continue
 				}
@@ -55,7 +55,7 @@ func init() {
 				}
 
 				for _, rule := range ruleResp.Rules {
-					id, ok := getsafe.GetSafeOk(rule.Id)
+					id, ok := getsafe.GetOk(rule.Id)
 					if !ok || id == nil {
 						continue
 					}

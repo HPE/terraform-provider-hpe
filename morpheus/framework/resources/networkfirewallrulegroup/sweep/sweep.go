@@ -48,7 +48,7 @@ func init() {
 			var allGroups []ruleGroupItem
 
 			for _, ns := range serversResp.NetworkServers {
-				nsID, ok := getsafe.GetSafeOk(ns.Id)
+				nsID, ok := getsafe.GetOk(ns.Id)
 				if !ok || nsID == nil {
 					continue
 				}
@@ -69,8 +69,8 @@ func init() {
 				}
 
 				for _, rg := range listResp.RuleGroups {
-					id, idOk := getsafe.GetSafeOk(rg.Id)
-					name, nameOk := getsafe.GetSafeOk(rg.Name)
+					id, idOk := getsafe.GetOk(rg.Id)
+					name, nameOk := getsafe.GetOk(rg.Name)
 
 					if !idOk || id == nil || !nameOk || name == nil {
 						continue

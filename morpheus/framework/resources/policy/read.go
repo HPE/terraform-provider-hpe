@@ -153,7 +153,7 @@ func mapPolicyConfigToState(
 	case "maxMemory":
 		maxMemoryAttrs := map[string]attr.Value{
 			"max_memory":         convert.StrToType(&apiConfig.MaxMemoryPolicyTypeConfiguration3.MaxMemory),
-			"exclude_containers": convert.StringToBool(ctx, getsafe.GetSafe(apiConfig.MaxMemoryPolicyTypeConfiguration3.ExcludeContainers)),
+			"exclude_containers": convert.StringToBool(ctx, getsafe.Get(apiConfig.MaxMemoryPolicyTypeConfiguration3.ExcludeContainers)),
 		}
 
 		maxMemoryValue, maxMemoryDiags := NewConfigMaxMemoryValue(ConfigMaxMemoryValue{}.AttributeTypes(ctx), maxMemoryAttrs)
@@ -166,7 +166,7 @@ func mapPolicyConfigToState(
 	case "maxCores":
 		maxCoresAttrs := map[string]attr.Value{
 			"max_cores":          convert.StrToType(&apiConfig.MaxCoresPolicyTypeConfiguration3.MaxCores),
-			"exclude_containers": convert.StringToBool(ctx, getsafe.GetSafe(apiConfig.MaxCoresPolicyTypeConfiguration3.ExcludeContainers)),
+			"exclude_containers": convert.StringToBool(ctx, getsafe.Get(apiConfig.MaxCoresPolicyTypeConfiguration3.ExcludeContainers)),
 		}
 
 		maxCoresValue, maxCoresDiags := NewConfigMaxCoresValue(ConfigMaxCoresValue{}.AttributeTypes(ctx), maxCoresAttrs)
@@ -200,11 +200,11 @@ func mapPolicyConfigToState(
 			"lifecycle_age": convert.StrToType(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAge),
 			"lifecycle_allow_extend": convert.StringToBool(
 				ctx,
-				getsafe.GetSafe(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAllowExtend),
+				getsafe.Get(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAllowExtend),
 			),
 			"lifecycle_auto_renew": convert.StringToBool(
 				ctx,
-				getsafe.GetSafe(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAutoRenew),
+				getsafe.Get(apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleAutoRenew),
 			),
 			"lifecycle_extensions_before_approval": convert.StrToType(
 				apiConfig.ExpirationPolicyTypeConfiguration3.LifecycleExtensionsBeforeApproval,
@@ -370,7 +370,7 @@ func mapPolicyConfigToState(
 		maxStorageAttrs := map[string]attr.Value{
 			"exclude_containers": convert.StringToBool(
 				ctx,
-				getsafe.GetSafe(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers),
+				getsafe.Get(apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.ExcludeContainers),
 			),
 			"max_storage": convert.StrToType(
 				&apiConfig.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3.MaxStorage,
@@ -520,11 +520,11 @@ func mapPolicyConfigToState(
 			"shutdown_age": convert.StrToType(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAge),
 			"shutdown_allow_extend": convert.StringToBool(
 				ctx,
-				getsafe.GetSafe(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAllowExtend),
+				getsafe.Get(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAllowExtend),
 			),
 			"shutdown_auto_renew": convert.StringToBool(
 				ctx,
-				getsafe.GetSafe(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAutoRenew),
+				getsafe.Get(apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownAutoRenew),
 			),
 			"shutdown_extensions_before_approval": convert.StrToType(
 				apiConfig.ShutdownPolicyTypeConfiguration3.ShutdownExtensionsBeforeApproval,

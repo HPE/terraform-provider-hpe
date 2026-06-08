@@ -42,7 +42,7 @@ func init() {
 			var items []clusterNamespaceSweepItem
 
 			for _, cluster := range clusterResp.Clusters {
-				clusterID, ok := getsafe.GetSafeOk(cluster.Id)
+				clusterID, ok := getsafe.GetOk(cluster.Id)
 				if !ok || clusterID == nil {
 					continue
 				}
@@ -54,12 +54,12 @@ func init() {
 				}
 
 				for _, ns := range nsResp.Namespaces {
-					id, ok := getsafe.GetSafeOk(ns.Id)
+					id, ok := getsafe.GetOk(ns.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(ns.Name)
+					name, ok := getsafe.GetOk(ns.Name)
 					if !ok || name == nil {
 						continue
 					}

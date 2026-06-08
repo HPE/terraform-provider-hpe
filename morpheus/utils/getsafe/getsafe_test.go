@@ -85,7 +85,7 @@ func testGetSafe[T any](t *testing.T, name string, ptr *T, expected T) {
 	t.Helper()
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
-		got := getsafe.GetSafe(ptr)
+		got := getsafe.Get(ptr)
 		assert.Equal(t, expected, got)
 	})
 }
@@ -94,7 +94,7 @@ func testGetSafeOk[T any](t *testing.T, name string, ptr *T) {
 	t.Helper()
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
-		got, ok := getsafe.GetSafeOk(ptr)
+		got, ok := getsafe.GetOk(ptr)
 		assert.True(t, ok)
 		assert.Same(t, ptr, got)
 		assert.Equal(t, ptr, got)
@@ -105,7 +105,7 @@ func testGetSafeOkNil[T any](t *testing.T, name string, ptr *T) {
 	t.Helper()
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
-		got, ok := getsafe.GetSafeOk(ptr)
+		got, ok := getsafe.GetOk(ptr)
 		assert.Nil(t, got)
 		assert.False(t, ok)
 	})

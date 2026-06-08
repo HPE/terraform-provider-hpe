@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return getsafe.GetSafe(&resp.Users), hresp, err
+			return getsafe.Get(&resp.Users), hresp, err
 		},
 		// Is this a test user?
 		func(item sdk.ListUsers200ResponseAllOfUsersInner) bool {
-			username, ok := getsafe.GetSafeOk(item.Username)
+			username, ok := getsafe.GetOk(item.Username)
 			if !ok || username == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListUsers200ResponseAllOfUsersInner,
 		) (*http.Response, error) {
-			id, ok := getsafe.GetSafeOk(item.Id)
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

@@ -42,7 +42,7 @@ func init() {
 			var items []networkFirewallRuleSweepItem
 
 			for _, server := range serverResp.NetworkServers {
-				serverID, ok := getsafe.GetSafeOk(server.Id)
+				serverID, ok := getsafe.GetOk(server.Id)
 				if !ok || serverID == nil {
 					continue
 				}
@@ -54,12 +54,12 @@ func init() {
 				}
 
 				for _, rule := range ruleResp.Rules {
-					id, ok := getsafe.GetSafeOk(rule.Id)
+					id, ok := getsafe.GetOk(rule.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := getsafe.GetSafeOk(rule.Name)
+					name, ok := getsafe.GetOk(rule.Name)
 					if !ok || name == nil {
 						continue
 					}
