@@ -106,6 +106,7 @@ func (r *provisioningLicenseResource) Create(
 	license := result.License
 	if license == nil {
 		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
 		return
 	}
 	if license.Id != nil {
@@ -147,6 +148,7 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	license := result.License
 	if license == nil {
 		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
 		return
 	}
 	if license.Id != nil {

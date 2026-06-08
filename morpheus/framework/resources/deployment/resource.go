@@ -73,6 +73,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	dep := result.Deployment
 	if dep == nil {
 		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
 		return
 	}
 	mapAddResponseToModel(&plan, dep)
@@ -111,6 +112,7 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 	dep := result.Deployment
 	if dep == nil {
 		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
 		return
 	}
 	mapGetResponseToModel(&state, dep)
@@ -154,6 +156,7 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	dep := result.Deployment
 	if dep == nil {
 		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
 		return
 	}
 	mapUpdateResponseToModel(&plan, dep)

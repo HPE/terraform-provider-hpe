@@ -107,6 +107,7 @@ func (r *securityGroupRuleResource) Create(
 	rule := result.Rule
 	if rule == nil {
 		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
 		return
 	}
 	mapCreateResponseToModel(&plan, rule)
@@ -147,6 +148,7 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	rule := result.Rule
 	if rule == nil {
 		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
 		return
 	}
 	mapResponseToModel(&state, rule)
@@ -217,6 +219,7 @@ func (r *securityGroupRuleResource) Update(
 	rule := result.Rule
 	if rule == nil {
 		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
 		return
 	}
 	mapUpdateResponseToModel(&plan, rule)

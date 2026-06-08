@@ -85,6 +85,7 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 	sv := result.StorageVolume
 	if sv == nil {
 		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
+
 		return
 	}
 	mapCreateResponseToModel(&plan, sv)
@@ -124,6 +125,7 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 	sv := result.StorageVolume
 	if sv == nil {
 		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
+
 		return
 	}
 	mapGetResponseToModel(&state, sv)

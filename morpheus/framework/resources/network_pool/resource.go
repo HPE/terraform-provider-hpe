@@ -108,6 +108,7 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 	pool := result.NetworkPool
 	if pool == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
 		return
 	}
 	mapCreateResponseToModel(&plan, pool)
@@ -146,6 +147,7 @@ func (r *networkPoolResource) Read(ctx context.Context, req resource.ReadRequest
 	pool := result.NetworkPool
 	if pool == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
 		return
 	}
 	mapReadResponseToModel(&state, pool)
@@ -225,6 +227,7 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 	pool := readResult.NetworkPool
 	if pool == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
 		return
 	}
 	mapReadResponseToModel(&plan, pool)

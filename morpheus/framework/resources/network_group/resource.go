@@ -119,6 +119,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	group := readResult.NetworkGroup
 	if group == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkGroup is nil in the response")
+
 		return
 	}
 	mapResponseToModel(&plan, group)
@@ -157,6 +158,7 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 	group := result.NetworkGroup
 	if group == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkGroup is nil in the response")
+
 		return
 	}
 	mapResponseToModel(&state, group)
@@ -219,6 +221,7 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	group := readResult.NetworkGroup
 	if group == nil {
 		resp.Diagnostics.AddError("API returned nil", "NetworkGroup is nil in the response")
+
 		return
 	}
 	mapResponseToModel(&plan, group)

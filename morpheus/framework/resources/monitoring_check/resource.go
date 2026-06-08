@@ -108,6 +108,7 @@ func (r *monitoringCheckResource) Create(
 	check := result.Check
 	if check == nil {
 		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
 		return
 	}
 	plan.ID = types.Int64Value(*check.Id)
@@ -161,6 +162,7 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 	check := result.Check
 	if check == nil {
 		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
 		return
 	}
 	if check.Id != nil {
@@ -248,6 +250,7 @@ func (r *monitoringCheckResource) Update(
 	check := result.Check
 	if check == nil {
 		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
 		return
 	}
 	plan.ID = types.Int64Value(*check.Id)

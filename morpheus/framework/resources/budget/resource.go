@@ -81,6 +81,7 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 	budget := result.Budget
 	if budget == nil {
 		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
 		return
 	}
 	mapAddResponseToModel(&plan, budget)
@@ -119,6 +120,7 @@ func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 	budget := result.Budget
 	if budget == nil {
 		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
 		return
 	}
 	mapGetResponseToModel(&state, budget)
@@ -173,6 +175,7 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	budget := result.Budget
 	if budget == nil {
 		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
 		return
 	}
 	mapUpdateResponseToModel(&plan, budget)
