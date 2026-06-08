@@ -290,43 +290,43 @@ func setPermissionsInUpdate(
 	updateRole.ResetAllAccess = sdk.PtrBool(true)
 
 	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
-		updateRole.GlobalAppTemplateAccess = sdk.PtrString(plan.Permissions.DefaultBlueprintAccess.ValueString())
+		updateRole.GlobalAppTemplateAccess = plan.Permissions.DefaultBlueprintAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		updateRole.GlobalCatalogItemTypeAccess = sdk.PtrString(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
+		updateRole.GlobalCatalogItemTypeAccess = plan.Permissions.DefaultCatalogItemTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
-		updateRole.GlobalZoneAccess = sdk.PtrString(plan.Permissions.DefaultCloudAccess.ValueString())
+		updateRole.GlobalZoneAccess = plan.Permissions.DefaultCloudAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultGroupAccess.IsUnknown() {
-		updateRole.GlobalSiteAccess = sdk.PtrString(plan.Permissions.DefaultGroupAccess.ValueString())
+		updateRole.GlobalSiteAccess = plan.Permissions.DefaultGroupAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultInstanceTypeAccess.IsUnknown() {
-		updateRole.GlobalInstanceTypeAccess = sdk.PtrString(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
+		updateRole.GlobalInstanceTypeAccess = plan.Permissions.DefaultInstanceTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultPersonaAccess.IsUnknown() {
-		updateRole.GlobalPersonaAccess = sdk.PtrString(plan.Permissions.DefaultPersonaAccess.ValueString())
+		updateRole.GlobalPersonaAccess = plan.Permissions.DefaultPersonaAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultReportTypeAccess.IsUnknown() {
-		updateRole.GlobalReportTypeAccess = sdk.PtrString(plan.Permissions.DefaultReportTypeAccess.ValueString())
+		updateRole.GlobalReportTypeAccess = plan.Permissions.DefaultReportTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultTaskAccess.IsUnknown() {
-		updateRole.GlobalTaskAccess = sdk.PtrString(plan.Permissions.DefaultTaskAccess.ValueString())
+		updateRole.GlobalTaskAccess = plan.Permissions.DefaultTaskAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultVdiPoolAccess.IsUnknown() {
-		updateRole.GlobalVdiPoolAccess = sdk.PtrString(plan.Permissions.DefaultVdiPoolAccess.ValueString())
+		updateRole.GlobalVdiPoolAccess = plan.Permissions.DefaultVdiPoolAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultWorkflowAccess.IsUnknown() {
-		updateRole.GlobalTaskSetAccess = sdk.PtrString(plan.Permissions.DefaultWorkflowAccess.ValueString())
+		updateRole.GlobalTaskSetAccess = plan.Permissions.DefaultWorkflowAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.FeaturePermissions.IsUnknown() &&
@@ -1039,43 +1039,43 @@ func setPermissionsInCreate(
 	var diags diag.Diagnostics
 
 	if !plan.Permissions.DefaultBlueprintAccess.IsUnknown() {
-		addRole.GlobalAppTemplateAccess = sdk.PtrString(plan.Permissions.DefaultBlueprintAccess.ValueString())
+		addRole.GlobalAppTemplateAccess = plan.Permissions.DefaultBlueprintAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultCatalogItemTypeAccess.IsUnknown() {
-		addRole.GlobalCatalogItemTypeAccess = sdk.PtrString(plan.Permissions.DefaultCatalogItemTypeAccess.ValueString())
+		addRole.GlobalCatalogItemTypeAccess = plan.Permissions.DefaultCatalogItemTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultCloudAccess.IsUnknown() {
-		addRole.GlobalZoneAccess = sdk.PtrString(plan.Permissions.DefaultCloudAccess.ValueString())
+		addRole.GlobalZoneAccess = plan.Permissions.DefaultCloudAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultGroupAccess.IsUnknown() {
-		addRole.GlobalSiteAccess = sdk.PtrString(plan.Permissions.DefaultGroupAccess.ValueString())
+		addRole.GlobalSiteAccess = plan.Permissions.DefaultGroupAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultInstanceTypeAccess.IsUnknown() {
-		addRole.GlobalInstanceTypeAccess = sdk.PtrString(plan.Permissions.DefaultInstanceTypeAccess.ValueString())
+		addRole.GlobalInstanceTypeAccess = plan.Permissions.DefaultInstanceTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultPersonaAccess.IsUnknown() {
-		addRole.GlobalPersonaAccess = sdk.PtrString(plan.Permissions.DefaultPersonaAccess.ValueString())
+		addRole.GlobalPersonaAccess = plan.Permissions.DefaultPersonaAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultReportTypeAccess.IsUnknown() {
-		addRole.GlobalReportTypeAccess = sdk.PtrString(plan.Permissions.DefaultReportTypeAccess.ValueString())
+		addRole.GlobalReportTypeAccess = plan.Permissions.DefaultReportTypeAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultTaskAccess.IsUnknown() {
-		addRole.GlobalTaskAccess = sdk.PtrString(plan.Permissions.DefaultTaskAccess.ValueString())
+		addRole.GlobalTaskAccess = plan.Permissions.DefaultTaskAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultVdiPoolAccess.IsUnknown() {
-		addRole.GlobalVdiPoolAccess = sdk.PtrString(plan.Permissions.DefaultVdiPoolAccess.ValueString())
+		addRole.GlobalVdiPoolAccess = plan.Permissions.DefaultVdiPoolAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.DefaultWorkflowAccess.IsUnknown() {
-		addRole.GlobalTaskSetAccess = sdk.PtrString(plan.Permissions.DefaultWorkflowAccess.ValueString())
+		addRole.GlobalTaskSetAccess = plan.Permissions.DefaultWorkflowAccess.ValueStringPointer()
 	}
 
 	if !plan.Permissions.FeaturePermissions.IsUnknown() {
@@ -1379,32 +1379,32 @@ func (r *Resource) Create(
 
 	// optional
 	if !plan.DefaultPersonaCode.IsUnknown() && !plan.DefaultPersonaCode.IsNull() {
-		addRole.DefaultPersona.Set(sdk.PtrString(plan.DefaultPersonaCode.ValueString()))
+		addRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
 	}
 
 	if !plan.Description.IsUnknown() {
-		addRole.Description.Set(sdk.PtrString(plan.Description.ValueString()))
+		addRole.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	if !plan.LandingUrl.IsUnknown() {
-		addRole.LandingUrl.Set(sdk.PtrString(plan.LandingUrl.ValueString()))
+		addRole.LandingUrl.Set(plan.LandingUrl.ValueStringPointer())
 	}
 
 	// optional_computed
 	if !plan.Multitenant.IsUnknown() {
 		// default: false
-		addRole.Multitenant = sdk.PtrBool(plan.Multitenant.ValueBool())
+		addRole.Multitenant = plan.Multitenant.ValueBoolPointer()
 	}
 
 	if !plan.MultitenantLocked.IsUnknown() {
 		// default: false
-		addRole.MultitenantLocked = sdk.PtrBool(plan.MultitenantLocked.ValueBool())
+		addRole.MultitenantLocked = plan.MultitenantLocked.ValueBoolPointer()
 	}
 
 	if !plan.RoleType.IsUnknown() {
 		// default: user
 		if plan.RoleType.ValueString() == RoleTypeUser {
-			addRole.RoleType = sdk.PtrString(plan.RoleType.ValueString())
+			addRole.RoleType = plan.RoleType.ValueStringPointer()
 		}
 
 		if plan.RoleType.ValueString() == RoleTypeTenant {
@@ -1861,33 +1861,33 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 
 	// required - authority (name)
-	updateRole.Authority = sdk.PtrString(plan.Name.ValueString())
+	updateRole.Authority = plan.Name.ValueStringPointer()
 
 	// optional fields
 	if plan.DefaultPersonaCode.IsNull() {
 		updateRole.DefaultPersona.Set(nil)
 	} else {
-		updateRole.DefaultPersona.Set(sdk.PtrString(plan.DefaultPersonaCode.ValueString()))
+		updateRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
 	}
 
 	if plan.Description.IsNull() {
 		updateRole.Description.Set(nil)
 	} else {
-		updateRole.Description.Set(sdk.PtrString(plan.Description.ValueString()))
+		updateRole.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	if plan.LandingUrl.IsNull() {
 		updateRole.LandingUrl.Set(nil)
 	} else {
-		updateRole.LandingUrl.Set(sdk.PtrString(plan.LandingUrl.ValueString()))
+		updateRole.LandingUrl.Set(plan.LandingUrl.ValueStringPointer())
 	}
 
 	if !plan.Multitenant.IsNull() {
-		updateRole.Multitenant = sdk.PtrBool(plan.Multitenant.ValueBool())
+		updateRole.Multitenant = plan.Multitenant.ValueBoolPointer()
 	}
 
 	if !plan.MultitenantLocked.IsNull() {
-		updateRole.MultitenantLocked = sdk.PtrBool(plan.MultitenantLocked.ValueBool())
+		updateRole.MultitenantLocked = plan.MultitenantLocked.ValueBoolPointer()
 	}
 
 	client, err := r.NewClient(ctx)

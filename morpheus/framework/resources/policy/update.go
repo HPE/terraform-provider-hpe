@@ -56,15 +56,15 @@ func (r *Resource) Update(
 
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updatePolicy.Description = sdk.PtrString(plan.Description.ValueString())
+		updatePolicy.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		updatePolicy.Enabled = sdk.PtrBool(plan.Enabled.ValueBool())
+		updatePolicy.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
-		updatePolicy.EachUser = sdk.PtrBool(plan.EachUser.ValueBool())
+		updatePolicy.EachUser = plan.EachUser.ValueBoolPointer()
 	}
 
 	// Set tenant IDs if provided

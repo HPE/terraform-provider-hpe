@@ -46,12 +46,12 @@ func (r *Resource) Update(
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		updateTask.AllowCustomConfig = sdk.PtrBool(plan.AllowCustomConfig.ValueBool())
+		updateTask.AllowCustomConfig = plan.AllowCustomConfig.ValueBoolPointer()
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateTask.Code = sdk.PtrString(plan.Code.ValueString())
+		updateTask.Code = plan.Code.ValueStringPointer()
 	}
 
 	taskOptions := sdk.UpdateTasksRequestTaskTaskOptions{}
@@ -110,7 +110,7 @@ func (r *Resource) Update(
 
 	// execute_target
 	if !plan.ExecuteTarget.IsNull() && !plan.ExecuteTarget.IsUnknown() {
-		updateTask.ExecuteTarget = sdk.PtrString(plan.ExecuteTarget.ValueString())
+		updateTask.ExecuteTarget = plan.ExecuteTarget.ValueStringPointer()
 	}
 
 	// labels
@@ -130,27 +130,27 @@ func (r *Resource) Update(
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		updateTask.Name = sdk.PtrString(plan.Name.ValueString())
+		updateTask.Name = plan.Name.ValueStringPointer()
 	}
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		updateTask.ResultType.Set(sdk.PtrString(plan.ResultType.ValueString()))
+		updateTask.ResultType.Set(plan.ResultType.ValueStringPointer())
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		updateTask.RetryCount = sdk.PtrInt64(plan.RetryCount.ValueInt64())
+		updateTask.RetryCount = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		updateTask.RetryDelaySeconds = sdk.PtrInt64(plan.RetryDelaySeconds.ValueInt64())
+		updateTask.RetryDelaySeconds = plan.RetryDelaySeconds.ValueInt64Pointer()
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		updateTask.Retryable = sdk.PtrBool(plan.Retryable.ValueBool())
+		updateTask.Retryable = plan.Retryable.ValueBoolPointer()
 	}
 
 	// task_type_code
@@ -162,7 +162,7 @@ func (r *Resource) Update(
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateTask.Visibility = sdk.PtrString(plan.Visibility.ValueString())
+		updateTask.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	updateRequest.Task = *updateTask

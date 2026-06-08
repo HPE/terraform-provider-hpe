@@ -47,47 +47,47 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		neighbor.Description = sdk.PtrString(plan.Description.ValueString())
+		neighbor.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.ForwardingAddress.IsNull() && !plan.ForwardingAddress.IsUnknown() {
-		neighbor.ForwardingAddress = sdk.PtrString(plan.ForwardingAddress.ValueString())
+		neighbor.ForwardingAddress = plan.ForwardingAddress.ValueStringPointer()
 	}
 
 	if !plan.ProtocolAddress.IsNull() && !plan.ProtocolAddress.IsUnknown() {
-		neighbor.ProtocolAddress = sdk.PtrString(plan.ProtocolAddress.ValueString())
+		neighbor.ProtocolAddress = plan.ProtocolAddress.ValueStringPointer()
 	}
 
 	if !plan.RemoteAs.IsNull() && !plan.RemoteAs.IsUnknown() {
-		neighbor.RemoteAs = sdk.PtrString(plan.RemoteAs.ValueString())
+		neighbor.RemoteAs = plan.RemoteAs.ValueStringPointer()
 	}
 
 	if !plan.Weight.IsNull() && !plan.Weight.IsUnknown() {
-		neighbor.Weight = sdk.PtrInt64(plan.Weight.ValueInt64())
+		neighbor.Weight = plan.Weight.ValueInt64Pointer()
 	}
 
 	if !plan.KeepAlive.IsNull() && !plan.KeepAlive.IsUnknown() {
-		neighbor.KeepAlive = sdk.PtrInt64(plan.KeepAlive.ValueInt64())
+		neighbor.KeepAlive = plan.KeepAlive.ValueInt64Pointer()
 	}
 
 	if !plan.HoldDown.IsNull() && !plan.HoldDown.IsUnknown() {
-		neighbor.HoldDown = sdk.PtrInt64(plan.HoldDown.ValueInt64())
+		neighbor.HoldDown = plan.HoldDown.ValueInt64Pointer()
 	}
 
 	if !plan.PasswordWo.IsNull() && !plan.PasswordWo.IsUnknown() {
-		neighbor.Password = sdk.PtrString(plan.PasswordWo.ValueString())
+		neighbor.Password = plan.PasswordWo.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringType.IsNull() && !plan.RouteFilteringType.IsUnknown() {
-		neighbor.RouteFilteringType = sdk.PtrString(plan.RouteFilteringType.ValueString())
+		neighbor.RouteFilteringType = plan.RouteFilteringType.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringIn.IsNull() && !plan.RouteFilteringIn.IsUnknown() {
-		neighbor.RouteFilteringIn = sdk.PtrString(plan.RouteFilteringIn.ValueString())
+		neighbor.RouteFilteringIn = plan.RouteFilteringIn.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringOut.IsNull() && !plan.RouteFilteringOut.IsUnknown() {
-		neighbor.RouteFilteringOut = sdk.PtrString(plan.RouteFilteringOut.ValueString())
+		neighbor.RouteFilteringOut = plan.RouteFilteringOut.ValueStringPointer()
 	}
 
 	if !plan.BfdEnabled.IsNull() && !plan.BfdEnabled.IsUnknown() {
@@ -98,11 +98,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.BfdInterval.IsNull() && !plan.BfdInterval.IsUnknown() {
-		neighbor.BfdInterval = sdk.PtrInt64(plan.BfdInterval.ValueInt64())
+		neighbor.BfdInterval = plan.BfdInterval.ValueInt64Pointer()
 	}
 
 	if !plan.BfdMultiple.IsNull() && !plan.BfdMultiple.IsUnknown() {
-		neighbor.BfdMultiple = sdk.PtrInt64(plan.BfdMultiple.ValueInt64())
+		neighbor.BfdMultiple = plan.BfdMultiple.ValueInt64Pointer()
 	}
 
 	if !plan.AllowAsIn.IsNull() && !plan.AllowAsIn.IsUnknown() {
@@ -113,11 +113,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.HopLimit.IsNull() && !plan.HopLimit.IsUnknown() {
-		neighbor.HopLimit = sdk.PtrInt64(plan.HopLimit.ValueInt64())
+		neighbor.HopLimit = plan.HopLimit.ValueInt64Pointer()
 	}
 
 	if !plan.RestartMode.IsNull() && !plan.RestartMode.IsUnknown() {
-		neighbor.RestartMode = sdk.PtrString(plan.RestartMode.ValueString())
+		neighbor.RestartMode = plan.RestartMode.ValueStringPointer()
 	}
 
 	config := buildCreateConfig(ctx, plan, resp)
@@ -228,12 +228,12 @@ func buildCreateConfig(
 
 		if !plan.ConfigNsxv.RouterId.IsNull() &&
 			!plan.ConfigNsxv.RouterId.IsUnknown() {
-			nsxvConfig.RouterId = sdk.PtrString(plan.ConfigNsxv.RouterId.ValueString())
+			nsxvConfig.RouterId = plan.ConfigNsxv.RouterId.ValueStringPointer()
 		}
 
 		if !plan.ConfigNsxv.Interface.IsNull() &&
 			!plan.ConfigNsxv.Interface.IsUnknown() {
-			nsxvConfig.Interface = sdk.PtrString(plan.ConfigNsxv.Interface.ValueString())
+			nsxvConfig.Interface = plan.ConfigNsxv.Interface.ValueStringPointer()
 		}
 
 		config.NSXVBGPNeighborConfig1 = nsxvConfig

@@ -48,11 +48,11 @@ func (r *Resource) Update(
 	monitor := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitor{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		monitor.Name = sdk.PtrString(plan.Name.ValueString())
+		monitor.Name = plan.Name.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.Description = sdk.PtrString(plan.Description.ValueString())
+		monitor.Description = plan.Description.ValueStringPointer()
 	}
 
 	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
@@ -108,35 +108,35 @@ func (r *Resource) Update(
 	}
 
 	if !plan.MonitorInterval.IsNull() && !plan.MonitorInterval.IsUnknown() {
-		monitor.MonitorInterval = sdk.PtrInt64(plan.MonitorInterval.ValueInt64())
+		monitor.MonitorInterval = plan.MonitorInterval.ValueInt64Pointer()
 	}
 
 	if !plan.MonitorTimeout.IsNull() && !plan.MonitorTimeout.IsUnknown() {
-		monitor.MonitorTimeout = sdk.PtrInt64(plan.MonitorTimeout.ValueInt64())
+		monitor.MonitorTimeout = plan.MonitorTimeout.ValueInt64Pointer()
 	}
 
 	if !plan.SendData.IsNull() && !plan.SendData.IsUnknown() {
-		monitor.SendData.Set(sdk.PtrString(plan.SendData.ValueString()))
+		monitor.SendData.Set(plan.SendData.ValueStringPointer())
 	}
 
 	if !plan.SendVersion.IsNull() && !plan.SendVersion.IsUnknown() {
-		monitor.SendVersion.Set(sdk.PtrString(plan.SendVersion.ValueString()))
+		monitor.SendVersion.Set(plan.SendVersion.ValueStringPointer())
 	}
 
 	if !plan.SendType.IsNull() && !plan.SendType.IsUnknown() {
-		monitor.SendType.Set(sdk.PtrString(plan.SendType.ValueString()))
+		monitor.SendType.Set(plan.SendType.ValueStringPointer())
 	}
 
 	if !plan.ReceiveData.IsNull() && !plan.ReceiveData.IsUnknown() {
-		monitor.ReceiveData.Set(sdk.PtrString(plan.ReceiveData.ValueString()))
+		monitor.ReceiveData.Set(plan.ReceiveData.ValueStringPointer())
 	}
 
 	if !plan.ReceiveCode.IsNull() && !plan.ReceiveCode.IsUnknown() {
-		monitor.ReceiveCode.Set(sdk.PtrString(plan.ReceiveCode.ValueString()))
+		monitor.ReceiveCode.Set(plan.ReceiveCode.ValueStringPointer())
 	}
 
 	if !plan.MonitorUsername.IsNull() && !plan.MonitorUsername.IsUnknown() {
-		monitor.MonitorUsername.Set(sdk.PtrString(plan.MonitorUsername.ValueString()))
+		monitor.MonitorUsername.Set(plan.MonitorUsername.ValueStringPointer())
 	}
 
 	if !plan.MonitorPasswordWoVersion.Equal(currentState.MonitorPasswordWoVersion) {
@@ -149,35 +149,35 @@ func (r *Resource) Update(
 			return
 		}
 
-		monitor.MonitorPassword.Set(sdk.PtrString(config.MonitorPasswordWo.ValueString()))
+		monitor.MonitorPassword.Set(config.MonitorPasswordWo.ValueStringPointer())
 	}
 
 	if !plan.MonitorDestination.IsNull() && !plan.MonitorDestination.IsUnknown() {
-		monitor.MonitorDestination.Set(sdk.PtrString(plan.MonitorDestination.ValueString()))
+		monitor.MonitorDestination.Set(plan.MonitorDestination.ValueStringPointer())
 	}
 
 	if !plan.FallCount.IsNull() && !plan.FallCount.IsUnknown() {
-		monitor.FallCount = sdk.PtrInt64(plan.FallCount.ValueInt64())
+		monitor.FallCount = plan.FallCount.ValueInt64Pointer()
 	}
 
 	if !plan.RiseCount.IsNull() && !plan.RiseCount.IsUnknown() {
-		monitor.RiseCount = sdk.PtrInt64(plan.RiseCount.ValueInt64())
+		monitor.RiseCount = plan.RiseCount.ValueInt64Pointer()
 	}
 
 	if !plan.AliasPort.IsNull() && !plan.AliasPort.IsUnknown() {
-		monitor.AliasPort = sdk.PtrInt64(plan.AliasPort.ValueInt64())
+		monitor.AliasPort = plan.AliasPort.ValueInt64Pointer()
 	}
 
 	if !plan.DataLength.IsNull() && !plan.DataLength.IsUnknown() {
-		monitor.DataLength = sdk.PtrInt64(plan.DataLength.ValueInt64())
+		monitor.DataLength = plan.DataLength.ValueInt64Pointer()
 	}
 
 	if !plan.MaxRetry.IsNull() && !plan.MaxRetry.IsUnknown() {
-		monitor.MaxRetry = sdk.PtrInt64(plan.MaxRetry.ValueInt64())
+		monitor.MaxRetry = plan.MaxRetry.ValueInt64Pointer()
 	}
 
 	if !plan.ExtraConfig.IsNull() && !plan.ExtraConfig.IsUnknown() {
-		monitor.ExtraConfig.Set(sdk.PtrString(plan.ExtraConfig.ValueString()))
+		monitor.ExtraConfig.Set(plan.ExtraConfig.ValueStringPointer())
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {

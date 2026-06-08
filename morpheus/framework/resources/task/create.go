@@ -31,12 +31,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		addTaskReq.Task.AllowCustomConfig = sdk.PtrBool(plan.AllowCustomConfig.ValueBool())
+		addTaskReq.Task.AllowCustomConfig = plan.AllowCustomConfig.ValueBoolPointer()
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		addTaskReq.Task.Code = sdk.PtrString(plan.Code.ValueString())
+		addTaskReq.Task.Code = plan.Code.ValueStringPointer()
 	}
 
 	taskOptionsSet := false
@@ -130,22 +130,22 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		addTaskReq.Task.ResultType.Set(sdk.PtrString(plan.ResultType.ValueString()))
+		addTaskReq.Task.ResultType.Set(plan.ResultType.ValueStringPointer())
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		addTaskReq.Task.RetryCount = sdk.PtrInt64(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryCount = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		addTaskReq.Task.RetryDelaySeconds = sdk.PtrInt64(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryDelaySeconds = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		addTaskReq.Task.Retryable = sdk.PtrBool(plan.Retryable.ValueBool())
+		addTaskReq.Task.Retryable = plan.Retryable.ValueBoolPointer()
 	}
 
 	// task_type_code
@@ -155,7 +155,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		addTaskReq.Task.Visibility = sdk.PtrString(plan.Visibility.ValueString())
+		addTaskReq.Task.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// send the API request here

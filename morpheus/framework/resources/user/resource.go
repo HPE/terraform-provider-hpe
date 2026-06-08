@@ -164,28 +164,28 @@ func (r *Resource) Create(
 
 	// optional
 	if !plan.FirstName.IsUnknown() {
-		addUser.FirstName = sdk.PtrString(plan.FirstName.ValueString())
+		addUser.FirstName = plan.FirstName.ValueStringPointer()
 	}
 	if !plan.LastName.IsUnknown() {
-		addUser.LastName = sdk.PtrString(plan.LastName.ValueString())
+		addUser.LastName = plan.LastName.ValueStringPointer()
 	}
 	if !plan.LinuxUsername.IsUnknown() {
-		addUser.LinuxUsername = sdk.PtrString(plan.LinuxUsername.ValueString())
+		addUser.LinuxUsername = plan.LinuxUsername.ValueStringPointer()
 	}
 	if !plan.LinuxPasswordWo.IsUnknown() {
-		addUser.LinuxPassword = sdk.PtrString(plan.LinuxPasswordWo.ValueString())
+		addUser.LinuxPassword = plan.LinuxPasswordWo.ValueStringPointer()
 	}
 	if !plan.WindowsUsername.IsUnknown() {
-		addUser.WindowsUsername = sdk.PtrString(plan.WindowsUsername.ValueString())
+		addUser.WindowsUsername = plan.WindowsUsername.ValueStringPointer()
 	}
 	if !plan.WindowsPasswordWo.IsUnknown() {
-		addUser.WindowsPassword = sdk.PtrString(plan.WindowsPasswordWo.ValueString())
+		addUser.WindowsPassword = plan.WindowsPasswordWo.ValueStringPointer()
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
-		addUser.LinuxKeyPairId = sdk.PtrInt64(plan.LinuxKeyPairId.ValueInt64())
+		addUser.LinuxKeyPairId = plan.LinuxKeyPairId.ValueInt64Pointer()
 	}
 	if !plan.ReceiveNotifications.IsUnknown() {
-		addUser.ReceiveNotifications = sdk.PtrBool(plan.ReceiveNotifications.ValueBool())
+		addUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
 	}
 
 	client, err := r.NewClient(ctx)
@@ -322,7 +322,7 @@ func (r *Resource) Update(
 
 	// non-nullable
 	updateUser.Username = sdk.PtrString(username)
-	updateUser.Email = sdk.PtrString(plan.Email.ValueString())
+	updateUser.Email = plan.Email.ValueStringPointer()
 	updateUser.Roles = roles
 
 	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
@@ -335,41 +335,41 @@ func (r *Resource) Update(
 
 			return
 		}
-		updateUser.Password = sdk.PtrString(config.PasswordWo.ValueString())
+		updateUser.Password = config.PasswordWo.ValueStringPointer()
 	}
 
 	// nullable
 	if plan.FirstName.IsNull() {
 		updateUser.FirstName.Set(nil)
 	} else {
-		updateUser.FirstName.Set(sdk.PtrString(plan.FirstName.ValueString()))
+		updateUser.FirstName.Set(plan.FirstName.ValueStringPointer())
 	}
 
 	if plan.LastName.IsNull() {
 		updateUser.LastName.Set(nil)
 	} else {
-		updateUser.LastName.Set(sdk.PtrString(plan.LastName.ValueString()))
+		updateUser.LastName.Set(plan.LastName.ValueStringPointer())
 	}
 
 	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.LinuxKeyPairId.Set(nil)
 	} else {
-		updateUser.LinuxKeyPairId.Set(sdk.PtrInt64(plan.LinuxKeyPairId.ValueInt64()))
+		updateUser.LinuxKeyPairId.Set(plan.LinuxKeyPairId.ValueInt64Pointer())
 	}
 
 	if plan.LinuxUsername.IsNull() {
 		updateUser.LinuxUsername.Set(nil)
 	} else {
-		updateUser.LinuxUsername.Set(sdk.PtrString(plan.LinuxUsername.ValueString()))
+		updateUser.LinuxUsername.Set(plan.LinuxUsername.ValueStringPointer())
 	}
 
 	if plan.WindowsUsername.IsNull() {
 		updateUser.WindowsUsername.Set(nil)
 	} else {
-		updateUser.WindowsUsername.Set(sdk.PtrString(plan.WindowsUsername.ValueString()))
+		updateUser.WindowsUsername.Set(plan.WindowsUsername.ValueStringPointer())
 	}
 
-	updateUser.ReceiveNotifications = sdk.PtrBool(plan.ReceiveNotifications.ValueBool())
+	updateUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
 
 	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
 		if config.LinuxPasswordWo.IsUnknown() {
@@ -384,7 +384,7 @@ func (r *Resource) Update(
 		if plan.LinuxPasswordWo.IsNull() {
 			updateUser.LinuxPassword.Set(nil)
 		} else {
-			updateUser.LinuxPassword.Set(sdk.PtrString(plan.LinuxPasswordWo.ValueString()))
+			updateUser.LinuxPassword.Set(plan.LinuxPasswordWo.ValueStringPointer())
 		}
 	}
 
@@ -401,7 +401,7 @@ func (r *Resource) Update(
 		if plan.WindowsPasswordWo.IsNull() {
 			updateUser.WindowsPassword.Set(nil)
 		} else {
-			updateUser.WindowsPassword.Set(sdk.PtrString(plan.WindowsPasswordWo.ValueString()))
+			updateUser.WindowsPassword.Set(plan.WindowsPasswordWo.ValueStringPointer())
 		}
 	}
 

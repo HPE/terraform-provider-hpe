@@ -59,20 +59,20 @@ func (r *Resource) Create(
 	// Set AssociatedResourceId if provided - required when RefType is not Global
 	// This is validated in ValidateConfig
 	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
-		addPolicy.RefId = sdk.PtrInt64(plan.AssociatedResourceId.ValueInt64())
+		addPolicy.RefId = plan.AssociatedResourceId.ValueInt64Pointer()
 	}
 
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		addPolicy.Description = sdk.PtrString(plan.Description.ValueString())
+		addPolicy.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		addPolicy.Enabled = sdk.PtrBool(plan.Enabled.ValueBool())
+		addPolicy.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
-		addPolicy.EachUser = sdk.PtrBool(plan.EachUser.ValueBool())
+		addPolicy.EachUser = plan.EachUser.ValueBoolPointer()
 	}
 
 	// Set tenant IDs if provided

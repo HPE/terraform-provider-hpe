@@ -30,15 +30,15 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 
 	updateLB := &sdk.UpdateLoadBalancerRequestLoadBalancer{
-		Name: sdk.PtrString(plan.Name.ValueString()),
+		Name: plan.Name.ValueStringPointer(),
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updateLB.Description = sdk.PtrString(plan.Description.ValueString())
+		updateLB.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateLB.Visibility = sdk.PtrString(plan.Visibility.ValueString())
+		updateLB.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if err := setUpdateConfig(ctx, updateLB, plan); err != nil {
@@ -182,7 +182,7 @@ func setUpdatePermissions(
 	perms := &sdk.UpdateLoadBalancerRequestLoadBalancerResourcePermission{}
 
 	if !plan.Permissions.All.IsNull() && !plan.Permissions.All.IsUnknown() {
-		perms.All = sdk.PtrBool(plan.Permissions.All.ValueBool())
+		perms.All = plan.Permissions.All.ValueBoolPointer()
 	} else if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
 		perms.All = sdk.PtrBool(false)
 	}
