@@ -37,8 +37,6 @@ func TestAccMorpheusDataSourceBudgetExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to missing resource implementation")
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := "example-budget"

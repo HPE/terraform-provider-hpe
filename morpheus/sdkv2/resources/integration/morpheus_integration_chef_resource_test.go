@@ -19,7 +19,6 @@ func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 
 		return
 	}
-	t.Skip("Skipping due to lack of available resources to test against")
 
 	t.Parallel()
 
