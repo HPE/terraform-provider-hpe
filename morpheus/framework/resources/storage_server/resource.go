@@ -210,7 +210,7 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		backoff.WithMaxElapsedTime(createTimeout),
 	); err != nil {
 		var status string
-		if r != nil {
+		if r != nil && r.StorageServer != nil {
 			ss := r.StorageServer
 			if s := ss.Status.Get(); s != nil {
 				status = *s
@@ -227,6 +227,12 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		return
 	} else {
 		storageServer := r.StorageServer
+		if storageServer == nil {
+			resp.Diagnostics.AddError("API returned nil", "StorageServer is nil in the response")
+
+			return
+		}
+
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 
@@ -389,7 +395,7 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		backoff.WithMaxElapsedTime(updateTimeout),
 	); err != nil {
 		var status string
-		if r != nil {
+		if r != nil && r.StorageServer != nil {
 			ss := r.StorageServer
 			if s := ss.Status.Get(); s != nil {
 				status = *s
@@ -411,6 +417,12 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	} else {
 		storageServer := r.StorageServer
+		if storageServer == nil {
+			resp.Diagnostics.AddError("API returned nil", "StorageServer is nil in the response")
+
+			return
+		}
+
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 

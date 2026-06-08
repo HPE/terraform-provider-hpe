@@ -71,6 +71,12 @@ func (r *monitoringCheckResource) Create(
 			return
 		}
 		ct := ctResult.CheckType
+		if ct == nil {
+			resp.Diagnostics.AddError("API returned nil", "CheckType is nil in the response")
+
+			return
+		}
+
 		code := ct.Code
 		checkBody.CheckType = &sdk.WebCheckAllOfCheckType{
 			Code: code,

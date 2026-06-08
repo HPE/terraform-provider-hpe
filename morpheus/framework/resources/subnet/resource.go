@@ -194,6 +194,12 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
 	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -345,6 +351,12 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
 	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
