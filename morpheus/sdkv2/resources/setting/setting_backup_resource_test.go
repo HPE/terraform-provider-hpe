@@ -28,8 +28,6 @@ func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Skip("Skipping due to API error")
 	// diagnostic_summary="Not found in response: BackupSettings"
 
 	providerConfig := testhelpers.ProviderBlock()

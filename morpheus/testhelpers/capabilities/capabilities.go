@@ -88,6 +88,9 @@ const (
 
 	// VDI
 	VDI Capability = "vdi"
+
+	// Licensing
+	License Capability = "license"
 )
 
 // String returns the string representation of the capability.
