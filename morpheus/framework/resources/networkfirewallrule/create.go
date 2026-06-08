@@ -43,18 +43,15 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
-		direction := plan.Direction.ValueString()
-		rule.Direction = &direction
+		rule.Direction = plan.Direction.ValueStringPointer()
 	}
 
 	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
-		policy := plan.Policy.ValueString()
-		rule.Policy = &policy
+		rule.Policy = plan.Policy.ValueStringPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {

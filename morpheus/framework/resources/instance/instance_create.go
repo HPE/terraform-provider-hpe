@@ -75,8 +75,7 @@ func (g *Resource) Create(
 	// cloud_id
 	reqInstance := &sdk.AddInstanceRequest{}
 	if !plan.CloudId.IsNull() {
-		zoneId := plan.CloudId.ValueInt64()
-		reqInstance.ZoneId = &zoneId
+		reqInstance.ZoneId = plan.CloudId.ValueInt64Pointer()
 	}
 
 	// config
@@ -143,8 +142,7 @@ func (g *Resource) Create(
 		}
 
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
-			kvmHostId := plan.ConfigHvm.KvmHostId.ValueInt64()
-			configHvm.KvmHostId = &kvmHostId
+			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -182,23 +180,19 @@ func (g *Resource) Create(
 		}
 
 		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
-			azureRegion := plan.ConfigAzure.AzureRegion.ValueString()
-			configAzure.AzureRegion = &azureRegion
+			configAzure.AzureRegion = plan.ConfigAzure.AzureRegion.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.AzuresecurityGroupId.IsNull() && !plan.ConfigAzure.AzuresecurityGroupId.IsUnknown() {
-			azureSecGroupId := plan.ConfigAzure.AzuresecurityGroupId.ValueString()
-			configAzure.AzuresecurityGroupId = &azureSecGroupId
+			configAzure.AzuresecurityGroupId = plan.ConfigAzure.AzuresecurityGroupId.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.AvailabilityOptions.IsNull() && !plan.ConfigAzure.AvailabilityOptions.IsUnknown() {
-			availabilityOptions := plan.ConfigAzure.AvailabilityOptions.ValueString()
-			configAzure.AvailabilityOptions = &availabilityOptions
+			configAzure.AvailabilityOptions = plan.ConfigAzure.AvailabilityOptions.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.AvailabilitySet.IsNull() && !plan.ConfigAzure.AvailabilitySet.IsUnknown() {
-			availabilitySet := plan.ConfigAzure.AvailabilitySet.ValueString()
-			configAzure.AvailabilitySet = &availabilitySet
+			configAzure.AvailabilitySet = plan.ConfigAzure.AvailabilitySet.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.AvailabilityZone.IsNull() && !plan.ConfigAzure.AvailabilityZone.IsUnknown() {
@@ -209,23 +203,19 @@ func (g *Resource) Create(
 		}
 
 		if !plan.ConfigAzure.AzurefloatingIp.IsNull() && !plan.ConfigAzure.AzurefloatingIp.IsUnknown() {
-			azureFloatingIp := plan.ConfigAzure.AzurefloatingIp.ValueString()
-			configAzure.AzurefloatingIp = &azureFloatingIp
+			configAzure.AzurefloatingIp = plan.ConfigAzure.AzurefloatingIp.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.BootDiagnostics.IsNull() && !plan.ConfigAzure.BootDiagnostics.IsUnknown() {
-			bootDiagnostics := plan.ConfigAzure.BootDiagnostics.ValueString()
-			configAzure.BootDiagnostics = &bootDiagnostics
+			configAzure.BootDiagnostics = plan.ConfigAzure.BootDiagnostics.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.OsGuestDiagnostics.IsNull() && !plan.ConfigAzure.OsGuestDiagnostics.IsUnknown() {
-			osGuestDiagnostics := plan.ConfigAzure.OsGuestDiagnostics.ValueString()
-			configAzure.OsGuestDiagnostics = &osGuestDiagnostics
+			configAzure.OsGuestDiagnostics = plan.ConfigAzure.OsGuestDiagnostics.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
-			diagnosticsStorageAccount := plan.ConfigAzure.DiagnosticsStorageAccount.ValueString()
-			configAzure.DiagnosticsStorageAccount = &diagnosticsStorageAccount
+			configAzure.DiagnosticsStorageAccount = plan.ConfigAzure.DiagnosticsStorageAccount.ValueStringPointer()
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -266,8 +256,7 @@ func (g *Resource) Create(
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		description := plan.Description.ValueString()
-		reqInstance.Instance.Description = &description
+		reqInstance.Instance.Description = plan.Description.ValueStringPointer()
 	}
 
 	// evars
@@ -287,8 +276,7 @@ func (g *Resource) Create(
 
 	// instance_context
 	if !plan.InstanceContext.IsNull() {
-		instanceContext := plan.InstanceContext.ValueString()
-		reqInstance.Instance.InstanceContext = &instanceContext
+		reqInstance.Instance.InstanceContext = plan.InstanceContext.ValueStringPointer()
 	}
 
 	// instance_type_id
@@ -318,8 +306,7 @@ func (g *Resource) Create(
 
 	// layout_size
 	if !plan.LayoutSize.IsNull() {
-		layoutSize := plan.LayoutSize.ValueInt64()
-		reqInstance.LayoutSize = &layoutSize
+		reqInstance.LayoutSize = plan.LayoutSize.ValueInt64Pointer()
 	}
 
 	// name
@@ -399,8 +386,7 @@ func (g *Resource) Create(
 
 	// task_set_id
 	if !plan.TaskSetId.IsNull() {
-		taskSetId := plan.TaskSetId.ValueInt64()
-		reqInstance.TaskSetId = &taskSetId
+		reqInstance.TaskSetId = plan.TaskSetId.ValueInt64Pointer()
 	}
 
 	// volumes

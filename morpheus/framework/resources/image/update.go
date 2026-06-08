@@ -52,14 +52,12 @@ func (r *Resource) Update(
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() {
-		val := plan.AutoJoinDomain.ValueBool()
-		updateImage.IsAutoJoinDomain = &val
+		updateImage.IsAutoJoinDomain = plan.AutoJoinDomain.ValueBoolPointer()
 	}
 
 	// cloud_init
 	if !plan.CloudInit.IsNull() {
-		val := plan.CloudInit.ValueBool()
-		updateImage.IsCloudInit = &val
+		updateImage.IsCloudInit = plan.CloudInit.ValueBoolPointer()
 	}
 
 	// config_azure
@@ -72,26 +70,22 @@ func (r *Resource) Update(
 
 	// fips_enabled
 	if !plan.FipsEnabled.IsNull() {
-		val := plan.FipsEnabled.ValueBool()
-		updateImage.FipsEnabled = &val
+		updateImage.FipsEnabled = plan.FipsEnabled.ValueBoolPointer()
 	}
 
 	// force_customization
 	if !plan.ForceCustomization.IsNull() {
-		val := plan.ForceCustomization.ValueBool()
-		updateImage.IsForceCustomization = &val
+		updateImage.IsForceCustomization = plan.ForceCustomization.ValueBoolPointer()
 	}
 
 	// image_type
 	if !plan.ImageType.IsNull() {
-		val := plan.ImageType.ValueString()
-		updateImage.ImageType = &val
+		updateImage.ImageType = plan.ImageType.ValueStringPointer()
 	}
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() {
-		val := plan.InstallAgent.ValueBool()
-		updateImage.InstallAgent = &val
+		updateImage.InstallAgent = plan.InstallAgent.ValueBoolPointer()
 	}
 
 	// labels
@@ -153,16 +147,14 @@ func (r *Resource) Update(
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() {
 		storageProvider := &sdk.UpdateVirtualImageRequestVirtualImageStorageProvider{}
-		storageProviderID := plan.StorageProviderId.ValueInt64()
-		storageProvider.Id = &storageProviderID
+		storageProvider.Id = plan.StorageProviderId.ValueInt64Pointer()
 
 		updateImage.StorageProvider = storageProvider
 	}
 
 	// sysprep
 	if !plan.Sysprep.IsNull() {
-		val := plan.Sysprep.ValueBool()
-		updateImage.IsSysprep = &val
+		updateImage.IsSysprep = plan.Sysprep.ValueBoolPointer()
 	}
 
 	// tags
@@ -194,14 +186,12 @@ func (r *Resource) Update(
 
 	// trial_version
 	if !plan.TrialVersion.IsNull() {
-		val := plan.TrialVersion.ValueBool()
-		updateImage.TrialVersion = &val
+		updateImage.TrialVersion = plan.TrialVersion.ValueBoolPointer()
 	}
 
 	// uefi
 	if !plan.Uefi.IsNull() {
-		val := plan.Uefi.ValueBool()
-		updateImage.Uefi = &val
+		updateImage.Uefi = plan.Uefi.ValueBoolPointer()
 	}
 
 	// url
@@ -216,20 +206,17 @@ func (r *Resource) Update(
 
 	// virtio_supported
 	if !plan.VirtioSupported.IsNull() {
-		val := plan.VirtioSupported.ValueBool()
-		updateImage.VirtioSupported = &val
+		updateImage.VirtioSupported = plan.VirtioSupported.ValueBoolPointer()
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() {
-		val := plan.Visibility.ValueString()
-		updateImage.Visibility = &val
+		updateImage.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// vm_tools_installed
 	if !plan.VmToolsInstalled.IsNull() {
-		val := plan.VmToolsInstalled.ValueBool()
-		updateImage.VmToolsInstalled = &val
+		updateImage.VmToolsInstalled = plan.VmToolsInstalled.ValueBoolPointer()
 	}
 
 	// send the API request here

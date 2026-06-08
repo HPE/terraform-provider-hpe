@@ -40,8 +40,7 @@ func (r *Resource) Update(
 	rule := &sdk.UpdateNetworkFirewallRuleRequestRule{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		name := plan.Name.ValueString()
-		rule.Name = &name
+		rule.Name = plan.Name.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
@@ -50,18 +49,15 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
-		direction := plan.Direction.ValueString()
-		rule.Direction = &direction
+		rule.Direction = plan.Direction.ValueStringPointer()
 	}
 
 	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
-		policy := plan.Policy.ValueString()
-		rule.Policy = &policy
+		rule.Policy = plan.Policy.ValueStringPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {

@@ -86,13 +86,11 @@ func (r *Resource) Create(
 	rule.Name = plan.Name.ValueString()
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		priority := plan.Priority.ValueInt64()
-		rule.Priority = &priority
+		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	createReq := sdk.CreateNetworkRouterFirewallRuleRequest{
@@ -260,13 +258,11 @@ func (r *Resource) Update(
 	rule.Name = plan.Name.ValueString()
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		priority := plan.Priority.ValueInt64()
-		rule.Priority = &priority
+		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	updateReq := sdk.UpdateNetworkRouterFirewallRuleRequest{

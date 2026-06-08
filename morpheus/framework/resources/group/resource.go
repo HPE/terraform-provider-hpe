@@ -314,13 +314,11 @@ func (r *Resource) Update(
 	updateGroup.Name = name
 
 	if !plan.Code.IsNull() {
-		code := plan.Code.ValueString()
-		updateGroup.Code = &code
+		updateGroup.Code = plan.Code.ValueStringPointer()
 	}
 
 	if !plan.Location.IsNull() {
-		location := plan.Location.ValueString()
-		updateGroup.Location = &location
+		updateGroup.Location = plan.Location.ValueStringPointer()
 	}
 
 	if plan.Labels.IsNull() {

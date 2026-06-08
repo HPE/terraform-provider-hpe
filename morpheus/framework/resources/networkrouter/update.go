@@ -49,13 +49,11 @@ func (r *Resource) Update(
 	router := &sdk.UpdateNetworkRouterRequestNetworkRouter{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		name := plan.Name.ValueString()
-		router.Name = &name
+		router.Name = plan.Name.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		router.Enabled = &enabled
+		router.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	// Build config map for update

@@ -510,43 +510,34 @@ func (r *Resource) Create(
 	addCloud.AccountId = &tenantID
 
 	if !plan.AgentInstallMode.IsNull() && !plan.AgentInstallMode.IsUnknown() {
-		val := plan.AgentInstallMode.ValueString()
-		addCloud.AgentMode = &val
+		addCloud.AgentMode = plan.AgentInstallMode.ValueStringPointer()
 	}
 
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
-		val := plan.AutoRecoverPowerState.ValueBool()
-		addCloud.AutoRecoverPowerState = &val
+		addCloud.AutoRecoverPowerState = plan.AutoRecoverPowerState.ValueBoolPointer()
 	}
 
 	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
-		val := plan.DefaultDatastoreSyncActive.ValueBool()
-		addCloud.DefaultDatastoreSyncActive = &val
+		addCloud.DefaultDatastoreSyncActive = plan.DefaultDatastoreSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
-		val := plan.DefaultFolderSyncActive.ValueBool()
-		addCloud.DefaultFolderSyncActive = &val
+		addCloud.DefaultFolderSyncActive = plan.DefaultFolderSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
-		val := plan.DefaultNetworkSyncActive.ValueBool()
-		addCloud.DefaultNetworkSyncActive = &val
+		addCloud.DefaultNetworkSyncActive = plan.DefaultNetworkSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
-		val := plan.DefaultPlanSyncActive.ValueBool()
-		addCloud.DefaultPlanSyncActive = &val
+		addCloud.DefaultPlanSyncActive = plan.DefaultPlanSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
-		val := plan.DefaultPoolSyncActive.ValueBool()
-		addCloud.DefaultPoolSyncActive = &val
+		addCloud.DefaultPoolSyncActive = plan.DefaultPoolSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
-		val := plan.DefaultSecurityGroupSyncActive.ValueBool()
-		addCloud.DefaultSecurityGroupSyncActive = &val
+		addCloud.DefaultSecurityGroupSyncActive = plan.DefaultSecurityGroupSyncActive.ValueBoolPointer()
 	}
 
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		val := plan.Code.ValueString()
-		addCloud.Code = &val
+		addCloud.Code = plan.Code.ValueStringPointer()
 	}
 
 	if !plan.CostingMode.IsNull() && !plan.CostingMode.IsUnknown() {
@@ -554,8 +545,7 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		val := plan.Enabled.ValueBool()
-		addCloud.Enabled = &val
+		addCloud.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
@@ -585,13 +575,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
-		val := plan.SecurityMode.ValueString()
-		addCloud.SecurityMode = &val
+		addCloud.SecurityMode = plan.SecurityMode.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		val := plan.Visibility.ValueString()
-		addCloud.Visibility = &val
+		addCloud.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	createRequest := &sdk.AddCloudsRequest{Zone: *addCloud}

@@ -73,8 +73,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// config_conditional_workflow
 	if !plan.ConfigConditionalWorkflow.IsNull() && !plan.ConfigConditionalWorkflow.IsUnknown() {
 		conditionalWorkflow := &sdk.ConditionalWorkflowTaskConfig{}
-		trimmed := plan.ConfigConditionalWorkflow.ConditionalScript.ValueString()
-		conditionalWorkflow.ConditionalScript = &trimmed
+		conditionalWorkflow.ConditionalScript = plan.ConfigConditionalWorkflow.ConditionalScript.ValueStringPointer()
 
 		conditionalWorkflow.IfOperationalWorkflowId = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowId.ValueInt64Pointer()

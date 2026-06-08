@@ -41,12 +41,10 @@ func (r *Resource) Create(
 	}
 
 	monitor := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitor{}
-	val := plan.Name.ValueString()
-	monitor.Name = &val
+	monitor.Name = plan.Name.ValueStringPointer()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		val := plan.Description.ValueString()
-		monitor.Description = &val
+		monitor.Description = plan.Description.ValueStringPointer()
 	}
 
 	loadBalancerID := plan.LoadBalancerId.ValueInt64()
@@ -105,13 +103,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.MonitorInterval.IsNull() && !plan.MonitorInterval.IsUnknown() {
-		val := plan.MonitorInterval.ValueInt64()
-		monitor.MonitorInterval = &val
+		monitor.MonitorInterval = plan.MonitorInterval.ValueInt64Pointer()
 	}
 
 	if !plan.MonitorTimeout.IsNull() && !plan.MonitorTimeout.IsUnknown() {
-		val := plan.MonitorTimeout.ValueInt64()
-		monitor.MonitorTimeout = &val
+		monitor.MonitorTimeout = plan.MonitorTimeout.ValueInt64Pointer()
 	}
 
 	if !plan.SendData.IsNull() && !plan.SendData.IsUnknown() {
@@ -155,28 +151,23 @@ func (r *Resource) Create(
 	}
 
 	if !plan.FallCount.IsNull() && !plan.FallCount.IsUnknown() {
-		val := plan.FallCount.ValueInt64()
-		monitor.FallCount = &val
+		monitor.FallCount = plan.FallCount.ValueInt64Pointer()
 	}
 
 	if !plan.RiseCount.IsNull() && !plan.RiseCount.IsUnknown() {
-		val := plan.RiseCount.ValueInt64()
-		monitor.RiseCount = &val
+		monitor.RiseCount = plan.RiseCount.ValueInt64Pointer()
 	}
 
 	if !plan.AliasPort.IsNull() && !plan.AliasPort.IsUnknown() {
-		val := plan.AliasPort.ValueInt64()
-		monitor.AliasPort = &val
+		monitor.AliasPort = plan.AliasPort.ValueInt64Pointer()
 	}
 
 	if !plan.DataLength.IsNull() && !plan.DataLength.IsUnknown() {
-		val := plan.DataLength.ValueInt64()
-		monitor.DataLength = &val
+		monitor.DataLength = plan.DataLength.ValueInt64Pointer()
 	}
 
 	if !plan.MaxRetry.IsNull() && !plan.MaxRetry.IsUnknown() {
-		val := plan.MaxRetry.ValueInt64()
-		monitor.MaxRetry = &val
+		monitor.MaxRetry = plan.MaxRetry.ValueInt64Pointer()
 	}
 
 	// TODO: extraConfig is a write-only String field on the domain object

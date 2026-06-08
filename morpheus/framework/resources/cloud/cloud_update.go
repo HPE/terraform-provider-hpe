@@ -51,43 +51,34 @@ func (r *Resource) Update(
 	}
 
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
-		val := plan.AutoRecoverPowerState.ValueBool()
-		updateCloud.AutoRecoverPowerState = &val
+		updateCloud.AutoRecoverPowerState = plan.AutoRecoverPowerState.ValueBoolPointer()
 	}
 
 	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
-		val := plan.DefaultDatastoreSyncActive.ValueBool()
-		updateCloud.DefaultDatastoreSyncActive = &val
+		updateCloud.DefaultDatastoreSyncActive = plan.DefaultDatastoreSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
-		val := plan.DefaultFolderSyncActive.ValueBool()
-		updateCloud.DefaultFolderSyncActive = &val
+		updateCloud.DefaultFolderSyncActive = plan.DefaultFolderSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
-		val := plan.DefaultNetworkSyncActive.ValueBool()
-		updateCloud.DefaultNetworkSyncActive = &val
+		updateCloud.DefaultNetworkSyncActive = plan.DefaultNetworkSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
-		val := plan.DefaultPlanSyncActive.ValueBool()
-		updateCloud.DefaultPlanSyncActive = &val
+		updateCloud.DefaultPlanSyncActive = plan.DefaultPlanSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
-		val := plan.DefaultPoolSyncActive.ValueBool()
-		updateCloud.DefaultPoolSyncActive = &val
+		updateCloud.DefaultPoolSyncActive = plan.DefaultPoolSyncActive.ValueBoolPointer()
 	}
 	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
-		val := plan.DefaultSecurityGroupSyncActive.ValueBool()
-		updateCloud.DefaultSecurityGroupSyncActive = &val
+		updateCloud.DefaultSecurityGroupSyncActive = plan.DefaultSecurityGroupSyncActive.ValueBoolPointer()
 	}
 
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		val := plan.Code.ValueString()
-		updateCloud.Code = &val
+		updateCloud.Code = plan.Code.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		val := plan.Enabled.ValueBool()
-		updateCloud.Enabled = &val
+		updateCloud.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if plan.Labels.IsNull() || plan.Labels.IsUnknown() {
@@ -107,18 +98,15 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
-		val := plan.Location.ValueString()
-		updateCloud.Location = &val
+		updateCloud.Location = plan.Location.ValueStringPointer()
 	}
 
 	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
-		val := plan.SecurityMode.ValueString()
-		updateCloud.SecurityMode = &val
+		updateCloud.SecurityMode = plan.SecurityMode.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		val := plan.Visibility.ValueString()
-		updateCloud.Visibility = &val
+		updateCloud.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// TODO: Update spec to generate setters

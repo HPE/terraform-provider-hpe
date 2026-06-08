@@ -59,28 +59,23 @@ func (r *Resource) Create(
 	}
 
 	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
-		displayName := plan.DisplayName.ValueString()
-		createNetwork.DisplayName = &displayName
+		createNetwork.DisplayName = plan.DisplayName.ValueStringPointer()
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		active := plan.Active.ValueBool()
-		createNetwork.Active = &active
+		createNetwork.Active = plan.Active.ValueBoolPointer()
 	}
 
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
-		cidr := plan.Cidr.ValueString()
-		createNetwork.Cidr = &cidr
+		createNetwork.Cidr = plan.Cidr.ValueStringPointer()
 	}
 
 	if !plan.CidrIpv6.IsNull() && !plan.CidrIpv6.IsUnknown() {
-		cidrIpv6 := plan.CidrIpv6.ValueString()
-		createNetwork.CidrIPv6 = &cidrIpv6
+		createNetwork.CidrIPv6 = plan.CidrIpv6.ValueStringPointer()
 	}
 
 	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
-		gateway := plan.Gateway.ValueString()
-		createNetwork.Gateway = &gateway
+		createNetwork.Gateway = plan.Gateway.ValueStringPointer()
 	}
 
 	if !plan.GatewayIpv6.IsNull() && !plan.GatewayIpv6.IsUnknown() {
@@ -89,13 +84,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.DnsPrimary.IsNull() && !plan.DnsPrimary.IsUnknown() {
-		dnsPrimary := plan.DnsPrimary.ValueString()
-		createNetwork.DnsPrimary = &dnsPrimary
+		createNetwork.DnsPrimary = plan.DnsPrimary.ValueStringPointer()
 	}
 
 	if !plan.DnsSecondary.IsNull() && !plan.DnsSecondary.IsUnknown() {
-		dnsSecondary := plan.DnsSecondary.ValueString()
-		createNetwork.DnsSecondary = &dnsSecondary
+		createNetwork.DnsSecondary = plan.DnsSecondary.ValueStringPointer()
 	}
 
 	if !plan.DnsPrimaryIpv6.IsNull() && !plan.DnsPrimaryIpv6.IsUnknown() {
@@ -110,42 +103,35 @@ func (r *Resource) Create(
 	}
 
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
-		dhcpServer := plan.DhcpServer.ValueBool()
-		createNetwork.DhcpServer = &dhcpServer
+		createNetwork.DhcpServer = plan.DhcpServer.ValueBoolPointer()
 	}
 
 	if !plan.DhcpServerIpv6.IsNull() &&
 		!plan.DhcpServerIpv6.IsUnknown() {
-		dhcpServerIpv6 := plan.DhcpServerIpv6.ValueBool()
-		createNetwork.DhcpServerIPv6 = &dhcpServerIpv6
+		createNetwork.DhcpServerIPv6 = plan.DhcpServerIpv6.ValueBoolPointer()
 	}
 
 	if !plan.AllowStaticOverride.IsNull() &&
 		!plan.AllowStaticOverride.IsUnknown() {
-		allowStaticOverride := plan.AllowStaticOverride.ValueBool()
-		createNetwork.AllowStaticOverride = &allowStaticOverride
+		createNetwork.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
 	}
 
 	if !plan.AssignPublicIp.IsNull() &&
 		!plan.AssignPublicIp.IsUnknown() {
-		assignPublicIp := plan.AssignPublicIp.ValueBool()
-		createNetwork.AssignPublicIp = &assignPublicIp
+		createNetwork.AssignPublicIp = plan.AssignPublicIp.ValueBoolPointer()
 	}
 
 	if !plan.ApplianceUrlProxyBypass.IsNull() &&
 		!plan.ApplianceUrlProxyBypass.IsUnknown() {
-		applianceUrlProxyBypass := plan.ApplianceUrlProxyBypass.ValueBool()
-		createNetwork.ApplianceUrlProxyBypass = &applianceUrlProxyBypass
+		createNetwork.ApplianceUrlProxyBypass = plan.ApplianceUrlProxyBypass.ValueBoolPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		visibility := plan.Visibility.ValueString()
-		createNetwork.Visibility = &visibility
+		createNetwork.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if !plan.VlanId.IsNull() && !plan.VlanId.IsUnknown() {
-		vlanId := plan.VlanId.ValueInt64()
-		createNetwork.VlanId = &vlanId
+		createNetwork.VlanId = plan.VlanId.ValueInt64Pointer()
 	}
 
 	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
@@ -166,13 +152,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Ipv4enabled.IsNull() && !plan.Ipv4enabled.IsUnknown() {
-		ipv4Enabled := plan.Ipv4enabled.ValueBool()
-		createNetwork.Ipv4Enabled = &ipv4Enabled
+		createNetwork.Ipv4Enabled = plan.Ipv4enabled.ValueBoolPointer()
 	}
 
 	if !plan.Ipv6enabled.IsNull() && !plan.Ipv6enabled.IsUnknown() {
-		ipv6Enabled := plan.Ipv6enabled.ValueBool()
-		createNetwork.Ipv6Enabled = &ipv6Enabled
+		createNetwork.Ipv6Enabled = plan.Ipv6enabled.ValueBoolPointer()
 	}
 
 	if !plan.NetmaskIpv6.IsNull() && !plan.NetmaskIpv6.IsUnknown() {
@@ -186,13 +170,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.SearchDomains.IsNull() && !plan.SearchDomains.IsUnknown() {
-		searchDomains := plan.SearchDomains.ValueString()
-		createNetwork.SearchDomains = &searchDomains
+		createNetwork.SearchDomains = plan.SearchDomains.ValueStringPointer()
 	}
 
 	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
-		switchId := plan.SwitchId.ValueString()
-		createNetwork.SwitchId = &switchId
+		createNetwork.SwitchId = plan.SwitchId.ValueStringPointer()
 	}
 
 	if !plan.TypeId.IsNull() && !plan.TypeId.IsUnknown() {

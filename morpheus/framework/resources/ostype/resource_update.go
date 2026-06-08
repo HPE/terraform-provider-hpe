@@ -39,8 +39,7 @@ func (r *Resource) Update(
 
 	// bit_count
 	if !plan.BitCount.IsNull() && !plan.BitCount.IsUnknown() {
-		val := plan.BitCount.ValueInt64()
-		osType.BitCount = &val
+		osType.BitCount = plan.BitCount.ValueInt64Pointer()
 	}
 
 	// category

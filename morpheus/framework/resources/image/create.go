@@ -47,14 +47,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// auto_join_domain
 	if !plan.AutoJoinDomain.IsNull() && !plan.AutoJoinDomain.IsUnknown() {
-		val := plan.AutoJoinDomain.ValueBool()
-		reqImage.VirtualImage.IsAutoJoinDomain = &val
+		reqImage.VirtualImage.IsAutoJoinDomain = plan.AutoJoinDomain.ValueBoolPointer()
 	}
 
 	// cloud_init
 	if !plan.CloudInit.IsNull() && !plan.CloudInit.IsUnknown() {
-		val := plan.CloudInit.ValueBool()
-		reqImage.VirtualImage.IsCloudInit = &val
+		reqImage.VirtualImage.IsCloudInit = plan.CloudInit.ValueBoolPointer()
 	}
 
 	// config_azure
@@ -73,20 +71,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		val := plan.Description.ValueString()
-		reqImage.VirtualImage.Description = &val
+		reqImage.VirtualImage.Description = plan.Description.ValueStringPointer()
 	}
 
 	// fips_enabled
 	if !plan.FipsEnabled.IsNull() && !plan.FipsEnabled.IsUnknown() {
-		val := plan.FipsEnabled.ValueBool()
-		reqImage.VirtualImage.FipsEnabled = &val
+		reqImage.VirtualImage.FipsEnabled = plan.FipsEnabled.ValueBoolPointer()
 	}
 
 	// is_force_customization
 	if !plan.ForceCustomization.IsNull() && !plan.ForceCustomization.IsUnknown() {
-		val := plan.ForceCustomization.ValueBool()
-		reqImage.VirtualImage.IsForceCustomization = &val
+		reqImage.VirtualImage.IsForceCustomization = plan.ForceCustomization.ValueBoolPointer()
 	}
 
 	// uncomment when adding support for uploading files
@@ -101,13 +96,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// }
 
 	// image_type (required)
-	imageTypeVal := plan.ImageType.ValueString()
-	reqImage.VirtualImage.ImageType = &imageTypeVal
+	reqImage.VirtualImage.ImageType = plan.ImageType.ValueStringPointer()
 
 	// install_agent
 	if !plan.InstallAgent.IsNull() && !plan.InstallAgent.IsUnknown() {
-		val := plan.InstallAgent.ValueBool()
-		reqImage.VirtualImage.InstallAgent = &val
+		reqImage.VirtualImage.InstallAgent = plan.InstallAgent.ValueBoolPointer()
 	}
 
 	// labels
@@ -138,8 +131,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	// name (required)
-	nameVal := plan.Name.ValueString()
-	reqImage.VirtualImage.Name = &nameVal
+	reqImage.VirtualImage.Name = plan.Name.ValueStringPointer()
 
 	// os_type_id
 	if !plan.OsTypeId.IsNull() && !plan.OsTypeId.IsUnknown() {
@@ -161,16 +153,14 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// storage_provider_id
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
 		storageProvider := &sdk.AddVirtualImageRequestVirtualImageStorageProvider{}
-		providerID := plan.StorageProviderId.ValueInt64()
-		storageProvider.Id = &providerID
+		storageProvider.Id = plan.StorageProviderId.ValueInt64Pointer()
 
 		reqImage.VirtualImage.StorageProvider = storageProvider
 	}
 
 	// sysprep
 	if !plan.Sysprep.IsNull() && !plan.Sysprep.IsUnknown() {
-		val := plan.Sysprep.ValueBool()
-		reqImage.VirtualImage.IsSysprep = &val
+		reqImage.VirtualImage.IsSysprep = plan.Sysprep.ValueBoolPointer()
 	}
 
 	// tags
@@ -204,20 +194,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// trial_version
 	if !plan.TrialVersion.IsNull() && !plan.TrialVersion.IsUnknown() {
-		val := plan.TrialVersion.ValueBool()
-		reqImage.VirtualImage.TrialVersion = &val
+		reqImage.VirtualImage.TrialVersion = plan.TrialVersion.ValueBoolPointer()
 	}
 
 	// uefi
 	if !plan.Uefi.IsNull() && !plan.Uefi.IsUnknown() {
-		val := plan.Uefi.ValueBool()
-		reqImage.VirtualImage.Uefi = &val
+		reqImage.VirtualImage.Uefi = plan.Uefi.ValueBoolPointer()
 	}
 
 	// url
 	if !plan.Url.IsNull() && !plan.Url.IsUnknown() {
-		val := plan.Url.ValueString()
-		reqImage.VirtualImage.Url = &val
+		reqImage.VirtualImage.Url = plan.Url.ValueStringPointer()
 	}
 
 	// user_data
@@ -227,20 +214,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// virtio_supported
 	if !plan.VirtioSupported.IsNull() && !plan.VirtioSupported.IsUnknown() {
-		val := plan.VirtioSupported.ValueBool()
-		reqImage.VirtualImage.VirtioSupported = &val
+		reqImage.VirtualImage.VirtioSupported = plan.VirtioSupported.ValueBoolPointer()
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		val := plan.Visibility.ValueString()
-		reqImage.VirtualImage.Visibility = &val
+		reqImage.VirtualImage.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// vm_tools_installed
 	if !plan.VmToolsInstalled.IsNull() && !plan.VmToolsInstalled.IsUnknown() {
-		val := plan.VmToolsInstalled.ValueBool()
-		reqImage.VirtualImage.VmToolsInstalled = &val
+		reqImage.VirtualImage.VmToolsInstalled = plan.VmToolsInstalled.ValueBoolPointer()
 	}
 
 	image, httpResp, err := client.LibraryAPI.AddVirtualImage(ctx).

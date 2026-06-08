@@ -45,13 +45,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		desc := plan.Description.ValueString()
-		createLB.Description = &desc
+		createLB.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		vis := plan.Visibility.ValueString()
-		createLB.Visibility = &vis
+		createLB.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
@@ -69,8 +67,7 @@ func (r *Resource) Create(
 	}
 
 	if !plan.NetworkServerId.IsNull() && !plan.NetworkServerId.IsUnknown() {
-		nsID := plan.NetworkServerId.ValueInt64()
-		createLB.NetworkServerId = &nsID
+		createLB.NetworkServerId = plan.NetworkServerId.ValueInt64Pointer()
 	}
 
 	if err := setCreateConfig(ctx, createLB, plan); err != nil {
@@ -182,8 +179,7 @@ func setCreateConfig(
 
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
 		if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
-			typeCode := plan.TypeCode.ValueString()
-			createLB.Type = &typeCode
+			createLB.Type = plan.TypeCode.ValueStringPointer()
 		} else {
 			typeCode := typeCodeNSXT
 			createLB.Type = &typeCode
@@ -192,23 +188,19 @@ func setCreateConfig(
 		nsxtConfig := &sdk.NSXTLoadBalancerConfigObject{}
 
 		if !plan.ConfigNsxt.AdminState.IsNull() && !plan.ConfigNsxt.AdminState.IsUnknown() {
-			adminState := plan.ConfigNsxt.AdminState.ValueBool()
-			nsxtConfig.AdminState = &adminState
+			nsxtConfig.AdminState = plan.ConfigNsxt.AdminState.ValueBoolPointer()
 		}
 
 		if !plan.ConfigNsxt.LogLevel.IsNull() && !plan.ConfigNsxt.LogLevel.IsUnknown() {
-			logLevel := plan.ConfigNsxt.LogLevel.ValueString()
-			nsxtConfig.Loglevel = &logLevel
+			nsxtConfig.Loglevel = plan.ConfigNsxt.LogLevel.ValueStringPointer()
 		}
 
 		if !plan.ConfigNsxt.Size.IsNull() && !plan.ConfigNsxt.Size.IsUnknown() {
-			size := plan.ConfigNsxt.Size.ValueString()
-			nsxtConfig.Size = &size
+			nsxtConfig.Size = plan.ConfigNsxt.Size.ValueStringPointer()
 		}
 
 		if !plan.ConfigNsxt.Tier1Gateway.IsNull() && !plan.ConfigNsxt.Tier1Gateway.IsUnknown() {
-			tier1 := plan.ConfigNsxt.Tier1Gateway.ValueString()
-			nsxtConfig.Tier1 = &tier1
+			nsxtConfig.Tier1 = plan.ConfigNsxt.Tier1Gateway.ValueStringPointer()
 		}
 
 		cfg := sdk.CreateLoadBalancerRequestLoadBalancerConfig{}
@@ -216,8 +208,7 @@ func setCreateConfig(
 		createLB.Config = &cfg
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		typeCode := plan.TypeCode.ValueString()
-		createLB.Type = &typeCode
+		createLB.Type = plan.TypeCode.ValueStringPointer()
 
 		configValue := plan.Config.UnderlyingValue()
 		configMap, err := convert.ValueToAny(ctx, configValue)
@@ -282,8 +273,7 @@ func setCreatePermissions(
 	perms := &sdk.CreateLoadBalancerRequestLoadBalancerResourcePermissions{}
 
 	if !plan.Permissions.All.IsNull() && !plan.Permissions.All.IsUnknown() {
-		allVal := plan.Permissions.All.ValueBool()
-		perms.All = &allVal
+		perms.All = plan.Permissions.All.ValueBoolPointer()
 	}
 
 	if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {

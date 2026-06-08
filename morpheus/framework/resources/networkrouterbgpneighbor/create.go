@@ -92,8 +92,7 @@ func (r *Resource) Create(
 
 	if !plan.BfdEnabled.IsNull() && !plan.BfdEnabled.IsUnknown() {
 		bfdVal := sdk.CreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborBfdEnabled{}
-		boolVal := plan.BfdEnabled.ValueBool()
-		bfdVal.Bool = &boolVal
+		bfdVal.Bool = plan.BfdEnabled.ValueBoolPointer()
 		neighbor.BfdEnabled = &bfdVal
 	}
 
@@ -107,8 +106,7 @@ func (r *Resource) Create(
 
 	if !plan.AllowAsIn.IsNull() && !plan.AllowAsIn.IsUnknown() {
 		allowVal := sdk.CreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborAllowAsIn{}
-		boolVal := plan.AllowAsIn.ValueBool()
-		allowVal.Bool = &boolVal
+		allowVal.Bool = plan.AllowAsIn.ValueBoolPointer()
 		neighbor.AllowAsIn = &allowVal
 	}
 

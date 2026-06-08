@@ -35,8 +35,7 @@ func (r *Resource) Update(
 
 	// Set all updateable fields from plan
 	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
-		displayName := plan.DisplayName.ValueString()
-		network.DisplayName = &displayName
+		network.DisplayName = plan.DisplayName.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
@@ -45,28 +44,23 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
-		cidr := plan.Cidr.ValueString()
-		network.Cidr = &cidr
+		network.Cidr = plan.Cidr.ValueStringPointer()
 	}
 
 	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
-		gateway := plan.Gateway.ValueString()
-		network.Gateway = &gateway
+		network.Gateway = plan.Gateway.ValueStringPointer()
 	}
 
 	if !plan.DnsPrimary.IsNull() && !plan.DnsPrimary.IsUnknown() {
-		dnsPrimary := plan.DnsPrimary.ValueString()
-		network.DnsPrimary = &dnsPrimary
+		network.DnsPrimary = plan.DnsPrimary.ValueStringPointer()
 	}
 
 	if !plan.DnsSecondary.IsNull() && !plan.DnsSecondary.IsUnknown() {
-		dnsSecondary := plan.DnsSecondary.ValueString()
-		network.DnsSecondary = &dnsSecondary
+		network.DnsSecondary = plan.DnsSecondary.ValueStringPointer()
 	}
 
 	if !plan.VlanId.IsNull() && !plan.VlanId.IsUnknown() {
-		vlanID := plan.VlanId.ValueInt64()
-		network.VlanId = &vlanID
+		network.VlanId = plan.VlanId.ValueInt64Pointer()
 	}
 
 	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
@@ -80,38 +74,31 @@ func (r *Resource) Update(
 	}
 
 	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
-		allowStaticOverride := plan.AllowStaticOverride.ValueBool()
-		network.AllowStaticOverride = &allowStaticOverride
+		network.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
 	}
 
 	if !plan.AssignPublicIp.IsNull() && !plan.AssignPublicIp.IsUnknown() {
-		assignPublicIP := plan.AssignPublicIp.ValueBool()
-		network.AssignPublicIp = &assignPublicIP
+		network.AssignPublicIp = plan.AssignPublicIp.ValueBoolPointer()
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		active := plan.Active.ValueBool()
-		network.Active = &active
+		network.Active = plan.Active.ValueBoolPointer()
 	}
 
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
-		dhcpServer := plan.DhcpServer.ValueBool()
-		network.DhcpServer = &dhcpServer
+		network.DhcpServer = plan.DhcpServer.ValueBoolPointer()
 	}
 
 	if !plan.SearchDomains.IsNull() && !plan.SearchDomains.IsUnknown() {
-		searchDomains := plan.SearchDomains.ValueString()
-		network.SearchDomains = &searchDomains
+		network.SearchDomains = plan.SearchDomains.ValueStringPointer()
 	}
 
 	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
-		switchID := plan.SwitchId.ValueString()
-		network.SwitchId = &switchID
+		network.SwitchId = plan.SwitchId.ValueStringPointer()
 	}
 
 	if !plan.ApplianceUrlProxyBypass.IsNull() && !plan.ApplianceUrlProxyBypass.IsUnknown() {
-		applianceURLProxyBypass := plan.ApplianceUrlProxyBypass.ValueBool()
-		network.ApplianceUrlProxyBypass = &applianceURLProxyBypass
+		network.ApplianceUrlProxyBypass = plan.ApplianceUrlProxyBypass.ValueBoolPointer()
 	}
 
 	if !plan.NoProxy.IsNull() && !plan.NoProxy.IsUnknown() {
@@ -120,8 +107,7 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		visibility := plan.Visibility.ValueString()
-		network.Visibility = &visibility
+		network.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {

@@ -43,18 +43,15 @@ func (r *Resource) Create(
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		desc := plan.Description.ValueString()
-		ruleGroup.Description = &desc
+		ruleGroup.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		priority := plan.Priority.ValueInt64()
-		ruleGroup.Priority = &priority
+		ruleGroup.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	if !plan.GroupLayer.IsNull() && !plan.GroupLayer.IsUnknown() {
-		layer := plan.GroupLayer.ValueString()
-		ruleGroup.GroupLayer = &layer
+		ruleGroup.GroupLayer = plan.GroupLayer.ValueStringPointer()
 	}
 
 	createReq := &sdk.CreateNetworkFirewallRuleGroupRequest{

@@ -84,8 +84,7 @@ func (r *Resource) Create(
 
 	// Set enabled
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		router.Enabled = &enabled
+		router.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	// Set zone (cloud_id) if provided

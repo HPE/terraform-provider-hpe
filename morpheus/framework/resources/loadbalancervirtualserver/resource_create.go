@@ -44,38 +44,31 @@ func (r *Resource) Create(
 	instance := &sdk.CreateLoadBalancerVirtualServerRequestLoadBalancerInstance{}
 
 	if !plan.VipName.IsNull() && !plan.VipName.IsUnknown() {
-		val := plan.VipName.ValueString()
-		instance.VipName = &val
+		instance.VipName = plan.VipName.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		val := plan.Description.ValueString()
-		instance.Description = &val
+		instance.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.VipAddress.IsNull() && !plan.VipAddress.IsUnknown() {
-		val := plan.VipAddress.ValueString()
-		instance.VipAddress = &val
+		instance.VipAddress = plan.VipAddress.ValueStringPointer()
 	}
 
 	if !plan.VipPort.IsNull() && !plan.VipPort.IsUnknown() {
-		val := plan.VipPort.ValueInt64()
-		instance.VipPort = &val
+		instance.VipPort = plan.VipPort.ValueInt64Pointer()
 	}
 
 	if !plan.VipProtocol.IsNull() && !plan.VipProtocol.IsUnknown() {
-		val := plan.VipProtocol.ValueString()
-		instance.VipProtocol = &val
+		instance.VipProtocol = plan.VipProtocol.ValueStringPointer()
 	}
 
 	if !plan.VipHostname.IsNull() && !plan.VipHostname.IsUnknown() {
-		val := plan.VipHostname.ValueString()
-		instance.VipHostname = &val
+		instance.VipHostname = plan.VipHostname.ValueStringPointer()
 	}
 
 	if !plan.VipType.IsNull() && !plan.VipType.IsUnknown() {
-		val := plan.VipType.ValueString()
-		instance.VipType = &val
+		instance.VipType = plan.VipType.ValueStringPointer()
 	}
 
 	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {
@@ -84,13 +77,11 @@ func (r *Resource) Create(
 	}
 
 	if !plan.SslCert.IsNull() && !plan.SslCert.IsUnknown() {
-		val := plan.SslCert.ValueInt64()
-		instance.SslCert = &val
+		instance.SslCert = plan.SslCert.ValueInt64Pointer()
 	}
 
 	if !plan.SslServerCert.IsNull() && !plan.SslServerCert.IsUnknown() {
-		val := plan.SslServerCert.ValueInt64()
-		instance.SslServerCert = &val
+		instance.SslServerCert = plan.SslServerCert.ValueInt64Pointer()
 	}
 
 	if err := setCreateConfig(ctx, instance, plan); err != nil {

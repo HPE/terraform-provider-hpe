@@ -87,23 +87,19 @@ func (r *Resource) Create(
 	route.Destination = plan.Destination.ValueString()
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		name := plan.Name.ValueString()
-		route.Name = &name
+		route.Name = plan.Name.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		description := plan.Description.ValueString()
-		route.Description = &description
+		route.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		route.Enabled = &enabled
+		route.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.DefaultRoute.IsNull() && !plan.DefaultRoute.IsUnknown() {
-		defaultRoute := plan.DefaultRoute.ValueBool()
-		route.DefaultRoute = &defaultRoute
+		route.DefaultRoute = plan.DefaultRoute.ValueBoolPointer()
 	}
 
 	if !plan.NetworkMtu.IsNull() && !plan.NetworkMtu.IsUnknown() {
