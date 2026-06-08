@@ -573,11 +573,18 @@ func mapPolicyConfigToState(
 		}
 
 	case "tags":
+		if apiConfig.TagsPolicyTypeConfiguration3 == nil {
+			diags.AddError("Failed to parse tag policy configuration",
+				"The API returned a tag policy with no configuration data")
+
+			return diags
+		}
+
 		tagsAttrs := map[string]attr.Value{
 			"key":           convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.Key),
 			"strict":        types.BoolValue(apiConfig.TagsPolicyTypeConfiguration3.Strict),
-			"value":         convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.Value),
-			"value_list_id": convert.StrToType(apiConfig.TagsPolicyTypeConfiguration3.ValueListId),
+			"value":         convert.StrToTypeEmptyAsNull(apiConfig.TagsPolicyTypeConfiguration3.Value),
+			"value_list_id": convert.StrToTypeZeroIDAsNull(apiConfig.TagsPolicyTypeConfiguration3.ValueListId),
 		}
 
 		tagsValue, tagsDiags := NewConfigTagsValue(ConfigTagsValue{}.AttributeTypes(ctx), tagsAttrs)

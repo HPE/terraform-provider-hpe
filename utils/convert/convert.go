@@ -23,6 +23,30 @@ func StrToType(s *string) types.String {
 	return types.StringValue(*s)
 }
 
+// StrToTypeEmptyAsNull converts a *string to types.String, treating
+// empty strings as null. Use for optional text fields where "" semantically
+// means "not set" (common in Morpheus policy configs created by the UI or
+// community provider).
+func StrToTypeEmptyAsNull(s *string) types.String {
+	if s == nil || *s == "" {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
+}
+
+// StrToTypeZeroIDAsNull converts a *string to types.String, treating
+// "0" and "" as null. Use for optional reference ID fields where "0" is a
+// sentinel meaning "no reference" (common when migrating from the community
+// provider which sends TypeInt 0 for unset optional IDs).
+func StrToTypeZeroIDAsNull(s *string) types.String {
+	if s == nil || *s == "" || *s == "0" {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
+}
+
 func StrSliceToSet(items []string) types.Set {
 	if len(items) == 0 {
 		return types.SetNull(types.StringType)
