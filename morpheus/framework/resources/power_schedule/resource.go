@@ -126,7 +126,12 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	mapAddResponseToModel(&plan, result.Schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+		return
+	}
+	mapAddResponseToModel(&plan, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -165,7 +170,12 @@ func (r *powerScheduleResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	mapGetResponseToModel(&state, result.Schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+		return
+	}
+	mapGetResponseToModel(&state, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -260,7 +270,12 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	mapUpdateResponseToModel(&plan, result.Schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+		return
+	}
+	mapUpdateResponseToModel(&plan, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

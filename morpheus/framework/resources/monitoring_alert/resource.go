@@ -88,6 +88,10 @@ func (r *monitoringAlertResource) Create(
 	}
 
 	alert := result.Alert
+	if alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+		return
+	}
 	mapAlertResponseToModel(&plan, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -122,6 +126,10 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	alert := result.Alert
+	if alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+		return
+	}
 	mapGetAlertResponseToModel(&state, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -177,6 +185,10 @@ func (r *monitoringAlertResource) Update(
 	}
 
 	alert := result.Alert
+	if alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+		return
+	}
 	mapGetAlertResponseToModel(&plan, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

@@ -85,6 +85,10 @@ func (r *monitoringGroupResource) Create(
 	}
 
 	group := result.CheckGroup
+	if group == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+		return
+	}
 	mapAddGroupResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -119,6 +123,10 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	group := result.CheckGroup
+	if group == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+		return
+	}
 	mapGetGroupResponseToModel(&state, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -172,6 +180,10 @@ func (r *monitoringGroupResource) Update(
 	}
 
 	group := result.CheckGroup
+	if group == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+		return
+	}
 	mapUpdateGroupResponseToModel(&plan, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
