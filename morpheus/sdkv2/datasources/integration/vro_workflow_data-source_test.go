@@ -29,8 +29,6 @@ func TestAccMorpheusDataSourceVroWorkflowExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to missing infrastructure in test environment")
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())

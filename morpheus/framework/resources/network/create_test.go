@@ -632,7 +632,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 // TestAccMorpheusNetworkResourceCreateOVSPortGroup tests creating an OVS Port Group network
 // for cloud ID 7714.
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NetworkDHCP) {
+	if capabilities.Missing(t, capabilities.HVM) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
@@ -641,8 +641,6 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-
-	t.Skip("Skipping due to missing infrastructure in test environment")
 
 	// nolint: goconst
 	providerConfig := testhelpers.ProviderBlock()

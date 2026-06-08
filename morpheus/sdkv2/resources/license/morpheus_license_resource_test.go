@@ -36,12 +36,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusLicenseExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
+	if capabilities.Missing(t, capabilities.License) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
-	t.Skip("Skipping due to lack of available resources to test against")
 
 	t.Parallel()
 
