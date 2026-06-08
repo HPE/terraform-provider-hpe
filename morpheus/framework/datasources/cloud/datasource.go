@@ -66,6 +66,9 @@ func getCloudByID(
 	}
 
 	cloud := c.Zone
+	if cloud == nil {
+		return fmt.Errorf("API response was missing the expected Zone object for cloud %d", id)
+	}
 
 	data.Id = convert.Int64ToType(cloud.Id)
 	data.Name = convert.StrToType(cloud.Name)

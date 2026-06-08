@@ -124,6 +124,10 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	sg := result.SecurityGroup
+	if sg == nil {
+		resp.Diagnostics.AddError("API returned nil", "SecurityGroup is nil in the response")
+		return
+	}
 	if sg.Id == nil {
 		resp.Diagnostics.AddError("Create Error", "Security group ID not returned")
 
@@ -323,6 +327,10 @@ func (r *securityGroupResource) getSecurityGroupAsState(
 	}
 
 	sg := result.SecurityGroup
+	if sg == nil {
+		diags.AddError("API returned nil", "SecurityGroup is nil in the response")
+		return nil, diags
+	}
 	var model SecurityGroupModel
 	mapResponseToModel(&model, sg)
 

@@ -67,6 +67,9 @@ func getEnvironmentByID(
 	}
 
 	environment := e.Environment
+	if environment == nil {
+		return fmt.Errorf("API response was missing the expected Environment object for environment %d", id)
+	}
 
 	data.Active = convert.BoolToType(environment.Active)
 	data.Code = convert.StrToType(environment.Code)

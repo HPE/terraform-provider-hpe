@@ -325,6 +325,10 @@ func (r *vdiPoolResource) getVdiPoolAsState(
 	}
 
 	pool := result.VdiPool
+	if pool == nil {
+		diags.AddError("API returned nil", "VdiPool is nil in the response")
+		return nil, diags
+	}
 	var model vdiPoolModel
 	mapGetResponseToModel(&model, pool)
 

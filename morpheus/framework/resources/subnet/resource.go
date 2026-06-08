@@ -162,6 +162,10 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+		return
+	}
 	if subnet.Id == nil {
 		resp.Diagnostics.AddError("create subnet resource", "API returned a subnet with no ID")
 
@@ -223,6 +227,10 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+		return
+	}
 	mapResponseToModel(&state, subnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

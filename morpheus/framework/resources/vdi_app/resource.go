@@ -70,6 +70,10 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	app := result.AddVDIApps200ResponseAnyOf.VdiApp
+	if app == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+		return
+	}
 	mapCreateResponseToModel(&plan, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -104,6 +108,10 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	app := result.VdiApp
+	if app == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+		return
+	}
 	mapGetResponseToModel(&state, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -145,6 +153,10 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	app := result.UpdateVDIApps200ResponseAnyOf.VdiApp
+	if app == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+		return
+	}
 	mapUpdateResponseToModel(&plan, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

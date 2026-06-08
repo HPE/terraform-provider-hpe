@@ -150,6 +150,10 @@ func (r *Resource) Create(
 			}
 		}
 
+		if response == nil || response.Datastore == nil {
+			return nil, backoff.Permanent(fmt.Errorf("missing datastore in response"))
+		}
+
 		status := response.Datastore.Status
 
 		return response, checkStatusDone(

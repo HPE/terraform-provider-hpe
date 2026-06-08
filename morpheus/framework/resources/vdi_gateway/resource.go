@@ -72,6 +72,10 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	gw := result.AddVDIGateways200ResponseAnyOf.VdiGateway
+	if gw == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiGateway is nil in the response")
+		return
+	}
 	mapCreateResponseToModel(&plan, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -106,6 +110,10 @@ func (r *vdiGatewayResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	gw := result.VdiGateway
+	if gw == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiGateway is nil in the response")
+		return
+	}
 	mapGetResponseToModel(&state, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -146,6 +154,10 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	gw := result.UpdateVDIGateways200ResponseAnyOf.VdiGateway
+	if gw == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiGateway is nil in the response")
+		return
+	}
 	mapUpdateResponseToModel(&plan, gw)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

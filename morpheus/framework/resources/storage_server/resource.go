@@ -187,6 +187,9 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		}
 
 		ss := response.StorageServer
+		if ss == nil {
+			return response, backoff.RetryAfter(5)
+		}
 		if status := ss.Status.Get(); status != nil {
 			return response, checkStatusDone(*status)
 		}
@@ -357,6 +360,9 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 
 		ss := response.StorageServer
+		if ss == nil {
+			return response, backoff.RetryAfter(5)
+		}
 		if status := ss.Status.Get(); status != nil {
 			return response, checkStatusDone(*status)
 		}

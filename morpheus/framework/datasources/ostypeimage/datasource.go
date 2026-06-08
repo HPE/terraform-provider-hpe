@@ -134,6 +134,10 @@ func (d *DataSource) Read(
 	}
 
 	img := imgResp.OsTypeImage
+	if img == nil {
+		resp.Diagnostics.AddError("API returned nil", "OsTypeImage is nil in the response")
+		return
+	}
 
 	data.Id = convert.Int64ToType(img.Id)
 	data.VirtualImageId = convert.Int64ToType(img.VirtualImageId)
