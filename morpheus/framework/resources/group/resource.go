@@ -72,6 +72,12 @@ func getGroupAsState(
 		return state, diags
 	}
 
+	if g.Group == nil {
+		diags.AddError("API returned nil", "Group is nil in the response")
+
+		return state, diags
+	}
+
 	state.Id = convert.Int64ToType(g.Group.Id)
 	state.Name = convert.StrToType(g.Group.Name)
 	state.Code = convert.StrToType(g.Group.Code.Get())
@@ -206,6 +212,12 @@ func (r *Resource) Create(
 			"create group resource",
 			"group "+name+" POST failed: "+errfmt.ErrMsg(err, hresp),
 		)
+
+		return
+	}
+
+	if group.Group == nil {
+		resp.Diagnostics.AddError("API returned nil", "Group is nil in the response")
 
 		return
 	}
@@ -350,6 +362,12 @@ func (r *Resource) Update(
 			"update group resource",
 			"group "+name+" PUT failed: "+errfmt.ErrMsg(err, hresp),
 		)
+
+		return
+	}
+
+	if group.Group == nil {
+		resp.Diagnostics.AddError("API returned nil", "Group is nil in the response")
 
 		return
 	}

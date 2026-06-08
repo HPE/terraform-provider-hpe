@@ -85,6 +85,12 @@ func getUserAsState(
 		return state, diags
 	}
 
+	if u.User == nil {
+		diags.AddError("API returned nil", "User is nil in the response")
+
+		return state, diags
+	}
+
 	roleIDValues := []attr.Value{}
 	for _, role := range u.User.Roles {
 		roleIDValues = append(roleIDValues, convert.Int64ToType(role.Id))
@@ -209,7 +215,13 @@ func (r *Resource) Create(
 		return
 	}
 
-	if user.User == nil || user.User.Id == nil {
+	if user.User == nil {
+		resp.Diagnostics.AddError("API returned nil", "User is nil in the response")
+
+		return
+	}
+
+	if user.User.Id == nil {
 		resp.Diagnostics.AddError(
 			"create user resource",
 			"user "+username+": id is nil",

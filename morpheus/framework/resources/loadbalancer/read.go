@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -75,7 +76,7 @@ func getLoadBalancerAsState(
 	// Set config based on the load balancer type code from the API.
 	switch {
 	case isHAProxy:
-		haproxyCfg, err := parseHAProxyConfig(ctx, data.Config)
+		haproxyCfg, err := parseHAProxyConfig(ctx, getsafe.GetSafe(&data.Config))
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
 		}

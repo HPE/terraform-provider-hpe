@@ -101,6 +101,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if !result.Id.IsSet() || result.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
 	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
@@ -140,52 +146,57 @@ func getNatAsState(
 	}
 
 	nat := resp.NetworkRouterNAT
+	if nat == nil {
+		diags.AddError("API returned nil", "NetworkRouterNAT is nil in the response")
 
-	if nat != nil && nat.Id != nil {
+		return state, diags
+	}
+
+	if nat.Id != nil {
 		state.Id = types.Int64Value(int64(*nat.Id))
 	}
 
 	state.RouterId = plan.RouterId
 
-	if nat != nil && nat.Name != nil {
+	if nat.Name != nil {
 		state.Name = types.StringValue(*nat.Name)
 	}
 
-	if nat != nil && nat.Description != nil {
+	if nat.Description != nil {
 		state.Description = types.StringValue(*nat.Description)
 	} else {
 		state.Description = types.StringNull()
 	}
 
-	if nat != nil && nat.Enabled != nil {
+	if nat.Enabled != nil {
 		state.Enabled = types.BoolValue(*nat.Enabled)
 	}
 
-	if nat != nil && nat.SourceNetwork != nil {
+	if nat.SourceNetwork != nil {
 		state.SourceNetwork = types.StringValue(*nat.SourceNetwork)
 	} else {
 		state.SourceNetwork = types.StringNull()
 	}
 
-	if nat != nil && nat.DestinationNetwork.IsSet() {
+	if nat.DestinationNetwork.IsSet() {
 		state.DestinationNetwork = types.StringValue(*nat.DestinationNetwork.Get())
 	} else {
 		state.DestinationNetwork = types.StringNull()
 	}
 
-	if nat != nil && nat.TranslatedNetwork != nil {
+	if nat.TranslatedNetwork != nil {
 		state.TranslatedNetwork = types.StringValue(*nat.TranslatedNetwork)
 	} else {
 		state.TranslatedNetwork = types.StringNull()
 	}
 
-	if nat != nil && nat.Priority != nil {
+	if nat.Priority != nil {
 		state.Priority = types.Int64Value(int64(*nat.Priority))
 	} else {
 		state.Priority = types.Int64Null()
 	}
 
-	if nat != nil && nat.Protocol.IsSet() {
+	if nat.Protocol.IsSet() {
 		state.Protocol = types.StringValue(*nat.Protocol.Get())
 	} else {
 		state.Protocol = types.StringNull()

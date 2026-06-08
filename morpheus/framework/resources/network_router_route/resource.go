@@ -127,6 +127,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if !result.Id.IsSet() || result.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
 	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
@@ -166,42 +172,47 @@ func getRouteAsState(
 	}
 
 	route := resp.NetworkRoute
+	if route == nil {
+		diags.AddError("API returned nil", "NetworkRoute is nil in the response")
 
-	if route != nil && route.Id != nil {
+		return state, diags
+	}
+
+	if route.Id != nil {
 		state.Id = types.Int64Value(*route.Id)
 	}
 
 	state.RouterId = plan.RouterId
 
-	if route != nil && route.Name != nil {
+	if route.Name != nil {
 		state.Name = types.StringValue(*route.Name)
 	} else {
 		state.Name = types.StringNull()
 	}
 
-	if route != nil && route.Description.IsSet() {
+	if route.Description.IsSet() {
 		state.Description = types.StringValue(*route.Description.Get())
 	} else {
 		state.Description = types.StringNull()
 	}
 
-	if route != nil && route.Source != nil {
+	if route.Source != nil {
 		state.Source = types.StringValue(*route.Source)
 	}
 
-	if route != nil && route.Destination != nil {
+	if route.Destination != nil {
 		state.Destination = types.StringValue(*route.Destination)
 	}
 
-	if route != nil && route.DefaultRoute != nil {
+	if route.DefaultRoute != nil {
 		state.DefaultRoute = types.BoolValue(*route.DefaultRoute)
 	}
 
-	if route != nil && route.Enabled != nil {
+	if route.Enabled != nil {
 		state.Enabled = types.BoolValue(*route.Enabled)
 	}
 
-	if route != nil && route.NetworkMtu.IsSet() {
+	if route.NetworkMtu.IsSet() {
 		state.NetworkMtu = types.Float64Value(float64(*route.NetworkMtu.Get()))
 	} else {
 		state.NetworkMtu = types.Float64Null()

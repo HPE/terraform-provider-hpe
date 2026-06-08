@@ -82,6 +82,11 @@ func getNetworkFirewallRuleGroupAsState(
 	}
 
 	ruleGroup := getResp.RuleGroup
+	if ruleGroup == nil {
+		diags.AddError("API returned nil", "RuleGroup is nil in the response")
+
+		return state, false, diags
+	}
 
 	state.Id = convert.Int64ToType(ruleGroup.Id)
 	state.Name = convert.StrToType(ruleGroup.Name)

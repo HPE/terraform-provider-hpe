@@ -156,7 +156,13 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	ss := result.StorageServer
-	if ss == nil || ss.Id == nil {
+	if ss == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageServer is nil in the response")
+
+		return
+	}
+
+	if ss.Id == nil {
 		resp.Diagnostics.AddError("Create Error", "Storage server ID not returned")
 
 		return
@@ -256,6 +262,12 @@ func (r *storageServerResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	ss := result.StorageServer
+	if ss == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageServer is nil in the response")
+
+		return
+	}
+
 	mapGetResponseToModel(ctx, &state, ss, &resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

@@ -85,6 +85,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if !createResp.Id.IsSet() || createResp.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
 	createdID := *createResp.Id.Get()
 	plan.Id = types.Int64Value(createdID)
 

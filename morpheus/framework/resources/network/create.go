@@ -299,7 +299,13 @@ func (r *Resource) Create(
 		return
 	}
 
-	if network.Network == nil || network.Network.Id == nil {
+	if network.Network == nil {
+		resp.Diagnostics.AddError("API returned nil", "Network is nil in the response")
+
+		return
+	}
+
+	if network.Network.Id == nil {
 		resp.Diagnostics.AddError(
 			"create network resource",
 			"network "+name+": id is nil",

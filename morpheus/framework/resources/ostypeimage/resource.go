@@ -96,7 +96,13 @@ func getOsTypeImageAsState(
 	}
 
 	vi := viResp.VirtualImage
-	if vi != nil && vi.OsType != nil && vi.OsType.Id != nil {
+	if vi == nil {
+		diags.AddError("API returned nil", "VirtualImage is nil in the response")
+
+		return state, diags
+	}
+
+	if vi.OsType != nil && vi.OsType.Id != nil {
 		state.OsTypeId = types.Int64Value(*vi.OsType.Id)
 	}
 

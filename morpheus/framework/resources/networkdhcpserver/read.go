@@ -56,6 +56,11 @@ func getNetworkDhcpServerAsState(
 	}
 
 	raw := dhcpResp.NetworkDhcpServer
+	if raw == nil {
+		diags.AddError("API returned nil", "NetworkDhcpServer is nil in the response")
+
+		return state, diags
+	}
 
 	encoded, err := json.Marshal(raw)
 	if err != nil {
