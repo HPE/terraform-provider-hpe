@@ -175,6 +175,18 @@ func (r *Resource) Update(
 		return
 	}
 
+	if taskResp.Task == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task is nil in the response")
+
+		return
+	}
+
+	if taskResp.Task.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task ID is nil in the response")
+
+		return
+	}
+
 	// set the ID value in state
 	plan.Id = convert.Int64ToType(taskResp.Task.Id)
 

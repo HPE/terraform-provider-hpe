@@ -230,9 +230,19 @@ func (r *Resource) Update(
 		return
 	}
 	// set the ID value in state
-	if image.VirtualImage != nil {
-		plan.Id = convert.Int64ToType(image.VirtualImage.Id)
+	if image.VirtualImage == nil {
+		resp.Diagnostics.AddError("API returned nil", "VirtualImage is nil in the response")
+
+		return
 	}
+
+	if image.VirtualImage.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "VirtualImage ID is nil in the response")
+
+		return
+	}
+
+	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {

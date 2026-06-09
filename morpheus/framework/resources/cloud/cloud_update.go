@@ -438,7 +438,13 @@ func (r *Resource) Update(
 		return
 	}
 
-	if cloud.Zone == nil || cloud.Zone.Id == nil {
+	if cloud.Zone == nil {
+		resp.Diagnostics.AddError("API returned nil", "Zone is nil in the response")
+
+		return
+	}
+
+	if cloud.Zone.Id == nil {
 		resp.Diagnostics.AddError(
 			updateOperation,
 			"cloud "+name+": id is nil",
