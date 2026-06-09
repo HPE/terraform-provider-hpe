@@ -26,7 +26,6 @@ type networkPoolModel struct {
 	IpRanges      types.Object `tfsdk:"ip_ranges"`
 }
 
-// nolint:unused
 type ipRangesModel struct {
 	StartingAddress types.String `tfsdk:"starting_address"`
 	EndingAddress   types.String `tfsdk:"ending_address"`
