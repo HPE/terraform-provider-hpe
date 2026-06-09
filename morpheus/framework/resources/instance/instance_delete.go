@@ -76,8 +76,8 @@ func (g *Resource) Delete(
 		return
 	}
 
-	instance, ok := ret.GetInstanceOk()
-	if !ok || instance == nil {
+	instance := ret.Instance
+	if instance == nil {
 		resp.Diagnostics.AddError(
 			"delete instance resource",
 			fmt.Sprintf("instance %d: GET returned empty instance", id),
@@ -87,8 +87,8 @@ func (g *Resource) Delete(
 	}
 
 	// Get serverId(s).  At the moment we only support a single server per instance, but we'll loop just in case
-	containers, ok := instance.GetContainerDetailsOk()
-	if !ok || containers == nil {
+	containers := instance.ContainerDetails
+	if containers == nil {
 		resp.Diagnostics.AddError(
 			"delete instance resource",
 			fmt.Sprintf("instance %d: GET returned empty containers", id),
@@ -99,8 +99,8 @@ func (g *Resource) Delete(
 
 	serverIds := make([]int64, 0)
 	for _, container := range containers {
-		server, ok := container.GetServerOk()
-		if !ok || server == nil {
+		server := container.Server
+		if server == nil {
 			resp.Diagnostics.AddError(
 				"delete instance resource",
 				fmt.Sprintf("instance %d: GET returned empty server in container", id),
@@ -109,8 +109,8 @@ func (g *Resource) Delete(
 			return
 		}
 
-		serverId, ok := server.GetIdOk()
-		if !ok || serverId == nil {
+		serverId := server.Id
+		if serverId == nil {
 			resp.Diagnostics.AddError(
 				"delete instance resource",
 				fmt.Sprintf("instance %d: GET returned empty server ID in container", id),
@@ -149,18 +149,17 @@ func (g *Resource) Delete(
 				}
 			}
 
-			server, ok := resp.GetServerOk()
-			if !ok || server == nil {
+			server := resp.Server
+			if server == nil {
 				return nil, backoff.Permanent(fmt.Errorf("instance %d: GET server %d returned empty server", id, serverId))
 			}
 
-			status, ok := server.GetStatusOk()
-			if !ok || status == nil {
+			if server.Status == nil {
 				return nil, backoff.Permanent(fmt.Errorf("instance %d: GET server %d returned empty status", id, serverId))
 			}
 
 			return resp, checkStatusDone(
-				*status,
+				*server.Status,
 				[]string{"provisioned", "stopped"},
 				StopErrorStatuses,
 			)
@@ -214,18 +213,17 @@ func (g *Resource) Delete(
 				return nil, nil
 			}
 
-			server, ok := resp.GetServerOk()
-			if !ok || server == nil {
+			server := resp.Server
+			if server == nil {
 				return nil, backoff.Permanent(fmt.Errorf("instance %d: GET server %d returned empty server", id, serverId))
 			}
 
-			status, ok := server.GetStatusOk()
-			if !ok || status == nil {
+			if server.Status == nil {
 				return nil, backoff.Permanent(fmt.Errorf("instance %d: GET server %d returned empty status", id, serverId))
 			}
 
 			return resp, checkStatusDone(
-				*status,
+				*server.Status,
 				nil,
 				StopErrorStatuses,
 			)
@@ -274,20 +272,17 @@ func (g *Resource) Delete(
 			return nil, nil
 		}
 
-		// Get instance
-		instance, ok := resp.GetInstanceOk()
-		if !ok || instance == nil {
+		instance := resp.Instance
+		if instance == nil {
 			return nil, backoff.Permanent(fmt.Errorf("instance %d: GET returned empty instance", id))
 		}
 
-		// Get status
-		status, ok := instance.GetStatusOk()
-		if !ok || status == nil {
+		if instance.Status == nil {
 			return nil, backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", id))
 		}
 
 		return resp, checkStatusDone(
-			*status,
+			*instance.Status,
 			nil,
 			DeleteErrorStatuses,
 		)

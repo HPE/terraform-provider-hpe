@@ -124,8 +124,13 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	job := result.GetJob()
-	mapGetResponseToModel(&state, &job)
+	job := result.Job
+	if job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

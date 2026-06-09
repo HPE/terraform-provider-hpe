@@ -134,15 +134,21 @@ func getVirtualServerAsState(
 		return state, "", nil, diags
 	}
 
-	vs := resp.GetLoadBalancerInstance()
+	vs := resp.LoadBalancerInstance
+	if vs == nil {
+		diags.AddError(
+			"error reading load balancer virtual server",
+			fmt.Sprintf("load balancer %d virtual server %d response did not contain an instance", loadBalancerID, id),
+		)
+
+		return state, "", nil, diags
+	}
 
 	// Extract the load balancer type code for config discrimination.
 	lbTypeCode := ""
-	if vs.LoadBalancer != nil {
-		if lbType, ok := vs.LoadBalancer.GetTypeOk(); ok && lbType != nil {
-			if code, ok := lbType.GetCodeOk(); ok && code != nil {
-				lbTypeCode = *code
-			}
+	if vs.LoadBalancer != nil && vs.LoadBalancer.Type != nil {
+		if code := vs.LoadBalancer.Type.Code; code != nil {
+			lbTypeCode = *code
 		}
 	}
 
@@ -188,28 +194,28 @@ func getVirtualServerAsState(
 	state.VipType = convert.StrToType(vs.VipType.Get())
 
 	// Dates
-	if dc, ok := vs.GetDateCreatedOk(); ok && dc != nil {
-		state.DateCreated = types.StringValue(dc.String())
+	if vs.DateCreated != nil {
+		state.DateCreated = types.StringValue(vs.DateCreated.String())
 	} else {
 		state.DateCreated = types.StringNull()
 	}
 
-	if lu, ok := vs.GetLastUpdatedOk(); ok && lu != nil {
-		state.LastUpdated = types.StringValue(lu.String())
+	if vs.LastUpdated != nil {
+		state.LastUpdated = types.StringValue(vs.LastUpdated.String())
 	} else {
 		state.LastUpdated = types.StringNull()
 	}
 
 	// SSL cert — GET returns an object {id, name}; schema expects Int64.
-	if sslCert, ok := vs.GetSslCertOk(); ok && sslCert != nil {
-		state.SslCert = convert.Int64ToType(sslCert.Id)
+	if vs.SslCert != nil {
+		state.SslCert = convert.Int64ToType(vs.SslCert.Id)
 	} else {
 		state.SslCert = types.Int64Null()
 	}
 
 	// SSL server cert — GET returns an object {id, name}; schema expects Int64.
-	if sslServerCert, ok := vs.GetSslServerCertOk(); ok && sslServerCert != nil {
-		state.SslServerCert = convert.Int64ToType(sslServerCert.Id)
+	if vs.SslServerCert != nil {
+		state.SslServerCert = convert.Int64ToType(vs.SslServerCert.Id)
 	} else {
 		state.SslServerCert = types.Int64Null()
 	}
@@ -229,7 +235,7 @@ func getVirtualServerAsState(
 
 	state.LoadBalancer = lb
 
-	return state, lbTypeCode, vs.GetConfig(), diags
+	return state, lbTypeCode, vs.Config, diags
 }
 
 func setConfigFromResponse(
@@ -315,13 +321,13 @@ func buildLoadBalancerValue(
 	// Build the nested type object
 	typeVal := types.ObjectNull(TypeValue{}.AttributeTypes(ctx))
 
-	if lbType, ok := lb.GetTypeOk(); ok && lbType != nil {
+	if lb.Type != nil {
 		tv, d := NewTypeValue(
 			TypeValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"code": convert.StrToType(lbType.Code),
-				"id":   convert.Int64ToType(lbType.Id),
-				"name": convert.StrToType(lbType.Name),
+				"code": convert.StrToType(lb.Type.Code),
+				"id":   convert.Int64ToType(lb.Type.Id),
+				"name": convert.StrToType(lb.Type.Name),
 			},
 		)
 		if d.HasError() {

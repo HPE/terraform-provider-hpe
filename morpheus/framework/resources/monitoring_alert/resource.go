@@ -138,8 +138,13 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	alert := result.GetAlert()
-	mapGetAlertResponseToModel(&state, &alert)
+	alert := result.Alert
+	if alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+
+		return
+	}
+	mapGetAlertResponseToModel(&state, alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

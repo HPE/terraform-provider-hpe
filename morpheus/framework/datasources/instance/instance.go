@@ -95,7 +95,7 @@ func (d *DataSource) Read(
 		var instances []sdk.ListInstances200ResponseAllOfInstancesInner
 
 		for _, instance := range instanceListResp.Instances {
-			if instance.GetName() != name {
+			if instance.Name == nil || *instance.Name != name {
 				continue
 			}
 
@@ -155,7 +155,16 @@ func (d *DataSource) Read(
 			)
 		}
 
-		instance := res.GetInstance()
+		if res.Instance == nil {
+			resp.Diagnostics.AddError(
+				"get instance resource",
+				fmt.Sprintf("instance %d response missing instance data", id),
+			)
+
+			return
+		}
+
+		instance := *res.Instance
 
 		if d := parseAsData(ctx, instance, &data, config); d.HasError() {
 			resp.Diagnostics.Append(d...)
@@ -329,7 +338,7 @@ func parseAsData(
 	// evars
 	evars, d := convert.ToSetType(
 		ctx,
-		instance.GetEvars(),
+		instance.Evars,
 		func(
 			in sdk.AddInstance200ResponseAllOfOneOfInstanceEvarsInner,
 		) EvarsValue {
@@ -407,11 +416,9 @@ func parseAsData(
 	// instance_price
 	data.InstancePrice = NewInstancePriceValueNull()
 	if instance.InstancePrice != nil {
-		currency := instance.InstancePrice.GetCurrency()
-
 		data.InstancePrice = InstancePriceValue{
 			Cost:     convert.NumToType(instance.InstancePrice.Cost),
-			Currency: convert.StrToType(&currency),
+			Currency: convert.StrToType(instance.InstancePrice.Currency),
 			Price:    convert.NumToType(instance.InstancePrice.Price),
 			Unit:     convert.StrToType(instance.InstancePrice.Unit),
 			state:    attr.ValueStateKnown,

@@ -170,7 +170,12 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	license := result.GetLicense()
+	license := result.License
+	if license == nil {
+		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
+		return
+	}
 	if license.Id != nil {
 		state.ID = types.Int64Value(*license.Id)
 	}

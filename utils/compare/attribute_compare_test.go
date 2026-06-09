@@ -165,14 +165,21 @@ func createExamplePlanObjectGeneric(t *testing.T) *examplePlanObject {
 func createExampleFromApiCloudHVM(t *testing.T) *exampleFromApi {
 	// Define a sample configType
 	enableNetworkTypeSelection := convert.BoolToStringOnOff(testEnableNetworkTypeSelection)
+	enableNTS := enableNetworkTypeSelection.ValueString()
+	certProvider := testCertificateProvider
+	applianceUrl := testApplianceUrl
+	consoleKeymap := testConsoleKeymap
+	datacenterName := testDatacenterName
+	externalId := testExternalId
+	inventoryLevel := testInventoryLevel
 	hvmConfig := sdkfuncs.NewHvmCloudConfig()
-	hvmConfig.SetCertificateProvider(testCertificateProvider)
-	hvmConfig.SetApplianceUrl(testApplianceUrl)
-	hvmConfig.SetConsoleKeymap(testConsoleKeymap)
-	hvmConfig.SetDatacenterName(testDatacenterName)
-	hvmConfig.SetEnableNetworkTypeSelection(enableNetworkTypeSelection.ValueString())
-	hvmConfig.SetExternalId(testExternalId)
-	hvmConfig.SetInventoryLevel(testInventoryLevel)
+	hvmConfig.CertificateProvider = &certProvider
+	hvmConfig.ApplianceUrl = &applianceUrl
+	hvmConfig.ConsoleKeymap = &consoleKeymap
+	hvmConfig.DatacenterName = &datacenterName
+	hvmConfig.EnableNetworkTypeSelection = *sdk.NewNullableString(&enableNTS)
+	hvmConfig.ExternalId = *sdk.NewNullableString(&externalId)
+	hvmConfig.InventoryLevel = &inventoryLevel
 
 	fromApiData, err := hvmConfig.ToMap()
 	assert.NoError(t, err)

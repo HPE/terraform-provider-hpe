@@ -211,7 +211,7 @@ func (r *optionListResource) Read(
 		return
 	}
 
-	optionTypes := result.GetOptionTypes()
+	optionTypes := result.OptionTypes
 	if len(optionTypes) == 0 {
 		// SDK field mismatch: API returns "optionTypeList" but SDK expects "optionTypes"
 		if rawOL, ok := result.AdditionalProperties["optionTypeList"]; ok {

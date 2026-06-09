@@ -62,9 +62,7 @@ func getGroupByID(
 		return nil, fmt.Errorf("GET failed for group %d", id)
 	}
 
-	group := g.GetGroup()
-
-	return &group, nil
+	return g.Group, nil
 }
 
 func getGroupByName(
@@ -80,12 +78,16 @@ func getGroupByName(
 	var groups []sdk.ListGroups200ResponseAllOfGroupsInner
 
 	for _, g := range gs.Groups {
-		if g.GetName() == name {
+		if g.Name != nil && *g.Name == name {
 			groups = append(groups, g)
 		}
 	}
 
 	if len(groups) == 1 {
+		if groups[0].Id == nil {
+			return nil, fmt.Errorf("GET failed for group %s", name)
+		}
+
 		return getGroupByID(ctx, *groups[0].Id, apiClient)
 	} else if len(groups) > 1 {
 		return nil, errors.New(consts.ErrorMultipleGroups)

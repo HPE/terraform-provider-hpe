@@ -160,8 +160,13 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	rule := result.GetRule()
-	mapResponseToModel(&state, &rule)
+	rule := result.Rule
+	if rule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&state, rule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

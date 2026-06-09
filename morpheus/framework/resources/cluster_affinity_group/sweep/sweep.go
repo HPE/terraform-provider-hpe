@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_cluster_affinity_group"
@@ -41,8 +41,8 @@ func init() {
 
 			var items []clusterAffinityGroupSweepItem
 
-			for _, cluster := range clusterResp.GetClusters() {
-				clusterID, ok := cluster.GetIdOk()
+			for _, cluster := range clusterResp.Clusters {
+				clusterID, ok := getsafe.GetOk(cluster.Id)
 				if !ok || clusterID == nil {
 					continue
 				}
@@ -53,13 +53,13 @@ func init() {
 					continue
 				}
 
-				for _, ag := range agResp.GetAffinityGroups() {
-					id, ok := ag.GetIdOk()
+				for _, ag := range agResp.AffinityGroups {
+					id, ok := getsafe.GetOk(ag.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := ag.GetNameOk()
+					name, ok := getsafe.GetOk(ag.Name)
 					if !ok || name == nil {
 						continue
 					}

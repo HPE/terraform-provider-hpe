@@ -126,8 +126,13 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapGetResponseToModel(&state, &cert)
+	cert := result.Certificate
+	if cert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

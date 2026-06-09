@@ -101,7 +101,13 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	if !result.Id.IsSet() || result.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
+	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
@@ -139,7 +145,12 @@ func getNatAsState(
 		return state, diags
 	}
 
-	nat := resp.GetNetworkRouterNAT()
+	nat := resp.NetworkRouterNAT
+	if nat == nil {
+		diags.AddError("API returned nil", "NetworkRouterNAT is nil in the response")
+
+		return state, diags
+	}
 
 	if nat.Id != nil {
 		state.Id = types.Int64Value(int64(*nat.Id))

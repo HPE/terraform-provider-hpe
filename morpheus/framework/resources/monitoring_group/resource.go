@@ -135,8 +135,13 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	group := result.GetCheckGroup()
-	mapGetGroupResponseToModel(&state, &group)
+	group := result.CheckGroup
+	if group == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+
+		return
+	}
+	mapGetGroupResponseToModel(&state, group)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

@@ -62,7 +62,7 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	result, httpResp, err := client.VDIAPI.AddVDIApps(ctx).AddVDIAppsRequest(sdk.AddVDIAppsRequest{
-		VdiApp: sdk.AddVDIAppsRequestVdiAppOneOfAsAddVDIAppsRequestVdiApp(&body),
+		VdiApp: sdk.AddVDIAppsRequestVdiApp{AddVDIAppsRequestVdiAppOneOf: &body},
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "vdi_app", plan.Name.ValueString(), err, httpResp)
@@ -120,8 +120,13 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	app := result.GetVdiApp()
-	mapGetResponseToModel(&state, &app)
+	app := result.VdiApp
+	if app == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, app)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

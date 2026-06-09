@@ -144,8 +144,13 @@ func (r *storageBucketResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	sb := result.GetStorageBucket()
-	mapGetResponseToModel(&state, &sb)
+	sb := result.StorageBucket
+	if sb == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, sb)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

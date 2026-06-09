@@ -121,8 +121,13 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapGetResponseToModel(&state, &dep)
+	dep := result.Deployment
+	if dep == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, dep)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

@@ -129,8 +129,13 @@ func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	budget := result.GetBudget()
-	mapGetResponseToModel(&state, &budget)
+	budget := result.Budget
+	if budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

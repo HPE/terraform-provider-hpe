@@ -65,11 +65,11 @@ func populateRoleAsStatePermissions(
 	var features []FeaturePermissionsValue
 	for _, v := range r.FeaturePermissions {
 		features = append(features, FeaturePermissionsValue{
-			Code:        types.StringValue(v.GetCode()),
-			Access:      types.StringValue(v.GetAccess()),
-			Id:          types.Int64Value(v.GetId()),
-			Name:        types.StringValue(v.GetName()),
-			SubCategory: types.StringValue(v.GetSubCategory()),
+			Code:        convert.StrToType(v.Code),
+			Access:      convert.StrToType(v.Access),
+			Id:          convert.Int64ToType(v.Id),
+			Name:        convert.StrToType(v.Name),
+			SubCategory: convert.StrToType(v.SubCategory),
 			state:       attr.ValueStateKnown,
 		})
 	}
@@ -77,9 +77,9 @@ func populateRoleAsStatePermissions(
 	var blueprints []BlueprintPermissionsValue
 	for _, v := range r.AppTemplatePermissions {
 		blueprints = append(blueprints, BlueprintPermissionsValue{
-			Name:   types.StringValue(v.GetName()),
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
+			Name:   convert.StrToType(v.Name),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -87,9 +87,9 @@ func populateRoleAsStatePermissions(
 	var catalogItemTypes []CatalogItemTypePermissionsValue
 	for _, v := range r.CatalogItemTypePermissions {
 		catalogItemTypes = append(catalogItemTypes, CatalogItemTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -97,9 +97,9 @@ func populateRoleAsStatePermissions(
 	var clouds []CloudPermissionsValue
 	for _, v := range r.Zones {
 		clouds = append(clouds, CloudPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -107,9 +107,9 @@ func populateRoleAsStatePermissions(
 	var groups []GroupPermissionsValue
 	for _, v := range r.Sites {
 		groups = append(groups, GroupPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Access: types.StringValue(v.GetAccess()),
-			Name:   types.StringValue(v.GetName()),
+			Id:     convert.Int64ToType(v.Id),
+			Access: convert.StrToType(v.Access),
+			Name:   convert.StrToType(v.Name),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -117,9 +117,9 @@ func populateRoleAsStatePermissions(
 	var instanceTypes []InstanceTypePermissionsValue
 	for _, v := range r.InstanceTypePermissions {
 		instanceTypes = append(instanceTypes, InstanceTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -127,10 +127,10 @@ func populateRoleAsStatePermissions(
 	var personas []PersonaPermissionsValue
 	for _, v := range r.PersonaPermissions {
 		personas = append(personas, PersonaPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
-			Code:   types.StringValue(v.GetCode()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
+			Code:   convert.StrToType(v.Code),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -138,10 +138,10 @@ func populateRoleAsStatePermissions(
 	var reportTypes []ReportTypePermissionsValue
 	for _, v := range r.ReportTypePermissions {
 		reportTypes = append(reportTypes, ReportTypePermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
-			Code:   types.StringValue(v.GetCode()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
+			Code:   convert.StrToType(v.Code),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -149,9 +149,9 @@ func populateRoleAsStatePermissions(
 	var tasks []TaskPermissionsValue
 	for _, v := range r.TaskPermissions {
 		tasks = append(tasks, TaskPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			Code:   types.StringPointerValue(v.Code.Get()),
 			state:  attr.ValueStateKnown,
 		})
@@ -160,9 +160,9 @@ func populateRoleAsStatePermissions(
 	var vdiPools []VdiPoolPermissionsValue
 	for _, v := range r.VdiPoolPermissions {
 		vdiPools = append(vdiPools, VdiPoolPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -170,9 +170,9 @@ func populateRoleAsStatePermissions(
 	var workflows []WorkflowPermissionsValue
 	for _, v := range r.TaskSetPermissions {
 		workflows = append(workflows, WorkflowPermissionsValue{
-			Id:     types.Int64Value(v.GetId()),
-			Name:   types.StringValue(v.GetName()),
-			Access: types.StringValue(v.GetAccess()),
+			Id:     convert.Int64ToType(v.Id),
+			Name:   convert.StrToType(v.Name),
+			Access: convert.StrToType(v.Access),
 			state:  attr.ValueStateKnown,
 		})
 	}
@@ -281,11 +281,20 @@ func roleAsState(
 		return state, diags
 	}
 
-	defaultPersona, diags := NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
-		"code": convert.StrToType(role.Role.GetDefaultPersona().Code),
-		"id":   convert.Int64ToType(role.Role.GetDefaultPersona().Id),
-		"name": convert.StrToType(role.Role.GetDefaultPersona().Name),
-	})
+	var defaultPersona DefaultPersonaValue
+	if role.Role.DefaultPersona != nil {
+		defaultPersona, diags = NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
+			"code": convert.StrToType(role.Role.DefaultPersona.Code),
+			"id":   convert.Int64ToType(role.Role.DefaultPersona.Id),
+			"name": convert.StrToType(role.Role.DefaultPersona.Name),
+		})
+	} else {
+		defaultPersona, diags = NewDefaultPersonaValue(DefaultPersonaValue{}.AttributeTypes(ctx), map[string]attr.Value{
+			"code": types.StringNull(),
+			"id":   types.Int64Null(),
+			"name": types.StringNull(),
+		})
+	}
 	if diags.HasError() {
 		return state, diags
 	}
@@ -336,13 +345,18 @@ func getRoleByName(
 	var roles []sdk.ListRoles200ResponseAllOfRolesInner
 
 	for _, c := range rs.Roles {
-		if c.GetName() == name {
+		if c.Name != nil && *c.Name == name {
 			roles = append(roles, c)
 		}
 	}
 
 	if len(roles) == 1 {
-		return getRoleByID(ctx, roles[0].GetId(), apiClient)
+		id := roles[0].Id
+		if id == nil {
+			return nil, errors.New(consts.ErrorNoRoleFound)
+		}
+
+		return getRoleByID(ctx, *id, apiClient)
 	} else if len(roles) > 1 {
 		return nil, errors.New(consts.ErrorMultipleRoles)
 	}

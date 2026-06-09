@@ -55,7 +55,12 @@ func getNetworkDhcpServerAsState(
 		return state, diags
 	}
 
-	raw := dhcpResp.GetNetworkDhcpServer()
+	raw := dhcpResp.NetworkDhcpServer
+	if raw == nil {
+		diags.AddError("API returned nil", "NetworkDhcpServer is nil in the response")
+
+		return state, diags
+	}
 
 	encoded, err := json.Marshal(raw)
 	if err != nil {
@@ -277,9 +282,9 @@ func detectConfigFromResponse(
 // isNsxtConfig returns true when at least one NSXT-specific field is present
 // in the decoded config, distinguishing it from an arbitrary generic map.
 func isNsxtConfig(cfg *sdk.NetworkDhcpServerConfigNSX) bool {
-	return cfg.IsSetEdgeCluster() ||
-		cfg.IsSetPreferredEdgeNode1() ||
-		cfg.IsSetPreferredEdgeNode2()
+	return cfg.EdgeCluster.IsSet() ||
+		cfg.PreferredEdgeNode1.IsSet() ||
+		cfg.PreferredEdgeNode2.IsSet()
 }
 
 func (r *Resource) Read(

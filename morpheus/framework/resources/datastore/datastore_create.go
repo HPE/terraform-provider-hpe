@@ -150,7 +150,11 @@ func (r *Resource) Create(
 			}
 		}
 
-		status := response.GetDatastore().Status
+		if response == nil || response.Datastore == nil {
+			return nil, backoff.Permanent(fmt.Errorf("missing datastore in response"))
+		}
+
+		status := response.Datastore.Status
 
 		return response, checkStatusDone(
 			status,
@@ -168,7 +172,7 @@ func (r *Resource) Create(
 		var status string
 
 		if r != nil {
-			status = r.GetDatastore().Status
+			status = r.Datastore.Status
 		}
 
 		// Unwrap the error to get the API/SDK error message if present

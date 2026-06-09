@@ -63,7 +63,12 @@ func getTaskAsState(
 		return state, diags
 	}
 
-	task := taskResp.GetTask()
+	task := taskResp.Task
+	if task == nil {
+		diags.AddError("populate task resource", fmt.Sprintf("task %d: response task is nil", id))
+
+		return state, diags
+	}
 
 	// allow_custom_config
 	state.AllowCustomConfig = convert.BoolToType(task.AllowCustomConfig)
@@ -72,8 +77,8 @@ func getTaskAsState(
 	state.Code = convert.StrToType(task.Code.Get())
 
 	var typeCode string
-	if task.GetTaskType().Code != nil {
-		typeCode = *task.GetTaskType().Code
+	if task.TaskType != nil && task.TaskType.Code != nil {
+		typeCode = *task.TaskType.Code
 	}
 	// config
 	state.Config = basetypes.NewDynamicNull()
@@ -124,7 +129,7 @@ func getTaskAsState(
 	state.Id = convert.Int64ToType(task.Id)
 
 	// labels
-	respLabels := task.GetLabels()
+	respLabels := task.Labels
 
 	labels, err := convert.SetToStrSlice(plan.Labels)
 	if err != nil {
