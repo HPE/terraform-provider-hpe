@@ -124,6 +124,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if createResp == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkFirewallRule create response is nil")
+
+		return
+	}
+
 	if !createResp.Id.IsSet() || createResp.Id.Get() == nil {
 		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
 

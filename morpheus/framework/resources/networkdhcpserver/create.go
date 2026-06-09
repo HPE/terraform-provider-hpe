@@ -141,6 +141,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if createResp == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkDhcpServer create response is nil")
+
+		return
+	}
+
 	if createResp.Id.Get() == nil {
 		resp.Diagnostics.AddError(
 			"create network dhcp server resource",
