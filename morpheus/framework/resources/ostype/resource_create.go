@@ -96,6 +96,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if createResp == nil {
+		resp.Diagnostics.AddError("API returned nil", "OsType create response is nil")
+
+		return
+	}
+
 	createdID := int64(0)
 	if createResp.Id.Get() != nil {
 		createdID = *createResp.Id.Get()

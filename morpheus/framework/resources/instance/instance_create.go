@@ -408,6 +408,12 @@ func (g *Resource) Create(
 		return
 	}
 
+	if instance == nil {
+		resp.Diagnostics.AddError("API returned nil", "Instance response is nil")
+
+		return
+	}
+
 	if instance.Instance.Id == nil {
 		resp.Diagnostics.AddError("error creating instance", "POST returned empty instance ID")
 

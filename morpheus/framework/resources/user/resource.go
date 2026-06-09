@@ -427,6 +427,24 @@ func (r *Resource) Update(
 		return
 	}
 
+	if originalUserState == nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			fmt.Sprintf("user %d: GET returned nil response", id),
+		)
+
+		return
+	}
+
+	if originalUserState.User == nil || originalUserState.User.LastUpdated == nil {
+		resp.Diagnostics.AddError(
+			"update user resource",
+			fmt.Sprintf("user %d: original user state or LastUpdated is nil", id),
+		)
+
+		return
+	}
+
 	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
 
 	updateUserReq := &sdk.UpdateUserRequest{User: *updateUser}
@@ -448,6 +466,24 @@ func (r *Resource) Update(
 			resp.Diagnostics.AddError(
 				"update user resource",
 				fmt.Sprintf("user %d: failed to read from api", id),
+			)
+
+			return
+		}
+
+		if newUserState == nil {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %d: GET returned nil response", id),
+			)
+
+			return
+		}
+
+		if newUserState.User == nil || newUserState.User.LastUpdated == nil {
+			resp.Diagnostics.AddError(
+				"update user resource",
+				fmt.Sprintf("user %d: new user state or LastUpdated is nil", id),
 			)
 
 			return
