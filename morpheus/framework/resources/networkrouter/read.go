@@ -38,7 +38,15 @@ func getRouterAsState(
 		return state, diags
 	}
 
-	router := resp.GetNetworkRouter()
+	router := resp.NetworkRouter
+	if router == nil {
+		diags.AddError(
+			readOperation,
+			fmt.Sprintf("network router %d GET returned no networkRouter payload", id),
+		)
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(router.Id)
 	state.Name = convert.StrToType(router.Name)

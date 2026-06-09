@@ -71,13 +71,11 @@ func getServicePlanByID(
 			"GET failed for service plan %d: %s", id, internalErrors.ErrMsg(err, hresp))
 	}
 
-	servicePlan, ok := sp.GetServicePlanOk()
-
-	if !ok {
+	if sp.ServicePlan == nil {
 		return nil, fmt.Errorf("service plan %d is nil", id)
 	}
 
-	return servicePlan, nil
+	return sp.ServicePlan, nil
 }
 
 func getServicePlanByName(
@@ -95,8 +93,8 @@ func getServicePlanByName(
 
 	var matchingProvisionTypes []sdk.
 		ListProvisionTypes200ResponseAllOfProvisionTypesInner
-	for _, pt := range pTypes.GetProvisionTypes() {
-		if ptCode, ok := pt.GetCodeOk(); ok && *ptCode == provisionTypeCode {
+	for _, pt := range pTypes.ProvisionTypes {
+		if pt.Code != nil && *pt.Code == provisionTypeCode {
 			matchingProvisionTypes = append(matchingProvisionTypes, pt)
 		}
 	}
@@ -109,13 +107,12 @@ func getServicePlanByName(
 		return nil, fmt.Errorf("multiple provision types with code %s found", provisionTypeCode)
 	}
 
-	pTypeID, ok := matchingProvisionTypes[0].GetIdOk()
-	if !ok {
+	if matchingProvisionTypes[0].Id == nil {
 		return nil, fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
-		name).ProvisionTypeId(*pTypeID).Execute()
+		name).ProvisionTypeId(*matchingProvisionTypes[0].Id).Execute()
 	if ps == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for service_plan %s: %s", name, internalErrors.ErrMsg(err, hresp))
@@ -123,20 +120,18 @@ func getServicePlanByName(
 
 	var matchingServicePlans []sdk.ListServicePlans200ResponseAllOfServicePlansInner
 
-	for _, sp := range ps.GetServicePlans() {
-		if pName, pNameOk := sp.GetNameOk(); pNameOk {
-			if pProvisionType, pProvisionTypeOk := sp.GetProvisionTypeOk(); pProvisionTypeOk {
-				// now check name and ProvisionType match getplanByName() params
-				if *pName == name && pProvisionType.GetCode() == provisionTypeCode {
-					matchingServicePlans = append(matchingServicePlans, sp)
-				}
+	for _, sp := range ps.ServicePlans {
+		if sp.Name != nil && sp.ProvisionType != nil && sp.ProvisionType.Code != nil {
+			// now check name and ProvisionType match getplanByName() params
+			if *sp.Name == name && *sp.ProvisionType.Code == provisionTypeCode {
+				matchingServicePlans = append(matchingServicePlans, sp)
 			}
 		}
 	}
 	if len(matchingServicePlans) == 1 {
-		if pID, pIDOk := matchingServicePlans[0].GetIdOk(); pIDOk {
+		if matchingServicePlans[0].Id != nil {
 			// same return types as GetPlanByID
-			return getServicePlanByID(ctx, *pID, apiClient)
+			return getServicePlanByID(ctx, *matchingServicePlans[0].Id, apiClient)
 		}
 
 		return nil, fmt.Errorf("service plan %s, id not found", name)

@@ -127,7 +127,11 @@ func getOsTypeByID(
 		return nil, fmt.Errorf("GET failed for os type %d: %s", id, providererrors.ErrMsg(err, hresp))
 	}
 
-	osType := r.GetOsType()
+	if r.OsType == nil {
+		return nil, fmt.Errorf("GET failed for os type %d: response missing osType", id)
+	}
+
+	osType := *r.OsType
 
 	return &osType, nil
 }
@@ -145,7 +149,7 @@ func getOsTypeByName(
 	var matched []sdk.ListOsTypes200ResponseAllOfOsTypesInner
 
 	for _, o := range rs.OsTypes {
-		if o.GetName() == name {
+		if o.Name != nil && *o.Name == name {
 			matched = append(matched, o)
 		}
 	}
@@ -156,7 +160,11 @@ func getOsTypeByName(
 		return nil, errors.New(ErrorMultipleOsTypes)
 	}
 
-	return getOsTypeByID(ctx, matched[0].GetId(), apiClient)
+	if matched[0].Id == nil {
+		return nil, fmt.Errorf("GET failed for os type %s: response missing id", name)
+	}
+
+	return getOsTypeByID(ctx, *matched[0].Id, apiClient)
 }
 
 func getOsType(

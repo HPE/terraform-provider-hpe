@@ -55,7 +55,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	body := sdk.NewCreateSubnetRequestSubnetWithDefaults()
+	body := &sdk.CreateSubnetRequestSubnet{}
 	body.Type = &sdk.CreateSubnetRequestSubnetType{
 		Id: plan.TypeId.ValueInt64Pointer(),
 	}
@@ -161,7 +161,12 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	subnet := result.GetSubnet()
+	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
 	if subnet.Id == nil {
 		resp.Diagnostics.AddError("create subnet resource", "API returned a subnet with no ID")
 
@@ -188,8 +193,14 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	readSubnet := readResult.GetSubnet()
-	mapResponseToModel(&plan, &readSubnet)
+	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
+	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -222,8 +233,13 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	subnet := result.GetSubnet()
-	mapResponseToModel(&state, &subnet)
+	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&state, subnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -244,7 +260,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.NewUpdateSubnetRequestSubnetWithDefaults()
+	body := &sdk.UpdateSubnetRequestSubnet{}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
@@ -334,8 +350,14 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	readSubnet := readResult.GetSubnet()
-	mapResponseToModel(&plan, &readSubnet)
+	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
+	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

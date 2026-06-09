@@ -64,42 +64,42 @@ func (r *Resource) Update(
 
 	id := currentState.Id.ValueInt64()
 
-	instance := sdk.NewUpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceWithDefaults()
+	instance := &sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance{}
 
 	if !plan.VipName.IsNull() && !plan.VipName.IsUnknown() {
-		instance.SetVipName(plan.VipName.ValueString())
+		instance.VipName = plan.VipName.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		instance.SetDescription(plan.Description.ValueString())
+		instance.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.VipAddress.IsNull() && !plan.VipAddress.IsUnknown() {
-		instance.SetVipAddress(plan.VipAddress.ValueString())
+		instance.VipAddress = plan.VipAddress.ValueStringPointer()
 	}
 
 	if !plan.VipPort.IsNull() && !plan.VipPort.IsUnknown() {
-		instance.SetVipPort(plan.VipPort.ValueInt64())
+		instance.VipPort = plan.VipPort.ValueInt64Pointer()
 	}
 
 	if !plan.VipProtocol.IsNull() && !plan.VipProtocol.IsUnknown() {
-		instance.SetVipProtocol(plan.VipProtocol.ValueString())
+		instance.VipProtocol = plan.VipProtocol.ValueStringPointer()
 	}
 
 	if !plan.VipHostname.IsNull() && !plan.VipHostname.IsUnknown() {
-		instance.SetVipHostname(plan.VipHostname.ValueString())
+		instance.VipHostname = plan.VipHostname.ValueStringPointer()
 	}
 
 	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {
-		instance.SetVipPool(plan.VipPool.ValueInt64())
+		instance.VipPool.Set(plan.VipPool.ValueInt64Pointer())
 	}
 
 	if !plan.SslCert.IsNull() && !plan.SslCert.IsUnknown() {
-		instance.SetSslCert(plan.SslCert.ValueInt64())
+		instance.SslCert = plan.SslCert.ValueInt64Pointer()
 	}
 
 	if !plan.SslServerCert.IsNull() && !plan.SslServerCert.IsUnknown() {
-		instance.SetSslServerCert(plan.SslServerCert.ValueInt64())
+		instance.SslServerCert = plan.SslServerCert.ValueInt64Pointer()
 	}
 
 	if err := setUpdateConfig(ctx, instance, plan); err != nil {
@@ -108,8 +108,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateReq := sdk.NewUpdateLoadBalancerVirtualServerRequestWithDefaults()
-	updateReq.SetLoadBalancerInstance(*instance)
+	updateReq := &sdk.UpdateLoadBalancerVirtualServerRequest{LoadBalancerInstance: instance}
 
 	_, hresp, err := client.LoadBalancersAPI.
 		UpdateLoadBalancerVirtualServer(ctx, lbID, id).
@@ -150,36 +149,36 @@ func setUpdateConfig(
 	plan LoadBalancerVirtualServerModel,
 ) error {
 	if !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown() {
-		nsxConfig := sdk.NewNSXVirtualServerConfigObject1()
+		nsxConfig := &sdk.NSXVirtualServerConfigObject1{}
 
 		if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-			nsxConfig.SetPool(strconv.FormatInt(plan.PoolId.ValueInt64(), 10))
+			nsxConfig.Pool.Set(sdk.PtrString(strconv.FormatInt(plan.PoolId.ValueInt64(), 10)))
 		}
 
 		if !plan.ConfigNsxt.ApplicationProfile.IsNull() && !plan.ConfigNsxt.ApplicationProfile.IsUnknown() {
-			nsxConfig.SetApplicationProfile(plan.ConfigNsxt.ApplicationProfile.ValueInt64())
+			nsxConfig.ApplicationProfile.Set(plan.ConfigNsxt.ApplicationProfile.ValueInt64Pointer())
 		}
 
 		if !plan.ConfigNsxt.Persistence.IsNull() && !plan.ConfigNsxt.Persistence.IsUnknown() {
-			nsxConfig.SetPersistence(plan.ConfigNsxt.Persistence.ValueString())
+			nsxConfig.Persistence.Set(plan.ConfigNsxt.Persistence.ValueStringPointer())
 		}
 
 		if !plan.ConfigNsxt.PersistenceProfile.IsNull() && !plan.ConfigNsxt.PersistenceProfile.IsUnknown() {
-			nsxConfig.SetPersistenceProfile(plan.ConfigNsxt.PersistenceProfile.ValueInt64())
+			nsxConfig.PersistenceProfile.Set(plan.ConfigNsxt.PersistenceProfile.ValueInt64Pointer())
 		}
 
 		if !plan.ConfigNsxt.SslClientProfile.IsNull() && !plan.ConfigNsxt.SslClientProfile.IsUnknown() {
-			nsxConfig.SetSslClientProfile(plan.ConfigNsxt.SslClientProfile.ValueInt64())
+			nsxConfig.SslClientProfile.Set(plan.ConfigNsxt.SslClientProfile.ValueInt64Pointer())
 		}
 
 		if !plan.ConfigNsxt.SslServerProfile.IsNull() && !plan.ConfigNsxt.SslServerProfile.IsUnknown() {
-			nsxConfig.SetSslServerProfile(plan.ConfigNsxt.SslServerProfile.ValueInt64())
+			nsxConfig.SslServerProfile.Set(plan.ConfigNsxt.SslServerProfile.ValueInt64Pointer())
 		}
 
 		cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
 			NSXVirtualServerConfigObject1: nsxConfig,
 		}
-		instance.SetConfig(cfg)
+		instance.Config = &cfg
 
 		return nil
 	}
@@ -203,7 +202,7 @@ func setUpdateConfig(
 	cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
 		MapmapOfStringAny: &configDataMap,
 	}
-	instance.SetConfig(cfg)
+	instance.Config = &cfg
 
 	return nil
 }

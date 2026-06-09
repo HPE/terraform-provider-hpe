@@ -37,24 +37,26 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	ruleGroup := sdk.NewCreateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
-	ruleGroup.SetName(name)
-	ruleGroup.SetExternalType(plan.ExternalType.ValueString())
+	ruleGroup := &sdk.CreateNetworkFirewallRuleGroupRequestRuleGroup{
+		Name:         name,
+		ExternalType: plan.ExternalType.ValueString(),
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		ruleGroup.SetDescription(plan.Description.ValueString())
+		ruleGroup.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		ruleGroup.SetPriority(plan.Priority.ValueInt64())
+		ruleGroup.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	if !plan.GroupLayer.IsNull() && !plan.GroupLayer.IsUnknown() {
-		ruleGroup.SetGroupLayer(plan.GroupLayer.ValueString())
+		ruleGroup.GroupLayer = plan.GroupLayer.ValueStringPointer()
 	}
 
-	createReq := sdk.NewCreateNetworkFirewallRuleGroupRequestWithDefaults()
-	createReq.SetRuleGroup(*ruleGroup)
+	createReq := &sdk.CreateNetworkFirewallRuleGroupRequest{
+		RuleGroup: ruleGroup,
+	}
 
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 
@@ -80,7 +82,13 @@ func (r *Resource) Create(
 		return
 	}
 
-	createdID := createResp.GetId()
+	if !createResp.Id.IsSet() || createResp.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
+	createdID := *createResp.Id.Get()
 	plan.Id = types.Int64Value(createdID)
 
 	taintResourceState := func(id int64) {

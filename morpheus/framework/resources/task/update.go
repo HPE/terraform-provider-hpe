@@ -41,17 +41,17 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateRequest := sdk.NewUpdateTasksRequestWithDefaults()
-	updateTask := sdk.NewUpdateTasksRequestTaskWithDefaults()
+	updateRequest := &sdk.UpdateTasksRequest{}
+	updateTask := &sdk.UpdateTasksRequestTask{}
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		updateTask.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+		updateTask.AllowCustomConfig = plan.AllowCustomConfig.ValueBoolPointer()
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateTask.SetCode(plan.Code.ValueString())
+		updateTask.Code = plan.Code.ValueStringPointer()
 	}
 
 	taskOptions := sdk.UpdateTasksRequestTaskTaskOptions{}
@@ -106,11 +106,11 @@ func (r *Resource) Update(
 		taskOptions.ConditionalWorkflowTaskConfig3 = conditionalWorkflow
 	}
 
-	updateTask.SetTaskOptions(taskOptions)
+	updateTask.TaskOptions = &taskOptions
 
 	// execute_target
 	if !plan.ExecuteTarget.IsNull() && !plan.ExecuteTarget.IsUnknown() {
-		updateTask.SetExecuteTarget(plan.ExecuteTarget.ValueString())
+		updateTask.ExecuteTarget = plan.ExecuteTarget.ValueStringPointer()
 	}
 
 	// labels
@@ -125,54 +125,64 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateTask.SetLabels(labels)
+		updateTask.Labels = labels
 	}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		updateTask.SetName(plan.Name.ValueString())
+		updateTask.Name = plan.Name.ValueStringPointer()
 	}
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		updateTask.SetResultType(plan.ResultType.ValueString())
+		updateTask.ResultType.Set(plan.ResultType.ValueStringPointer())
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		updateTask.SetRetryCount(plan.RetryCount.ValueInt64())
+		updateTask.RetryCount = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		updateTask.SetRetryDelaySeconds(plan.RetryDelaySeconds.ValueInt64())
+		updateTask.RetryDelaySeconds = plan.RetryDelaySeconds.ValueInt64Pointer()
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		updateTask.SetRetryable(plan.Retryable.ValueBool())
+		updateTask.Retryable = plan.Retryable.ValueBoolPointer()
 	}
 
 	// task_type_code
 	if !plan.TaskTypeCode.IsNull() && !plan.TaskTypeCode.IsUnknown() {
-		updateTask.SetTaskType(*sdk.NewUpdateTasksRequestTaskTaskType(
-			plan.TaskTypeCode.ValueString(),
-		))
+		updateTask.TaskType = &sdk.UpdateTasksRequestTaskTaskType{
+			Code: plan.TaskTypeCode.ValueString(),
+		}
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateTask.SetVisibility(
-			plan.Visibility.ValueString(),
-		)
+		updateTask.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	updateRequest.SetTask(*updateTask)
+	updateRequest.Task = *updateTask
 	taskResp, httpResp, err := client.AutomationAPI.UpdateTasks(ctx, state.Id.ValueInt64()).
 		UpdateTasksRequest(*updateRequest).
 		Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError("error updating task", errfmt.ErrMsg(err, httpResp))
+
+		return
+	}
+
+	if taskResp.Task == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task is nil in the response")
+
+		return
+	}
+
+	if taskResp.Task.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task ID is nil in the response")
 
 		return
 	}

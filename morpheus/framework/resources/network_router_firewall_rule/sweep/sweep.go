@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -13,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_router_firewall_rule"
@@ -34,8 +34,8 @@ func init() {
 
 			items := make([]firewallRuleSweeperItem, 0)
 
-			for _, router := range routersResp.GetNetworkRouters() {
-				routerID, ok := router.GetIdOk()
+			for _, router := range routersResp.NetworkRouters {
+				routerID, ok := getsafe.GetOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -45,7 +45,7 @@ func init() {
 					continue
 				}
 
-				for _, rule := range rulesResp.GetRules() {
+				for _, rule := range rulesResp.Rules {
 					items = append(items, firewallRuleSweeperItem{routerID: *routerID, rule: rule})
 				}
 			}
@@ -54,7 +54,7 @@ func init() {
 		},
 		// Is this a test network router firewall rule?
 		func(item firewallRuleSweeperItem) bool {
-			name, ok := item.rule.GetNameOk()
+			name, ok := getsafe.GetOk(item.rule.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -63,7 +63,7 @@ func init() {
 		},
 		// Delete the test network router firewall rule.
 		func(ctx context.Context, client *sdk.APIClient, item firewallRuleSweeperItem) (*http.Response, error) {
-			id, ok := item.rule.GetIdOk()
+			id, ok := getsafe.GetOk(item.rule.Id)
 			if !ok || id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}

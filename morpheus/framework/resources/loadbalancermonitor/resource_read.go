@@ -65,7 +65,7 @@ func (r *Resource) Read(
 		}
 
 		lbTypeCode := ""
-		if lb := lbResp.GetLoadBalancer(); lb.Type != nil {
+		if lb := lbResp.LoadBalancer; lb != nil && lb.Type != nil {
 			if code := lb.Type.Code; code != nil {
 				lbTypeCode = *code
 			}
@@ -110,7 +110,15 @@ func getLoadBalancerMonitorAsState(
 		return state, diags
 	}
 
-	m := monitorResp.GetLoadBalancerMonitor()
+	m := monitorResp.LoadBalancerMonitor
+	if m == nil {
+		diags.AddError(
+			"error reading load balancer monitor",
+			fmt.Sprintf("load balancer monitor %d response did not contain a monitor", id),
+		)
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(m.Id)
 	state.LoadBalancerId = types.Int64Value(loadBalancerID)
@@ -145,11 +153,11 @@ func getLoadBalancerMonitorAsState(
 
 	// Config — structured nested object.
 	if m.Config != nil {
-		cfg := m.GetConfig()
+		cfg := m.Config
 
 		var monitorObjVal basetypes.ObjectValue
 		if cfg.Monitor != nil {
-			monitorInner := cfg.GetMonitor()
+			monitorInner := cfg.Monitor
 			monitorObjVal = types.ObjectValueMust(
 				MonitorValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{

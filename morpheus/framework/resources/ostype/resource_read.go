@@ -60,7 +60,15 @@ func getOsTypeAsState(
 		return state, diags
 	}
 
-	osType := osTypeResp.GetOsType()
+	osType := osTypeResp.OsType
+	if osType == nil {
+		diags.AddError(
+			"error reading os type",
+			fmt.Sprintf("os type %d GET returned no osType", id),
+		)
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(osType.Id)
 	state.Code = convert.StrToType(osType.Code)

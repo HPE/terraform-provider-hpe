@@ -14,13 +14,27 @@ import (
 )
 
 var (
-	permissionsFunc        = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsPlansFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults
-	permissionsSitesFunc   = sdk.NewSaveDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
-	tenantsFunc            = sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsWithDefaults
-	nfsConfigFunc          = sdk.NewNFSDatastoreConfiguration1WithDefaults
-	alletrampHvmConfigFunc = sdk.NewAlletraMPHVMDatastoreConfiguration1WithDefaults
-	storageServerFunc      = sdk.NewSaveDatastoreRequestDatastoreStorageServerWithDefaults
+	permissionsFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissions {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissions{}
+	}
+	permissionsPlansFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsPlansInner{}
+	}
+	permissionsSitesFunc = func() *sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner {
+		return &sdk.SaveDatastoreRequestDatastoreResourcePermissionsSitesInner{}
+	}
+	tenantsFunc = func() *sdk.SaveDatastoreRequestDatastoreTenantPermissions {
+		return &sdk.SaveDatastoreRequestDatastoreTenantPermissions{}
+	}
+	nfsConfigFunc = func() *sdk.NFSDatastoreConfiguration1 {
+		return &sdk.NFSDatastoreConfiguration1{}
+	}
+	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 {
+		return &sdk.AlletraMPHVMDatastoreConfiguration1{}
+	}
+	storageServerFunc = func() *sdk.SaveDatastoreRequestDatastoreStorageServer {
+		return &sdk.SaveDatastoreRequestDatastoreStorageServer{}
+	}
 )
 
 type (
@@ -37,45 +51,45 @@ func datastoreCreateDatastore(ctx context.Context,
 	resp *resource.CreateResponse,
 ) int64 {
 	// datastoreCreate is used by the SDK to create the datastore
-	datastoreCreate := sdk.NewSaveDatastoreRequestDatastoreWithDefaults()
+	datastoreCreate := &sdk.SaveDatastoreRequestDatastore{}
 
 	// Set the required fields
-	datastoreCreate.SetName(name)
-	datastoreCreate.SetDatastoreType(datastoreType.Code.ValueString())
+	datastoreCreate.Name = name
+	datastoreCreate.DatastoreType = datastoreType.Code.ValueString()
 	// Set the associated resource - this is refType for the API
 	switch associatedResourceType {
 	case associatedResourceTypeCloud:
-		datastoreCreate.SetRefType(cloudRefType)
+		datastoreCreate.RefType = cloudRefType
 		// TODO allow the following when API has been fixed
 	// case associatedResourceTypeCluster:
-	//	datastoreCreate.SetRefType(clusterRefType)
+	//	datastoreCreate.RefType = clusterRefType
 	default:
 		resp.Diagnostics.AddError(
 			"create datastore resource",
 			"datastore "+name+": invalid associated_resource_type "+associatedResourceType+", must be 'Cloud' or 'Cluster'",
 		)
 	}
-	datastoreCreate.SetRefId(associatedResourceId)
+	datastoreCreate.RefId = associatedResourceId
 
 	// Set the config.  As far as I can tell you need a config object, even if empty.
 	// The config can be one of several types, handled below.
 	// If none of the specific types are set, then use the generic config map.
 	// The specific types are mutually exclusive.
-	createConfig := datastoreCreate.GetConfig()
+	createConfig := datastoreCreate.Config
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
 		nfsConfig := nfsConfigFunc()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
-			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
+			nfsConfig.SourceHostname = plan.ConfigNfs.SourceHostname.ValueString()
 		}
 
 		if !plan.ConfigNfs.SourceDirPath.IsNull() {
-			nfsConfig.SetSourceDirPath(plan.ConfigNfs.SourceDirPath.ValueString())
+			nfsConfig.SourceDirPath = plan.ConfigNfs.SourceDirPath.ValueString()
 		}
 
 		if !plan.ConfigNfs.SourceVersion.IsNull() {
-			nfsConfig.SetSourceVersion(plan.ConfigNfs.SourceVersion.ValueString())
+			nfsConfig.SourceVersion = plan.ConfigNfs.SourceVersion.ValueStringPointer()
 		}
 
 		createConfig.NFSDatastoreConfiguration1 = nfsConfig
@@ -84,18 +98,18 @@ func datastoreCreateDatastore(ctx context.Context,
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
+			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
-			alletrampHvmConfig.SetProtocolType(plan.ConfigAlletrampHvm.ProtocolType.ValueString())
+			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
 
 		// removing for now
 		/*
 			case !plan.ConfigGfs2.IsNull() && !plan.ConfigGfs2.IsUnknown():
-				gfs2Config := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf1WithDefaults()
+				gfs2Config := &sdk.SaveClusterDatastoreRequestDatastoreConfigAnyOf1{}
 
 				if !plan.ConfigGfs2.BlockDevice.IsNull() {
 					gfs2Config.SetBlockDevice(plan.ConfigGfs2.BlockDevice.ValueString())
@@ -136,25 +150,25 @@ func datastoreCreateDatastore(ctx context.Context,
 
 	}
 
-	datastoreCreate.SetConfig(createConfig)
+	datastoreCreate.Config = createConfig
 
 	// Optional fields
 	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
 		storageServerConfig := storageServerFunc()
-		storageServerConfig.SetId(plan.StorageServer.Id.ValueInt64())
-		datastoreCreate.SetStorageServer(*storageServerConfig)
+		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
+		datastoreCreate.StorageServer = storageServerConfig
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		datastoreCreate.SetVisibility(plan.Visibility.ValueString())
+		datastoreCreate.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		datastoreCreate.SetActive(plan.Active.ValueBool())
+		datastoreCreate.Active = plan.Active.ValueBoolPointer()
 	}
 
 	if !plan.DefaultStore.IsNull() && !plan.DefaultStore.IsUnknown() {
-		datastoreCreate.SetDefaultStore(plan.DefaultStore.ValueBool())
+		datastoreCreate.DefaultStore = plan.DefaultStore.ValueBoolPointer()
 	}
 
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
@@ -168,20 +182,20 @@ func datastoreCreateDatastore(ctx context.Context,
 		tenantPermissions := tenantsFunc()
 		var accounts []sdk.SaveDatastoreRequestDatastoreTenantPermissionsAccountsInner
 		for _, tenantsValue := range tenantsValues {
-			account := sdk.NewSaveDatastoreRequestDatastoreTenantPermissionsAccountsInnerWithDefaults()
-			account.SetId(tenantsValue.Id.ValueInt64())
+			account := &sdk.SaveDatastoreRequestDatastoreTenantPermissionsAccountsInner{}
+			account.Id = tenantsValue.Id.ValueInt64Pointer()
 			accounts = append(accounts, *account)
 		}
 		tenantPermissions.Accounts = accounts
-		datastoreCreate.SetTenantPermissions(*tenantPermissions)
+		datastoreCreate.TenantPermissions = tenantPermissions
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		resourcePermissions := permissionsFunc()
-		resourcePermissions.SetAllGroups(plan.ResourcePermissions.AllGroups.ValueBool())
-		resourcePermissions.SetDefaultStore(plan.ResourcePermissions.DefaultStore.ValueBool())
-		resourcePermissions.SetCanManage(plan.ResourcePermissions.CanManage.ValueBool())
-		resourcePermissions.SetAll(plan.ResourcePermissions.All.ValueBool())
+		resourcePermissions.AllGroups = plan.ResourcePermissions.AllGroups.ValueBoolPointer()
+		resourcePermissions.DefaultStore = plan.ResourcePermissions.DefaultStore.ValueBoolPointer()
+		resourcePermissions.CanManage = plan.ResourcePermissions.CanManage.ValueBoolPointer()
+		resourcePermissions.All = plan.ResourcePermissions.All.ValueBoolPointer()
 
 		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
 			var groupsValues []GroupsValue
@@ -194,11 +208,11 @@ func datastoreCreateDatastore(ctx context.Context,
 			var sites []permissionsSites
 			for _, groupsValue := range groupsValues {
 				site := permissionsSitesFunc()
-				site.SetId(groupsValue.Id.ValueInt64())
+				site.Id = groupsValue.Id.ValueInt64Pointer()
 				sites = append(sites, *site)
 			}
 
-			resourcePermissions.SetSites(sites)
+			resourcePermissions.Sites = sites
 		}
 
 		// nolint:duplicate
@@ -213,21 +227,21 @@ func datastoreCreateDatastore(ctx context.Context,
 			var plans []permissionsPlans
 			for _, plansValue := range plansValues {
 				planItem := permissionsPlansFunc()
-				planItem.SetId(plansValue.Id.ValueInt64())
-				planItem.SetCode(plansValue.Code.ValueString())
-				planItem.SetName(plansValue.Name.ValueString())
+				planItem.Id = plansValue.Id.ValueInt64Pointer()
+				planItem.Code = plansValue.Code.ValueStringPointer()
+				planItem.Name = plansValue.Name.ValueStringPointer()
 				plans = append(plans, *planItem)
 			}
 
-			resourcePermissions.SetPlans(plans)
+			resourcePermissions.Plans = plans
 		}
 
-		datastoreCreate.SetResourcePermissions(*resourcePermissions)
+		datastoreCreate.ResourcePermissions = resourcePermissions
 	}
 
 	// Call API
-	datastoreRequest := sdk.NewSaveDatastoreRequestWithDefaults()
-	datastoreRequest.SetDatastore(*datastoreCreate)
+	datastoreRequest := &sdk.SaveDatastoreRequest{}
+	datastoreRequest.Datastore = datastoreCreate
 
 	response, hresp, err := client.DatastoresAPI.SaveDatastore(ctx).SaveDatastoreRequest(*datastoreRequest).Execute()
 	if response == nil || err != nil || hresp.StatusCode != http.StatusOK {
@@ -239,8 +253,8 @@ func datastoreCreateDatastore(ctx context.Context,
 		return 0
 	}
 
-	datastore, ok := response.GetDatastoreOk()
-	if !ok {
+	datastore := response.Datastore
+	if datastore == nil {
 		resp.Diagnostics.AddError(
 			"create datastore resource",
 			"datastore "+name+": could not get datastore from response",
@@ -248,8 +262,8 @@ func datastoreCreateDatastore(ctx context.Context,
 
 		return 0
 	}
-	id, ok := datastore.GetIdOk()
-	if !ok || id == nil {
+	id := datastore.Id
+	if id == 0 {
 		resp.Diagnostics.AddError(
 			"create datastore resource",
 			"datastore "+name+": could not get id",
@@ -258,5 +272,5 @@ func datastoreCreateDatastore(ctx context.Context,
 		return 0
 	}
 
-	return *id
+	return id
 }

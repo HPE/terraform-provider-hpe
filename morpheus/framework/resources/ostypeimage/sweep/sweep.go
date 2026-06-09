@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_os_type_image"
@@ -38,8 +38,8 @@ func init() {
 			}
 
 			items := make([]osTypeImageSweepItem, 0)
-			for _, osType := range resp.GetOsTypes() {
-				osTypeID, ok := osType.GetIdOk()
+			for _, osType := range resp.OsTypes {
+				osTypeID, ok := getsafe.GetOk(osType.Id)
 				if !ok || osTypeID == nil {
 					continue
 				}
@@ -54,15 +54,15 @@ func init() {
 					return nil, osTypeHresp, osTypeErr
 				}
 
-				osTypeDetail := osTypeResp.GetOsType()
+				osTypeDetail := getsafe.Get(osTypeResp.OsType)
 
-				for _, image := range osTypeDetail.GetImages() {
-					id, ok := image.GetIdOk()
+				for _, image := range osTypeDetail.Images {
+					id, ok := getsafe.GetOk(image.Id)
 					if !ok || id == nil {
 						continue
 					}
 
-					name, ok := image.GetVirtualImageNameOk()
+					name, ok := getsafe.GetOk(image.VirtualImageName)
 					if !ok || name == nil {
 						continue
 					}

@@ -70,10 +70,16 @@ func (r *monitoringCheckResource) Create(
 
 			return
 		}
-		ct := ctResult.GetCheckType()
-		code := ct.GetCode()
+		ct := ctResult.CheckType
+		if ct == nil {
+			resp.Diagnostics.AddError("API returned nil", "CheckType is nil in the response")
+
+			return
+		}
+
+		code := ct.Code
 		checkBody.CheckType = &sdk.WebCheckAllOfCheckType{
-			Code: &code,
+			Code: code,
 		}
 	}
 	if !plan.Description.IsNull() {
@@ -94,7 +100,7 @@ func (r *monitoringCheckResource) Create(
 		checkBody.Severity = plan.Severity.ValueStringPointer()
 	}
 
-	checkReq := sdk.WebCheckAsAddChecksRequestCheck(&checkBody)
+	checkReq := sdk.AddChecksRequestCheck{WebCheck: &checkBody}
 
 	result, httpResp, err := client.ChecksAPI.AddChecks(ctx).AddChecksRequest(sdk.AddChecksRequest{
 		Check: checkReq,
@@ -105,7 +111,19 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	check := result.GetCheck()
+	check := result.Check
+	if check == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
+		return
+	}
+
+	if check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
+
+		return
+	}
+
 	plan.ID = types.Int64Value(*check.Id)
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)
@@ -154,7 +172,12 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	check := result.GetCheck()
+	check := result.Check
+	if check == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
+		return
+	}
 	if check.Id != nil {
 		state.ID = types.Int64Value(*check.Id)
 	}
@@ -226,7 +249,7 @@ func (r *monitoringCheckResource) Update(
 		checkBody.Severity = plan.Severity.ValueStringPointer()
 	}
 
-	checkReq := sdk.WebCheck1AsUpdateChecksRequestCheck(&checkBody)
+	checkReq := sdk.UpdateChecksRequestCheck{WebCheck1: &checkBody}
 
 	result, httpResp, err := client.ChecksAPI.UpdateChecks(ctx, id).UpdateChecksRequest(sdk.UpdateChecksRequest{
 		Check: checkReq,
@@ -237,7 +260,19 @@ func (r *monitoringCheckResource) Update(
 		return
 	}
 
-	check := result.GetCheck()
+	check := result.Check
+	if check == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
+		return
+	}
+
+	if check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
+
+		return
+	}
+
 	plan.ID = types.Int64Value(*check.Id)
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)

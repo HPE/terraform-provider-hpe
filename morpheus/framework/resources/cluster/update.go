@@ -45,17 +45,17 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
-	updateClusterReq := sdk.NewUpdateClusterRequest()
-	cluster := sdk.NewUpdateClusterRequestCluster()
+	updateClusterReq := &sdk.UpdateClusterRequest{}
+	cluster := &sdk.UpdateClusterRequestCluster{}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		cluster.SetName(plan.Name.ValueString())
+		cluster.Name = plan.Name.ValueStringPointer()
 	}
 
 	// description
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		cluster.SetDescription(plan.Description.ValueString())
+		cluster.Description = plan.Description.ValueStringPointer()
 	}
 
 	// labels
@@ -70,7 +70,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		cluster.SetLabels(labels)
+		cluster.Labels = labels
 	}
 
 	switch {
@@ -97,14 +97,14 @@ func (r *Resource) Update(
 			return
 		}
 
-		cluster.SetConfig(sdk.UpdateClusterRequestClusterConfig{
+		cluster.Config = &sdk.UpdateClusterRequestClusterConfig{
 			AdditionalProperties: configDataMap,
-		})
+		}
 	// HVM config updatable fields
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
-		config := sdk.NewUpdateClusterRequestClusterConfig()
-
-		config.AdditionalProperties = make(map[string]any)
+		config := &sdk.UpdateClusterRequestClusterConfig{
+			AdditionalProperties: make(map[string]any),
+		}
 
 		if !plan.ConfigHvm.CpuArch.IsNull() && !plan.ConfigHvm.CpuArch.IsUnknown() {
 			config.AdditionalProperties["cpuArch"] = plan.ConfigHvm.CpuArch.ValueString()
@@ -115,9 +115,7 @@ func (r *Resource) Update(
 		}
 
 		if !plan.ConfigHvm.DynamicPlacement.IsNull() && !plan.ConfigHvm.DynamicPlacement.IsUnknown() {
-			config.SetDynamicPlacementMode(
-				*convert.BoolTypeToStringPointerOnOff(plan.ConfigHvm.DynamicPlacement),
-			)
+			config.DynamicPlacementMode = convert.BoolTypeToStringPointerOnOff(plan.ConfigHvm.DynamicPlacement)
 		}
 
 		if !plan.ConfigHvm.VcpuPlacementMode.IsNull() && !plan.ConfigHvm.VcpuPlacementMode.IsUnknown() {
@@ -128,11 +126,11 @@ func (r *Resource) Update(
 			config.AdditionalProperties["powerPolicy"] = plan.ConfigHvm.PowerPolicy.ValueString()
 		}
 
-		cluster.SetConfig(*config)
+		cluster.Config = config
 
 	}
 
-	updateClusterReq.SetCluster(*cluster)
+	updateClusterReq.Cluster = cluster
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

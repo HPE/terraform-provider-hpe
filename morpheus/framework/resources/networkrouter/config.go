@@ -10,149 +10,189 @@ import (
 
 // nsxTier0Config builds a typed NSX Tier-0 gateway config using the SDK struct.
 func nsxTier0Config(cfg ConfigNsxtGatewayTier0Value) sdk.CreateNetworkRouterRequestNetworkRouterConfig {
-	t0 := sdk.NewCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOfWithDefaults()
+	t0 := &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf{}
 
 	if !cfg.HaMode.IsNull() && !cfg.HaMode.IsUnknown() {
-		t0.SetHaMode(cfg.HaMode.ValueString())
+		haMode := cfg.HaMode.ValueString()
+		t0.HaMode = &haMode
 	}
 	if !cfg.EdgeCluster.IsNull() && !cfg.EdgeCluster.IsUnknown() {
-		t0.SetEdgeCluster(cfg.EdgeCluster.ValueString())
+		edgeCluster := cfg.EdgeCluster.ValueString()
+		t0.EdgeCluster = &edgeCluster
 	}
 	if !cfg.FailOver.IsNull() && !cfg.FailOver.IsUnknown() {
-		t0.SetFailOver(cfg.FailOver.ValueString())
+		failOver := cfg.FailOver.ValueString()
+		t0.FailOver = &failOver
 	}
 	if !cfg.IpManagementType.IsNull() && !cfg.IpManagementType.IsUnknown() {
-		t0.SetIpManagementType(cfg.IpManagementType.ValueString())
+		ipManagementType := cfg.IpManagementType.ValueString()
+		t0.IpManagementType = &ipManagementType
 	}
 	if !cfg.IpServerId.IsNull() && !cfg.IpServerId.IsUnknown() {
-		t0.SetIpServerId(cfg.IpServerId.ValueString())
+		ipServerId := cfg.IpServerId.ValueString()
+		t0.IpServerId = &ipServerId
 	}
 	if !cfg.LocalAsNum.IsNull() && !cfg.LocalAsNum.IsUnknown() {
-		t0.SetLOCAL_AS_NUM(cfg.LocalAsNum.ValueString())
+		localAsNum := cfg.LocalAsNum.ValueString()
+		t0.LOCAL_AS_NUM = &localAsNum
 	}
 	if !cfg.RestartMode.IsNull() && !cfg.RestartMode.IsUnknown() {
-		t0.SetRESTART_MODE(cfg.RestartMode.ValueString())
+		restartMode := cfg.RestartMode.ValueString()
+		t0.RESTART_MODE = &restartMode
 	}
 	if !cfg.RestartTime.IsNull() && !cfg.RestartTime.IsUnknown() {
-		t0.SetRESTART_TIME(cfg.RestartTime.ValueInt64())
+		restartTime := cfg.RestartTime.ValueInt64()
+		t0.RESTART_TIME = &restartTime
 	}
 	if !cfg.StaleRouteTime.IsNull() && !cfg.StaleRouteTime.IsUnknown() {
-		t0.SetSTALE_ROUTE_TIME(cfg.StaleRouteTime.ValueInt64())
+		staleRouteTime := cfg.StaleRouteTime.ValueInt64()
+		t0.STALE_ROUTE_TIME = &staleRouteTime
 	}
 	if !cfg.Ecmp.IsNull() && !cfg.Ecmp.IsUnknown() {
-		t0.SetECMP(convert.BoolToStringOnOff(cfg.Ecmp.ValueBool()).ValueString())
+		ecmp := convert.BoolToStringOnOff(cfg.Ecmp.ValueBool()).ValueString()
+		t0.ECMP = &ecmp
 	}
 	if !cfg.MultipathRelax.IsNull() && !cfg.MultipathRelax.IsUnknown() {
-		t0.SetMULTIPATH_RELAX(convert.BoolToStringOnOff(cfg.MultipathRelax.ValueBool()).ValueString())
+		multipathRelax := convert.BoolToStringOnOff(cfg.MultipathRelax.ValueBool()).ValueString()
+		t0.MULTIPATH_RELAX = &multipathRelax
 	}
 	if !cfg.Tier0Static.IsNull() && !cfg.Tier0Static.IsUnknown() {
-		t0.SetTIER0STATIC(convert.BoolToStringOnOff(cfg.Tier0Static.ValueBool()).ValueString())
+		tier0Static := convert.BoolToStringOnOff(cfg.Tier0Static.ValueBool()).ValueString()
+		t0.TIER0STATIC = &tier0Static
 	}
 	if !cfg.Tier0Nat.IsNull() && !cfg.Tier0Nat.IsUnknown() {
-		t0.SetTIER0NAT(convert.BoolToStringOnOff(cfg.Tier0Nat.ValueBool()).ValueString())
+		tier0Nat := convert.BoolToStringOnOff(cfg.Tier0Nat.ValueBool()).ValueString()
+		t0.TIER0NAT = &tier0Nat
 	}
 	if !cfg.Tier0IpsecLocalIp.IsNull() && !cfg.Tier0IpsecLocalIp.IsUnknown() {
-		t0.SetTIER0IPSECLOCALIP(convert.BoolToStringOnOff(cfg.Tier0IpsecLocalIp.ValueBool()).ValueString())
+		tier0IpsecLocalIp := convert.BoolToStringOnOff(cfg.Tier0IpsecLocalIp.ValueBool()).ValueString()
+		t0.TIER0IPSECLOCALIP = &tier0IpsecLocalIp
 	}
 	if !cfg.Tier0DnsForwarderIp.IsNull() && !cfg.Tier0DnsForwarderIp.IsUnknown() {
-		t0.SetTIER0DNSFORWARDERIP(convert.BoolToStringOnOff(cfg.Tier0DnsForwarderIp.ValueBool()).ValueString())
+		tier0DnsForwarderIp := convert.BoolToStringOnOff(cfg.Tier0DnsForwarderIp.ValueBool()).ValueString()
+		t0.TIER0DNSFORWARDERIP = &tier0DnsForwarderIp
 	}
 	if !cfg.Tier0ServiceInterface.IsNull() && !cfg.Tier0ServiceInterface.IsUnknown() {
-		t0.SetTIER0SERVICEINTERFACE(convert.BoolToStringOnOff(cfg.Tier0ServiceInterface.ValueBool()).ValueString())
+		tier0ServiceInterface := convert.BoolToStringOnOff(cfg.Tier0ServiceInterface.ValueBool()).ValueString()
+		t0.TIER0SERVICEINTERFACE = &tier0ServiceInterface
 	}
 	if !cfg.Tier0ExternalInterface.IsNull() && !cfg.Tier0ExternalInterface.IsUnknown() {
-		t0.SetTIER0EXTERNALINTERFACE(convert.BoolToStringOnOff(cfg.Tier0ExternalInterface.ValueBool()).ValueString())
+		tier0ExternalInterface := convert.BoolToStringOnOff(cfg.Tier0ExternalInterface.ValueBool()).ValueString()
+		t0.TIER0EXTERNALINTERFACE = &tier0ExternalInterface
 	}
 	if !cfg.Tier0LoopbackInterface.IsNull() && !cfg.Tier0LoopbackInterface.IsUnknown() {
-		t0.SetTIER0LOOPBACKINTERFACE(convert.BoolToStringOnOff(cfg.Tier0LoopbackInterface.ValueBool()).ValueString())
+		tier0LoopbackInterface := convert.BoolToStringOnOff(cfg.Tier0LoopbackInterface.ValueBool()).ValueString()
+		t0.TIER0LOOPBACKINTERFACE = &tier0LoopbackInterface
 	}
 	if !cfg.Tier0Segment.IsNull() && !cfg.Tier0Segment.IsUnknown() {
-		t0.SetTIER0SEGMENT(convert.BoolToStringOnOff(cfg.Tier0Segment.ValueBool()).ValueString())
+		tier0Segment := convert.BoolToStringOnOff(cfg.Tier0Segment.ValueBool()).ValueString()
+		t0.TIER0SEGMENT = &tier0Segment
 	}
 	if !cfg.Tier1DnsForwarderIp.IsNull() && !cfg.Tier1DnsForwarderIp.IsUnknown() {
-		t0.SetTIER1DNSFORWARDERIP(convert.BoolToStringOnOff(cfg.Tier1DnsForwarderIp.ValueBool()).ValueString())
+		tier1DnsForwarderIp := convert.BoolToStringOnOff(cfg.Tier1DnsForwarderIp.ValueBool()).ValueString()
+		t0.TIER1DNSFORWARDERIP = &tier1DnsForwarderIp
 	}
 	if !cfg.Tier1Static.IsNull() && !cfg.Tier1Static.IsUnknown() {
-		t0.SetTIER1STATIC(convert.BoolToStringOnOff(cfg.Tier1Static.ValueBool()).ValueString())
+		tier1Static := convert.BoolToStringOnOff(cfg.Tier1Static.ValueBool()).ValueString()
+		t0.TIER1STATIC = &tier1Static
 	}
 	if !cfg.Tier1LbVip.IsNull() && !cfg.Tier1LbVip.IsUnknown() {
-		t0.SetTIER1LBVIP(convert.BoolToStringOnOff(cfg.Tier1LbVip.ValueBool()).ValueString())
+		tier1LbVip := convert.BoolToStringOnOff(cfg.Tier1LbVip.ValueBool()).ValueString()
+		t0.TIER1LBVIP = &tier1LbVip
 	}
 	if !cfg.Tier1Nat.IsNull() && !cfg.Tier1Nat.IsUnknown() {
-		t0.SetTIER1NAT(convert.BoolToStringOnOff(cfg.Tier1Nat.ValueBool()).ValueString())
+		tier1Nat := convert.BoolToStringOnOff(cfg.Tier1Nat.ValueBool()).ValueString()
+		t0.TIER1NAT = &tier1Nat
 	}
 	if !cfg.Tier1LbSnat.IsNull() && !cfg.Tier1LbSnat.IsUnknown() {
-		t0.SetTIER1LBSNAT(convert.BoolToStringOnOff(cfg.Tier1LbSnat.ValueBool()).ValueString())
+		tier1LbSnat := convert.BoolToStringOnOff(cfg.Tier1LbSnat.ValueBool()).ValueString()
+		t0.TIER1LBSNAT = &tier1LbSnat
 	}
 	if !cfg.Tier1IpsecLocalEndpoint.IsNull() && !cfg.Tier1IpsecLocalEndpoint.IsUnknown() {
-		t0.SetTIER1IPSECLOCALENDPOINT(convert.BoolToStringOnOff(cfg.Tier1IpsecLocalEndpoint.ValueBool()).ValueString())
+		tier1IpsecLocalEndpoint := convert.BoolToStringOnOff(cfg.Tier1IpsecLocalEndpoint.ValueBool()).ValueString()
+		t0.TIER1IPSECLOCALENDPOINT = &tier1IpsecLocalEndpoint
 	}
 	if !cfg.Tier1ServiceInterface.IsNull() && !cfg.Tier1ServiceInterface.IsUnknown() {
-		t0.SetTIER1SERVICEINTERFACE(convert.BoolToStringOnOff(cfg.Tier1ServiceInterface.ValueBool()).ValueString())
+		tier1ServiceInterface := convert.BoolToStringOnOff(cfg.Tier1ServiceInterface.ValueBool()).ValueString()
+		t0.TIER1SERVICEINTERFACE = &tier1ServiceInterface
 	}
 	if !cfg.Tier1Segment.IsNull() && !cfg.Tier1Segment.IsUnknown() {
-		t0.SetTIER1SEGMENT(convert.BoolToStringOnOff(cfg.Tier1Segment.ValueBool()).ValueString())
+		tier1Segment := convert.BoolToStringOnOff(cfg.Tier1Segment.ValueBool()).ValueString()
+		t0.TIER1SEGMENT = &tier1Segment
 	}
 
 	if !cfg.InterSrIbgp.IsNull() && !cfg.InterSrIbgp.IsUnknown() {
-		t0.SetINTER_SR_IBGP(convert.BoolToStringOnOff(cfg.InterSrIbgp.ValueBool()).ValueString())
+		interSrIbgp := convert.BoolToStringOnOff(cfg.InterSrIbgp.ValueBool()).ValueString()
+		t0.INTER_SR_IBGP = &interSrIbgp
 	}
 
-	anyOf := sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOfAsCreateNetworkRouterRequestNetworkRouterConfigAnyOf( //nolint:lll
-		t0,
-	)
+	anyOf := *t0
 
 	return sdk.CreateNetworkRouterRequestNetworkRouterConfig{
-		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &anyOf,
+		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOf{
+			CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf: &anyOf,
+		},
 	}
 }
 
 // nsxTier1Config builds a typed NSX Tier-1 gateway config using the SDK struct.
 func nsxTier1Config(cfg ConfigNsxtGatewayTier1Value) sdk.CreateNetworkRouterRequestNetworkRouterConfig {
-	t1 := sdk.NewCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1WithDefaults()
+	t1 := &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1{}
 
 	if !cfg.Tier0Gateway.IsNull() && !cfg.Tier0Gateway.IsUnknown() {
-		t1.SetTier0Gateway(cfg.Tier0Gateway.ValueString())
+		tier0Gateway := cfg.Tier0Gateway.ValueString()
+		t1.Tier0Gateway = &tier0Gateway
 	}
 	if !cfg.EdgeCluster.IsNull() && !cfg.EdgeCluster.IsUnknown() {
-		t1.SetEdgeCluster(cfg.EdgeCluster.ValueString())
+		edgeCluster := cfg.EdgeCluster.ValueString()
+		t1.EdgeCluster = &edgeCluster
 	}
 	if !cfg.FailOver.IsNull() && !cfg.FailOver.IsUnknown() {
-		t1.SetFailOver(cfg.FailOver.ValueString())
+		failOver := cfg.FailOver.ValueString()
+		t1.FailOver = &failOver
 	}
 	if !cfg.IpManagementType.IsNull() && !cfg.IpManagementType.IsUnknown() {
-		t1.SetIpManagementType(cfg.IpManagementType.ValueString())
+		ipManagementType := cfg.IpManagementType.ValueString()
+		t1.IpManagementType = &ipManagementType
 	}
 	if !cfg.IpServerId.IsNull() && !cfg.IpServerId.IsUnknown() {
-		t1.SetIpServerId(cfg.IpServerId.ValueString())
+		ipServerId := cfg.IpServerId.ValueString()
+		t1.IpServerId = &ipServerId
 	}
 	if !cfg.Tier1Connected.IsNull() && !cfg.Tier1Connected.IsUnknown() {
-		t1.SetTIER1CONNECTED(convert.BoolToStringOnOff(cfg.Tier1Connected.ValueBool()).ValueString())
+		tier1Connected := convert.BoolToStringOnOff(cfg.Tier1Connected.ValueBool()).ValueString()
+		t1.TIER1CONNECTED = &tier1Connected
 	}
 	if !cfg.Tier1Nat.IsNull() && !cfg.Tier1Nat.IsUnknown() {
-		t1.SetTIER1NAT(convert.BoolToStringOnOff(cfg.Tier1Nat.ValueBool()).ValueString())
+		tier1Nat := convert.BoolToStringOnOff(cfg.Tier1Nat.ValueBool()).ValueString()
+		t1.TIER1NAT = &tier1Nat
 	}
 	if !cfg.Tier1StaticRoutes.IsNull() && !cfg.Tier1StaticRoutes.IsUnknown() {
-		t1.SetTIER1STATICROUTES(convert.BoolToStringOnOff(cfg.Tier1StaticRoutes.ValueBool()).ValueString())
+		tier1StaticRoutes := convert.BoolToStringOnOff(cfg.Tier1StaticRoutes.ValueBool()).ValueString()
+		t1.TIER1STATICROUTES = &tier1StaticRoutes
 	}
 	if !cfg.Tier1LbVip.IsNull() && !cfg.Tier1LbVip.IsUnknown() {
-		t1.SetTIER1LBVIP(convert.BoolToStringOnOff(cfg.Tier1LbVip.ValueBool()).ValueString())
+		tier1LbVip := convert.BoolToStringOnOff(cfg.Tier1LbVip.ValueBool()).ValueString()
+		t1.TIER1LBVIP = &tier1LbVip
 	}
 	if !cfg.Tier1LbSnat.IsNull() && !cfg.Tier1LbSnat.IsUnknown() {
-		t1.SetTIER1LBSNAT(convert.BoolToStringOnOff(cfg.Tier1LbSnat.ValueBool()).ValueString())
+		tier1LbSnat := convert.BoolToStringOnOff(cfg.Tier1LbSnat.ValueBool()).ValueString()
+		t1.TIER1LBSNAT = &tier1LbSnat
 	}
 	if !cfg.Tier1DnsForwarderIp.IsNull() && !cfg.Tier1DnsForwarderIp.IsUnknown() {
-		t1.SetTIER1DNSFORWARDERIP(convert.BoolToStringOnOff(cfg.Tier1DnsForwarderIp.ValueBool()).ValueString())
+		tier1DnsForwarderIp := convert.BoolToStringOnOff(cfg.Tier1DnsForwarderIp.ValueBool()).ValueString()
+		t1.TIER1DNSFORWARDERIP = &tier1DnsForwarderIp
 	}
 	if !cfg.Tier1IpsecLocalEndpoint.IsNull() && !cfg.Tier1IpsecLocalEndpoint.IsUnknown() {
-		t1.SetTIER1IPSECLOCALENDPOINT(convert.BoolToStringOnOff(cfg.Tier1IpsecLocalEndpoint.ValueBool()).ValueString())
+		tier1IpsecLocalEndpoint := convert.BoolToStringOnOff(cfg.Tier1IpsecLocalEndpoint.ValueBool()).ValueString()
+		t1.TIER1IPSECLOCALENDPOINT = &tier1IpsecLocalEndpoint
 	}
 
-	anyOf := sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1AsCreateNetworkRouterRequestNetworkRouterConfigAnyOf( //nolint:lll
-		t1,
-	)
+	anyOf := *t1
 
 	return sdk.CreateNetworkRouterRequestNetworkRouterConfig{
-		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &anyOf,
+		CreateNetworkRouterRequestNetworkRouterConfigAnyOf: &sdk.CreateNetworkRouterRequestNetworkRouterConfigAnyOf{
+			CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf1: &anyOf,
+		},
 	}
 }

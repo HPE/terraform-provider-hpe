@@ -118,8 +118,8 @@ func (r *containerScriptResource) Create(
 	// Extract ID from response — SDK may not deserialize correctly due to account field mismatch
 	var scriptID int64
 	if result != nil {
-		script := result.GetContainerScript()
-		if script.Id != nil {
+		script := result.ContainerScript
+		if script != nil && script.Id != nil {
 			scriptID = *script.Id
 		}
 	}
@@ -325,8 +325,8 @@ func mapGetResponseToModel(
 	} else {
 		model.Labels = types.ListNull(types.StringType)
 	}
-	if v, ok := script.GetCategoryOk(); ok && v != nil {
-		model.Category = types.StringValue(*v)
+	if script.Category.IsSet() && script.Category.Get() != nil {
+		model.Category = types.StringValue(*script.Category.Get())
 	} else {
 		model.Category = types.StringNull()
 	}
@@ -344,8 +344,8 @@ func mapGetResponseToModel(
 	} else {
 		model.Script = types.StringNull()
 	}
-	if v, ok := script.GetRunAsUserOk(); ok && v != nil {
-		model.RunAsUser = types.StringValue(*v)
+	if script.RunAsUser.IsSet() && script.RunAsUser.Get() != nil {
+		model.RunAsUser = types.StringValue(*script.RunAsUser.Get())
 	} else {
 		model.RunAsUser = types.StringNull()
 	}
@@ -374,10 +374,12 @@ func readScriptIntoModel(
 
 	// If SDK deserialization succeeded, use typed response
 	if err == nil && result != nil {
-		script := result.GetContainerScript()
-		mapGetResponseToModel(ctx, model, &script, diags)
+		script := result.ContainerScript
+		if script != nil {
+			mapGetResponseToModel(ctx, model, script, diags)
 
-		return nil
+			return nil
+		}
 	}
 
 	// SDK deserialization failed (likely due to 'account' field type mismatch).

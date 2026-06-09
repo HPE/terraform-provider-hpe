@@ -14,36 +14,37 @@ func createVolumeMapper(
 	volume := sdk.AddClusterRequestClusterServerVolumesInner{}
 
 	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
-		volume.SetId(vol.Id.ValueInt64())
+		volume.Id = vol.Id.ValueInt64Pointer()
 	} else {
 		// set to auto
-		volume.SetId(-1)
+		id := int64(-1)
+		volume.Id = &id
 	}
 
 	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
 		// convert to expected format of API (string)
 		id := strconv.Itoa(int(vol.DatastoreId.ValueInt64()))
-		volume.SetDatastoreId(id)
+		volume.DatastoreId = *sdk.NewNullableString(&id)
 	}
 
 	if !vol.DatastoreAutoSelection.IsNull() && !vol.DatastoreAutoSelection.IsUnknown() {
-		volume.SetDatastoreId(vol.DatastoreAutoSelection.ValueString())
+		volume.DatastoreId = *sdk.NewNullableString(vol.DatastoreAutoSelection.ValueStringPointer())
 	}
 
 	if !vol.Name.IsNull() && !vol.Name.IsUnknown() {
-		volume.SetName(vol.Name.ValueString())
+		volume.Name = vol.Name.ValueString()
 	}
 
 	if !vol.RootVolume.IsNull() && !vol.RootVolume.IsUnknown() {
-		volume.SetRootVolume(vol.RootVolume.ValueBool())
+		volume.RootVolume = vol.RootVolume.ValueBoolPointer()
 	}
 
 	if !vol.Size.IsNull() && !vol.Size.IsUnknown() {
-		volume.SetSize(vol.Size.ValueInt64())
+		volume.Size = vol.Size.ValueInt64Pointer()
 	}
 
 	if !vol.StorageTypeId.IsNull() && !vol.StorageTypeId.IsUnknown() {
-		volume.SetStorageType(vol.StorageTypeId.ValueInt64())
+		volume.StorageType = vol.StorageTypeId.ValueInt64Pointer()
 	}
 
 	return volume
@@ -55,11 +56,11 @@ func createSSHHostsMapper(
 	host := sdk.AddClusterRequestClusterServerSshHostsInner{}
 
 	if !sshHost.Ip.IsNull() && !sshHost.Ip.IsUnknown() {
-		host.SetIp(sshHost.Ip.ValueString())
+		host.Ip = sshHost.Ip.ValueStringPointer()
 	}
 
 	if !sshHost.Name.IsNull() && !sshHost.Name.IsUnknown() {
-		host.SetName(sshHost.Name.ValueString())
+		host.Name = sshHost.Name.ValueStringPointer()
 	}
 
 	return host
@@ -71,15 +72,13 @@ func createNetworkInterfacesMapper(
 	ni := sdk.AddClusterRequestClusterServerNetworkInterfacesInner{}
 
 	if !networkInterface.NetworkId.IsNull() && !networkInterface.NetworkId.IsUnknown() {
-		ni.Network.SetId(
-			sdk.AddClusterRequestClusterServerNetworkInterfacesInnerNetworkId{
-				Int64: networkInterface.NetworkId.ValueInt64Pointer(),
-			},
-		)
+		ni.Network.Id = sdk.AddClusterRequestClusterServerNetworkInterfacesInnerNetworkId{
+			Int64: networkInterface.NetworkId.ValueInt64Pointer(),
+		}
 	}
 
 	if !networkInterface.IpMode.IsNull() && !networkInterface.IpMode.IsUnknown() {
-		ni.SetIpMode(networkInterface.IpMode.ValueString())
+		ni.IpMode = networkInterface.IpMode.ValueStringPointer()
 	}
 
 	return ni

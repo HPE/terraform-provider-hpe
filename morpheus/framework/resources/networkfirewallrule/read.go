@@ -76,9 +76,20 @@ func getNetworkFirewallRuleAsState(
 		return state, false, diags
 	}
 
-	rule := ruleResp.GetRule()
+	rule := ruleResp.Rule
+	if rule == nil {
+		diags.AddError("API returned nil", "Rule is nil in the response")
 
-	state.Id = types.Int64Value(rule.GetId())
+		return state, false, diags
+	}
+
+	if rule.Id == nil {
+		diags.AddError("API returned nil", "Rule ID is nil in the response")
+
+		return state, false, diags
+	}
+
+	state.Id = types.Int64Value(*rule.Id)
 	state.NetworkIntegrationId = types.Int64Value(networkIntegrationId)
 	state.Name = convert.StrToType(rule.Name)
 	state.Direction = convert.StrToType(rule.Direction)

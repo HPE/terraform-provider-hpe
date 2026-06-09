@@ -68,9 +68,7 @@ func getInstanceTypeLayoutByID(
 		return nil, fmt.Errorf("GET failed for instance layout %d", id)
 	}
 
-	layout := c.GetInstanceTypeLayout()
-
-	return &layout, nil
+	return c.InstanceTypeLayout, nil
 }
 
 func getInstanceTypeLayoutByName(
@@ -95,7 +93,7 @@ func getInstanceTypeLayoutByName(
 	var layouts []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 
 	for _, l := range ls.InstanceTypeLayouts {
-		if l.GetName() == name {
+		if l.Name != nil && *l.Name == name {
 			layouts = append(layouts, l)
 		}
 	}
@@ -105,7 +103,7 @@ func getInstanceTypeLayoutByName(
 
 		var filtered []sdk.ListLayouts200ResponseAllOfInstanceTypeLayoutsInner
 		for _, l := range layouts {
-			if l.GetInstanceVersion() == version {
+			if l.InstanceVersion != nil && *l.InstanceVersion == version {
 				filtered = append(filtered, l)
 			}
 		}
@@ -115,6 +113,10 @@ func getInstanceTypeLayoutByName(
 
 	// We return the first layout which should have the highest display order (sortOrder)
 	if len(layouts) > 0 {
+		if layouts[0].Id == nil {
+			return nil, errors.New(ErrorNoInstanceTypeLayoutFound)
+		}
+
 		return getInstanceTypeLayoutByID(ctx, *layouts[0].Id, apiClient)
 	}
 

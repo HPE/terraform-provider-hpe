@@ -116,7 +116,18 @@ func getImageByID(
 		return diags
 	}
 
-	image := imageResp.GetVirtualImage()
+	if imageResp.VirtualImage == nil {
+		diags.AddError(
+			fmt.Sprintf(
+				"GET failed for image '%d'", id,
+			),
+			"image response did not include virtualImage",
+		)
+
+		return diags
+	}
+
+	image := *imageResp.VirtualImage
 
 	d := parseAsData(ctx, image, data)
 	diags = append(diags, d...)
@@ -152,11 +163,11 @@ func getImageByName(
 
 	var images []sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner
 
-	for _, image := range imageListResp.GetVirtualImages() {
-		if image.GetName() == name {
+	for _, image := range imageListResp.VirtualImages {
+		if image.Name != nil && *image.Name == name {
 			if !data.ImageType.IsNull() {
 				// skip if image type doesn't match
-				if image.GetImageType() != data.ImageType.ValueString() {
+				if image.ImageType == nil || *image.ImageType != data.ImageType.ValueString() {
 					continue
 				}
 			}
@@ -229,12 +240,12 @@ func parseAsData(
 	data.CloudInit = convert.BoolToType(image.IsCloudInit)
 
 	// config_azure
-	if image.GetImageType() == "azure-reference" {
-		if image.GetConfig().AzureReferenceVirtualImageConfiguration3 != nil {
-			data.ConfigAzure.Publisher = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher)
-			data.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Offer)
-			data.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Version)
-			data.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Sku)
+	if image.ImageType != nil && *image.ImageType == "azure-reference" {
+		if image.Config != nil && image.Config.AzureReferenceVirtualImageConfiguration3 != nil {
+			data.ConfigAzure.Publisher = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Publisher)
+			data.ConfigAzure.Offer = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Offer)
+			data.ConfigAzure.Version = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Version)
+			data.ConfigAzure.Sku = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Sku)
 		}
 
 		data.ConfigAzure.state = attr.ValueStateKnown
@@ -267,7 +278,7 @@ func parseAsData(
 	data.InstallAgent = convert.BoolToType(image.InstallAgent)
 
 	// lables
-	data.Labels = convert.StrSliceToSet(image.GetLabels())
+	data.Labels = convert.StrSliceToSet(image.Labels)
 
 	// min_disk
 	if image.MinDisk.Get() != nil {
@@ -289,7 +300,11 @@ func parseAsData(
 	data.Name = convert.StrToType(image.Name)
 
 	// os_type_id
-	data.OsTypeId = convert.Int64ToType(image.GetOsType().Id)
+	var osTypeID *int64
+	if image.OsType != nil {
+		osTypeID = image.OsType.Id
+	}
+	data.OsTypeId = convert.Int64ToType(osTypeID)
 
 	// owner_id
 	data.OwnerId = convert.Int64ToType(image.OwnerId)
@@ -307,7 +322,11 @@ func parseAsData(
 	data.Status = convert.StrToType(image.Status)
 
 	// storage_provider_id
-	data.StorageProviderId = convert.Int64ToType(image.GetStorageProvider().Id)
+	var storageProviderID *int64
+	if image.StorageProvider != nil {
+		storageProviderID = image.StorageProvider.Id
+	}
+	data.StorageProviderId = convert.Int64ToType(storageProviderID)
 
 	// sysprep
 	data.Sysprep = convert.BoolToType(image.IsSysprep)

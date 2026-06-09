@@ -33,7 +33,7 @@ func (r *Resource) Update(
 	id := state.Id.ValueInt64()
 	name := plan.Name.ValueString()
 
-	updatePolicy := sdk.NewUpdatePoliciesRequestPolicyWithDefaults()
+	updatePolicy := &sdk.UpdatePoliciesRequestPolicy{}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *Resource) Update(
 	}
 
 	// Set required fields
-	updatePolicy.SetName(name)
+	updatePolicy.Name = sdk.PtrString(name)
 
 	// Note: PolicyType, AssociatedResourceType, and AssociatedResourceId are not included
 	// in updates. PolicyType is not updatable via the API (not present in UpdatePoliciesRequestPolicy).
@@ -56,15 +56,15 @@ func (r *Resource) Update(
 
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updatePolicy.SetDescription(plan.Description.ValueString())
+		updatePolicy.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		updatePolicy.SetEnabled(plan.Enabled.ValueBool())
+		updatePolicy.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
-		updatePolicy.SetEachUser(plan.EachUser.ValueBool())
+		updatePolicy.EachUser = plan.EachUser.ValueBoolPointer()
 	}
 
 	// Set tenant IDs if provided
@@ -76,7 +76,7 @@ func (r *Resource) Update(
 
 			return
 		}
-		updatePolicy.SetAccounts(tenantIDs)
+		updatePolicy.Accounts = tenantIDs
 	}
 
 	// Set Config - convert state config fields to SDK config structure
@@ -87,10 +87,10 @@ func (r *Resource) Update(
 		return
 	}
 	if sdkConfig != nil {
-		updatePolicy.SetConfig(*sdkConfig)
+		updatePolicy.Config = sdkConfig
 	}
 
-	updatePolicyRequest := sdk.NewUpdatePoliciesRequest(*updatePolicy)
+	updatePolicyRequest := &sdk.UpdatePoliciesRequest{Policy: *updatePolicy}
 
 	policy, hresp, err := client.PoliciesAPI.UpdatePolicies(ctx, id).
 		UpdatePoliciesRequest(*updatePolicyRequest).Execute()

@@ -175,9 +175,7 @@ func getBgpNeighborByID(
 		)
 	}
 
-	neighbor := r.GetNetworkRouterBgpNeighbor()
-
-	return &neighbor, nil
+	return r.NetworkRouterBgpNeighbor, nil
 }
 
 func getBgpNeighborByIpAddress(
@@ -196,7 +194,7 @@ func getBgpNeighborByIpAddress(
 		)
 	}
 
-	items := rs.GetNetworkRouterBgpNeighbors()
+	items := rs.NetworkRouterBgpNeighbors
 	if len(items) == 0 {
 		return nil, errors.New(ErrorNoNetworkRouterBgpNeighborFound)
 	}
@@ -204,11 +202,14 @@ func getBgpNeighborByIpAddress(
 	var matchedIDs []int64
 
 	for i := range items {
-		if items[i].GetIpAddress() != ipAddress {
+		if items[i].IpAddress == nil || *items[i].IpAddress != ipAddress {
+			continue
+		}
+		if items[i].Id == nil {
 			continue
 		}
 
-		matchedIDs = append(matchedIDs, items[i].GetId())
+		matchedIDs = append(matchedIDs, *items[i].Id)
 	}
 
 	if len(matchedIDs) == 0 {

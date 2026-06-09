@@ -14,12 +14,24 @@ import (
 )
 
 var (
-	tenantsClusterFunc             = sdk.NewSaveClusterDatastoreRequestDatastoreTenantsInnerWithDefaults
-	resourcePermissionsClusterFunc = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsWithDefaults
-	permissionsSitesClusterFunc    = sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInnerWithDefaults
-	datastoreTypeClusterFunc       = sdk.NewSaveClusterDatastoreRequestDatastoreDatastoreTypeWithDefaults
-	nfsConfigClusterFunc           = sdk.NewNFSDatastoreConfigurationWithDefaults
-	alletrampHvmConfigClusterFunc  = sdk.NewAlletraMPHVMDatastoreConfigurationWithDefaults
+	tenantsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreTenantsInner {
+		return &sdk.SaveClusterDatastoreRequestDatastoreTenantsInner{}
+	}
+	resourcePermissionsClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions {
+		return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissions{}
+	}
+	permissionsSitesClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner {
+		return &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{}
+	}
+	datastoreTypeClusterFunc = func() *sdk.SaveClusterDatastoreRequestDatastoreDatastoreType {
+		return &sdk.SaveClusterDatastoreRequestDatastoreDatastoreType{}
+	}
+	nfsConfigClusterFunc = func() *sdk.NFSDatastoreConfiguration {
+		return &sdk.NFSDatastoreConfiguration{}
+	}
+	alletrampHvmConfigClusterFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration {
+		return &sdk.AlletraMPHVMDatastoreConfiguration{}
+	}
 )
 
 func datastoreCreateCluster(ctx context.Context,
@@ -31,35 +43,38 @@ func datastoreCreateCluster(ctx context.Context,
 	resp *resource.CreateResponse,
 ) int64 {
 	// datastoreCreate is used by the SDK to create the datastore
-	datastoreCreate := sdk.NewSaveClusterDatastoreRequestDatastoreWithDefaults()
+	datastoreCreate := &sdk.SaveClusterDatastoreRequestDatastore{}
 
 	// Set the required fields
-	datastoreCreate.SetName(name)
+	datastoreCreate.Name = plan.Name.ValueStringPointer()
 
 	// Set the type
 	datastoreTypeForRequest := datastoreTypeClusterFunc()
-	datastoreTypeForRequest.SetId(datastoreType.Id.ValueInt64())
-	datastoreCreate.SetDatastoreType(*datastoreTypeForRequest)
+	datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
+	datastoreCreate.DatastoreType = datastoreTypeForRequest
 
 	// Set the config.  As far as I can tell you need a config object, even if empty.
 	// The config can be one of several types, handled below.
 	// If none of the specific types are set, then use the generic config map.
 	// The specific types are mutually exclusive.
-	createConfig := datastoreCreate.GetConfig()
+	createConfig := datastoreCreate.Config
+	if createConfig == nil {
+		createConfig = &sdk.SaveClusterDatastoreRequestDatastoreConfig{}
+	}
 	switch {
 	case !plan.ConfigNfs.IsNull() && !plan.ConfigNfs.IsUnknown():
 		nfsConfig := nfsConfigClusterFunc()
 
 		if !plan.ConfigNfs.SourceHostname.IsNull() {
-			nfsConfig.SetSourceHostname(plan.ConfigNfs.SourceHostname.ValueString())
+			nfsConfig.SourceHostname = plan.ConfigNfs.SourceHostname.ValueString()
 		}
 
 		if !plan.ConfigNfs.SourceDirPath.IsNull() {
-			nfsConfig.SetSourceDirPath(plan.ConfigNfs.SourceDirPath.ValueString())
+			nfsConfig.SourceDirPath = plan.ConfigNfs.SourceDirPath.ValueString()
 		}
 
 		if !plan.ConfigNfs.SourceVersion.IsNull() {
-			nfsConfig.SetSourceVersion(plan.ConfigNfs.SourceVersion.ValueString())
+			nfsConfig.SourceVersion = plan.ConfigNfs.SourceVersion.ValueStringPointer()
 		}
 
 		createConfig.NFSDatastoreConfiguration = nfsConfig
@@ -69,11 +84,11 @@ func datastoreCreateCluster(ctx context.Context,
 
 		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
-			alletrampHvmConfig.SetEnableransomware(enableRansomwareString.ValueString())
+			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
 		}
 
 		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
-			alletrampHvmConfig.SetProtocolType(plan.ConfigAlletrampHvm.ProtocolType.ValueString())
+			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 
 		createConfig.AlletraMPHVMDatastoreConfiguration = alletrampHvmConfig
@@ -81,7 +96,7 @@ func datastoreCreateCluster(ctx context.Context,
 		// removing for now
 		/*
 			case !plan.ConfigGfs2.IsNull() && !plan.ConfigGfs2.IsUnknown():
-				gfs2Config := sdk.NewSaveClusterDatastoreRequestDatastoreConfigAnyOf1WithDefaults()
+				gfs2Config := &sdk.SaveClusterDatastoreRequestDatastoreConfigAnyOf1{}
 
 				if !plan.ConfigGfs2.BlockDevice.IsNull() {
 					gfs2Config.SetBlockDevice(plan.ConfigGfs2.BlockDevice.ValueString())
@@ -122,25 +137,25 @@ func datastoreCreateCluster(ctx context.Context,
 
 	}
 
-	datastoreCreate.SetConfig(createConfig)
+	datastoreCreate.Config = createConfig
 
 	// Optional fields
 	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
-		storageServerConfig := sdk.NewSaveClusterDatastoreRequestDatastoreStorageServerWithDefaults()
-		storageServerConfig.SetId(plan.StorageServer.Id.ValueInt64())
-		datastoreCreate.SetStorageServer(*storageServerConfig)
+		storageServerConfig := &sdk.SaveClusterDatastoreRequestDatastoreStorageServer{}
+		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
+		datastoreCreate.StorageServer = storageServerConfig
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		datastoreCreate.SetVisibility(plan.Visibility.ValueString())
+		datastoreCreate.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		datastoreCreate.SetActive(plan.Active.ValueBool())
+		datastoreCreate.Active = plan.Active.ValueBoolPointer()
 	}
 
 	if !plan.DefaultStore.IsNull() && !plan.DefaultStore.IsUnknown() {
-		datastoreCreate.SetDefaultStore(plan.DefaultStore.ValueBool())
+		datastoreCreate.DefaultStore = plan.DefaultStore.ValueBoolPointer()
 	}
 
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
@@ -154,18 +169,18 @@ func datastoreCreateCluster(ctx context.Context,
 		var tenantPermissions []sdk.SaveClusterDatastoreRequestDatastoreTenantsInner
 		for _, tenantsValue := range tenantsValues {
 			tenantPermission := tenantsClusterFunc()
-			tenantPermission.SetId(tenantsValue.Id.ValueInt64())
+			tenantPermission.Id = tenantsValue.Id.ValueInt64Pointer()
 			tenantPermissions = append(tenantPermissions, *tenantPermission)
 		}
-		datastoreCreate.SetTenants(tenantPermissions)
+		datastoreCreate.Tenants = tenantPermissions
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		resourcePermissions := resourcePermissionsClusterFunc()
-		resourcePermissions.SetAllGroups(plan.ResourcePermissions.AllGroups.ValueBool())
-		resourcePermissions.SetDefaultStore(plan.ResourcePermissions.DefaultStore.ValueBool())
-		resourcePermissions.SetCanManage(plan.ResourcePermissions.CanManage.ValueBool())
-		resourcePermissions.SetAll(plan.ResourcePermissions.All.ValueBool())
+		resourcePermissions.AllGroups = plan.ResourcePermissions.AllGroups.ValueBoolPointer()
+		resourcePermissions.DefaultStore = plan.ResourcePermissions.DefaultStore.ValueBoolPointer()
+		resourcePermissions.CanManage = plan.ResourcePermissions.CanManage.ValueBoolPointer()
+		resourcePermissions.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
 			var groupsValues []GroupsValue
 			diags := plan.ResourcePermissions.Groups.ElementsAs(ctx, &groupsValues, false)
@@ -177,11 +192,11 @@ func datastoreCreateCluster(ctx context.Context,
 			sites := []sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{}
 			for _, groupsValue := range groupsValues {
 				site := permissionsSitesClusterFunc()
-				site.SetId(groupsValue.Id.ValueInt64())
+				site.Id = groupsValue.Id.ValueInt64Pointer()
 				sites = append(sites, *site)
 			}
 
-			resourcePermissions.SetSites(sites)
+			resourcePermissions.Sites = sites
 		}
 
 		// nolint:duplicate
@@ -195,22 +210,22 @@ func datastoreCreateCluster(ctx context.Context,
 
 			var plans []sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInner
 			for _, plansValue := range plansValues {
-				planItem := sdk.NewSaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInnerWithDefaults()
-				planItem.SetId(plansValue.Id.ValueInt64())
-				planItem.SetCode(plansValue.Code.ValueString())
-				planItem.SetName(plansValue.Name.ValueString())
+				planItem := &sdk.SaveClusterDatastoreRequestDatastoreResourcePermissionsPlansInner{}
+				planItem.Id = plansValue.Id.ValueInt64Pointer()
+				planItem.Code = plansValue.Code.ValueStringPointer()
+				planItem.Name = plansValue.Name.ValueStringPointer()
 				plans = append(plans, *planItem)
 			}
 
-			resourcePermissions.SetPlans(plans)
+			resourcePermissions.Plans = plans
 		}
 
-		datastoreCreate.SetResourcePermissions(*resourcePermissions)
+		datastoreCreate.ResourcePermissions = resourcePermissions
 	}
 
 	// Call API
-	datastoreRequest := sdk.NewSaveClusterDatastoreRequestWithDefaults()
-	datastoreRequest.SetDatastore(*datastoreCreate)
+	datastoreRequest := &sdk.SaveClusterDatastoreRequest{}
+	datastoreRequest.Datastore = datastoreCreate
 
 	response, hresp, err := client.ClustersAPI.SaveClusterDatastore(ctx, associatedResourceId).
 		SaveClusterDatastoreRequest(*datastoreRequest).Execute()
@@ -223,8 +238,8 @@ func datastoreCreateCluster(ctx context.Context,
 		return 0
 	}
 
-	datastore, ok := response.GetDatastoreOk()
-	if !ok {
+	datastore := response.Datastore
+	if datastore == nil {
 		resp.Diagnostics.AddError(
 			"create cluster datastore resource",
 			"datastore "+name+": could not get datastore from response",
@@ -232,8 +247,8 @@ func datastoreCreateCluster(ctx context.Context,
 
 		return 0
 	}
-	id, ok := datastore.GetIdOk()
-	if !ok || id == nil {
+	id := datastore.Id
+	if id == nil {
 		resp.Diagnostics.AddError(
 			"create cluster datastore resource",
 			"datastore "+name+": could not get id",

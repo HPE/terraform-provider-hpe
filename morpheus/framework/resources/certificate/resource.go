@@ -75,8 +75,13 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapAddResponseToModel(&plan, &cert)
+	cert := result.Certificate
+	if cert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapAddResponseToModel(&plan, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -109,8 +114,13 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapGetResponseToModel(&state, &cert)
+	cert := result.Certificate
+	if cert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -153,8 +163,13 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	cert := result.GetCertificate()
-	mapUpdateResponseToModel(&plan, &cert)
+	cert := result.Certificate
+	if cert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapUpdateResponseToModel(&plan, cert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
