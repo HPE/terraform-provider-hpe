@@ -94,7 +94,9 @@ func getGroupAsState(
 		if len(g.Group.Zones) > 0 {
 			var cloudIds []int64
 			for _, zone := range g.Group.Zones {
-				cloudIds = append(cloudIds, *zone.Id)
+				if zone.Id != nil {
+					cloudIds = append(cloudIds, *zone.Id)
+				}
 			}
 
 			// Only set the state if cloud ids are returned

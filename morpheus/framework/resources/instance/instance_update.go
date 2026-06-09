@@ -623,6 +623,19 @@ func makeResizeRequestAndWaitForComplete(
 	updateTimeout time.Duration,
 ) diag.Diagnostics {
 	var d diag.Diagnostics
+
+	if resizeRequest.Instance == nil {
+		d.AddError("instance resize failed", "resize request Instance is nil")
+
+		return d
+	}
+
+	if resizeRequest.Instance.Id == nil {
+		d.AddError("instance resize failed", "resize request Instance ID is nil")
+
+		return d
+	}
+
 	resizeInstance := client.InstancesAPI.ResizeInstance(ctx, *resizeRequest.Instance.Id)
 	resizeResp, httpResp, err := resizeInstance.ResizeInstanceRequest(*resizeRequest).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {

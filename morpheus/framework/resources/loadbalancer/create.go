@@ -104,6 +104,12 @@ func (r *Resource) Create(
 		return
 	}
 
+	if lb.LoadBalancer == nil {
+		resp.Diagnostics.AddError("API returned nil", "LoadBalancer is nil in the response")
+
+		return
+	}
+
 	if lb.LoadBalancer.Id == nil {
 		resp.Diagnostics.AddError(
 			"create load balancer resource",

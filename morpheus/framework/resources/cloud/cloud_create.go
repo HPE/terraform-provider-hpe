@@ -605,6 +605,18 @@ func (r *Resource) Create(
 		return
 	}
 
+	if cloud.Zone == nil {
+		resp.Diagnostics.AddError("API returned nil", "Zone is nil in the response")
+
+		return
+	}
+
+	if cloud.Zone.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Zone ID is nil in the response")
+
+		return
+	}
+
 	id := *cloud.Zone.Id
 	plan.Id = types.Int64Value(id)
 

@@ -166,6 +166,18 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	if taskResp.Task == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task is nil in the response")
+
+		return
+	}
+
+	if taskResp.Task.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task ID is nil in the response")
+
+		return
+	}
+
 	plan.Id = convert.Int64ToType(taskResp.Task.Id)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

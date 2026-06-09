@@ -237,6 +237,18 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	if image.VirtualImage == nil {
+		resp.Diagnostics.AddError("API returned nil", "VirtualImage is nil in the response")
+
+		return
+	}
+
+	if image.VirtualImage.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "VirtualImage ID is nil in the response")
+
+		return
+	}
+
 	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
 	// Helper to taint the resource state on an error after the POST request

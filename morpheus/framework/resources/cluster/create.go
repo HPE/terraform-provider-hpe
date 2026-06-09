@@ -148,6 +148,18 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	if clusterResp.Cluster == nil {
+		resp.Diagnostics.AddError("API returned nil", "Cluster is nil in the response")
+
+		return
+	}
+
+	if clusterResp.Cluster.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Cluster ID is nil in the response")
+
+		return
+	}
+
 	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
 

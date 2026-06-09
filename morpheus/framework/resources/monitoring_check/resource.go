@@ -117,6 +117,13 @@ func (r *monitoringCheckResource) Create(
 
 		return
 	}
+
+	if check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
+
+		return
+	}
+
 	plan.ID = types.Int64Value(*check.Id)
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)
@@ -259,6 +266,13 @@ func (r *monitoringCheckResource) Update(
 
 		return
 	}
+
+	if check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
+
+		return
+	}
+
 	plan.ID = types.Int64Value(*check.Id)
 	if check.Name != nil {
 		plan.Name = types.StringValue(*check.Name)
