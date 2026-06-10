@@ -72,10 +72,10 @@ func getNetworkTypeByID(
 
 	state := &NetworkTypeModel{}
 
-	nt, ok := response.GetNetworkTypeOk()
-	if !ok {
+	if response.NetworkType == nil {
 		return nil, fmt.Errorf("network type %d is nil", id)
 	}
+	nt := response.NetworkType
 
 	state.Id = types.Int64Value(id)
 	state.Name = convert.StrToType(nt.Name)
@@ -98,8 +98,8 @@ func getNetworkTypeByName(
 	}
 
 	var matchingNetworkTypes []sdk.ListNetworkTypes200ResponseAllOfNetworkTypesInner
-	for _, networkType := range response.GetNetworkTypes() {
-		if networkTypeName, ok := networkType.GetNameOk(); ok && *networkTypeName == name {
+	for _, networkType := range response.NetworkTypes {
+		if networkType.Name != nil && *networkType.Name == name {
 			matchingNetworkTypes = append(matchingNetworkTypes, networkType)
 		}
 	}
@@ -111,8 +111,8 @@ func getNetworkTypeByName(
 	if len(matchingNetworkTypes) > 1 {
 		var networkTypeIDs []string
 		for _, n := range matchingNetworkTypes {
-			if id, ok := n.GetIdOk(); ok {
-				networkTypeIDs = append(networkTypeIDs, fmt.Sprintf("%d", *id))
+			if n.Id != nil {
+				networkTypeIDs = append(networkTypeIDs, fmt.Sprintf("%d", *n.Id))
 			}
 		}
 
@@ -124,8 +124,8 @@ func getNetworkTypeByName(
 		)
 	}
 
-	id, ok := matchingNetworkTypes[0].GetIdOk()
-	if !ok {
+	id := matchingNetworkTypes[0].Id
+	if id == nil {
 		return nil, fmt.Errorf("network type %s has missing ID", name)
 	}
 

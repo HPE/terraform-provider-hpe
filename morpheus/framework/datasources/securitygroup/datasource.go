@@ -72,10 +72,10 @@ func getSecurityGroupByID(
 
 	state := &SecurityGroupModel{}
 
-	sg, ok := response.GetSecurityGroupOk()
-	if !ok {
+	if response.SecurityGroup == nil {
 		return nil, fmt.Errorf("security group %d is nil", id)
 	}
+	sg := response.SecurityGroup
 
 	state.Id = types.Int64Value(id)
 	state.Name = convert.StrToType(sg.Name)
@@ -84,10 +84,8 @@ func getSecurityGroupByID(
 	state.Visibility = convert.StrToType(sg.Visibility)
 	state.ExternalId = convert.StrToType(sg.ExternalId.Get())
 
-	if zone, ok := sg.GetZoneOk(); ok && zone != nil {
-		if zoneId, ok := zone.GetIdOk(); ok {
-			state.CloudId = types.Int64Value(*zoneId)
-		}
+	if sg.Zone != nil && sg.Zone.Id != nil {
+		state.CloudId = types.Int64Value(*sg.Zone.Id)
 	}
 
 	return state, nil
@@ -104,8 +102,8 @@ func getSecurityGroupByName(
 	}
 
 	var matchingGroups []sdk.ListSecurityGroups200ResponseAllOfSecurityGroupsInner
-	for _, sg := range response.GetSecurityGroups() {
-		if sgName, ok := sg.GetNameOk(); ok && *sgName == name {
+	for _, sg := range response.SecurityGroups {
+		if sg.Name != nil && *sg.Name == name {
 			matchingGroups = append(matchingGroups, sg)
 		}
 	}
@@ -117,8 +115,8 @@ func getSecurityGroupByName(
 	if len(matchingGroups) > 1 {
 		var sgIDs []string
 		for _, sg := range matchingGroups {
-			if id, ok := sg.GetIdOk(); ok {
-				sgIDs = append(sgIDs, fmt.Sprintf("%d", *id))
+			if sg.Id != nil {
+				sgIDs = append(sgIDs, fmt.Sprintf("%d", *sg.Id))
 			}
 		}
 
@@ -130,8 +128,8 @@ func getSecurityGroupByName(
 		)
 	}
 
-	id, ok := matchingGroups[0].GetIdOk()
-	if !ok {
+	id := matchingGroups[0].Id
+	if id == nil {
 		return nil, fmt.Errorf("security group %s has missing ID", name)
 	}
 
