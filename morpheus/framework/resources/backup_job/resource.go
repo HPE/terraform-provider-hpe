@@ -74,8 +74,10 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	createJob := result.GetJob()
-	id := (&createJob).GetId()
+	var id int64
+	if result.Job != nil && result.Job.Id != nil {
+		id = *result.Job.Id
+	}
 
 	readResult, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -90,8 +92,12 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	readJob := readResult.GetJob()
-	mapGetResponseToModel(&plan, &readJob)
+	if readResult.Job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -182,8 +188,12 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	readJob := readResult.GetJob()
-	mapGetResponseToModel(&plan, &readJob)
+	if readResult.Job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

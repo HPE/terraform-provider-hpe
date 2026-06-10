@@ -105,8 +105,8 @@ func (r *provisioningLicenseResource) Create(
 	}
 
 	var id int64
-	if l := result.GetLicense(); l.Id != nil {
-		id = *l.Id
+	if result.License != nil && result.License.Id != nil {
+		id = *result.License.Id
 	}
 
 	readResult, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
@@ -122,7 +122,12 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
-	readLicense := readResult.GetLicense()
+	readLicense := readResult.License
+	if readLicense == nil {
+		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
+		return
+	}
 	if readLicense.Id != nil {
 		plan.ID = types.Int64Value(*readLicense.Id)
 	}
@@ -271,7 +276,12 @@ func (r *provisioningLicenseResource) Update(
 		return
 	}
 
-	readLicense := readResult.GetLicense()
+	readLicense := readResult.License
+	if readLicense == nil {
+		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
+		return
+	}
 	if readLicense.Id != nil {
 		plan.ID = types.Int64Value(*readLicense.Id)
 	}

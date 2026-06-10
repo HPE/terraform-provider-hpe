@@ -88,8 +88,10 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	createAlert := result.GetAlert()
-	id := (&createAlert).GetId()
+	var id int64
+	if result.Alert != nil && result.Alert.Id != nil {
+		id = *result.Alert.Id
+	}
 
 	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -104,8 +106,12 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	readAlert := readResult.GetAlert()
-	mapGetAlertResponseToModel(&plan, &readAlert)
+	if readResult.Alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+
+		return
+	}
+	mapGetAlertResponseToModel(&plan, readResult.Alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -205,8 +211,12 @@ func (r *monitoringAlertResource) Update(
 		return
 	}
 
-	readAlert := readResult.GetAlert()
-	mapGetAlertResponseToModel(&plan, &readAlert)
+	if readResult.Alert == nil {
+		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
+
+		return
+	}
+	mapGetAlertResponseToModel(&plan, readResult.Alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

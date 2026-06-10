@@ -112,8 +112,10 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	createCheck := result.GetCheck()
-	id := (&createCheck).GetId()
+	var id int64
+	if result.Check != nil && result.Check.Id != nil {
+		id = *result.Check.Id
+	}
 
 	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -128,7 +130,12 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	check := readResult.GetCheck()
+	check := readResult.Check
+	if check == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
+		return
+	}
 	if check.Id != nil {
 		plan.ID = types.Int64Value(*check.Id)
 	}
@@ -282,7 +289,12 @@ func (r *monitoringCheckResource) Update(
 		return
 	}
 
-	check := readResult.GetCheck()
+	check := readResult.Check
+	if check == nil {
+		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
+
+		return
+	}
 	if check.Id != nil {
 		plan.ID = types.Int64Value(*check.Id)
 	}

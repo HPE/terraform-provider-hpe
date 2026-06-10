@@ -79,8 +79,10 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	createBudget := result.GetBudget()
-	id := (&createBudget).GetId()
+	var id int64
+	if result.Budget != nil && result.Budget.Id != nil {
+		id = *result.Budget.Id
+	}
 
 	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -95,8 +97,12 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	readBudget := readResult.GetBudget()
-	mapGetResponseToModel(&plan, &readBudget)
+	if readResult.Budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -191,8 +197,12 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	readBudget := readResult.GetBudget()
-	mapGetResponseToModel(&plan, &readBudget)
+	if readResult.Budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -76,8 +76,10 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	createCert := result.GetCertificate()
-	id := (&createCert).GetId()
+	var id int64
+	if result.Certificate != nil && result.Certificate.Id != nil {
+		id = *result.Certificate.Id
+	}
 
 	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -92,8 +94,12 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	readCert := readResult.GetCertificate()
-	mapGetResponseToModel(&plan, &readCert)
+	if readResult.Certificate == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Certificate)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -182,8 +188,12 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	readCert := readResult.GetCertificate()
-	mapGetResponseToModel(&plan, &readCert)
+	if readResult.Certificate == nil {
+		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Certificate)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

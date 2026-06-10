@@ -70,8 +70,10 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	createApp := result.AddVDIApps200ResponseAnyOf.GetVdiApp()
-	id := (&createApp).GetId()
+	var id int64
+	if result.AddVDIApps200ResponseAnyOf != nil && result.AddVDIApps200ResponseAnyOf.VdiApp != nil && result.AddVDIApps200ResponseAnyOf.VdiApp.Id != nil {
+		id = *result.AddVDIApps200ResponseAnyOf.VdiApp.Id
+	}
 
 	readResult, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -86,8 +88,12 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	readApp := readResult.GetVdiApp()
-	mapGetResponseToModel(&plan, &readApp)
+	if readResult.VdiApp == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.VdiApp)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -158,7 +164,7 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	_, httpResp, err := client.VDIAPI.UpdateVDIApps(ctx, id).UpdateVDIAppsRequest(sdk.UpdateVDIAppsRequest{
-		VdiApp: sdk.UpdateVDIAppsRequestVdiAppOneOfAsUpdateVDIAppsRequestVdiApp(&body),
+		VdiApp: sdk.UpdateVDIAppsRequestVdiApp{UpdateVDIAppsRequestVdiAppOneOf: &body},
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "vdi_app", plan.Name.ValueString(), err, httpResp)
@@ -173,8 +179,12 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	readApp := readResult.GetVdiApp()
-	mapGetResponseToModel(&plan, &readApp)
+	if readResult.VdiApp == nil {
+		resp.Diagnostics.AddError("API returned nil", "VdiApp is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.VdiApp)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

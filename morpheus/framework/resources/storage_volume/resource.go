@@ -83,9 +83,11 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	createSV := result.GetStorageVolume()
-	id := (&createSV).GetId()
-	idParam := sdk.Int64AsGetStorageVolumesIdParameter(&id)
+	var id int64
+	if result.StorageVolume != nil && result.StorageVolume.Id != nil {
+		id = *result.StorageVolume.Id
+	}
+	idParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
 
 	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -100,8 +102,12 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	readSV := readResult.GetStorageVolume()
-	mapGetResponseToModel(&plan, &readSV)
+	if readResult.StorageVolume == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageVolume)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -183,7 +189,7 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	readIdParam := sdk.Int64AsGetStorageVolumesIdParameter(&id)
+	readIdParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
 
 	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, readIdParam).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -192,8 +198,12 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	readSV := readResult.GetStorageVolume()
-	mapGetResponseToModel(&plan, &readSV)
+	if readResult.StorageVolume == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageVolume)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

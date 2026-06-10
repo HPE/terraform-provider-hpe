@@ -85,8 +85,10 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	createGroup := result.GetCheckGroup()
-	id := (&createGroup).GetId()
+	var id int64
+	if result.CheckGroup != nil && result.CheckGroup.Id != nil {
+		id = *result.CheckGroup.Id
+	}
 
 	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -101,8 +103,12 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	readGroup := readResult.GetCheckGroup()
-	mapGetGroupResponseToModel(&plan, &readGroup)
+	if readResult.CheckGroup == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+
+		return
+	}
+	mapGetGroupResponseToModel(&plan, readResult.CheckGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -200,8 +206,12 @@ func (r *monitoringGroupResource) Update(
 		return
 	}
 
-	readGroup := readResult.GetCheckGroup()
-	mapGetGroupResponseToModel(&plan, &readGroup)
+	if readResult.CheckGroup == nil {
+		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
+
+		return
+	}
+	mapGetGroupResponseToModel(&plan, readResult.CheckGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

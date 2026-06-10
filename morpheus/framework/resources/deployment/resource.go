@@ -71,8 +71,10 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createDeployment := result.GetDeployment()
-	id := (&createDeployment).GetId()
+	var id int64
+	if result.Deployment != nil && result.Deployment.Id != nil {
+		id = *result.Deployment.Id
+	}
 
 	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -87,8 +89,12 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	readDep := readResult.GetDeployment()
-	mapGetResponseToModel(&plan, &readDep)
+	if readResult.Deployment == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Deployment)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -172,8 +178,12 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	readDep := readResult.GetDeployment()
-	mapGetResponseToModel(&plan, &readDep)
+	if readResult.Deployment == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Deployment)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

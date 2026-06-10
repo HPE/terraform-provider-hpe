@@ -94,8 +94,10 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	createSB := result.GetStorageBucket()
-	id := (&createSB).GetId()
+	var id int64
+	if result.StorageBucket != nil && result.StorageBucket.Id != nil {
+		id = *result.StorageBucket.Id
+	}
 
 	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -110,8 +112,12 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	readSB := readResult.GetStorageBucket()
-	mapGetResponseToModel(&plan, &readSB)
+	if readResult.StorageBucket == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageBucket)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -216,8 +222,12 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	readSB := readResult.GetStorageBucket()
-	mapGetResponseToModel(&plan, &readSB)
+	if readResult.StorageBucket == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageBucket)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

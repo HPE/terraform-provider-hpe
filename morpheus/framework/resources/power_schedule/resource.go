@@ -121,8 +121,10 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	createSchedule := result.GetSchedule()
-	id := (&createSchedule).GetId()
+	var id int64
+	if result.Schedule != nil && result.Schedule.Id != nil {
+		id = *result.Schedule.Id
+	}
 
 	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -137,8 +139,12 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	readSchedule := readResult.GetSchedule()
-	mapGetResponseToModel(&plan, &readSchedule)
+	if readResult.Schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -274,8 +280,12 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	readSchedule := readResult.GetSchedule()
-	mapGetResponseToModel(&plan, &readSchedule)
+	if readResult.Schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
