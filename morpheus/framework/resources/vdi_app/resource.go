@@ -71,8 +71,9 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	var id int64
-	if result.AddVDIApps200ResponseAnyOf != nil && result.AddVDIApps200ResponseAnyOf.VdiApp != nil && result.AddVDIApps200ResponseAnyOf.VdiApp.Id != nil {
-		id = *result.AddVDIApps200ResponseAnyOf.VdiApp.Id
+	anyOf := result.AddVDIApps200ResponseAnyOf
+	if anyOf != nil && anyOf.VdiApp != nil && anyOf.VdiApp.Id != nil {
+		id = *anyOf.VdiApp.Id
 	}
 
 	readResult, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
@@ -227,45 +228,7 @@ func (r *vdiAppResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *vdiAppModel, app *sdk.AddVDIApps200ResponseAnyOfVdiApp) {
-	if app.Id != nil {
-		model.ID = types.Int64Value(*app.Id)
-	}
-	if app.Name != nil {
-		model.Name = types.StringValue(*app.Name)
-	}
-	if v := app.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if app.LaunchPrefix != nil {
-		model.LaunchPrefix = types.StringValue(*app.LaunchPrefix)
-	} else {
-		model.LaunchPrefix = types.StringNull()
-	}
-}
-
 func mapGetResponseToModel(model *vdiAppModel, app *sdk.GetVDIApps200ResponseVdiApp) {
-	if app.Id != nil {
-		model.ID = types.Int64Value(*app.Id)
-	}
-	if app.Name != nil {
-		model.Name = types.StringValue(*app.Name)
-	}
-	if v := app.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if app.LaunchPrefix != nil {
-		model.LaunchPrefix = types.StringValue(*app.LaunchPrefix)
-	} else {
-		model.LaunchPrefix = types.StringNull()
-	}
-}
-
-func mapUpdateResponseToModel(model *vdiAppModel, app *sdk.UpdateVDIApps200ResponseAnyOfVdiApp) {
 	if app.Id != nil {
 		model.ID = types.Int64Value(*app.Id)
 	}

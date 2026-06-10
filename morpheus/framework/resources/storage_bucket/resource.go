@@ -270,26 +270,6 @@ func (r *storageBucketResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *storageBucketModel, sb *sdk.AddStorageBuckets200ResponseAllOfStorageBucket) {
-	if sb.Id != nil {
-		model.ID = types.Int64Value(*sb.Id)
-	}
-	if sb.Name != nil {
-		model.Name = types.StringValue(*sb.Name)
-	}
-	if sb.ProviderType != nil {
-		model.ProviderType = types.StringValue(*sb.ProviderType)
-	}
-	if sb.BucketName != nil {
-		model.BucketName = types.StringValue(*sb.BucketName)
-	} else {
-		model.BucketName = types.StringNull()
-	}
-	if sb.DefaultBackupTarget != nil {
-		model.DefaultBackupTarget = types.BoolValue(*sb.DefaultBackupTarget)
-	}
-}
-
 func mapGetResponseToModel(model *storageBucketModel, sb *sdk.GetStorageBuckets200ResponseStorageBucket) {
 	if sb.Id != nil {
 		model.ID = types.Int64Value(*sb.Id)

@@ -263,30 +263,6 @@ func (r *monitoringAlertResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAlertResponseToModel(model *monitoringAlertModel, alert *sdk.AddAlerts200ResponseAllOfAlert) {
-	if alert.Id != nil {
-		model.ID = types.Int64Value(*alert.Id)
-	}
-	if alert.Name != nil {
-		model.Name = types.StringValue(*alert.Name)
-	}
-	if alert.MinSeverity != nil {
-		model.MinSeverity = types.StringValue(*alert.MinSeverity)
-	}
-	if alert.MinDuration != nil {
-		model.MinDuration = types.Int64Value(*alert.MinDuration)
-	}
-	if alert.Active != nil {
-		model.Active = types.BoolValue(*alert.Active)
-	}
-	if alert.AllChecks != nil {
-		model.AllChecks = types.BoolValue(*alert.AllChecks)
-	}
-	if alert.AllGroups != nil {
-		model.AllGroups = types.BoolValue(*alert.AllGroups)
-	}
-}
-
 func mapGetAlertResponseToModel(model *monitoringAlertModel, alert *sdk.GetAlerts200ResponseAllOfAlert) {
 	if alert.Id != nil {
 		model.ID = types.Int64Value(*alert.Id)

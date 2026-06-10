@@ -247,29 +247,6 @@ func (r *storageVolumeResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *storageVolumeModel, sv *sdk.AddStorageVolumes200ResponseAllOfStorageVolume) {
-	if sv.Id != nil {
-		model.ID = types.Int64Value(*sv.Id)
-	}
-	if sv.Name != nil {
-		model.Name = types.StringValue(*sv.Name)
-	}
-	if sv.TypeId != nil {
-		model.TypeId = types.Int64Value(*sv.TypeId)
-	}
-	if storageServer := sv.StorageServer; storageServer != nil {
-		if id, ok := storageServer["id"].(float64); ok {
-			model.StorageServerID = types.Int64Value(int64(id))
-		}
-	}
-	if sv.MaxStorage != nil {
-		model.MaxStorage = types.Int64Value(*sv.MaxStorage)
-	}
-	if sv.Status != nil {
-		model.Status = types.StringValue(*sv.Status)
-	}
-}
-
 func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes200ResponseStorageVolume) {
 	if sv.Id != nil {
 		model.ID = types.Int64Value(*sv.Id)

@@ -291,47 +291,6 @@ func (r *networkPoolResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *networkPoolModel, pool *sdk.CreateNetworkPool200ResponseNetworkPool) {
-	if pool.Id != nil {
-		model.ID = types.Int64Value(*pool.Id)
-	}
-	if pool.Name != nil {
-		model.Name = types.StringValue(*pool.Name)
-	}
-	if pool.IpCount != nil {
-		model.IpCount = types.Int64Value(*pool.IpCount)
-	}
-	if pool.FreeCount != nil {
-		model.FreeCount = types.Int64Value(*pool.FreeCount)
-	}
-	if pool.PoolEnabled != nil {
-		model.PoolEnabled = types.BoolValue(*pool.PoolEnabled)
-	}
-	if pool.DhcpServer != nil {
-		model.DhcpServer = types.BoolValue(*pool.DhcpServer)
-	}
-	if pool.DnsDomain.IsSet() && pool.DnsDomain.Get() != nil {
-		model.DNSDomain = types.StringValue(*pool.DnsDomain.Get())
-	} else {
-		model.DNSDomain = types.StringNull()
-	}
-	if pool.Gateway.IsSet() && pool.Gateway.Get() != nil {
-		model.Gateway = types.StringValue(*pool.Gateway.Get())
-	} else {
-		model.Gateway = types.StringNull()
-	}
-	if pool.Netmask.IsSet() && pool.Netmask.Get() != nil {
-		model.Netmask = types.StringValue(*pool.Netmask.Get())
-	} else {
-		model.Netmask = types.StringNull()
-	}
-	if pool.SubnetAddress.IsSet() && pool.SubnetAddress.Get() != nil {
-		model.SubnetAddress = types.StringValue(*pool.SubnetAddress.Get())
-	} else {
-		model.SubnetAddress = types.StringNull()
-	}
-}
-
 func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) {
 	if pool.Id != nil {
 		model.ID = types.Int64Value(*pool.Id)

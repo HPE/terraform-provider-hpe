@@ -258,64 +258,7 @@ func (r *monitoringGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddGroupResponseToModel(model *monitoringGroupModel, group *sdk.AddCheckGroups200ResponseAllOfCheckGroup) {
-	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
-	}
-	if group.Name != nil {
-		model.Name = types.StringValue(*group.Name)
-	}
-	if group.Description.IsSet() && group.Description.Get() != nil {
-		model.Description = types.StringValue(*group.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	if group.MinHappy != nil {
-		model.MinHappy = types.Int64Value(*group.MinHappy)
-	} else {
-		model.MinHappy = types.Int64Null()
-	}
-	if group.Severity != nil {
-		model.Severity = types.StringValue(*group.Severity)
-	} else {
-		model.Severity = types.StringNull()
-	}
-	if group.InUptime != nil {
-		model.InUptime = types.BoolValue(*group.InUptime)
-	}
-}
-
 func mapGetGroupResponseToModel(model *monitoringGroupModel, group *sdk.GetCheckGroups200ResponseCheckGroup) {
-	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
-	}
-	if group.Name != nil {
-		model.Name = types.StringValue(*group.Name)
-	}
-	if group.Description.IsSet() && group.Description.Get() != nil {
-		model.Description = types.StringValue(*group.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	if group.MinHappy != nil {
-		model.MinHappy = types.Int64Value(*group.MinHappy)
-	} else {
-		model.MinHappy = types.Int64Null()
-	}
-	if group.Severity != nil {
-		model.Severity = types.StringValue(*group.Severity)
-	} else {
-		model.Severity = types.StringNull()
-	}
-	if group.InUptime != nil {
-		model.InUptime = types.BoolValue(*group.InUptime)
-	}
-}
-
-func mapUpdateGroupResponseToModel(
-	model *monitoringGroupModel,
-	group *sdk.UpdateCheckGroups200ResponseAllOfCheckGroup,
-) {
 	if group.Id != nil {
 		model.ID = types.Int64Value(*group.Id)
 	}

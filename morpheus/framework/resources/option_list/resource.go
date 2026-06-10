@@ -360,44 +360,6 @@ func (r *optionListResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapListOptionListToModel(
-	model *optionListModel,
-	ol *sdk.ListOptionLists200ResponseAllOfOptionTypesInner,
-) {
-	if ol.Id != nil {
-		model.ID = types.Int64Value(*ol.Id)
-	}
-	if ol.Name != nil {
-		model.Name = types.StringValue(*ol.Name)
-	}
-	if v := ol.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if ol.Type != nil {
-		model.Type = types.StringValue(*ol.Type)
-	} else {
-		model.Type = types.StringNull()
-	}
-	if ol.SourceUrl != nil {
-		model.SourceURL = types.StringValue(*ol.SourceUrl)
-	} else {
-		model.SourceURL = types.StringNull()
-	}
-	if ol.Visibility != nil {
-		model.Visibility = types.StringValue(*ol.Visibility)
-	}
-	if v := ol.ApiType.Get(); v != nil {
-		model.ApiType = types.StringValue(*v)
-	} else {
-		model.ApiType = types.StringNull()
-	}
-	if ol.RealTime != nil {
-		model.RealTime = types.BoolValue(*ol.RealTime)
-	}
-}
-
 func mapGetOptionListToModel(model *optionListModel, ol *sdk.GetOptionList200ResponseOptionTypesInner) {
 	if ol.Id != nil {
 		model.ID = types.Int64Value(*ol.Id)

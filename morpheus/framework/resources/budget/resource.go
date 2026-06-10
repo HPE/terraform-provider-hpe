@@ -245,29 +245,6 @@ func (r *budgetResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *budgetModel, b *sdk.AddBudgets200ResponseAllOfBudget) {
-	if b.Id != nil {
-		model.ID = types.Int64Value(*b.Id)
-	}
-	if b.Name != nil {
-		model.Name = types.StringValue(*b.Name)
-	}
-	if v := b.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if b.Interval != nil {
-		model.Interval = types.StringValue(*b.Interval)
-	}
-	if b.RefScope != nil {
-		model.Scope = types.StringValue(*b.RefScope)
-	}
-	if b.Enabled != nil {
-		model.Enabled = types.BoolValue(*b.Enabled)
-	}
-}
-
 func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOfBudget) {
 	if b.Id != nil {
 		model.ID = types.Int64Value(*b.Id)
@@ -293,28 +270,5 @@ func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOf
 		if v, err := strconv.ParseInt(*b.Year, 10, 64); err == nil {
 			model.Year = types.Int64Value(v)
 		}
-	}
-}
-
-func mapUpdateResponseToModel(model *budgetModel, b *sdk.UpdateBudgets200ResponseAllOfBudget) {
-	if b.Id != nil {
-		model.ID = types.Int64Value(*b.Id)
-	}
-	if b.Name != nil {
-		model.Name = types.StringValue(*b.Name)
-	}
-	if v := b.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if b.Interval != nil {
-		model.Interval = types.StringValue(*b.Interval)
-	}
-	if b.RefScope != nil {
-		model.Scope = types.StringValue(*b.RefScope)
-	}
-	if b.Enabled != nil {
-		model.Enabled = types.BoolValue(*b.Enabled)
 	}
 }

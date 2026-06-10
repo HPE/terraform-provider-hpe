@@ -236,23 +236,6 @@ func (r *backupJobResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *backupJobModel, job *sdk.AddBackupJobs200ResponseAllOfJob) {
-	if job.Id != nil {
-		model.ID = types.Int64Value(*job.Id)
-	}
-	if job.Name != nil {
-		model.Name = types.StringValue(*job.Name)
-	}
-	if v := job.RetentionCount.Get(); v != nil {
-		model.RetentionCount = types.Int64Value(*v)
-	} else {
-		model.RetentionCount = types.Int64Null()
-	}
-	if job.Enabled != nil {
-		model.Enabled = types.BoolValue(*job.Enabled)
-	}
-}
-
 func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200ResponseJob) {
 	if job.Id != nil {
 		model.ID = types.Int64Value(*job.Id)
@@ -279,17 +262,5 @@ func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200Respo
 		model.ScheduleID = types.Int64Value(*job.Schedule.Id)
 	} else {
 		model.ScheduleID = types.Int64Null()
-	}
-}
-
-func mapUpdateResponseToModel(model *backupJobModel, job *sdk.UpdateBackupJobs200ResponseAllOfJob) {
-	if job.Id != nil {
-		model.ID = types.Int64Value(*job.Id)
-	}
-	if job.Name != nil {
-		model.Name = types.StringValue(*job.Name)
-	}
-	if job.Enabled != nil {
-		model.Enabled = types.BoolValue(*job.Enabled)
 	}
 }

@@ -236,29 +236,6 @@ func (r *certificateResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *certificateModel, cert *sdk.AddCertificate200ResponseAllOfCertificate) {
-	if cert.Id != nil {
-		model.ID = types.Int64Value(*cert.Id)
-	}
-	if cert.Name != nil {
-		model.Name = types.StringValue(*cert.Name)
-	}
-	// Only update description if the API returns a value; otherwise keep the
-	// plan value (no-op by not modifying model.Description).
-	if cert.Description.IsSet() && cert.Description.Get() != nil {
-		model.Description = types.StringValue(*cert.Description.Get())
-	}
-	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
-		model.DomainName = types.StringValue(*cert.DomainName.Get())
-	} else {
-		model.DomainName = types.StringNull()
-	}
-	if cert.Enabled != nil {
-		model.Enabled = types.BoolValue(*cert.Enabled)
-	}
-	// cert_file and key_file are not returned by the API; keep plan values
-}
-
 func mapGetResponseToModel(model *certificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
 	if cert.Id != nil {
 		model.ID = types.Int64Value(*cert.Id)
@@ -280,27 +257,4 @@ func mapGetResponseToModel(model *certificateModel, cert *sdk.GetCertificate200R
 		model.Enabled = types.BoolValue(*cert.Enabled)
 	}
 	// cert_file and key_file are not returned by the API; keep existing state values
-}
-
-func mapUpdateResponseToModel(model *certificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
-	if cert.Id != nil {
-		model.ID = types.Int64Value(*cert.Id)
-	}
-	if cert.Name != nil {
-		model.Name = types.StringValue(*cert.Name)
-	}
-	// Only update description if the API returns a value; otherwise keep the
-	// plan value (no-op by not modifying model.Description).
-	if cert.Description.IsSet() && cert.Description.Get() != nil {
-		model.Description = types.StringValue(*cert.Description.Get())
-	}
-	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
-		model.DomainName = types.StringValue(*cert.DomainName.Get())
-	} else {
-		model.DomainName = types.StringNull()
-	}
-	if cert.Enabled != nil {
-		model.Enabled = types.BoolValue(*cert.Enabled)
-	}
-	// cert_file and key_file are not returned by the API; keep plan values
 }

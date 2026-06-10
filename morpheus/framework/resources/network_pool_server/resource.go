@@ -328,67 +328,6 @@ func (r *networkPoolServerResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(
-	model *NetworkPoolServerModel,
-	server *sdk.CreateNetworkPoolServer200ResponseAllOfNetworkPoolServer,
-) {
-	if server.Id != nil {
-		model.Id = types.Int64Value(*server.Id)
-	}
-	if server.Name != nil {
-		model.Name = types.StringValue(*server.Name)
-	}
-	if t := server.Type; t != nil && t.Id != nil {
-		model.TypeId = types.Int64Value(*t.Id)
-	}
-	if server.ServiceUrl.IsSet() && server.ServiceUrl.Get() != nil {
-		model.ServiceUrl = types.StringValue(*server.ServiceUrl.Get())
-	}
-	if server.IgnoreSsl.IsSet() && server.IgnoreSsl.Get() != nil {
-		model.IgnoreSsl = types.BoolValue(*server.IgnoreSsl.Get())
-	}
-	if server.Enabled != nil {
-		model.Enabled = types.BoolValue(*server.Enabled)
-	}
-	if server.Status != nil {
-		model.Status = types.StringValue(*server.Status)
-	} else {
-		model.Status = types.StringNull()
-	}
-	if server.NetworkFilter.IsSet() && server.NetworkFilter.Get() != nil {
-		model.NetworkFilter = types.StringValue(*server.NetworkFilter.Get())
-	} else {
-		model.NetworkFilter = types.StringNull()
-	}
-	if server.ZoneFilter.IsSet() && server.ZoneFilter.Get() != nil {
-		model.ZoneFilter = types.StringValue(*server.ZoneFilter.Get())
-	} else {
-		model.ZoneFilter = types.StringNull()
-	}
-	if server.TenantMatch.IsSet() && server.TenantMatch.Get() != nil {
-		model.TenantMatch = types.StringValue(*server.TenantMatch.Get())
-	} else {
-		model.TenantMatch = types.StringNull()
-	}
-	if server.ServiceMode.IsSet() && server.ServiceMode.Get() != nil {
-		model.ServiceMode = types.StringValue(*server.ServiceMode.Get())
-	} else {
-		model.ServiceMode = types.StringNull()
-	}
-	if server.ServiceThrottleRate.IsSet() && server.ServiceThrottleRate.Get() != nil {
-		model.ServiceThrottleRate = types.Int64Value(*server.ServiceThrottleRate.Get())
-	} else {
-		model.ServiceThrottleRate = types.Int64Null()
-	}
-
-	// Credential: extract ID from response if it's a stored credential
-	if server.Credential != nil && server.Credential.Type != nil && *server.Credential.Type != "local" {
-		if id := server.Credential.Id.Get(); id != nil {
-			model.CredentialId = types.Int64Value(*id)
-		}
-	}
-}
-
 func mapReadResponseToModel(
 	model *NetworkPoolServerModel,
 	server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer,

@@ -226,35 +226,7 @@ func (r *deploymentResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *deploymentModel, dep *sdk.AddDeployments200ResponseAllOfDeployment) {
-	if dep.Id != nil {
-		model.ID = types.Int64Value(*dep.Id)
-	}
-	if dep.Name != nil {
-		model.Name = types.StringValue(*dep.Name)
-	}
-	if dep.Description != nil {
-		model.Description = types.StringValue(*dep.Description)
-	} else {
-		model.Description = types.StringNull()
-	}
-}
-
 func mapGetResponseToModel(model *deploymentModel, dep *sdk.GetDeployment200ResponseDeployment) {
-	if dep.Id != nil {
-		model.ID = types.Int64Value(*dep.Id)
-	}
-	if dep.Name != nil {
-		model.Name = types.StringValue(*dep.Name)
-	}
-	if dep.Description != nil {
-		model.Description = types.StringValue(*dep.Description)
-	} else {
-		model.Description = types.StringNull()
-	}
-}
-
-func mapUpdateResponseToModel(model *deploymentModel, dep *sdk.UpdateDeployment200ResponseAllOfDeployment) {
 	if dep.Id != nil {
 		model.ID = types.Int64Value(*dep.Id)
 	}

@@ -73,8 +73,9 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	var id int64
-	if result.AddVDIGateways200ResponseAnyOf != nil && result.AddVDIGateways200ResponseAnyOf.VdiGateway != nil && result.AddVDIGateways200ResponseAnyOf.VdiGateway.Id != nil {
-		id = *result.AddVDIGateways200ResponseAnyOf.VdiGateway.Id
+	anyOf := result.AddVDIGateways200ResponseAnyOf
+	if anyOf != nil && anyOf.VdiGateway != nil && anyOf.VdiGateway.Id != nil {
+		id = *anyOf.VdiGateway.Id
 	}
 
 	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
@@ -228,41 +229,7 @@ func (r *vdiGatewayResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *vdiGatewayModel, gw *sdk.AddVDIGateways200ResponseAnyOfVdiGateway) {
-	if gw.Id != nil {
-		model.ID = types.Int64Value(*gw.Id)
-	}
-	if gw.Name != nil {
-		model.Name = types.StringValue(*gw.Name)
-	}
-	if v := gw.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if v := gw.GatewayUrl.Get(); v != nil {
-		model.GatewayUrl = types.StringValue(*v)
-	}
-}
-
 func mapGetResponseToModel(model *vdiGatewayModel, gw *sdk.GetVDIGateways200ResponseVdiGateway) {
-	if gw.Id != nil {
-		model.ID = types.Int64Value(*gw.Id)
-	}
-	if gw.Name != nil {
-		model.Name = types.StringValue(*gw.Name)
-	}
-	if v := gw.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if v := gw.GatewayUrl.Get(); v != nil {
-		model.GatewayUrl = types.StringValue(*v)
-	}
-}
-
-func mapUpdateResponseToModel(model *vdiGatewayModel, gw *sdk.UpdateVDIGateways200ResponseAnyOfVdiGateway) {
 	if gw.Id != nil {
 		model.ID = types.Int64Value(*gw.Id)
 	}
