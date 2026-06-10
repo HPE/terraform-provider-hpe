@@ -69,10 +69,10 @@ func getNetworkPoolByID(
 		return nil, fmt.Errorf("network pool %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	pool, ok := response.GetNetworkPoolOk()
-	if !ok {
+	if response.NetworkPool == nil {
 		return nil, fmt.Errorf("network pool %d is nil", id)
 	}
+	pool := response.NetworkPool
 
 	state := &NetworkPoolModel{}
 	state.Id = types.Int64Value(id)
@@ -85,10 +85,8 @@ func getNetworkPoolByID(
 	state.Netmask = convert.StrToType(pool.Netmask.Get())
 	state.SubnetAddress = convert.StrToType(pool.SubnetAddress.Get())
 
-	if poolType, ok := pool.GetTypeOk(); ok && poolType != nil {
-		if code, ok := poolType.GetCodeOk(); ok {
-			state.TypeCode = types.StringValue(*code)
-		}
+	if pool.Type != nil && pool.Type.Code != nil {
+		state.TypeCode = types.StringValue(*pool.Type.Code)
 	}
 
 	return state, nil
@@ -107,7 +105,7 @@ func getNetworkPoolByName(
 	// NetworkPools is typed as interface{} in the SDK because the OpenAPI spec
 	// defines it as a free-form object. Type assert to []interface{} to extract
 	// individual pool entries.
-	poolsRaw := response.GetNetworkPools()
+	poolsRaw := response.NetworkPools
 	pools, ok := poolsRaw.([]interface{})
 	if !ok || len(pools) == 0 {
 		return nil, fmt.Errorf("network pool %s not found", name)

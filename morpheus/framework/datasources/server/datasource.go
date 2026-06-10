@@ -65,15 +65,16 @@ func getServerByID(
 	id int64,
 	client *sdk.APIClient,
 ) (*ServerModel, error) {
-	response, hresp, err := client.HostsAPI.GetHost(ctx, sdk.Int64AsGetHostIdParameter(&id)).Execute()
+	getId := sdk.GetHostIdParameter{Int64: &id}
+	response, hresp, err := client.HostsAPI.GetHost(ctx, getId).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	server, ok := response.GetServerOk()
-	if !ok {
+	if response.Server == nil {
 		return nil, fmt.Errorf("server %d is nil", id)
 	}
+	server := response.Server
 
 	state := &ServerModel{}
 	state.Id = types.Int64Value(id)
@@ -105,8 +106,8 @@ func getServerByName(
 	}
 
 	var matchingServers []sdk.ListHosts200ResponseAllOfServersInner
-	for _, server := range servers.GetServers() {
-		if serverName, ok := server.GetNameOk(); ok && *serverName == name {
+	for _, server := range servers.Servers {
+		if server.Name != nil && *server.Name == name {
 			matchingServers = append(matchingServers, server)
 		}
 	}
@@ -118,8 +119,8 @@ func getServerByName(
 	if len(matchingServers) > 1 {
 		var serverIDs []string
 		for _, s := range matchingServers {
-			if id, ok := s.GetIdOk(); ok {
-				serverIDs = append(serverIDs, fmt.Sprintf("%d", *id))
+			if s.Id != nil {
+				serverIDs = append(serverIDs, fmt.Sprintf("%d", *s.Id))
 			}
 		}
 
@@ -131,8 +132,8 @@ func getServerByName(
 		)
 	}
 
-	id, ok := matchingServers[0].GetIdOk()
-	if !ok {
+	id := matchingServers[0].Id
+	if id == nil {
 		return nil, fmt.Errorf("server %s has missing ID", name)
 	}
 
