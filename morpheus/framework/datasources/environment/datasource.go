@@ -66,7 +66,10 @@ func getEnvironmentByID(
 		return fmt.Errorf("GET failed for environment %d", id)
 	}
 
-	environment := e.GetEnvironment()
+	environment := e.Environment
+	if environment == nil {
+		return fmt.Errorf("API response was missing the expected Environment object for environment %d", id)
+	}
 
 	data.Active = convert.BoolToType(environment.Active)
 	data.Code = convert.StrToType(environment.Code)
@@ -89,10 +92,10 @@ func getEnvironmentByName(
 		return fmt.Errorf("GET failed for environment %s", name)
 	}
 
-	environments := sdk.NewListEnvironments200Response().Environments
+	environments := sdk.ListEnvironments200Response{}.Environments
 
 	for _, e := range es.Environments {
-		if e.GetName() == name {
+		if e.Name != nil && *e.Name == name {
 			environments = append(environments, e)
 		}
 	}

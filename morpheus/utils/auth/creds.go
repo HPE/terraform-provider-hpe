@@ -36,8 +36,13 @@ func (c *CredsRoundTripper) GetToken(ctx context.Context) error {
 		return fmt.Errorf(msg, c.username, err)
 	}
 
+	if token == nil || token.AccessToken == nil {
+		return fmt.Errorf(
+			"could not authenticate with the Morpheus API using the username:'%s': response missing access token", c.username)
+	}
+
 	c.client.GetConfig().AddDefaultHeader(
-		"Authorization", "Bearer "+token.GetAccessToken(),
+		"Authorization", "Bearer "+*token.AccessToken,
 	)
 
 	return nil

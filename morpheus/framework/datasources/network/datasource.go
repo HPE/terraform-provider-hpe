@@ -72,10 +72,10 @@ func getNetworkByID(
 
 	state := &NetworkModel{}
 
-	net, ok := network.GetNetworkOk()
-	if !ok {
+	if network.Network == nil {
 		return nil, fmt.Errorf("network %d is nil", id)
 	}
+	net := network.Network
 
 	state.Labels = convert.StrSliceToSet(net.Labels)
 
@@ -101,8 +101,8 @@ func getNetworkByName(
 	}
 
 	var matchingNetworks []sdk.ListNetworks200ResponseAllOfNetworksInner
-	for _, network := range networks.GetNetworks() {
-		if networkName, ok := network.GetNameOk(); ok && *networkName == name {
+	for _, network := range networks.Networks {
+		if network.Name != nil && *network.Name == name {
 			matchingNetworks = append(matchingNetworks, network)
 		}
 	}
@@ -114,8 +114,8 @@ func getNetworkByName(
 	if len(matchingNetworks) > 1 {
 		var networkIDs []string
 		for _, n := range matchingNetworks {
-			if id, ok := n.GetIdOk(); ok {
-				networkIDs = append(networkIDs, fmt.Sprintf("%d", *id))
+			if n.Id != nil {
+				networkIDs = append(networkIDs, fmt.Sprintf("%d", *n.Id))
 			}
 		}
 
@@ -127,8 +127,8 @@ func getNetworkByName(
 		)
 	}
 
-	id, ok := matchingNetworks[0].GetIdOk()
-	if !ok {
+	id := matchingNetworks[0].Id
+	if id == nil {
 		return nil, fmt.Errorf("network %s has missing ID", name)
 	}
 

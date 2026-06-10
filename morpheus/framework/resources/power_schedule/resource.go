@@ -120,8 +120,14 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	schedule := result.GetSchedule()
-	mapAddResponseToModel(&plan, &schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+
+	mapAddResponseToModel(&plan, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -154,8 +160,14 @@ func (r *powerScheduleResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	schedule := result.GetSchedule()
-	mapGetResponseToModel(&state, &schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+
+	mapGetResponseToModel(&state, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -244,8 +256,14 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	schedule := result.GetSchedule()
-	mapUpdateResponseToModel(&plan, &schedule)
+	schedule := result.Schedule
+	if schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+
+	mapUpdateResponseToModel(&plan, schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -295,7 +313,7 @@ func mapAddResponseToModel(model *powerScheduleModel, schedule *sdk.AddPowerSche
 	if schedule.Name != nil {
 		model.Name = types.StringValue(*schedule.Name)
 	}
-	if desc, ok := schedule.GetDescriptionOk(); ok && desc != nil {
+	if desc := schedule.Description.Get(); desc != nil {
 		model.Description = types.StringValue(*desc)
 	} else {
 		model.Description = types.StringNull()
@@ -332,7 +350,7 @@ func mapGetResponseToModel(model *powerScheduleModel, schedule *sdk.GetPowerSche
 	if schedule.Name != nil {
 		model.Name = types.StringValue(*schedule.Name)
 	}
-	if desc, ok := schedule.GetDescriptionOk(); ok && desc != nil {
+	if desc := schedule.Description.Get(); desc != nil {
 		model.Description = types.StringValue(*desc)
 	} else {
 		model.Description = types.StringNull()
@@ -369,7 +387,7 @@ func mapUpdateResponseToModel(model *powerScheduleModel, schedule *sdk.UpdatePow
 	if schedule.Name != nil {
 		model.Name = types.StringValue(*schedule.Name)
 	}
-	if desc, ok := schedule.GetDescriptionOk(); ok && desc != nil {
+	if desc := schedule.Description.Get(); desc != nil {
 		model.Description = types.StringValue(*desc)
 	} else {
 		model.Description = types.StringNull()

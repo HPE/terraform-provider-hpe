@@ -174,8 +174,8 @@ func firewallRuleAsState(
 	}
 
 	ruleGroup := NewRuleGroupValueNull()
-	if rule.IsSetRuleGroup() {
-		rg := rule.GetRuleGroup()
+	if rule.RuleGroup != nil {
+		rg := rule.RuleGroup
 		v, rgDiags := NewRuleGroupValue(
 			RuleGroupValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
@@ -238,9 +238,7 @@ func getFirewallRuleByID(
 		)
 	}
 
-	rule := r.GetRule()
-
-	return &rule, nil
+	return r.Rule, nil
 }
 
 // listRuleSummary is a lightweight struct for unmarshalling the list endpoint
@@ -268,7 +266,7 @@ func getFirewallRuleByName(
 		)
 	}
 
-	raw := rs.GetRules()
+	raw := rs.Rules
 
 	rawJSON, err := json.Marshal(raw)
 	if err != nil {

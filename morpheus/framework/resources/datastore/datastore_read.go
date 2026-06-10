@@ -47,8 +47,8 @@ func getDatastoreAsState(
 		return state, diags
 	}
 
-	datastore, ok := d.GetDatastoreOk()
-	if !ok || datastore == nil {
+	datastore := d.Datastore
+	if datastore == nil {
 		diags.AddError(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d not found in response", id),
@@ -61,15 +61,7 @@ func getDatastoreAsState(
 	state.AssociatedResourceId = convert.Int64ToType(datastore.RefId)
 
 	// Set DatastoreType, we get the code and id back from the API
-	datastoreType, ok := datastore.GetDatastoreTypeOk()
-	if !ok || datastoreType == nil {
-		diags.AddError(
-			"populate datastore resource",
-			fmt.Sprintf("datastore %d missing datastore type in response", id),
-		)
-
-		return state, diags
-	}
+	datastoreType := &datastore.DatastoreType
 	datastoreTypeValue := DatastoreTypeValue{}
 	datastoreTypeValue.Id = convert.Int64ToType(&datastoreType.Id)
 	datastoreTypeValue.Code = convert.StrToType(&datastoreType.Code)
@@ -77,8 +69,8 @@ func getDatastoreAsState(
 	state.DatastoreType = datastoreTypeValue
 
 	// Set AssociatedResourceType based on RefType
-	refType, ok := datastore.GetRefTypeOk()
-	if !ok || refType == nil {
+	refType := datastore.RefType
+	if refType == nil {
 		diags.AddError(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing ref type in response", id),
@@ -133,7 +125,7 @@ func getDatastoreAsState(
 	}
 
 	// Populate Config
-	switch datastoreType.GetCode() {
+	switch datastoreType.Code {
 	case nfsDatastoreCode:
 		// Check returned config against plan
 		keysMap := map[string]string{
@@ -256,7 +248,7 @@ func getDatastoreAsState(
 	}
 
 	// Set StorageServer to that returned by the API
-	if server, ok := datastore.GetStorageServerOk(); ok && server != nil {
+	if server := datastore.StorageServer; server != nil {
 		storageServer := StorageServerValue{}
 		storageServer.Id = convert.Int64ToType(server.Id)
 		storageServer.state = attr.ValueStateKnown
@@ -286,31 +278,31 @@ func getDatastoreAsState(
 	state.StatusMessage = convert.StrToType(datastore.StatusMessage)
 
 	state.Cloud = NewCloudValueNull()
-	if cloudId, ok := datastore.Zone.GetIdOk(); ok && cloudId != nil {
+	if datastore.Zone != nil && datastore.Zone.Id != nil {
 		cloud := CloudValue{}
-		cloud.Id = convert.Int64ToType(cloudId)
+		cloud.Id = convert.Int64ToType(datastore.Zone.Id)
 		cloud.state = attr.ValueStateKnown
 		state.Cloud = cloud
 	}
 
 	state.ResourcePool = NewResourcePoolValueNull()
-	if poolId, ok := datastore.ZonePool.GetIdOk(); ok && poolId != nil {
+	if datastore.ZonePool != nil && datastore.ZonePool.Id != nil {
 		resourcePool := ResourcePoolValue{}
-		resourcePool.Id = convert.Int64ToType(poolId)
+		resourcePool.Id = convert.Int64ToType(datastore.ZonePool.Id)
 		resourcePool.state = attr.ValueStateKnown
 		state.ResourcePool = resourcePool
 	}
 
 	state.Owner = NewOwnerValueNull()
-	if ownerId, ok := datastore.Owner.GetIdOk(); ok && ownerId != nil {
+	if datastore.Owner != nil && datastore.Owner.Id != nil {
 		owner := OwnerValue{}
-		owner.Id = convert.Int64ToType(ownerId)
+		owner.Id = convert.Int64ToType(datastore.Owner.Id)
 		owner.state = attr.ValueStateKnown
 		state.Owner = owner
 	}
 
 	state.Locations = basetypes.NewSetNull(LocationsValue{}.Type(ctx))
-	if locations, ok := datastore.GetLocationsOk(); ok && locations != nil {
+	if locations := datastore.Locations; locations != nil {
 		locationsSet, d := convert.ToSetType(
 			ctx,
 			locations,
@@ -331,7 +323,7 @@ func getDatastoreAsState(
 	}
 
 	state.Datastores = basetypes.NewSetNull(DatastoresValue{}.Type(ctx))
-	if datastores, ok := datastore.GetDatastoresOk(); ok && datastores != nil {
+	if datastores := datastore.Datastores; datastores != nil {
 		datastoresSet, d := convert.ToSetType(
 			ctx,
 			datastores,
@@ -375,8 +367,8 @@ func populateCloudDatastoreInformation(
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
 	}
 
-	cloudDatastore, ok := cdResp.GetDatastoreOk()
-	if !ok || cloudDatastore == nil {
+	cloudDatastore := cdResp.Datastore
+	if cloudDatastore == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing cloud datastore in response", id),
@@ -386,8 +378,8 @@ func populateCloudDatastoreInformation(
 	}
 
 	// Populate Tenants
-	tenants, ok := cloudDatastore.GetTenantsOk()
-	if !ok || tenants == nil {
+	tenants := cloudDatastore.Tenants
+	if tenants == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing tenants in response", id),
@@ -412,8 +404,8 @@ func populateCloudDatastoreInformation(
 	diags = append(diags, tdiag...)
 
 	// Populate ResourcePermissions, we'll only do Groups for now
-	rp, ok := cloudDatastore.GetResourcePermissionOk()
-	if !ok || rp == nil {
+	rp := cloudDatastore.ResourcePermission
+	if rp == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing resource permissions in response", id),
@@ -422,8 +414,8 @@ func populateCloudDatastoreInformation(
 		return tenantsSet, NewResourcePermissionsValueNull(), diags
 	}
 
-	sites, ok := rp.GetSitesOk()
-	if !ok || sites == nil {
+	sites := rp.Sites
+	if sites == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing resource permission sites in response", id),
@@ -472,8 +464,8 @@ func populateClusterDatastoreInformation(
 
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), diags
 	}
-	clusterDatastore, ok := cdResp.GetDatastoreOk()
-	if !ok || clusterDatastore == nil {
+	clusterDatastore := cdResp.Datastore
+	if clusterDatastore == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing cluster datastore in response", id),
@@ -483,8 +475,8 @@ func populateClusterDatastoreInformation(
 	}
 
 	// Populate Tenants
-	tenants, ok := clusterDatastore.GetTenantsOk()
-	if !ok || tenants == nil {
+	tenants := clusterDatastore.Tenants
+	if tenants == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing tenants in response", id),
@@ -509,8 +501,8 @@ func populateClusterDatastoreInformation(
 	diags = append(diags, tdiag...)
 
 	// Populate ResourcePermissions, we'll only do Groups for now
-	rp, ok := clusterDatastore.GetResourcePermissionsOk()
-	if !ok || rp == nil {
+	rp := clusterDatastore.ResourcePermissions
+	if rp == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing resource permissions in response", id),
@@ -518,8 +510,8 @@ func populateClusterDatastoreInformation(
 
 		return tenantsSet, NewResourcePermissionsValueNull(), diags
 	}
-	sites, ok := rp.GetSitesOk()
-	if !ok || sites == nil {
+	sites := rp.Sites
+	if sites == nil {
 		diags.AddWarning(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d missing resource permission sites in response", id),

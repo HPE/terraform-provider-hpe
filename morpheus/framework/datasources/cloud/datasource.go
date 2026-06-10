@@ -65,7 +65,10 @@ func getCloudByID(
 		return fmt.Errorf("GET failed for cloud %d", id)
 	}
 
-	cloud := c.GetZone()
+	cloud := c.Zone
+	if cloud == nil {
+		return fmt.Errorf("API response was missing the expected Zone object for cloud %d", id)
+	}
 
 	data.Id = convert.Int64ToType(cloud.Id)
 	data.Name = convert.StrToType(cloud.Name)
@@ -80,7 +83,9 @@ func getCloudByID(
 
 	var groupIDs []int64
 	for _, g := range cloud.Groups {
-		groupIDs = append(groupIDs, (*g.Id))
+		if g.Id != nil {
+			groupIDs = append(groupIDs, *g.Id)
+		}
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
@@ -101,11 +106,14 @@ func getCloudByName(
 		return fmt.Errorf("GET failed for cloud %s", name)
 	}
 
-	clouds := sdk.NewListClouds200Response().Zones
+	clouds := sdk.ListClouds200Response{}.Zones
 
 	for _, c := range cs.Zones {
-		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", c.GetName()))
-		if c.GetName() == name {
+		if c.Name == nil {
+			continue
+		}
+		tflog.Warn(ctx, fmt.Sprintf("found cloud: %s", *c.Name))
+		if *c.Name == name {
 			clouds = append(clouds, c)
 		}
 	}
@@ -131,7 +139,9 @@ func getCloudByName(
 
 	var groupIDs []int64
 	for _, g := range cloud.Groups {
-		groupIDs = append(groupIDs, (*g.Id))
+		if g.Id != nil {
+			groupIDs = append(groupIDs, *g.Id)
+		}
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 

@@ -106,22 +106,17 @@ func (g *Resource) ModifyPlan(
 		return
 	}
 
-	health, ok := apiResp.GetHealthOk()
-	if !ok {
+	health := apiResp.Health
+	if health == nil || health.BuildVersion == nil {
 		return
 	}
 
-	apiVersion, ok := health.GetBuildVersionOk()
-	if !ok {
-		return
-	}
-
-	versionParts := strings.Split(*apiVersion, ".")
+	versionParts := strings.Split(*health.BuildVersion, ".")
 	if len(versionParts) < 3 {
 		resp.Diagnostics.AddError(
 			"Unable to Parse Appliance Version",
 			"Not enough components - expect at least major.minor.patch, got %s"+
-				*apiVersion,
+				*health.BuildVersion,
 		)
 	}
 
@@ -133,7 +128,7 @@ func (g *Resource) ModifyPlan(
 			"Unable to Parse Appliance Version",
 			fmt.Sprintf(
 				"Unable to parse appliance version %s: %v",
-				*apiVersion, err.Error(),
+				*health.BuildVersion, err.Error(),
 			),
 		)
 

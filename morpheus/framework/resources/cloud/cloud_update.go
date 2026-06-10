@@ -41,17 +41,36 @@ func (r *Resource) Update(
 
 	name := plan.Name.ValueString()
 
-	updateCloud := sdk.NewUpdateCloudsRequestZoneWithDefaults()
+	updateCloud := &sdk.UpdateCloudsRequestZone{}
 	updateCloud.AdditionalProperties = make(map[string]any)
-	updateCloud.SetName(name)
+	updateCloud.Name = name
 
 	// This won't do anything with the current API.
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		updateCloud.SetGroupId(plan.GroupId.ValueInt64())
+		updateCloud.GroupId = plan.GroupId.ValueInt64()
 	}
 
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
-		updateCloud.SetAutoRecoverPowerState(plan.AutoRecoverPowerState.ValueBool())
+		updateCloud.AutoRecoverPowerState = plan.AutoRecoverPowerState.ValueBoolPointer()
+	}
+
+	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
+		updateCloud.DefaultDatastoreSyncActive = plan.DefaultDatastoreSyncActive.ValueBoolPointer()
+	}
+	if !plan.DefaultFolderSyncActive.IsNull() && !plan.DefaultFolderSyncActive.IsUnknown() {
+		updateCloud.DefaultFolderSyncActive = plan.DefaultFolderSyncActive.ValueBoolPointer()
+	}
+	if !plan.DefaultNetworkSyncActive.IsNull() && !plan.DefaultNetworkSyncActive.IsUnknown() {
+		updateCloud.DefaultNetworkSyncActive = plan.DefaultNetworkSyncActive.ValueBoolPointer()
+	}
+	if !plan.DefaultPlanSyncActive.IsNull() && !plan.DefaultPlanSyncActive.IsUnknown() {
+		updateCloud.DefaultPlanSyncActive = plan.DefaultPlanSyncActive.ValueBoolPointer()
+	}
+	if !plan.DefaultPoolSyncActive.IsNull() && !plan.DefaultPoolSyncActive.IsUnknown() {
+		updateCloud.DefaultPoolSyncActive = plan.DefaultPoolSyncActive.ValueBoolPointer()
+	}
+	if !plan.DefaultSecurityGroupSyncActive.IsNull() && !plan.DefaultSecurityGroupSyncActive.IsUnknown() {
+		updateCloud.DefaultSecurityGroupSyncActive = plan.DefaultSecurityGroupSyncActive.ValueBoolPointer()
 	}
 
 	if !plan.DefaultDatastoreSyncActive.IsNull() && !plan.DefaultDatastoreSyncActive.IsUnknown() {
@@ -74,15 +93,15 @@ func (r *Resource) Update(
 	}
 
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateCloud.SetCode(plan.Code.ValueString())
+		updateCloud.Code = plan.Code.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		updateCloud.SetEnabled(plan.Enabled.ValueBool())
+		updateCloud.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if plan.Labels.IsNull() || plan.Labels.IsUnknown() {
-		updateCloud.SetLabels([]string{})
+		updateCloud.Labels = []string{}
 	} else {
 		labels, err := convert.SetToStrSlice(plan.Labels)
 		if err != nil {
@@ -94,19 +113,19 @@ func (r *Resource) Update(
 			return
 		}
 
-		updateCloud.SetLabels(labels)
+		updateCloud.Labels = labels
 	}
 
 	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
-		updateCloud.SetLocation(plan.Location.ValueString())
+		updateCloud.Location = plan.Location.ValueStringPointer()
 	}
 
 	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
-		updateCloud.SetSecurityMode(plan.SecurityMode.ValueString())
+		updateCloud.SecurityMode = plan.SecurityMode.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateCloud.SetVisibility(plan.Visibility.ValueString())
+		updateCloud.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// TODO: Update spec to generate setters
@@ -425,7 +444,7 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	updateCloudReq := sdk.NewUpdateCloudsRequest(*updateCloud)
+	updateCloudReq := &sdk.UpdateCloudsRequest{Zone: *updateCloud}
 
 	cloud, hresp, err := client.CloudsAPI.UpdateClouds(ctx, id).
 		UpdateCloudsRequest(*updateCloudReq).Execute()
@@ -438,7 +457,13 @@ func (r *Resource) Update(
 		return
 	}
 
-	if cloud.GetZone().Id == nil {
+	if cloud.Zone == nil {
+		resp.Diagnostics.AddError("API returned nil", "Zone is nil in the response")
+
+		return
+	}
+
+	if cloud.Zone.Id == nil {
 		resp.Diagnostics.AddError(
 			updateOperation,
 			"cloud "+name+": id is nil",
@@ -447,7 +472,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	newid := *cloud.GetZone().Id
+	newid := *cloud.Zone.Id
 	if newid != id {
 		resp.Diagnostics.AddError(
 			updateOperation,

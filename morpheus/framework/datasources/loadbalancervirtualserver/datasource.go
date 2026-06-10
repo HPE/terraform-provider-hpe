@@ -111,8 +111,14 @@ func getVirtualServerByID(
 		)
 	}
 
-	vs := resp.GetLoadBalancerInstance()
-	state := populateVirtualServerState(ctx, loadBalancerID, &vs)
+	if resp.LoadBalancerInstance == nil {
+		return nil, fmt.Errorf(
+			"load balancer %d virtual server %d GET returned no loadBalancerInstance",
+			loadBalancerID, id,
+		)
+	}
+
+	state := populateVirtualServerState(ctx, loadBalancerID, resp.LoadBalancerInstance)
 
 	return state, nil
 }
@@ -134,8 +140,8 @@ func getVirtualServerByName(
 	}
 
 	var matching []sdk.ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
-	for _, vs := range list.GetLoadBalancerInstances() {
-		if name, ok := vs.GetVipNameOk(); ok && *name == vipName {
+	for _, vs := range list.LoadBalancerInstances {
+		if vs.VipName != nil && *vs.VipName == vipName {
 			matching = append(matching, vs)
 		}
 	}
@@ -150,8 +156,8 @@ func getVirtualServerByName(
 	if len(matching) > 1 {
 		var ids []string
 		for _, vs := range matching {
-			if id, ok := vs.GetIdOk(); ok {
-				ids = append(ids, fmt.Sprintf("%d", *id))
+			if vs.Id != nil {
+				ids = append(ids, fmt.Sprintf("%d", *vs.Id))
 			}
 		}
 
@@ -163,8 +169,8 @@ func getVirtualServerByName(
 		)
 	}
 
-	id, ok := matching[0].GetIdOk()
-	if !ok {
+	id := matching[0].Id
+	if id == nil {
 		return nil, fmt.Errorf(
 			"load balancer %d virtual server with vip_name %q has missing ID",
 			loadBalancerID, vipName,
@@ -224,14 +230,14 @@ func populateVirtualServerState(
 	state.VipType = convert.StrToType(vs.VipType.Get())
 
 	// Dates
-	if dc, ok := vs.GetDateCreatedOk(); ok && dc != nil {
-		state.DateCreated = types.StringValue(dc.String())
+	if vs.DateCreated != nil {
+		state.DateCreated = types.StringValue(vs.DateCreated.String())
 	} else {
 		state.DateCreated = types.StringNull()
 	}
 
-	if lu, ok := vs.GetLastUpdatedOk(); ok && lu != nil {
-		state.LastUpdated = types.StringValue(lu.String())
+	if vs.LastUpdated != nil {
+		state.LastUpdated = types.StringValue(vs.LastUpdated.String())
 	} else {
 		state.LastUpdated = types.StringNull()
 	}
@@ -248,10 +254,10 @@ func populateVirtualServerState(
 	}
 
 	// SSL cert — nested {id, name} object.
-	if sslCert, ok := vs.GetSslCertOk(); ok && sslCert != nil {
+	if vs.SslCert != nil {
 		state.SslCert = SslCertValue{
-			Id:    convert.Int64ToType(sslCert.Id),
-			Name:  convert.StrToType(sslCert.Name),
+			Id:    convert.Int64ToType(vs.SslCert.Id),
+			Name:  convert.StrToType(vs.SslCert.Name),
 			state: attr.ValueStateKnown,
 		}
 	} else {
@@ -259,10 +265,10 @@ func populateVirtualServerState(
 	}
 
 	// SSL server cert — nested {id, name} object.
-	if sslServerCert, ok := vs.GetSslServerCertOk(); ok && sslServerCert != nil {
+	if vs.SslServerCert != nil {
 		state.SslServerCert = SslServerCertValue{
-			Id:    convert.Int64ToType(sslServerCert.Id),
-			Name:  convert.StrToType(sslServerCert.Name),
+			Id:    convert.Int64ToType(vs.SslServerCert.Id),
+			Name:  convert.StrToType(vs.SslServerCert.Name),
 			state: attr.ValueStateKnown,
 		}
 	} else {
@@ -282,13 +288,13 @@ func populateVirtualServerState(
 
 		typeVal := types.ObjectNull(TypeValue{}.AttributeTypes(ctx))
 
-		if lbType, ok := lb.GetTypeOk(); ok && lbType != nil {
+		if lb.Type != nil {
 			tv, d := NewTypeValue(
 				TypeValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
-					"code": convert.StrToType(lbType.Code),
-					"id":   convert.Int64ToType(lbType.Id),
-					"name": convert.StrToType(lbType.Name),
+					"code": convert.StrToType(lb.Type.Code),
+					"id":   convert.Int64ToType(lb.Type.Id),
+					"name": convert.StrToType(lb.Type.Name),
 				},
 			)
 			if !d.HasError() {
@@ -320,15 +326,11 @@ func populateVirtualServerState(
 	// Config — the generic config map returned as a dynamic value.
 	// For NSX-T, build a typed config_nsxt and extract pool_id from config.
 	lbTypeCode := ""
-	if vs.LoadBalancer != nil {
-		if lbType, ok := vs.LoadBalancer.GetTypeOk(); ok && lbType != nil {
-			if code, ok := lbType.GetCodeOk(); ok && code != nil {
-				lbTypeCode = *code
-			}
-		}
+	if vs.LoadBalancer != nil && vs.LoadBalancer.Type != nil && vs.LoadBalancer.Type.Code != nil {
+		lbTypeCode = *vs.LoadBalancer.Type.Code
 	}
 
-	configMap := vs.GetConfig()
+	configMap := vs.Config
 
 	switch lbTypeCode {
 	case "nsx-t":

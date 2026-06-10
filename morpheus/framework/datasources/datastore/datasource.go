@@ -82,8 +82,8 @@ func getDatastoreById(
 
 	state := &DatastoreModel{}
 
-	datastore, ok := response.GetDatastoreOk()
-	if !ok {
+	datastore := response.Datastore
+	if datastore == nil {
 		return nil, fmt.Errorf("datastore %d is nil", id)
 	}
 
@@ -109,10 +109,7 @@ func getDatastoreById(
 	state.DefaultStore = convert.BoolToType(datastore.DefaultStore)
 
 	// Set DatastoreType, we get the code and id back from the API
-	datastoreType, ok := datastore.GetDatastoreTypeOk()
-	if !ok || datastoreType == nil {
-		return nil, fmt.Errorf("datastore %d missing datastore type in response", id)
-	}
+	datastoreType := datastore.DatastoreType
 	datastoreTypeValue := DatastoreTypeValue{}
 	datastoreTypeValue.Id = convert.Int64ToType(&datastoreType.Id)
 	datastoreTypeValue.Code = convert.StrToType(&datastoreType.Code)
@@ -120,17 +117,22 @@ func getDatastoreById(
 	state.DatastoreType = datastoreTypeValue
 
 	// Set AssociatedResourceType based on RefType
-	refType, ok := datastore.GetRefTypeOk()
-	if !ok || refType == nil {
+	refType := datastore.RefType
+	if refType == nil {
 		return nil, fmt.Errorf("datastore %d missing ref type in response", id)
 	}
 
-	state.AssociatedResourceId = convert.Int64ToType(datastore.RefId)
+	refId := datastore.RefId
+	if refId == nil {
+		return nil, fmt.Errorf("datastore %d missing ref id in response", id)
+	}
+
+	state.AssociatedResourceId = convert.Int64ToType(refId)
 	switch *refType {
 	case cloudRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCloud)
 		tenants, resourcePermissions, err := populateCloudDatastoreInformation(
-			ctx, id, *datastore.RefId, client)
+			ctx, id, *refId, client)
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +142,7 @@ func getDatastoreById(
 	case clusterRefType:
 		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCluster)
 		tenants, resourcePermissions, err := populateClusterDatastoreInformation(
-			ctx, id, *datastore.RefId, client)
+			ctx, id, *refId, client)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +154,7 @@ func getDatastoreById(
 	}
 
 	// Populate Config
-	switch datastoreType.GetCode() {
+	switch datastoreType.Code {
 	case nfsDatastoreCode:
 		var configNfsValue ConfigNfsValue
 		for k, v := range datastore.Config {
@@ -218,7 +220,7 @@ func getDatastoreById(
 	}
 
 	// Set StorageServer to that returned by the API
-	if server, ok := datastore.GetStorageServerOk(); ok && server != nil {
+	if server := datastore.StorageServer; server != nil {
 		storageServer := StorageServerValue{}
 		storageServer.Id = convert.Int64ToType(server.Id)
 		storageServer.state = attr.ValueStateKnown
@@ -226,31 +228,31 @@ func getDatastoreById(
 	}
 
 	state.Cloud = NewCloudValueNull()
-	if cloudId, ok := datastore.Zone.GetIdOk(); ok && cloudId != nil {
+	if datastore.Zone != nil && datastore.Zone.Id != nil {
 		cloud := CloudValue{}
-		cloud.Id = convert.Int64ToType(cloudId)
+		cloud.Id = convert.Int64ToType(datastore.Zone.Id)
 		cloud.state = attr.ValueStateKnown
 		state.Cloud = cloud
 	}
 
 	state.ResourcePool = NewResourcePoolValueNull()
-	if poolId, ok := datastore.ZonePool.GetIdOk(); ok && poolId != nil {
+	if datastore.ZonePool != nil && datastore.ZonePool.Id != nil {
 		resourcePool := ResourcePoolValue{}
-		resourcePool.Id = convert.Int64ToType(poolId)
+		resourcePool.Id = convert.Int64ToType(datastore.ZonePool.Id)
 		resourcePool.state = attr.ValueStateKnown
 		state.ResourcePool = resourcePool
 	}
 
 	state.Owner = NewOwnerValueNull()
-	if ownerId, ok := datastore.Owner.GetIdOk(); ok && ownerId != nil {
+	if datastore.Owner != nil && datastore.Owner.Id != nil {
 		owner := OwnerValue{}
-		owner.Id = convert.Int64ToType(ownerId)
+		owner.Id = convert.Int64ToType(datastore.Owner.Id)
 		owner.state = attr.ValueStateKnown
 		state.Owner = owner
 	}
 
 	state.Locations = basetypes.NewSetNull(LocationsValue{}.Type(ctx))
-	if locations, ok := datastore.GetLocationsOk(); ok && locations != nil {
+	if locations := datastore.Locations; locations != nil {
 		locationsSet, d := convert.ToSetType(
 			ctx,
 			locations,
@@ -274,17 +276,21 @@ func getDatastoreById(
 	}
 
 	state.Datastores = basetypes.NewSetNull(DatastoresValue{}.Type(ctx))
-	if datastores, ok := datastore.GetDatastoresOk(); ok && datastores != nil {
+	if datastores := datastore.Datastores; datastores != nil {
 		datastoresSet, d := convert.ToSetType(
 			ctx,
 			datastores,
 			func(
 				in sdk.GetDatastores200ResponseAllOfDatastoreDatastoresInner,
 			) DatastoresValue {
-				id64 := int64(*in.Id)
+				var datastoreID *int64
+				if in.Id != nil {
+					id64 := int64(*in.Id)
+					datastoreID = &id64
+				}
 
 				return DatastoresValue{
-					Id:    convert.Int64ToType(&id64),
+					Id:    convert.Int64ToType(datastoreID),
 					Name:  convert.StrToType(in.Name),
 					state: attr.ValueStateKnown,
 				}
@@ -314,8 +320,8 @@ func populateCloudDatastoreInformation(
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
 	}
 
-	cloudDatastore, ok := cdResp.GetDatastoreOk()
-	if !ok || cloudDatastore == nil {
+	cloudDatastore := cdResp.Datastore
+	if cloudDatastore == nil {
 		retErr := fmt.Errorf("datastore %d missing cloud datastore in response", id)
 
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
@@ -323,8 +329,8 @@ func populateCloudDatastoreInformation(
 
 	// Populate Tenants
 	var tenantsSet types.Set
-	tenants, ok := cloudDatastore.GetTenantsOk()
-	if ok && tenants != nil {
+	tenants := cloudDatastore.Tenants
+	if tenants != nil {
 
 		var tdiag diag.Diagnostics
 		tenantsSet, tdiag = convert.ToSetType(
@@ -349,10 +355,10 @@ func populateCloudDatastoreInformation(
 
 	// Populate ResourcePermissions, we'll only do Groups for now
 	var resourcePermissions ResourcePermissionsValue
-	rp, ok := cloudDatastore.GetResourcePermissionOk()
-	if ok && rp != nil {
-		sites, ok := rp.GetSitesOk()
-		if !ok || sites == nil {
+	rp := cloudDatastore.ResourcePermission
+	if rp != nil {
+		sites := rp.Sites
+		if sites == nil {
 			tflog.Debug(ctx, fmt.Sprintf("datastore %d missing resource permission sites in response", id))
 
 			return tenantsSet, NewResourcePermissionsValueNull(), nil
@@ -396,8 +402,8 @@ func populateClusterDatastoreInformation(
 
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
 	}
-	clusterDatastore, ok := cdResp.GetDatastoreOk()
-	if !ok || clusterDatastore == nil {
+	clusterDatastore := cdResp.Datastore
+	if clusterDatastore == nil {
 		retErr := fmt.Errorf("datastore %d missing cluster datastore in response", id)
 
 		return types.SetNull(TenantsType{}), NewResourcePermissionsValueNull(), retErr
@@ -405,8 +411,8 @@ func populateClusterDatastoreInformation(
 
 	// Populate Tenants
 	var tenantsSet types.Set
-	tenants, ok := clusterDatastore.GetTenantsOk()
-	if ok && tenants != nil {
+	tenants := clusterDatastore.Tenants
+	if tenants != nil {
 
 		var tdiag diag.Diagnostics
 		tenantsSet, tdiag = convert.ToSetType(
@@ -430,11 +436,11 @@ func populateClusterDatastoreInformation(
 
 	// Populate ResourcePermissions, we'll only do Groups for now
 	var resourcePermissions ResourcePermissionsValue
-	rp, ok := clusterDatastore.GetResourcePermissionsOk()
-	if ok && rp != nil {
+	rp := clusterDatastore.ResourcePermissions
+	if rp != nil {
 
-		sites, ok := rp.GetSitesOk()
-		if !ok || sites == nil {
+		sites := rp.Sites
+		if sites == nil {
 			tflog.Debug(ctx, fmt.Sprintf("datastore %d missing resource permission sites in response", id))
 
 			return tenantsSet, NewResourcePermissionsValueNull(), nil
@@ -522,8 +528,8 @@ func getDatastoreByName(
 		return nil, fmt.Errorf("datastore %s list failed: %s", name, errfmt.ErrMsg(err, hresp))
 	}
 
-	matchingDatastores, ok := datastores.GetDatastoresOk()
-	if !ok || len(matchingDatastores) == 0 {
+	matchingDatastores := datastores.Datastores
+	if len(matchingDatastores) == 0 {
 		return nil, fmt.Errorf("datastore %s not found", name)
 	}
 
@@ -531,9 +537,7 @@ func getDatastoreByName(
 	if len(matchingDatastores) > 1 {
 		var datastoreIDs []string
 		for _, n := range matchingDatastores {
-			if id, ok := n.GetIdOk(); ok {
-				datastoreIDs = append(datastoreIDs, fmt.Sprintf("%d", *id))
-			}
+			datastoreIDs = append(datastoreIDs, fmt.Sprintf("%d", n.Id))
 		}
 
 		return nil, fmt.Errorf(
@@ -544,12 +548,9 @@ func getDatastoreByName(
 		)
 	}
 
-	id, ok := matchingDatastores[0].GetIdOk()
-	if !ok {
-		return nil, fmt.Errorf("datastore %s has missing ID", name)
-	}
+	id := matchingDatastores[0].Id
 
-	return getDatastoreById(ctx, *id, client)
+	return getDatastoreById(ctx, id, client)
 }
 
 func getDatastore(

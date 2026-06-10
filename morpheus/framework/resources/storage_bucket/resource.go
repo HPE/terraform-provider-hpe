@@ -93,8 +93,13 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sb := result.GetStorageBucket()
-	mapCreateResponseToModel(&plan, &sb)
+	sb := result.StorageBucket
+	if sb == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapCreateResponseToModel(&plan, sb)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -127,8 +132,13 @@ func (r *storageBucketResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	sb := result.GetStorageBucket()
-	mapGetResponseToModel(&state, &sb)
+	sb := result.StorageBucket
+	if sb == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, sb)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

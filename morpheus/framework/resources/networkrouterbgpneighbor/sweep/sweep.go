@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -13,6 +12,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_network_router_bgp_neighbor"
@@ -34,8 +34,8 @@ func init() {
 
 			items := make([]bgpNeighborSweeperItem, 0)
 
-			for _, router := range routersResp.GetNetworkRouters() {
-				routerID, ok := router.GetIdOk()
+			for _, router := range routersResp.NetworkRouters {
+				routerID, ok := getsafe.GetOk(router.Id)
 				if !ok || routerID == nil {
 					continue
 				}
@@ -45,7 +45,7 @@ func init() {
 					continue
 				}
 
-				for _, neighbor := range neighborsResp.GetNetworkRouterBgpNeighbors() {
+				for _, neighbor := range neighborsResp.NetworkRouterBgpNeighbors {
 					items = append(items, bgpNeighborSweeperItem{routerID: *routerID, neighbor: neighbor})
 				}
 			}
@@ -58,7 +58,7 @@ func init() {
 		},
 		// Delete the test network router BGP neighbor.
 		func(ctx context.Context, client *sdk.APIClient, item bgpNeighborSweeperItem) (*http.Response, error) {
-			neighborID, ok := item.neighbor.GetIdOk()
+			neighborID, ok := getsafe.GetOk(item.neighbor.Id)
 			if !ok || neighborID == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
@@ -76,9 +76,10 @@ func init() {
 func isTestBgpNeighbor(
 	neighbor sdk.GetNetworkRoutersBgpNeighbors200ResponseNetworkRouterBgpNeighborsInner,
 ) bool {
-	desc, ok := neighbor.GetDescriptionOk()
-	if ok && desc != nil && strings.HasPrefix(*desc, "TestAcc") {
-		return true
+	if neighbor.Description.IsSet() {
+		if desc := neighbor.Description.Get(); desc != nil && strings.HasPrefix(*desc, "TestAcc") {
+			return true
+		}
 	}
 
 	return false

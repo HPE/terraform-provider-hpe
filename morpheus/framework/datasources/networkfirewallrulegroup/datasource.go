@@ -134,9 +134,7 @@ func getRuleGroupByID(
 		)
 	}
 
-	rg := r.GetRuleGroup()
-
-	return &rg, nil
+	return r.RuleGroup, nil
 }
 
 func getRuleGroupByName(
@@ -157,16 +155,19 @@ func getRuleGroupByName(
 		)
 	}
 
-	ruleGroups := r.GetRuleGroups()
+	ruleGroups := r.RuleGroups
 
 	var matchedIDs []int64
 
 	for _, rg := range ruleGroups {
-		if rg.GetName() != name {
+		if rg.Name == nil || *rg.Name != name {
+			continue
+		}
+		if rg.Id == nil {
 			continue
 		}
 
-		matchedIDs = append(matchedIDs, rg.GetId())
+		matchedIDs = append(matchedIDs, *rg.Id)
 	}
 
 	if len(matchedIDs) == 0 {
@@ -227,8 +228,8 @@ func mapRule(
 ) RulesValue {
 	applications := mapIDNameSet(ctx, r.Applications, diags,
 		func(a sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerApplicationsInner,
-		) (string, string) {
-			return a.GetId(), a.GetName()
+		) (*string, *string) {
+			return a.Id, a.Name
 		},
 		NewApplicationsValue,
 	)
@@ -243,16 +244,16 @@ func mapRule(
 
 	destinations := mapIDNameSet(ctx, r.Destinations, diags,
 		func(d sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerDestinationsInner,
-		) (string, string) {
-			return d.GetId(), d.GetName()
+		) (*string, *string) {
+			return d.Id, d.Name
 		},
 		NewDestinationsValue,
 	)
 
 	profiles := mapIDNameSet(ctx, r.Profiles, diags,
 		func(p sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner,
-		) (string, string) {
-			return p.GetId(), p.GetName()
+		) (*string, *string) {
+			return p.Id, p.Name
 		},
 		NewProfilesValue,
 	)
@@ -261,16 +262,16 @@ func mapRule(
 
 	scopes := mapIDNameSet(ctx, r.Scopes, diags,
 		func(s sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerScopesInner,
-		) (string, string) {
-			return s.GetId(), s.GetName()
+		) (*string, *string) {
+			return s.Id, s.Name
 		},
 		NewScopesValue,
 	)
 
 	sources := mapIDNameSet(ctx, r.Sources, diags,
 		func(s sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerSourcesInner,
-		) (string, string) {
-			return s.GetId(), s.GetName()
+		) (*string, *string) {
+			return s.Id, s.Name
 		},
 		NewSourcesValue,
 	)
@@ -303,7 +304,7 @@ func mapRule(
 }
 
 // idNameExtractor extracts id and name strings from a model.
-type idNameExtractor[T any] func(T) (id, name string)
+type idNameExtractor[T any] func(T) (id, name *string)
 
 func mapIDNameSet[T any, V interface {
 	attr.Value
@@ -327,8 +328,8 @@ func mapIDNameSet[T any, V interface {
 		id, name := extract(item)
 
 		v, d := construct(attrTypes, map[string]attr.Value{
-			"id":   types.StringValue(id),
-			"name": types.StringValue(name),
+			"id":   convert.StrToType(id),
+			"name": convert.StrToType(name),
 		})
 		diags.Append(d...)
 

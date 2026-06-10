@@ -27,16 +27,16 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	addTaskReq := sdk.NewAddTasksRequestWithDefaults()
+	addTaskReq := &sdk.AddTasksRequest{}
 
 	// allow_custom_config
 	if !plan.AllowCustomConfig.IsNull() && !plan.AllowCustomConfig.IsUnknown() {
-		addTaskReq.Task.SetAllowCustomConfig(plan.AllowCustomConfig.ValueBool())
+		addTaskReq.Task.AllowCustomConfig = plan.AllowCustomConfig.ValueBoolPointer()
 	}
 
 	// code
 	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		addTaskReq.Task.SetCode(plan.Code.ValueString())
+		addTaskReq.Task.Code = plan.Code.ValueStringPointer()
 	}
 
 	taskOptionsSet := false
@@ -73,8 +73,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// config_conditional_workflow
 	if !plan.ConfigConditionalWorkflow.IsNull() && !plan.ConfigConditionalWorkflow.IsUnknown() {
 		conditionalWorkflow := &sdk.ConditionalWorkflowTaskConfig{}
-		trimmed := plan.ConfigConditionalWorkflow.ConditionalScript.ValueString()
-		conditionalWorkflow.ConditionalScript = &trimmed
+		conditionalWorkflow.ConditionalScript = plan.ConfigConditionalWorkflow.ConditionalScript.ValueStringPointer()
 
 		conditionalWorkflow.IfOperationalWorkflowId = plan.ConfigConditionalWorkflow.
 			IfOperationalWorkflowId.ValueInt64Pointer()
@@ -100,12 +99,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	if taskOptionsSet {
-		addTaskReq.Task.SetTaskOptions(*taskOptions)
+		addTaskReq.Task.TaskOptions = taskOptions
 	}
 
 	// execute_target
 	if !plan.ExecuteTarget.IsNull() && !plan.ExecuteTarget.IsUnknown() {
-		addTaskReq.Task.SetExecuteTarget(plan.ExecuteTarget.ValueString())
+		addTaskReq.Task.ExecuteTarget = plan.ExecuteTarget.ValueString()
 	}
 
 	// labels
@@ -120,42 +119,42 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		addTaskReq.Task.SetLabels(labels)
+		addTaskReq.Task.Labels = labels
 	}
 
 	// name
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		addTaskReq.Task.SetName(plan.Name.ValueString())
+		addTaskReq.Task.Name = plan.Name.ValueString()
 	}
 
 	// result_type
 	if !plan.ResultType.IsNull() && !plan.ResultType.IsUnknown() {
-		addTaskReq.Task.SetResultType(plan.ResultType.ValueString())
+		addTaskReq.Task.ResultType.Set(plan.ResultType.ValueStringPointer())
 	}
 
 	// retry_count
 	if !plan.RetryCount.IsNull() && !plan.RetryCount.IsUnknown() {
-		addTaskReq.Task.SetRetryCount(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryCount = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retry_delay_seconds
 	if !plan.RetryDelaySeconds.IsNull() && !plan.RetryDelaySeconds.IsUnknown() {
-		addTaskReq.Task.SetRetryDelaySeconds(plan.RetryCount.ValueInt64())
+		addTaskReq.Task.RetryDelaySeconds = plan.RetryCount.ValueInt64Pointer()
 	}
 
 	// retryable
 	if !plan.Retryable.IsNull() && !plan.Retryable.IsUnknown() {
-		addTaskReq.Task.SetRetryable(plan.Retryable.ValueBool())
+		addTaskReq.Task.Retryable = plan.Retryable.ValueBoolPointer()
 	}
 
 	// task_type_code
 	if !plan.TaskTypeCode.IsNull() && !plan.TaskTypeCode.IsUnknown() {
-		addTaskReq.Task.TaskType.SetCode(plan.TaskTypeCode.ValueString())
+		addTaskReq.Task.TaskType.Code = plan.TaskTypeCode.ValueString()
 	}
 
 	// visibility
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		addTaskReq.Task.SetVisibility(plan.Visibility.ValueString())
+		addTaskReq.Task.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	// send the API request here
@@ -163,6 +162,18 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		AddTasksRequest(*addTaskReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError("error creating task", errfmt.ErrMsg(err, httpResp))
+
+		return
+	}
+
+	if taskResp.Task == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task is nil in the response")
+
+		return
+	}
+
+	if taskResp.Task.Id == nil {
+		resp.Diagnostics.AddError("API returned nil", "Task ID is nil in the response")
 
 		return
 	}

@@ -57,7 +57,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	body := sdk.NewAddSecurityGroupsRequestSecurityGroupWithDefaults()
+	body := &sdk.AddSecurityGroupsRequestSecurityGroup{}
 	body.Name = plan.Name.ValueString()
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
 		body.ZoneId = plan.CloudId.ValueInt64()
@@ -123,7 +123,12 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sg := result.GetSecurityGroup()
+	sg := result.SecurityGroup
+	if sg == nil {
+		resp.Diagnostics.AddError("API returned nil", "SecurityGroup is nil in the response")
+
+		return
+	}
 	if sg.Id == nil {
 		resp.Diagnostics.AddError("Create Error", "Security group ID not returned")
 
@@ -176,7 +181,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.NewUpdateSecurityGroupsRequestSecurityGroupWithDefaults()
+	body := &sdk.UpdateSecurityGroupsRequestSecurityGroup{}
 	body.Name = plan.Name.ValueStringPointer()
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
@@ -322,9 +327,14 @@ func (r *securityGroupResource) getSecurityGroupAsState(
 		return nil, diags
 	}
 
-	sg := result.GetSecurityGroup()
+	sg := result.SecurityGroup
+	if sg == nil {
+		diags.AddError("API returned nil", "SecurityGroup is nil in the response")
+
+		return nil, diags
+	}
 	var model SecurityGroupModel
-	mapResponseToModel(&model, &sg)
+	mapResponseToModel(&model, sg)
 
 	return &model, diags
 }
@@ -342,8 +352,12 @@ func mapResponseToModel(
 	}
 	model.Active = convert.BoolToType(sg.Active)
 	model.Visibility = convert.StrToType(sg.Visibility)
-	zone := sg.GetZone()
-	model.CloudId = convert.Int64ToType(zone.Id)
+
+	if sg.Zone != nil {
+		model.CloudId = convert.Int64ToType(sg.Zone.Id)
+	} else {
+		model.CloudId = types.Int64Null()
+	}
 
 	// Tenants
 	if len(sg.Tenants) > 0 {

@@ -1,6 +1,7 @@
 package serviceplan_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -13,6 +14,7 @@ import (
 
 // TestAccMorpheusServicePlanResourceUpdateAllAttrsOk tests updating all mutable attributes and detecting changes
 func TestAccMorpheusServicePlanResourceUpdateAllAttrsOk(t *testing.T) {
+	t.Parallel()
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
 
@@ -25,12 +27,13 @@ func TestAccMorpheusServicePlanResourceUpdateAllAttrsOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	uniqueName := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(uniqueName)
 
 	baseConfigText := providerConfig + `
 variable "name" { type = string }
-variable "code" { 
-  type = string 
-  default = "test-serviceplan-code"
+variable "code" {
+  type = string
+  default = "` + code + `"
 }
 variable "description" {
   type    = string
@@ -183,7 +186,7 @@ resource "hpe_morpheus_service_plan" "test" {
 
 	baseChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "name", uniqueName),
-		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", "test-serviceplan-code"),
+		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", code),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "description", "test serviceplan"),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_memory", "4294967296"),
 		resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_storage", "0"),
@@ -419,7 +422,7 @@ resource "hpe_morpheus_service_plan" "test" {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "name", uniqueName),
-					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", "test-serviceplan-code"),
+					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "code", code),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "description", "Comprehensive update test"),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_memory", "8589934592"),
 					resource.TestCheckResourceAttr("hpe_morpheus_service_plan.test", "max_storage", "10737418240"),

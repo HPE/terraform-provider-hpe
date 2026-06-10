@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -32,16 +31,15 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetVdiPools(), hresp, err
+			return resp.VdiPools, hresp, err
 		},
 		// Is this a test VDI pool?
 		func(item sdk.ListVDIPools200ResponseAllOfVdiPoolsInner) bool {
-			name, ok := item.GetNameOk()
-			if !ok || name == nil {
+			if item.Name == nil {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(*item.Name, testsweep.TestResourcePrefix)
 		},
 		// Delete the test VDI pool.
 		func(
@@ -49,12 +47,11 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListVDIPools200ResponseAllOfVdiPoolsInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
-			if !ok || id == nil {
+			if item.Id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}
 
-			_, hresp, err := client.VDIAPI.RemoveVDIPools(ctx, *id).Execute()
+			_, hresp, err := client.VDIAPI.RemoveVDIPools(ctx, *item.Id).Execute()
 
 			return hresp, err
 		},

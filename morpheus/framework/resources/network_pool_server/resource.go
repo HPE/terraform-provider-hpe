@@ -66,7 +66,7 @@ func (r *networkPoolServerResource) Create(
 	// concrete type because it is the superset of all pool server types (Infoblox, Bluecat,
 	// phpIPAM, SolarWinds). The API resolves the actual type from type_id, not from the
 	// "type" field in the request body. All common fields are accepted regardless of type.
-	infoblox := sdk.NewInfobloxNetworkPoolServerWithDefaults()
+	infoblox := &sdk.InfobloxNetworkPoolServer{}
 	infoblox.Type = "infoblox"
 	infoblox.Name = plan.Name.ValueString()
 	if !plan.ServiceUrl.IsNull() {
@@ -104,7 +104,7 @@ func (r *networkPoolServerResource) Create(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		cred := sdk.NewInfobloxNetworkPoolServerCredentialWithDefaults()
+		cred := &sdk.InfobloxNetworkPoolServerCredential{}
 		cred.Type = &idStr
 		infoblox.Credential = cred
 	}
@@ -123,8 +123,13 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapCreateResponseToModel(&plan, &server)
+	server := result.NetworkPoolServer
+	if server == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapCreateResponseToModel(&plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -157,8 +162,13 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapReadResponseToModel(&state, &server)
+	server := result.NetworkPoolServer
+	if server == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&state, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -183,7 +193,7 @@ func (r *networkPoolServerResource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	infobloxUpdate := sdk.NewInfobloxNetworkPoolServerUpdateWithDefaults()
+	infobloxUpdate := &sdk.InfobloxNetworkPoolServerUpdate{}
 	infobloxUpdate.Name = plan.Name.ValueStringPointer()
 	if !plan.ServiceUrl.IsNull() {
 		infobloxUpdate.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
@@ -220,12 +230,14 @@ func (r *networkPoolServerResource) Update(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		cred := sdk.NewInfobloxNetworkPoolServerUpdateCredentialWithDefaults()
+		cred := &sdk.InfobloxNetworkPoolServerUpdateCredential{}
 		cred.Type = &idStr
 		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(infobloxUpdate)
+	serverReq := sdk.UpdateNetworkPoolServerRequestNetworkPoolServer{
+		InfobloxNetworkPoolServerUpdate: infobloxUpdate,
+	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
@@ -245,8 +257,13 @@ func (r *networkPoolServerResource) Update(
 		return
 	}
 
-	server := readResult.GetNetworkPoolServer()
-	mapReadResponseToModel(&plan, &server)
+	server := readResult.NetworkPoolServer
+	if server == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_nat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -33,19 +34,24 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	routerID := os.Getenv("TF_ACC_MORPHEUS_ROUTER_ID")
-	if routerID == "" {
-		t.Skip("TF_ACC_MORPHEUS_ROUTER_ID not set")
-	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resourceConfig, err := network_router_nat.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": routerID,
+		"RouterId": "hpe_morpheus_network_router.example.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -53,7 +59,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
@@ -64,11 +70,11 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + routerConfig + resourceConfig,
 				Check:  checks,
 			},
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + routerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
@@ -100,19 +106,24 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	routerID := os.Getenv("TF_ACC_MORPHEUS_ROUTER_ID")
-	if routerID == "" {
-		t.Skip("TF_ACC_MORPHEUS_ROUTER_ID not set")
-	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	createConfig, err := network_router_nat.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": routerID,
+		"RouterId": "hpe_morpheus_network_router.example.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -121,7 +132,7 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 
 	updateConfig := `
 resource "hpe_morpheus_network_router_nat" "example" {
-  router_id      = ` + routerID + `
+  router_id      = hpe_morpheus_network_router.example.id
   name           = "` + name + `"
   source_network = "10.1.0.0/24"
   description    = "Updated SNAT rule"
@@ -129,14 +140,14 @@ resource "hpe_morpheus_network_router_nat" "example" {
 `
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.1.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated SNAT rule"),
@@ -151,9 +162,9 @@ resource "hpe_morpheus_network_router_nat" "example" {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			{Config: providerConfig + createConfig, Check: createChecks},
-			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
-			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
 }

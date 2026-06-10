@@ -33,74 +33,82 @@ func (r *Resource) Create(
 		return
 	}
 
-	rule := sdk.NewCreateNetworkFirewallRuleRequestRule(plan.Name.ValueString())
+	rule := &sdk.CreateNetworkFirewallRuleRequestRule{
+		Name: plan.Name.ValueString(),
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		rule.SetDescription(plan.Description.ValueString())
+		desc := plan.Description.ValueString()
+		rule.Description.Set(&desc)
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		rule.SetEnabled(plan.Enabled.ValueBool())
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
-		rule.SetDirection(plan.Direction.ValueString())
+		rule.Direction = plan.Direction.ValueStringPointer()
 	}
 
 	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
-		rule.SetPolicy(plan.Policy.ValueString())
+		rule.Policy = plan.Policy.ValueStringPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		rule.SetPriority(plan.Priority.ValueInt64())
+		priority := plan.Priority.ValueInt64()
+		rule.Priority.Set(&priority)
 	}
 
 	if !plan.Sources.IsNull() && !plan.Sources.IsUnknown() {
-		sources := sdk.NewCreateNetworkFirewallRuleRequestRuleSourcesWithDefaults()
-		sources.SetId(setValueToStringSlice(plan.Sources.Id))
-		rule.SetSources(*sources)
+		sources := &sdk.CreateNetworkFirewallRuleRequestRuleSources{
+			Id: setValueToStringSlice(plan.Sources.Id),
+		}
+		rule.Sources = sources
 	}
 
 	if !plan.Destinations.IsNull() && !plan.Destinations.IsUnknown() {
-		destinations := sdk.NewCreateNetworkFirewallRuleRequestRuleDestinationsWithDefaults()
-		destinations.SetId(setValueToStringSlice(plan.Destinations.Id))
-		rule.SetDestinations(*destinations)
+		destinations := &sdk.CreateNetworkFirewallRuleRequestRuleDestinations{
+			Id: setValueToStringSlice(plan.Destinations.Id),
+		}
+		rule.Destinations = destinations
 	}
 
 	if !plan.Scopes.IsNull() && !plan.Scopes.IsUnknown() {
-		scopes := sdk.NewCreateNetworkFirewallRuleRequestRuleScopesWithDefaults()
-		scopes.SetId(setValueToStringSlice(plan.Scopes.Id))
-		rule.SetScopes(*scopes)
+		scopes := &sdk.CreateNetworkFirewallRuleRequestRuleScopes{
+			Id: setValueToStringSlice(plan.Scopes.Id),
+		}
+		rule.Scopes = scopes
 	}
 
-	config := sdk.NewCreateNetworkFirewallRuleRequestRuleConfigWithDefaults()
+	config := &sdk.CreateNetworkFirewallRuleRequestRuleConfig{}
 	configSet := false
 
 	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		config.SetApplication(setValueToStringSlice(plan.Application))
+		config.Application = setValueToStringSlice(plan.Application)
 		configSet = true
 	}
 
 	if !plan.Profile.IsNull() && !plan.Profile.IsUnknown() {
-		config.SetProfile(setValueToStringSlice(plan.Profile))
+		config.Profile = setValueToStringSlice(plan.Profile)
 		configSet = true
 	}
 
 	if configSet {
-		rule.SetConfig(*config)
+		rule.Config = config
 	}
 
 	if !plan.RuleGroupId.IsNull() && !plan.RuleGroupId.IsUnknown() {
-		ruleGroup := sdk.NewCreateNetworkFirewallRuleRequestRuleRuleGroupWithDefaults()
+		ruleGroup := &sdk.CreateNetworkFirewallRuleRequestRuleRuleGroup{}
 		if !plan.RuleGroupId.Id.IsNull() && !plan.RuleGroupId.Id.IsUnknown() {
 			ruleGroupID := int32(plan.RuleGroupId.Id.ValueInt64()) //nolint:gosec // API uses int32
-			ruleGroup.SetId(ruleGroupID)
+			ruleGroup.Id = &ruleGroupID
 		}
-		rule.SetRuleGroup(*ruleGroup)
+		rule.RuleGroup = ruleGroup
 	}
 
-	addReq := sdk.NewCreateNetworkFirewallRuleRequestWithDefaults()
-	addReq.SetRule(*rule)
+	addReq := &sdk.CreateNetworkFirewallRuleRequest{
+		Rule: rule,
+	}
 
 	networkIntegrationId := plan.NetworkIntegrationId.ValueInt64()
 
@@ -116,7 +124,19 @@ func (r *Resource) Create(
 		return
 	}
 
-	createdID := createResp.GetId()
+	if createResp == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkFirewallRule create response is nil")
+
+		return
+	}
+
+	if !createResp.Id.IsSet() || createResp.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
+	createdID := *createResp.Id.Get()
 
 	// Taint the resource state on post-create failures so Terraform can
 	// destroy and recreate the resource on the next apply.

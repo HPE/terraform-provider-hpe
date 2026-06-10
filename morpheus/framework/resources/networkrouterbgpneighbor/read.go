@@ -41,7 +41,15 @@ func getNetworkRouterBgpNeighborAsState(
 		return state, diags
 	}
 
-	neighbor := resp.GetNetworkRouterBgpNeighbor()
+	neighbor := resp.NetworkRouterBgpNeighbor
+	if neighbor == nil {
+		diags.AddError(
+			readOperation,
+			fmt.Sprintf("bgp neighbor %d GET succeeded but response payload was missing", id),
+		)
+
+		return state, diags
+	}
 
 	state.Id = convert.Int64ToType(neighbor.Id)
 	state.RouterId = plan.RouterId
@@ -138,7 +146,7 @@ func getNetworkRouterBgpNeighborAsState(
 
 		if cfg.NSXTBGPNeighborConfig2 != nil && !plan.ConfigNsxt.IsNull() {
 			nsxt := cfg.NSXTBGPNeighborConfig2
-			sourceAddrs := nsxt.GetSourceAddresses()
+			sourceAddrs := nsxt.SourceAddresses
 
 			var addrValues []attr.Value
 			for _, addr := range sourceAddrs {

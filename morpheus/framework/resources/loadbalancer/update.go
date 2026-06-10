@@ -29,16 +29,16 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
-	updateLB := sdk.NewUpdateLoadBalancerRequestLoadBalancerWithDefaults()
-
-	updateLB.SetName(plan.Name.ValueString())
+	updateLB := &sdk.UpdateLoadBalancerRequestLoadBalancer{
+		Name: plan.Name.ValueStringPointer(),
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		updateLB.SetDescription(plan.Description.ValueString())
+		updateLB.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		updateLB.SetVisibility(plan.Visibility.ValueString())
+		updateLB.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
 	if err := setUpdateConfig(ctx, updateLB, plan); err != nil {
@@ -59,8 +59,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	updateReq := sdk.NewUpdateLoadBalancerRequest()
-	updateReq.SetLoadBalancer(*updateLB)
+	updateReq := &sdk.UpdateLoadBalancerRequest{LoadBalancer: updateLB}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -121,7 +120,7 @@ func setUpdateConfig(
 				"id": plan.ConfigHaproxy.Pool.ValueString(),
 			},
 		}
-		updateLB.SetConfig(configMap)
+		updateLB.Config = configMap
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()
@@ -135,7 +134,7 @@ func setUpdateConfig(
 			return fmt.Errorf("config must be a valid object/map")
 		}
 
-		updateLB.SetConfig(configDataMap)
+		updateLB.Config = configDataMap
 	}
 
 	return nil
@@ -158,14 +157,14 @@ func setUpdateTenants(
 	var tenants []sdk.UpdateLoadBalancerRequestLoadBalancerTenantsInner
 	for _, t := range tenantObjs {
 		if !t.Id.IsNull() && !t.Id.IsUnknown() {
-			tenant := sdk.UpdateLoadBalancerRequestLoadBalancerTenantsInner{}
-			tenant.SetId(t.Id.ValueInt64())
-			tenants = append(tenants, tenant)
+			tenants = append(tenants, sdk.UpdateLoadBalancerRequestLoadBalancerTenantsInner{
+				Id: sdk.PtrInt64(t.Id.ValueInt64()),
+			})
 		}
 	}
 
 	if len(tenants) > 0 {
-		updateLB.SetTenants(tenants)
+		updateLB.Tenants = tenants
 	}
 
 	return nil
@@ -180,12 +179,12 @@ func setUpdatePermissions(
 		return nil
 	}
 
-	perms := sdk.NewUpdateLoadBalancerRequestLoadBalancerResourcePermission()
+	perms := &sdk.UpdateLoadBalancerRequestLoadBalancerResourcePermission{}
 
 	if !plan.Permissions.All.IsNull() && !plan.Permissions.All.IsUnknown() {
-		perms.SetAll(plan.Permissions.All.ValueBool())
+		perms.All = plan.Permissions.All.ValueBoolPointer()
 	} else if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
-		perms.SetAll(false)
+		perms.All = sdk.PtrBool(false)
 	}
 
 	if !plan.Permissions.Groups.IsNull() && !plan.Permissions.Groups.IsUnknown() {
@@ -194,10 +193,10 @@ func setUpdatePermissions(
 			return fmt.Errorf("failed to parse permission groups: %s", diags.Errors())
 		}
 
-		perms.SetSites(groupIDs)
+		perms.Sites = groupIDs
 	}
 
-	updateLB.SetResourcePermission(*perms)
+	updateLB.ResourcePermission = perms
 
 	return nil
 }

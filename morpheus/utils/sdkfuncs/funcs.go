@@ -4,15 +4,42 @@ package sdkfuncs
 
 import "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-var (
-	// Cloud
-	NewAwsCloudConfig    = sdk.NewAddCloudsRequestZoneConfigAnyOf
-	NewAzureCloudConfig  = sdk.NewAddCloudsRequestZoneConfigAnyOf1
-	NewHvmCloudConfig    = sdk.NewAddCloudsRequestZoneConfigAnyOf2
-	NewVmwareCloudConfig = sdk.NewAddCloudsRequestZoneConfigAnyOf3
+// Cloud
 
-	// Cluster
-	NewHvmClusterServerConfig = sdk.NewAddClusterRequestClusterServerConfigAnyOfOneOf6
-	// nolint:lll
-	NewHvmClusterServerConfigAsAnyOf = sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6AsAddClusterRequestClusterServerConfigAnyOf
-)
+func NewAwsCloudConfig(endpoint string) *sdk.AddCloudsRequestZoneConfigAnyOf {
+	cfg := &sdk.AddCloudsRequestZoneConfigAnyOf{}
+	cfg.Endpoint = endpoint
+
+	return cfg
+}
+
+func NewAzureCloudConfig() *sdk.AddCloudsRequestZoneConfigAnyOf1 {
+	return &sdk.AddCloudsRequestZoneConfigAnyOf1{}
+}
+
+func NewHvmCloudConfig() *sdk.AddCloudsRequestZoneConfigAnyOf2 {
+	return &sdk.AddCloudsRequestZoneConfigAnyOf2{}
+}
+
+func NewVmwareCloudConfig(apiUrl, apiVersion, datacenter string) *sdk.AddCloudsRequestZoneConfigAnyOf3 {
+	cfg := &sdk.AddCloudsRequestZoneConfigAnyOf3{}
+	cfg.ApiUrl = apiUrl
+	cfg.ApiVersion = apiVersion
+	cfg.Datacenter = datacenter
+
+	return cfg
+}
+
+// Cluster
+
+func NewHvmClusterServerConfig() *sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6 {
+	return &sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6{}
+}
+
+func NewHvmClusterServerConfigAsAnyOf(
+	cfg *sdk.AddClusterRequestClusterServerConfigAnyOfOneOf6,
+) sdk.AddClusterRequestClusterServerConfigAnyOf {
+	return sdk.AddClusterRequestClusterServerConfigAnyOf{
+		AddClusterRequestClusterServerConfigAnyOfOneOf6: cfg,
+	}
+}

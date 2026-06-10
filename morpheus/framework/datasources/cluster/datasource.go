@@ -102,7 +102,7 @@ func populateClusterData(
 	data.DateCreated = timeToType(cluster.DateCreated)
 	data.LastUpdated = timeToType(cluster.LastUpdated)
 	data.Managed = convert.BoolToType(cluster.Managed)
-	data.Labels = convert.StrSliceToSet(cluster.GetLabels())
+	data.Labels = convert.StrSliceToSet(cluster.Labels)
 	data.AutoRecoverPowerState = convert.BoolToType(cluster.AutoRecoverPowerState)
 	data.UseAgent = convert.StrToType(cluster.UseAgent.Get())
 	data.ProvisionComplete = convert.BoolToType(cluster.ProvisionComplete)
@@ -402,8 +402,8 @@ func getClusterByID(
 		return fmt.Errorf("cluster %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	cluster, ok := clusterResp.GetClusterOk()
-	if !ok || cluster == nil {
+	cluster := clusterResp.Cluster
+	if cluster == nil {
 		return errors.New(ErrorNoClusterFound)
 	}
 
@@ -426,8 +426,8 @@ func getClusterByName(
 	}
 
 	var matchingClusters []sdk.ListClusters200ResponseAllOfClustersInner
-	for _, c := range clustersResp.GetClusters() {
-		if c.GetName() == name {
+	for _, c := range clustersResp.Clusters {
+		if c.Name != nil && *c.Name == name {
 			matchingClusters = append(matchingClusters, c)
 		}
 	}
@@ -440,8 +440,8 @@ func getClusterByName(
 		return errors.New(ErrorMultipleClusters)
 	}
 
-	id, ok := matchingClusters[0].GetIdOk()
-	if !ok || id == nil {
+	id := matchingClusters[0].Id
+	if id == nil {
 		return errors.New(ErrorNoClusterFound)
 	}
 

@@ -102,8 +102,13 @@ func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	settings := result.GetWhitelabelSettings()
-	mapResponseToModel(&state, &settings)
+	settings := result.WhitelabelSettings
+	if settings == nil {
+		resp.Diagnostics.AddError("API returned nil", "WhitelabelSettings is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&state, settings)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -204,8 +209,13 @@ func (r *settingWhitelabelResource) readIntoModel(
 		return
 	}
 
-	settings := result.GetWhitelabelSettings()
-	mapResponseToModel(model, &settings)
+	settings := result.WhitelabelSettings
+	if settings == nil {
+		diagnostics.AddError("API returned nil", "WhitelabelSettings is nil in the response")
+
+		return
+	}
+	mapResponseToModel(model, settings)
 }
 
 func buildUpdateRequest(plan *settingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
