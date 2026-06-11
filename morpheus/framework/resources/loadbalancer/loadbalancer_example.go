@@ -140,36 +140,23 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 	return prereq + lb, nil
 }
 
-// renderNsxtTier1Prereq renders a self-contained NSX-T tier-1 gateway router
-// and a data source that exposes its provider_id for use as a load balancer's
-// tier1_gateway. The router is labelled hpe_morpheus_network_router.example and
-// the data source hpe_morpheus_network_router.lb_tier1.
+// renderNsxtTier1Prereq renders a data source exposing the provider_id of an
+// existing, fully-realized NSX-T tier-1 gateway (router id 27) for use as a load
+// balancer's tier1_gateway (data source hpe_morpheus_network_router.lb_tier1).
 //
-// The tier-1 gateway is given an edge cluster (and fail_over, required with it)
-// so NSX-T can deploy a load balancer service on it.
+// An LB service can only be deployed on a tier-1 that is connected to a tier-0
+// (or has a Tier1Interface) and has an associated edge cluster. Rather than
+// building that topology per test (and racing NSX-T realization), we reference a
+// pre-provisioned tier-1.
 //
-// QA verify: edge_cluster is the NSX-T edge cluster external id (display name
-// "qa-edge-cluster-01"); NSX-T integration 5 / group 3 are the QA appliance values.
-// The gateway create resolves the edge cluster by external id, not display name,
-// so a name here leaves the tier-1 without an associated edge cluster.
-func renderNsxtTier1Prereq(t *testing.T, name string) (string, error) {
+// QA verify: router id 27 is a realized NSX-T tier-1 (connected to a tier-0, with
+// an edge cluster) on integration 5.
+func renderNsxtTier1Prereq(t *testing.T, _ string) (string, error) {
 	t.Helper()
 
 	return `
-resource "hpe_morpheus_network_router" "example" {
-  name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
-
-  config_nsxt_gateway_tier1 = {
-    ip_management_type = "dhcpLocal"
-    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
-    fail_over          = "NON_PREEMPTIVE"
-  }
-}
-
 data "hpe_morpheus_network_router" "lb_tier1" {
-  id = hpe_morpheus_network_router.example.id
+  id = 27
 }
 `, nil
 }

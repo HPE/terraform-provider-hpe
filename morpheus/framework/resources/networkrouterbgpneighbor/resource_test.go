@@ -25,35 +25,12 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// bgpRouterFixture renders a self-contained NSX-T tier-0 gateway router (group
-// 3, NSX-T integration 5) with BGP enabled, labelled
-// hpe_morpheus_network_router.example. BGP neighbors attach to a BGP-capable
-// tier-0 gateway that has an edge cluster and a local AS.
-//
-// QA verify: edge_cluster is the NSX-T edge cluster external id (display name
-// "qa-edge-cluster-01"), local_as_num 65000, NSX-T integration 5 and group 3 are
-// the QA appliance values. The gateway create resolves the edge cluster by
-// external id, not display name.
-func bgpRouterFixture(t *testing.T, name string) string {
-	t.Helper()
-
-	return `
-resource "hpe_morpheus_network_router" "example" {
-  name                   = "` + name + `-router"
-  group_id               = 3
-  network_integration_id = 5
-  enable_bgp             = true
-
-  config_nsxt_gateway_tier0 = {
-    ha_mode      = "ACTIVE_ACTIVE"
-    restart_mode = "HELPER_ONLY"
-    edge_cluster = "3de5f8d0-4f8a-433b-95ed-91020c948084"
-    fail_over    = "NON_PREEMPTIVE"
-    local_as_num = "65000"
-  }
-}
-`
-}
+// existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
+// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
+// BGP neighbors attach to the tier-0's locale-services, which are only populated
+// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
+// races that sync, so we reference this existing gateway.
+const existingTier0RouterID = "28"
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
@@ -77,7 +54,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	config, err := networkrouterbgpneighbor.RenderBgpNeighborConfig(t, map[string]string{
 		"Description": name,
 		"IpAddress":   ipAddress,
-		"RouterId":    "hpe_morpheus_network_router.example.id",
+		"RouterId":    existingTier0RouterID,
 	})
 	if err != nil {
 		t.Fatalf("failed to render config: %s", err)
@@ -89,7 +66,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + bgpRouterFixture(t, name) + config,
+				Config: providerConfig + config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "ip_address", ipAddress),
@@ -123,9 +100,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "192.168.1." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + bgpRouterFixture(t, name) + `
+	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
-  router_id   = hpe_morpheus_network_router.example.id
+  router_id   = 28
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -189,9 +166,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.0.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + bgpRouterFixture(t, name) + `
+	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
-  router_id            = hpe_morpheus_network_router.example.id
+  router_id            = 28
   ip_address           = "` + ipAddress + `"
   description          = "` + name + `"
   remote_as            = "65002"
@@ -304,11 +281,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "172.16.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	routerConfig := bgpRouterFixture(t, name)
-
-	createConfig := providerConfig + routerConfig + `
+	createConfig := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id   = hpe_morpheus_network_router.example.id
+  router_id   = 28
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -318,9 +293,9 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 }
 `
 
-	updateConfig := providerConfig + routerConfig + `
+	updateConfig := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id    = hpe_morpheus_network_router.example.id
+  router_id    = 28
   ip_address   = "` + ipAddress + `"
   description  = "` + name + ` updated"
   remote_as    = "65002"
@@ -427,9 +402,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.1.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + bgpRouterFixture(t, name) + `
+	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
-  router_id   = hpe_morpheus_network_router.example.id
+  router_id   = 28
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -484,9 +459,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.2.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + bgpRouterFixture(t, name) + `
+	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
-  router_id   = hpe_morpheus_network_router.example.id
+  router_id   = 28
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65010"

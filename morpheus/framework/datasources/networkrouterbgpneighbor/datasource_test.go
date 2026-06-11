@@ -33,42 +33,20 @@ provider "hpe" {
 }
 `
 
-// routerFixture renders a self-contained NSX-T tier-0 gateway router (group 3,
-// NSX-T integration 5) with BGP enabled, labelled
-// hpe_morpheus_network_router.example.
-//
-// QA verify: edge_cluster is the NSX-T edge cluster external id (display name
-// "qa-edge-cluster-01"), local_as_num 65000, NSX-T integration 5 and group 3 are
-// the QA appliance values. The gateway create resolves the edge cluster by
-// external id, not display name.
-func routerFixture(t *testing.T, name string) string {
-	t.Helper()
+// existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
+// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
+// BGP neighbors attach to the tier-0's locale-services, which are only populated
+// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
+// races that sync, so we reference this existing gateway.
+const existingTier0RouterID = "28"
 
-	return `
-resource "hpe_morpheus_network_router" "example" {
-  name                   = "` + name + `-router"
-  group_id               = 3
-  network_integration_id = 5
-  enable_bgp             = true
-
-  config_nsxt_gateway_tier0 = {
-    ha_mode      = "ACTIVE_ACTIVE"
-    restart_mode = "HELPER_ONLY"
-    edge_cluster = "3de5f8d0-4f8a-433b-95ed-91020c948084"
-    fail_over    = "NON_PREEMPTIVE"
-    local_as_num = "65000"
-  }
-}
-`
-}
-
-// neighborFixture renders a BGP neighbor on the router fixture, labelled
+// neighborFixture renders a BGP neighbor on the existing tier-0 router, labelled
 // hpe_morpheus_network_router_bgp_neighbor.example.
 func neighborFixture(t *testing.T, name, ipAddress string) string {
 	t.Helper()
 
 	cfg, err := bgpresource.RenderBgpNeighborConfig(t, map[string]string{
-		"RouterId":    "hpe_morpheus_network_router.example.id",
+		"RouterId":    existingTier0RouterID,
 		"IpAddress":   ipAddress,
 		"Description": name,
 	})
@@ -102,7 +80,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "` + ipAddress + `"
-  router_id  = hpe_morpheus_network_router.example.id
+  router_id  = 28
   depends_on = [hpe_morpheus_network_router_bgp_neighbor.example]
 }
 `
@@ -113,7 +91,7 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + routerFixture(t, name) + neighborFixture(t, name, ipAddress) + dataSourceConfig,
+				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -141,7 +119,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 	// id and router_id reference the created resources, deferring the read.
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, map[string]string{
 		"Id":       "hpe_morpheus_network_router_bgp_neighbor.example.id",
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "28",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -153,7 +131,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + routerFixture(t, name) + neighborFixture(t, name, ipAddress) + dataSourceConfig,
+				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -175,13 +153,12 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
-	name := acctest.RandomWithPrefix(t.Name())
 
-	// Search a real (created) router for a neighbor IP that does not exist.
+	// Search a real (existing) router for a neighbor IP that does not exist.
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "0.0.0.0"
-  router_id  = hpe_morpheus_network_router.example.id
+  router_id  = 28
 }
 `
 
@@ -191,7 +168,7 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + routerFixture(t, name) + dataSourceConfig,
+				Config:      providerConfig + dataSourceConfig,
 				ExpectError: expected,
 			},
 		},
