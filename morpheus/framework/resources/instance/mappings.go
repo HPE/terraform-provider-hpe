@@ -115,6 +115,10 @@ func createNetworkInterfaceMapper(
 			id = in.NetworkId.String()
 		}
 
+		if !in.SubnetId.IsNull() {
+			id = "subnet-" + in.SubnetId.String()
+		}
+
 		ipPool := &sdk.InstancesNetworkInterfaces2NetworkPool{}
 		if !in.IpPool.IsNull() {
 			ipPool.Id = in.IpPool.ValueInt64Pointer()
@@ -155,6 +159,10 @@ func updateNetworkInterfaceMapper(
 
 		if !in.NetworkId.IsNull() {
 			id = in.NetworkId.String()
+		}
+
+		if !in.SubnetId.IsNull() {
+			id = "subnet-" + in.SubnetId.String()
 		}
 
 		ipPool := &sdk.InstancesNetworkInterfaces3NetworkPool{}

@@ -96,6 +96,13 @@ Some Service Plans have options that must be set at the time of creation of the 
 
 ## Azure Instance
 
+-> Some clouds (such as Azure) provision onto a specific subnet rather than a network. Use
+`subnet_id` in a `network_interfaces` block to target a subnet. `subnet_id`, `network_id` and
+`network_group_id` are mutually exclusive. The subnet id is available from the Morpheus
+`/api/options/zoneNetworkOptions` endpoint. Note that `subnet_id` is a write-only input: the API
+reports the network the subnet resolves to, so on `import` the interface's `network_id` is populated
+rather than `subnet_id`.
+
 {{ tffile "morpheus/framework/resources/instance/example_azure.tf" }}
 
 ## BMaaS Instance

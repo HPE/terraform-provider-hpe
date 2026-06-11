@@ -1281,6 +1281,17 @@ func getStateInterfaces(
 
 	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same
 	if compareServerPlanIntfs(intfsFromServer, intfsFromPlan) {
+		// subnet_id is never returned by the API: the server reports the network that
+		// the subnet resolved to (network_id), not the subnet itself. Preserve the
+		// plan's subnet_id so that provisioning a network interface via subnet_id does
+		// not produce a perpetual diff. network_id is Optional+Computed, so the
+		// server-resolved network_id can be stored without causing a diff. The two
+		// lists are the same length and in the same order (guaranteed by
+		// compareServerPlanIntfs having returned true).
+		for i := range intfsFromServer {
+			intfsFromServer[i].SubnetId = intfsFromPlan[i].SubnetId
+		}
+
 		return intfsFromServer, diags
 	}
 
@@ -1347,6 +1358,9 @@ func getStateInterfacesFromInstance(
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
+		// subnet_id is not recoverable on import: the API reports the resolved
+		// network (network_id), not the subnet it came from.
+		ifaceVal.SubnetId = types.Int64Null()
 		if net := instIntf.Network; net != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
 			ifaceVal.IpPool = types.Int64Null()
