@@ -6,14 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
@@ -22,25 +20,14 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
-}
-
-func TestSecurityGroupDataSourceByName(t *testing.T) {
+func TestAccMorpheusSecurityGroupDataSourceByNameExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 
+	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -49,20 +36,54 @@ func TestSecurityGroupDataSourceByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	datasourceConfig := `
-data "hpe_morpheus_security_group" "test" {
-  name = "default"
-}
-`
+	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByNameConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + datasourceConfig,
+				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.hpe_morpheus_security_group.test", "id"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.test", "name", "default"),
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_security_group.example", "id"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "name", "default"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusSecurityGroupDataSourceByIdExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.NetworkFirewall) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByIDConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_security_group.example", "name"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "id", "1"),
 				),
 			},
 		},
