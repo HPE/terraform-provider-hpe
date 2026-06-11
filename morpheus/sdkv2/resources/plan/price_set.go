@@ -5,6 +5,7 @@ package plan
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -62,12 +63,12 @@ func ResourcePriceSet() *schema.Resource {
 			},
 			"type": {
 				Type: schema.TypeString,
-				Description: "The price type (fixed, compute, memory, cores, storage, datastore, platform, " +
-					"software_or_service, load_balancer, load_balancer_virtual_server)",
+				Description: "The price set type (fixed, compute_plus_storage, component, " +
+					"load_balancer, virtual_image, snapshot, software_or_service)",
 				ValidateFunc: validation.StringInSlice(
 					[]string{
-						"fixed", "compute", "memory", "cores", "storage", "datastore", "platform",
-						"software_or_service", "load_balancer", "load_balancer_virtual_server",
+						"fixed", "compute_plus_storage", "component",
+						"load_balancer", "virtual_image", "snapshot", "software_or_service",
 					},
 					false,
 				),
@@ -211,6 +212,24 @@ func resourcePriceSetCreate(ctx context.Context, d *schema.ResourceData, meta an
 		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+	}
+
+	// The Morpheus API returns HTTP 200 with success:true even on validation
+	// failure (a server-side bug). Detect failure by checking for a missing/zero
+	// id or non-empty errors map.
+	if result.ID == 0 || len(result.Errors) > 0 {
+		errMsg := "API reported success but failed to create price set"
+		if result.Message != "" {
+			errMsg = result.Message
+		}
+
+		if len(result.Errors) > 0 {
+			for field, msg := range result.Errors {
+				errMsg += fmt.Sprintf("; %s: %s", field, msg)
+			}
+		}
+
+		return diag.Errorf("%s", errMsg)
 	}
 
 	d.SetId(convert.Int64ToString(result.ID))
@@ -411,9 +430,30 @@ func resourcePriceSetUpdate(ctx context.Context, d *schema.ResourceData, meta an
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var result map[string]any
-	if err := json.Unmarshal(resp.Body, &result); err != nil {
-		log.Fatal(err)
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
+	var updateResult *morpheus.UpdatePriceSetResult
+	if v, ok := resp.Result.(*morpheus.UpdatePriceSetResult); ok {
+		updateResult = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+	}
+
+	if !updateResult.Success || len(updateResult.Errors) > 0 {
+		errMsg := "Failed to update price set"
+		if updateResult.Message != "" {
+			errMsg = updateResult.Message
+		}
+
+		if len(updateResult.Errors) > 0 {
+			for field, msg := range updateResult.Errors {
+				errMsg += fmt.Sprintf("; %s: %s", field, msg)
+			}
+		}
+
+		return diag.Errorf("%s", errMsg)
 	}
 
 	d.SetId(id)

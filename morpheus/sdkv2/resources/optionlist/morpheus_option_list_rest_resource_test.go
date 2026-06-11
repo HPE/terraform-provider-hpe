@@ -97,6 +97,16 @@ func TestAccMorpheusOptionListRestExampleOk(t *testing.T) {
 			"source_method",
 			"GET",
 		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_option_list_rest.tf_example_rest_option_list",
+			"inject_system_authorization_header",
+			"true",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_option_list_rest.tf_example_rest_option_list",
+			"use_owner_auth",
+			"false",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
