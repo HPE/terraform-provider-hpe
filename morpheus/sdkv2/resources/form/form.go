@@ -364,6 +364,12 @@ func validateFormOptionTypes(_ context.Context, d *schema.ResourceDiff, _ any) e
 }
 
 func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string]any) diag.Diagnostics {
+	// field_context applies to any option type. Only send it when set so the
+	// Morpheus default ("config") is preserved when it is omitted.
+	if fieldContext, ok := optionTypeConfig["field_context"].(string); ok && fieldContext != "" {
+		row["fieldContext"] = fieldContext
+	}
+
 	// Evaluate the option type selected
 	switch optionTypeConfig["type"] {
 	case typeByteSize:
@@ -837,6 +843,7 @@ func buildOptionTypeRow(optionType morpheus.Option, logHidden bool) map[string]a
 	row["type"] = optionType.Type
 	row["field_label"] = optionType.FieldLabel
 	row["field_name"] = optionType.FieldName
+	row["field_context"] = optionType.FieldContext
 	// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence
 	if optionType.Config.DefaultValue != "" {
 		row["default_value"] = optionType.Config.DefaultValue
@@ -973,6 +980,13 @@ func optionTypeSchema(parent string) *schema.Schema {
 					Type:        schema.TypeString,
 					Description: fmt.Sprintf("The field name of the option type to add to the %s", parent),
 					Optional:    true,
+				},
+				"field_context": {
+					Type: schema.TypeString,
+					Description: "The context the field value is stored in. Defaults to 'config' " +
+						"(stored in config.customOptions). Set to 'instance' to target instance.* properties.",
+					Optional: true,
+					Computed: true,
 				},
 				"type": {
 					Type: schema.TypeString,

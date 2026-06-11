@@ -1201,6 +1201,7 @@ Optional:
 - `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
+- `field_context` (String) The context the field value is stored in. Defaults to 'config' (stored in config.customOptions). Set to 'instance' to target instance.* properties.
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the field group
 - `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
@@ -1282,6 +1283,7 @@ Optional:
 - `enable_storage_type_selection` (Boolean) Whether to allow users to select a storage type for a diskManager option type
 - `exclude_from_search` (Boolean) Whether the option type should be excluded from search or not
 - `export_meta` (Boolean) Whether to export the option type as a tag
+- `field_context` (String) The context the field value is stored in. Defaults to 'config' (stored in config.customOptions). Set to 'instance' to target instance.* properties.
 - `field_label` (String) The label of the option type
 - `field_name` (String) The field name of the option type to add to the form
 - `filter_from_resource` (Boolean) Whether to filter out resources that are not associated with this option
