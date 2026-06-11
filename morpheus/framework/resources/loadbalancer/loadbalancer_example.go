@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
@@ -142,31 +141,33 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 }
 
 // renderNsxtTier1Prereq renders a self-contained NSX-T tier-1 gateway router
-// (group 3, NSX-T integration 5) and a data source that exposes its
-// provider_id for use as a load balancer's tier1_gateway. The router is
-// labelled hpe_morpheus_network_router.example and the data source
-// hpe_morpheus_network_router.lb_tier1.
+// and a data source that exposes its provider_id for use as a load balancer's
+// tier1_gateway. The router is labelled hpe_morpheus_network_router.example and
+// the data source hpe_morpheus_network_router.lb_tier1.
 //
-// QA verify: assumes group 3 / NSX-T integration 5 (matching the router family
-// fixtures) and that a freshly-created tier-1 gateway exposes a provider_id the
-// load balancer accepts.
+// The tier-1 gateway is given an edge cluster (and fail_over, required with it)
+// so NSX-T can deploy a load balancer service on it.
+//
+// QA verify: edge_cluster "Edge-Cluster-01" and NSX-T integration 5 / group 3
+// are the QA appliance values.
 func renderNsxtTier1Prereq(t *testing.T, name string) (string, error) {
 	t.Helper()
 
-	router, err := networkrouterresource.RenderNetworkRouterNSXTGatewayTier1Config(t, map[string]string{
-		"Name":                 name + "-tier1",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		return "", err
-	}
+	return `
+resource "hpe_morpheus_network_router" "example" {
+  name                   = "` + name + `-tier1"
+  group_id               = 3
+  network_integration_id = 5
 
-	ds := `
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+    edge_cluster       = "Edge-Cluster-01"
+    fail_over          = "NON_PREEMPTIVE"
+  }
+}
+
 data "hpe_morpheus_network_router" "lb_tier1" {
   id = hpe_morpheus_network_router.example.id
 }
-`
-
-	return router + ds, nil
+`, nil
 }

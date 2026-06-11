@@ -61,6 +61,9 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	body.NetworkId = plan.NetworkId.ValueInt64Pointer()
 
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		body.Name = plan.Name.ValueStringPointer()
+	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
@@ -262,6 +265,9 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	body := &sdk.UpdateSubnetRequestSubnet{}
 
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		body.Name = plan.Name.ValueStringPointer()
+	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}

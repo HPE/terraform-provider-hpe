@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -27,25 +26,31 @@ func TestMain(m *testing.M) {
 }
 
 // bgpRouterFixture renders a self-contained NSX-T tier-0 gateway router (group
-// 3, NSX-T integration 5) labelled hpe_morpheus_network_router.example. BGP
-// neighbors attach to a BGP-capable router; tier-0 is the NSX-T gateway type
-// that supports BGP.
+// 3, NSX-T integration 5) with BGP enabled, labelled
+// hpe_morpheus_network_router.example. BGP neighbors attach to a BGP-capable
+// tier-0 gateway that has an edge cluster and a local AS.
 //
-// QA verify: if the API rejects BGP neighbors because BGP is not enabled on the
-// gateway, the tier-0 fixture may need enable_bgp / BGP config added.
+// QA verify: edge_cluster "Edge-Cluster-01", local_as_num 65000, NSX-T
+// integration 5 and group 3 are the QA appliance values.
 func bgpRouterFixture(t *testing.T, name string) string {
 	t.Helper()
 
-	cfg, err := networkrouterresource.RenderNetworkRouterNSXTGatewayTier0Config(t, map[string]string{
-		"Name":                 name + "-router",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatalf("failed to render router fixture: %s", err)
-	}
+	return `
+resource "hpe_morpheus_network_router" "example" {
+  name                   = "` + name + `-router"
+  group_id               = 3
+  network_integration_id = 5
+  enable_bgp             = true
 
-	return cfg
+  config_nsxt_gateway_tier0 = {
+    ha_mode      = "ACTIVE_ACTIVE"
+    restart_mode = "HELPER_ONLY"
+    edge_cluster = "Edge-Cluster-01"
+    fail_over    = "NON_PREEMPTIVE"
+    local_as_num = "65000"
+  }
+}
+`
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {

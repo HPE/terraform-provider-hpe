@@ -7,10 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
+	dhcpresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -31,6 +33,26 @@ provider "hpe" {
 }
 `
 
+// dhcpFixture renders a self-contained DHCP server on the QA NSX-T network
+// integration (id 5), labelled hpe_morpheus_network_dhcp_server.example.
+//
+// QA verify: NSX-T integration id 5 and edge cluster "qa-edge-cluster-01" (the
+// resource example default) are the QA appliance values.
+func dhcpFixture(t *testing.T, name, serverIP string) string {
+	t.Helper()
+
+	cfg, err := dhcpresource.RenderNetworkDhcpServerConfig(t, map[string]string{
+		"NetworkIntegrationId": "5",
+		"Name":                 name,
+		"ServerIpAddress":      serverIP,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cfg
+}
+
 func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
@@ -46,21 +68,24 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// depends_on defers the data source read until the DHCP server exists.
+	dataSourceConfig := `
+data "hpe_morpheus_network_dhcp_server" "example" {
+  name                   = "` + name + `"
+  network_integration_id = 5
+  depends_on             = [hpe_morpheus_network_dhcp_server.example]
+}
+`
 
-	checks := networkDhcpServerChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(networkDhcpServerChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + dhcpFixture(t, name, "192.168.40.1/24") + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -82,21 +107,24 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, nil)
+	// id references the created DHCP server, deferring the read.
+	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByIdConfig(t, map[string]string{
+		"Id":                   "hpe_morpheus_network_dhcp_server.example.id",
+		"NetworkIntegrationId": "5",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	checks := networkDhcpServerChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(networkDhcpServerChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + dhcpFixture(t, name, "192.168.41.1/24") + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -119,9 +147,12 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	// Search the real NSX-T integration (5) for a DHCP server name that does
+	// not exist.
 	dataSourceConfig, err := networkdhcpserver.RenderNetworkDhcpServerByNameConfig(t,
 		map[string]string{
-			"Name": "______",
+			"Name":                 "______",
+			"NetworkIntegrationId": "5",
 		},
 	)
 	if err != nil {

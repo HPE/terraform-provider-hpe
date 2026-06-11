@@ -12,7 +12,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
-	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	bgpresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -35,23 +34,30 @@ provider "hpe" {
 `
 
 // routerFixture renders a self-contained NSX-T tier-0 gateway router (group 3,
-// NSX-T integration 5) labelled hpe_morpheus_network_router.example.
+// NSX-T integration 5) with BGP enabled, labelled
+// hpe_morpheus_network_router.example.
 //
-// QA verify: if BGP neighbor creation is rejected because BGP is not enabled on
-// the gateway, the tier-0 fixture may need enable_bgp / BGP config added.
+// QA verify: edge_cluster "Edge-Cluster-01", local_as_num 65000, NSX-T
+// integration 5 and group 3 are the QA appliance values.
 func routerFixture(t *testing.T, name string) string {
 	t.Helper()
 
-	cfg, err := networkrouterresource.RenderNetworkRouterNSXTGatewayTier0Config(t, map[string]string{
-		"Name":                 name + "-router",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	return `
+resource "hpe_morpheus_network_router" "example" {
+  name                   = "` + name + `-router"
+  group_id               = 3
+  network_integration_id = 5
+  enable_bgp             = true
 
-	return cfg
+  config_nsxt_gateway_tier0 = {
+    ha_mode      = "ACTIVE_ACTIVE"
+    restart_mode = "HELPER_ONLY"
+    edge_cluster = "Edge-Cluster-01"
+    fail_over    = "NON_PREEMPTIVE"
+    local_as_num = "65000"
+  }
+}
+`
 }
 
 // neighborFixture renders a BGP neighbor on the router fixture, labelled

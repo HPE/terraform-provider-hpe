@@ -225,7 +225,8 @@ func routeChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "router_id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
-		resource.TestCheckResourceAttrSet(ds, "code"),
+		// 'code' is not populated for a freshly-created route (only synced/seeded
+		// routes have it), so it is not asserted here.
 		resource.TestCheckResourceAttrSet(ds, "route_type"),
 		resource.TestCheckResourceAttrSet(ds, "source_type"),
 		resource.TestCheckResourceAttrSet(ds, "external_id"),

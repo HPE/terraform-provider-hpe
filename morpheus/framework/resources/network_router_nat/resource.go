@@ -83,8 +83,10 @@ func (r *Resource) Create(
 	routerID := plan.RouterId.ValueInt64()
 
 	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{
-		Name:   plan.Name.ValueString(),
-		Action: plan.Action.ValueString(),
+		Name: plan.Name.ValueString(),
+		Config: sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
+			Action: plan.Action.ValueString(),
+		},
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()
@@ -287,8 +289,10 @@ func (r *Resource) Update(
 	routerID := plan.RouterId.ValueInt64()
 
 	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{
-		Name:   plan.Name.ValueStringPointer(),
-		Action: plan.Action.ValueStringPointer(),
+		Name: plan.Name.ValueStringPointer(),
+		Config: &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
+			Action: plan.Action.ValueStringPointer(),
+		},
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()

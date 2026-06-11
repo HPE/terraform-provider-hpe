@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"log"
+	"strconv"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
@@ -339,8 +340,14 @@ func resourceTaskVRORead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("code", workflowTask.Code)
 	d.Set("labels", workflowTask.Labels)
 	d.Set("result_type", workflowTask.ResultType)
-	d.Set("vro_integration_id", workflowTask.TaskOptions.VroIntegrationId)
-	d.Set("vro_workflow_value", workflowTask.TaskOptions.VroWorkflow)
+	// vro_integration_id and vro_workflow_value are TypeInt, but the legacy SDK
+	// returns them as strings; convert before Set to avoid a type panic.
+	if vroIntegrationID, err := strconv.Atoi(workflowTask.TaskOptions.VroIntegrationId); err == nil {
+		d.Set("vro_integration_id", vroIntegrationID)
+	}
+	if vroWorkflowValue, err := strconv.Atoi(workflowTask.TaskOptions.VroWorkflow); err == nil {
+		d.Set("vro_workflow_value", vroWorkflowValue)
+	}
 	d.Set("body", workflowTask.TaskOptions.VroBody)
 	d.Set("execute_target", workflowTask.ExecuteTarget)
 	d.Set("retryable", workflowTask.Retryable)

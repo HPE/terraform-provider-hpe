@@ -14,7 +14,7 @@ This resource manages a DHCP server configuration attached to a Morpheus network
 
 ```terraform
 resource "hpe_morpheus_network_dhcp_server" "example" {
-  network_integration_id = 16
+  network_integration_id = 5
   name                   = "Example DHCP Server"
   server_ip_address      = "192.168.1.1/24"
   lease_time             = 86400
