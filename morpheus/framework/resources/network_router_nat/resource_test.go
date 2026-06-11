@@ -12,7 +12,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_nat"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -21,6 +20,28 @@ func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
+}
+
+// nsxtTier1RouterConfig renders a realized NSX-T tier-1 gateway (with an edge
+// cluster) named hpe_morpheus_network_router.example. NSX-T NAT rules attach to
+// the gateway's policy path, so the router must be a realized tier-1; a generic
+// router without an associated edge cluster fails with "General error" when the
+// NAT rule is created. edge_cluster is the NSX-T edge cluster external id
+// (display name "qa-edge-cluster-01") on integration 5.
+func nsxtTier1RouterConfig(name string) string {
+	return `
+resource "hpe_morpheus_network_router" "example" {
+  name                   = "` + name + `-router"
+  group_id               = 3
+  network_integration_id = 5
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
+    fail_over          = "NON_PREEMPTIVE"
+  }
+}
+`
 }
 
 func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
@@ -40,15 +61,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	routerConfig := nsxtTier1RouterConfig(name)
 
 	resourceConfig, err := network_router_nat.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",
@@ -112,15 +125,7 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	routerConfig := nsxtTier1RouterConfig(name)
 
 	createConfig, err := network_router_nat.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",

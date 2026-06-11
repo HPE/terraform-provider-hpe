@@ -37,8 +37,10 @@ provider "hpe" {
 // NSX-T integration 5) with BGP enabled, labelled
 // hpe_morpheus_network_router.example.
 //
-// QA verify: edge_cluster "qa-edge-cluster-01", local_as_num 65000, NSX-T
-// integration 5 and group 3 are the QA appliance values.
+// QA verify: edge_cluster is the NSX-T edge cluster external id (display name
+// "qa-edge-cluster-01"), local_as_num 65000, NSX-T integration 5 and group 3 are
+// the QA appliance values. The gateway create resolves the edge cluster by
+// external id, not display name.
 func routerFixture(t *testing.T, name string) string {
 	t.Helper()
 
@@ -52,7 +54,7 @@ resource "hpe_morpheus_network_router" "example" {
   config_nsxt_gateway_tier0 = {
     ha_mode      = "ACTIVE_ACTIVE"
     restart_mode = "HELPER_ONLY"
-    edge_cluster = "qa-edge-cluster-01"
+    edge_cluster = "3de5f8d0-4f8a-433b-95ed-91020c948084"
     fail_over    = "NON_PREEMPTIVE"
     local_as_num = "65000"
   }
