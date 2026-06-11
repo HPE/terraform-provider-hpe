@@ -8,11 +8,11 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 )
 
-// TestServicePlanInZone verifies the cloud_id disambiguation helper used by the
+// TestServicePlanInCloud verifies the cloud_id disambiguation helper used by the
 // data source. ListServicePlans with IncludeZones(true) returns, for each plan,
 // the clouds (zones) it is available in; servicePlanInZone reports whether a
 // given cloud id is among them.
-func TestServicePlanInZone(t *testing.T) {
+func TestServicePlanInCloud(t *testing.T) {
 	t.Parallel()
 
 	newPlan := func(zoneIDs ...int64) sdk.ListServicePlans200ResponseAllOfServicePlansInner {
