@@ -132,10 +132,12 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 
 	updateConfig := `
 resource "hpe_morpheus_network_router_nat" "example" {
-  router_id      = hpe_morpheus_network_router.example.id
-  name           = "` + name + `"
-  source_network = "10.1.0.0/24"
-  description    = "Updated SNAT rule"
+  router_id          = hpe_morpheus_network_router.example.id
+  name               = "` + name + `"
+  action             = "SNAT"
+  source_network     = "10.1.0.0/24"
+  translated_network = "192.168.1.1"
+  description        = "Updated SNAT rule"
 }
 `
 

@@ -62,6 +62,16 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
+	// service_password_wo is a write-only attribute: its value is only present in
+	// the configuration, never in the plan or state. Read it from req.Config.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// The SDK uses a oneOf union for this request. We use InfobloxNetworkPoolServer as the
 	// concrete type because it is the superset of all pool server types (Infoblox, Bluecat,
 	// phpIPAM, SolarWinds). The API resolves the actual type from type_id, not from the
@@ -75,8 +85,8 @@ func (r *networkPoolServerResource) Create(
 	if !plan.ServiceUsername.IsNull() {
 		infoblox.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		infoblox.ServicePassword = *sdk.NewNullableString(plan.ServicePasswordWo.ValueStringPointer())
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		infoblox.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
 		infoblox.IgnoreSsl = plan.IgnoreSsl.ValueBoolPointer()
@@ -191,6 +201,15 @@ func (r *networkPoolServerResource) Update(
 		return
 	}
 
+	// service_password_wo is a write-only attribute: read it from req.Config.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id := plan.Id.ValueInt64()
 
 	infobloxUpdate := &sdk.InfobloxNetworkPoolServerUpdate{}
@@ -201,8 +220,8 @@ func (r *networkPoolServerResource) Update(
 	if !plan.ServiceUsername.IsNull() {
 		infobloxUpdate.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		infobloxUpdate.ServicePassword = *sdk.NewNullableString(plan.ServicePasswordWo.ValueStringPointer())
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		infobloxUpdate.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
 		infobloxUpdate.IgnoreSsl = plan.IgnoreSsl.ValueBoolPointer()

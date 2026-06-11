@@ -46,9 +46,6 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Description of the route",
 				MarkdownDescription: "Description of the route",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"source": schema.StringAttribute{
 				Required:            true,

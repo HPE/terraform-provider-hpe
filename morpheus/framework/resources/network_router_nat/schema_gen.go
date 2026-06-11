@@ -36,6 +36,11 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Name of the NAT rule",
 				MarkdownDescription: "Name of the NAT rule",
 			},
+			"action": schema.StringAttribute{
+				Required:            true,
+				Description:         "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
+				MarkdownDescription: "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -87,6 +92,7 @@ type NetworkRouterNatModel struct {
 	Id                 types.Int64  `tfsdk:"id"`
 	RouterId           types.Int64  `tfsdk:"router_id"`
 	Name               types.String `tfsdk:"name"`
+	Action             types.String `tfsdk:"action"`
 	Description        types.String `tfsdk:"description"`
 	Enabled            types.Bool   `tfsdk:"enabled"`
 	SourceNetwork      types.String `tfsdk:"source_network"`
