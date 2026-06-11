@@ -6,14 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
@@ -22,25 +20,14 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
-}
-
-func TestNetworkTypeDataSourceByName(t *testing.T) {
+func TestAccMorpheusNetworkTypeDataSourceByNameExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
 
 		return
 	}
 
+	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -49,20 +36,54 @@ func TestNetworkTypeDataSourceByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	datasourceConfig := `
-data "hpe_morpheus_network_type" "test" {
-  name = "Host Network"
-}
-`
+	dataSourceConfig, err := networktype.RenderNetworkTypeDataSourceByNameConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + datasourceConfig,
+				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.hpe_morpheus_network_type.test", "id"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_network_type.test", "name", "Host Network"),
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_network_type.example", "id"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network_type.example", "name", "Host Network"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkTypeDataSourceByIdExampleOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Network) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := networktype.RenderNetworkTypeDataSourceByIDConfig(t, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_network_type.example", "name"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network_type.example", "id", "1"),
 				),
 			},
 		},
