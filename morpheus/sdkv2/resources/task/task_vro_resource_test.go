@@ -33,9 +33,9 @@ func TestAccMorpheusTaskVroExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	expectedBody := "<<EOF\n{\n \"parameters\": [\n {\n \"name\": \"vmName\",\n" +
+	expectedBody := "{\n \"parameters\": [\n {\n \"name\": \"vmName\",\n" +
 		" \"type\": \"string\",\n \"value\": {\n \"string\": {\n" +
-		" \"value\": \"<%=instance.hostname%>\"\n }\n }\n }\n ]\n}\nEOF"
+		" \"value\": \"<%=instance.hostname%>\"\n }\n }\n }\n ]\n}"
 
 	resourceConfig, err := task.RenderTaskVroConfig(t, map[string]string{
 		"Name": name,

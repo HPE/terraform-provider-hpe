@@ -148,7 +148,7 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 // The tier-1 gateway is given an edge cluster (and fail_over, required with it)
 // so NSX-T can deploy a load balancer service on it.
 //
-// QA verify: edge_cluster "Edge-Cluster-01" and NSX-T integration 5 / group 3
+// QA verify: edge_cluster "qa-edge-cluster-01" and NSX-T integration 5 / group 3
 // are the QA appliance values.
 func renderNsxtTier1Prereq(t *testing.T, name string) (string, error) {
 	t.Helper()
@@ -161,7 +161,7 @@ resource "hpe_morpheus_network_router" "example" {
 
   config_nsxt_gateway_tier1 = {
     ip_management_type = "dhcpLocal"
-    edge_cluster       = "Edge-Cluster-01"
+    edge_cluster       = "qa-edge-cluster-01"
     fail_over          = "NON_PREEMPTIVE"
   }
 }

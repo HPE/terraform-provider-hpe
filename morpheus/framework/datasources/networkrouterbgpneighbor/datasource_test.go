@@ -37,7 +37,7 @@ provider "hpe" {
 // NSX-T integration 5) with BGP enabled, labelled
 // hpe_morpheus_network_router.example.
 //
-// QA verify: edge_cluster "Edge-Cluster-01", local_as_num 65000, NSX-T
+// QA verify: edge_cluster "qa-edge-cluster-01", local_as_num 65000, NSX-T
 // integration 5 and group 3 are the QA appliance values.
 func routerFixture(t *testing.T, name string) string {
 	t.Helper()
@@ -52,7 +52,7 @@ resource "hpe_morpheus_network_router" "example" {
   config_nsxt_gateway_tier0 = {
     ha_mode      = "ACTIVE_ACTIVE"
     restart_mode = "HELPER_ONLY"
-    edge_cluster = "Edge-Cluster-01"
+    edge_cluster = "qa-edge-cluster-01"
     fail_over    = "NON_PREEMPTIVE"
     local_as_num = "65000"
   }

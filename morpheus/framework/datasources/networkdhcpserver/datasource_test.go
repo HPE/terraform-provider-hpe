@@ -237,6 +237,8 @@ func networkDhcpServerChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
 		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
-		resource.TestCheckResourceAttrSet(ds, "lease_time"),
+		// lease_time is intentionally not checked: the DHCP server GET response
+		// does not return leaseTime, so the data source cannot populate it (the
+		// resource preserves it from prior state, but a data source has none).
 	}
 }

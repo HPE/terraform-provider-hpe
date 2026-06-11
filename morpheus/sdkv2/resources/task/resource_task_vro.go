@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
@@ -68,6 +69,12 @@ func ResourceTaskVRO() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The JSON body to send to vRO",
 				Optional:    true,
+				// The API normalises the stored body (e.g. strips a trailing
+				// newline added by an HCL heredoc), so suppress whitespace-only
+				// differences to avoid a perpetual diff.
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+					return strings.TrimSpace(oldValue) == strings.TrimSpace(newValue)
+				},
 			},
 			"execute_target": {
 				Type:        schema.TypeString,
