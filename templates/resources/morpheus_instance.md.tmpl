@@ -105,6 +105,14 @@ rather than `subnet_id`.
 
 {{ tffile "morpheus/framework/resources/instance/example_azure.tf" }}
 
+## Azure Instance with subnet
+
+This example provisions onto a specific subnet by setting `subnet_id` in the `network_interfaces`
+block instead of `network_id`. `subnet_id`, `network_id` and `network_group_id` are mutually
+exclusive. The subnet id is available from the Morpheus `/api/options/zoneNetworkOptions` endpoint.
+
+{{ tffile "morpheus/framework/resources/instance/example_azure_subnet.tf" }}
+
 ## BMaaS Instance
 
 -> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
