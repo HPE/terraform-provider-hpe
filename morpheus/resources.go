@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup"
+	backupinstance "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
@@ -124,6 +125,7 @@ func (s SubProvider) GetResources(
 		budget.NewResource,
 		backup.NewResource,
 		backup_job.NewResource,
+		backupinstance.NewResource,
 
 		// Sprint 6: Library & Provisioning
 		option_list.NewResource,
