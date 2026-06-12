@@ -4,22 +4,48 @@ package networkpool
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
 func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"boot_file": schema.StringAttribute{
+				Computed:            true,
+				Description:         "TFTP boot file",
+				MarkdownDescription: "TFTP boot file",
+			},
+			"dhcp_server": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a DHCP server is present",
+				MarkdownDescription: "Whether a DHCP server is present",
+			},
 			"display_name": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The display name of the network pool",
 				MarkdownDescription: "The display name of the network pool",
+			},
+			"dns_domain": schema.StringAttribute{
+				Computed:            true,
+				Description:         "DNS domain for the pool",
+				MarkdownDescription: "DNS domain for the pool",
+			},
+			"dns_search_path": schema.StringAttribute{
+				Computed:            true,
+				Description:         "DNS search path",
+				MarkdownDescription: "DNS search path",
+			},
+			"dns_servers": schema.SetAttribute{
+				Computed:            true,
+				ElementType:         types.StringType,
+				Description:         "DNS server list",
+				MarkdownDescription: "DNS server list",
 			},
 			"free_count": schema.Int64Attribute{
 				Computed:            true,
@@ -40,6 +66,10 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{
 						path.MatchRoot("name"),
 					}...),
+					int64validator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
+					}...),
 				},
 			},
 			"ip_count": schema.Int64Attribute{
@@ -55,6 +85,10 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("id"),
+					}...),
+					stringvalidator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
 					}...),
 				},
 			},
@@ -83,7 +117,12 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkPoolModel struct {
+	BootFile      types.String `tfsdk:"boot_file"`
+	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
 	DisplayName   types.String `tfsdk:"display_name"`
+	DnsDomain     types.String `tfsdk:"dns_domain"`
+	DnsSearchPath types.String `tfsdk:"dns_search_path"`
+	DnsServers    types.Set    `tfsdk:"dns_servers"`
 	FreeCount     types.Int64  `tfsdk:"free_count"`
 	Gateway       types.String `tfsdk:"gateway"`
 	Id            types.Int64  `tfsdk:"id"`

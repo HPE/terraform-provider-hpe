@@ -16,6 +16,41 @@ import (
 func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"cloud_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The associated cloud ID",
+				MarkdownDescription: "The associated cloud ID",
+			},
+			"cores_per_socket": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Number of cores per socket",
+				MarkdownDescription: "Number of cores per socket",
+			},
+			"description": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The description of the server",
+				MarkdownDescription: "The description of the server",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external/hypervisor ID of the server",
+				MarkdownDescription: "The external/hypervisor ID of the server",
+			},
+			"external_ip": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external IP address",
+				MarkdownDescription: "The external IP address",
+			},
+			"group_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the group the server belongs to",
+				MarkdownDescription: "The ID of the group the server belongs to",
+			},
+			"hostname": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The hostname of the server",
+				MarkdownDescription: "The hostname of the server",
+			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -25,7 +60,31 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{
 						path.MatchRoot("name"),
 					}...),
+					int64validator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
+					}...),
 				},
+			},
+			"internal_ip": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal IP address",
+				MarkdownDescription: "The internal IP address",
+			},
+			"max_cores": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Number of allocated CPU cores",
+				MarkdownDescription: "Number of allocated CPU cores",
+			},
+			"max_memory": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Allocated memory in bytes",
+				MarkdownDescription: "Allocated memory in bytes",
+			},
+			"max_storage": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Total allocated storage in bytes",
+				MarkdownDescription: "Total allocated storage in bytes",
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,
@@ -36,55 +95,64 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("id"),
 					}...),
+					stringvalidator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
+					}...),
 				},
 			},
-			"hostname": schema.StringAttribute{
+			"os_type": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The hostname of the server",
-				MarkdownDescription: "The hostname of the server",
+				Description:         "The OS type of the server",
+				MarkdownDescription: "The OS type of the server",
 			},
-			"external_ip": schema.StringAttribute{
+			"platform": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The external IP address",
-				MarkdownDescription: "The external IP address",
+				Description:         "The platform/OS type",
+				MarkdownDescription: "The platform/OS type",
 			},
-			"internal_ip": schema.StringAttribute{
+			"platform_version": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The internal IP address",
-				MarkdownDescription: "The internal IP address",
-			},
-			"status": schema.StringAttribute{
-				Computed:            true,
-				Description:         "The server status",
-				MarkdownDescription: "The server status",
+				Description:         "The platform/OS version",
+				MarkdownDescription: "The platform/OS version",
 			},
 			"power_state": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The power state of the server",
 				MarkdownDescription: "The power state of the server",
 			},
-			"platform": schema.StringAttribute{
+			"status": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The platform/OS",
-				MarkdownDescription: "The platform/OS",
+				Description:         "The server status",
+				MarkdownDescription: "The server status",
 			},
-			"cloud_id": schema.Int64Attribute{
+			"uuid": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The associated cloud ID",
-				MarkdownDescription: "The associated cloud ID",
+				Description:         "The UUID of the server",
+				MarkdownDescription: "The UUID of the server",
 			},
 		},
 	}
 }
 
 type ServerModel struct {
-	Id         types.Int64  `tfsdk:"id"`
-	Name       types.String `tfsdk:"name"`
-	Hostname   types.String `tfsdk:"hostname"`
-	ExternalIp types.String `tfsdk:"external_ip"`
-	InternalIp types.String `tfsdk:"internal_ip"`
-	Status     types.String `tfsdk:"status"`
-	PowerState types.String `tfsdk:"power_state"`
-	Platform   types.String `tfsdk:"platform"`
-	CloudId    types.Int64  `tfsdk:"cloud_id"`
+	CloudId         types.Int64  `tfsdk:"cloud_id"`
+	CoresPerSocket  types.Int64  `tfsdk:"cores_per_socket"`
+	Description     types.String `tfsdk:"description"`
+	ExternalId      types.String `tfsdk:"external_id"`
+	ExternalIp      types.String `tfsdk:"external_ip"`
+	GroupId         types.Int64  `tfsdk:"group_id"`
+	Hostname        types.String `tfsdk:"hostname"`
+	Id              types.Int64  `tfsdk:"id"`
+	InternalIp      types.String `tfsdk:"internal_ip"`
+	MaxCores        types.Int64  `tfsdk:"max_cores"`
+	MaxMemory       types.Int64  `tfsdk:"max_memory"`
+	MaxStorage      types.Int64  `tfsdk:"max_storage"`
+	Name            types.String `tfsdk:"name"`
+	OsType          types.String `tfsdk:"os_type"`
+	Platform        types.String `tfsdk:"platform"`
+	PlatformVersion types.String `tfsdk:"platform_version"`
+	PowerState      types.String `tfsdk:"power_state"`
+	Status          types.String `tfsdk:"status"`
+	Uuid            types.String `tfsdk:"uuid"`
 }

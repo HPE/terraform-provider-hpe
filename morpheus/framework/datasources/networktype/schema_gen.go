@@ -4,22 +4,32 @@ package networktype
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
 func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"can_assign_pool": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a network pool can be assigned",
+				MarkdownDescription: "Whether a network pool can be assigned",
+			},
 			"category": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The category of the network type",
 				MarkdownDescription: "The category of the network type",
+			},
+			"cidr_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the CIDR is editable",
+				MarkdownDescription: "Whether the CIDR is editable",
 			},
 			"code": schema.StringAttribute{
 				Computed:            true,
@@ -31,10 +41,20 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether this network type can be created",
 				MarkdownDescription: "Whether this network type can be created",
 			},
+			"deletable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether this network type can be deleted",
+				MarkdownDescription: "Whether this network type can be deleted",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the network type",
 				MarkdownDescription: "The description of the network type",
+			},
+			"has_cidr": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether CIDR is supported",
+				MarkdownDescription: "Whether CIDR is supported",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -43,6 +63,10 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the network type",
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{
+						path.MatchRoot("name"),
+					}...),
+					int64validator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
 						path.MatchRoot("name"),
 					}...),
 				},
@@ -56,17 +80,43 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("id"),
 					}...),
+					stringvalidator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
+					}...),
 				},
+			},
+			"name_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the network name is editable",
+				MarkdownDescription: "Whether the network name is editable",
+			},
+			"overlay": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether this network type uses overlay networking",
+				MarkdownDescription: "Whether this network type uses overlay networking",
+			},
+			"vlan_id_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the VLAN ID is editable",
+				MarkdownDescription: "Whether the VLAN ID is editable",
 			},
 		},
 	}
 }
 
 type NetworkTypeModel struct {
-	Category    types.String `tfsdk:"category"`
-	Code        types.String `tfsdk:"code"`
-	Creatable   types.Bool   `tfsdk:"creatable"`
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
+	CanAssignPool  types.Bool   `tfsdk:"can_assign_pool"`
+	Category       types.String `tfsdk:"category"`
+	CidrEditable   types.Bool   `tfsdk:"cidr_editable"`
+	Code           types.String `tfsdk:"code"`
+	Creatable      types.Bool   `tfsdk:"creatable"`
+	Deletable      types.Bool   `tfsdk:"deletable"`
+	Description    types.String `tfsdk:"description"`
+	HasCidr        types.Bool   `tfsdk:"has_cidr"`
+	Id             types.Int64  `tfsdk:"id"`
+	Name           types.String `tfsdk:"name"`
+	NameEditable   types.Bool   `tfsdk:"name_editable"`
+	Overlay        types.Bool   `tfsdk:"overlay"`
+	VlanIdEditable types.Bool   `tfsdk:"vlan_id_editable"`
 }

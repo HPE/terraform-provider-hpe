@@ -37,9 +37,19 @@ data "hpe_morpheus_server" "example" {
 ### Read-Only
 
 - `cloud_id` (Number) The associated cloud ID
+- `cores_per_socket` (Number) Number of cores per socket
+- `description` (String) The description of the server
+- `external_id` (String) The external/hypervisor ID of the server
 - `external_ip` (String) The external IP address
+- `group_id` (Number) The ID of the group the server belongs to
 - `hostname` (String) The hostname of the server
 - `internal_ip` (String) The internal IP address
-- `platform` (String) The platform/OS
+- `max_cores` (Number) Number of allocated CPU cores
+- `max_memory` (Number) Allocated memory in bytes
+- `max_storage` (Number) Total allocated storage in bytes
+- `os_type` (String) The OS type of the server
+- `platform` (String) The platform/OS type
+- `platform_version` (String) The platform/OS version
 - `power_state` (String) The power state of the server
 - `status` (String) The server status
+- `uuid` (String) The UUID of the server
