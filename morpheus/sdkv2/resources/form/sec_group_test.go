@@ -3,6 +3,7 @@
 package form_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -91,6 +92,46 @@ func TestAccMorpheusFormSecGroupOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFormSecGroupRejectsUnsupportedCascade(t *testing.T) {
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// secGroup with group_field set — should be rejected at plan time.
+	invalidConfig := `
+resource "hpe_morpheus_form" "bad_sec_group" {
+  name        = "bad-secgroup-test"
+  code        = "bad-secgroup-test"
+  description = "test"
+
+  option_type {
+    name             = "bad option"
+    code             = "bad-option"
+    type             = "secGroup"
+    field_name       = "badSec"
+    field_label      = "Bad"
+    cloud_field_type = "value"
+    cloud_id         = "1"
+    group_field      = "fGroups"
+    group_field_type = "field"
+  }
+}
+`
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + invalidConfig,
+				ExpectError: regexp.MustCompile(`group_field is not supported for secGroup`),
 			},
 		},
 	})

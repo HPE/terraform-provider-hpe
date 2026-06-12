@@ -25,6 +25,17 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 			"add_volumes": schema.BoolAttribute{
 				Computed: true,
 			},
+			"cloud_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "ID of the cloud the service plan must be available in. Disambiguates plans that share a name across clouds/regions (e.g. Azure). Requires name and provision_type_code.",
+				MarkdownDescription: "ID of the cloud the service plan must be available in. Disambiguates plans that share a name across clouds/regions (e.g. Azure). Requires name and provision_type_code.",
+				Validators: []validator.Int64{
+					int64validator.AlsoRequires(path.Expressions{
+						path.MatchRoot("name"),
+						path.MatchRoot("provision_type_code"),
+					}...),
+				},
+			},
 			"code": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The code of the Morpheus service plan",
@@ -206,6 +217,7 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 
 type ServicePlanModel struct {
 	AddVolumes        types.Bool        `tfsdk:"add_volumes"`
+	CloudId           types.Int64       `tfsdk:"cloud_id"`
 	Code              types.String      `tfsdk:"code"`
 	ConfigRanges      ConfigRangesValue `tfsdk:"config_ranges"`
 	CoresPerSocket    types.Int64       `tfsdk:"cores_per_socket"`

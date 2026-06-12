@@ -454,6 +454,11 @@ resource "hpe_morpheus_form" "example" {
 
 ### Cloud (cloud)
 
+~> **Note:** For the `cloud` option type, set `group_field` (with `group_field_type = "field"`)
+to the code of the upstream group form field that drives the group→cloud cascade. Morpheus's cloud
+input uses the plain `group` config key for this dependency; the provider maps `group_field` to it
+automatically.
+
 ```terraform
 resource "hpe_morpheus_form" "example" {
   name        = "demo"
@@ -483,6 +488,35 @@ resource "hpe_morpheus_form" "example" {
     instance_type_field_type = "value"
     instance_type_code       = "apache"
     cloud_type               = "4"
+  }
+}
+```
+
+#### Cloud with Group Cascade
+
+```terraform
+resource "hpe_morpheus_form" "example" {
+  name        = "demo-cascade"
+  code        = "demo-cascade"
+  description = "Demonstrates group→cloud cascade"
+  labels      = ["terraform", "demo"]
+
+  option_type {
+    name        = "Group Selector"
+    code        = "group-selector"
+    type        = "group"
+    field_label = "Group"
+    field_name  = "fGroups"
+  }
+
+  option_type {
+    name             = "Cloud Selector"
+    code             = "cloud-selector"
+    type             = "cloud"
+    field_label      = "Cloud"
+    field_name       = "fClouds"
+    group_field_type = "field"
+    group_field      = "fGroups"
   }
 }
 ```
@@ -788,6 +822,11 @@ resource "hpe_morpheus_form" "example" {
 ```
 
 ### Security Group (secGroup)
+
+~> **Note:** The `secGroup` option type supports only cloud and resource-pool cascades:
+`cloud_field` / `cloud_field_type` / `cloud_id` and `pool_field`. Other cascade keys such as
+`group_field`, `group_field_type`, `pool_field_type`, and the layout/plan fields are not
+supported and will produce a validation error.
 
 ```terraform
 resource "hpe_morpheus_form" "example" {
