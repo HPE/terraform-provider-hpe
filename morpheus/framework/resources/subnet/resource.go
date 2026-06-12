@@ -467,9 +467,16 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 	} else {
 		model.CloudId = types.Int64Null()
 	}
-	if subnet.Labels != nil {
+	// labels is Optional-only (not Computed): the applied value must equal the
+	// config value. The API returns a non-nil empty slice when no labels are
+	// set, so guarding on len (not nil) and falling back to null keeps a null
+	// plan consistent with the response (avoids "inconsistent result after
+	// apply: .labels was null, but now cty.SetValEmpty").
+	if len(subnet.Labels) > 0 {
 		labels, _ := types.SetValueFrom(context.Background(), types.StringType, subnet.Labels)
 		model.Labels = labels
+	} else {
+		model.Labels = types.SetNull(types.StringType)
 	}
 
 	// Tenants — intentionally not updated from the API response.
