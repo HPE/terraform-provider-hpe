@@ -1279,19 +1279,11 @@ func getStateInterfaces(
 		return nil, pd
 	}
 
-	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same
+	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same.
+	// subnet_id is read back from the server interface itself (see
+	// getStateInterfacesFromInstanceServer / getChildNetworks), so no plan-preservation
+	// is required.
 	if compareServerPlanIntfs(intfsFromServer, intfsFromPlan) {
-		// subnet_id is never returned by the API: the server reports the network that
-		// the subnet resolved to (network_id), not the subnet itself. Preserve the
-		// plan's subnet_id so that provisioning a network interface via subnet_id does
-		// not produce a perpetual diff. network_id is Optional+Computed, so the
-		// server-resolved network_id can be stored without causing a diff. The two
-		// lists are the same length and in the same order (guaranteed by
-		// compareServerPlanIntfs having returned true).
-		for i := range intfsFromServer {
-			intfsFromServer[i].SubnetId = intfsFromPlan[i].SubnetId
-		}
-
 		return intfsFromServer, diags
 	}
 
@@ -1358,8 +1350,8 @@ func getStateInterfacesFromInstance(
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
-		// subnet_id is not recoverable on import: the API reports the resolved
-		// network (network_id), not the subnet it came from.
+		// subnet_id is not recoverable on import: the instance.interfaces list used
+		// here does not include the subnet (only the server-interface read path does).
 		ifaceVal.SubnetId = types.Int64Null()
 		if net := instIntf.Network; net != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
@@ -1410,6 +1402,9 @@ func getInstanceInterfacesChildNetworks(
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
+		// subnet_id is not recoverable on import: the instance.interfaces list used
+		// here does not include the subnet (only the server-interface read path does).
+		ifaceVal.SubnetId = types.Int64Null()
 		if net := instIntf.Network; net != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
 			ifaceVal.IpPool = types.Int64Null()
@@ -1462,6 +1457,13 @@ func getStateInterfacesFromInstanceServer(
 		}
 		if iface.Network != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		}
+		// subnet_id is read back from the interface's subnet association. The API
+		// resolves a subnet to its parent network (reported as network_id) but also
+		// returns the subnet itself, so subnet_id round-trips on refresh.
+		ifaceVal.SubnetId = types.Int64Null()
+		if iface.Subnet != nil {
+			ifaceVal.SubnetId = convert.Int64ToType(iface.Subnet.Id)
 		}
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
@@ -1632,6 +1634,12 @@ func getChildNetworks(
 			ifaceVal.IpPool = convert.Int64ToType(iface.NetworkPool.Id)
 		}
 		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		// subnet_id round-trips from the interface's subnet association (see
+		// getStateInterfacesFromInstanceServer).
+		ifaceVal.SubnetId = types.Int64Null()
+		if iface.Subnet != nil {
+			ifaceVal.SubnetId = convert.Int64ToType(iface.Subnet.Id)
+		}
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 		ifaceVal.state = attr.ValueStateKnown

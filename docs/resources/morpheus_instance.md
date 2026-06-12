@@ -598,11 +598,11 @@ resource "hpe_morpheus_instance" "example" {
 ## Azure Instance
 
 -> Some clouds (such as Azure) provision onto a specific subnet rather than a network. Use
-`subnet_id` in a `network_interfaces` block to target a subnet. `subnet_id`, `network_id` and
-`network_group_id` are mutually exclusive. The subnet id is available from the Morpheus
-`/api/options/zoneNetworkOptions` endpoint. Note that `subnet_id` is a write-only input: the API
-reports the network the subnet resolves to, so on `import` the interface's `network_id` is populated
-rather than `subnet_id`.
+`subnet_id` in a `network_interfaces` block (or in a `child_virtual_networks` block) to target a
+subnet. `subnet_id`, `network_id` and `network_group_id` are mutually exclusive. The subnet id is
+available from the Morpheus `/api/options/zoneNetworkOptions` endpoint. `subnet_id` is read back from
+the API on refresh. The one exception is `import`: the interface list used on import does not include
+the subnet, so an imported interface reports its resolved `network_id` instead of `subnet_id`.
 
 ```terraform
 data "hpe_morpheus_cloud" "azure_cloud" {
@@ -934,6 +934,7 @@ Optional:
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
 - `network_type_id` (Number) The id of the type of network interface
+- `subnet_id` (Number) id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.
 
 Read-Only:
 

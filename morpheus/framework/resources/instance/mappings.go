@@ -212,6 +212,10 @@ func createChildNetworkInterfaceMapper(
 		id = in.NetworkId.String()
 	}
 
+	if !in.SubnetId.IsNull() {
+		id = "subnet-" + in.SubnetId.String()
+	}
+
 	ipPool := &sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
 		ipPool.Id = in.IpPool.ValueInt64Pointer()
@@ -239,6 +243,10 @@ func updateChildNetworkInterfaceMapper(
 
 	if !in.NetworkId.IsNull() {
 		id = in.NetworkId.String()
+	}
+
+	if !in.SubnetId.IsNull() {
+		id = "subnet-" + in.SubnetId.String()
 	}
 
 	var intfIdPtr *int64
