@@ -68,23 +68,14 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 		LocationType: "server",
 		BackupType:   plan.BackupTypeCode.ValueString(),
 		JobAction:    "addTo",
-		ServerId:     plan.HostId.ValueInt64Pointer(),
+		ServerId:     plan.HostId.ValueInt64(),
 		JobId:        plan.JobId.ValueInt64Pointer(),
 	}
-
-	// path and storage_provider_id are not modelled by the SDK. The backups API
-	// accepts them as the "targetPath" and "target" properties respectively, so
-	// set them via AdditionalProperties when the user has supplied a value. When
-	// storage_provider_id is omitted the API uses the system default.
-	additional := map[string]interface{}{}
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
-		additional["target"] = plan.StorageProviderId.ValueInt64()
+		host.Target = plan.StorageProviderId.ValueInt64Pointer()
 	}
 	if !plan.Path.IsNull() {
-		additional["targetPath"] = plan.Path.ValueString()
-	}
-	if len(additional) > 0 {
-		host.AdditionalProperties = additional
+		host.TargetPath = plan.Path.ValueStringPointer()
 	}
 
 	backup := sdk.AddBackupsRequestBackup{
@@ -161,26 +152,16 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		Name: plan.Name.ValueStringPointer(),
 	}
 	if !plan.JobId.IsNull() {
-		body.JobId = plan.JobId.ValueInt64Pointer()
+		body.BackupJobId = plan.JobId.ValueInt64Pointer()
 	}
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-
-	// path and storage_provider_id are not modelled by the SDK, so set them via
-	// AdditionalProperties. The update API accepts the storage provider as a
-	// nested "storageProvider" object and the path as "targetPath".
-	additional := map[string]interface{}{}
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
-		additional["storageProvider"] = map[string]interface{}{
-			"id": plan.StorageProviderId.ValueInt64(),
-		}
+		body.StorageProviderId = *sdk.NewNullableInt64(plan.StorageProviderId.ValueInt64Pointer())
 	}
 	if !plan.Path.IsNull() {
-		additional["targetPath"] = plan.Path.ValueString()
-	}
-	if len(additional) > 0 {
-		body.AdditionalProperties = additional
+		body.TargetPath = plan.Path.ValueStringPointer()
 	}
 
 	_, httpResp, err := client.BackupsAPI.UpdateBackups(ctx, id).UpdateBackupsRequest(sdk.UpdateBackupsRequest{
@@ -290,21 +271,16 @@ func getBackupAsState(
 		state.StorageProviderId = convert.Int64ToType(b.StorageProvider.Id)
 	}
 
-	// host_id and path are not yet modelled by the SDK. The GET response returns
-	// the host under "server" (with an "id") and the path as "targetPath", which
-	// land in AdditionalProperties (numbers decode as float64). Fall back to the
-	// planned value when absent so the attributes are never unexpectedly null.
+	// host_id and path are not present on every backup type, so fall back to the
+	// planned value when the API omits them.
 	state.HostId = plan.HostId
-	if server, ok := b.AdditionalProperties["server"].(map[string]interface{}); ok {
-		if rawID, ok := server["id"].(float64); ok {
-			hostID := int64(rawID)
-			state.HostId = convert.Int64ToType(&hostID)
-		}
+	if b.Server != nil {
+		state.HostId = convert.Int64ToType(b.Server.Id)
 	}
 
 	state.Path = plan.Path
-	if targetPath, ok := b.AdditionalProperties["targetPath"].(string); ok && targetPath != "" {
-		state.Path = convert.StrToType(&targetPath)
+	if v := b.TargetPath.Get(); v != nil {
+		state.Path = convert.StrToType(v)
 	}
 
 	return state, diags

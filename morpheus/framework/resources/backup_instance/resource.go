@@ -81,14 +81,8 @@ func (r *backupInstanceResource) Create(
 		JobAction:    "addTo",
 		JobId:        plan.JobId.ValueInt64Pointer(),
 	}
-
-	// storage_provider_id is not modelled by the SDK. The backups API accepts it
-	// as the "target" property, so set it via AdditionalProperties when the
-	// user has supplied a value. When omitted the API uses the system default.
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
-		instance.AdditionalProperties = map[string]interface{}{
-			"target": plan.StorageProviderId.ValueInt64(),
-		}
+		instance.Target = plan.StorageProviderId.ValueInt64Pointer()
 	}
 
 	// The backup POST requires a containerId. Look up the instance to
@@ -199,19 +193,13 @@ func (r *backupInstanceResource) Update(
 		Name: plan.Name.ValueStringPointer(),
 	}
 	if !plan.JobId.IsNull() {
-		body.JobId = plan.JobId.ValueInt64Pointer()
+		body.BackupJobId = plan.JobId.ValueInt64Pointer()
 	}
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-
-	// Need to put storageProvider.id into additional properties - not currently in SDK.
 	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
-		body.AdditionalProperties = map[string]interface{}{
-			"storageProvider": map[string]interface{}{
-				"id": plan.StorageProviderId.ValueInt64(),
-			},
-		}
+		body.StorageProviderId = *sdk.NewNullableInt64(plan.StorageProviderId.ValueInt64Pointer())
 	}
 
 	_, httpResp, err := client.BackupsAPI.UpdateBackups(ctx, id).UpdateBackupsRequest(sdk.UpdateBackupsRequest{
