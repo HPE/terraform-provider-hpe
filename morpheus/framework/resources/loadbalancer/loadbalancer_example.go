@@ -140,23 +140,43 @@ func RenderLoadBalancerNsxtConfig(t *testing.T, overrides map[string]string) (st
 	return prereq + lb, nil
 }
 
-// renderNsxtTier1Prereq renders a data source exposing the provider_id of an
-// existing, fully-realized NSX-T tier-1 gateway (router id 27) for use as a load
-// balancer's tier1_gateway (data source hpe_morpheus_network_router.lb_tier1).
+// renderNsxtTier1Prereq renders a per-test NSX-T tier-1 gateway connected to an
+// existing tier-0 (router id 28) and a data source exposing the tier-1's
+// provider_id for use as a load balancer's tier1_gateway (data source
+// hpe_morpheus_network_router.lb_tier1).
 //
-// An LB service can only be deployed on a tier-1 that is connected to a tier-0
-// (or has a Tier1Interface) and has an associated edge cluster. Rather than
-// building that topology per test (and racing NSX-T realization), we reference a
-// pre-provisioned tier-1.
+// NSX-T allows only one load balancer service per tier-1, so each test must use
+// its own tier-1 (sharing one would collide under parallel runs). The tier-1 is
+// connected to the pre-provisioned tier-0 (whose provider_id/path we read via a
+// data source) and given an edge cluster, both required for an LB service to
+// deploy on it.
 //
-// QA verify: router id 27 is a realized NSX-T tier-1 (connected to a tier-0, with
-// an edge cluster) on integration 5.
-func renderNsxtTier1Prereq(t *testing.T, _ string) (string, error) {
+// QA verify: tier-0 router id 28 is a realized NSX-T tier-0 on integration 5;
+// edge_cluster is the NSX-T edge cluster external id (display name
+// "qa-edge-cluster-01").
+func renderNsxtTier1Prereq(t *testing.T, name string) (string, error) {
 	t.Helper()
 
 	return `
+data "hpe_morpheus_network_router" "lb_tier0" {
+  id = 28
+}
+
+resource "hpe_morpheus_network_router" "lb_tier1" {
+  name                   = "` + name + `-tier1"
+  group_id               = 3
+  network_integration_id = 5
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
+    fail_over          = "NON_PREEMPTIVE"
+    tier0_gateway      = data.hpe_morpheus_network_router.lb_tier0.provider_id
+  }
+}
+
 data "hpe_morpheus_network_router" "lb_tier1" {
-  id = 27
+  id = hpe_morpheus_network_router.lb_tier1.id
 }
 `, nil
 }
