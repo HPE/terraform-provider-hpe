@@ -447,6 +447,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Validators: []validator.Int64{
 											int64validator.ConflictsWith(path.Expressions{
 												path.MatchRelative().AtParent().AtName("network_id"),
+												path.MatchRelative().AtParent().AtName("subnet_id"),
 											}...),
 										},
 									},
@@ -455,6 +456,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
 										MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.Expressions{
+												path.MatchRelative().AtParent().AtName("network_group_id"),
+												path.MatchRelative().AtParent().AtName("subnet_id"),
+											}...),
+										},
 									},
 									"network_type_id": schema.Int64Attribute{
 										Optional:            true,
@@ -538,6 +545,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
 									path.MatchRelative().AtParent().AtName("network_id"),
+									path.MatchRelative().AtParent().AtName("subnet_id"),
 								}...),
 							},
 						},
@@ -546,6 +554,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
 							MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+							Validators: []validator.Int64{
+								int64validator.ConflictsWith(path.Expressions{
+									path.MatchRelative().AtParent().AtName("network_group_id"),
+									path.MatchRelative().AtParent().AtName("subnet_id"),
+								}...),
+							},
 						},
 						"network_type_id": schema.Int64Attribute{
 							Optional:            true,
