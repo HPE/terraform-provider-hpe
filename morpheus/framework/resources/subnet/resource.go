@@ -108,8 +108,15 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		body.Tenants = tenants
 	}
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configValue := plan.Config.UnderlyingValue()
+	// config is a write-only attribute, so its value is null in the plan; it must
+	// be read from the request config instead.
+	var configWO types.Dynamic
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &configWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !configWO.IsNull() && !configWO.IsUnknown() {
+		configValue := configWO.UnderlyingValue()
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
