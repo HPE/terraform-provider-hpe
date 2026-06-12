@@ -45,7 +45,7 @@ func TestAccMorpheusSubnetResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet("hpe_morpheus_subnet.example", "id"),
 		resource.TestCheckResourceAttr("hpe_morpheus_subnet.example", "name", name),
-		resource.TestCheckResourceAttr("hpe_morpheus_subnet.example", "type_id", "1"),
+		resource.TestCheckResourceAttr("hpe_morpheus_subnet.example", "type_id", "8"),
 		resource.TestCheckResourceAttr("hpe_morpheus_subnet.example", "visibility", "private"),
 	)
 
@@ -104,13 +104,13 @@ func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_id", "8"),
 		resource.TestCheckResourceAttr(resourceName, "visibility", "private"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_id", "8"),
 		resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
 	)
 
