@@ -30,7 +30,11 @@ func TestAccMorpheusSubnetResourceExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// NOTE: intentionally NOT t.Parallel(). Both subnet resource tests provision
+	// on the same Azure VNet (network 88), and Azure serializes write operations
+	// per-VNet regardless of CIDR. Running them in parallel makes one create fail
+	// with "Another operation on this or dependent resource is in progress".
+	// Keeping them serial (no t.Parallel) avoids the collision.
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -80,15 +84,17 @@ func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	t.Parallel()
+	// NOTE: intentionally NOT t.Parallel() — see TestAccMorpheusSubnetResourceExampleOk.
+	// Both tests share Azure VNet 88, which serializes per-VNet operations.
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
 	createConfig, err := subnet.RenderSubnetConfig(t, map[string]string{
 		"Name": name,
-		// Distinct from ExampleOk's 10.0.250.0/24 to avoid an overlapping-CIDR
-		// collision when the subnet tests run in parallel on network 88.
+		// Distinct from ExampleOk's 10.0.250.0/24. The tests run serially now,
+		// but distinct CIDRs remain as defensive hygiene against a delete→create
+		// CIDR-reuse race on the shared VNet.
 		"SubnetCidr": "10.0.251.0/24",
 	})
 	if err != nil {
