@@ -36,7 +36,14 @@ data "hpe_morpheus_network_type" "example" {
 
 ### Read-Only
 
+- `can_assign_pool` (Boolean) Whether a network pool can be assigned
 - `category` (String) The category of the network type
+- `cidr_editable` (Boolean) Whether the CIDR is editable
 - `code` (String) The code of the network type
 - `creatable` (Boolean) Whether this network type can be created
+- `deletable` (Boolean) Whether this network type can be deleted
 - `description` (String) The description of the network type
+- `has_cidr` (Boolean) Whether CIDR is supported
+- `name_editable` (Boolean) Whether the network name is editable
+- `overlay` (Boolean) Whether this network type uses overlay networking
+- `vlan_id_editable` (Boolean) Whether the VLAN ID is editable

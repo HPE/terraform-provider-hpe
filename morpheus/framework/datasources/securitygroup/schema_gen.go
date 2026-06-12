@@ -4,18 +4,48 @@ package securitygroup
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
 func SecurityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"active": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the security group is active",
+				MarkdownDescription: "Whether the security group is active",
+			},
+			"cloud_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The associated cloud (zone) ID",
+				MarkdownDescription: "The associated cloud (zone) ID",
+			},
+			"description": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The description of the security group",
+				MarkdownDescription: "The description of the security group",
+			},
+			"enabled": schema.StringAttribute{
+				Computed:            true,
+				Description:         "Whether the security group is enabled",
+				MarkdownDescription: "Whether the security group is enabled",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the security group",
+				MarkdownDescription: "The external ID of the security group",
+			},
+			"group_source": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source of the security group (local or synced)",
+				MarkdownDescription: "The source of the security group (local or synced)",
+			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -23,6 +53,10 @@ func SecurityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the security group",
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{
+						path.MatchRoot("name"),
+					}...),
+					int64validator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
 						path.MatchRoot("name"),
 					}...),
 				},
@@ -36,37 +70,41 @@ func SecurityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("id"),
 					}...),
+					stringvalidator.AtLeastOneOf(path.Expressions{
+						path.MatchRoot("id"),
+						path.MatchRoot("name"),
+					}...),
 				},
 			},
-			"description": schema.StringAttribute{
-				Computed: true,
+			"sync_source": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The sync source identifier for the security group",
+				MarkdownDescription: "The sync source identifier for the security group",
 			},
-			"active": schema.BoolAttribute{
-				Computed: true,
+			"tenant_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the tenant that owns the security group",
+				MarkdownDescription: "The ID of the tenant that owns the security group",
 			},
 			"visibility": schema.StringAttribute{
-				Computed: true,
-			},
-			"cloud_id": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "The associated cloud (zone) ID",
-				MarkdownDescription: "The associated cloud (zone) ID",
-			},
-			"external_id": schema.StringAttribute{
-				Computed:            true,
-				Description:         "The external ID of the security group",
-				MarkdownDescription: "The external ID of the security group",
+				Description:         "The visibility of the security group",
+				MarkdownDescription: "The visibility of the security group",
 			},
 		},
 	}
 }
 
 type SecurityGroupModel struct {
+	Active      types.Bool   `tfsdk:"active"`
+	CloudId     types.Int64  `tfsdk:"cloud_id"`
+	Description types.String `tfsdk:"description"`
+	Enabled     types.String `tfsdk:"enabled"`
+	ExternalId  types.String `tfsdk:"external_id"`
+	GroupSource types.String `tfsdk:"group_source"`
 	Id          types.Int64  `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Active      types.Bool   `tfsdk:"active"`
+	SyncSource  types.String `tfsdk:"sync_source"`
+	TenantId    types.Int64  `tfsdk:"tenant_id"`
 	Visibility  types.String `tfsdk:"visibility"`
-	CloudId     types.Int64  `tfsdk:"cloud_id"`
-	ExternalId  types.String `tfsdk:"external_id"`
 }

@@ -36,7 +36,12 @@ data "hpe_morpheus_network_pool" "example" {
 
 ### Read-Only
 
+- `boot_file` (String) TFTP boot file
+- `dhcp_server` (Boolean) Whether a DHCP server is present
 - `display_name` (String) The display name of the network pool
+- `dns_domain` (String) DNS domain for the pool
+- `dns_search_path` (String) DNS search path
+- `dns_servers` (Set of String) DNS server list
 - `free_count` (Number) Available IPs in pool
 - `gateway` (String) Gateway address
 - `ip_count` (Number) Total IPs in pool
