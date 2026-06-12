@@ -13,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -247,6 +248,13 @@ func (r *Resource) Create(
 		ctx, loadBalancerID, *created.Id, client,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "loadbalancermonitor",
+			ResourceID:   *created.Id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 

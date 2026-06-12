@@ -9,6 +9,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -187,6 +188,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	state, diag := getTaskAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "task",
+			ResourceID:   plan.Id.ValueInt64(),
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 
