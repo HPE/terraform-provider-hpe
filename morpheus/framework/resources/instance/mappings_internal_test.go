@@ -30,22 +30,46 @@ func TestNetworkInterfaceMapperNetworkID(t *testing.T) {
 		subnetID       types.Int64
 		want           string
 	}{
+		// Real create plans mark unset Optional+Computed fields as *unknown*
+		// (not null); these cases fail if the mapper does not guard IsUnknown.
 		{
-			name:           "network_id maps to a bare id",
+			name:           "network_id set, others unknown",
+			networkID:      types.Int64Value(28),
+			networkGroupID: types.Int64Unknown(),
+			subnetID:       types.Int64Unknown(),
+			want:           "28",
+		},
+		{
+			name:           "network_group_id set, others unknown",
+			networkID:      types.Int64Unknown(),
+			networkGroupID: types.Int64Value(2),
+			subnetID:       types.Int64Unknown(),
+			want:           "networkGroup-2",
+		},
+		{
+			name:           "subnet_id set, others unknown",
+			networkID:      types.Int64Unknown(),
+			networkGroupID: types.Int64Unknown(),
+			subnetID:       types.Int64Value(5),
+			want:           "subnet-5",
+		},
+		// Null (e.g. state-derived) unset fields must likewise be ignored.
+		{
+			name:           "network_id set, others null",
 			networkID:      types.Int64Value(28),
 			networkGroupID: types.Int64Null(),
 			subnetID:       types.Int64Null(),
 			want:           "28",
 		},
 		{
-			name:           "network_group_id maps to a networkGroup- prefix",
+			name:           "network_group_id set, others null",
 			networkID:      types.Int64Null(),
 			networkGroupID: types.Int64Value(2),
 			subnetID:       types.Int64Null(),
 			want:           "networkGroup-2",
 		},
 		{
-			name:           "subnet_id maps to a subnet- prefix",
+			name:           "subnet_id set, others null",
 			networkID:      types.Int64Null(),
 			networkGroupID: types.Int64Null(),
 			subnetID:       types.Int64Value(5),
@@ -97,22 +121,46 @@ func TestChildNetworkInterfaceMapperNetworkID(t *testing.T) {
 		subnetID       types.Int64
 		want           string
 	}{
+		// Real create plans mark unset Optional+Computed fields as *unknown*
+		// (not null); these cases fail if the mapper does not guard IsUnknown.
 		{
-			name:           "network_id maps to a bare id",
+			name:           "network_id set, others unknown",
+			networkID:      types.Int64Value(28),
+			networkGroupID: types.Int64Unknown(),
+			subnetID:       types.Int64Unknown(),
+			want:           "28",
+		},
+		{
+			name:           "network_group_id set, others unknown",
+			networkID:      types.Int64Unknown(),
+			networkGroupID: types.Int64Value(2),
+			subnetID:       types.Int64Unknown(),
+			want:           "networkGroup-2",
+		},
+		{
+			name:           "subnet_id set, others unknown",
+			networkID:      types.Int64Unknown(),
+			networkGroupID: types.Int64Unknown(),
+			subnetID:       types.Int64Value(5),
+			want:           "subnet-5",
+		},
+		// Null (e.g. state-derived) unset fields must likewise be ignored.
+		{
+			name:           "network_id set, others null",
 			networkID:      types.Int64Value(28),
 			networkGroupID: types.Int64Null(),
 			subnetID:       types.Int64Null(),
 			want:           "28",
 		},
 		{
-			name:           "network_group_id maps to a networkGroup- prefix",
+			name:           "network_group_id set, others null",
 			networkID:      types.Int64Null(),
 			networkGroupID: types.Int64Value(2),
 			subnetID:       types.Int64Null(),
 			want:           "networkGroup-2",
 		},
 		{
-			name:           "subnet_id maps to a subnet- prefix",
+			name:           "subnet_id set, others null",
 			networkID:      types.Int64Null(),
 			networkGroupID: types.Int64Null(),
 			subnetID:       types.Int64Value(5),

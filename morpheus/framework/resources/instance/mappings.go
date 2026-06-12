@@ -107,15 +107,15 @@ func createNetworkInterfaceMapper(
 ) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 		var id string
-		if !in.NetworkGroupId.IsNull() {
+		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 			id = "networkGroup-" + in.NetworkGroupId.String()
 		}
 
-		if !in.NetworkId.IsNull() {
+		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
 			id = in.NetworkId.String()
 		}
 
-		if !in.SubnetId.IsNull() {
+		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
 			id = "subnet-" + in.SubnetId.String()
 		}
 
@@ -153,15 +153,15 @@ func updateNetworkInterfaceMapper(
 ) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
 		var id string
-		if !in.NetworkGroupId.IsNull() {
+		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 			id = "networkGroup-" + in.NetworkGroupId.String()
 		}
 
-		if !in.NetworkId.IsNull() {
+		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
 			id = in.NetworkId.String()
 		}
 
-		if !in.SubnetId.IsNull() {
+		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
 			id = "subnet-" + in.SubnetId.String()
 		}
 
@@ -204,15 +204,15 @@ func createChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
 ) sdk.InstancesNetworkInterfaces2NetworkInterfacesInner {
 	var id string
-	if !in.NetworkGroupId.IsNull() {
+	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 		id = "networkGroup-" + in.NetworkGroupId.String()
 	}
 
-	if !in.NetworkId.IsNull() {
+	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
 		id = in.NetworkId.String()
 	}
 
-	if !in.SubnetId.IsNull() {
+	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
 		id = "subnet-" + in.SubnetId.String()
 	}
 
@@ -237,15 +237,15 @@ func updateChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
 ) sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
 	var id string
-	if !in.NetworkGroupId.IsNull() {
+	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 		id = "networkGroup-" + in.NetworkGroupId.String()
 	}
 
-	if !in.NetworkId.IsNull() {
+	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
 		id = in.NetworkId.String()
 	}
 
-	if !in.SubnetId.IsNull() {
+	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
 		id = "subnet-" + in.SubnetId.String()
 	}
 
