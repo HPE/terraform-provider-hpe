@@ -324,6 +324,50 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 	})
 }
 
+func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// cloud_id requires name and provision_type_code, so cloud_id on its own
+	// must fail validation during plan.
+	config := providerConfig + `
+			data "hpe_morpheus_service_plan" "test" {
+				cloud_id = 1
+			}`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_service_plan.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := serviceplan.ErrorRunningPreApply
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
 // test to verify that all of the attributes from a created service plan can be read
 func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
